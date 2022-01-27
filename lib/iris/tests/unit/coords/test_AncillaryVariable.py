@@ -442,7 +442,8 @@ class Test__str__(tests.IrisTest):
                 "    standard_name: 'height'",
                 "    long_name: 'height of detector'",
                 "    var_name: 'height'",
-                "    attributes: {'notes': 'Measured from sea level'}",
+                "    attributes:",
+                "        notes  'Measured from sea level'",
             ]
         )
         self.assertEqual(expected, ancillary_var.__str__())

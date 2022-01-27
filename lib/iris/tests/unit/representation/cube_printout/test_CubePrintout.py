@@ -142,7 +142,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             (
                 "        very_very_very_very_very_long_name "
-                "longish string extends beyond dim columns"
+                "'longish string extends beyond dim columns'"
             ),
         ]
         self.assertEqual(rep, expected)
@@ -442,7 +442,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             "        list                        [3]",
             "        number                      1.2",
-            "        string                      four five in a string",
+            "        string                      'four five in a string'",
             "        z_tupular                   (6, (7, 8))",
         ]
         self.assertEqual(rep, expected)
@@ -464,7 +464,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             "        escaped                     'escaped\\tstring'",
             (
-                "        long                        this is very very very "
+                "        long                        'this is very very very "
                 "very very very very very very very very very very..."
             ),
             (

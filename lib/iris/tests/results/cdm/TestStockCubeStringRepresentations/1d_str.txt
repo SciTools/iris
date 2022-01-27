@@ -13,4 +13,4 @@ air_potential_temperature / (K)     (grid_longitude: 100)
         sigma                       0.9994238, bound=(1.0, 0.99846387)
         time                        2009-09-09 17:10:00
     Attributes:
-        source                      Iris test case
+        source                      'Iris test case'

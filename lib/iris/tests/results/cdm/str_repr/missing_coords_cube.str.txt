@@ -11,4 +11,4 @@ air_potential_temperature / (K)     (-- : 6; -- : 70; grid_latitude: 100; grid_l
     Scalar coordinates:
         forecast_period             0.0 hours
     Attributes:
-        source                      Iris test case
+        source                      'Iris test case'

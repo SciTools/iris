@@ -112,10 +112,10 @@ class Resolve:
             Cell methods:
                 mean                        time (6 hour)
             Attributes:
-                Conventions                 CF-1.5
-                Model scenario              A1B
+                Conventions                 'CF-1.5'
+                Model scenario              'A1B'
                 STASH                       m01s03i236
-                source                      Data from Met Office Unified Model 6.05
+                source                      'Data from Met Office Unified Model 6.05'
 
         >>> print(cube2)
         air_temperature / (K)               (longitude: 49; latitude: 37)
@@ -130,10 +130,10 @@ class Resolve:
             Cell methods:
                 mean                        time (6 hour)
             Attributes:
-                Conventions                 CF-1.5
-                Model scenario              E1
+                Conventions                 'CF-1.5'
+                Model scenario              'E1'
                 STASH                       m01s03i236
-                source                      Data from Met Office Unified Model 6.05
+                source                      'Data from Met Office Unified Model 6.05'
 
         >>> print(data.shape)
         (240, 37, 49)
@@ -153,9 +153,9 @@ class Resolve:
             Cell methods:
                 mean                        time (6 hour)
             Attributes:
-                Conventions                 CF-1.5
+                Conventions                 'CF-1.5'
                 STASH                       m01s03i236
-                source                      Data from Met Office Unified Model 6.05
+                source                      'Data from Met Office Unified Model 6.05'
 
     Secondly, creating an *empty* ``resolver`` instance, that may be called *multiple*
     times with *different* :class:`~iris.cube.Cube` operands and *different* ``data``,
@@ -2413,10 +2413,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              A1B
+                    Conventions                 'CF-1.5'
+                    Model scenario              'A1B'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> print(cube2)
             air_temperature / (K)               (longitude: 49; latitude: 37)
                 Dimension coordinates:
@@ -2430,10 +2430,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              E1
+                    Conventions                 'CF-1.5'
+                    Model scenario              'E1'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> Resolve().mapped is None
             True
             >>> resolver = Resolve(cube1, cube2)
@@ -2481,10 +2481,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              A1B
+                    Conventions                 'CF-1.5'
+                    Model scenario              'A1B'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> print(cube2)
             air_temperature / (K)               (longitude: 49; latitude: 37)
                 Dimension coordinates:
@@ -2498,10 +2498,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              E1
+                    Conventions                 'CF-1.5'
+                    Model scenario              'E1'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> Resolve().shape is None
             True
             >>> Resolve(cube1, cube2).shape

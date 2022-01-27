@@ -11,4 +11,5 @@ DimCoord :  level_height / (m)
     shape: (10,)  bounds(10, 2)
     dtype: float32
     long_name: 'level_height'
-    attributes: {'positive': 'up'}
+    attributes:
+        positive  'up'

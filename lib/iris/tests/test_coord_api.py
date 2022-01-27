@@ -256,7 +256,8 @@ class TestAuxCoordCreation(tests.IrisTest):
                 "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
                 "    shape: (10,)",
                 "    dtype: int64",
-                "    attributes: {'monty': 'python'}",
+                "    attributes:",
+                "        monty  'python'",
             ]
         )
         self.assertEqual(result, str(b))
@@ -360,7 +361,8 @@ class TestDimCoordCreation(tests.IrisTest):
                 "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
                 "    shape: (10,)",
                 "    dtype: int64",
-                "    attributes: {'monty': 'python'}",
+                "    attributes:",
+                "        monty  'python'",
             ]
         )
         self.assertEqual(result, str(b))

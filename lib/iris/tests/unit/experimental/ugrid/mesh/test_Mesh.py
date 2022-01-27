@@ -129,7 +129,8 @@ class TestProperties1D(TestMeshCommon):
             "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
             "    long_name: 'my_topology_mesh'",
             "    var_name: 'mesh'",
-            "    attributes: {'notes': 'this is a test'}",
+            "    attributes:",
+            "        notes  'this is a test'",
         ]
         self.assertEqual(expected, str(self.mesh).split("\n"))
 
@@ -427,7 +428,8 @@ class TestProperties2D(TestProperties1D):
             ),
             "    long_name: 'my_topology_mesh'",
             "    var_name: 'mesh'",
-            "    attributes: {'notes': 'this is a test'}",
+            "    attributes:",
+            "        notes  'this is a test'",
         ]
         self.assertEqual(expected, str(self.mesh).split("\n"))
 
@@ -474,7 +476,8 @@ class TestProperties2D(TestProperties1D):
             ),
             "    long_name: 'my_topology_mesh'",
             "    var_name: 'mesh'",
-            "    attributes: {'notes': 'this is a test'}",
+            "    attributes:",
+            "        notes  'this is a test'",
         ]
         self.assertEqual(expected, str(alt_mesh).split("\n"))
 
@@ -696,6 +699,19 @@ class Test__str__various(TestMeshCommon):
         self.mesh.attributes.clear()
         self.assertNotIn("attributes", str(self.mesh))
 
+    def test__str__longstringattribute(self):
+        self.mesh.attributes["long_string"] = (
+            "long_x_10_long_x_20_long_x_30_long_x_40_"
+            "long_x_50_long_x_60_long_x_70_long_x_80_"
+        )
+        result = str(self.mesh)
+        # Note: initial single-quote, but no final one : this is correct !
+        expected = (
+            "'long_x_10_long_x_20_long_x_30_long_x_40_"
+            "long_x_50_long_x_60_long_x_70..."
+        )
+        self.assertIn(expected + ":END", result + ":END")
+
     def test___str__units_stdname(self):
         # These are usually missing, but they *can* be present.
         mesh_kwargs = self.kwargs.copy()
@@ -713,7 +729,8 @@ class Test__str__various(TestMeshCommon):
                 "    long_name: 'my_topology_mesh'",
                 "    var_name: 'mesh'",
                 "    units: Unit('m')",
-                "    attributes: {'notes': 'this is a test'}",
+                "    attributes:",
+                "        notes  'this is a test'",
             ]
         )
         self.assertTrue(result.endswith(expected))

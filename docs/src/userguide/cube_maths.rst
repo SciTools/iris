@@ -63,9 +63,9 @@ but with the data representing their difference:
             forecast_reference_time     1859-09-01 06:00:00
             height                      1.5 m
         Attributes:
-            Conventions                 CF-1.5
-            Model scenario              E1
-            source                      Data from Met Office Unified Model 6.05
+            Conventions                 'CF-1.5'
+            Model scenario              'E1'
+            source                      'Data from Met Office Unified Model 6.05'
 
 
 .. note::

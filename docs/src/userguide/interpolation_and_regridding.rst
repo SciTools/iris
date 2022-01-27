@@ -79,7 +79,7 @@ Let's take the air temperature cube we've seen previously:
             mean over years             time
         Attributes:
             STASH                       m01s16i203
-            source                      Data from Met Office Unified Model
+            source                      'Data from Met Office Unified Model'
 
 We can interpolate specific values from the coordinates of the cube:
 
@@ -98,7 +98,7 @@ We can interpolate specific values from the coordinates of the cube:
             mean over years             time
         Attributes:
             STASH                       m01s16i203
-            source                      Data from Met Office Unified Model
+            source                      'Data from Met Office Unified Model'
 
 As we can see, the resulting cube is scalar and has longitude and latitude coordinates with
 the values defined in our sample points.
