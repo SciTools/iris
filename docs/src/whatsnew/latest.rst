@@ -325,8 +325,8 @@ This document explains the changes made to Iris for this release
 
 #. `@lbdreyer`_ corrected the license PyPI classifier. (:pull:`4435`)
 
-#. `@aaronspring <https://github.com/aaronspring>`_ exchanged `dask` with
-   `dask-core` in testing environments reducing the number of dependencies
+#. `@aaronspring <https://github.com/aaronspring>`_ exchanged ``dask`` with
+   ``dask-core`` in testing environments reducing the number of dependencies
    installed for testing. (:pull:`4434`)
 
 #. `@wjbenfold`_ prevented github action runs in forks (:issue:`4441`,
