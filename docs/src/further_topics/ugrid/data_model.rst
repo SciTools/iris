@@ -335,12 +335,12 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
         from iris.experimental.ugrid import Connectivity, Mesh
 
         node_x = AuxCoord(
-                     points=[3.0, 3.0, 0.0, 0.0, 0.0],
+                     points=[0.0, 5.0, 0.0, 5.0, 8.0],
                      standard_name="longitude",
                      units="degrees_east",
                  )
         node_y = AuxCoord(
-                     points=[0.0, 5.0, 0.0, 5.0, 8.0],
+                     points=[3.0, 3.0, 0.0, 0.0, 0.0],
                      standard_name="latitude",
                      units="degrees_north",
                  )
@@ -533,21 +533,6 @@ given only the ``location`` argument
         MeshCoord :  latitude / (degrees_north)
             mesh: <Mesh: 'my_mesh'>
             location: 'edge'
-            points: [2.5, 0. , 5. , 6.5, 2.5, 6.5]
-            bounds: [
-                [0., 5.],
-                [0., 0.],
-                [5., 5.],
-                [5., 8.],
-                [0., 5.],
-                [5., 8.]]
-            shape: (6,)  bounds(6, 2)
-            dtype: float64
-            standard_name: 'latitude'
-            axis: 'y'
-        MeshCoord :  longitude / (degrees_east)
-            mesh: <Mesh: 'my_mesh'>
-            location: 'edge'
             points: [3. , 1.5, 1.5, 1.5, 0. , 0. ]
             bounds: [
                 [3., 3.],
@@ -556,6 +541,21 @@ given only the ``location`` argument
                 [3., 0.],
                 [0., 0.],
                 [0., 0.]]
+            shape: (6,)  bounds(6, 2)
+            dtype: float64
+            standard_name: 'latitude'
+            axis: 'y'
+        MeshCoord :  longitude / (degrees_east)
+            mesh: <Mesh: 'my_mesh'>
+            location: 'edge'
+            points: [2.5, 0. , 5. , 6.5, 2.5, 6.5]
+            bounds: [
+                [0., 5.],
+                [0., 0.],
+                [5., 5.],
+                [5., 8.],
+                [0., 5.],
+                [5., 8.]]
             shape: (6,)  bounds(6, 2)
             dtype: float64
             standard_name: 'longitude'

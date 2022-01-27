@@ -71,12 +71,12 @@ subsequent example operations on this page.
         #  2----3--4
 
         >>> node_x = AuxCoord(
-        ...     points=[3.0, 3.0, 0.0, 0.0, 0.0],
+        ...     points=[0.0, 5.0, 0.0, 5.0, 8.0],
         ...     standard_name="longitude",
         ...     units="degrees_east",
         ...     long_name="node_x_coordinates",
         ... )
-        >>> node_y = AuxCoord(points=[0.0, 5.0, 0.0, 5.0, 8.0], standard_name="latitude")
+        >>> node_y = AuxCoord(points=[3.0, 3.0, 0.0, 0.0, 0.0], standard_name="latitude")
 
         >>> face_x = AuxCoord([2.0, 6.0], "longitude")
         >>> face_y = AuxCoord([1.0, 1.0], "latitude")
@@ -469,12 +469,12 @@ earlier:
         # Just plotting a single height level.
         >>> face_polydata = cube_faces_to_polydata(face_cube[:, 0])
         >>> print(face_polydata)
-        PolyData (0x7fb854a9ce80)
+        PolyData (0x7ff4861ff4c0)
           N Cells:	2
           N Points:	5
           X Bounds:	9.903e-01, 1.000e+00
-          Y Bounds:	0.000e+00, 5.234e-02
-          Z Bounds:	6.123e-17, 1.392e-01
+          Y Bounds:	0.000e+00, 1.392e-01
+          Z Bounds:	6.123e-17, 5.234e-02
           N Arrays:	2
 
         # Create the GeoVista plotter and add our mesh+data to it.
