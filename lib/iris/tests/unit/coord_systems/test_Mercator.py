@@ -29,7 +29,8 @@ class Test_Mercator__basics(tests.IrisTest):
             "Mercator(longitude_of_projection_origin=90.0, "
             "ellipsoid=GeogCS(semi_major_axis=6377563.396, "
             "semi_minor_axis=6356256.909), "
-            "standard_parallel=0.0)"
+            "standard_parallel=0.0, "
+            "false_easting=0.0, false_northing=0.0)"
         )
         self.assertEqual(expected, repr(self.tm))
 
@@ -38,16 +39,23 @@ class Test_init_defaults(tests.IrisTest):
     def test_set_optional_args(self):
         # Check that setting the optional (non-ellipse) args works.
         crs = Mercator(
-            longitude_of_projection_origin=27, standard_parallel=157.4
+            longitude_of_projection_origin=27,
+            standard_parallel=157.4,
+            false_easting=13,
+            false_northing=12,
         )
         self.assertEqualAndKind(crs.longitude_of_projection_origin, 27.0)
         self.assertEqualAndKind(crs.standard_parallel, 157.4)
+        self.assertEqualAndKind(crs.false_easting, 13.0)
+        self.assertEqualAndKind(crs.false_northing, 12.0)
 
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.
         self.assertEqualAndKind(crs.longitude_of_projection_origin, 0.0)
         self.assertEqualAndKind(crs.standard_parallel, 0.0)
+        self.assertEqualAndKind(crs.false_easting, 0.0)
+        self.assertEqualAndKind(crs.false_northing, 0.0)
 
     def test_no_optional_args(self):
         # Check expected defaults with no optional args.
@@ -57,7 +65,10 @@ class Test_init_defaults(tests.IrisTest):
     def test_optional_args_None(self):
         # Check expected defaults with optional args=None.
         crs = Mercator(
-            longitude_of_projection_origin=None, standard_parallel=None
+            longitude_of_projection_origin=None,
+            standard_parallel=None,
+            false_easting=None,
+            false_northing=None,
         )
         self._check_crs_defaults(crs)
 
@@ -77,6 +88,8 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         # converted to a cartopy CRS.
         longitude_of_projection_origin = 90.0
         true_scale_lat = 14.0
+        false_easting = 13
+        false_northing = 12
         ellipsoid = GeogCS(
             semi_major_axis=6377563.396, semi_minor_axis=6356256.909
         )
@@ -85,6 +98,8 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
             longitude_of_projection_origin,
             ellipsoid=ellipsoid,
             standard_parallel=true_scale_lat,
+            false_easting=false_easting,
+            false_northing=false_northing,
         )
 
         expected = ccrs.Mercator(
@@ -95,6 +110,8 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
                 ellipse=None,
             ),
             latitude_true_scale=true_scale_lat,
+            false_easting=false_easting,
+            false_northing=false_northing,
         )
 
         res = merc_cs.as_cartopy_crs()
@@ -113,6 +130,8 @@ class Test_as_cartopy_projection(tests.IrisTest):
     def test_extra_kwargs(self):
         longitude_of_projection_origin = 90.0
         true_scale_lat = 14.0
+        false_easting = 13
+        false_northing = 12
         ellipsoid = GeogCS(
             semi_major_axis=6377563.396, semi_minor_axis=6356256.909
         )
@@ -121,6 +140,8 @@ class Test_as_cartopy_projection(tests.IrisTest):
             longitude_of_projection_origin,
             ellipsoid=ellipsoid,
             standard_parallel=true_scale_lat,
+            false_easting=false_easting,
+            false_northing=false_northing,
         )
 
         expected = ccrs.Mercator(
@@ -131,6 +152,8 @@ class Test_as_cartopy_projection(tests.IrisTest):
                 ellipse=None,
             ),
             latitude_true_scale=true_scale_lat,
+            false_easting=false_easting,
+            false_northing=false_northing,
         )
 
         res = merc_cs.as_cartopy_projection()
