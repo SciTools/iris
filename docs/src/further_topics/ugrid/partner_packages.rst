@@ -3,18 +3,16 @@
 Iris' Mesh Partner Packages
 ****************************
 Python is an easy to use language and has formed a very strong collaborative
-scientific community, which is why Iris is written in Python. But it is not as
-computationally strong as other languages, and this is a problem for working
-with unstructured meshes where computations are higher in volume and complexity
-(:ref:`see the data model detail <ugrid implications>`). So there are
-operations - which Python can perform acceptably on structured grids - which
-need unworkably large time/resource to perform on an unstructured mesh. New
-approaches are needed...
+scientific community, which is why Iris is written in Python. *Performant*
+Python relies on calls down to C, which is ideal for structured grid work since
+they can be directly represented as NumPy arrays. This is more difficult when
+working with unstructured meshes where extra steps are needed to determine data
+position (:ref:`see the data model detail <ugrid implications>`), and we need
+to find ways of again passing the operations down to more optimised languages.
 
-Python packages already exist that enable the use of powerful mesh analysis
-tools originally written in faster languages such as C. And the Iris team are
-working on wrapper solutions to 'bridge the gap' between these packages and
-Iris.
+The Iris team are therefore developing 'wrapper' packages, which make it quick
+and easy to analyse Iris mesh data via some popular Python packages that use
+powerful tools under the hood, working in C and other languages.
 
 These solutions have been placed in their own 'partner packages' for several
 reasons:

@@ -16,8 +16,10 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
-   * We've added experimental support for `CF-UGRID`_ meshes which can now be loaded
-     and attached to a cube.
+   * We've added experimental support for
+     :ref:`Meshes <ugrid>`, which can now be loaded and
+     attached to a cube. Mesh support is based on the based on `CF-UGRID`_
+     model.
    * We've also dropped support for ``Python 3.7``.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
@@ -37,7 +39,7 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@bjlittle`_, `@pp-mo`_, `@trexfeathers`_ and `@stephenworsley`_ added
-   support for unstructured meshes, as described by `CF-UGRID`_. This involved
+   support for :ref:`unstructured meshes <ugrid>`. This involved
    adding a data model (:pull:`3968`, :pull:`4014`, :pull:`4027`, :pull:`4036`,
    :pull:`4053`, :pull:`4439`) and API (:pull:`4063`, :pull:`4064`), and
    supporting representation (:pull:`4033`, :pull:`4054`) of data on meshes.
@@ -60,8 +62,8 @@ This document explains the changes made to Iris for this release
    returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
    (:pull:`4058`).
 
-#. `@pp-mo`_ added support to save cubes with meshes to netcdf files, using the
-   `CF-UGRID`_ conventions.
+#. `@pp-mo`_ added support to save cubes with :ref:`meshes <ugrid>` to netcdf
+   files, using the `CF-UGRID`_ conventions.
    The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
    A routine :meth:`iris.experimental.ugrid.save.save_mesh` allows saving
    :class:`~iris.experimental.ugrid.mesh.Mesh` objects to netcdf *without* any associated data
@@ -82,7 +84,7 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.AuxCoord` :attr:`~iris.coords.AuxCoord.points` and
    :class:`~iris.experimental.ugrid.mesh.Connectivity`
    :attr:`~iris.experimental.ugrid.mesh.Connectivity.indices` under the
-   `CF-UGRID`_ model. (:pull:`4375`)
+   :ref:`mesh model <ugrid model>`. (:pull:`4375`)
 
 #. `@bsherratt`_ added a `threshold` parameter to
    :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)

@@ -114,10 +114,10 @@ E.g. we could make a mesh of 4 nodes, with 2 triangles described using this
 
 .. important::
 
-        **Meshes are unstructured**. Elements are enumerated along a single
-        **unstructured dimension** represented by either the coordinate or
-        connectivity arrays detailed above, and an element's position within
-        its respective array has nothing to do with its spatial position.
+        **Meshes are unstructured**. The mesh elements - represented in the
+        coordinate and connectivity arrays detailed above - are enumerated
+        along a single **unstructured dimension**. An element's position along
+        this dimension has nothing to do with its spatial position.
 
 A data variable associated with a mesh has a **location** of either ``node``,
 ``edge``, ``face`` or ``volume``. The data is stored in a 1D array with one

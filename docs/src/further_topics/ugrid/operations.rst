@@ -1,7 +1,7 @@
 .. _ugrid operations:
 
 Working with Mesh Data
-***********************
+**********************
 
 .. note:: Several of the operations below rely on the optional dependencies
           mentioned in :doc:`partner_packages`.
