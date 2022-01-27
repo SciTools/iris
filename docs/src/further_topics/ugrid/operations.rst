@@ -394,7 +394,150 @@ Plotting
 
 .. rubric:: |tagline: plotting|
 
-.. todo: populate!
+The Cartopy-Matplotlib combination is not optimised for displaying the high
+number of irregular shapes associated with meshes. Thankfully mesh
+visualisation is already popular in many other fields (e.g. CGI, gaming,
+SEM microscopy), so there is a wealth of tooling available, which
+:ref:`ugrid geovista` harnesses for cartographic plotting.
+
+GeoVista's default behaviour is to convert lat-lon information into full XYZ
+coordinates so the data is visualised on the surface of a 3D globe. The plots
+are interactive by default, so it's easy to explore the data in detail.
+
+2D projections have also been demonstrated in proofs of concept, and will
+be added to API in the near future.
+
+This first example uses GeoVista to plot the ``face_cube`` that we created
+earlier:
+
+.. dropdown:: :opticon:`code`
+
+    .. code-block:: python
+
+        >>> from geovista import GeoPlotter, Transform
+        >>> from geovista.common import to_xyz
+
+
+        # We'll re-use this to plot some real global data later.
+        >>> def cube_faces_to_polydata(cube):
+        ...     lons, lats = cube.mesh.node_coords
+        ...     face_node = cube.mesh.face_node_connectivity
+        ...     indices = face_node.indices_by_location()
+        ...
+        ...     mesh = Transform.from_unstructured(
+        ...         lons.points,
+        ...         lats.points,
+        ...         indices,
+        ...         data=cube.data,
+        ...         name=f"{cube.name()} / {cube.units}",
+        ...         start_index=face_node.start_index,
+        ...     )
+        ...     return mesh
+
+        >>> print(face_cube)
+        face_data / (K)                     (-- : 2; height: 3)
+            Dimension coordinates:
+                height                          -          x
+            Mesh coordinates:
+                latitude                        x          -
+                longitude                       x          -
+            Attributes:
+                Conventions                 CF-1.7
+
+        # Convert our mesh+data to a PolyData object.
+        # Just plotting a single height level.
+        >>> face_polydata = cube_faces_to_polydata(face_cube[:, 0])
+        >>> print(face_polydata)
+        PolyData (0x7fb854a9ce80)
+          N Cells:	2
+          N Points:	5
+          X Bounds:	9.903e-01, 1.000e+00
+          Y Bounds:	0.000e+00, 5.234e-02
+          Z Bounds:	6.123e-17, 1.392e-01
+          N Arrays:	2
+
+        # Create the GeoVista plotter and add our mesh+data to it.
+        >>> my_plotter = GeoPlotter()
+        >>> my_plotter.add_coastlines(color="black")
+        >>> my_plotter.add_base_layer(color="grey")
+        >>> my_plotter.add_mesh(face_polydata)
+
+        # Centre the camera on the data.
+        >>> camera_region = to_xyz(
+        ...     face_cube.coord("longitude").points,
+        ...     face_cube.coord("latitude").points,
+        ...     radius=3,
+        ... )
+        >>> camera_pos = camera_region.mean(axis=0)
+        >>> my_plotter.camera.position = camera_pos
+
+        >>> my_plotter.show()
+
+    ..  image:: images/plotting_basic.png
+        :alt: A GeoVista plot of the basic example Mesh.
+
+    This artificial data makes West Africa rather chilly!
+
+Here's another example using a global cubed-sphere data set:
+
+.. dropdown:: :opticon:`code`
+
+    .. code-block:: python
+
+        >>> from iris import load_cube
+        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+
+        # Demonstrating with a global data set.
+        # You could also download this file from github.com/SciTools/iris-test-data.
+        >>> from iris.tests import get_data_path
+        >>> file_path = get_data_path(
+        ...     [
+        ...         "NetCDF",
+        ...         "unstructured_grid",
+        ...         "lfric_surface_mean.nc",
+        ...     ]
+        ... )
+        >>> with PARSE_UGRID_ON_LOAD.context():
+        ...     global_cube = load_cube(file_path, "tstar_sea")
+        >>> print(global_cube)
+        sea_surface_temperature / (K)       (-- : 1; -- : 13824)
+            Mesh coordinates:
+                latitude                        -       x
+                longitude                       -       x
+            Auxiliary coordinates:
+                time                            x       -
+            Cell methods:
+                mean                        time (300 s)
+                mean                        time_counter
+            Attributes:
+                Conventions                 UGRID
+                description                 Created by xios
+                interval_operation          300 s
+                interval_write              1 d
+                name                        lfric_surface
+                online_operation            average
+                timeStamp                   2020-Feb-07 16:23:14 GMT
+                title                       Created by xios
+                uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
+
+        >>> global_polydata = cube_faces_to_polydata(global_cube)
+        >>> print(global_polydata)
+        PolyData (0x7f761b536160)
+          N Cells:	13824
+          N Points:	13826
+          X Bounds:	-1.000e+00, 1.000e+00
+          Y Bounds:	-1.000e+00, 1.000e+00
+          Z Bounds:	-1.000e+00, 1.000e+00
+          N Arrays:	2
+
+        >>> my_plotter = GeoPlotter()
+        >>> my_plotter.add_coastlines()
+        >>> my_plotter.add_mesh(global_polydata, show_edges=True)
+
+        >>> my_plotter.show()
+
+    ..  image:: images/plotting_global.png
+        :alt: A GeoVista plot of a global sea surface temperature Mesh.
 
 Region Extraction
 -----------------

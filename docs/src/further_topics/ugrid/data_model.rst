@@ -331,7 +331,7 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
         import numpy as np
 
         from iris.coords import AuxCoord, DimCoord
-        from iris.cube import Cube, CubeList
+        from iris.cube import Cube
         from iris.experimental.ugrid import Connectivity, Mesh
 
         node_x = AuxCoord(
