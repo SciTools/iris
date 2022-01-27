@@ -618,7 +618,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(
         .. deprecated:: 3.2.0
 
         This function is scheduled to be removed in a future release.
-        Please use :meth:`~iris.cube.Cube.regrid` with the
+        Please use :meth:`iris.cube.Cube.regrid` with the
         :class:`iris.analysis.AreaWeighted` scheme instead : this is an exact
         replacement.
 
@@ -1142,7 +1142,7 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         .. deprecated:: 3.2.0
 
         This function is scheduled to be removed in a future release.
-        Please use :meth:`~iris.cube.Cube.regrid` with the
+        Please use :meth:`iris.cube.Cube.regrid` with the
         :class:`iris.analysis.PointInCell` scheme instead : this is an exact
         replacement.
 
