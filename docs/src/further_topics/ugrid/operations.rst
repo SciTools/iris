@@ -393,7 +393,7 @@ etcetera:
                 latitude                        x          -
                 longitude                       x          -
             Attributes:
-                Conventions                 CF-1.7
+                Conventions                 'CF-1.7'
 
 .. note::
 
@@ -495,7 +495,7 @@ earlier:
                 latitude                        x          -
                 longitude                       x          -
             Attributes:
-                Conventions                 CF-1.7
+                Conventions                 'CF-1.7'
 
         # Convert our mesh+data to a PolyData object.
         # Just plotting a single height level.
@@ -827,7 +827,7 @@ with the
                 latitude                             x               -
                 longitude                            -               x
             Attributes:
-                Conventions                 CF-1.7
+                Conventions                 'CF-1.7'
 
         # Initialise the regridder.
         >>> rg = MeshToGridESMFRegridder(mesh_cube1, sample_grid)
