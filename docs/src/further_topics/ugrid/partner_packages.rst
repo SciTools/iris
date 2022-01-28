@@ -4,7 +4,8 @@ Iris' Mesh Partner Packages
 ****************************
 Python is an easy to use language and has formed a very strong collaborative
 scientific community, which is why Iris is written in Python. *Performant*
-Python relies on calls down to C, which is ideal for structured grid work since
+Python relies on calls down to low level languages like C, which is ideal for
+structured grid work since
 they can be directly represented as NumPy arrays. This is more difficult when
 working with unstructured meshes where extra steps are needed to determine data
 position (:ref:`see the data model detail <ugrid implications>`), and we need
