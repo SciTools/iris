@@ -110,6 +110,29 @@ subsequent example operations on this page.
         ...     face_coords_and_axes=[(face_x, "x"), (face_y, "y")],
         ... )
 
+        >>> print(my_mesh)
+        Mesh : 'my_mesh'
+            topology_dimension: 2
+            node
+                node_dimension: 'Mesh2d_node'
+                node coordinates
+                    <AuxCoord: longitude / (degrees_east)  [...]  shape(5,)>
+                    <AuxCoord: latitude / (unknown)  [...]  shape(5,)>
+            edge
+                edge_dimension: 'Mesh2d_edge'
+                edge_node_connectivity: <Connectivity: unknown / (unknown)  [...]  shape(6, 2)>
+                edge coordinates
+                    <AuxCoord: longitude / (unknown)  [...]  shape(6,)>
+                    <AuxCoord: latitude / (unknown)  [...]  shape(6,)>
+            face
+                face_dimension: 'Mesh2d_face'
+                face_node_connectivity: <Connectivity: unknown / (unknown)  [...]  shape(2, 4)>
+                face coordinates
+                    <AuxCoord: longitude / (unknown)  [...]  shape(2,)>
+                    <AuxCoord: latitude / (unknown)  [...]  shape(2,)>
+            long_name: 'my_mesh'
+
+
 .. _making a cube:
 
 Making a Cube (with a Mesh)
@@ -158,6 +181,15 @@ Creating a :class:`~iris.cube.Cube` is unchanged; the
         ...     print(f"{cube.name()}: {cube.mesh.name()}, {cube.location}")
         edge_data: my_mesh, edge
         face_data: my_mesh, face
+
+        >>> print(my_cubelist.extract_cube("edge_data"))
+        edge_data / (K)                     (-- : 6; height: 3)
+            Dimension coordinates:
+                height                          -          x
+            Mesh coordinates:
+                latitude                        x          -
+                longitude                       x          -
+
 
 Save
 ----
