@@ -11,7 +11,9 @@ Support for conservative regridding via ESMPy.
     .. deprecated:: 3.2.0
 
     This package will be removed in a future release.
-    Please use `iris-esmf-regrid`_ instead.
+    Please use
+    `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
+    instead.
 
 """
 
@@ -153,7 +155,9 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         .. deprecated:: 3.2.0
 
         This function is scheduled to be removed in a future release.
-        Please use `iris-esmf-regrid`_ instead.
+        Please use
+        `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
+        instead.
 
         For example :
 
