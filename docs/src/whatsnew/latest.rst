@@ -191,6 +191,10 @@ This document explains the changes made to Iris for this release
    :class:`benchmarks.HorizontalChunkedRegridding` shows a time decrease
    from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
 
+#. `@bjlittle`_ included an optimisation to :class:`~iris.cube.Cube.coord_dims`
+   to avoid unnecessary processing whenever a coordinate instance that already
+   exists within the cube is provided. (:pull:`4549`)
+
 
 🔥 Deprecations
 ===============
