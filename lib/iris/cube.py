@@ -1451,39 +1451,53 @@ class Cube(CFVariableMixin):
             The (name of the) coord to look for.
 
         """
+        name_provided = False
+        if isinstance(coord, str):
+            # Forced to look-up the coordinate if we only have the name.
+            coord = self.coord(coord)
+            name_provided = True
 
-        coord = self.coord(coord)
+        coord_id = id(coord)
 
-        # Search for existing coordinate (object) on the cube, faster lookup
-        # than equality - makes no functional difference.
-        matches = [
-            (dim,)
-            for coord_, dim in self._dim_coords_and_dims
-            if coord_ is coord
-        ]
-        if not matches:
-            matches = [
-                dims
-                for coord_, dims in self._aux_coords_and_dims
-                if coord_ is coord
-            ]
+        # Dimension of dimension coordinate by object id
+        dims_by_id = {id(c): (d,) for c, d in self._dim_coords_and_dims}
+        # Check for id match - faster than equality check
+        match = dims_by_id.get(coord_id)
 
-        # Search derived aux coords
-        if not matches:
+        if match is None:
+            # Dimension/s of auxiliary coordinate by object id
+            aux_dims_by_id = {id(c): d for c, d in self._aux_coords_and_dims}
+            # Check for id match - faster than equality
+            match = aux_dims_by_id.get(coord_id)
+            if match is None:
+                dims_by_id.update(aux_dims_by_id)
+
+        if match is None and not name_provided:
+            # We may have an equivalent coordinate but not the actual
+            # cube coordinate instance - so forced to perform coordinate
+            # lookup to attempt to retrieve it
+            coord = self.coord(coord)
+            # Check for id match - faster than equality
+            match = dims_by_id.get(id(coord))
+
+        # Search derived aux coordinates
+        if match is None:
             target_metadata = coord.metadata
 
-            def match(factory):
+            def matcher(factory):
                 return factory.metadata == target_metadata
 
-            factories = filter(match, self._aux_factories)
+            factories = filter(matcher, self._aux_factories)
             matches = [
                 factory.derived_dims(self.coord_dims) for factory in factories
             ]
+            if matches:
+                match = matches[0]
 
-        if not matches:
+        if match is None:
             raise iris.exceptions.CoordinateNotFoundError(coord.name())
 
-        return matches[0]
+        return match
 
     def cell_measure_dims(self, cell_measure):
         """
