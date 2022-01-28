@@ -633,7 +633,17 @@ the link between :class:`~iris.cube.Cube` and
 Extracting a region therefore requires extra steps - to determine the spatial
 position of the data points before they can be analysed as inside/outside the
 selected region. The recommended way to do this is using tools provided by
-:ref:`ugrid geovista`, which is optimised for performant mesh analysis:
+:ref:`ugrid geovista`, which is optimised for performant mesh analysis.
+
+This approach centres around using :meth:`geovista.geodesic.BBox.enclosed` to
+get the subset of the original mesh that is inside the
+:class:`~geovista.geodesic.BBox`. This subset :class:`pyvista.PolyData` object
+includes the original indices of each datapoint - the ``vtkOriginalCellIds``
+array, which can be used to index the original :class:`~iris.cube.Cube`. Since
+we **know** that this subset :class:`~iris.cube.Cube` represents a regional
+mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
+:class:`~iris.cube.Cube`\'s :attr:`~iris.cube.Cube.aux_coords` using
+:meth:`iris.experimental.ugrid.Mesh.from_coords`:
 
 ..
     Not using doctest here as want to keep GeoVista as optional dependency.
