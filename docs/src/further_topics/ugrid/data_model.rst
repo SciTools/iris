@@ -249,9 +249,10 @@ Coordinates are recorded per-node, and connectivities are recorded per-element.
 This is opposed to a structured grid, where a single coordinate value is shared
 by every data point/area along that line.
 
-For example: representing a cubed-sphere using a mesh leads to coordinates and
-connectivities being **~8 times larger than the data itself**, as opposed to a
-small fraction of the data size when dividing a sphere using a structured grid.
+For example: representing the surface of a cubed-sphere using a mesh leads to
+coordinates and connectivities being **~8 times larger than the data itself**,
+as opposed to a small fraction of the data size when dividing a spherical
+surface using a structured grid of longitudes and latitudes.
 
 This further increases the emphasis on lazy loading and processing of data
 using packages such as Dask.
