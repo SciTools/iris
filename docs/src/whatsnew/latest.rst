@@ -231,6 +231,9 @@ This document explains the changes made to Iris for this release
    :func:`~iris.analysis.maths.intersection_of_cubes` function will be removed in
    a future release of Iris. (:pull:`4541`)
 
+#. `@pp-mo`_ deprecated :mod:`iris.experimental.regrid_conservative`.  This is
+   now replaced by `iris-emsf-regrid`_
+
 
 🔗 Dependencies
 ===============
@@ -357,6 +360,8 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
-.. _sort-all: https://github.com/aio-libs/sort-all
-.. _faster documentation building: https://docs.readthedocs.io/en/stable/guides/conda.html#making-builds-faster-with-mamba
 .. _Metarelate: http://www.metarelate.net/
+.. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
+.. _iris-emsf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
+.. _faster documentation building: https://docs.readthedocs.io/en/stable/guides/conda.html#making-builds-faster-with-mamba
+.. _sort-all: https://github.com/aio-libs/sort-all
