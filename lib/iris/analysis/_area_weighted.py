@@ -14,7 +14,6 @@ from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import RectilinearRegridder
 import iris.analysis.cartography
 import iris.coord_systems
-import iris.cube
 from iris.util import _meshgrid
 
 
