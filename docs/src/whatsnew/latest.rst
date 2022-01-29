@@ -47,7 +47,7 @@ This document explains the changes made to Iris for this release
    objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
    :class:`iris.experimental.ugrid.mesh.MeshCoord` and
    :obj:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
-   A :class:`iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
+   A :class:`~iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
    type mesh. :class:`~iris.experimental.ugrid.mesh.MeshCoord`\ s are coordinates that
    reference and represent a :class:`~iris.experimental.ugrid.mesh.Mesh` for use
    on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
@@ -86,7 +86,7 @@ This document explains the changes made to Iris for this release
    :attr:`~iris.experimental.ugrid.mesh.Connectivity.indices` under the
    :ref:`mesh model <ugrid model>`. (:pull:`4375`)
 
-#. `@bsherratt`_ added a `threshold` parameter to
+#. `@bsherratt`_ added a ``threshold`` parameter to
    :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)
 
 #. `@wjbenfold`_ added test data to ci benchmarks so that it is accessible to
@@ -232,7 +232,7 @@ This document explains the changes made to Iris for this release
    a future release of Iris. (:pull:`4541`)
 
 #. `@pp-mo`_ deprecated :mod:`iris.experimental.regrid_conservative`.  This is
-   now replaced by `iris-emsf-regrid`_
+   now replaced by `iris-emsf-regrid`_.  (:pull:`4551`)
 
 
 🔗 Dependencies
@@ -325,7 +325,7 @@ This document explains the changes made to Iris for this release
 
 #. `@akuhnregnier`_ removed addition of period from
    :func:`~iris.analysis.cartography.wrap_lons` and updated affected tests
-   using assertArrayAllClose following :issue:`3993`.
+   using ``assertArrayAllClose`` following :issue:`3993`.
    (:pull:`4421`)
 
 #. `@rcomer`_ updated some tests to work with Matplotlib v3.5. (:pull:`4428`)
