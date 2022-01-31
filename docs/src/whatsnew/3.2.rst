@@ -18,8 +18,7 @@ This document explains the changes made to Iris for this release
 
    * We've added experimental support for
      :ref:`Meshes <ugrid>`, which can now be loaded and
-     attached to a cube. Mesh support is based on the based on `CF-UGRID`_
-     model.
+     attached to a cube. Mesh support is based on the `CF-UGRID`_ model.
    * We've also dropped support for ``Python 3.7``.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
