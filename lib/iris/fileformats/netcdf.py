@@ -2738,9 +2738,9 @@ class Saver:
                     cmin, cmax = _co_realise_lazy_arrays([cmin, cmax])
                 n = dtype.itemsize * 8
                 if masked:
-                    scale_factor = (cmax - cmin) / (2 ** n - 2)
+                    scale_factor = (cmax - cmin) / (2**n - 2)
                 else:
-                    scale_factor = (cmax - cmin) / (2 ** n - 1)
+                    scale_factor = (cmax - cmin) / (2**n - 1)
                 if dtype.kind == "u":
                     add_offset = cmin
                 elif dtype.kind == "i":

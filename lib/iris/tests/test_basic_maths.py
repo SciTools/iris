@@ -249,7 +249,7 @@ class TestBasicMaths(tests.IrisTest):
             np.square,
             a,
             new_name="squared temperature",
-            new_unit=a.units ** 2,
+            new_unit=a.units**2,
             in_place=False,
         )
         self.assertCMLApproxData(a, ("analysis", "apply_ufunc_original.cml"))
@@ -259,14 +259,14 @@ class TestBasicMaths(tests.IrisTest):
             np.square,
             a,
             new_name="squared temperature",
-            new_unit=a.units ** 2,
+            new_unit=a.units**2,
             in_place=True,
         )
         self.assertCMLApproxData(b, ("analysis", "apply_ufunc.cml"))
         self.assertCMLApproxData(a, ("analysis", "apply_ufunc.cml"))
 
         def vec_mag(u, v):
-            return math.sqrt(u ** 2 + v ** 2)
+            return math.sqrt(u**2 + v**2)
 
         c = a.copy() + 2
 
@@ -295,7 +295,7 @@ class TestBasicMaths(tests.IrisTest):
     def test_ifunc(self):
         a = self.cube
 
-        my_ifunc = iris.analysis.maths.IFunc(np.square, lambda a: a.units ** 2)
+        my_ifunc = iris.analysis.maths.IFunc(np.square, lambda a: a.units**2)
         b = my_ifunc(a, new_name="squared temperature", in_place=False)
 
         self.assertCMLApproxData(a, ("analysis", "apply_ifunc_original.cml"))
@@ -307,7 +307,7 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCMLApproxData(a, ("analysis", "apply_ifunc.cml"))
 
         def vec_mag(u, v):
-            return math.sqrt(u ** 2 + v ** 2)
+            return math.sqrt(u**2 + v**2)
 
         c = a.copy() + 2
 
@@ -347,7 +347,7 @@ class TestBasicMaths(tests.IrisTest):
     def test_ifunc_call_fail(self):
         a = self.cube
 
-        my_ifunc = iris.analysis.maths.IFunc(np.square, lambda a: a.units ** 2)
+        my_ifunc = iris.analysis.maths.IFunc(np.square, lambda a: a.units**2)
 
         # should now NOT fail because giving 2 arguments to an ifunc that
         # expects only one will now ignore the surplus argument and raise
@@ -367,7 +367,7 @@ class TestBasicMaths(tests.IrisTest):
             my_ifunc(a)
 
         my_ifunc = iris.analysis.maths.IFunc(
-            lambda a: (a, a ** 2.0), lambda cube: cf_units.Unit("1")
+            lambda a: (a, a**2.0), lambda cube: cf_units.Unit("1")
         )
 
         # should fail because data function returns a tuple
@@ -553,9 +553,9 @@ class TestExponentiate(tests.IrisTest):
         a.data = abs(a.data)
         a.units **= 2
 
-        e = a ** 0.5
+        e = a**0.5
 
-        self.assertArrayAllClose(e.data, a.data ** 0.5)
+        self.assertArrayAllClose(e.data, a.data**0.5)
         self.assertCML(e, ("analysis", "sqrt.cml"), checksum=False)
         self.assertRaises(ValueError, iris.analysis.maths.exponentiate, a, 0.3)
 
@@ -585,26 +585,26 @@ class TestApplyUfunc(tests.IrisTest):
             np.square,
             a,
             new_name="more_thingness",
-            new_unit=a.units ** 2,
+            new_unit=a.units**2,
             in_place=False,
         )
 
-        ans = a.data ** 2
+        ans = a.data**2
 
         self.assertArrayEqual(b.data, ans)
         self.assertEqual(b.name(), "more_thingness")
         self.assertEqual(b.units, cf_units.Unit("m^2"))
 
         def vec_mag(u, v):
-            return math.sqrt(u ** 2 + v ** 2)
+            return math.sqrt(u**2 + v**2)
 
         c = a.copy() + 2
 
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
         b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
 
-        ans = a.data ** 2 + c.data ** 2
-        b2 = b ** 2
+        ans = a.data**2 + c.data**2
+        b2 = b**2
 
         self.assertArrayAlmostEqual(b2.data, ans)
 
@@ -617,17 +617,17 @@ class TestIFunc(tests.IrisTest):
         a = self.cube
         a.units = cf_units.Unit("meters")
 
-        my_ifunc = iris.analysis.maths.IFunc(np.square, lambda x: x.units ** 2)
+        my_ifunc = iris.analysis.maths.IFunc(np.square, lambda x: x.units**2)
         b = my_ifunc(a, new_name="more_thingness", in_place=False)
 
-        ans = a.data ** 2
+        ans = a.data**2
 
         self.assertArrayEqual(b.data, ans)
         self.assertEqual(b.name(), "more_thingness")
         self.assertEqual(b.units, cf_units.Unit("m^2"))
 
         def vec_mag(u, v):
-            return math.sqrt(u ** 2 + v ** 2)
+            return math.sqrt(u**2 + v**2)
 
         c = a.copy() + 2
 
@@ -637,12 +637,12 @@ class TestIFunc(tests.IrisTest):
         )
         b = my_ifunc(a, c)
 
-        ans = (a.data ** 2 + c.data ** 2) ** 0.5
+        ans = (a.data**2 + c.data**2) ** 0.5
 
         self.assertArrayAlmostEqual(b.data, ans)
 
         def vec_mag_data_func(u_data, v_data):
-            return np.sqrt(u_data ** 2 + v_data ** 2)
+            return np.sqrt(u_data**2 + v_data**2)
 
         vec_mag_ifunc = iris.analysis.maths.IFunc(
             vec_mag_data_func, lambda a, b: (a + b).units
