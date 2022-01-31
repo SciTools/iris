@@ -234,6 +234,12 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ deprecated :mod:`iris.experimental.regrid_conservative`.  This is
    now replaced by `iris-emsf-regrid`_.  (:pull:`4551`)
 
+#. `@pp-mo`_ deprecated everything in :mod:`iris.experimental.regrid`.
+   Most features have a preferred exact alternative, as suggested, *except*
+   :class:`iris.experimental.regrid.ProjectedUnstructuredLinear` : that has no
+   identical equivalent, but :class:`iris.analysis.UnstructuredNearest` is
+   suggested as being quite close (though possibly slower).  (:pull:`4548`)
+
 
 🔗 Dependencies
 ===============
@@ -288,6 +294,15 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ contributed `@alastair-gemmell`_'s :ref:`step-by-step guide to
    contributing to the docs <contributing.documentation_easy>` to the docs.
    (:pull:`4461`)
+
+#. `@pp-mo`_ improved and corrected docstrings of
+   :class:`iris.analysis.PointInCell`, making it clear what is the actual
+   calculation performed.  (:pull:`4548`)
+
+#. `@pp-mo`_ removed reference in docstring of
+   :class:`iris.analysis.UnstructuredNearest` to the obsolete (deprecated)
+   :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
+   (:pull:`4548`)
 
 
 💼 Internal

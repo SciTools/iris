@@ -2691,14 +2691,6 @@ class UnstructuredNearest:
     .. Note::
         Currently only supports regridding, not interpolation.
 
-    .. Note::
-          This scheme performs essentially the same job as
-          :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
-          That scheme is faster, but only works well on data in a limited
-          region of the globe, covered by a specified projection.
-          This approach is more rigorously correct and can be applied to global
-          datasets.
-
     """
 
     # Note: the argument requirements are simply those of the underlying
@@ -2769,6 +2761,9 @@ class PointInCell:
     This class describes the point-in-cell regridding scheme for use
     typically with :meth:`iris.cube.Cube.regrid()`.
 
+    Each result datapoint is an average over all source points that fall inside
+    that (bounded) target cell.
+
     The PointInCell regridder can regrid data from a source grid of any
     dimensionality and in any coordinate system.
     The location of each source point is specified by X and Y coordinates
@@ -2786,8 +2781,12 @@ class PointInCell:
 
     def __init__(self, weights=None):
         """
-        Point-in-cell regridding scheme suitable for regridding over one
-        or more orthogonal coordinates.
+        Point-in-cell regridding scheme suitable for regridding from a source
+        cube with X and Y coordinates all on the same dimensions, to a target
+        cube with bounded X and Y coordinates on separate X and Y dimensions.
+
+        Each result datapoint is an average over all source points that fall
+        inside that (bounded) target cell.
 
         Optional Args:
 

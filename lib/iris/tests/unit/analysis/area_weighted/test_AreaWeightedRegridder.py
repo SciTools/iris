@@ -16,11 +16,13 @@ from unittest import mock
 import numpy as np
 
 from iris import load_cube
-from iris.analysis._area_weighted import AreaWeightedRegridder
+from iris.analysis._area_weighted import (
+    AreaWeightedRegridder,
+    _regrid_area_weighted_rectilinear_src_and_grid__prepare,
+)
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-import iris.experimental.regrid as eregrid
 
 
 class Test(tests.IrisTest):
@@ -46,19 +48,17 @@ class Test(tests.IrisTest):
     def check_mdtol(self, mdtol=None):
         src_grid, target_grid = self.grids()
         # Get _regrid_info result
-        _regrid_info = (
-            eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
-                src_grid, target_grid
-            )
+        _regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
+            src_grid, target_grid
         )
         self.assertEqual(len(_regrid_info), 10)
         with mock.patch(
-            "iris.experimental.regrid."
+            "iris.analysis._area_weighted."
             "_regrid_area_weighted_rectilinear_src_and_grid__prepare",
             return_value=_regrid_info,
         ) as prepare:
             with mock.patch(
-                "iris.experimental.regrid."
+                "iris.analysis._area_weighted."
                 "_regrid_area_weighted_rectilinear_src_and_grid__perform",
                 return_value=mock.sentinel.result,
             ) as perform:
@@ -253,7 +253,6 @@ class TestLazy(tests.IrisTest):
     # Setup
     def setUp(self) -> None:
         # Prepare a cube and a template
-
         cube_file_path = tests.get_data_path(
             ["NetCDF", "regrid", "regrid_xyt.nc"]
         )
