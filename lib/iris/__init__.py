@@ -36,8 +36,8 @@ To persist a cube to the file-system, use the :func:`save` function.
 All the load functions share very similar arguments:
 
     * uris:
-        Either a single filename/URI expressed as a string, or an
-        iterable of filenames/URIs.
+        Either a single filename/URI expressed as a string or
+        :class:`pathlib.PurePath`, or an iterable of filenames/URIs.
 
         Filenames can contain `~` or `~user` abbreviations, and/or
         Unix shell-style wildcards (e.g. `*` and `?`). See the
@@ -89,6 +89,7 @@ import contextlib
 import glob
 import itertools
 import os.path
+import pathlib
 import threading
 
 import iris._constraints
@@ -103,7 +104,7 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = "3.2.dev0"
+__version__ = "3.2.0rc0"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
@@ -241,7 +242,7 @@ else:
 
 def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, str):
+    if isinstance(uris, (str, pathlib.PurePath)):
         uris = [uris]
 
     # Group collections of uris by their iris handler
@@ -285,7 +286,7 @@ def load(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -313,7 +314,7 @@ def load_cube(uris, constraint=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -352,7 +353,7 @@ def load_cubes(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -397,7 +398,7 @@ def load_raw(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 

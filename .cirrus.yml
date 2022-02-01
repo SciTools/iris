@@ -60,7 +60,6 @@ linux_task_template: &LINUX_TASK_TEMPLATE
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CONDA_CACHE_BUILD}"
       - uname -r
     populate_script:
-      - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
       - bash miniconda.sh -b -p ${HOME}/miniconda
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
@@ -142,8 +141,6 @@ task:
   << : *CREDITS_TEMPLATE
   matrix:
     env:
-      PY_VER: 3.7
-    env:
       PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests"
   container:
@@ -153,7 +150,6 @@ task:
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
@@ -174,7 +170,6 @@ task:
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
@@ -197,7 +192,6 @@ task:
   name: "${CIRRUS_OS}: py${PY_VER} link check"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}

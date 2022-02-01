@@ -3,14 +3,6 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-#
-# DO NOT EDIT: AUTO-GENERATED
-# Created on 29 November 2019 14:11 from 
-# http://www.metarelate.net/metOcean
-# at commit 448f2ef5e676edaaa27408b9f3ddbecbf05e3289
-#
-# https://github.com/metarelate/metOcean/commit/448f2ef5e676edaaa27408b9f3ddbecbf05e3289
-
 """
 Provides UM/CF phenomenon translations.
 
@@ -689,7 +681,7 @@ STASH_TO_CF = {
     'm01s09i212': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_4p5_oktas', 'kft'),
     'm01s09i213': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_5p5_oktas', 'kft'),
     'm01s09i214': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_6p5_oktas', 'kft'),
-    'm01s09i215': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_7p5_oktas', 'kft'),
+    'm01s09i215': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_7p9_oktas', 'kft'),
     'm01s09i216': CFName(None, 'cloud_area_fraction_assuming_random_overlap', '1'),
     'm01s09i217': CFName(None, 'cloud_area_fraction_assuming_maximum_random_overlap', '1'),
     'm01s09i218': CFName(None, 'cloud_area_fraction_assuming_only_consider_surface_to_1000_feet_asl', '1'),

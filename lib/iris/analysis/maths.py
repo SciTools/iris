@@ -19,6 +19,7 @@ import dask.array as da
 import numpy as np
 from numpy import ma
 
+from iris._deprecation import warn_deprecated
 import iris.analysis
 from iris.common import SERVICES, Resolve
 from iris.common.lenient import _lenient_client
@@ -138,10 +139,35 @@ def intersection_of_cubes(cube, other_cube):
         An instance of :class:`iris.cube.Cube`.
 
     Returns:
-        A pair of :class:`iris.cube.Cube` instances in a tuple corresponding
-        to the original cubes restricted to their intersection.
+        A pair of :class:`iris.cube.Cube` instances in a tuple corresponding to
+        the original cubes restricted to their intersection.
+
+    .. deprecated:: 3.2.0
+
+       Instead use :meth:`iris.cube.CubeList.extract_overlapping`. For example,
+       rather than calling
+
+       .. code::
+
+          cube1, cube2 = intersection_of_cubes(cube1, cube2)
+
+       replace with
+
+       .. code::
+
+          cubes = CubeList([cube1, cube2])
+          coords = ["latitude", "longitude"]    # Replace with relevant coords
+          intersections = cubes.extract_overlapping(coords)
+          cube1, cube2 = (intersections[0], intersections[1])
 
     """
+    wmsg = (
+        "iris.analysis.maths.intersection_of_cubes has been deprecated and will "
+        "be removed, please use iris.cube.CubeList.extract_overlapping "
+        "instead. See intersection_of_cubes docstring for more information."
+    )
+    warn_deprecated(wmsg)
+
     # Take references of the original cubes (which will be copied when
     # slicing later).
     new_cube_self = cube
@@ -514,7 +540,7 @@ def exponentiate(cube, exponent, in_place=False):
     return _math_op_common(
         cube,
         power,
-        cube.units ** exponent,
+        cube.units**exponent,
         new_dtype=new_dtype,
         in_place=in_place,
     )

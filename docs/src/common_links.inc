@@ -37,6 +37,7 @@
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _using git: https://docs.github.com/en/github/using-git
 .. _requirements/ci/: https://github.com/SciTools/iris/tree/main/requirements/ci
+.. _CF-UGRID: https://ugrid-conventions.github.io/ugrid-conventions/
 
 
 .. comment

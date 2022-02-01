@@ -28,9 +28,9 @@ class ConnectivityMetadata(BaseMetadata):
 
     """
 
-    # The "src_dim" member is stateful only, and does not participate in
+    # The "location_axis" member is stateful only, and does not participate in
     # lenient/strict equivalence.
-    _members = ("cf_role", "start_index", "src_dim")
+    _members = ("cf_role", "start_index", "location_axis")
 
     __slots__ = ()
 
@@ -53,7 +53,7 @@ class ConnectivityMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
-        # Perform "strict" combination for "cf_role", "start_index", "src_dim".
+        # Perform "strict" combination for "cf_role", "start_index", "location_axis".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
@@ -82,9 +82,10 @@ class ConnectivityMetadata(BaseMetadata):
 
         """
         # Perform "strict" comparison for "cf_role", "start_index".
-        # The "src_dim" member is not part of lenient equivalence.
+        # The "location_axis" member is not part of lenient equivalence.
         members = filter(
-            lambda member: member != "src_dim", ConnectivityMetadata._members
+            lambda member: member != "location_axis",
+            ConnectivityMetadata._members,
         )
         result = all(
             [
@@ -112,7 +113,7 @@ class ConnectivityMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
-        # Perform "strict" difference for "cf_role", "start_index", "src_dim".
+        # Perform "strict" difference for "cf_role", "start_index", "location_axis".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)

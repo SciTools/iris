@@ -972,9 +972,9 @@ class _FillValueMaskCheckAndStoreTarget:
         self.target[keys] = arr
 
 
-# NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.LOCATIONS`,
+# NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
-MESH_LOCATIONS = ("node", "edge", "face")
+MESH_ELEMENTS = ("node", "edge", "face")
 
 
 class Saver:
@@ -1422,7 +1422,7 @@ class Saver:
                 mesh_dims = self._mesh_dims[mesh]
 
                 # Add all the element coordinate variables.
-                for location in MESH_LOCATIONS:
+                for location in MESH_ELEMENTS:
                     coords_meshobj_attr = f"{location}_coords"
                     coords_file_attr = f"{location}_coordinates"
                     mesh_coords = getattr(mesh, coords_meshobj_attr, None)
@@ -1460,7 +1460,7 @@ class Saver:
                     last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
                     # Create if it does not already exist.
                     if last_dim not in self._dataset.dimensions:
-                        length = conn.shape[1 - conn.src_dim]
+                        length = conn.shape[1 - conn.location_axis]
                         self._dataset.createDimension(last_dim, length)
 
                     # Create variable.
@@ -1470,7 +1470,7 @@ class Saver:
                     # when it is first created.
                     loc_dim_name = mesh_dims[loc_from]
                     conn_dims = (loc_dim_name, last_dim)
-                    if conn.src_dim == 1:
+                    if conn.location_axis == 1:
                         # Has the 'other' dimension order, =reversed
                         conn_dims = conn_dims[::-1]
                     if iris.util.is_masked(conn.core_indices()):
@@ -1494,7 +1494,7 @@ class Saver:
                     _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
                     # If the connectivity had the 'alternate' dimension order, add the
                     # relevant dimension property
-                    if conn.src_dim == 1:
+                    if conn.location_axis == 1:
                         loc_dim_attr = f"{loc_from}_dimension"
                         # Should only get here once.
                         assert loc_dim_attr not in cf_mesh_var.ncattrs()
@@ -1813,7 +1813,7 @@ class Saver:
             # NOTE: one of these will be a cube dimension, but that one does not
             # get any special handling.  We *do* want to list/create them in a
             # definite order (node,edge,face), and before non-mesh dimensions.
-            for location in MESH_LOCATIONS:
+            for location in MESH_ELEMENTS:
                 # Find if this location exists in the mesh, and a characteristic
                 # coordinate to identify it with.
                 # To use only _required_ UGRID components, we use a location
@@ -1850,7 +1850,9 @@ class Saver:
                             (dim_length,) = dim_element.shape
                         else:
                             # extract source dim, respecting dim-ordering
-                            dim_length = dim_element.shape[dim_element.src_dim]
+                            dim_length = dim_element.shape[
+                                dim_element.location_axis
+                            ]
                         # Name it for the relevant mesh dimension
                         location_dim_attr = f"{location}_dimension"
                         dim_name = getattr(mesh, location_dim_attr)
@@ -2736,9 +2738,9 @@ class Saver:
                     cmin, cmax = _co_realise_lazy_arrays([cmin, cmax])
                 n = dtype.itemsize * 8
                 if masked:
-                    scale_factor = (cmax - cmin) / (2 ** n - 2)
+                    scale_factor = (cmax - cmin) / (2**n - 2)
                 else:
-                    scale_factor = (cmax - cmin) / (2 ** n - 1)
+                    scale_factor = (cmax - cmin) / (2**n - 1)
                 if dtype.kind == "u":
                     add_offset = cmin
                 elif dtype.kind == "i":

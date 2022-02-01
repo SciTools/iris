@@ -38,8 +38,8 @@ Collectively, the aforementioned classes will be known here as the Iris
 .. hint::
 
     If there are any `CF Conventions`_ metadata missing from Iris that you
-    care about, then please let us know by raising a `GitHub Issue`_ on
-    `SciTools/iris`_
+    care about, then please let us know by raising a :issue:`GitHub Issue<new/choose>`
+    on `SciTools/iris`_
 
 
 Common Metadata
@@ -120,10 +120,10 @@ For example, given the following :class:`~iris.cube.Cube`,
         Cell methods:
             mean                        time (6 hour)
         Attributes:
-            Conventions                 CF-1.5
-            Model scenario              A1B
+            Conventions                 'CF-1.5'
+            Model scenario              'A1B'
             STASH                       m01s03i236
-            source                      Data from Met Office Unified Model 6.05
+            source                      'Data from Met Office Unified Model 6.05'
 
 We can easily get all of the associated metadata of the :class:`~iris.cube.Cube`
 using the ``metadata`` property:
@@ -990,7 +990,6 @@ values. All other metadata members will be left unaltered.
 .. _CF Conventions: https://cfconventions.org/
 .. _Cell Measures: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#cell-measures
 .. _Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
-.. _GitHub Issue: https://github.com/SciTools/iris/issues/new/choose
 .. _mapping: https://docs.python.org/3/glossary.html#term-mapping
 .. _namedtuple: https://docs.python.org/3/library/collections.html#collections.namedtuple
 .. _namedtuple._make: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._make

@@ -84,10 +84,10 @@ represents the output of an low-resolution global atmospheric ``experiment``,
             forecast_reference_time             2009-09-09 17:10:00
             time                                2009-09-09 17:10:00
         Attributes:
-            Conventions                         CF-1.5
+            Conventions                         'CF-1.5'
             STASH                               m01s00i004
-            experiment-id                       RT3 50
-            source                              Data from Met Office Unified Model 7.04
+            experiment-id                       'RT3 50'
+            source                              'Data from Met Office Unified Model 7.04'
 
 Consider also the following :class:`~iris.cube.Cube`, which has the same global
 spatial extent, and acts as a ``control``,
@@ -103,9 +103,9 @@ spatial extent, and acts as a ``control``,
             model_level_number          1
             time                        2009-09-09 17:10:00
         Attributes:
-            Conventions                 CF-1.7
+            Conventions                 'CF-1.7'
             STASH                       m01s00i004
-            source                      Data from Met Office Unified Model 7.04
+            source                      'Data from Met Office Unified Model 7.04'
 
 Now let's subtract these cubes in order to calculate a simple ``difference``,
 
@@ -129,8 +129,8 @@ Now let's subtract these cubes in order to calculate a simple ``difference``,
             forecast_reference_time             2009-09-09 17:10:00
             time                                2009-09-09 17:10:00
         Attributes:
-            experiment-id                       RT3 50
-            source                              Data from Met Office Unified Model 7.04
+            experiment-id                       'RT3 50'
+            source                              'Data from Met Office Unified Model 7.04'
 
 Note that, cube maths automatically takes care of broadcasting the
 dimensionality of the ``control`` up to that of the ``experiment``, in order to
@@ -218,7 +218,7 @@ time perform **strict** cube maths instead,
         Scalar coordinates:
             time                                2009-09-09 17:10:00
         Attributes:
-            source                              Data from Met Office Unified Model 7.04
+            source                              'Data from Met Office Unified Model 7.04'
 
 Although the numerical result of this strict cube maths operation is identical,
 it is not as rich in metadata as the :ref:`lenient alternative <lenient example>`.

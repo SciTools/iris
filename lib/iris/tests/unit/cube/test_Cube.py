@@ -757,7 +757,29 @@ class Test_aggregated_by(tests.IrisTest):
         res_cube = self.cube.aggregated_by("label", self.mock_agg)
         val_coord = AuxCoord(
             np.array([1.0, 0.5, 1.0]),
-            bounds=np.array([[0, 2], [0, 1], [2, 0]]),
+            bounds=np.array([[0, 2], [0, 1], [0, 2]]),
+            long_name="val",
+        )
+        label_coord = AuxCoord(
+            np.array(["alpha", "beta", "gamma"]),
+            long_name="label",
+            units="no_unit",
+        )
+        self.assertEqual(res_cube.coord("val"), val_coord)
+        self.assertEqual(res_cube.coord("label"), label_coord)
+
+    def test_agg_by_label_bounded(self):
+        # Aggregate a cube on a string coordinate label where label
+        # and val entries are not in step; the resulting cube has a val
+        # coord of bounded cells and a label coord of single string entries.
+        val_points = self.cube.coord("val").points
+        self.cube.coord("val").bounds = np.array(
+            [val_points - 0.5, val_points + 0.5]
+        ).T
+        res_cube = self.cube.aggregated_by("label", self.mock_agg)
+        val_coord = AuxCoord(
+            np.array([1.0, 0.5, 1.0]),
+            bounds=np.array([[-0.5, 2.5], [-0.5, 1.5], [-0.5, 2.5]]),
             long_name="val",
         )
         label_coord = AuxCoord(
@@ -890,7 +912,7 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         res_cube = self.cube.aggregated_by("label", MEAN)
         val_coord = AuxCoord(
             np.array([1.0, 0.5, 1.0]),
-            bounds=np.array([[0, 2], [0, 1], [2, 0]]),
+            bounds=np.array([[0, 2], [0, 1], [0, 2]]),
             long_name="val",
         )
         label_coord = AuxCoord(
