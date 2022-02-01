@@ -53,8 +53,8 @@ For instance, suppose we have a cube:
             forecast_reference_time     2009-11-19 04:00:00
         Attributes:
             STASH                       m01s00i004
-            source                      Data from Met Office Unified Model
-            um_version                  7.3
+            source                      'Data from Met Office Unified Model'
+            um_version                  '7.3'
 
 
 In this case we have a 4 dimensional cube;
@@ -84,8 +84,8 @@ we can pass the coordinate name and the aggregation definition to the
             mean                        model_level_number
         Attributes:
             STASH                       m01s00i004
-            source                      Data from Met Office Unified Model
-            um_version                  7.3
+            source                      'Data from Met Office Unified Model'
+            um_version                  '7.3'
 
 
 Similarly other analysis operators such as ``MAX``, ``MIN`` and ``STD_DEV``
@@ -143,8 +143,8 @@ These areas can now be passed to the ``collapsed`` method as weights:
             mean                        grid_longitude, grid_latitude
         Attributes:
             STASH                       m01s00i004
-            source                      Data from Met Office Unified Model
-            um_version                  7.3
+            source                      'Data from Met Office Unified Model'
+            um_version                  '7.3'
 
 Several examples of area averaging exist in the gallery which may be of interest,
 including an example on taking a :ref:`global area-weighted mean
@@ -229,7 +229,7 @@ Printing this cube now shows that two extra coordinates exist on the cube:
         Cell methods:
             mean                        month, year
         Attributes:
-            Conventions                 CF-1.5
+            Conventions                 'CF-1.5'
             STASH                       m01s00i024
 
 

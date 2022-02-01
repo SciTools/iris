@@ -184,7 +184,7 @@ def mesh_location_size(mesh, location):
         if conn is None:
             result = 0
         else:
-            result = conn.shape[conn.src_dim]
+            result = conn.shape[conn.location_axis]
     return result
 
 
@@ -705,7 +705,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         # Get the face-node and edge-node connectivities
         face_nodes_conn = mesh.face_node_connectivity
         edge_nodes_conn = mesh.edge_node_connectivity
-        # Transpose them : N.B. this sets src_dim=1, as it should be.
+        # Transpose them : N.B. this sets location_axis=1, as it should be.
         nodesfirst_faces_conn = face_nodes_conn.transpose()
         nodesfirst_edges_conn = edge_nodes_conn.transpose()
         # Make a new mesh with both face and edge connectivities 'transposed'.

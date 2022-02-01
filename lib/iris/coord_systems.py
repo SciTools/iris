@@ -297,7 +297,10 @@ class GeogCS(CoordSystem):
         return ccrs.Geodetic(self.as_cartopy_globe())
 
     def as_cartopy_projection(self):
-        return ccrs.PlateCarree()
+        return ccrs.PlateCarree(
+            central_longitude=self.longitude_of_prime_meridian,
+            globe=self.as_cartopy_globe(),
+        )
 
     def as_cartopy_globe(self):
         # Explicitly set `ellipse` to None as a workaround for

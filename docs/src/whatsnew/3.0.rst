@@ -35,8 +35,8 @@ This document explains the changes made to Iris for this release
      :ref:`incompatible changes <whatsnew 3.0 changes>` and
      :ref:`deprecations <whatsnew 3.0 deprecations>`.
 
-   And finally, get in touch with us on `GitHub`_ if you have any issues or
-   feature requests for improving Iris. Enjoy!
+   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
+   any issues or feature requests for improving Iris. Enjoy!
 
 
 v3.0.1 (27 Jan 2021)
@@ -617,7 +617,6 @@ v3.0.4 (22 July 2021)
 .. _xxHash: https://github.com/Cyan4973/xxHash
 .. _PyKE: https://pypi.org/project/scitools-pyke/
 .. _@owena11: https://github.com/owena11
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _readthedocs: https://readthedocs.org/
 .. _CF Conventions and Metadata: https://cfconventions.org/
 .. _flake8: https://flake8.pycqa.org/en/stable/

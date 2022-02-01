@@ -13,7 +13,9 @@ is the name of the file to write the Python dictionary file into.
 By default, Iris will use the source XML file:
     etc/cf-standard-name-table.xml
 as obtained from:
-    http://cf-pcmdi.llnl.gov/documents/cf-standard-names
+    http://cfconventions.org/standard-names.html
+    E.G. http://cfconventions.org/Data/cf-standard-names/78/src/cf-standard-name-table.xml
+    - N.B. no fixed 'latest' url is provided.
 
 """
 

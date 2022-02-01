@@ -12,6 +12,7 @@ import collections
 from collections import OrderedDict
 import glob
 import os.path
+import pathlib
 import re
 
 import iris.exceptions
@@ -85,8 +86,9 @@ def decode_uri(uri, default="file"):
     r"""
     Decodes a single URI into scheme and scheme-specific parts.
 
-    In addition to well-formed URIs, it also supports bare file paths.
-    Both Windows and UNIX style paths are accepted.
+    In addition to well-formed URIs, it also supports bare file paths as strings
+    or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
+    accepted.
 
     .. testsetup::
 
@@ -113,6 +115,8 @@ def decode_uri(uri, default="file"):
         ('file', 'dataZoo/...')
 
     """
+    if isinstance(uri, pathlib.PurePath):
+        uri = str(uri)
     # make sure scheme has at least 2 letters to avoid windows drives
     # put - last in the brackets so it refers to the character, not a range
     # reference on valid schemes: http://tools.ietf.org/html/std66#section-3.1
@@ -312,7 +316,8 @@ def find_saver(filespec):
 
     Args:
 
-        * filespec - A string such as "my_file.pp" or "PP".
+        * filespec
+            A string such as "my_file.pp" or "PP".
 
     Returns:
         A save function or None.
@@ -359,7 +364,8 @@ def save(source, target, saver=None, **kwargs):
     * target:
         A filename (or writeable, depending on file format).
         When given a filename or file, Iris can determine the
-        file format.
+        file format. Filename can be given as a string or
+        :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -414,6 +420,8 @@ def save(source, target, saver=None, **kwargs):
     from iris.cube import Cube, CubeList
 
     # Determine format from filename
+    if isinstance(target, pathlib.PurePath):
+        target = str(target)
     if isinstance(target, str) and saver is None:
         saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:

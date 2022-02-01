@@ -17,7 +17,7 @@ from iris.io.format_picker import (
     UriProtocol,
 )
 
-from . import abf, name, netcdf, nimrod, pp, um
+from . import name, netcdf, nimrod, pp, um
 
 __all__ = ["FORMAT_AGENT"]
 
@@ -224,16 +224,23 @@ FORMAT_AGENT.add_spec(
 
 #
 # ABF/ABL
+# TODO: now deprecated, remove later
 #
+def load_cubes_abf_abl(*args, **kwargs):
+    from . import abf
+
+    return abf.load_cubes(*args, **kwargs)
+
+
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "ABF", FileExtension(), ".abf", abf.load_cubes, priority=3
+        "ABF", FileExtension(), ".abf", load_cubes_abf_abl, priority=3
     )
 )
 
 
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "ABL", FileExtension(), ".abl", abf.load_cubes, priority=3
+        "ABL", FileExtension(), ".abl", load_cubes_abf_abl, priority=3
     )
 )

@@ -29,28 +29,30 @@ class TestStandard(tests.IrisTest):
             "var_name": "face_nodes",
             "attributes": {"notes": "this is a test"},
             "start_index": 1,
-            "src_dim": 1,
+            "location_axis": 1,
         }
         self.connectivity = Connectivity(**self.kwargs)
 
     def test_cf_role(self):
         self.assertEqual(self.kwargs["cf_role"], self.connectivity.cf_role)
 
-    def test_src_location(self):
+    def test_location(self):
         expected = self.kwargs["cf_role"].split("_")[0]
-        self.assertEqual(expected, self.connectivity.src_location)
+        self.assertEqual(expected, self.connectivity.location)
 
-    def test_tgt_location(self):
+    def test_connected(self):
         expected = self.kwargs["cf_role"].split("_")[1]
-        self.assertEqual(expected, self.connectivity.tgt_location)
+        self.assertEqual(expected, self.connectivity.connected)
 
     def test_start_index(self):
         self.assertEqual(
             self.kwargs["start_index"], self.connectivity.start_index
         )
 
-    def test_src_dim(self):
-        self.assertEqual(self.kwargs["src_dim"], self.connectivity.src_dim)
+    def test_location_axis(self):
+        self.assertEqual(
+            self.kwargs["location_axis"], self.connectivity.location_axis
+        )
 
     def test_indices(self):
         self.assertArrayEqual(
@@ -58,7 +60,7 @@ class TestStandard(tests.IrisTest):
         )
 
     def test_read_only(self):
-        attributes = ("indices", "cf_role", "start_index", "src_dim")
+        attributes = ("indices", "cf_role", "start_index", "location_axis")
         for attribute in attributes:
             self.assertRaisesRegex(
                 AttributeError,
@@ -70,10 +72,10 @@ class TestStandard(tests.IrisTest):
             )
 
     def test_transpose(self):
-        expected_dim = 1 - self.kwargs["src_dim"]
+        expected_dim = 1 - self.kwargs["location_axis"]
         expected_indices = self.kwargs["indices"].transpose()
         new_connectivity = self.connectivity.transpose()
-        self.assertEqual(expected_dim, new_connectivity.src_dim)
+        self.assertEqual(expected_dim, new_connectivity.location_axis)
         self.assertArrayEqual(expected_indices, new_connectivity.indices)
 
     def test_lazy_indices(self):
@@ -87,39 +89,52 @@ class TestStandard(tests.IrisTest):
     def test_has_lazy_indices(self):
         self.assertFalse(self.connectivity.has_lazy_indices())
 
-    def test_lazy_src_lengths(self):
-        self.assertTrue(is_lazy_data(self.connectivity.lazy_src_lengths()))
+    def test_lazy_location_lengths(self):
+        self.assertTrue(
+            is_lazy_data(self.connectivity.lazy_location_lengths())
+        )
 
-    def test_src_lengths(self):
+    def test_location_lengths(self):
         expected = [4, 4, 4]
-        self.assertArrayEqual(expected, self.connectivity.src_lengths())
+        self.assertArrayEqual(expected, self.connectivity.location_lengths())
 
     def test___str__(self):
-        expected = (
-            "Connectivity(cf_role='face_node_connectivity', start_index=1)"
+        expected = "\n".join(
+            [
+                "Connectivity :  my_face_nodes / (unknown)",
+                "    data: [",
+                "        [ 1,  2,  3],",
+                "        [ 4,  5,  6],",
+                "        [ 7,  8,  9],",
+                "        [10, 11, 12]]",
+                "    shape: (4, 3)",
+                "    dtype: int64",
+                "    long_name: 'my_face_nodes'",
+                "    var_name: 'face_nodes'",
+                "    attributes:",
+                "        notes  'this is a test'",
+                "    cf_role: 'face_node_connectivity'",
+                "    start_index: 1",
+                "    location_axis: 1",
+            ]
         )
         self.assertEqual(expected, self.connectivity.__str__())
 
     def test___repr__(self):
-        expected = (
-            "Connectivity(array([[ 1,  2,  3], [ 4,  5,  6], [ 7,  8,  9], [10, 11, 12]]), "
-            "cf_role='face_node_connectivity', long_name='my_face_nodes', "
-            "var_name='face_nodes', attributes={'notes': 'this is a test'}, "
-            "start_index=1, src_dim=1)"
-        )
+        expected = "<Connectivity: my_face_nodes / (unknown)  [[1, 2, 3], ...]  shape(4, 3)>"
         self.assertEqual(expected, self.connectivity.__repr__())
 
     def test_xml_element(self):
         doc = minidom.Document()
         connectivity_element = self.connectivity.xml_element(doc)
         self.assertEqual(connectivity_element.tagName, "connectivity")
-        for attribute in ("cf_role", "start_index", "src_dim"):
+        for attribute in ("cf_role", "start_index", "location_axis"):
             self.assertIn(attribute, connectivity_element.attributes)
 
     def test___eq__(self):
         equivalent_kwargs = self.kwargs
         equivalent_kwargs["indices"] = self.kwargs["indices"].transpose()
-        equivalent_kwargs["src_dim"] = 1 - self.kwargs["src_dim"]
+        equivalent_kwargs["location_axis"] = 1 - self.kwargs["location_axis"]
         equivalent = Connectivity(**equivalent_kwargs)
         self.assertFalse(
             np.array_equal(equivalent.indices, self.connectivity.indices)
@@ -150,16 +165,18 @@ class TestStandard(tests.IrisTest):
         copy_connectivity = self.connectivity.copy(new_indices)
         self.assertArrayEqual(new_indices, copy_connectivity.indices)
 
-    def test_indices_by_src(self):
+    def test_indices_by_location(self):
         expected = self.kwargs["indices"].transpose()
-        self.assertArrayEqual(expected, self.connectivity.indices_by_src())
+        self.assertArrayEqual(
+            expected, self.connectivity.indices_by_location()
+        )
 
-    def test_indices_by_src_input(self):
+    def test_indices_by_location_input(self):
         expected = as_lazy_data(self.kwargs["indices"].transpose())
-        by_src = self.connectivity.indices_by_src(
+        by_location = self.connectivity.indices_by_location(
             self.connectivity.lazy_indices()
         )
-        self.assertArrayEqual(expected, by_src)
+        self.assertArrayEqual(expected, by_location)
 
 
 class TestAltIndices(tests.IrisTest):
@@ -210,14 +227,14 @@ class TestValidations(tests.IrisTest):
             ValueError, "Invalid start_index .", Connectivity, **kwargs
         )
 
-    def test_src_dim(self):
+    def test_location_axis(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "face_node_connectivity",
-            "src_dim": 2,
+            "location_axis": 2,
         }
         self.assertRaisesRegex(
-            ValueError, "Invalid src_dim .", Connectivity, **kwargs
+            ValueError, "Invalid location_axis .", Connectivity, **kwargs
         )
 
     def test_cf_role(self):
@@ -275,7 +292,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all src_locations meet requirement: len=2",
+            "Not all edges meet requirement: len=2",
             Connectivity,
             **kwargs,
         )
@@ -287,7 +304,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all src_locations meet requirement: len>=3",
+            "Not all faces meet requirement: len>=3",
             Connectivity,
             **kwargs,
         )
@@ -299,7 +316,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all src_locations meet requirement: len>=4",
+            "Not all volumes meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
@@ -311,7 +328,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all src_locations meet requirement: len>=6",
+            "Not all volumes meet requirement: len>=6",
             Connectivity,
             **kwargs,
         )
@@ -321,11 +338,11 @@ class TestValidations(tests.IrisTest):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((3, -1)),
             "cf_role": "volume_face_connectivity",
-            "src_dim": 1,
+            "location_axis": 1,
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all src_locations meet requirement: len>=4",
+            "Not all volumes meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
@@ -342,6 +359,10 @@ class TestValidations(tests.IrisTest):
         connectivity = Connectivity(**kwargs)
         self.assertRaisesRegex(
             ValueError,
-            "Not all src_locations meet requirement: len>=3",
+            "Not all faces meet requirement: len>=3",
             connectivity.validate_indices,
         )
+
+
+if __name__ == "__main__":
+    tests.main()

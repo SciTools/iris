@@ -12,9 +12,10 @@ Eventual destination: dedicated module in :mod:`iris` root.
 """
 from abc import ABC, abstractmethod
 from collections import namedtuple
-import re
+from collections.abc import Container
 from typing import Iterable
 
+from cf_units import Unit
 from dask import array as da
 import numpy as np
 
@@ -24,10 +25,11 @@ from ...common import (
     metadata_filter,
     metadata_manager_factory,
 )
+from ...common.metadata import BaseMetadata
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from ...util import array_equal, guess_coord_axis
+from ...util import array_equal, clip_string, guess_coord_axis
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
@@ -92,8 +94,8 @@ Mesh2DConnectivities = namedtuple(
 class Connectivity(_DimensionalMetadata):
     """
     A CF-UGRID topology connectivity, describing the topological relationship
-    between two lists of dimensional locations. One or more connectivities
-    make up a CF-UGRID topology - a constituent of a CF-UGRID mesh.
+    between two types of mesh element. One or more connectivities make up a
+    CF-UGRID topology - a constituent of a CF-UGRID mesh.
 
     See: https://ugrid-conventions.github.io/ugrid-conventions
 
@@ -122,7 +124,7 @@ class Connectivity(_DimensionalMetadata):
         units=None,
         attributes=None,
         start_index=0,
-        src_dim=0,
+        location_axis=0,
     ):
         """
         Constructs a single connectivity.
@@ -130,17 +132,23 @@ class Connectivity(_DimensionalMetadata):
         Args:
 
         * indices (numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array):
-            The index values describing a topological relationship. Constructed
-            of 2 dimensions - the list of locations, and within each location:
-            the indices of the 'target locations' it relates to.
-            Use a :class:`numpy.ma.core.MaskedArray` if :attr:`src_location`
-            lengths vary - mask unused index 'slots' within each
-            :attr:`src_location`. Use a :class:`dask.array.Array` to keep
-            indices 'lazy'.
+            2D array giving the topological connection relationship between
+            :attr:`location` elements and :attr:`connected` elements.
+            The :attr:`location_axis` dimension indexes over the
+            :attr:`location` dimension of the mesh - i.e. its length matches
+            the total number of :attr:`location` elements in the mesh. The
+            :attr:`connected_axis` dimension can be any length, corresponding
+            to the highest number of :attr:`connected` elements connected to a
+            :attr:`location` element. The array values are indices into the
+            :attr:`connected` dimension of the mesh. If the number of
+            :attr:`connected` elements varies between :attr:`location`
+            elements: use a :class:`numpy.ma.core.MaskedArray` and mask the
+            :attr:`location` elements' unused index 'slots'. Use a
+            :class:`dask.array.Array` to keep indices 'lazy'.
         * cf_role (str):
             Denotes the topological relationship that this connectivity
-            describes. Made up of this array's locations, and the indexed
-            'target location' within each location.
+            describes. Made up of this array's :attr:`location`, and the
+            :attr:`connected` element type that is indexed by the array.
             See :attr:`UGRID_CF_ROLES` for valid arguments.
 
         Kwargs:
@@ -164,14 +172,14 @@ class Connectivity(_DimensionalMetadata):
             Either ``0`` or ``1``. Default is ``0``. Denotes whether
             :attr:`indices` uses 0-based or 1-based indexing (allows support
             for Fortran and legacy NetCDF files).
-        * src_dim (int):
-            Either ``0`` or ``1``. Default is ``0``. Denotes which dimension
-            of :attr:`indices` varies over the :attr:`src_location`\\ s (the
-            alternate dimension therefore varying within individual
-            :attr:`src_location`\\ s). (This parameter allows support for fastest varying index being
+        * location_axis (int):
+            Either ``0`` or ``1``. Default is ``0``. Denotes which axis
+            of :attr:`indices` varies over the :attr:`location` elements (the
+            alternate axis therefore varying over :attr:`connected` elements).
+            (This parameter allows support for fastest varying index being
             either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
-            ``indices.shape[src_dim] = 10``.
+            ``indices.shape[location_axis] == 10``.
 
         """
 
@@ -188,15 +196,15 @@ class Connectivity(_DimensionalMetadata):
 
         validate_arg_vs_list("start_index", start_index, [0, 1])
         # indices array will be 2-dimensional, so must be either 0 or 1.
-        validate_arg_vs_list("src_dim", src_dim, [0, 1])
+        validate_arg_vs_list("location_axis", location_axis, [0, 1])
         validate_arg_vs_list("cf_role", cf_role, Connectivity.UGRID_CF_ROLES)
 
         self._metadata_manager.start_index = start_index
-        self._metadata_manager.src_dim = src_dim
+        self._metadata_manager.location_axis = location_axis
         self._metadata_manager.cf_role = cf_role
 
-        self._tgt_dim = 1 - src_dim
-        self._src_location, self._tgt_location = cf_role.split("_")[:2]
+        self._connected_axis = 1 - location_axis
+        self._location, self._connected = cf_role.split("_")[:2]
 
         super().__init__(
             values=indices,
@@ -206,58 +214,6 @@ class Connectivity(_DimensionalMetadata):
             units=units,
             attributes=attributes,
         )
-
-    def __repr__(self):
-        def kwargs_filter(k, v):
-            result = False
-            if k != "cf_role":
-                if v is not None:
-                    result = True
-                    if (
-                        not isinstance(v, str)
-                        and isinstance(v, Iterable)
-                        and not v
-                    ):
-                        result = False
-                    elif k == "units" and v == "unknown":
-                        result = False
-            return result
-
-        def array2repr(array):
-            if self.has_lazy_indices():
-                result = repr(array)
-            else:
-                with np.printoptions(
-                    threshold=NP_PRINTOPTIONS_THRESHOLD,
-                    edgeitems=NP_PRINTOPTIONS_EDGEITEMS,
-                ):
-                    result = re.sub("\n  *", " ", repr(array))
-            return result
-
-        # positional arguments
-        args = ", ".join(
-            [
-                f"{array2repr(self.core_indices())}",
-                f"cf_role={self.cf_role!r}",
-            ]
-        )
-
-        # optional arguments (metadata)
-        kwargs = ", ".join(
-            [
-                f"{k}={v!r}"
-                for k, v in self.metadata._asdict().items()
-                if kwargs_filter(k, v)
-            ]
-        )
-
-        return f"{self.__class__.__name__}({', '.join([args, kwargs])})"
-
-    def __str__(self):
-        args = ", ".join(
-            [f"cf_role={self.cf_role!r}", f"start_index={self.start_index!r}"]
-        )
-        return f"{self.__class__.__name__}({args})"
 
     @property
     def _values(self):
@@ -283,25 +239,25 @@ class Connectivity(_DimensionalMetadata):
         return self._metadata_manager.cf_role
 
     @property
-    def src_location(self):
+    def location(self):
         """
         Derived from the connectivity's :attr:`cf_role` - the first part, e.g.
-        ``face`` in ``face_node_connectivity``. Refers to the locations
-        listed by the :attr:`src_dim` of the connectivity's :attr:`indices`
-        array.
+        ``face`` in ``face_node_connectivity``. Refers to the elements that
+        vary along the :attr:`location_axis` of the connectivity's
+        :attr:`indices` array.
 
         """
-        return self._src_location
+        return self._location
 
     @property
-    def tgt_location(self):
+    def connected(self):
         """
         Derived from the connectivity's :attr:`cf_role` - the second part, e.g.
-        ``node`` in ``face_node_connectivity``. Refers to the locations indexed
+        ``node`` in ``face_node_connectivity``. Refers to the elements indexed
         by the values in the connectivity's :attr:`indices` array.
 
         """
-        return self._tgt_location
+        return self._connected
 
     @property
     def start_index(self):
@@ -316,47 +272,48 @@ class Connectivity(_DimensionalMetadata):
         return self._metadata_manager.start_index
 
     @property
-    def src_dim(self):
+    def location_axis(self):
         """
-        The dimension of the connectivity's :attr:`indices` array that varies
-        over the connectivity's :attr:`src_location`\\ s. Either ``0`` or ``1``.
+        The axis of the connectivity's :attr:`indices` array that varies
+        over the connectivity's :attr:`location` elements. Either ``0`` or ``1``.
         **Read-only** - validity of :attr:`indices` is dependent on
-        :attr:`src_dim`. Use :meth:`transpose` to create a new, transposed
-        :class:`Connectivity` if a different :attr:`src_dim` is needed.
+        :attr:`location_axis`. Use :meth:`transpose` to create a new, transposed
+        :class:`Connectivity` if a different :attr:`location_axis` is needed.
 
         """
-        return self._metadata_manager.src_dim
+        return self._metadata_manager.location_axis
 
     @property
-    def tgt_dim(self):
+    def connected_axis(self):
         """
-        Derived as the alternate value of :attr:`src_dim` - each must equal
-        either ``0`` or ``1``.
-        The dimension of the connectivity's :attr:`indices` array that varies
-        within the connectivity's individual :attr:`src_location`\\ s.
+        Derived as the alternate value of :attr:`location_axis` - each must
+        equal either ``0`` or ``1``. The axis of the connectivity's
+        :attr:`indices` array that varies over the :attr:`connected` elements
+        associated with each :attr:`location` element.
 
         """
-        return self._tgt_dim
+        return self._connected_axis
 
     @property
     def indices(self):
         """
         The index values describing the topological relationship of the
         connectivity, as a NumPy array. Masked points indicate a
-        :attr:`src_location` shorter than the longest :attr:`src_location`
-        described in this array - unused index 'slots' are masked.
+        :attr:`location` element  with fewer :attr:`connected` elements than
+        other :attr:`location` elements described in this array - unused index
+        'slots' are masked.
         **Read-only** - index values are only meaningful when combined with
         an appropriate :attr:`cf_role`, :attr:`start_index` and
-        :attr:`src_dim`. A new :class:`Connectivity` must therefore be
+        :attr:`location_axis`. A new :class:`Connectivity` must therefore be
         defined if different indices are needed.
 
         """
         return self._values
 
-    def indices_by_src(self, indices=None):
+    def indices_by_location(self, indices=None):
         """
-        Return a view of the indices array with :attr:`src_dim` **always** as
-        the first index - transposed if necessary. Can optionally pass in an
+        Return a view of the indices array with :attr:`location_axis` **always** as
+        the first axis - transposed if necessary. Can optionally pass in an
         identically shaped array on which to perform this operation (e.g. the
         output from :meth:`core_indices` or :meth:`lazy_indices`).
 
@@ -368,7 +325,7 @@ class Connectivity(_DimensionalMetadata):
 
         Returns:
             A view of the indices array, transposed - if necessary - to put
-            :attr:`src_dim` first.
+            :attr:`location_axis` first.
 
         """
         if indices is None:
@@ -380,20 +337,20 @@ class Connectivity(_DimensionalMetadata):
                 f"got shape={indices.shape} ."
             )
 
-        if self.src_dim == 0:
+        if self.location_axis == 0:
             result = indices
-        elif self.src_dim == 1:
+        elif self.location_axis == 1:
             result = indices.transpose()
         else:
-            raise ValueError("Invalid src_dim.")
+            raise ValueError("Invalid location_axis.")
 
         return result
 
     def _validate_indices(self, indices, shapes_only=False):
         # Use shapes_only=True for a lower resource, less thorough validation
         # of indices by just inspecting the array shape instead of inspecting
-        # individual masks. So will not catch individual src_locations being
-        # unacceptably small.
+        # individual masks. So will not catch individual location elements
+        # having unacceptably low numbers of associated connected elements.
 
         def indices_error(message):
             raise ValueError("Invalid indices provided. " + message)
@@ -422,43 +379,43 @@ class Connectivity(_DimensionalMetadata):
 
         len_req_fail = False
         if shapes_only:
-            src_shape = indices_shape[self.tgt_dim]
+            location_shape = indices_shape[self.connected_axis]
             # Wrap as lazy to allow use of the same operations below
             # regardless of shapes_only.
-            src_lengths = _lazy.as_lazy_data(np.asarray(src_shape))
+            location_lengths = _lazy.as_lazy_data(np.asarray(location_shape))
         else:
             # Wouldn't be safe to use during __init__ validation, since
-            # lazy_src_lengths requires self.indices to exist. Safe here since
+            # lazy_location_lengths requires self.indices to exist. Safe here since
             # shapes_only==False is only called manually, i.e. after
             # initialisation.
-            src_lengths = self.lazy_src_lengths()
-        if self.src_location in ("edge", "boundary"):
-            if (src_lengths != 2).any().compute():
+            location_lengths = self.lazy_location_lengths()
+        if self.location in ("edge", "boundary"):
+            if (location_lengths != 2).any().compute():
                 len_req_fail = "len=2"
         else:
-            if self.src_location == "face":
+            if self.location == "face":
                 min_size = 3
-            elif self.src_location == "volume":
-                if self.tgt_location == "edge":
+            elif self.location == "volume":
+                if self.connected == "edge":
                     min_size = 6
                 else:
                     min_size = 4
             else:
                 raise NotImplementedError
-            if (src_lengths < min_size).any().compute():
+            if (location_lengths < min_size).any().compute():
                 len_req_fail = f"len>={min_size}"
         if len_req_fail:
             indices_error(
-                f"Not all src_locations meet requirement: {len_req_fail} - "
+                f"Not all {self.location}s meet requirement: {len_req_fail} - "
                 f"needed to describe '{self.cf_role}' ."
             )
 
     def validate_indices(self):
         """
         Perform a thorough validity check of this connectivity's
-        :attr:`indices`. Includes checking the sizes of individual
-        :attr:`src_location`\\ s (specified using masks on the
-        :attr:`indices` array) against the :attr:`cf_role`.
+        :attr:`indices`. Includes checking the number of :attr:`connected`
+        elements associated with each :attr:`location` element (specified using
+        masks on the :attr:`indices` array) against the :attr:`cf_role`.
 
         Raises a ``ValueError`` if any problems are encountered, otherwise
         passes silently.
@@ -476,8 +433,8 @@ class Connectivity(_DimensionalMetadata):
         if isinstance(other, Connectivity):
             # Account for the fact that other could be the transposed equivalent
             # of self, which we consider 'safe' since the recommended
-            # interaction with the indices array is via indices_by_src, which
-            # corrects for this difference. (To enable this, src_dim does
+            # interaction with the indices array is via indices_by_location, which
+            # corrects for this difference. (To enable this, location_axis does
             # not participate in ConnectivityMetadata to ConnectivityMetadata
             # equivalence).
             if hasattr(other, "metadata"):
@@ -486,22 +443,22 @@ class Connectivity(_DimensionalMetadata):
                 if eq:
                     eq = (
                         self.shape == other.shape
-                        and self.src_dim == other.src_dim
+                        and self.location_axis == other.location_axis
                     ) or (
                         self.shape == other.shape[::-1]
-                        and self.src_dim == other.tgt_dim
+                        and self.location_axis == other.connected_axis
                     )
                 if eq:
                     eq = array_equal(
-                        self.indices_by_src(self.core_indices()),
-                        other.indices_by_src(other.core_indices()),
+                        self.indices_by_location(self.core_indices()),
+                        other.indices_by_location(other.core_indices()),
                     )
         return eq
 
     def transpose(self):
         """
         Create a new :class:`Connectivity`, identical to this one but with the
-        :attr:`indices` array transposed and the :attr:`src_dim` value flipped.
+        :attr:`indices` array transposed and the :attr:`location_axis` value flipped.
 
         Returns:
             A new :class:`Connectivity` that is the transposed equivalent of
@@ -517,7 +474,7 @@ class Connectivity(_DimensionalMetadata):
             units=self.units,
             attributes=self.attributes,
             start_index=self.start_index,
-            src_dim=self.tgt_dim,
+            location_axis=self.connected_axis,
         )
         return new_connectivity
 
@@ -560,11 +517,11 @@ class Connectivity(_DimensionalMetadata):
         """
         return super()._has_lazy_values()
 
-    def lazy_src_lengths(self):
+    def lazy_location_lengths(self):
         """
-        Return a lazy array representing the lengths of each
-        :attr:`src_location` in the :attr:`src_dim` of the connectivity's
-        :attr:`indices` array, accounting for masks if present.
+        Return a lazy array representing the number of :attr:`connected`
+        elements associated with each of the connectivity's :attr:`location`
+        elements, accounting for masks if present.
 
         Accessing this method will never cause the :attr:`indices` values to be
         loaded. Similarly, calling methods on, or indexing, the returned Array
@@ -574,26 +531,28 @@ class Connectivity(_DimensionalMetadata):
         :attr:`indices` have already been loaded.
 
         Returns:
-            A lazy array, representing the lengths of each :attr:`src_location`.
+            A lazy array, representing the number of :attr:`connected`
+             elements associated with each :attr:`location` element.
 
         """
-        src_mask_counts = da.sum(
-            da.ma.getmaskarray(self.indices), axis=self.tgt_dim
+        location_mask_counts = da.sum(
+            da.ma.getmaskarray(self.indices), axis=self.connected_axis
         )
-        max_src_size = self.indices.shape[self.tgt_dim]
-        return max_src_size - src_mask_counts
+        max_location_size = self.indices.shape[self.connected_axis]
+        return max_location_size - location_mask_counts
 
-    def src_lengths(self):
+    def location_lengths(self):
         """
-        Return a NumPy array representing the lengths of each
-        :attr:`src_location` in the :attr:`src_dim` of the connectivity's
-        :attr:`indices` array, accounting for masks if present.
+        Return a NumPy array representing the number of :attr:`connected`
+        elements associated with each of the connectivity's :attr:`location`
+        elements, accounting for masks if present.
 
         Returns:
-            A NumPy array, representing the lengths of each :attr:`src_location`.
+            A NumPy array, representing the number of :attr:`connected`
+             elements associated with each :attr:`location` element.
 
         """
-        return self.lazy_src_lengths().compute()
+        return self.lazy_location_lengths().compute()
 
     def cube_dims(self, cube):
         """Not available on :class:`Connectivity`."""
@@ -606,7 +565,7 @@ class Connectivity(_DimensionalMetadata):
 
         element.setAttribute("cf_role", self.cf_role)
         element.setAttribute("start_index", self.start_index)
-        element.setAttribute("src_dim", self.src_dim)
+        element.setAttribute("location_axis", self.location_axis)
 
         return element
 
@@ -632,8 +591,8 @@ class Mesh(CFVariableMixin):
     AXES = ("x", "y")
     #: Valid range of values for ``topology_dimension``.
     TOPOLOGY_DIMENSIONS = (1, 2)
-    #: Valid mesh locations.
-    LOCATIONS = ("edge", "node", "face")
+    #: Valid mesh elements.
+    ELEMENTS = ("edge", "node", "face")
 
     def __init__(
         self,
@@ -684,12 +643,12 @@ class Mesh(CFVariableMixin):
         self.attributes = attributes
 
         # based on the topology_dimension, create the appropriate coordinate manager
-        def normalise(location, axis):
+        def normalise(element, axis):
             result = str(axis).lower()
             if result not in self.AXES:
-                emsg = f"Invalid axis specified for {location} coordinate {coord.name()!r}, got {axis!r}."
+                emsg = f"Invalid axis specified for {element} coordinate {coord.name()!r}, got {axis!r}."
                 raise ValueError(emsg)
-            return f"{location}_{result}"
+            return f"{element}_{result}"
 
         if not isinstance(node_coords_and_axes, Iterable):
             node_coords_and_axes = [node_coords_and_axes]
@@ -975,77 +934,143 @@ class Mesh(CFVariableMixin):
             result = not result
         return result
 
-    def __repr__(self):
-        def to_coord_and_axis(members):
-            def axis(member):
-                return member.split("_")[1]
+    def summary(self, shorten=False):
+        """
+        Return a string representation of the Mesh.
 
-            result = [
-                f"({coord!s}, {axis(member)!r})"
-                for member, coord in members._asdict().items()
-                if coord is not None
-            ]
-            result = f"[{', '.join(result)}]" if result else None
-            return result
+        Parameters
+        ----------
+        shorten : bool, default = False
+            If True, produce a oneline string form of the form <Mesh: ...>.
+            If False, produce a multi-line detailed print output.
 
-        node_coords_and_axes = to_coord_and_axis(self.node_coords)
-        connectivities = [
-            str(connectivity)
-            for connectivity in self.all_connectivities
-            if connectivity is not None
-        ]
+        Returns
+        -------
+        result : str
 
-        if len(connectivities) == 1:
-            connectivities = connectivities[0]
+        """
+        if shorten:
+            result = self._summary_oneline()
         else:
-            connectivities = f"[{', '.join(connectivities)}]"
+            result = self._summary_multiline()
+        return result
 
-        # positional arguments
-        args = [
-            f"topology_dimension={self.topology_dimension!r}",
-            f"node_coords_and_axes={node_coords_and_axes}",
-            f"connectivities={connectivities}",
-        ]
+    def __repr__(self):
+        return self.summary(shorten=True)
 
-        # optional argument
-        edge_coords_and_axes = to_coord_and_axis(self.edge_coords)
-        if edge_coords_and_axes:
-            args.append(f"edge_coords_and_axes={edge_coords_and_axes}")
+    def __str__(self):
+        return self.summary(shorten=False)
 
-        # optional argument
-        if self.topology_dimension > 1:
-            face_coords_and_axes = to_coord_and_axis(self.face_coords)
-            if face_coords_and_axes:
-                args.append(f"face_coords_and_axes={face_coords_and_axes}")
+    def _summary_oneline(self):
+        # We use the repr output to produce short one-line identity summary,
+        # similar to the object.__str__ output "<object at xxx>".
+        # This form also used in other str() constructions, like MeshCoord.
+        # By contrast, __str__ (below) produces a readable multi-line printout.
+        mesh_name = self.name()
+        if mesh_name in (None, "", "unknown"):
+            mesh_name = None
+        if mesh_name:
+            # Use a more human-readable form
+            mesh_string = f"<Mesh: '{mesh_name}'>"
+        else:
+            # Mimic the generic object.__str__ style.
+            mesh_id = id(self)
+            mesh_string = f"<Mesh object at {hex(mesh_id)}>"
 
-        def kwargs_filter(k, v):
-            result = False
-            if k != "topology_dimension":
-                if not (
-                    self.topology_dimension == 1 and k == "face_dimension"
-                ):
-                    if v is not None:
-                        result = True
-                        if (
-                            not isinstance(v, str)
-                            and isinstance(v, Iterable)
-                            and not v
-                        ):
-                            result = False
-                        elif k == "units" and v == "unknown":
-                            result = False
-            return result
+        return mesh_string
 
-        # optional arguments (metadata)
-        args.extend(
-            [
-                f"{k}={v!r}"
-                for k, v in self.metadata._asdict().items()
-                if kwargs_filter(k, v)
-            ]
+    def _summary_multiline(self):
+        # Produce a readable multi-line summary of the Mesh content.
+        lines = []
+        n_indent = 4
+        indent_str = " " * n_indent
+
+        def line(text, i_indent=0):
+            indent = indent_str * i_indent
+            lines.append(f"{indent}{text}")
+
+        line(f"Mesh : '{self.name()}'")
+        line(f"topology_dimension: {self.topology_dimension}", 1)
+        for element in ("node", "edge", "face"):
+            if element == "node":
+                element_exists = True
+            else:
+                main_conn_name = f"{element}_node_connectivity"
+                main_conn = getattr(self, main_conn_name, None)
+                element_exists = main_conn is not None
+            if element_exists:
+                # Include a section for this element
+                line(element, 1)
+                # Print element dimension
+                dim_name = f"{element}_dimension"
+                dim = getattr(self, dim_name)
+                line(f"{dim_name}: '{dim}'", 2)
+                # Print defining connectivity (except node)
+                if element != "node":
+                    main_conn_string = main_conn.summary(
+                        shorten=True, linewidth=0
+                    )
+                    line(f"{main_conn_name}: {main_conn_string}", 2)
+                # Print coords
+                include_key = f"include_{element}s"
+                coords = self.coords(**{include_key: True})
+                if coords:
+                    line(f"{element} coordinates", 2)
+                    for coord in coords:
+                        coord_string = coord.summary(shorten=True, linewidth=0)
+                        line(coord_string, 3)
+
+        # Having dealt with essential info, now add any optional connectivities
+        # N.B. includes boundaries: as optional connectivity, not an "element"
+        optional_conn_names = (
+            "boundary_connectivity",
+            "face_face_connectivity",
+            "face_edge_connectivity",
+            "edge_face_connectivity",
         )
+        optional_conns = [
+            getattr(self, name, None) for name in optional_conn_names
+        ]
+        optional_conns = {
+            name: conn
+            for conn, name in zip(optional_conns, optional_conn_names)
+            if conn is not None
+        }
+        if optional_conns:
+            line("optional connectivities", 1)
+            for name, conn in optional_conns.items():
+                conn_string = conn.summary(shorten=True, linewidth=0)
+                line(f"{name}: {conn_string}", 2)
 
-        return f"{self.__class__.__name__}({', '.join(args)})"
+        # Output the detail properties, basically those from CFVariableMixin
+        for name in BaseMetadata._members:
+            val = getattr(self, name, None)
+            if val is not None:
+                if name == "units":
+                    show = val.origin != Unit(None)
+                elif isinstance(val, Container):
+                    show = bool(val)
+                else:
+                    show = val is not None
+                if show:
+                    if name == "attributes":
+                        # Use a multi-line form for this.
+                        line("attributes:", 1)
+                        max_attname_len = max(len(attr) for attr in val.keys())
+                        for attrname, attrval in val.items():
+                            attrname = attrname.ljust(max_attname_len)
+                            if isinstance(attrval, str):
+                                # quote strings
+                                attrval = repr(attrval)
+                                # and abbreviate really long ones
+                                attrval = clip_string(attrval)
+                            attr_string = f"{attrname}  {attrval}"
+                            line(attr_string, 2)
+                    else:
+                        line(f"{name}: {val!r}", 1)
+
+        result = "\n".join(lines)
+        return result
 
     def __setstate__(self, state):
         metadata_manager, coord_manager, connectivity_manager = state
@@ -1375,17 +1400,17 @@ class Mesh(CFVariableMixin):
             :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
-            Contains the ``node`` location as part of the
+            Contains the ``node`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_edge (bool):
-            Contains the ``edge`` location as part of the
+            Contains the ``edge`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_face (bool):
-            Contains the ``face`` location as part of the
+            Contains the ``face`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
@@ -1476,17 +1501,17 @@ class Mesh(CFVariableMixin):
             :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
-            Contains the ``node`` location as part of the
+            Contains the ``node`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_edge (bool):
-            Contains the ``edge`` location as part of the
+            Contains the ``edge`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_face (bool):
-            Contains the ``face`` location as part of the
+            Contains the ``face`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
@@ -1743,17 +1768,17 @@ class Mesh(CFVariableMixin):
             :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
-            Contains the ``node`` location as part of the
+            Contains the ``node`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
 
         * contains_edge (bool):
-            Contains the ``edge`` location as part of the
+            Contains the ``edge`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
 
         * contains_face (bool):
-            Contains the ``face`` location as part of the
+            Contains the ``face`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
 
@@ -2089,12 +2114,12 @@ class _Mesh1DCoordinateManager:
 
         return result
 
-    def _setter(self, location, axis, coord, shape):
+    def _setter(self, element, axis, coord, shape):
         axis = axis.lower()
-        member = f"{location}_{axis}"
+        member = f"{element}_{axis}"
 
         # enforce the UGRID minimum coordinate requirement
-        if location == "node" and coord is None:
+        if element == "node" and coord is None:
             emsg = (
                 f"{member!r} is a required coordinate, cannot set to 'None'."
             )
@@ -2121,22 +2146,22 @@ class _Mesh1DCoordinateManager:
 
         self._members[member] = coord
 
-    def _shape(self, location):
-        coord = getattr(self, f"{location}_x")
+    def _shape(self, element):
+        coord = getattr(self, f"{element}_x")
         shape = coord.shape if coord is not None else None
         if shape is None:
-            coord = getattr(self, f"{location}_y")
+            coord = getattr(self, f"{element}_y")
             if coord is not None:
                 shape = coord.shape
         return shape
 
     @property
     def _edge_shape(self):
-        return self._shape(location="edge")
+        return self._shape(element="edge")
 
     @property
     def _node_shape(self):
-        return self._shape(location="node")
+        return self._shape(element="node")
 
     @property
     def all_members(self):
@@ -2153,7 +2178,7 @@ class _Mesh1DCoordinateManager:
     @edge_x.setter
     def edge_x(self, coord):
         self._setter(
-            location="edge", axis="x", coord=coord, shape=self._edge_shape
+            element="edge", axis="x", coord=coord, shape=self._edge_shape
         )
 
     @property
@@ -2163,7 +2188,7 @@ class _Mesh1DCoordinateManager:
     @edge_y.setter
     def edge_y(self, coord):
         self._setter(
-            location="edge", axis="y", coord=coord, shape=self._edge_shape
+            element="edge", axis="y", coord=coord, shape=self._edge_shape
         )
 
     @property
@@ -2177,7 +2202,7 @@ class _Mesh1DCoordinateManager:
     @node_x.setter
     def node_x(self, coord):
         self._setter(
-            location="node", axis="x", coord=coord, shape=self._node_shape
+            element="node", axis="x", coord=coord, shape=self._node_shape
         )
 
     @property
@@ -2187,7 +2212,7 @@ class _Mesh1DCoordinateManager:
     @node_y.setter
     def node_y(self, coord):
         self._setter(
-            location="node", axis="y", coord=coord, shape=self._node_shape
+            element="node", axis="y", coord=coord, shape=self._node_shape
         )
 
     def _add(self, coords):
@@ -2363,7 +2388,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
 
     @property
     def _face_shape(self):
-        return self._shape(location="face")
+        return self._shape(element="face")
 
     @property
     def all_members(self):
@@ -2380,7 +2405,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
     @face_x.setter
     def face_x(self, coord):
         self._setter(
-            location="face", axis="x", coord=coord, shape=self._face_shape
+            element="face", axis="x", coord=coord, shape=self._face_shape
         )
 
     @property
@@ -2390,7 +2415,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
     @face_y.setter
     def face_y(self, coord):
         self._setter(
-            location="face", axis="y", coord=coord, shape=self._face_shape
+            element="face", axis="y", coord=coord, shape=self._face_shape
         )
 
     def add(
@@ -2510,24 +2535,20 @@ class _MeshConnectivityManagerBase(ABC):
 
         # Validate shapes.
         proposed_members = {**self._members, **add_dict}
-        locations = set(
-            [
-                c.src_location
-                for c in proposed_members.values()
-                if c is not None
-            ]
+        elements = set(
+            [c.location for c in proposed_members.values() if c is not None]
         )
-        for location in locations:
+        for element in elements:
             counts = [
-                len(c.indices_by_src(c.lazy_indices()))
+                len(c.indices_by_location(c.lazy_indices()))
                 for c in proposed_members.values()
-                if c is not None and c.src_location == location
+                if c is not None and c.location == element
             ]
             # Check is list values are identical.
             if not counts.count(counts[0]) == len(counts):
                 message = (
                     f"Invalid Connectivities provided - inconsistent "
-                    f"{location} counts."
+                    f"{element} counts."
                 )
                 raise ValueError(message)
 
@@ -2582,13 +2603,16 @@ class _MeshConnectivityManagerBase(ABC):
                 instance for instance in members if instance.cf_role == cf_role
             ]
 
-        def location_filter(instances, loc_arg, loc_name):
+        def element_filter(instances, loc_arg, loc_name):
             if loc_arg is False:
                 filtered = [
                     instance
                     for instance in instances
                     if loc_name
-                    not in (instance.src_location, instance.tgt_location)
+                    not in (
+                        instance.location,
+                        instance.connected,
+                    )
                 ]
             elif loc_arg is None:
                 filtered = instances
@@ -2597,8 +2621,7 @@ class _MeshConnectivityManagerBase(ABC):
                 filtered = [
                     instance
                     for instance in instances
-                    if loc_name
-                    in (instance.src_location, instance.tgt_location)
+                    if loc_name in (instance.location, instance.connected)
                 ]
 
             return filtered
@@ -2608,7 +2631,7 @@ class _MeshConnectivityManagerBase(ABC):
             (contains_edge, "edge"),
             (contains_face, "face"),
         ):
-            members = location_filter(members, arg, loc)
+            members = element_filter(members, arg, loc)
 
         # No need to actually modify filtering behaviour - already won't return
         # any face cf-roles if none are present.
@@ -2790,10 +2813,10 @@ class MeshCoord(AuxCoord):
         # NOTE: currently *not* included in metadata. In future it might be.
         self._mesh = mesh
 
-        if location not in Mesh.LOCATIONS:
+        if location not in Mesh.ELEMENTS:
             msg = (
                 f"'location' of {location} is not a valid Mesh location', "
-                f"must be one of {Mesh.LOCATIONS}."
+                f"must be one of {Mesh.ELEMENTS}."
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.location, but cannot set it.
@@ -2943,61 +2966,61 @@ class MeshCoord(AuxCoord):
     def __hash__(self):
         return hash(id(self))
 
-    def _string_summary(self, repr_style):
-        # Note: bypass the immediate parent here, which is Coord, because we
-        # have no interest in reporting coord_system or climatological, or in
-        # printing out our points/bounds.
-        # We also want to list our defining properties, i.e. mesh/location/axis
-        # *first*, before names/units etc, so different from other Coord types.
-
-        # First construct a shortform text summary to identify the Mesh.
-        # IN 'str-mode', this attempts to use Mesh.name() if it is set,
-        # otherwise uses an object-id style (as also for 'repr-mode').
-        # TODO: use a suitable method provided by Mesh, e.g. something like
-        #  "Mesh.summary(shorten=True)", when it is available.
-        mesh_name = None
-        if not repr_style:
-            mesh_name = self.mesh.name()
-            if mesh_name in (None, "", "unknown"):
-                mesh_name = None
-        if mesh_name:
-            # Use a more human-readable form
-            mesh_string = f"Mesh({mesh_name!r})"
+    def summary(self, *args, **kwargs):
+        # We need to specialise _DimensionalMetadata.summary, so that we always
+        # print the mesh+location of a MeshCoord.
+        if len(args) > 0:
+            shorten = args[0]
         else:
-            # Mimic the generic object.__str__ style.
-            mesh_id = id(self.mesh)
-            mesh_string = f"<Mesh object at {hex(mesh_id)}>"
-        result = (
-            f"mesh={mesh_string}"
-            f", location={self.location!r}"
-            f", axis={self.axis!r}"
-        )
-        # Add 'other' metadata that is drawn from the underlying node-coord.
-        # But put these *afterward*, unlike other similar classes.
-        for item in (
-            "shape",
-            "standard_name",
-            "units",
-            "long_name",
-            "attributes",
-        ):
-            # NOTE: order of these matches Coord.summary, but omit var_name.
-            val = getattr(self, item, None)
-            if item == "attributes":
-                is_blank = len(val) == 0  # an empty dict is as good as none
-            else:
-                is_blank = val is None
-            if not is_blank:
-                result += f", {item}={val!r}"
+            shorten = kwargs.get("shorten", False)
 
-        result = f"MeshCoord({result})"
+        # Get the default-form result.
+        if shorten:
+            # NOTE: we simply aren't interested in the values for the repr,
+            # so fix linewidth to suppress them
+            kwargs["linewidth"] = 1
+
+        # Plug private key, to get back the section structure info
+        section_indices = {}
+        kwargs["_section_indices"] = section_indices
+        result = super().summary(*args, **kwargs)
+
+        # Modify the generic 'default-form' result to produce what we want.
+        if shorten:
+            # Single-line form : insert mesh+location before the array part
+            # Construct a text detailing the mesh + location
+            mesh_string = self.mesh.name()
+            if mesh_string == "unknown":
+                # If no name, replace with the one-line summary
+                mesh_string = self.mesh.summary(shorten=True)
+            extra_str = f"mesh({mesh_string}) location({self.location})  "
+            # find where in the line the data-array text begins
+            i_line, i_array = section_indices["data"]
+            assert i_line == 0
+            # insert the extra text there
+            result = result[:i_array] + extra_str + result[i_array:]
+            # NOTE: this invalidates the original width calculation and may
+            # easily extend the result beyond the intended maximum linewidth.
+            # We do treat that as an advisory control over array printing, not
+            # an absolute contract, so just ignore the problem for now.
+        else:
+            # Multiline form
+            # find where the "location: ... " section is
+            i_location, i_namestart = section_indices["location"]
+            lines = result.split("\n")
+            location_line = lines[i_location]
+            # copy the indent spacing
+            indent = location_line[:i_namestart]
+            # use that to construct a suitable 'mesh' line
+            mesh_string = self.mesh.summary(shorten=True)
+            mesh_line = f"{indent}mesh: {mesh_string}"
+            # Move the 'location' line, putting it and the 'mesh' line right at
+            # the top, immediately after the header line.
+            del lines[i_location]
+            lines[1:1] = [mesh_line, location_line]
+            # Re-join lines to give the result
+            result = "\n".join(lines)
         return result
-
-    def __str__(self):
-        return self._string_summary(repr_style=False)
-
-    def __repr__(self):
-        return self._string_summary(repr_style=True)
 
     def _construct_access_arrays(self):
         """
@@ -3035,7 +3058,7 @@ class MeshCoord(AuxCoord):
             # Data can be real or lazy, so operations must work in Dask, too.
             indices = bounds_connectivity.core_indices()
             # Normalise indices dimension order to [faces/edges, bounds]
-            indices = bounds_connectivity.indices_by_src(indices)
+            indices = bounds_connectivity.indices_by_location(indices)
             # Normalise the start index
             indices = indices - bounds_connectivity.start_index
 

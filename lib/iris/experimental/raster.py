@@ -20,7 +20,16 @@ import numpy.ma as ma
 from osgeo import gdal, osr
 
 import iris
+from iris._deprecation import warn_deprecated
 import iris.coord_systems
+
+wmsg = (
+    "iris.experimental.raster is deprecated since version 3.2, and will be "
+    "removed in a future release. If you make use of this functionality, "
+    "please contact the Iris Developers to discuss how to retain it (which may "
+    "involve reversing the deprecation)."
+)
+warn_deprecated(wmsg)
 
 _GDAL_DATATYPES = {
     "i2": gdal.GDT_Int16,
@@ -96,6 +105,14 @@ def export_geotiff(cube, fname):
     """
     Writes cube data to raster file format as a PixelIsArea GeoTiff image.
 
+    .. deprecated:: 3.2.0
+
+        This method is scheduled to be removed in a future release, and no
+        replacement is currently planned.
+        If you make use of this functionality, please contact the Iris
+        Developers to discuss how to retain it (which could include reversing
+        the deprecation).
+
     Args:
         * cube (Cube): The 2D regularly gridded cube slice to be exported.
                        The cube must have regular, contiguous bounds.
@@ -107,6 +124,13 @@ def export_geotiff(cube, fname):
         http://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
 
     """
+    wmsg = (
+        "iris.experimental.raster.export_geotiff has been deprecated, and will "
+        "be removed in a future release.  Please consult the docstring for "
+        "details."
+    )
+    warn_deprecated(wmsg)
+
     if cube.ndim != 2:
         raise ValueError("The cube must be two dimensional.")
 
