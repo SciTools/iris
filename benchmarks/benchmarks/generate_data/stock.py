@@ -1,3 +1,14 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+"""
+Wrappers for using :mod:`iris.tests.stock` methods for benchmarking.
+
+See :mod:`benchmarks.generate_data` for an explanation of this structure.
+"""
+
 from pathlib import Path
 import pickle
 
@@ -10,6 +21,8 @@ def create_file__xios_2d_face_half_levels(
     temp_file_dir, dataset_name, n_faces=866, n_times=1
 ):
     """
+    Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_2d_face_half_levels`.
+
     Have taken control of temp_file_dir
 
     todo: is create_file__xios_2d_face_half_levels still appropriate now we can
@@ -39,6 +52,8 @@ def create_file__xios_2d_face_half_levels(
 
 
 def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
+    """Wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
+
     def _external(*args, **kwargs):
         from iris.experimental.ugrid import save_mesh
         from iris.tests.stock.mesh import sample_mesh
@@ -61,7 +76,13 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
 
 def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
-    """Must also generate any custom :class:`iris.experimental.ugrid.Mesh from scratch."""
+    """
+    Wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
+
+    Inputs deviate from the original as cannot pass a
+    :class:`iris.experimental.ugrid.Mesh to the separate Python instance - must
+    instead generate the Mesh as well.
+    """
 
     def _external(**kwargs):
         from pathlib import Path
