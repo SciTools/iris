@@ -65,8 +65,13 @@ class Connectivity(UGridCommon):
     def time_indices(self, n_faces):
         _ = self.object.indices
 
-    def time_src_lengths(self, n_faces):
-        _ = self.object.src_lengths()
+    def time_location_lengths(self, n_faces):
+        # Proofed against the Connectivity name change (633ed17).
+        if getattr(self.object, "src_lengths", False):
+            meth = self.object.src_lengths
+        else:
+            meth = self.object.location_lengths
+        _ = meth()
 
     def time_validate_indices(self, n_faces):
         self.object.validate_indices()
