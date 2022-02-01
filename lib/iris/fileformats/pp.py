@@ -403,7 +403,7 @@ class SplittableInt:
 
     def _calculate_value_from_str_value(self):
         self._value = np.sum(
-            [10 ** i * val for i, val in enumerate(self._strvalue)]
+            [10**i * val for i, val in enumerate(self._strvalue)]
         )
 
     def __len__(self):
@@ -418,7 +418,7 @@ class SplittableInt:
         # if the key returns a list of values, then combine them together
         # to an integer
         if isinstance(val, list):
-            val = sum([10 ** i * val for i, val in enumerate(val)])
+            val = sum([10**i * val for i, val in enumerate(val)])
 
         return val
 
