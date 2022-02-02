@@ -221,9 +221,10 @@ class TestNetCDFLoad(tests.IrisTest):
     def test_load_merc_false_en_grid(self):
         # Test loading a single CF-netCDF file with a Mercator grid_mapping that
         # includes false easting and northing
-        raise NotImplementedError
         cube = iris.load_cube(
-            tests.get_data_path(("NetCDF", "mercator", "?.nc"))
+            tests.get_data_path(
+                ("NetCDF", "mercator", "false_east_north_merc.nc")
+            )
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc_false.cml"))
 
