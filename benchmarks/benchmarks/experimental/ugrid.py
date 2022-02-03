@@ -15,7 +15,7 @@ import numpy as np
 from iris.experimental import ugrid
 
 from .. import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
-from ..generate_data.stock import sample_mesh, sample_meshcoord
+from ..generate_data.stock import sample_mesh
 
 
 class UGridCommon:
@@ -89,11 +89,31 @@ class ConnectivityLazy(Connectivity):
 
 class Mesh(UGridCommon):
     def setup(self, n_faces, lazy=False):
-        n_nodes = n_faces + 2
-        n_edges = n_faces * 2
-        self.mesh_kwargs = dict(
-            n_nodes=n_nodes, n_faces=n_faces, n_edges=n_edges, lazy_values=lazy
+        ####
+        # Steal everything from the sample mesh for benchmarking creation of a
+        #  brand new mesh.
+        source_mesh = sample_mesh(
+            n_nodes=n_faces + 2,
+            n_edges=n_faces * 2,
+            n_faces=n_faces,
+            lazy_values=lazy,
         )
+
+        def get_coords_and_axes(location):
+            search_kwargs = {f"include_{location}s": True}
+            return [
+                (source_mesh.coord(axis=axis, **search_kwargs), axis)
+                for axis in ("x", "y")
+            ]
+
+        self.mesh_kwargs = dict(
+            topology_dimension=source_mesh.topology_dimension,
+            node_coords_and_axes=get_coords_and_axes("node"),
+            connectivities=source_mesh.connectivities(),
+            edge_coords_and_axes=get_coords_and_axes("edge"),
+            face_coords_and_axes=get_coords_and_axes("face"),
+        )
+        ####
 
         super().setup(n_faces)
 
@@ -111,7 +131,7 @@ class Mesh(UGridCommon):
         self.eq_object = deepcopy(self.object)
 
     def create(self):
-        return sample_mesh(**self.mesh_kwargs)
+        return ugrid.Mesh(**self.mesh_kwargs)
 
     def time_add_connectivities(self, n_faces):
         self.object.add_connectivities(self.face_node)
@@ -148,7 +168,7 @@ class MeshCoord(UGridCommon):
     params = UGridCommon.params + [ARTIFICIAL_DIM_SIZE]
 
     def setup(self, n_faces, lazy=False):
-        self.mesh_kwargs = dict(
+        self.mesh = sample_mesh(
             n_nodes=n_faces + 2,
             n_edges=n_faces * 2,
             n_faces=n_faces,
@@ -158,7 +178,7 @@ class MeshCoord(UGridCommon):
         super().setup(n_faces)
 
     def create(self):
-        return sample_meshcoord(sample_mesh_kwargs=self.mesh_kwargs)
+        return ugrid.MeshCoord(mesh=self.mesh, location="face", axis="x")
 
     def time_points(self, n_faces):
         _ = self.object.points

@@ -59,10 +59,12 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         from iris.tests.stock.mesh import sample_mesh
 
         save_path_ = kwargs.pop("save_path")
+        # Always saving, so laziness is irrelevant. Use lazy to save time.
+        kwargs["lazy_values"] = True
         new_mesh = sample_mesh(*args, **kwargs)
         save_mesh(new_mesh, save_path_)
 
-    arg_list = [n_nodes, n_faces, n_edges, lazy_values]
+    arg_list = [n_nodes, n_faces, n_edges]
     args_hash = hash(str(arg_list))
     save_path = (BENCHMARK_DATA / f"sample_mesh_{args_hash}").with_suffix(
         ".nc"
@@ -72,42 +74,53 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
             _external, *arg_list, save_path=str(save_path)
         )
     with PARSE_UGRID_ON_LOAD.context():
-        return load_mesh(str(save_path))
+        mesh = load_mesh(str(save_path))
+    if not lazy_values:
+        # Realise everything.
+        for coord in mesh.coords():
+            _ = coord.points
+        for conn in mesh.connectivities():
+            _ = conn.indices
+    return mesh
 
 
 def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
     """
     Wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
 
-    Inputs deviate from the original as cannot pass a
+    Parameters deviate from the original as cannot pass a
     :class:`iris.experimental.ugrid.Mesh to the separate Python instance - must
     instead generate the Mesh as well.
+
+    MeshCoords cannot be saved to file, so the _external method saves the
+    MeshCoord's Mesh, then the original Python instance loads in that Mesh and
+    regenerates the MeshCoord from there.
     """
 
-    def _external(**kwargs):
-        from pathlib import Path
-        import pickle
-
+    def _external(sample_mesh_kwargs_, save_path_):
+        from iris.experimental.ugrid import save_mesh
         from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
 
-        sample_mesh_kwargs_ = kwargs.pop("sample_mesh_kwargs", None)
         if sample_mesh_kwargs_:
-            kwargs["mesh"] = sample_mesh(**sample_mesh_kwargs_)
+            input_mesh = sample_mesh(**sample_mesh_kwargs_)
+        else:
+            input_mesh = None
+        # Don't parse the location or axis arguments - only saving the Mesh at
+        #  this stage.
+        new_meshcoord = sample_meshcoord(mesh=input_mesh)
+        save_mesh(new_meshcoord.mesh, save_path_)
 
-        pickle_path_ = Path(kwargs.pop("pickle_path"))
-        new_meshcoord = sample_meshcoord(**kwargs)
-        with pickle_path_.open("wb") as write_file:
-            pickle.dump(new_meshcoord, write_file)
-
-    args_hash = hash(str([sample_mesh_kwargs, location, axis]))
-    pickle_path = BENCHMARK_DATA / f"sample_meshcoord_f{args_hash}"
-    # No file re-use - risky with pickle objects.
-    _ = run_function_elsewhere(
-        _external,
-        sample_mesh_kwargs=sample_mesh_kwargs,
-        location=location,
-        axis=axis,
-        pickle_path=str(pickle_path),
-    )
-    with pickle_path.open("rb") as read_file:
-        return pickle.load(read_file)
+    args_hash = hash(str(sample_mesh_kwargs))
+    save_path = (
+        BENCHMARK_DATA / f"sample_mesh_coord_{args_hash}"
+    ).with_suffix(".nc")
+    if not REUSE_DATA or not save_path.is_file():
+        _ = run_function_elsewhere(
+            _external,
+            sample_mesh_kwargs_=sample_mesh_kwargs,
+            save_path_=str(save_path),
+        )
+    with PARSE_UGRID_ON_LOAD.context():
+        source_mesh = load_mesh(str(save_path))
+    # Regenerate MeshCoord from its Mesh, which we saved.
+    return source_mesh.to_MeshCoord(location=location, axis=axis)

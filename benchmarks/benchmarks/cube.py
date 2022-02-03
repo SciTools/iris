@@ -13,7 +13,7 @@ import numpy as np
 from iris import analysis, aux_factory, coords, cube
 
 from . import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
-from .generate_data.stock import sample_mesh, sample_meshcoord
+from .generate_data.stock import sample_meshcoord
 
 
 def setup(*params):
