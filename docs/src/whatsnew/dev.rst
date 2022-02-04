@@ -37,7 +37,7 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@rsdavies`_ modified the CF complaint standard name for m01s00i023 :issue:`4566` 
 
 
 💣 Incompatible Changes
