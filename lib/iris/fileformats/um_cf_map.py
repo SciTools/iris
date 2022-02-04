@@ -81,7 +81,7 @@ STASH_TO_CF = {
     'm01s00i012': CFName('mass_fraction_of_cloud_ice_in_air', None, 'kg kg-1'),
     'm01s00i013': CFName('convective_cloud_area_fraction', None, '1'),
     'm01s00i020': CFName('soil_temperature', None, 'K'),
-    'm01s00i023': CFName('snowfall_amount', None, 'kg m-2'),
+    'm01s00i023': CFName('surface_snow_amount', None, 'kg m-2'),
     'm01s00i024': CFName('surface_temperature', None, 'K'),
     'm01s00i025': CFName('atmosphere_boundary_layer_thickness', None, 'm'),
     'm01s00i026': CFName('surface_roughness_length', None, 'm'),
