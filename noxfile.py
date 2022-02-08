@@ -333,7 +333,8 @@ def benchmarks(session: nox.sessions.Session, ci_mode: bool):
                 "--factor=1.2",
                 previous_commit,
                 "HEAD",
-                "--attribute" "rounds=4",
+                "--attribute",
+                "rounds=4",
             )
         finally:
             asv_exec("compare", previous_commit, "HEAD")
