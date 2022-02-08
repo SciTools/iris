@@ -18,6 +18,7 @@
     //  * No build-time environment variables.
     //  * Is run in the same environment as the ASV install itself.
     "delegated_env_commands": [
+        "sed -i 's/_PY_VERSIONS_ALL/_PY_VERSION_LATEST/g' noxfile.py",
         "nox --envdir={conf_dir}/.asv/env/nox01 --session=tests --install-only --no-error-on-external-run --verbose"
     ],
     // The parent directory of the above environment.
