@@ -83,9 +83,16 @@ class CondaDelegated(Conda):
         self._env_commands = self._interpolate_commands(
             conf.delegated_env_commands
         )
-        self._delegated_env_parent = Path(
-            self._interpolate_commands(conf.delegated_env_parent)[0][0][0]
-        ).resolve()
+        # Again using _interpolate_commands to get env parent path - allows use
+        #  of the same ASV env variables.
+        env_parent_interpolated = self._interpolate_commands(
+            conf.delegated_env_parent
+        )
+        # Returns list of tuples, we just want the first.
+        env_parent_first = env_parent_interpolated[0]
+        # The 'command' is the first item in the returned tuple.
+        env_parent_string = " ".join(env_parent_first[0])
+        self._delegated_env_parent = Path(env_parent_string).resolve()
 
     @property
     def name(self):
