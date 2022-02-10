@@ -344,6 +344,10 @@ def benchmarks(
     version that is also available for ``--session=tests``.
 
     """
+    # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
+    #  for more.
+    COMPARE_FACTOR = 1.2
+
     session.install("asv", "nox")
     session.cd("benchmarks")
     # Skip over setup questions for a new machine.
@@ -371,11 +375,11 @@ def benchmarks(
     def asv_compare(*commits):
         """Run through a list of commits comparing each one to the next."""
         commits = [commit[:8] for commit in commits]
-        shifts_dir = Path("performance-shifts")
+        shifts_dir = Path(".asv") / "performance-shifts"
         for i in range(len(commits) - 1):
             before = commits[i]
             after = commits[i + 1]
-            asv_command_ = f"asv compare {before} {after} --factor=1.2 --split"
+            asv_command_ = f"asv compare {before} {after} --factor={COMPARE_FACTOR} --split"
             session.run(*asv_command_.split(" "))
 
             if run_type == "overnight":
@@ -387,7 +391,7 @@ def benchmarks(
                 )
                 if shifts:
                     # Write the shifts report to a file.
-                    shifts_dir.mkdir(exist_ok=True)
+                    shifts_dir.mkdir(exist_ok=True, parents=True)
                     shifts_path = shifts_dir / after
                     with shifts_path.open("w") as shifts_file:
                         shifts_file.write(shifts)
