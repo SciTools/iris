@@ -297,7 +297,10 @@ def linkcheck(session: nox.sessions.Session):
     ["overnight", "branch", "custom"],
     ids=["overnight", "branch", "custom"],
 )
-def benchmarks(session: nox.sessions.Session, run_type: Literal["overnight", "branch", "custom"]):
+def benchmarks(
+    session: nox.sessions.Session,
+    run_type: Literal["overnight", "branch", "custom"],
+):
     """
     Perform esmf-regrid performance benchmarks (using Airspeed Velocity).
 
@@ -350,7 +353,7 @@ def benchmarks(session: nox.sessions.Session, run_type: Literal["overnight", "br
     run_type_arg = {
         "overnight": "first commit",
         "branch": "base branch",
-        "custom": "ASV command type"
+        "custom": "ASV command type",
     }
     if run_type not in run_type_arg.keys():
         message = f"Unsupported run-type: {run_type}"
@@ -358,7 +361,8 @@ def benchmarks(session: nox.sessions.Session, run_type: Literal["overnight", "br
     first_arg = session.posargs[0]
     if not first_arg:
         message = (
-            f"Missing mandatory first Nox session posarg: {run_type_arg[run_type]}"
+            f"Missing mandatory first Nox session posarg: "
+            f"{run_type_arg[run_type]}"
         )
         raise ValueError(message)
     # Optional extra arguments to be passed down to ASV.
@@ -378,7 +382,9 @@ def benchmarks(session: nox.sessions.Session, run_type: Literal["overnight", "br
                 # Record performance shifts.
                 # Run the command again but limited to only showing performance
                 #  shifts.
-                shifts = session.run(*asv_command_.split(" "), "--only-changed", silent=True)
+                shifts = session.run(
+                    *asv_command_.split(" "), "--only-changed", silent=True
+                )
                 if shifts:
                     # Write the shifts report to a file.
                     shifts_dir.mkdir(exist_ok=True)
@@ -387,7 +393,9 @@ def benchmarks(session: nox.sessions.Session, run_type: Literal["overnight", "br
                         shifts_file.write(shifts)
 
     # Common ASV arguments used for both `overnight` and `bench` run_types.
-    asv_harness = "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict"
+    asv_harness = (
+        "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict"
+    )
 
     if run_type == "overnight":
         first_commit = first_arg
@@ -397,14 +405,18 @@ def benchmarks(session: nox.sessions.Session, run_type: Literal["overnight", "br
 
         # git rev-list --first-parent is the command ASV uses.
         git_command = f"git rev-list --first-parent {commit_range}"
-        commit_string = session.run(*git_command.split(" "), silent=True, external=True)
+        commit_string = session.run(
+            *git_command.split(" "), silent=True, external=True
+        )
         commit_list = commit_string.rstrip().split("\n")
         asv_compare(*reversed(commit_list))
 
     elif run_type == "branch":
         base_branch = first_arg
         git_command = f"git merge-base HEAD {base_branch}"
-        merge_base = session.run(*git_command.split(" "), silent=True, external=True)[:8]
+        merge_base = session.run(
+            *git_command.split(" "), silent=True, external=True
+        )[:8]
 
         with NamedTemporaryFile("w") as hashfile:
             hashfile.writelines([merge_base, "\n", "HEAD"])
