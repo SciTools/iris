@@ -108,6 +108,7 @@ jobs:
           rm -r artifacts
         
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
         with:
           commit-message: Updated environment lockfiles
@@ -115,6 +116,17 @@ jobs:
           author: "Lockfile bot <noreply@github.com>"
           delete-branch: true
           branch: auto-update-lockfiles
-          title: Update CI environment lockfiles
+          title: [iris.ci] environment lockfiles auto-update
           body: |
             Lockfiles updated to the latest resolvable environment.
+          labels: |
+            New: Pull Request
+            Bot
+
+      - name: Check Pull Request
+        if: steps.cpr.outputs.pull-request-number != ''
+        run: |
+          echo "pull-request #${{ steps.cpr.outputs.pull-request-number }}"
+          echo "pull-request URL ${{ steps.cpr.outputs.pull-request-url }}"
+          echo "pull-request operation [${{ steps.cpr.outputs.pull-request-operation }}]"
+          echo "pull-request head SHA ${{ steps.cpr.outputs.pull-request-head-sha }}"
