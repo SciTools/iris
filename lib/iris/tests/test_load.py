@@ -11,8 +11,6 @@ Test the main loading API.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
-import pathlib
-
 import iris
 import iris.io
 
@@ -21,13 +19,6 @@ import iris.io
 class TestLoad(tests.IrisTest):
     def test_normal(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
-        cubes = iris.load(paths)
-        self.assertEqual(len(cubes), 1)
-
-    def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
         cubes = iris.load(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -80,12 +71,6 @@ class TestLoadCube(tests.IrisTest):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         _ = iris.load_cube(paths)
 
-    def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
-        _ = iris.load_cube(paths)
-
     def test_not_enough(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
@@ -107,13 +92,6 @@ class TestLoadCubes(tests.IrisTest):
         cubes = iris.load_cubes(paths)
         self.assertEqual(len(cubes), 1)
 
-    def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
-        cubes = iris.load_cubes(paths)
-        self.assertEqual(len(cubes), 1)
-
     def test_not_enough(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
@@ -131,21 +109,6 @@ class TestLoadCubes(tests.IrisTest):
         )
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
             iris.load_cube(paths)
-
-
-@tests.skip_data
-class TestLoadRaw(tests.IrisTest):
-    def test_normal(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
-        cubes = iris.load_raw(paths)
-        self.assertEqual(len(cubes), 1)
-
-    def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
-        cubes = iris.load_raw(paths)
-        self.assertEqual(len(cubes), 1)
 
 
 class TestOpenDAP(tests.IrisTest):

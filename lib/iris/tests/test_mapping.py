@@ -211,10 +211,7 @@ class TestBoundedCube(tests.GraphicsTest):
 
     def test_default_projection_and_extent(self):
         self.assertEqual(
-            iplt.default_projection(self.cube),
-            ccrs.PlateCarree(
-                globe=self.cube.coord_system("CoordSystem").as_cartopy_globe()
-            ),
+            iplt.default_projection(self.cube), ccrs.PlateCarree()
         )
         np_testing.assert_array_almost_equal(
             iplt.default_projection_extent(self.cube),

@@ -204,7 +204,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     lambda field: field
                     not in (
                         "circular",
-                        "location_axis",
+                        "src_dim",
                         "node_dimension",
                         "edge_dimension",
                         "face_dimension",

@@ -286,15 +286,13 @@ class Test__metadata_setter(tests.IrisTest):
         )
 
     def test_class_connectivitymetadata(self):
-        self.args.update(
-            dict(cf_role=None, start_index=None, location_axis=None)
-        )
+        self.args.update(dict(cf_role=None, start_index=None, src_dim=None))
         metadata = ConnectivityMetadata(**self.args)
         self.item.metadata = metadata
         expected = metadata._asdict()
         del expected["cf_role"]
         del expected["start_index"]
-        del expected["location_axis"]
+        del expected["src_dim"]
         self.assertEqual(self.item._metadata_manager.values, expected)
         self.assertIsNot(
             self.item._metadata_manager.attributes, metadata.attributes

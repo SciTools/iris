@@ -207,7 +207,7 @@ class AttributeSection(Section):
         self.values = []
         self.contents = []
         for name, value in sorted(attributes.items()):
-            value = value_repr(value, quote_strings=True)
+            value = value_repr(value)
             value = iris.util.clip_string(value)
             self.names.append(name)
             self.values.append(value)

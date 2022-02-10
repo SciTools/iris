@@ -11,13 +11,12 @@ Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import re
 import unittest.mock as mock
 
 import dask.array as da
 import numpy as np
 
-from iris._lazy_data import as_lazy_data, is_lazy_data
+from iris._lazy_data import is_lazy_data
 from iris.common.metadata import BaseMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
@@ -61,7 +60,7 @@ class Test___init__(tests.IrisTest):
             sample_meshcoord(mesh=mock.sentinel.odd)
 
     def test_valid_locations(self):
-        for loc in Mesh.ELEMENTS:
+        for loc in Mesh.LOCATIONS:
             meshcoord = sample_meshcoord(location=loc)
             self.assertEqual(meshcoord.location, loc)
 
@@ -269,117 +268,42 @@ class Test__str_repr(tests.IrisTest):
 
     def _expected_elements_regexp(
         self,
-        standard_name="longitude",
-        long_name="long-name",
+        mesh_strstyle=True,
+        standard_name=True,
+        long_name=True,
         attributes=True,
-        location="face",
-        axis="x",
     ):
-        # Printed name is standard or long -- we don't have a case with neither
-        coord_name = standard_name or long_name
-        # Construct regexp in 'sections'
-        # NB each consumes upto first non-space in the next line
-        regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
-        regexp += r"mesh: \<Mesh: 'test_mesh'>\n *"
-        regexp += f"location: '{location}'\n *"
-        # Now some optional sections : whichever comes first will match
-        # arbitrary content leading up to it.
-        matched_any_upto = False
+        regexp = r"^MeshCoord\(mesh="
+        if mesh_strstyle:
+            regexp += r"Mesh\('test_mesh'\)"
+        else:
+            regexp += "<Mesh object at .*>"
+        regexp += r", location='face', axis='x', shape=\(3,\)"
         if standard_name:
-            regexp += ".*"
-            matched_any_upto = True
-            regexp += f"standard_name: '{standard_name}'\n *"
+            regexp += ", standard_name='longitude'"
+        regexp += r", units=Unit\('degrees_east'\)"
         if long_name:
-            if not matched_any_upto:
-                regexp += ".*"
-                matched_any_upto = True
-            regexp += f"long_name: '{long_name}'\n *"
+            regexp += ", long_name='long-name'"
         if attributes:
-            # if we expected attributes, they should come next
-            # TODO: change this when each attribute goes on a new line
-            if not matched_any_upto:
-                regexp += ".*"
-                matched_any_upto = True
-            # match 'attributes:' followed by N*lines with larger indent
-            regexp += "attributes:(\n        [^ \n]+ +[^ \n]+)+\n    "
-        # After those items, expect 'axis' next
-        # N.B. this FAILS if we had attributes when we didn't expect them
-        regexp += f"axis: '{axis}'$"  # N.B. this is always the end
-
-        # Compile regexp, also allowing matches across newlines
-        regexp = re.compile(regexp, flags=re.DOTALL)
+            regexp += r", attributes={'a': 1, 'b': 'c'}"
+        regexp += r"\)$"
         return regexp
 
     def test_repr(self):
-        # A simple check for the condensed form.
         result = repr(self.meshcoord)
-        expected = (
-            "<MeshCoord: longitude / (degrees_east)  "
-            "mesh(test_mesh) location(face)  [...]+bounds  shape(3,)>"
-        )
-        self.assertEqual(expected, result)
-
-    def test_repr_lazy(self):
-        # Displays lazy content (and does not realise!).
-        self.meshcoord.points = as_lazy_data(self.meshcoord.points)
-        self.meshcoord.bounds = as_lazy_data(self.meshcoord.bounds)
-        self.assertTrue(self.meshcoord.has_lazy_points())
-        self.assertTrue(self.meshcoord.has_lazy_bounds())
-
-        result = repr(self.meshcoord)
-        self.assertTrue(self.meshcoord.has_lazy_points())
-        self.assertTrue(self.meshcoord.has_lazy_bounds())
-
-        expected = (
-            "<MeshCoord: longitude / (degrees_east)  "
-            "mesh(test_mesh) location(face)  <lazy>+bounds  shape(3,)>"
-        )
-        self.assertEqual(expected, result)
-
-    def test_repr__nameless_mesh(self):
-        # Check what it does when the Mesh doesn't have a name.
-        self.mesh.long_name = None
-        assert self.mesh.name() == "unknown"
-        result = repr(self.meshcoord)
-        re_expected = (
-            r".MeshCoord: longitude / \(degrees_east\)  "
-            r"mesh\(.Mesh object at 0x[^>]+.\) location\(face\) "
-        )
+        re_expected = self._expected_elements_regexp(mesh_strstyle=False)
         self.assertRegex(result, re_expected)
 
     def test__str__(self):
-        # Basic output contains mesh, location, standard_name, long_name,
-        # attributes, mesh, location and axis
         result = str(self.meshcoord)
-        re_expected = self._expected_elements_regexp()
-        self.assertRegex(result, re_expected)
-
-    def test__str__lazy(self):
-        # Displays lazy content (and does not realise!).
-        self.meshcoord.points = as_lazy_data(self.meshcoord.points)
-        self.meshcoord.bounds = as_lazy_data(self.meshcoord.bounds)
-
-        result = str(self.meshcoord)
-        self.assertTrue(self.meshcoord.has_lazy_points())
-        self.assertTrue(self.meshcoord.has_lazy_bounds())
-
-        self.assertIn("points: <lazy>", result)
-        self.assertIn("bounds: <lazy>", result)
-        re_expected = self._expected_elements_regexp()
+        re_expected = self._expected_elements_regexp(mesh_strstyle=True)
         self.assertRegex(result, re_expected)
 
     def test_alternative_location_and_axis(self):
         meshcoord = sample_meshcoord(mesh=self.mesh, location="edge", axis="y")
         result = str(meshcoord)
-        re_expected = self._expected_elements_regexp(
-            standard_name="latitude",
-            long_name=None,
-            location="edge",
-            axis="y",
-            attributes=None,
-        )
+        re_expected = r", location='edge', axis='y'"
         self.assertRegex(result, re_expected)
-        # Basic output contains standard_name, long_name, attributes
 
     def test_str_no_long_name(self):
         mesh = self.mesh
@@ -537,12 +461,12 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         lazy_sources=False,
         location="face",
         inds_start_index=0,
-        inds_location_axis=0,
+        inds_src_dim=0,
         facenodes_changes=None,
     ):
         # Construct a miniature face-nodes mesh for testing.
         # NOTE: we will make our connectivity arrays with standard
-        # start_index=0 and location_axis=0 :  We only adjust that (if required) when
+        # start_index=0 and src_dim=0 :  We only adjust that (if required) when
         # creating the actual connectivities.
         face_nodes_array = np.array(
             [
@@ -627,26 +551,26 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
             inds_start_index
             + (
                 face_nodes_array.transpose()
-                if inds_location_axis == 1
+                if inds_src_dim == 1
                 else face_nodes_array
             ),
             cf_role="face_node_connectivity",
             long_name="face_nodes",
             start_index=inds_start_index,
-            location_axis=inds_location_axis,
+            src_dim=inds_src_dim,
         )
 
         edge_node_conn = Connectivity(
             inds_start_index
             + (
                 edge_nodes_array.transpose()
-                if inds_location_axis == 1
+                if inds_src_dim == 1
                 else edge_nodes_array
             ),
             cf_role="edge_node_connectivity",
             long_name="edge_nodes",
             start_index=inds_start_index,
-            location_axis=inds_location_axis,
+            src_dim=inds_src_dim,
         )
 
         self.mesh = Mesh(
@@ -730,9 +654,9 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # NB simpler than faces : no possibility of missing points
         self.assertArrayAlmostEqual(result, expected)
 
-    def test_bounds_connectivity__location_axis_1(self):
+    def test_bounds_connectivity__src_dim_1(self):
         # Test with a transposed indices array.
-        self._make_test_meshcoord(inds_location_axis=1)
+        self._make_test_meshcoord(inds_src_dim=1)
         self._check_expected_bounds_values()
 
     def test_bounds_connectivity__start_index_1(self):

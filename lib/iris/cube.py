@@ -745,7 +745,7 @@ class Cube(CFVariableMixin):
                 mean over years             time
             Attributes:
                 STASH                       m01s16i203
-                source                      'Data from Met Office Unified Model'
+                source                      Data from Met Office Unified Model
 
 
     See the :doc:`user guide</userguide/index>` for more information.
@@ -1051,7 +1051,9 @@ class Cube(CFVariableMixin):
             old_unit = self.units
             new_unit = unit
 
-            pointwise_convert = partial(old_unit.convert, other=new_unit)
+            # Define a delayed conversion operation (i.e. a callback).
+            def pointwise_convert(values):
+                return old_unit.convert(values, new_unit)
 
             new_data = _lazy.lazy_elementwise(
                 self.lazy_data(), pointwise_convert
@@ -1451,53 +1453,39 @@ class Cube(CFVariableMixin):
             The (name of the) coord to look for.
 
         """
-        name_provided = False
-        if isinstance(coord, str):
-            # Forced to look-up the coordinate if we only have the name.
-            coord = self.coord(coord)
-            name_provided = True
 
-        coord_id = id(coord)
+        coord = self.coord(coord)
 
-        # Dimension of dimension coordinate by object id
-        dims_by_id = {id(c): (d,) for c, d in self._dim_coords_and_dims}
-        # Check for id match - faster than equality check
-        match = dims_by_id.get(coord_id)
+        # Search for existing coordinate (object) on the cube, faster lookup
+        # than equality - makes no functional difference.
+        matches = [
+            (dim,)
+            for coord_, dim in self._dim_coords_and_dims
+            if coord_ is coord
+        ]
+        if not matches:
+            matches = [
+                dims
+                for coord_, dims in self._aux_coords_and_dims
+                if coord_ is coord
+            ]
 
-        if match is None:
-            # Dimension/s of auxiliary coordinate by object id
-            aux_dims_by_id = {id(c): d for c, d in self._aux_coords_and_dims}
-            # Check for id match - faster than equality
-            match = aux_dims_by_id.get(coord_id)
-            if match is None:
-                dims_by_id.update(aux_dims_by_id)
-
-        if match is None and not name_provided:
-            # We may have an equivalent coordinate but not the actual
-            # cube coordinate instance - so forced to perform coordinate
-            # lookup to attempt to retrieve it
-            coord = self.coord(coord)
-            # Check for id match - faster than equality
-            match = dims_by_id.get(id(coord))
-
-        # Search derived aux coordinates
-        if match is None:
+        # Search derived aux coords
+        if not matches:
             target_metadata = coord.metadata
 
-            def matcher(factory):
+            def match(factory):
                 return factory.metadata == target_metadata
 
-            factories = filter(matcher, self._aux_factories)
+            factories = filter(match, self._aux_factories)
             matches = [
                 factory.derived_dims(self.coord_dims) for factory in factories
             ]
-            if matches:
-                match = matches[0]
 
-        if match is None:
+        if not matches:
             raise iris.exceptions.CoordinateNotFoundError(coord.name())
 
-        return match
+        return matches[0]
 
     def cell_measure_dims(self, cell_measure):
         """
@@ -3650,7 +3638,7 @@ class Cube(CFVariableMixin):
                     mean                        month, year
                     mean                        longitude
                 Attributes:
-                    Conventions                 'CF-1.5'
+                    Conventions                 CF-1.5
                     STASH                       m01s00i024
 
 
@@ -3885,7 +3873,7 @@ x            -              -
                     mean                        month, year
                     mean                        year
                 Attributes:
-                    Conventions                 'CF-1.5'
+                    Conventions                 CF-1.5
                     STASH                       m01s00i024
 
         """
@@ -4090,8 +4078,8 @@ x            -               -
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
-'Data from Met Office Unified Model'
-                    um_version                  '7.6'
+Data from Met Office Unified Model
+                    um_version                  7.6
 
 
             >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
@@ -4116,8 +4104,8 @@ x            -               -
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
-'Data from Met Office Unified Model'
-                    um_version                  '7.6'
+Data from Met Office Unified Model
+                    um_version                  7.6
 
             Notice that the forecast_period dimension now represents the 4
             possible windows of size 3 from the original cube.
@@ -4248,7 +4236,7 @@ x            -               -
             dates or times may optionally be supplied as datetime.datetime or
             cftime.datetime instances.
         * scheme:
-            An instance of the type of interpolation to use to interpolate from this
+            The type of interpolation to use to interpolate from this
             :class:`~iris.cube.Cube` to the given sample points. The
             interpolation schemes currently available in Iris are:
 
@@ -4277,11 +4265,8 @@ x            -               -
             air_potential_temperature / (K)     \
 (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(cube.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
-                points: [2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00]
-                shape: (3,)
-                dtype: float64
-                standard_name: 'time'
+            DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, \
+2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
             >>> print(cube.coord('time').points)
             [349618. 349619. 349620.]
             >>> samples = [('time', 349618.5)]
@@ -4290,11 +4275,8 @@ x            -               -
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(result.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
-                points: [2009-11-19 10:30:00]
-                shape: (1,)
-                dtype: float64
-                standard_name: 'time'
+            DimCoord([2009-11-19 10:30:00], standard_name='time', \
+calendar='gregorian')
             >>> print(result.coord('time').points)
             [349618.5]
             >>> # For datetime-like coordinates, we can also use
@@ -4305,11 +4287,8 @@ x            -               -
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(result2.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
-                points: [2009-11-19 10:30:00]
-                shape: (1,)
-                dtype: float64
-                standard_name: 'time'
+            DimCoord([2009-11-19 10:30:00], standard_name='time', \
+calendar='gregorian')
             >>> print(result2.coord('time').points)
             [349618.5]
             >>> print(result == result2)
@@ -4330,7 +4309,7 @@ x            -               -
         * grid:
             A :class:`~iris.cube.Cube` that defines the target grid.
         * scheme:
-            An instance of the type of regridding to use to regrid this cube onto the
+            The type of regridding to use to regrid this cube onto the
             target grid. The regridding schemes in Iris currently include:
 
                 * :class:`iris.analysis.Linear`\*,

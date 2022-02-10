@@ -178,9 +178,7 @@ class TestXML(tests.IrisTest):
 @tests.skip_data
 class TestCoord_ReprStr_nontime(tests.IrisTest):
     def setUp(self):
-        cube = iris.tests.stock.realistic_4d()
-        self.lat = cube.coord("grid_latitude")[:10]
-        self.height = cube.coord("level_height")[:10]
+        self.lat = iris.tests.stock.realistic_4d().coord("grid_latitude")[:10]
 
     def test_DimCoord_repr(self):
         self.assertRepr(
@@ -189,7 +187,7 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
 
     def test_AuxCoord_repr(self):
         self.assertRepr(
-            self.height, ("coord_api", "str_repr", "aux_nontime_repr.txt")
+            self.lat, ("coord_api", "str_repr", "aux_nontime_repr.txt")
         )
 
     def test_DimCoord_str(self):
@@ -199,16 +197,14 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
 
     def test_AuxCoord_str(self):
         self.assertString(
-            str(self.height), ("coord_api", "str_repr", "aux_nontime_str.txt")
+            str(self.lat), ("coord_api", "str_repr", "aux_nontime_str.txt")
         )
 
 
 @tests.skip_data
 class TestCoord_ReprStr_time(tests.IrisTest):
     def setUp(self):
-        cube = iris.tests.stock.realistic_4d()
-        self.time = cube.coord("time")
-        self.fp = cube.coord("forecast_period")
+        self.time = iris.tests.stock.realistic_4d().coord("time")
 
     def test_DimCoord_repr(self):
         self.assertRepr(
@@ -217,7 +213,7 @@ class TestCoord_ReprStr_time(tests.IrisTest):
 
     def test_AuxCoord_repr(self):
         self.assertRepr(
-            self.fp, ("coord_api", "str_repr", "aux_time_repr.txt")
+            self.time, ("coord_api", "str_repr", "aux_time_repr.txt")
         )
 
     def test_DimCoord_str(self):
@@ -227,7 +223,7 @@ class TestCoord_ReprStr_time(tests.IrisTest):
 
     def test_AuxCoord_str(self):
         self.assertString(
-            str(self.fp), ("coord_api", "str_repr", "aux_time_str.txt")
+            str(self.time), ("coord_api", "str_repr", "aux_time_str.txt")
         )
 
 
@@ -236,29 +232,23 @@ class TestAuxCoordCreation(tests.IrisTest):
         a = iris.coords.AuxCoord(
             np.arange(10), "air_temperature", units="kelvin"
         )
-        result = "\n".join(
-            [
-                "AuxCoord :  air_temperature / (kelvin)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    shape: (10,)",
-                "    dtype: int64",
-                "    standard_name: 'air_temperature'",
-            ]
+        result = (
+            "AuxCoord("
+            "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
+            " standard_name='air_temperature',"
+            " units=Unit('kelvin'))"
         )
         self.assertEqual(result, str(a))
 
         b = iris.coords.AuxCoord(
             list(range(10)), attributes={"monty": "python"}
         )
-        result = "\n".join(
-            [
-                "AuxCoord :  unknown / (unknown)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    shape: (10,)",
-                "    dtype: int64",
-                "    attributes:",
-                "        monty  'python'",
-            ]
+        result = (
+            "AuxCoord("
+            "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
+            " standard_name=None,"
+            " units=Unit('unknown'),"
+            " attributes={'monty': 'python'})"
         )
         self.assertEqual(result, str(b))
 
@@ -286,15 +276,12 @@ class TestAuxCoordCreation(tests.IrisTest):
             units="kelvin",
             coord_system=iris.coord_systems.GeogCS(6000),
         )
-        result = "\n".join(
-            [
-                "AuxCoord :  air_temperature / (kelvin)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    shape: (10,)",
-                "    dtype: int64",
-                "    standard_name: 'air_temperature'",
-                "    coord_system: GeogCS(6000.0)",
-            ]
+        result = (
+            "AuxCoord("
+            "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
+            " standard_name='air_temperature',"
+            " units=Unit('kelvin'),"
+            " coord_system=GeogCS(6000.0))"
         )
         self.assertEqual(result, str(a))
 
@@ -305,20 +292,14 @@ class TestAuxCoordCreation(tests.IrisTest):
             units="kelvin",
             bounds=np.arange(0, 20).reshape(10, 2),
         )
-        result = "\n".join(
-            [
-                "AuxCoord :  air_temperature / (kelvin)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    bounds: [",
-                "        [ 0,  1],",
-                "        [ 2,  3],",
-                "        ...,",
-                "        [16, 17],",
-                "        [18, 19]]",
-                "    shape: (10,)  bounds(10, 2)",
-                "    dtype: int64",
-                "    standard_name: 'air_temperature'",
-            ]
+        result = (
+            "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
+            ", bounds=array(["
+            "[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       "
+            "[ 6,  7],\n       [ 8,  9],\n       [10, 11],\n       "
+            "[12, 13],\n       [14, 15],\n       [16, 17],\n       "
+            "[18, 19]])"
+            ", standard_name='air_temperature', units=Unit('kelvin'))"
         )
         self.assertEqual(result, str(a))
 
@@ -341,29 +322,23 @@ class TestDimCoordCreation(tests.IrisTest):
         a = iris.coords.DimCoord(
             np.arange(10), "air_temperature", units="kelvin"
         )
-        result = "\n".join(
-            [
-                "DimCoord :  air_temperature / (kelvin)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    shape: (10,)",
-                "    dtype: int64",
-                "    standard_name: 'air_temperature'",
-            ]
+        result = (
+            "DimCoord("
+            "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
+            " standard_name='air_temperature',"
+            " units=Unit('kelvin'))"
         )
         self.assertEqual(result, str(a))
 
         b = iris.coords.DimCoord(
             list(range(10)), attributes={"monty": "python"}
         )
-        result = "\n".join(
-            [
-                "DimCoord :  unknown / (unknown)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    shape: (10,)",
-                "    dtype: int64",
-                "    attributes:",
-                "        monty  'python'",
-            ]
+        result = (
+            "DimCoord("
+            "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
+            " standard_name=None,"
+            " units=Unit('unknown'),"
+            " attributes={'monty': 'python'})"
         )
         self.assertEqual(result, str(b))
 
@@ -391,15 +366,12 @@ class TestDimCoordCreation(tests.IrisTest):
             units="kelvin",
             coord_system=iris.coord_systems.GeogCS(6000),
         )
-        result = "\n".join(
-            [
-                "DimCoord :  air_temperature / (kelvin)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    shape: (10,)",
-                "    dtype: int64",
-                "    standard_name: 'air_temperature'",
-                "    coord_system: GeogCS(6000.0)",
-            ]
+        result = (
+            "DimCoord("
+            "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
+            " standard_name='air_temperature',"
+            " units=Unit('kelvin'),"
+            " coord_system=GeogCS(6000.0))"
         )
         self.assertEqual(result, str(a))
 
@@ -410,20 +382,14 @@ class TestDimCoordCreation(tests.IrisTest):
             units="kelvin",
             bounds=np.arange(0, 20).reshape(10, 2),
         )
-        result = "\n".join(
-            [
-                "DimCoord :  air_temperature / (kelvin)",
-                "    points: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
-                "    bounds: [",
-                "        [ 0,  1],",
-                "        [ 2,  3],",
-                "        ...,",
-                "        [16, 17],",
-                "        [18, 19]]",
-                "    shape: (10,)  bounds(10, 2)",
-                "    dtype: int64",
-                "    standard_name: 'air_temperature'",
-            ]
+        result = (
+            "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
+            ", bounds=array(["
+            "[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       "
+            "[ 6,  7],\n       [ 8,  9],\n       [10, 11],\n       "
+            "[12, 13],\n       [14, 15],\n       [16, 17],\n       "
+            "[18, 19]])"
+            ", standard_name='air_temperature', units=Unit('kelvin'))"
         )
         self.assertEqual(result, str(a))
 

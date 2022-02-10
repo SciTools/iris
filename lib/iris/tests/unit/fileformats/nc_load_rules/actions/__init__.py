@@ -6,6 +6,9 @@
 """
 Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`.
 
+This module provides the engine.activate() call used in the function
+`iris.fileformats.netcdf._load_cube`.
+
 """
 from pathlib import Path
 import shutil
