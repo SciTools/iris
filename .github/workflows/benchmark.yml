@@ -5,11 +5,10 @@ name: benchmark-check
 on:
   # Runs every day at 23:00.
   schedule:
-    - cron: 0 23 * * *
+    - cron: 50 23 * * *
 
 jobs:
   benchmark:
-    if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
 
     env:
