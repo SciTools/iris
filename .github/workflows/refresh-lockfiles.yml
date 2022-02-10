@@ -35,7 +35,7 @@ jobs:
       # the lockfile bot has made the head commit, abort the workflow.
       # This job can be manually overridden by running directly from the github actions panel
       # (known as a "workflow_dispatch") and setting the `clobber` input to "yes".
-      - uses: actions/script@v4
+      - uses: actions/script@v5.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
