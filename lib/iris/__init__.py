@@ -44,6 +44,8 @@ All the load functions share very similar arguments:
         standard library function :func:`os.path.expanduser` and
         module :mod:`fnmatch` for more details.
 
+        If supplying a URL, only OPeNDAP Data Sources are supported.
+
     * constraints:
         Either a single constraint, or an iterable of constraints.
         Each constraint can be either a string, an instance of
@@ -287,6 +289,7 @@ def load(uris, constraints=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -315,6 +318,7 @@ def load_cube(uris, constraint=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -354,6 +358,7 @@ def load_cubes(uris, constraints=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -399,6 +404,7 @@ def load_raw(uris, constraints=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
