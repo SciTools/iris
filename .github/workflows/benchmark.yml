@@ -3,9 +3,9 @@
 name: benchmark-check
 
 on:
-  # Runs every day at 23:00.
-  schedule:
-    - cron: 50 23 * * *
+  push:
+    branches:
+      - overnight_benchmarks
 
 jobs:
   benchmark:
