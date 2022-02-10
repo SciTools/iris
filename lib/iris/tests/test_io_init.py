@@ -12,37 +12,58 @@ Test the io/__init__.py module.
 import iris.tests as tests  # isort:skip
 
 from io import BytesIO
+from pathlib import Path
 
 import iris.fileformats as iff
 import iris.io
 
 
 class TestDecodeUri(tests.IrisTest):
-    def test_decode_uri(self):
+    def test_decode_uri__str(self):
         tests = {
-            "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp": (
+            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 "file",
-                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                uri,
             ),
-            r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp": (
+            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
                 "file",
-                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
+                uri,
             ),
-            "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp": (
+            (
+                uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"
+            ): (
+                uri[:4],
+                uri[5:],
+            ),
+            (uri := "http://www.somehost.com:8080/resource/thing.grib"): (
+                uri[:4],
+                uri[5:],
+            ),
+            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
-                "///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
-            ),
-            "http://www.somehost.com:8080/resource/thing.grib": (
-                "http",
-                "//www.somehost.com:8080/resource/thing.grib",
-            ),
-            "/data/local/someDir/2013-11-25T13:49:17.632797": (
-                "file",
-                "/data/local/someDir/2013-11-25T13:49:17.632797",
+                uri,
             ),
         }
-        for uri, pair in tests.items():
-            self.assertEqual(pair, iris.io.decode_uri(uri))
+        for uri, expected in tests.items():
+            self.assertEqual(expected, iris.io.decode_uri(uri))
+
+    def test_decode_uri__path(self):
+        tests = {
+            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
+                "file",
+                uri,
+            ),
+            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
+                "file",
+                uri,
+            ),
+            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
+                "file",
+                uri,
+            ),
+        }
+        for uri, expected in tests.items():
+            self.assertEqual(expected, iris.io.decode_uri(Path(uri)))
 
 
 class TestFileFormatPicker(tests.IrisTest):

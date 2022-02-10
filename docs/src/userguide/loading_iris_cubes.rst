@@ -51,15 +51,14 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
 
 .. note::
 
-     The result of :func:`iris.load` is **always** a
-     :class:`list of cubes <iris.cube.CubeList>`.
-     Anything that can be done with a Python :class:`list` can be done
-     with the resultant list of cubes. It is worth noting, however, that
-     there is no inherent order to this
-     :class:`list of cubes <iris.cube.CubeList>`.
-     Because of this, indexing may be inconsistent. A more consistent way to
-     extract a cube is by using the :class:`iris.Constraint` class as
-     described in :ref:`constrained-loading`.
+     The result of :func:`iris.load` is **always** a :class:`iris.cube.CubeList`
+     (even if it only contains one :class:`iris.cube.Cube` - see
+     :ref:`strict-loading`). Anything that can be done with a Python
+     :class:`list` can be done with an :class:`iris.cube.CubeList`.
+     
+     The order of this list should not be relied upon. Ways of loading a
+     specific cube or cubes are covered in :ref:`constrained-loading` and
+     :ref:`strict-loading`.
 
 .. hint::
 
@@ -101,8 +100,8 @@ list indexing can be used:
             forecast_reference_time     2009-11-19 04:00:00
         Attributes:
             STASH                       m01s00i004
-            source                      Data from Met Office Unified Model
-            um_version                  7.3
+            source                      'Data from Met Office Unified Model'
+            um_version                  '7.3'
 
 Notice that the result of printing a **cube** is a little more verbose than
 it was when printing a **list of cubes**. In addition to the very short summary
@@ -305,13 +304,21 @@ for ease of calendar-based testing.
     >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
     >>> print('All times :\n' + str(cube_all.coord('time')))
     All times :
-    DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+        points: [2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00]
+        shape: (3,)
+        dtype: float64
+        standard_name: 'time'
     >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
     >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
     >>> cube_11 = cube_all.extract(hour_11)
     >>> print('Selected times :\n' + str(cube_11.coord('time')))
     Selected times :
-    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+        points: [2009-11-19 11:00:00]
+        shape: (1,)
+        dtype: float64
+        standard_name: 'time'
 
 Secondly, the :class:`iris.time` module provides flexible time comparison
 facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
@@ -336,7 +343,11 @@ The previous constraint example can now be written as:
     >>> print(iris.load_cube(
     ...     iris.sample_data_path('uk_hires.pp'),
     ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
-    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+        points: [2009-11-19 11:00:00]
+        shape: (1,)
+        dtype: float64
+        standard_name: 'time'
 
 It is common that a cube will need to be constrained between two given dates.
 In the following example we construct a time sequence representing the first
@@ -356,10 +367,13 @@ day of every week for many years:
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
 
     >>> print(long_ts.coord('time'))
-    DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
-              ...
-              2010-02-01 00:00:00, 2010-02-08 00:00:00, 2010-02-15 00:00:00],
-             standard_name='time', calendar='gregorian')
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-04-09 00:00:00, 2007-04-16 00:00:00, ...,
+            2010-02-08 00:00:00, 2010-02-15 00:00:00]
+        shape: (150,)
+        dtype: int64
+        standard_name: 'time'
 
 Given two dates in datetime format, we can select all points between them.
 
@@ -372,9 +386,13 @@ Given two dates in datetime format, we can select all points between them.
     ...     time=lambda cell: d1 <= cell.point < d2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
     >>> print(within_st_swithuns_07.coord('time'))
-    DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
-              2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00],
-             standard_name='time', calendar='gregorian')
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
+        shape: (6,)
+        dtype: int64
+        standard_name: 'time'
 
 Alternatively, we may rewrite this using :class:`iris.time.PartialDateTime`
 objects.
@@ -388,9 +406,13 @@ objects.
     ...     time=lambda cell: pdt1 <= cell.point < pdt2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
     >>> print(within_st_swithuns_07.coord('time'))
-    DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
-              2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00],
-             standard_name='time', calendar='gregorian')
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
+        shape: (6,)
+        dtype: int64
+        standard_name: 'time'
 
 A more complex example might require selecting points over an annually repeating
 date range. We can select points within a certain part of the year, in this case
@@ -403,17 +425,24 @@ PartialDateTime this becomes simple:
     ...     time=lambda cell: PartialDateTime(month=7, day=15) <= cell < PartialDateTime(month=8, day=25))
     >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
     ...
-    >>> print(within_st_swithuns.coord('time'))
-    DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
-           2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
-           2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
-           2008-08-11 00:00:00, 2008-08-18 00:00:00, 2009-07-20 00:00:00,
-           2009-07-27 00:00:00, 2009-08-03 00:00:00, 2009-08-10 00:00:00,
-           2009-08-17 00:00:00, 2009-08-24 00:00:00], standard_name='time', calendar='gregorian')
+    >>> # Note: using summary(max_values) to show more of the points
+    >>> print(within_st_swithuns.coord('time').summary(max_values=100))
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
+            2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
+            2008-08-11 00:00:00, 2008-08-18 00:00:00, 2009-07-20 00:00:00,
+            2009-07-27 00:00:00, 2009-08-03 00:00:00, 2009-08-10 00:00:00,
+            2009-08-17 00:00:00, 2009-08-24 00:00:00]
+        shape: (17,)
+        dtype: int64
+        standard_name: 'time'
 
 Notice how the dates printed are between the range specified in the ``st_swithuns_daterange``
 and that they span multiple years.
 
+.. _strict-loading:
 
 Strict Loading
 --------------

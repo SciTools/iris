@@ -52,7 +52,7 @@ class TestAll(tests.IrisTest):
             1,
         )
 
-        self.tcs = iris.coord_systems.GeogCS(6000000)
+        self.tcs = iris.coord_systems.GeogCS(6371229)
 
     def test_is_iris_coord_system(self):
         res, _ = project(self.cube, self.tcs)

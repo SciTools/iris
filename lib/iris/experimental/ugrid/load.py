@@ -280,7 +280,7 @@ def _build_aux_coord(coord_var, file_path):
     return coord, axis
 
 
-def _build_connectivity(connectivity_var, file_path, location_dims):
+def _build_connectivity(connectivity_var, file_path, element_dims):
     """
     Construct a :class:`~iris.experimental.ugrid.mesh.Connectivity` from a
     given :class:`~iris.experimental.ugrid.cf.CFUGridConnectivityVariable`,
@@ -301,10 +301,10 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     dim_names = connectivity_var.dimensions
     # Connectivity arrays must have two dimensions.
     assert len(dim_names) == 2
-    if dim_names[1] in location_dims:
-        src_dim = 1
+    if dim_names[1] in element_dims:
+        location_axis = 1
     else:
-        src_dim = 0
+        location_axis = 0
 
     standard_name, long_name, var_name = get_names(
         connectivity_var, None, attributes
@@ -319,7 +319,7 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
         units=attr_units,
         attributes=attributes,
         start_index=start_index,
-        src_dim=src_dim,
+        location_axis=location_axis,
     )
 
     return connectivity, dim_names[0]
@@ -423,20 +423,20 @@ def _build_mesh(cf, mesh_var, file_path):
         raise ValueError(message)
 
     # Used for detecting transposed connectivities.
-    location_dims = (edge_dimension, face_dimension)
+    element_dims = (edge_dimension, face_dimension)
     connectivity_args = []
     for connectivity_var in mesh_var.cf_group.connectivities.values():
         connectivity, first_dim_name = _build_connectivity(
-            connectivity_var, file_path, location_dims
+            connectivity_var, file_path, element_dims
         )
         assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
         connectivity_args.append(connectivity)
 
         # If the mesh_var has not supplied the dimension name, it is safe to
         # fall back on the connectivity's first dimension's name.
-        if edge_dimension is None and connectivity.src_location == "edge":
+        if edge_dimension is None and connectivity.location == "edge":
             edge_dimension = first_dim_name
-        if face_dimension is None and connectivity.src_location == "face":
+        if face_dimension is None and connectivity.location == "face":
             face_dimension = first_dim_name
 
     standard_name, long_name, var_name = get_names(mesh_var, None, attributes)
@@ -480,12 +480,12 @@ def _build_mesh_coords(mesh, cf_var):
     """
     # TODO: integrate with standard saving API when no longer 'experimental'.
     # Identify the cube's mesh dimension, for attaching MeshCoords.
-    locations_dimensions = {
+    element_dimensions = {
         "node": mesh.node_dimension,
         "edge": mesh.edge_dimension,
         "face": mesh.face_dimension,
     }
-    mesh_dim_name = locations_dimensions[cf_var.location]
+    mesh_dim_name = element_dimensions[cf_var.location]
     # (Only expecting 1 mesh dimension per cf_var).
     mesh_dim = cf_var.dimensions.index(mesh_dim_name)
 

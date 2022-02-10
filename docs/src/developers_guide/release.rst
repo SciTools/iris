@@ -36,6 +36,14 @@ Ensure that any behaviour which has been deprecated for the correct number of
 previous releases is now finally changed. More detail, including the correct
 number of releases, is in :ref:`iris_development_deprecations`.
 
+Standard Names
+~~~~~~~~~~~~~~
+
+Update the file ``etc/cf-standard-name-table.xml`` to the latest CF standard names,
+from the `latest CF standard names`_.
+( This is used during build to automatically generate the sourcefile
+``lib/iris/std_names.py``. )
+
 
 Release Branch
 --------------
@@ -175,9 +183,9 @@ back onto the ``SciTools/iris`` ``main`` branch.
 
 To achieve this, first cut a local branch from the latest ``main`` branch,
 and `git merge` the :literal:`.x` release branch into it. Ensure that the
-``iris.__version__``, ``docs/src/whatsnew/index.rst`` and ``docs/src/whatsnew/latest.rst``
-are correct, before committing these changes and then proposing a pull-request
-on the ``main`` branch of ``SciTools/iris``.
+``iris.__version__``, ``docs/src/whatsnew/index.rst``, ``docs/src/whatsnew/dev.rst``,
+and ``docs/src/whatsnew/latest.rst`` are correct, before committing these changes
+and then proposing a pull-request on the ``main`` branch of ``SciTools/iris``.
 
 
 Point Releases
@@ -210,9 +218,11 @@ Release Steps
 #. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
 #. Update the ``whatsnew`` for the release:
 
-    * Use ``git`` to rename ``docs/src/whatsnew/latest.rst`` to the release
+    * Use ``git`` to rename ``docs/src/whatsnew/dev.rst`` to the release
       version file ``v1.9.rst``
-    * Use ``git`` to delete the ``docs/src/whatsnew/latest.rst.template`` file
+    * Update the symbolic link ``latest.rst`` to reference the latest
+      whatsnew ``v1.9.rst``
+    * Use ``git`` to delete the ``docs/src/whatsnew/dev.rst.template`` file
     * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
       Note that, the Iris version and release date are updated automatically
       when the documentation is built
@@ -221,11 +231,11 @@ Release Steps
       dropdown at the top of the file, which provides extra detail on notable
       changes
     * Use ``git`` to add and commit all changes, including removal of
-      ``latest.rst.template``
+      ``dev.rst.template`` and update to the ``latest.rst`` symbolic link.
 
 #. Update the ``whatsnew`` index ``docs/src/whatsnew/index.rst``
 
-   * Remove the reference to ``latest.rst``
+   * Remove the reference to ``dev.rst``
    * Add a reference to ``v1.9.rst`` to the top of the list
 
 #. Check your changes by building the documentation and reviewing
@@ -246,13 +256,6 @@ Post Release Steps
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
    see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
-#. Copy ``docs/src/whatsnew/latest.rst.template`` to
-   ``docs/src/whatsnew/latest.rst``.  This will reset
-   the file with the ``unreleased`` heading and placeholders for the
-   ``whatsnew`` headings
-#. Add back in the reference to ``latest.rst`` to the ``whatsnew`` index
-   ``docs/src/whatsnew/index.rst``
-#. Update ``iris.__init__.py`` version string to show as ``1.10.dev0``
 #. Merge back to ``main``
 
 
@@ -268,3 +271,4 @@ Post Release Steps
 .. _rc_iris: https://anaconda.org/conda-forge/iris/labels
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project
+.. _latest CF standard names: http://cfconventions.org/standard-names.html

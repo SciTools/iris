@@ -16,7 +16,7 @@ from nox.logger import logger
 nox.options.reuse_existing_virtualenvs = True
 
 #: Python versions we can run sessions under
-_PY_VERSIONS_ALL = ["3.7", "3.8"]
+_PY_VERSIONS_ALL = ["3.8"]
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
 #: One specific python version for docs builds
@@ -27,6 +27,13 @@ PY_VER = os.environ.get("PY_VER", _PY_VERSIONS_ALL)
 
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
+
+# https://github.com/numpy/numpy/pull/19478
+# https://github.com/matplotlib/matplotlib/pull/22099
+#: Common session environment variables.
+ENV = dict(
+    NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512VL,AVX512BW,AVX512DQ,AVX512_SKX"
+)
 
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
@@ -210,6 +217,7 @@ def tests(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.run(
         "python",
         "-m",
@@ -232,6 +240,7 @@ def doctest(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.cd("docs")
     session.run(
         "make",

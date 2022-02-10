@@ -433,11 +433,18 @@ class Test__str__(tests.IrisTest):
             units="m",
             attributes={"notes": "Measured from sea level"},
         )
-        expected = (
-            "AncillaryVariable(array([2, 5, 9]), "
-            "standard_name='height', units=Unit('m'), "
-            "long_name='height of detector', var_name='height', "
-            "attributes={'notes': 'Measured from sea level'})"
+        expected = "\n".join(
+            [
+                "AncillaryVariable :  height / (m)",
+                "    data: [2, 5, 9]",
+                "    shape: (3,)",
+                "    dtype: int64",
+                "    standard_name: 'height'",
+                "    long_name: 'height of detector'",
+                "    var_name: 'height'",
+                "    attributes:",
+                "        notes  'Measured from sea level'",
+            ]
         )
         self.assertEqual(expected, ancillary_var.__str__())
 
@@ -447,11 +454,20 @@ class Test__str__(tests.IrisTest):
             units="hours since 1970-01-01 01:00",
             long_name="time of previous valid detection",
         )
-        expected = (
-            "AncillaryVariable([1970-01-01 03:00:00, "
-            "1970-01-01 06:00:00, 1970-01-01 10:00:00], "
-            "standard_name=None, calendar='gregorian', "
-            "long_name='time of previous valid detection')"
+        expected = "\n".join(
+            [
+                (
+                    "AncillaryVariable :  time of previous valid detection / "
+                    "(hours since 1970-01-01 01:00, gregorian calendar)"
+                ),
+                (
+                    "    data: [1970-01-01 03:00:00, 1970-01-01 06:00:00, "
+                    "1970-01-01 10:00:00]"
+                ),
+                "    shape: (3,)",
+                "    dtype: int64",
+                "    long_name: 'time of previous valid detection'",
+            ]
         )
         self.assertEqual(expected, ancillary_var.__str__())
 
@@ -466,12 +482,7 @@ class Test__repr__(tests.IrisTest):
             units="m",
             attributes={"notes": "Measured from sea level"},
         )
-        expected = (
-            "AncillaryVariable(array([2, 5, 9]), "
-            "standard_name='height', units=Unit('m'), "
-            "long_name='height of detector', var_name='height', "
-            "attributes={'notes': 'Measured from sea level'})"
-        )
+        expected = "<AncillaryVariable: height / (m)  [2, 5, 9]  shape(3,)>"
         self.assertEqual(expected, ancillary_var.__repr__())
 
     def test_time_values(self):
@@ -481,10 +492,8 @@ class Test__repr__(tests.IrisTest):
             long_name="time of previous valid detection",
         )
         expected = (
-            "AncillaryVariable(array([2, 5, 9]), standard_name=None, "
-            "units=Unit('hours since 1970-01-01 01:00', "
-            "calendar='gregorian'), "
-            "long_name='time of previous valid detection')"
+            "<AncillaryVariable: time of previous valid detection / (hours since 1970-01-01 01:00)  "
+            "[...]  shape(3,)>"
         )
         self.assertEqual(expected, ancillary_var.__repr__())
 

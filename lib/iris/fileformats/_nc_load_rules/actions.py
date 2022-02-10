@@ -184,16 +184,19 @@ def action_provides_coordinate(engine, dimcoord_fact):
 
     # Identify the "type" of a coordinate variable
     coord_type = None
-    # NOTE: must test for rotated cases *first*, as 'is_longitude' and
-    # 'is_latitude' functions also accept rotated cases.
-    if hh.is_rotated_latitude(engine, var_name):
-        coord_type = "rotated_latitude"
-    elif hh.is_rotated_longitude(engine, var_name):
-        coord_type = "rotated_longitude"
-    elif hh.is_latitude(engine, var_name):
-        coord_type = "latitude"
+
+    if hh.is_latitude(engine, var_name):
+        # N.B. result of 'is_rotated_lat/lon' checks are valid ONLY when the
+        # relevant 'is_lat/lon' is also True.
+        if hh.is_rotated_latitude(engine, var_name):
+            coord_type = "rotated_latitude"
+        else:
+            coord_type = "latitude"
     elif hh.is_longitude(engine, var_name):
-        coord_type = "longitude"
+        if hh.is_rotated_longitude(engine, var_name):
+            coord_type = "rotated_longitude"
+        else:
+            coord_type = "longitude"
     elif hh.is_time(engine, var_name):
         coord_type = "time"
     elif hh.is_time_period(engine, var_name):

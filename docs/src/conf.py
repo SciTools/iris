@@ -158,6 +158,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "image_test_output",
 ]
 
 if skip_api == "1":
@@ -199,7 +200,9 @@ spelling_ignore_python_builtins = True
 
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
-copybutton_prompt_text = ">>> "
+copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_is_regexp = True
+copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
@@ -208,6 +211,7 @@ todo_include_todos = True
 # api generation configuration
 autodoc_member_order = "groupwise"
 autodoc_default_flags = ["show-inheritance"]
+autodoc_typehints = "none"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
@@ -327,8 +331,10 @@ sphinx_gallery_conf = {
     "gallery_dirs": ["generated/gallery"],
     # filename pattern for the files in the gallery
     "filename_pattern": "/plot_",
-    # filename patternt to ignore in the gallery
+    # filename pattern to ignore in the gallery
     "ignore_pattern": r"__init__\.py",
+    # force gallery building, unless overridden (see src/Makefile)
+    "plot_gallery": "'True'",
 }
 
 # -----------------------------------------------------------------------------

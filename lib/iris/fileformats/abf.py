@@ -23,10 +23,19 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._deprecation import warn_deprecated
 from iris.coord_systems import GeogCS
 from iris.coords import AuxCoord, DimCoord
 import iris.fileformats
 import iris.io.format_picker
+
+wmsg = (
+    "iris.fileformats.abf has been deprecated and will be removed in a "
+    "future release. If you make use of this functionality, please contact "
+    "the Iris Developers to discuss how to retain it (which may involve "
+    "reversing the deprecation)."
+)
+warn_deprecated(wmsg)
 
 X_SIZE = 4320
 Y_SIZE = 2160
