@@ -10,11 +10,34 @@ See :mod:`benchmarks.generate_data` for an explanation of this structure.
 """
 
 from pathlib import Path
-import pickle
 
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, run_function_elsewhere
+
+
+def _create_file__xios_common(func_name, **kwargs):
+    def _external(func_name_, temp_file_dir, **kwargs_):
+        from iris.tests.stock import netcdf
+
+        func = getattr(netcdf, func_name_)
+        print(func(temp_file_dir, **kwargs_), end="")
+
+    args_hash = hash(str(**kwargs))
+    save_path = (BENCHMARK_DATA / f"{func_name}_{args_hash}").with_suffix(
+        ".nc"
+    )
+    if not REUSE_DATA or not save_path.is_file():
+        # The xios functions take control of save location so need to move to
+        #  a more specific name that allows re-use.
+        actual_path = run_function_elsewhere(
+            _external,
+            func_name_=func_name,
+            temp_file_dir=str(BENCHMARK_DATA),
+            **kwargs,
+        )
+        Path(actual_path.decode()).replace(save_path)
+    return save_path
 
 
 def create_file__xios_2d_face_half_levels(
@@ -29,26 +52,33 @@ def create_file__xios_2d_face_half_levels(
      properly save Mesh Cubes?
     """
 
-    def _external(*args, **kwargs):
-        from iris.tests.stock.netcdf import (
-            create_file__xios_2d_face_half_levels,
-        )
+    return _create_file__xios_common(
+        func_name="create_file__xios_2d_face_half_levels",
+        dataset_name=dataset_name,
+        n_faces=n_faces,
+        n_times=n_times,
+    )
 
-        print(create_file__xios_2d_face_half_levels(*args, **kwargs), end="")
 
-    args_list = [dataset_name, n_faces, n_times]
-    args_hash = hash(str(args_list))
-    save_path = (
-        BENCHMARK_DATA / f"create_file__xios_2d_face_half_levels_{args_hash}"
-    ).with_suffix(".nc")
-    if not REUSE_DATA or not save_path.is_file():
-        # create_file__xios_2d_face_half_levels takes control of save location
-        #  so need to move to a more specific name that allows re-use.
-        actual_path = run_function_elsewhere(
-            _external, str(BENCHMARK_DATA), *args_list
-        )
-        Path(actual_path.decode()).replace(save_path)
-    return save_path
+def create_file__xios_3d_face_half_levels(
+    temp_file_dir, dataset_name, n_faces=866, n_times=1, n_levels=38
+):
+    """
+    Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_3d_face_half_levels`.
+
+    Have taken control of temp_file_dir
+
+    todo: is create_file__xios_3d_face_half_levels still appropriate now we can
+     properly save Mesh Cubes?
+    """
+
+    return _create_file__xios_common(
+        func_name="create_file__xios_3d_face_half_levels",
+        dataset_name=dataset_name,
+        n_faces=n_faces,
+        n_times=n_times,
+        n_levels=n_levels,
+    )
 
 
 def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):

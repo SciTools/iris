@@ -22,6 +22,11 @@ from pathlib import Path
 from subprocess import CalledProcessError, check_output, run
 from textwrap import dedent
 
+from stock import (
+    create_file__xios_2d_face_half_levels,
+    create_file__xios_3d_face_half_levels,
+)
+
 from iris import load_cube as iris_loadcube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
@@ -168,3 +173,31 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
     with PARSE_UGRID_ON_LOAD.context():
         cube = iris_loadcube(str(filepath))
     return cube
+
+
+def make_cubesphere_testfile(c_size, n_levels=0, n_times=1):
+    """
+    Build a C<c_size> cubesphere testfile in a given directory, with a standard naming.
+    If n_levels > 0 specified: 3d file with the specified number of levels.
+    Return the file path.
+
+    """
+    n_faces = 6 * c_size * c_size
+    stem_name = f"mesh_cubesphere_C{c_size}_t{n_times}"
+    kwargs = dict(
+        temp_file_dir=None,
+        dataset_name=stem_name,  # N.B. function adds the ".nc" extension
+        n_times=n_times,
+        n_faces=n_faces,
+    )
+
+    three_d = n_levels > 0
+    if three_d:
+        kwargs["n_levels"] = n_levels
+        kwargs["dataset_name"] += f"_{n_levels}levels"
+        func = create_file__xios_3d_face_half_levels
+    else:
+        func = create_file__xios_2d_face_half_levels
+
+    file_path = func(**kwargs)
+    return file_path
