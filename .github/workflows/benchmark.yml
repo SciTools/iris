@@ -89,9 +89,9 @@ jobs:
               \n<details>
               \n<summary>Performance shift report</summary>
               \n
-              \n```
+              \n\`\`\`
               \n$(cat $commit_file)
-              \n```
+              \n\`\`\`
               \n
               \n</details>
               \n
