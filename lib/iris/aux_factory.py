@@ -9,7 +9,6 @@ Definitions of derived coordinates.
 """
 
 from abc import ABCMeta, abstractmethod
-from time import sleep
 import warnings
 
 import cf_units
@@ -579,8 +578,6 @@ class HybridHeightFactory(AuxCoordFactory):
             The coordinate providing the `orog` term.
 
         """
-        # Benchmark testing.
-        sleep(10)
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
