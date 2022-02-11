@@ -302,7 +302,7 @@ def benchmarks(
     run_type: Literal["overnight", "branch", "custom"],
 ):
     """
-    Perform esmf-regrid performance benchmarks (using Airspeed Velocity).
+    Perform Iris performance benchmarks (using Airspeed Velocity).
 
     All run types require a single Nox positional argument (e.g.
     ``nox --session="foo" -- my_pos_arg``) - detailed in the parameters
@@ -334,6 +334,7 @@ def benchmarks(
     --------
     * ``nox --session="benchmarks(overnight)" -- a1b23d4``
     * ``nox --session="benchmarks(branch)" -- upstream/main``
+    * ``nox --session="benchmarks(branch)" -- upstream/mesh-data-model``
     * ``nox --session="benchmarks(branch)" -- upstream/main --bench=regridding``
     * ``nox --session="benchmarks(custom)" -- continuous a1b23d4 HEAD --quick``
 
