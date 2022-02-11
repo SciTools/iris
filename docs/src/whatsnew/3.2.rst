@@ -177,6 +177,9 @@ This document explains the changes made to Iris for this release
    to indicate cloud fraction greater than 7.9 oktas, rather than 7.5 
    (:issue:`3305`, :pull:`4535`)
 
+#. `@lbdreyer`_ fixed a bug in :class:`iris.io.load_http` which was missing an import
+   (:pull:`4580`)
+
 
 💣 Incompatible Changes
 =======================
