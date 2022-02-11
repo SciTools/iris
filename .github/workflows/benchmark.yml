@@ -79,11 +79,11 @@ jobs:
             do
               pr_number=$(git log 8404ff64^! --oneline | grep -o "#[0-9]*" | cut -c 2-)
               assignee=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo SciTools/iris)
-              title="Performance Shift(s): $commit_file"
+              title="Performance Shift(s): \`$commit_file\`"
               body="
-          Benchmark comparison has identified performance shifts at commit
-          $commit_file (#$pr_number). Please review the report below and
-          take corrective/congratulatory action as appropriate
+          Benchmark comparison has identified performance shifts at commit\
+          $commit_file (#$pr_number). Please review the report below and\
+          take corrective/congratulatory action as appropriate\
           :slightly_smiling_face:
           
           <details>
