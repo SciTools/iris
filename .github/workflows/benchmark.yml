@@ -79,7 +79,7 @@ jobs:
             do
               pr_number=$(git log 8404ff64^! --oneline | grep -o "#[0-9]*" | cut -c 2-)
               author=trexfeathers
-              issue_title="Performance Shift(s): $commit_file"
+              issue_title="Performance Shift(s): $(echo $commit_file)"
               issue_body="
               Benchmark comparison has identified performance shifts at commit
               $commit_file (#$pr_number). Please review the report below and
