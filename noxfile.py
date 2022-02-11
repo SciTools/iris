@@ -337,12 +337,6 @@ def benchmarks(
     * ``nox --session="benchmarks(branch)" -- upstream/main --bench=regridding``
     * ``nox --session="benchmarks(custom)" -- continuous a1b23d4 HEAD --quick``
 
-    Notes
-    -----
-    ASV is set up to use ``nox --session=tests --install-only`` to prepare
-    the benchmarking environment. This session environment must use a Python
-    version that is also available for ``--session=tests``.
-
     """
     # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
     #  for more.
