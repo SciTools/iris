@@ -82,7 +82,7 @@ jobs:
               issue_title="Performance Shift(s): $(echo $commit_file)"
               issue_body="
               Benchmark comparison has identified performance shifts at commit
-              $commit_file (#$pr_number). Please review the report below and
+              $(echo $commit_file) (#$pr_number). Please review the report below and
               take corrective/congratulatory action as appropriate
               :slightly_smiling_face:
               \n
