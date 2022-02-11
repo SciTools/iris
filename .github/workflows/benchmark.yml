@@ -64,7 +64,7 @@ jobs:
       - name: Run overnight benchmarks
         run: |
           first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" --reverse | head -n 1)
-          nox --session="benchmarks(overnight)" .. $first_commit
+          nox --session="benchmarks(overnight)" -- $first_commit
 
       - name: Create issues for performance shifts
         run: |
