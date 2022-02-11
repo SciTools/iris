@@ -184,8 +184,8 @@ def create_um_files(
     """
     Generate FF-based FF / PP / NetCDF files with specified shape and compression.
 
-    Saved to a directory for all files that shape. A dictionary of the saved
-    paths is returned.
+    All files representing a given shape are saved in a dedicated directory. A
+    dictionary of the saved paths is returned.
     """
     # Self contained imports to avoid linting confusion with _create_um_files().
     from . import BENCHMARK_DATA, REUSE_DATA, run_function_elsewhere

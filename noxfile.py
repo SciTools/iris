@@ -321,20 +321,24 @@ def benchmarks(session: nox.sessions.Session, ci_mode: bool):
         print("Using existing data generation environment.")
     else:
         print("Setting up the data generation environment...")
+        # Get Nox to build an environment for the `tests` session, but don't
+        #  run the session. Will re-use a cached environment if appropriate.
         session.run_always(
             "nox",
             "--session=tests",
             "--install-only",
             f"--python={session.python}",
         )
+        # Find the environment built above, set it to be the data generation
+        #  environment.
         data_gen_python = next(
             Path(".nox").rglob(f"tests*/bin/python{session.python}")
         ).resolve()
         session.env[data_gen_var] = data_gen_python
 
-        print("Installing Mule into data generation environment...")
         mule_dir = data_gen_python.parents[1] / "resources" / "mule"
         if not mule_dir.is_dir():
+            print("Installing Mule into data generation environment...")
             session.run_always(
                 "git",
                 "clone",
