@@ -359,13 +359,13 @@ def benchmarks(
     if run_type not in run_type_arg.keys():
         message = f"Unsupported run-type: {run_type}"
         raise NotImplementedError(message)
-    first_arg = session.posargs[0]
-    if not first_arg:
+    if not session.posargs:
         message = (
             f"Missing mandatory first Nox session posarg: "
             f"{run_type_arg[run_type]}"
         )
         raise ValueError(message)
+    first_arg = session.posargs[0]
     # Optional extra arguments to be passed down to ASV.
     asv_args = session.posargs[1:]
 
