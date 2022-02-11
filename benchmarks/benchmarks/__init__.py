@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Common code for benchmarks."""
+from os import environ
 import resource
 
 from .generate_data import BENCHMARK_DATA, run_function_elsewhere
@@ -70,3 +71,25 @@ class TrackAddedMemoryAllocation:
     def addedmem_mb(self):
         """Return measured memory growth, in Mb."""
         return self.mb_after - self.mb_before
+
+
+def on_demand_benchmark(benchmark_object):
+    """
+    Decorator. Disables these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.
+
+    For benchmarks that, for whatever reason, should not be run by default.
+    E.g:
+        * Require a local file
+        * Used for scalability analysis instead of commit monitoring.
+
+    Can be applied to benchmark classes/methods/functions.
+
+    """
+
+    def disabled_setup(_):
+        raise NotImplementedError
+
+    if "ON_DEMAND_BENCHMARKS" not in environ:
+        benchmark_object.setup = disabled_setup
+
+    return benchmark_object
