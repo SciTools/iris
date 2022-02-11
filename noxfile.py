@@ -365,7 +365,14 @@ def benchmarks(session: nox.sessions.Session, ci_mode: bool):
         #  Else: compare to previous commit.
         previous_commit = os.environ.get("PR_BASE_SHA", "HEAD^1")
         try:
-            asv_exec("continuous", "--factor=1.2", previous_commit, "HEAD")
+            asv_exec(
+                "continuous",
+                "--factor=1.2",
+                previous_commit,
+                "HEAD",
+                "--attribute",
+                "rounds=4",
+            )
         finally:
             asv_exec("compare", previous_commit, "HEAD")
     else:

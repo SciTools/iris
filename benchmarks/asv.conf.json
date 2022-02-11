@@ -3,18 +3,25 @@
     "project": "scitools-iris",
     "project_url": "https://github.com/SciTools/iris",
     "repo": "..",
-    "environment_type": "nox-conda",
+    "environment_type": "conda-delegated",
     "show_commit_url": "http://github.com/scitools/iris/commit/",
 
     "benchmark_dir": "./benchmarks",
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
-    "plugins": [".nox_asv_plugin"],
-    // The commit to checkout to first run Nox to set up the environment.
-    "nox_setup_commit": "HEAD",
-    // The path of the noxfile's location relative to the project root.
-    "noxfile_rel_path": "noxfile.py",
-    // The ``--session`` arg to be used with ``--install-only`` to prep an environment.
-    "nox_session_name": "tests"
+    "plugins": [".asv_delegated_conda"],
+
+    // The command(s) that create/update an environment correctly for the
+    //  checked-out commit.
+    // Interpreted the same as build_command, with following exceptions:
+    //  * No build-time environment variables.
+    //  * Is run in the same environment as the ASV install itself.
+    "delegated_env_commands": [
+        "sed -i 's/_PY_VERSIONS_ALL/_PY_VERSION_LATEST/g' noxfile.py",
+        "nox --envdir={conf_dir}/.asv/env/nox01 --session=tests --install-only --no-error-on-external-run --verbose"
+    ],
+    // The parent directory of the above environment.
+    //  The most recently modified environment in the directory will be used.
+    "delegated_env_parent": "{conf_dir}/.asv/env/nox01"
 }
