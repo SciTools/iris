@@ -116,7 +116,7 @@ jobs:
           author: "Lockfile bot <noreply@github.com>"
           delete-branch: true
           branch: auto-update-lockfiles
-          title: [iris.ci] environment lockfiles auto-update
+          title: "[iris.ci] environment lockfiles auto-update"
           body: |
             Lockfiles updated to the latest resolvable environment.
           labels: |
