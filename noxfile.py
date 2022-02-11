@@ -325,6 +325,8 @@ def benchmarks(
           Designed for testing if the active branch's changes cause performance
           shifts - anticipating what would be caught by ``overnight`` once
           merged.
+          **For maximum accuracy, avoid using the machine that is running this
+          session. Run time could be >1 hour for the full benchmark suite.**
         * ``custom``: run ASV with the input **ASV command type**, without any
           preset arguments - must all be supplied by the user. So just like
           running ASV manually, with the convenience of re-using the session's
