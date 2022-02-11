@@ -305,7 +305,7 @@ def benchmarks(
     Perform esmf-regrid performance benchmarks (using Airspeed Velocity).
 
     All run types require a single Nox positional argument (e.g.
-    ``nox --session="foo" .. my_pos_arg``) - detailed in the parameters
+    ``nox --session="foo" -- my_pos_arg``) - detailed in the parameters
     section - and can optionally accept a series of further arguments that will
     be added to session's ASV command.
 
