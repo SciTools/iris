@@ -332,10 +332,10 @@ def benchmarks(
 
     Examples
     --------
-    * ``nox --session="benchmarks(overnight)" .. a1b23d4``
-    * ``nox --session="benchmarks(branch)" .. upstream/main``
-    * ``nox --session="benchmarks(branch)" .. upstream/main --bench=regridding``
-    * ``nox --session="benchmarks(custom)" .. continuous a1b23d4 HEAD --quick``
+    * ``nox --session="benchmarks(overnight)" -- a1b23d4``
+    * ``nox --session="benchmarks(branch)" -- upstream/main``
+    * ``nox --session="benchmarks(branch)" -- upstream/main --bench=regridding``
+    * ``nox --session="benchmarks(custom)" -- continuous a1b23d4 HEAD --quick``
 
     Notes
     -----
