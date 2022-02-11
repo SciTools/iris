@@ -52,9 +52,7 @@ class Test(tests.IrisTest):
             cftime.datetime(2000, 2, 29, calendar=calendar),
             cftime.datetime(2000, 2, 30, calendar=calendar),
         ]
-        self.assertArrayEqual(
-            [cdt.datetime for cdt in result], expected_datetimes
-        )
+        self.assertArrayEqual(result, expected_datetimes)
 
     @tests.skip_nc_time_axis
     def test_365_day_calendar(self):
@@ -67,9 +65,7 @@ class Test(tests.IrisTest):
             cftime.datetime(2000, 2, 25, 1, 0, calendar=calendar),
             cftime.datetime(2000, 2, 25, 2, 30, calendar=calendar),
         ]
-        self.assertArrayEqual(
-            [cdt.datetime for cdt in result], expected_datetimes
-        )
+        self.assertArrayEqual(result, expected_datetimes)
 
     @tests.skip_nc_time_axis
     def test_360_day_calendar_attribute(self):

@@ -591,7 +591,7 @@ def _fixup_dates(coord, values):
             r = [datetime.datetime(*date) for date in dates]
         else:
             try:
-                import nc_time_axis
+                import nc_time_axis  # noqa: F401
             except ImportError:
                 msg = (
                     "Cannot plot against time in a non-gregorian "
@@ -603,12 +603,10 @@ def _fixup_dates(coord, values):
                 raise IrisError(msg)
 
             r = [
-                nc_time_axis.CalendarDateTime(
-                    cftime.datetime(*date, calendar=coord.units.calendar),
-                    coord.units.calendar,
-                )
+                cftime.datetime(*date, calendar=coord.units.calendar)
                 for date in dates
             ]
+
         values = np.empty(len(r), dtype=object)
         values[:] = r
     return values
