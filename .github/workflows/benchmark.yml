@@ -77,8 +77,8 @@ jobs:
             cd benchmarks/.asv/performance-shifts
             for commit_file in .*
             do
-              pr_number=$(git log "$commit_file"^! --oneline | grep -o "#[0-9]*" | cut -c 2-)
-              author=$(gh pr view $pr_number --json author -q '.["author"]["login"]')
+              pr_number=$(git log 8404ff64^! --oneline | grep -o "#[0-9]*" | cut -c 2-)
+              author=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo SciTools/iris)
               issue_title="Performance Shift(s): $commit_file"
               issue_body="
               Benchmark comparison has identified performance shifts at commit
