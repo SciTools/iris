@@ -44,7 +44,9 @@ All the load functions share very similar arguments:
         standard library function :func:`os.path.expanduser` and
         module :mod:`fnmatch` for more details.
 
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        .. warning::
+
+            If supplying a URL, only OPeNDAP Data Sources are supported.
 
     * constraints:
         Either a single constraint, or an iterable of constraints.
