@@ -66,7 +66,7 @@ jobs:
       - name: Run overnight benchmarks
         run: |
           first_commit=c50480b94594a563c7f35fa0769b20400c2b49eb
-          nox --session="benchmarks(overnight)" -- $first_commit --quick --bench=aux_factory --no-interleave-rounds
+          nox --session="benchmarks(overnight)" -- $first_commit --quick --bench=aux_factory --no-interleave-rounds --steps 3
 
       - name: Create issues for performance shifts
         env:
@@ -78,7 +78,7 @@ jobs:
             for commit_file in *
             do
               pr_number=$(git log 8404ff64^! --oneline | grep -o "#[0-9]*" | cut -c 2-)
-              author=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo SciTools/iris)
+              author=trexfeathers
               issue_title="Performance Shift(s): $commit_file"
               issue_body="
               Benchmark comparison has identified performance shifts at commit
