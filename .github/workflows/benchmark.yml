@@ -70,9 +70,9 @@ jobs:
 
       - name: Create issues for performance shifts
         run: |
-          if [ -d .asv/performance-shifts ]
+          if [ -d benchmarks/.asv/performance-shifts ]
           then
-            for commit_file in .asv/performance-shifts/*
+            for commit_file in benchmarks/.asv/performance-shifts/*
             do
               pr_number=$(git log "$commit_file"^! --oneline | grep -o "#[0-9]*" | cut -c 2-)
               author=$(gh pr view $pr_number --json author -q '.["author"]["login"]')
