@@ -65,8 +65,8 @@ jobs:
 
       - name: Run overnight benchmarks
         run: |
-          first_commit=c50480b94594a563c7f35fa0769b20400c2b49eb
-          nox --session="benchmarks(overnight)" -- $first_commit --quick --bench=aux_factory --no-interleave-rounds --steps 3
+          first_commit=06165e99339caad2ff5e594b863b49f2e8aaaa62
+          nox --session="benchmarks(overnight)" -- $first_commit --quick --bench=aux_factory --no-interleave-rounds
 
       - name: Create issues for performance shifts
         env:
