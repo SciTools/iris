@@ -317,7 +317,7 @@ def benchmarks(
         * ``overnight``: benchmarks all commits between the input **first
           commit** to ``HEAD``, comparing each to its parent for performance
           shifts. If a commit causes shifts, the output is saved to a file:
-          ``performance-shifts/<commit-sha>``. Designed for checking the
+          ``.asv/performance-shifts/<commit-sha>``. Designed for checking the
           previous 24 hours' commits, typically in a scheduled script.
         * ``branch``: Performs the same operations as ``overnight``, but always
           on two commits only - ``HEAD``, and ``HEAD``'s merge-base with the
