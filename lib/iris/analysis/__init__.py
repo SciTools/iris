@@ -1394,7 +1394,7 @@ def _lazy_rms(array, axis, **kwargs):
     # all. Thus trying to use this aggregator with weights will currently
     # raise an error in dask due to the unexpected keyword `weights`,
     # rather than silently returning the wrong answer.
-    return da.sqrt(da.mean(array ** 2, axis=axis, **kwargs))
+    return da.sqrt(da.mean(array**2, axis=axis, **kwargs))
 
 
 @_build_dask_mdtol_function

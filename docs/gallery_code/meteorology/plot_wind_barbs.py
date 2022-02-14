@@ -30,7 +30,7 @@ def main():
 
     # To illustrate the full range of barbs, scale the wind speed up to pretend
     # that a storm is passing over
-    magnitude = (uwind ** 2 + vwind ** 2) ** 0.5
+    magnitude = (uwind**2 + vwind**2) ** 0.5
     magnitude.convert_units("knot")
     max_speed = magnitude.collapsed(
         ("latitude", "longitude"), iris.analysis.MAX
@@ -41,7 +41,7 @@ def main():
     vwind = vwind / max_speed * max_desired
 
     # Create a cube containing the wind speed
-    windspeed = (uwind ** 2 + vwind ** 2) ** 0.5
+    windspeed = (uwind**2 + vwind**2) ** 0.5
     windspeed.rename("windspeed")
     windspeed.convert_units("knot")
 
