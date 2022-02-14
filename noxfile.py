@@ -291,7 +291,7 @@ def linkcheck(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=PY_VER, venv_backend="conda")
+@nox.session
 @nox.parametrize(
     "run_type",
     ["overnight", "branch", "custom"],
@@ -358,12 +358,12 @@ def benchmarks(
             "nox",
             "--session=tests",
             "--install-only",
-            f"--python={session.python}",
+            f"--python={_PY_VERSION_LATEST}",
         )
         # Find the environment built above, set it to be the data generation
         #  environment.
         data_gen_python = next(
-            Path(".nox").rglob(f"tests*/bin/python{session.python}")
+            Path(".nox").rglob(f"tests*/bin/python{_PY_VERSION_LATEST}")
         ).resolve()
         session.env[data_gen_var] = data_gen_python
 
