@@ -1,6 +1,3 @@
-[//]: # (the final pieces of this setup are still falling into place, so have
-         included several TODO's)
-
 # Iris Performance Benchmarking
 
 Iris uses an [Airspeed Velocity](https://github.com/airspeed-velocity/asv)
@@ -15,20 +12,33 @@ shifts in performance being flagged in a new GitHub issue.
 ## Running benchmarks
 
 `asv ...` commands must be run from this directory. You will need to have ASV
-installed, as well as Nox (see 
+installed, as well as Nox (see
 [Benchmark environments](#benchmark-environments)).
 
 [Iris' noxfile](../noxfile.py) includes a `benchmarks` session that provides
-conveniences for setting up, and even replicating the automated overnight run
-locally. See the session docstring for detail.
+conveniences for setting up before benchmarking, and can also replicate the
+automated overnight run locally. See the session docstring for detail.
 
-[//]: # (TODO: ### Environment variables section)
+### Environment variables
+
+* ``DATA_GEN_PYTHON`` - required - path to a Python executable that can be
+used to generate benchmark test objects/files; see
+[Data generation](#data-generation). The Nox session sets this automatically,
+but will defer to any value already set in the shell.
+* ``BENCHMARK_DATA`` - optional - path to a directory where test files used by
+the benchmarks are saved and loaded. Defaults to ``<root>/benchmarks/.data/``
+if not set.
 
 ## Writing benchmarks
 
-[//]: # (TODO: ### Data generation section)
-
 [See the ASV docs](https://asv.readthedocs.io/) for full detail.
+
+### Data generation
+**Important:** be sure not to use the benchmarking environment to generate any
+test objects/files, as this environment changes with each commit being
+benchmarked, creating inconsistent benchmark 'conditions'. The
+[generate_data](./benchmarks/generate_data/__init__.py) module offers a
+solution; read more detail there.
 
 ### ASV re-run behaviour
 
