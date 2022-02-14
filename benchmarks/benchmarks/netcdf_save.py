@@ -18,7 +18,7 @@ from iris import save
 from iris.experimental.ugrid import save_mesh
 
 from . import TrackAddedMemoryAllocation
-from .generate_data import make_cube_like_2d_cubesphere
+from .generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
 class NetcdfSave:
