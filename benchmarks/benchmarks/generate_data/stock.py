@@ -23,7 +23,7 @@ def _create_file__xios_common(func_name, **kwargs):
         func = getattr(netcdf, func_name_)
         print(func(temp_file_dir, **kwargs_), end="")
 
-    args_hash = hash(str(**kwargs))
+    args_hash = hash(str(kwargs))
     save_path = (BENCHMARK_DATA / f"{func_name}_{args_hash}").with_suffix(
         ".nc"
     )
