@@ -16,14 +16,18 @@ NetCDF file. Could also use pickling but there is a potential risk if the
 benchmark sequence runs over two different Python versions.
 
 """
+from contextlib import contextmanager
 from inspect import getsource
 from os import environ
 from pathlib import Path
 from subprocess import CalledProcessError, check_output, run
 from textwrap import dedent
+from typing import Iterable
 
 from iris import load_cube as iris_loadcube
+from iris._lazy_data import as_concrete_data
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+from iris.fileformats import netcdf
 
 #: Python executable used by :func:`run_function_elsewhere`, set via env
 #:  variable of same name. Must be path of Python within an environment that
@@ -166,5 +170,25 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
 
     # File now *should* definitely exist: content is simply the desired cube.
     with PARSE_UGRID_ON_LOAD.context():
-        cube = iris_loadcube(str(filepath))
+        with load_realised():
+            cube = iris_loadcube(str(filepath))
     return cube
+
+
+@contextmanager
+def load_realised():
+    """
+    Force NetCDF loading with realised arrays.
+
+    Since passing between data generation and benchmarking environments is via
+    file loading, but some benchmarks are only meaningful if starting with real
+    arrays.
+    """
+    from iris.fileformats.netcdf import _get_cf_var_data as pre_patched
+
+    def patched(cf_var, filename):
+        return as_concrete_data(pre_patched(cf_var, filename))
+
+    netcdf._get_cf_var_data = patched
+    yield netcdf
+    netcdf._get_cf_var_data = pre_patched

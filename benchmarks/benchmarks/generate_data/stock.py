@@ -14,7 +14,7 @@ import pickle
 
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
-from . import BENCHMARK_DATA, REUSE_DATA, run_function_elsewhere
+from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 
 
 def create_file__xios_2d_face_half_levels(
@@ -74,13 +74,12 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
             _external, *arg_list, save_path=str(save_path)
         )
     with PARSE_UGRID_ON_LOAD.context():
-        mesh = load_mesh(str(save_path))
-    if not lazy_values:
-        # Realise everything.
-        for coord in mesh.coords():
-            _ = coord.points
-        for conn in mesh.connectivities():
-            _ = conn.indices
+        if not lazy_values:
+            # Realise everything.
+            with load_realised():
+                mesh = load_mesh(str(save_path))
+        else:
+            mesh = load_mesh(str(save_path))
     return mesh
 
 
@@ -121,6 +120,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
             save_path_=str(save_path),
         )
     with PARSE_UGRID_ON_LOAD.context():
-        source_mesh = load_mesh(str(save_path))
+        with load_realised():
+            source_mesh = load_mesh(str(save_path))
     # Regenerate MeshCoord from its Mesh, which we saved.
     return source_mesh.to_MeshCoord(location=location, axis=axis)
