@@ -85,11 +85,5 @@ def on_demand_benchmark(benchmark_object):
     Can be applied to benchmark classes/methods/functions.
 
     """
-
-    def disabled_setup(_):
-        raise NotImplementedError
-
-    if "ON_DEMAND_BENCHMARKS" not in environ:
-        benchmark_object.setup = disabled_setup
-
-    return benchmark_object
+    if "ON_DEMAND_BENCHMARKS" in environ:
+        return benchmark_object
