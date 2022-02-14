@@ -16,7 +16,9 @@ jobs:
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
       IRIS_TEST_DATA_VERSION: "2.5"
       # Lets us manually bump the cache to rebuild
+      ENV_CACHE_BUILD: "0"
       TEST_DATA_CACHE_BUILD: "2"
+      PY_VER: 3.8
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -32,19 +34,15 @@ jobs:
         run: |
           pip install nox
 
-      - name: Cache .nox and .asv/env directories
+      - name: Cache environment directories
         id: cache-env-dir
         uses: actions/cache@v2
         with:
           path: |
             .nox
             benchmarks/.asv/env
-          # Make sure GHA never gets an exact cache match by using the unique
-          #  github.sha. This means it will always store this run as a new
-          #  cache (Nox may have made relevant changes during run). Cache
-          #  restoration still succeeds via the partial restore-key match.
-          key: ${{ runner.os }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}
+            $CONDA/pkgs
+          key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
 
       - name: Cache test data directory
         id: cache-test-data
@@ -62,7 +60,7 @@ jobs:
           unzip -q iris-test-data.zip
           mkdir --parents ${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_LOC_PATH}
           mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}
-          
+
       - name: Set test data var
         run: |
           echo "OVERRIDE_TEST_DATA_REPOSITORY=${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}/test_data" >> $GITHUB_ENV
