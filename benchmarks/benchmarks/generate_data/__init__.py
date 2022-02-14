@@ -16,11 +16,16 @@ NetCDF file. Could also use pickling but there is a potential risk if the
 benchmark sequence runs over two different Python versions.
 
 """
+from contextlib import contextmanager
 from inspect import getsource
 from os import environ
 from pathlib import Path
 from subprocess import CalledProcessError, check_output, run
 from textwrap import dedent
+from typing import Iterable
+
+from iris._lazy_data import as_concrete_data
+from iris.fileformats import netcdf
 
 #: Python executable used by :func:`run_function_elsewhere`, set via env
 #:  variable of same name. Must be path of Python within an environment that
@@ -89,3 +94,22 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
         [DATA_GEN_PYTHON, "-c", python_string], capture_output=True, check=True
     )
     return result.stdout
+
+
+@contextmanager
+def load_realised():
+    """
+    Force NetCDF loading with realised arrays.
+
+    Since passing between data generation and benchmarking environments is via
+    file loading, but some benchmarks are only meaningful if starting with real
+    arrays.
+    """
+    from iris.fileformats.netcdf import _get_cf_var_data as pre_patched
+
+    def patched(cf_var, filename):
+        return as_concrete_data(pre_patched(cf_var, filename))
+
+    netcdf._get_cf_var_data = patched
+    yield netcdf
+    netcdf._get_cf_var_data = pre_patched
