@@ -9,7 +9,7 @@ Scripts for generating supporting data for UGRID-related benchmarking.
 from iris import load_cube as iris_loadcube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
-from . import BENCHMARK_DATA, load_realised, run_function_elsewhere
+from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 from .stock import (
     create_file__xios_2d_face_half_levels,
     create_file__xios_3d_face_half_levels,
@@ -93,11 +93,74 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
     return cube
 
 
+def make_cube_like_umfield(xy_dims):
+    """
+    Create a "UM-like" cube with lazy content, for save performance testing.
+
+    Roughly equivalent to a single current UM cube, to be compared with
+    a "make_cube_like_2d_cubesphere(n_cube=_N_CUBESPHERE_UM_EQUIVALENT)"
+    (see below).
+
+    Note: probably a bit over-simplified, as there is no time coord, but that
+    is probably equally true of our LFRic-style synthetic data.
+
+    Args:
+    * xy_dims (2-tuple):
+        Set the horizontal dimensions = n-lats, n-lons.
+
+    """
+
+    def _external(xy_dims_, save_path_):
+        from dask import array as da
+        import numpy as np
+
+        from iris import save
+        from iris.coords import DimCoord
+        from iris.cube import Cube
+
+        nz, ny, nx = (1,) + xy_dims_
+
+        # Base data : Note this is float32 not float64 like LFRic/XIOS outputs.
+        lazy_data = da.zeros((nz, ny, nx), dtype=np.float32)
+        cube = Cube(lazy_data, long_name="structured_phenom")
+
+        # Add simple dim coords also.
+        z_dimco = DimCoord(np.arange(nz), long_name="level", units=1)
+        y_dimco = DimCoord(
+            np.linspace(-90.0, 90.0, ny),
+            standard_name="latitude",
+            units="degrees",
+        )
+        x_dimco = DimCoord(
+            np.linspace(-180.0, 180.0, nx),
+            standard_name="longitude",
+            units="degrees",
+        )
+        for idim, co in enumerate([z_dimco, y_dimco, x_dimco]):
+            cube.add_dim_coord(co, idim)
+
+        save(cube, save_path_)
+
+    save_path = (
+        BENCHMARK_DATA / f"make_cube_like_umfield_{xy_dims}"
+    ).with_suffix(".nc")
+    if not REUSE_DATA or not save_path.is_file():
+        _ = run_function_elsewhere(_external, xy_dims, str(save_path))
+    with PARSE_UGRID_ON_LOAD.context():
+        with load_realised():
+            cube = iris_loadcube(str(save_path))
+
+    return cube
+
+
 def make_cubesphere_testfile(c_size, n_levels=0, n_times=1):
     """
     Build a C<c_size> cubesphere testfile in a given directory, with a standard naming.
     If n_levels > 0 specified: 3d file with the specified number of levels.
     Return the file path.
+
+    todo: is create_file__xios... still appropriate now we can properly save
+     Mesh Cubes?
 
     """
     n_faces = 6 * c_size * c_size
