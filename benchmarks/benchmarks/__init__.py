@@ -7,8 +7,6 @@
 from os import environ
 import resource
 
-from .generate_data import BENCHMARK_DATA, run_function_elsewhere
-
 ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
 
 

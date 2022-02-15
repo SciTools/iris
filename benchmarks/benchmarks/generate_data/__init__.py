@@ -22,7 +22,6 @@ from os import environ
 from pathlib import Path
 from subprocess import CalledProcessError, check_output, run
 from textwrap import dedent
-from typing import Iterable
 
 from iris._lazy_data import as_concrete_data
 from iris.fileformats import netcdf
