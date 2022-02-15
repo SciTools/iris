@@ -4,22 +4,22 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Loading benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
+Benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
 
 CPerf = comparing performance working with data in UM versus LFRic formats.
+
+Files available from the UK Met Office:
+  moo ls moose:/adhoc/projects/avd/asv/data_for_nightly_tests/
 """
 import numpy as np
 
-from iris import load_cube, save
+from iris import load_cube
 
 # TODO: remove uses of PARSE_UGRID_ON_LOAD once UGRID parsing is core behaviour.
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
-from .. import BENCHMARK_DATA, on_demand_benchmark
+from .. import BENCHMARK_DATA
 from ..generate_data.ugrid import make_cubesphere_testfile
-
-# Files available from the UK Met Office:
-#  moo ls moose:/adhoc/projects/avd/asv/data_for_nightly_tests/
 
 # The data of the core test UM files has dtype=np.float32 shape=(1920, 2560)
 _UM_DIMS_YX = (1920, 2560)
@@ -28,10 +28,8 @@ _UM_DIMS_YX = (1920, 2560)
 _N_CUBESPHERE_UM_EQUIVALENT = int(np.sqrt(np.prod(_UM_DIMS_YX) / 6))
 
 
-@on_demand_benchmark
-class SingleDiagnostic:
-    # The larger files take a long time to realise.
-    timeout = 600.0
+class SingleDiagnosticMixin:
+    """For use in any benchmark classes that work on a single diagnostic file."""
 
     params = [
         ["LFRic", "UM", "UM_lbpack0", "UM_netcdf"],
@@ -94,46 +92,6 @@ class SingleDiagnostic:
         self.file_path = file_path
         self.file_type = file_type
 
-        # To setup time_realise().
-        self.loaded_cube = self.load()
-
-    def load(self, realise_coords: bool = False):
+    def load(self):
         with PARSE_UGRID_ON_LOAD.context():
-            cube = load_cube(str(self.file_path))
-
-        assert cube.has_lazy_data()
-
-        # UM files load lon/lat as DimCoords, which are always realised.
-        expecting_lazy_coords = self.file_type == "LFRic"
-        for coord_name in "longitude", "latitude":
-            coord = cube.coord(coord_name)
-            assert coord.has_lazy_points() == expecting_lazy_coords
-            assert coord.has_lazy_bounds() == expecting_lazy_coords
-            if realise_coords:
-                # Don't touch actual points/bounds objects - permanent
-                #  realisation plays badly with ASV's re-run strategy.
-                if coord.has_lazy_points():
-                    coord.core_points().compute()
-                if coord.has_lazy_bounds():
-                    coord.core_bounds().compute()
-
-        return cube
-
-    def time_load(self, _, __, ___):
-        """
-        The 'real world comparison'
-          * UM coords are always realised (DimCoords).
-          * LFRic coords are not realised by default (MeshCoords).
-
-        """
-        _ = self.load()
-
-    def time_load_w_realised_coords(self, _, __, ___):
-        """A valuable extra comparison where both UM and LFRic coords are realised."""
-        _ = self.load(realise_coords=True)
-
-    def time_realise(self, _, __, ___):
-        # Don't touch loaded_cube.data - permanent realisation plays badly with
-        #  ASV's re-run strategy.
-        assert self.loaded_cube.has_lazy_data()
-        self.loaded_cube.core_data().compute()
+            return load_cube(str(self.file_path))
