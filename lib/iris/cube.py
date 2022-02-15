@@ -4034,6 +4034,19 @@ x            -              -
                 aggregator.lazy_aggregate, axis=dimension_to_groupby, **kwargs
             )
             result = list(map(agg, groupby_subcubes, groupby_subweights))
+
+            # If weights are returned, "result" is a list of tuples (each tuple
+            # contains two elements; the first is the aggregated data, the
+            # second is the aggregated weights). Convert these to two lists
+            # (one for the aggregated data and one for the aggregated weights)
+            # before combining the different slices.
+            if kwargs.get("returned", False):
+                result, weights_result = list(zip(*result))
+                aggregateby_weights = da.stack(
+                    weights_result, axis=dimension_to_groupby
+                )
+            else:
+                aggregateby_weights = None
             aggregateby_data = da.stack(result, axis=dimension_to_groupby)
         else:
             cube_slice = [slice(None, None)] * len(data_shape)
@@ -4049,11 +4062,16 @@ x            -              -
                     kwargs["weights"] = groupby_sub_weights
 
                 # Perform the aggregation over the group-by sub-cube and
-                # repatriate the aggregated data into the aggregate-by
-                # cube data.
+                # repatriate the aggregated data into the aggregate-by cube
+                # data. If weights are also returned, handle them separately.
                 result = aggregator.aggregate(
                     groupby_sub_cube.data, axis=dimension_to_groupby, **kwargs
                 )
+                if kwargs.get("returned", False):
+                    weights_result = result[1]
+                    result = result[0]
+                else:
+                    weights_result = None
 
                 # Determine aggregation result data type for the aggregate-by
                 # cube data on first pass.
@@ -4066,8 +4084,16 @@ x            -              -
                         aggregateby_data = np.zeros(
                             data_shape, dtype=result.dtype
                         )
+                    if weights_result is not None:
+                        aggregateby_weights = np.zeros(
+                            data_shape, dtype=weights_result.dtype
+                        )
+                    else:
+                        aggregateby_weights = None
                 cube_slice[dimension_to_groupby] = i
                 aggregateby_data[tuple(cube_slice)] = result
+                if weights_result is not None:
+                    aggregateby_weights[tuple(cube_slice)] = weights_result
 
             # Restore original weights.
             kwargs["weights"] = weights
@@ -4095,8 +4121,12 @@ x            -              -
                 )
 
         # Attach the aggregate-by data into the aggregate-by cube.
+        if aggregateby_weights is None:
+            data_result = aggregateby_data
+        else:
+            data_result = (aggregateby_data, aggregateby_weights)
         aggregateby_cube = aggregator.post_process(
-            aggregateby_cube, aggregateby_data, coords, **kwargs
+            aggregateby_cube, data_result, coords, **kwargs
         )
 
         return aggregateby_cube

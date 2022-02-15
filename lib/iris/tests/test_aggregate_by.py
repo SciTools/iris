@@ -17,6 +17,7 @@ import iris
 import iris.analysis
 import iris.coord_systems
 import iris.coords
+from iris._lazy_data import as_concrete_data
 
 
 class TestAggregateBy(tests.IrisTest):
@@ -137,6 +138,91 @@ class TestAggregateBy(tests.IrisTest):
         self.cube_multi.add_dim_coord(model_level, 0)
         self.cube_multi.add_dim_coord(coord_lon.copy(), 1)
         self.cube_multi.add_dim_coord(coord_lat.copy(), 2)
+
+        #
+        # masked cubes to test handling of masks
+        #
+        mask_single = np.vstack(
+            (
+                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
+                    26, axis=0
+                ),
+                np.zeros([10, 3, 3]),
+            )
+        )
+        self.cube_single_masked = self.cube_single.copy(
+            ma.array(self.cube_single.data, mask=mask_single)
+        )
+        mask_multi = np.vstack(
+            (
+                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
+                    16, axis=0
+                ),
+                np.ones([2, 3, 3]),
+                np.zeros([2, 3, 3]),
+            )
+        )
+        self.cube_multi_masked = self.cube_multi.copy(
+            ma.array(self.cube_multi.data, mask=mask_multi)
+        )
+
+        #
+        # simple cubes for further tests
+        #
+        data_easy = np.array(
+            [[6, 10, 12, 18], [8, 12, 14, 20], [18, 12, 10, 6]],
+            dtype=np.float32,
+        )
+        self.cube_easy = iris.cube.Cube(
+            data_easy, long_name="temperature", units="kelvin"
+        )
+
+        llcs = iris.coord_systems.GeogCS(6371229)
+        self.cube_easy.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.array([0, 0, 10], dtype=np.float32),
+                "latitude",
+                units="degrees",
+                coord_system=llcs,
+            ),
+            0,
+        )
+        self.cube_easy.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.array([0, 0, 10, 10], dtype=np.float32),
+                "longitude",
+                units="degrees",
+                coord_system=llcs,
+            ),
+            1,
+        )
+
+        data_easy_weighted = np.array(
+            [[3, 5, 7, 9], [0, 2, 4, 6]],
+            dtype=np.float32,
+        )
+        self.cube_easy_weighted = iris.cube.Cube(
+            data_easy_weighted, long_name="temperature", units="kelvin"
+        )
+        llcs = iris.coord_systems.GeogCS(6371229)
+        self.cube_easy_weighted.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.array([0, 10], dtype=np.float32),
+                "latitude",
+                units="degrees",
+                coord_system=llcs,
+            ),
+            0,
+        )
+        self.cube_easy_weighted.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.array([0, 0, 10, 10], dtype=np.float32),
+                "longitude",
+                units="degrees",
+                coord_system=llcs,
+            ),
+            1,
+        )
 
         #
         # weights for weighted aggregate-by
@@ -688,36 +774,12 @@ class TestAggregateBy(tests.IrisTest):
         )
 
     def test_easy(self):
-        data = np.array(
-            [[6, 10, 12, 18], [8, 12, 14, 20], [18, 12, 10, 6]],
-            dtype=np.float32,
-        )
-        cube = iris.cube.Cube(data, long_name="temperature", units="kelvin")
-
-        llcs = iris.coord_systems.GeogCS(6371229)
-        cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.array([0, 0, 10], dtype=np.float32),
-                "latitude",
-                units="degrees",
-                coord_system=llcs,
-            ),
-            0,
-        )
-        cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.array([0, 0, 10, 10], dtype=np.float32),
-                "longitude",
-                units="degrees",
-                coord_system=llcs,
-            ),
-            1,
-        )
-
         #
         # Easy mean aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by("longitude", iris.analysis.MEAN)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "longitude", iris.analysis.MEAN
+        )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -730,7 +792,9 @@ class TestAggregateBy(tests.IrisTest):
             checksum=False,
         )
 
-        aggregateby_cube = cube.aggregated_by("latitude", iris.analysis.MEAN)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "latitude", iris.analysis.MEAN
+        )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -742,7 +806,9 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy max aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by("longitude", iris.analysis.MAX)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "longitude", iris.analysis.MAX
+        )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -750,7 +816,9 @@ class TestAggregateBy(tests.IrisTest):
             ),
         )
 
-        aggregateby_cube = cube.aggregated_by("latitude", iris.analysis.MAX)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "latitude", iris.analysis.MAX
+        )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -762,7 +830,9 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy sum aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by("longitude", iris.analysis.SUM)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "longitude", iris.analysis.SUM
+        )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -770,7 +840,9 @@ class TestAggregateBy(tests.IrisTest):
             ),
         )
 
-        aggregateby_cube = cube.aggregated_by("latitude", iris.analysis.SUM)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "latitude", iris.analysis.SUM
+        )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -782,7 +854,7 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy percentile aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by(
+        aggregateby_cube = self.cube_easy.aggregated_by(
             "longitude", iris.analysis.PERCENTILE, percent=25
         )
         np.testing.assert_almost_equal(
@@ -792,7 +864,7 @@ class TestAggregateBy(tests.IrisTest):
             ),
         )
 
-        aggregateby_cube = cube.aggregated_by(
+        aggregateby_cube = self.cube_easy.aggregated_by(
             "latitude", iris.analysis.PERCENTILE, percent=25
         )
         np.testing.assert_almost_equal(
@@ -806,7 +878,9 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy root mean square aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by("longitude", iris.analysis.RMS)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "longitude", iris.analysis.RMS
+        )
         row = [
             list(np.sqrt([68.0, 234.0])),
             list(np.sqrt([104.0, 298.0])),
@@ -816,7 +890,9 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube.data, np.array(row, dtype=np.float32)
         )
 
-        aggregateby_cube = cube.aggregated_by("latitude", iris.analysis.RMS)
+        aggregateby_cube = self.cube_easy.aggregated_by(
+            "latitude", iris.analysis.RMS
+        )
         row = [
             list(np.sqrt([50.0, 122.0, 170.0, 362.0])),
             [18.0, 12.0, 10.0, 6.0],
@@ -826,41 +902,18 @@ class TestAggregateBy(tests.IrisTest):
         )
 
     def test_weighted_easy(self):
-        data = np.array(
-            [[3, 5, 7, 9], [0, 2, 4, 6]],
-            dtype=np.float32,
-        )
-        cube = iris.cube.Cube(data, long_name="temperature", units="kelvin")
-        weights = np.array(
+        # Use different weights for lat and lon to avoid division by zero.
+        lon_weights = np.array(
             [[1, 0, 1, 1], [9, 1, 2, 0]],
             dtype=np.float32,
         )
-
-        llcs = iris.coord_systems.GeogCS(6371229)
-        cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.array([0, 10], dtype=np.float32),
-                "latitude",
-                units="degrees",
-                coord_system=llcs,
-            ),
-            0,
-        )
-        cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.array([0, 0, 10, 10], dtype=np.float32),
-                "longitude",
-                units="degrees",
-                coord_system=llcs,
-            ),
-            1,
-        )
+        lat_weights = np.array([2.0, 2.0])
 
         #
         # Easy weighted mean aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by(
-            "longitude", iris.analysis.MEAN, weights=weights
+        aggregateby_cube = self.cube_easy_weighted.aggregated_by(
+            "longitude", iris.analysis.MEAN, weights=lon_weights
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
@@ -872,13 +925,15 @@ class TestAggregateBy(tests.IrisTest):
             checksum=False,
         )
 
-        aggregateby_cube = cube.aggregated_by(
-            "latitude", iris.analysis.MEAN, weights=weights
+        aggregateby_cube = self.cube_easy_weighted.aggregated_by(
+            "latitude",
+            iris.analysis.MEAN,
+            weights=lat_weights,
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
-                [[3.0, 0.0, 7.0, 9.0], [0.0, 2.0, 4.0, 0.0]],
+                [[3.0, 5.0, 7.0, 9.0], [0.0, 2.0, 4.0, 6.0]],
                 dtype=np.float32,
             ),
         )
@@ -886,21 +941,23 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy weighted sum aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by(
-            "longitude", iris.analysis.SUM, weights=weights
+        aggregateby_cube = self.cube_easy_weighted.aggregated_by(
+            "longitude", iris.analysis.SUM, weights=lon_weights
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array([[3.0, 16.0], [2.0, 8.0]], dtype=np.float32),
         )
 
-        aggregateby_cube = cube.aggregated_by(
-            "latitude", iris.analysis.SUM, weights=weights
+        aggregateby_cube = self.cube_easy_weighted.aggregated_by(
+            "latitude",
+            iris.analysis.SUM,
+            weights=lat_weights,
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
-                [[3.0, 0.0, 7.0, 9.0], [0.0, 2.0, 8.0, 0.0]],
+                [[6.0, 10.0, 14.0, 18.0], [0.0, 4.0, 8.0, 12.0]],
                 dtype=np.float32,
             ),
         )
@@ -910,11 +967,11 @@ class TestAggregateBy(tests.IrisTest):
         # Note: Not possible for latitude since at least two values for each
         # category are necessary.
         #
-        aggregateby_cube = cube.aggregated_by(
+        aggregateby_cube = self.cube_easy_weighted.aggregated_by(
             "longitude",
             iris.analysis.WPERCENTILE,
             percent=50,
-            weights=weights,
+            weights=lon_weights,
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
@@ -924,8 +981,8 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy weighted root mean square aggregate test by each coordinate.
         #
-        aggregateby_cube = cube.aggregated_by(
-            "longitude", iris.analysis.RMS, weights=weights
+        aggregateby_cube = self.cube_easy_weighted.aggregated_by(
+            "longitude", iris.analysis.RMS, weights=lon_weights
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
@@ -934,28 +991,19 @@ class TestAggregateBy(tests.IrisTest):
             ),
         )
 
-        aggregateby_cube = cube.aggregated_by(
-            "latitude", iris.analysis.RMS, weights=weights
+        aggregateby_cube = self.cube_easy_weighted.aggregated_by(
+            "latitude", iris.analysis.RMS, weights=lat_weights
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
-                [[3.0, 0.0, 7.0, 9.0], [0.0, 2.0, 4.0, 0.0]],
+                [[3.0, 5.0, 7.0, 9.0], [0.0, 2.0, 4.0, 6.0]],
                 dtype=np.float32,
             ),
         )
 
     def test_single_missing(self):
         # aggregation correctly handles masked data
-        mask = np.vstack(
-            (
-                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
-                    26, axis=0
-                ),
-                np.zeros([10, 3, 3]),
-            )
-        )
-        self.cube_single.data = ma.array(self.cube_single.data, mask=mask)
         single_expected = ma.masked_invalid(
             [
                 [
@@ -1000,9 +1048,13 @@ class TestAggregateBy(tests.IrisTest):
                 ],
             ]
         )
-        aggregateby_cube = self.cube_single.aggregated_by(
+        aggregateby_cube = self.cube_single_masked.aggregated_by(
             "height", iris.analysis.MEAN
         )
+
+        # Realize data so that tests with lazy data pass (see
+        # test_lazy_aggregate_by.py).
+        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_missing.cml"),
@@ -1014,15 +1066,6 @@ class TestAggregateBy(tests.IrisTest):
 
     def test_weighted_single_missing(self):
         # weighted aggregation correctly handles masked data
-        mask = np.vstack(
-            (
-                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
-                    26, axis=0
-                ),
-                np.zeros([10, 3, 3]),
-            )
-        )
-        self.cube_single.data = ma.array(self.cube_single.data, mask=mask)
         weighted_single_expected = ma.masked_invalid(
             [
                 [
@@ -1067,11 +1110,15 @@ class TestAggregateBy(tests.IrisTest):
                 ],
             ]
         )
-        aggregateby_cube = self.cube_single.aggregated_by(
+        aggregateby_cube = self.cube_single_masked.aggregated_by(
             "height",
             iris.analysis.MEAN,
             weights=self.weights_single,
         )
+
+        # Realize data so that tests with lazy data pass (see
+        # test_lazy_aggregate_by.py).
+        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_missing.cml"),
@@ -1084,16 +1131,6 @@ class TestAggregateBy(tests.IrisTest):
 
     def test_multi_missing(self):
         # aggregation correctly handles masked data
-        mask = np.vstack(
-            (
-                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
-                    16, axis=0
-                ),
-                np.ones([2, 3, 3]),
-                np.zeros([2, 3, 3]),
-            )
-        )
-        self.cube_multi.data = ma.array(self.cube_multi.data, mask=mask)
         multi_expected = ma.masked_invalid(
             [
                 [
@@ -1143,9 +1180,13 @@ class TestAggregateBy(tests.IrisTest):
                 ],
             ]
         )
-        aggregateby_cube = self.cube_multi.aggregated_by(
+        aggregateby_cube = self.cube_multi_masked.aggregated_by(
             ["height", "level"], iris.analysis.MEAN
         )
+
+        # Realize data so that tests with lazy data pass (see
+        # test_lazy_aggregate_by.py).
+        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "multi_missing.cml"),
@@ -1157,16 +1198,6 @@ class TestAggregateBy(tests.IrisTest):
 
     def test_weighted_multi_missing(self):
         # weighted aggregation correctly handles masked data
-        mask = np.vstack(
-            (
-                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
-                    16, axis=0
-                ),
-                np.ones([2, 3, 3]),
-                np.zeros([2, 3, 3]),
-            )
-        )
-        self.cube_multi.data = ma.array(self.cube_multi.data, mask=mask)
         weighted_multi_expected = ma.masked_invalid(
             [
                 [
@@ -1216,11 +1247,15 @@ class TestAggregateBy(tests.IrisTest):
                 ],
             ]
         )
-        aggregateby_cube = self.cube_multi.aggregated_by(
+        aggregateby_cube = self.cube_multi_masked.aggregated_by(
             ["height", "level"],
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
+
+        # Realize data so that tests with lazy data pass (see
+        # test_lazy_aggregate_by.py).
+        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "multi_missing.cml"),
@@ -1229,6 +1264,85 @@ class TestAggregateBy(tests.IrisTest):
         self.assertMaskedArrayAlmostEqual(
             aggregateby_cube.data,
             weighted_multi_expected,
+        )
+
+    def test_returned_true_single(self):
+        aggregateby_output = self.cube_single.aggregated_by(
+            "height",
+            iris.analysis.MEAN,
+            returned=True,
+            weights=self.weights_single,
+        )
+        assert isinstance(aggregateby_output, tuple)
+
+        aggregateby_cube = aggregateby_output[0]
+        self.assertCML(
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "weighted_single.cml"),
+        )
+
+        aggregateby_weights = aggregateby_output[1]
+        expected_weights = np.array(
+            [
+                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                [[4.0, 4.0, 4.0], [4.0, 4.0, 4.0], [4.0, 4.0, 4.0]],
+                [[5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [5.0, 5.0, 5.0]],
+                [[6.0, 6.0, 6.0], [6.0, 6.0, 6.0], [6.0, 6.0, 6.0]],
+                [[7.0, 7.0, 7.0], [7.0, 7.0, 7.0], [7.0, 7.0, 7.0]],
+                [[8.0, 8.0, 8.0], [8.0, 8.0, 8.0], [8.0, 8.0, 8.0]],
+            ]
+        )
+        np.testing.assert_almost_equal(aggregateby_weights, expected_weights)
+
+    def test_returned_true_multi(self):
+        aggregateby_output = self.cube_multi.aggregated_by(
+            ["height", "level"],
+            iris.analysis.MEAN,
+            returned=True,
+            weights=self.weights_multi,
+        )
+        assert isinstance(aggregateby_output, tuple)
+
+        aggregateby_cube = aggregateby_output[0]
+        self.assertCML(
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "weighted_multi.cml"),
+        )
+
+        aggregateby_weights = aggregateby_output[1]
+        expected_weights = np.array(
+            [
+                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                [[3.0, 3.0, 3.0], [3.0, 3.0, 3.0], [3.0, 3.0, 3.0]],
+                [[3.0, 3.0, 3.0], [3.0, 3.0, 3.0], [3.0, 3.0, 3.0]],
+                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
+                [[3.0, 3.0, 3.0], [3.0, 3.0, 3.0], [3.0, 3.0, 3.0]],
+                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
+            ]
+        )
+        np.testing.assert_almost_equal(aggregateby_weights, expected_weights)
+
+    def test_returned_fails_with_non_weighted_aggregator(self):
+        self.assertRaises(
+            TypeError,
+            self.cube_single.aggregated_by,
+            "height",
+            iris.analysis.MAX,
+            returned=True,
+        )
+
+    def test_weights_fail_with_non_weighted_aggregator(self):
+        self.assertRaises(
+            TypeError,
+            self.cube_single.aggregated_by,
+            "height",
+            iris.analysis.MAX,
+            weights=self.weights_single,
         )
 
 
