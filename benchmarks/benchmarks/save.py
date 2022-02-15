@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Cubesphere-like netcdf saving benchmarks.
+File saving benchmarks.
 
 Where possible benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
