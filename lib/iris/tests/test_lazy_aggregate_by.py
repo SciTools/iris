@@ -5,9 +5,8 @@
 # licensing details.
 import unittest
 
-from iris.tests import test_aggregate_by
-
 from iris._lazy_data import as_lazy_data
+from iris.tests import test_aggregate_by
 
 
 # Simply redo the tests of test_aggregate_by.py with lazy data

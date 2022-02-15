@@ -14,10 +14,10 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._lazy_data import as_concrete_data
 import iris.analysis
 import iris.coord_systems
 import iris.coords
-from iris._lazy_data import as_concrete_data
 
 
 class TestAggregateBy(tests.IrisTest):
@@ -1273,7 +1273,7 @@ class TestAggregateBy(tests.IrisTest):
             returned=True,
             weights=self.weights_single,
         )
-        assert isinstance(aggregateby_output, tuple)
+        self.assertTrue(isinstance(aggregateby_output, tuple))
 
         aggregateby_cube = aggregateby_output[0]
         self.assertCML(
@@ -1303,7 +1303,7 @@ class TestAggregateBy(tests.IrisTest):
             returned=True,
             weights=self.weights_multi,
         )
-        assert isinstance(aggregateby_output, tuple)
+        self.assertTrue(isinstance(aggregateby_output, tuple))
 
         aggregateby_cube = aggregateby_output[0]
         self.assertCML(

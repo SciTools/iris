@@ -4096,7 +4096,8 @@ x            -              -
                     aggregateby_weights[tuple(cube_slice)] = weights_result
 
             # Restore original weights.
-            kwargs["weights"] = weights
+            if weights is not None:
+                kwargs["weights"] = weights
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
