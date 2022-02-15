@@ -98,15 +98,10 @@ class SingleDiagnosticMixin:
             return load_cube(str(self.file_path))
 
 
-@on_demand_benchmark
-class CubeComparison(SingleDiagnosticMixin):
+class ComparisonMixin(SingleDiagnosticMixin):
     """
-    Benchmark time and memory costs of comparing LFRic and UM
-     :class:`~iris.cube.Cube`\\ s.
-
     Uses :class:`SingleDiagnosticMixin` as the realistic case will be comparing
     :class:`~iris.cube.Cube`\\ s that have been loaded from file.
-
     """
 
     # Cut down the parent parameters.
@@ -117,28 +112,35 @@ class CubeComparison(SingleDiagnosticMixin):
         self.cube = self.load()
         self.other_cube = self.load()
 
-    def _comp_cube(self):
+
+@on_demand_benchmark
+class CubeComparison(ComparisonMixin):
+    """
+    Benchmark time and memory costs of comparing LFRic and UM
+     :class:`~iris.cube.Cube`\\ s.
+    """
+
+    def _comparison(self):
         _ = self.cube == self.other_cube
 
     def peakmem_eq(self, file_type):
-        self._comp_cube()
+        self._comparison()
 
     def time_eq(self, file_type):
-        self._comp_cube()
+        self._comparison()
 
 
 @on_demand_benchmark
-class MeshComparison(CubeComparison):
+class MeshComparison(ComparisonMixin):
     """Provides extra context for :class:`CubeComparison`."""
 
-    # Same actions as parent but only on the LFRic file.
     params = [["LFRic"]]
 
-    def _comp_mesh(self):
+    def _comparison(self):
         _ = self.cube.mesh == self.other_cube.mesh
 
     def peakmem_eq(self, file_type):
-        self._comp_mesh()
+        self._comparison()
 
     def time_eq(self, file_type):
-        self._comp_mesh()
+        self._comparison()
