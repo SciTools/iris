@@ -27,7 +27,7 @@ def main():
     vwind = iris.load_cube(infile, "y_wind")
 
     # Create a cube containing the wind speed.
-    windspeed = (uwind ** 2 + vwind ** 2) ** 0.5
+    windspeed = (uwind**2 + vwind**2) ** 0.5
     windspeed.rename("windspeed")
 
     # Plot the wind speed as a contour plot.

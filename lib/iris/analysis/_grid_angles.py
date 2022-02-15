@@ -120,7 +120,7 @@ def _angle(p, q, r):
     mid_lons = np.deg2rad(q[0])
 
     pr = _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
-    pr_norm = np.sqrt(np.sum(pr ** 2, axis=0))
+    pr_norm = np.sqrt(np.sum(pr**2, axis=0))
     pr_top = pr[1] * np.cos(mid_lons) - pr[0] * np.sin(mid_lons)
 
     index = pr_norm == 0
