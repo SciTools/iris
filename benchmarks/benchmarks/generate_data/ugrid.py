@@ -9,7 +9,7 @@ Scripts for generating supporting data for UGRID-related benchmarking.
 from iris import load_cube as iris_loadcube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
-from .. import BENCHMARK_DATA, run_function_elsewhere
+from . import BENCHMARK_DATA, load_realised, run_function_elsewhere
 from .stock import (
     create_file__xios_2d_face_half_levels,
     create_file__xios_3d_face_half_levels,
@@ -88,7 +88,8 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
 
     # File now *should* definitely exist: content is simply the desired cube.
     with PARSE_UGRID_ON_LOAD.context():
-        cube = iris_loadcube(str(filepath))
+        with load_realised():
+            cube = iris_loadcube(str(filepath))
     return cube
 
 
