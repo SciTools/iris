@@ -4,7 +4,7 @@ name: Stale issues and pull-requests
 
 on:
   schedule:
-    # Run once an hour
+    # Run once a day
     # N.B. "should" be quoted, according to
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
     - cron: "0 0 * * *"
