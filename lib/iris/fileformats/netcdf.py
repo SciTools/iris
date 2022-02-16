@@ -498,7 +498,7 @@ def _actions_activation_stats(engine, cf_name):
 
     print("Rules Triggered:")
 
-    for rule in sorted(list(engine.rule_triggered)):
+    for rule in sorted(list(engine.rules_triggered)):
         print("\t%s" % rule)
 
     print("Case Specific Facts:")
@@ -610,7 +610,7 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.cube = cube
     engine.cube_parts = {}
     engine.requires = {}
-    engine.rule_triggered = _OrderedAddableList()
+    engine.rules_triggered = _OrderedAddableList()
     engine.filename = filename
 
     # Assert all the case-specific facts.
