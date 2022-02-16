@@ -429,6 +429,8 @@ def benchmarks(
                 )
                 if shifts:
                     # Write the shifts report to a file.
+                    # Dir is used by .github/workflows/benchmarks.yml,
+                    #  but not cached - intended to be discarded after run.
                     shifts_dir.mkdir(exist_ok=True, parents=True)
                     shifts_path = shifts_dir / after
                     with shifts_path.open("w") as shifts_file:
