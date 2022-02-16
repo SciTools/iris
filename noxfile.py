@@ -435,9 +435,7 @@ def benchmarks(
                         shifts_file.write(shifts)
 
     # Common ASV arguments used for both `overnight` and `bench` run_types.
-    asv_harness = (
-        "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict"
-    )
+    asv_harness = "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict --show-stderr"
 
     if run_type == "overnight":
         first_commit = first_arg
