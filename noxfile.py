@@ -469,4 +469,5 @@ def benchmarks(
 
     else:
         asv_subcommand = first_arg
+        assert run_type == "custom"
         session.run("asv", asv_subcommand, *asv_args)
