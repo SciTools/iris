@@ -573,7 +573,7 @@ def _get_cf_var_data(cf_var, filename):
 class _OrderedAddableList(list):
     """
     A custom container object for actions recording.
-    
+
     Used purely in actions debugging, to accumulate a record of which actions
     were activated.
 
@@ -584,6 +584,7 @@ class _OrderedAddableList(list):
     a set.add with a list.append.
 
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._n_add = 0
