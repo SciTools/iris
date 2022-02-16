@@ -327,7 +327,7 @@ def benchmarks(
           merged.
           **For maximum accuracy, avoid using the machine that is running this
           session. Run time could be >1 hour for the full benchmark suite.**
-        * ``custom``: run ASV with the input **ASV command type**, without any
+        * ``custom``: run ASV with the input **ASV sub-command**, without any
           preset arguments - must all be supplied by the user. So just like
           running ASV manually, with the convenience of re-using the session's
           scripted setup steps.
@@ -395,7 +395,7 @@ def benchmarks(
     run_type_arg = {
         "overnight": "first commit",
         "branch": "base branch",
-        "custom": "ASV command type",
+        "custom": "ASV sub-command",
     }
     if run_type not in run_type_arg.keys():
         message = f"Unsupported run-type: {run_type}"
@@ -468,5 +468,5 @@ def benchmarks(
         asv_compare(merge_base, "HEAD")
 
     else:
-        asv_command_type = first_arg
-        session.run("asv", asv_command_type, *asv_args)
+        asv_subcommand = first_arg
+        session.run("asv", asv_subcommand, *asv_args)
