@@ -22,7 +22,9 @@ on:
         default: "no"
   schedule:
     # Run once a week on a Saturday night 
-    - cron: 1 0 * * 6
+    # N.B. "should" be quoted, according to
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
+    - cron: "1 0 * * 6"
 
 
 jobs:
