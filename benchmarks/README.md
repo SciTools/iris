@@ -25,9 +25,9 @@ automated overnight run locally. See the session docstring for detail.
 used to generate benchmark test objects/files; see
 [Data generation](#data-generation). The Nox session sets this automatically,
 but will defer to any value already set in the shell.
-* ``BENCHMARK_DATA`` - optional - path to a directory where test files used by
-the benchmarks are saved and loaded. Defaults to ``<root>/benchmarks/.data/``
-if not set.
+* ``BENCHMARK_DATA`` - optional - path to a directory for benchmark synthetic
+test data, which the benchmark scripts will create if it doesn't already
+exist. Defaults to ``<root>/benchmarks/.data/`` if not set.
 
 ## Writing benchmarks
 
