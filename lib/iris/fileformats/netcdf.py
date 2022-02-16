@@ -570,13 +570,20 @@ def _get_cf_var_data(cf_var, filename):
     return as_lazy_data(proxy, chunks=chunks)
 
 
-class OrderedAddableList(list):
-    # Used purely in actions debugging, to accumulate a record of which actions
-    # were activated.
-    # It replaces a set, so as to record the ordering of operations, with
-    # possible repeats, and it also numbers the entries.
-    # Actions routines invoke the 'add' method, which thus effectively converts
-    # a set.add into a list.append.
+class _OrderedAddableList(list):
+    """
+    A custom container object for actions recording.
+    
+    Used purely in actions debugging, to accumulate a record of which actions
+    were activated.
+
+    It replaces a set, so as to preserve the ordering of operations, with
+    possible repeats, and it also numbers the entries.
+
+    The actions routines invoke an 'add' method, so this effectively replaces
+    a set.add with a list.append.
+
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._n_add = 0
@@ -602,7 +609,7 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.cube = cube
     engine.cube_parts = {}
     engine.requires = {}
-    engine.rule_triggered = OrderedAddableList()
+    engine.rule_triggered = _OrderedAddableList()
     engine.filename = filename
 
     # Assert all the case-specific facts.
