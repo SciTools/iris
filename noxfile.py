@@ -8,6 +8,8 @@ For further details, see https://nox.thea.codes/en/stable/#
 import hashlib
 import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import Literal
 
 import nox
 from nox.logger import logger
@@ -289,31 +291,60 @@ def linkcheck(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=PY_VER, venv_backend="conda")
+@nox.session
 @nox.parametrize(
-    ["ci_mode"],
-    [True, False],
-    ids=["ci compare", "full"],
+    "run_type",
+    ["overnight", "branch", "custom"],
+    ids=["overnight", "branch", "custom"],
 )
-def benchmarks(session: nox.sessions.Session, ci_mode: bool):
+def benchmarks(
+    session: nox.sessions.Session,
+    run_type: Literal["overnight", "branch", "custom"],
+):
     """
     Perform Iris performance benchmarks (using Airspeed Velocity).
+
+    All run types require a single Nox positional argument (e.g.
+    ``nox --session="foo" -- my_pos_arg``) - detailed in the parameters
+    section - and can optionally accept a series of further arguments that will
+    be added to session's ASV command.
 
     Parameters
     ----------
     session: object
         A `nox.sessions.Session` object.
-    ci_mode: bool
-        Run a cut-down selection of benchmarks, comparing the current commit to
-        the last commit for performance regressions.
+    run_type: {"overnight", "branch", "custom"}
+        * ``overnight``: benchmarks all commits between the input **first
+          commit** to ``HEAD``, comparing each to its parent for performance
+          shifts. If a commit causes shifts, the output is saved to a file:
+          ``.asv/performance-shifts/<commit-sha>``. Designed for checking the
+          previous 24 hours' commits, typically in a scheduled script.
+        * ``branch``: Performs the same operations as ``overnight``, but always
+          on two commits only - ``HEAD``, and ``HEAD``'s merge-base with the
+          input **base branch**. Output from this run is never saved to a file.
+          Designed for testing if the active branch's changes cause performance
+          shifts - anticipating what would be caught by ``overnight`` once
+          merged.
+          **For maximum accuracy, avoid using the machine that is running this
+          session. Run time could be >1 hour for the full benchmark suite.**
+        * ``custom``: run ASV with the input **ASV sub-command**, without any
+          preset arguments - must all be supplied by the user. So just like
+          running ASV manually, with the convenience of re-using the session's
+          scripted setup steps.
 
-    Notes
-    -----
-    ASV is set up to use ``nox --session=tests --install-only`` to prepare
-    the benchmarking environment. This session environment must use a Python
-    version that is also available for ``--session=tests``.
+    Examples
+    --------
+    * ``nox --session="benchmarks(overnight)" -- a1b23d4``
+    * ``nox --session="benchmarks(branch)" -- upstream/main``
+    * ``nox --session="benchmarks(branch)" -- upstream/mesh-data-model``
+    * ``nox --session="benchmarks(branch)" -- upstream/main --bench=regridding``
+    * ``nox --session="benchmarks(custom)" -- continuous a1b23d4 HEAD --quick``
 
     """
+    # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
+    #  for more.
+    COMPARE_FACTOR = 1.2
+
     session.install("asv", "nox")
 
     data_gen_var = "DATA_GEN_PYTHON"
@@ -321,20 +352,24 @@ def benchmarks(session: nox.sessions.Session, ci_mode: bool):
         print("Using existing data generation environment.")
     else:
         print("Setting up the data generation environment...")
+        # Get Nox to build an environment for the `tests` session, but don't
+        #  run the session. Will re-use a cached environment if appropriate.
         session.run_always(
             "nox",
             "--session=tests",
             "--install-only",
-            f"--python={session.python}",
+            f"--python={_PY_VERSION_LATEST}",
         )
+        # Find the environment built above, set it to be the data generation
+        #  environment.
         data_gen_python = next(
-            Path(".nox").rglob(f"tests*/bin/python{session.python}")
+            Path(".nox").rglob(f"tests*/bin/python{_PY_VERSION_LATEST}")
         ).resolve()
         session.env[data_gen_var] = data_gen_python
 
-        print("Installing Mule into data generation environment...")
         mule_dir = data_gen_python.parents[1] / "resources" / "mule"
         if not mule_dir.is_dir():
+            print("Installing Mule into data generation environment...")
             session.run_always(
                 "git",
                 "clone",
@@ -356,18 +391,85 @@ def benchmarks(session: nox.sessions.Session, ci_mode: bool):
     # Skip over setup questions for a new machine.
     session.run("asv", "machine", "--yes")
 
-    def asv_exec(*sub_args: str) -> None:
-        run_args = ["asv", *sub_args]
-        session.run(*run_args)
+    # All run types require one Nox posarg.
+    run_type_arg = {
+        "overnight": "first commit",
+        "branch": "base branch",
+        "custom": "ASV sub-command",
+    }
+    if run_type not in run_type_arg.keys():
+        message = f"Unsupported run-type: {run_type}"
+        raise NotImplementedError(message)
+    if not session.posargs:
+        message = (
+            f"Missing mandatory first Nox session posarg: "
+            f"{run_type_arg[run_type]}"
+        )
+        raise ValueError(message)
+    first_arg = session.posargs[0]
+    # Optional extra arguments to be passed down to ASV.
+    asv_args = session.posargs[1:]
 
-    if ci_mode:
-        # If on a PR: compare to the base (target) branch.
-        #  Else: compare to previous commit.
-        previous_commit = os.environ.get("PR_BASE_SHA", "HEAD^1")
-        try:
-            asv_exec("continuous", "--factor=1.2", previous_commit, "HEAD")
-        finally:
-            asv_exec("compare", previous_commit, "HEAD")
+    def asv_compare(*commits):
+        """Run through a list of commits comparing each one to the next."""
+        commits = [commit[:8] for commit in commits]
+        shifts_dir = Path(".asv") / "performance-shifts"
+        for i in range(len(commits) - 1):
+            before = commits[i]
+            after = commits[i + 1]
+            asv_command_ = f"asv compare {before} {after} --factor={COMPARE_FACTOR} --split"
+            session.run(*asv_command_.split(" "))
+
+            if run_type == "overnight":
+                # Record performance shifts.
+                # Run the command again but limited to only showing performance
+                #  shifts.
+                shifts = session.run(
+                    *asv_command_.split(" "), "--only-changed", silent=True
+                )
+                if shifts:
+                    # Write the shifts report to a file.
+                    # Dir is used by .github/workflows/benchmarks.yml,
+                    #  but not cached - intended to be discarded after run.
+                    shifts_dir.mkdir(exist_ok=True, parents=True)
+                    shifts_path = shifts_dir / after
+                    with shifts_path.open("w") as shifts_file:
+                        shifts_file.write(shifts)
+
+    # Common ASV arguments used for both `overnight` and `bench` run_types.
+    asv_harness = "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict --show-stderr"
+
+    if run_type == "overnight":
+        first_commit = first_arg
+        commit_range = f"{first_commit}^^.."
+        asv_command = asv_harness.format(posargs=commit_range)
+        session.run(*asv_command.split(" "), *asv_args)
+
+        # git rev-list --first-parent is the command ASV uses.
+        git_command = f"git rev-list --first-parent {commit_range}"
+        commit_string = session.run(
+            *git_command.split(" "), silent=True, external=True
+        )
+        commit_list = commit_string.rstrip().split("\n")
+        asv_compare(*reversed(commit_list))
+
+    elif run_type == "branch":
+        base_branch = first_arg
+        git_command = f"git merge-base HEAD {base_branch}"
+        merge_base = session.run(
+            *git_command.split(" "), silent=True, external=True
+        )[:8]
+
+        with NamedTemporaryFile("w") as hashfile:
+            hashfile.writelines([merge_base, "\n", "HEAD"])
+            hashfile.flush()
+            commit_range = f"HASHFILE:{hashfile.name}"
+            asv_command = asv_harness.format(posargs=commit_range)
+            session.run(*asv_command.split(" "), *asv_args)
+
+        asv_compare(merge_base, "HEAD")
+
     else:
-        # f5ceb808 = first commit supporting nox --install-only .
-        asv_exec("run", "f5ceb808..HEAD")
+        asv_subcommand = first_arg
+        assert run_type == "custom"
+        session.run("asv", asv_subcommand, *asv_args)

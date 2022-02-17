@@ -216,7 +216,7 @@ def load_files(filenames, callback, constraints=None):
 
 def load_http(urls, callback):
     """
-    Takes a list of urls and a callback function, and returns a generator
+    Takes a list of OPeNDAP URLs and a callback function, and returns a generator
     of Cubes from the given URLs.
 
     .. note::
@@ -226,11 +226,11 @@ def load_http(urls, callback):
 
     """
     # Create default dict mapping iris format handler to its associated filenames
+    from iris.fileformats import FORMAT_AGENT
+
     handler_map = collections.defaultdict(list)
     for url in urls:
-        handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
-            url, None
-        )
+        handling_format_spec = FORMAT_AGENT.get_spec(url, None)
         handler_map[handling_format_spec].append(url)
 
     # Call each iris format handler with the appropriate filenames

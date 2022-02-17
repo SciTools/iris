@@ -60,12 +60,10 @@ class LoadAndRealise:
         _ = self.load()
 
     def time_realise(self, _, __, ___, ____) -> None:
-        # Cache the original data object and re-apply after realisation, which
-        #  restores original state for the next repeat. The cache/apply steps
-        #  add negligible time to the benchmark result.
-        data_original = self.cube.core_data()
-        _ = self.cube.data
-        self.cube.data = data_original
+        # Don't touch cube.data - permanent realisation plays badly with ASV's
+        #  re-run strategy.
+        assert self.cube.has_lazy_data()
+        self.cube.core_data().compute()
 
 
 class STASHConstraint:
@@ -116,6 +114,8 @@ class TimeConstraint:
 
 
 class ManyVars:
+    FILE_PATH = BENCHMARK_DATA / "many_var_file.nc"
+
     @staticmethod
     def _create_file(save_path: str) -> None:
         """Is run externally - everything must be self-contained."""
@@ -135,17 +135,16 @@ class ManyVars:
             cube.add_aux_coord(coord, 0)
         save(cube, save_path)
 
-    def setup(self) -> None:
-        self.file_path = BENCHMARK_DATA / "many_var_file.nc"
-        if not REUSE_DATA or not self.file_path.is_file():
+    def setup_cache(self) -> None:
+        if not REUSE_DATA or not self.FILE_PATH.is_file():
             # See :mod:`benchmarks.generate_data` docstring for full explanation.
             _ = run_function_elsewhere(
                 self._create_file,
-                str(self.file_path),
+                str(self.FILE_PATH),
             )
 
     def time_many_var_load(self) -> None:
-        _ = load(str(self.file_path))
+        _ = load(str(self.FILE_PATH))
 
 
 class StructuredFF:

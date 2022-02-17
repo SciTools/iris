@@ -168,10 +168,10 @@ def pearsonr(
     covar = (s1 * s2).collapsed(
         corr_coords, iris.analysis.SUM, weights=weights_1, mdtol=mdtol
     )
-    var_1 = (s1 ** 2).collapsed(
+    var_1 = (s1**2).collapsed(
         corr_coords, iris.analysis.SUM, weights=weights_1
     )
-    var_2 = (s2 ** 2).collapsed(
+    var_2 = (s2**2).collapsed(
         corr_coords, iris.analysis.SUM, weights=weights_2
     )
 
