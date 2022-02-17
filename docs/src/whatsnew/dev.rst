@@ -1,13 +1,13 @@
 .. include:: ../common_links.inc
 
-v3.2 (31 Jan 2022) [unreleased]
-*******************************
+|iris_version| |build_date| [unreleased]
+****************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` v3.2.0 Release Highlights
+.. dropdown:: :opticon:`report` |iris_version| Release Highlights
    :container: + shadow
    :title: text-primary text-center font-weight-bold
    :body: bg-light
@@ -18,7 +18,8 @@ This document explains the changes made to Iris for this release
 
    * We've added experimental support for
      :ref:`Meshes <ugrid>`, which can now be loaded and
-     attached to a cube. Mesh support is based on the `CF-UGRID`_ model.
+     attached to a cube. Mesh support is based on the based on `CF-UGRID`_
+     model.
    * We've also dropped support for ``Python 3.7``.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
