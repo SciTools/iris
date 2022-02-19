@@ -4431,7 +4431,7 @@ x            -               -
             air_potential_temperature / (K)     \
 (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(cube.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+            DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
                 points: [2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00]
                 shape: (3,)
                 dtype: float64
@@ -4444,7 +4444,7 @@ x            -               -
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(result.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+            DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
                 points: [2009-11-19 10:30:00]
                 shape: (1,)
                 dtype: float64
@@ -4459,7 +4459,7 @@ x            -               -
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(result2.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+            DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
                 points: [2009-11-19 10:30:00]
                 shape: (1,)
                 dtype: float64

@@ -30,7 +30,7 @@ variables:
 	double forecast_reference_time ;
 		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
 		forecast_reference_time:standard_name = "forecast_reference_time" ;
-		forecast_reference_time:calendar = "gregorian" ;
+		forecast_reference_time:calendar = "standard" ;
 	double height ;
 		height:units = "m" ;
 		height:standard_name = "height" ;
@@ -39,7 +39,7 @@ variables:
 		time:bounds = "time_bnds" ;
 		time:units = "hours since 1970-01-01 00:00:00" ;
 		time:standard_name = "time" ;
-		time:calendar = "gregorian" ;
+		time:calendar = "standard" ;
 	double time_bnds(bnds) ;
 
 // global attributes:

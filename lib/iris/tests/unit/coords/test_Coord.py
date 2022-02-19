@@ -890,7 +890,7 @@ class Test___str__(tests.IrisTest):
         )
         expected = "\n".join(
             [
-                "DimCoord :  time / (days since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (days since 1970-01-01, standard calendar)",
                 "    points: [1970-01-06 00:00:00]",
                 "    shape: (1,)",
                 "    dtype: int64",
@@ -907,7 +907,7 @@ class Test___str__(tests.IrisTest):
         coord.guess_bounds()
         expected = "\n".join(
             [
-                "DimCoord :  time / (days since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (days since 1970-01-01, standard calendar)",
                 "    points: [1970-01-06 00:00:00, 1970-01-07 00:00:00]",
                 "    bounds: [",
                 "        [1970-01-05 12:00:00, 1970-01-06 12:00:00],",
@@ -926,7 +926,7 @@ class Test___str__(tests.IrisTest):
         )
         expected = "\n".join(
             [
-                "DimCoord :  time / (years since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (years since 1970-01-01, standard calendar)",
                 "    points: [5]",
                 "    shape: (1,)",
                 "    dtype: int64",
@@ -943,7 +943,7 @@ class Test___str__(tests.IrisTest):
         coord.guess_bounds()
         expected = "\n".join(
             [
-                "DimCoord :  time / (years since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (years since 1970-01-01, standard calendar)",
                 "    points: [5, 6]",
                 "    bounds: [",
                 "        [4.5, 5.5],",

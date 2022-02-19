@@ -80,7 +80,7 @@ Internal
   cf_units v2 is almost entirely backwards compatible with v1.
   However the ability to preserve some aliased calendars has been removed.
   For this reason, it is possible that NetCDF load of a variable with a
-  "standard" calendar will result in a saved NetCDF of a "gregorian"
+  "standard" calendar will result in a saved NetCDF of a "standard"
   calendar.
 
 * Iris updated its time-handling functionality from the

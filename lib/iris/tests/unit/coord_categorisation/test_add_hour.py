@@ -32,7 +32,7 @@ class Test_add_hour(tests.IrisTest):
         time_coord = iris.coords.DimCoord(
             hour_numbers,
             standard_name="time",
-            units=cf_units.Unit("hours since epoch", "gregorian"),
+            units=cf_units.Unit("hours since epoch", "standard"),
         )
         cube.add_dim_coord(time_coord, 0)
 

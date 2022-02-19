@@ -163,7 +163,7 @@ fullname
 func
 geolocations
 github
-gregorian
+standard
 grib
 gribapi
 gridcell

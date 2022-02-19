@@ -88,7 +88,7 @@
 		[273.0, 303.0],
 		[304.0, 333.0],
 		[334.0, 364.0]]" id="1c4a69ce" long_name="time" points="[15.0, 44.5, 74.0, 104.5, 135.0, 165.5, 196.0,
-		227.0, 257.5, 288.0, 318.5, 349.0]" shape="(12,)" standard_name="time" units="Unit('days since 2010-01-01 12:00:00', calendar='gregorian')" value_type="float64" var_name="time"/>
+		227.0, 257.5, 288.0, 318.5, 349.0]" shape="(12,)" standard_name="time" units="Unit('days since 2010-01-01 12:00:00', calendar='standard')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

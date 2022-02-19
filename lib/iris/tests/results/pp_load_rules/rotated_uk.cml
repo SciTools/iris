@@ -11,7 +11,7 @@
         <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[333627.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[333627.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="f1ab3066" points="[-4.452, -4.416, -4.38, ..., 8.4, 8.436, 8.472]" shape="(360,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
@@ -35,7 +35,7 @@
         <dimCoord id="6eef7051" long_name="pressure" points="[-1.0]" shape="(1,)" units="Unit('hPa')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord id="cb784457" points="[333627.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[333627.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

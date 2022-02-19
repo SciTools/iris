@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test plot of time coord with non-gregorian calendar.
+Test plot of time coord with non-standard calendar.
 
 """
 

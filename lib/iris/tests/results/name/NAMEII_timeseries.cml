@@ -36,7 +36,7 @@
 		[370473.5, 370474.5],
 		[370474.5, 370475.5],
 		[370475.5, 370476.5]]" id="cb784457" points="[370345.0, 370346.0, 370347.0, ..., 370474.0,
-		370475.0, 370476.0]" shape="(132,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+		370475.0, 370476.0]" shape="(132,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
         <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string">
@@ -85,7 +85,7 @@
 		[370473.5, 370474.5],
 		[370474.5, 370475.5],
 		[370475.5, 370476.5]]" id="cb784457" points="[370345.0, 370346.0, 370347.0, ..., 370474.0,
-		370475.0, 370476.0]" shape="(132,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+		370475.0, 370476.0]" shape="(132,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
         <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string">

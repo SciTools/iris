@@ -17,7 +17,7 @@
         <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord id="a2cbc1ea" points="[1.65]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
@@ -37,7 +37,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="84a944b0" points="[200.0, 350.0, 800.0, 1000.0, 1500.0, 5000.0,

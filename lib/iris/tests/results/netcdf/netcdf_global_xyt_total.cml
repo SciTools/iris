@@ -19,7 +19,7 @@
 		929262, 929268, 929274, 929280, 929286, 929292,
 		929298, 929304, 929310, 929316, 929322, 929328,
 		929334, 929340, 929346, 929352, 929358, 929364,
-		929370]" shape="(31,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='gregorian')" value_type="int32" var_name="time"/>
+		929370]" shape="(31,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='standard')" value_type="int32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>
