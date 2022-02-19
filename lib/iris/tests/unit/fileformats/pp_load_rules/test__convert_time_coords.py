@@ -13,7 +13,7 @@ Unit tests for
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from cf_units import CALENDAR_360_DAY, CALENDAR_GREGORIAN, Unit
+from cf_units import CALENDAR_360_DAY, CALENDAR_STANDARD, Unit
 from cftime import datetime as nc_datetime
 import numpy as np
 
@@ -38,7 +38,7 @@ def _lbcode(value=None, ix=None, iy=None):
     return result
 
 
-_EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_GREGORIAN)
+_EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_STANDARD)
 _HOURS_UNIT = Unit("hours")
 
 

@@ -38,7 +38,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
     """
     units = Unit("unknown")
     if calendar is None:
-        calendar = cf_units.CALENDAR_GREGORIAN
+        calendar = cf_units.CALENDAR_STANDARD
 
     # Convert pandas datetime objects to python datetime obejcts.
     if isinstance(points, DatetimeIndex):
@@ -83,7 +83,7 @@ def as_cube(pandas_array, copy=True, calendars=None):
     Example usage::
 
         as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
-        as_cube(data_frame, calendars={1: cf_units.CALENDAR_GREGORIAN})
+        as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     .. note:: This function will copy your data by default.
 

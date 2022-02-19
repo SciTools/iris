@@ -51,7 +51,7 @@ class TestSystemInitial(tests.IrisTest):
             )
         )
         hours_since_epoch = cf_units.Unit(
-            "hours since epoch", cf_units.CALENDAR_GREGORIAN
+            "hours since epoch", cf_units.CALENDAR_STANDARD
         )
         cm.add_aux_coord(
             iris.coords.AuxCoord(

@@ -1066,7 +1066,7 @@ class PPField(metaclass=ABCMeta):
     def calendar(self):
         """Return the calendar of the field."""
         # TODO #577 What calendar to return when ibtim.ic in [0, 3]
-        calendar = cf_units.CALENDAR_GREGORIAN
+        calendar = cf_units.CALENDAR_STANDARD
         if self.lbtim.ic == 2:
             calendar = cf_units.CALENDAR_360_DAY
         elif self.lbtim.ic == 4:
