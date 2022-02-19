@@ -139,7 +139,7 @@ class TestCFReader(tests.IrisTest):
         attr = []
         attr.append(("axis", "T"))
         attr.append(("bounds", "time_bnds"))
-        attr.append(("calendar", "standard"))
+        attr.append(("calendar", "gregorian"))
         attr.append(("long_name", "Julian Day"))
         attr.append(("units", "days since 1950-01-01 00:00:00.0"))
         self.assertEqual(time.cf_attrs(), tuple(attr))
