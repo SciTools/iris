@@ -1122,12 +1122,15 @@ class Mercator(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
+        # Initialise to None, then set based on arguments
+        #: The latitude where the scale is 1.
+        self.standard_parallel = None
+        # The scale factor at the origin of the projection
+        self.scale_factor_at_projection_origin = None
         if scale_factor_at_projection_origin is None:
-            #: The latitude where the scale is 1.
             self.standard_parallel = _arg_default(standard_parallel, 0)
         else:
             if standard_parallel is None:
-                # The scale factor at the origin of the projection
                 self.scale_factor_at_projection_origin = _arg_default(
                     scale_factor_at_projection_origin, 0
                 )
