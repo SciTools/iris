@@ -1110,7 +1110,7 @@ class Mercator(CoordSystem):
         * false_northing:
             Y offset from the planar origin in metres. Defaults to 0.0.
 
-        Note: Only one of ``latitude_true_scale`` and
+        Note: Only one of ``standard_parallel`` and
         ``scale_factor_at_projection_origin`` should be included.
 
         """
@@ -1134,7 +1134,8 @@ class Mercator(CoordSystem):
             else:
                 raise ValueError(
                     "It does not make sense to provide both "
-                    '"scale_factor" and "latitude_true_scale". '
+                    '"scale_factor_at_projection_origin" and '
+                    '"standard_parallel".'
                 )
 
         #: X offset from the planar origin in metres.

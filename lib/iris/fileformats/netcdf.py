@@ -2563,7 +2563,12 @@ class Saver:
                     )
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.scale_factor_at_projection_origin = 1.0
+                    if cs.scale_factor_at_projection_origin is not None:
+                        cf_var_grid.scale_factor_at_projection_origin = (
+                            cs.scale_factor_at_projection_origin
+                        )
+                    if cs.standard_parallel is not None:
+                        cf_var_grid.standard_parallel = cs.standard_parallel
 
                 # lcc
                 elif isinstance(cs, iris.coord_systems.LambertConformal):
