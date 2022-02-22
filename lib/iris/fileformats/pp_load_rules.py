@@ -956,7 +956,7 @@ def convert(f):
     )
 
 
-def _all_other_rules(f):
+def _all_other_rules(f):  # noqa C901
     """
     This deals with all the other rules that have not been factored into any of
     the other convert_scalar_coordinate functions above.
@@ -1156,6 +1156,27 @@ def _all_other_rules(f):
         )
 
     if (
+        f.bdx != 0.0
+        and f.bdx != f.bmdi
+        and len(f.lbcode) != 5
+        and f.lbcode[0] == 9
+    ):
+        dim_coords_and_dims.append(
+            (
+                DimCoord.from_regular(
+                    f.bzx,
+                    f.bdx,
+                    f.lbnpt,
+                    standard_name="projection_x_coordinate",
+                    units="metres",
+                    circular=(f.lbhem in [0, 4]),
+                    coord_system=None,
+                ),
+                1,
+            )
+        )
+
+    if (
         f.bdy != 0.0
         and f.bdy != f.bmdi
         and len(f.lbcode) != 5
@@ -1191,6 +1212,26 @@ def _all_other_rules(f):
                     units="degrees",
                     coord_system=f.coord_system(),
                     with_bounds=True,
+                ),
+                0,
+            )
+        )
+
+    if (
+        f.bdy != 0.0
+        and f.bdy != f.bmdi
+        and len(f.lbcode) != 5
+        and f.lbcode[0] == 9
+    ):
+        dim_coords_and_dims.append(
+            (
+                DimCoord.from_regular(
+                    f.bzy,
+                    f.bdy,
+                    f.lbrow,
+                    standard_name="projection_y_coordinate",
+                    units="metres",
+                    coord_system=None,
                 ),
                 0,
             )
