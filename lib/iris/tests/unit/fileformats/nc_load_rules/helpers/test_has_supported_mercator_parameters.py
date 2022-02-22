@@ -79,7 +79,25 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
 
         self.assertTrue(is_valid)
 
-    def test_invalid_scale_factor(self):
+    def test_valid_scale_factor(self):
+        cf_name = "mercator"
+        cf_grid_var = mock.Mock(
+            spec=[],
+            longitude_of_projection_origin=0,
+            false_easting=0,
+            false_northing=0,
+            scale_factor_at_projection_origin=0.9,
+            semi_major_axis=6377563.396,
+            semi_minor_axis=6356256.909,
+        )
+        engine = _engine(cf_grid_var, cf_name)
+
+        is_valid = has_supported_mercator_parameters(engine, cf_name)
+
+        self.assertTrue(is_valid)
+
+    def test_invalid_scale_factor_and_standard_parallel(self):
+        raise NotImplementedError
         # Iris does not yet support scale factors other than one for
         # Mercator projections
         cf_name = "mercator"

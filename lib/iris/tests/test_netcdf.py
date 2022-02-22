@@ -228,6 +228,12 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc_false.cml"))
 
+    def test_load_merc_non_unit_scale_factor(self):
+        raise NotImplementedError
+
+    def test_load_merc_standard_parallel(self):
+        raise NotImplementedError
+
     def test_load_stereographic_grid(self):
         # Test loading a single CF-netCDF file with a stereographic
         # grid_mapping.
