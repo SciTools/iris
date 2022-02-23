@@ -97,8 +97,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
         self.assertTrue(is_valid)
 
     def test_invalid_scale_factor_and_standard_parallel(self):
-        raise NotImplementedError
-        # Iris does not yet support scale factors other than one for
+        # Scale factor and standard parallel cannot both be specified for
         # Mercator projections
         cf_name = "mercator"
         cf_grid_var = mock.Mock(
@@ -107,6 +106,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
             false_easting=0,
             false_northing=0,
             scale_factor_at_projection_origin=0.9,
+            standard_parallel=20,
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
@@ -118,7 +118,11 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegex(str(warns[0]), "Scale factor")
+        self.assertRegex(
+            str(warns[0]),
+            "both "
+            '"scale_factor_at_projection_origin" and "standard_parallel"',
+        )
 
 
 if __name__ == "__main__":
