@@ -42,6 +42,7 @@ import iris.util as iutil  # noqa
 _POSTFIX_DIFF = "-failed-diff.png"
 _POSTFIX_JSON = os.path.join("results", "imagerepo.json")
 _POSTFIX_LOCK = os.path.join("results", "imagerepo.lock")
+BASE_REPO_URI = "https://scitools.github.io/test-iris-imagehash/"
 
 
 @contextlib.contextmanager
@@ -147,9 +148,13 @@ def diff_viewer(
     plt.show()
 
 
-def _calculate_hit(uris, phash, action):
+def _calculate_hit(image_options, phash, action):
     # Extract the hex basename strings from the uris.
-    hexes = [os.path.splitext(os.path.basename(uri))[0] for uri in uris]
+    hexes = [
+        hex
+        for image_option in image_options
+        for hex in image_option["known_hashes"]
+    ]
     # Create the expected perceptual image hashes from the uris.
     to_hash = imagehash.hex_to_hash
     expected = [to_hash(uri_hex) for uri_hex in hexes]
@@ -226,9 +231,11 @@ def step_over_diffs(result_dir, action, display=True):
                 phash = imagehash.phash(
                     Image.open(result_fname), hash_size=iris.tests._HASH_SIZE
                 )
-                uris = repo[key]
-                hash_index, distance = _calculate_hit(uris, phash, action)
-                uri = uris[hash_index]
+                image_options = repo[key]
+                image_index, distance = _calculate_hit(
+                    image_options, phash, action
+                )
+                uri = BASE_REPO_URI + image_options[image_index]["image_uri"]
             except KeyError:
                 wmsg = "Ignoring unregistered test result {!r}."
                 warnings.warn(wmsg.format(key))
