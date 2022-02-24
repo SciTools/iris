@@ -7,6 +7,7 @@ Testing
    :maxdepth: 3
 
    contributing_testing
+   testing_tools
    contributing_graphics_tests
    imagehash_index
    contributing_running_tests
