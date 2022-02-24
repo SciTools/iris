@@ -61,7 +61,9 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@rcomer`_ introduced the ``nc-time-axis >=1.4`` minimum pin, reflecting that
+   we no longer use the deprecated :class:`nc_time_axis.CalendarDateTime`
+   when plotting against time coordinates. (:pull:`4584`)
 
 
 📚 Documentation
