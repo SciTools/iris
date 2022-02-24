@@ -218,9 +218,9 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc.cml"))
 
-    def test_load_merc_false_en_grid(self):
+    def test_load_complex_merc_grid(self):
         # Test loading a single CF-netCDF file with a Mercator grid_mapping that
-        # includes false easting and northing
+        # includes false easting and northing and a standard parallel
         cube = iris.load_cube(
             tests.get_data_path(
                 ("NetCDF", "mercator", "false_east_north_merc.nc")
@@ -228,11 +228,15 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc_false.cml"))
 
-    def test_load_merc_non_unit_scale_factor(self):
-        raise NotImplementedError
-
-    def test_load_merc_standard_parallel(self):
-        raise NotImplementedError
+    def test_load_merc_grid_non_unit_scale_factor(self):
+        # Test loading a single CF-netCDF file with a Mercator grid_mapping that
+        # includes a non-unit scale factor at projection origin
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "mercator", "non_unit_scale_factor_merc.nc")
+            )
+        )
+        self.assertCML(cube, ("netcdf", "netcdf_merc_scale_factor.cml"))
 
     def test_load_stereographic_grid(self):
         # Test loading a single CF-netCDF file with a stereographic
