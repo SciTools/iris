@@ -229,7 +229,7 @@ class _RegularGridInterpolator:
             xi_shape, method, indices, norm_distances, out_of_bounds = prepared
 
             # Allocate arrays for describing the sparse matrix.
-            n_src_values_per_result_value = 2 ** ndim
+            n_src_values_per_result_value = 2**ndim
             n_result_values = len(indices[0])
             n_non_zero = n_result_values * n_src_values_per_result_value
             weights = np.ones(n_non_zero, dtype=norm_distances[0].dtype)

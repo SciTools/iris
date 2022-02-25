@@ -18,7 +18,7 @@ not :
 
 3) Iris-specific info is (still) stored in additional properties created on
    the engine object :
-       engine.cf_var, .cube, .cube_parts, .requires, .rule_triggered, .filename
+       engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered, .filename
 
 Our "rules" are just action routines.
 The top-level 'run_actions' routine decides which actions to call, based on the
@@ -78,7 +78,7 @@ def action_function(func):
             # but also may vary depending on whether it successfully
             # triggered, and if so what it matched.
             rule_name = _default_rulenamesfunc(func.__name__)
-        engine.rule_triggered.add(rule_name)
+        engine.rules_triggered.add(rule_name)
 
     func._rulenames_func = _default_rulenamesfunc
     return inner

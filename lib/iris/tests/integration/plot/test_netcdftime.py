@@ -18,10 +18,6 @@ import numpy as np
 
 from iris.coords import AuxCoord
 
-if tests.NC_TIME_AXIS_AVAILABLE:
-    from nc_time_axis import CalendarDateTime
-
-
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
@@ -48,9 +44,8 @@ class Test(tests.GraphicsTest):
             )
             for atime in times
         ]
-        expected_ydata = np.array(
-            [CalendarDateTime(time, calendar) for time in times]
-        )
+
+        expected_ydata = times
         (line1,) = iplt.plot(time_coord)
         result_ydata = line1.get_ydata()
         self.assertArrayEqual(expected_ydata, result_ydata)

@@ -22,7 +22,7 @@ class AuxSort:
         # Should generate 10 distinct contours, regardless of dim size.
         dim_size = int(ARTIFICIAL_DIM_SIZE / 5)
         repeat_number = int(dim_size / 10)
-        repeat_range = range(int((dim_size ** 2) / repeat_number))
+        repeat_range = range(int((dim_size**2) / repeat_number))
         data = np.repeat(repeat_range, repeat_number)
         data = data.reshape((dim_size,) * 2)
 

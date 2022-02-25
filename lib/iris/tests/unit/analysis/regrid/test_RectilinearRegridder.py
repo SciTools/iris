@@ -33,7 +33,7 @@ class Test__regrid__linear(tests.IrisTest):
         self.xs, self.ys = np.meshgrid(self.x.points, self.y.points)
 
         def transformation(x, y):
-            return x + y ** 2
+            return x + y**2
 
         # Construct a function which adds dimensions to the 2D data array
         # so that we can test higher dimensional functionality.
