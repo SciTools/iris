@@ -150,16 +150,20 @@ def diff_viewer(
 
 def _calculate_hit(image_options, phash, action):
     # Extract the hex basename strings from the uris.
-    hexes = [
-        hex
-        for image_option in image_options
-        for hex in image_option["known_hashes"]
-    ]
-    # Create the expected perceptual image hashes from the uris.
+    hexes = [image_option["known_hexes"] for image_option in image_options]
+    # Create the expected perceptual image hashes from the hex values.
     to_hash = imagehash.hex_to_hash
-    expected = [to_hash(uri_hex) for uri_hex in hexes]
+    all_hashes = [
+        [to_hash(uri_hex) for uri_hex in image_hexes] for image_hexes in hexes
+    ]
     # Calculate the hamming distance vector for the result hash.
-    distances = [e - phash for e in expected]
+    all_distances = [
+        [e - phash for e in image_expected] for image_expected in all_hashes
+    ]
+    # Find the minimum distance for each image (because each has multiple stored
+    # hashes related to different hash methods, and we just want the one most
+    # likely to match the method currently in use)
+    distances = [min(image_distances) for image_distances in all_distances]
 
     if action == "first":
         index = 0
