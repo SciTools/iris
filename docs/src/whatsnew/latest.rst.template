@@ -56,6 +56,10 @@ NOTE: section above is a template for bugfix patches
 
 #. N/A
 
+#. `@wjbenfold`_ added support for CF-compliant treatment of
+   ``standard_parallel`` and ``scale_factor_at_projection_origin`` to
+   :class:`~iris.coord_system.Mercator`. (:issue:`3844`, :pull:`4609`)
+
 
 🐛 Bugs Fixed
 =============
