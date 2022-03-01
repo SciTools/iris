@@ -310,8 +310,9 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
             ds = nc.Dataset(nc_path)
-            # Confirm successful save of 2D bounds array into single dimension.
-            self.assertEqual(2, ds.dimensions["bnds"].size)
+            # Confirm that the only dimension is the one denoting the number
+            #  of bounds - have successfully saved the 2D bounds array into 1D.
+            self.assertEqual(["bnds"], list(ds.dimensions.keys()))
             ds.close()
 
 
