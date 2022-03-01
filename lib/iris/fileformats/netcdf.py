@@ -2865,10 +2865,11 @@ class Saver:
 
     @staticmethod
     def _lazy_stream_data(data, fill_value, fill_warn, cf_var):
-        if data.shape == (1,) + cf_var.shape:
+        if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # Reduce dimensionality where bounds data is for a scalar point -
             #  bounds data is 2D but contains just 1 row, which causes
             #  broadcast ambiguity between the data and its 1D cf_var.
+            # (Don't do this check for string data).
             data = np.atleast_1d(data[0])
 
         if is_lazy_data(data):
