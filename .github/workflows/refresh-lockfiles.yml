@@ -111,7 +111,7 @@ jobs:
         
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@89265e8d24a5dea438a2577fdc409a11e9f855ca
+        uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672
         with:
           commit-message: Updated environment lockfiles
           committer: "Lockfile bot <noreply@github.com>"
