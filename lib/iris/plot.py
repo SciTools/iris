@@ -673,7 +673,7 @@ def _get_plot_objects(args):
         if (
             isinstance(v_object, iris.cube.Cube)
             and isinstance(u_object, iris.coords.Coord)
-            and iris.util.guess_coord_axis(u_object) in ["Y", "Z"]
+            and iris.util.guess_coord_axis(u_object) == "Z"
         ):
             u_object, v_object = v_object, u_object
             u, v = v, u

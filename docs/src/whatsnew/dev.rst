@@ -38,7 +38,9 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@rcomer`_ reverted part of the change from :pull:`3906` so that
+   :func:`iris.plot.plot` no longer defaults to placing a "Y" coordinate (e.g.
+   latitude) on the y-axis of the plot. (:issue:`4493`, :pull:`4601`)
 
 
 💣 Incompatible Changes

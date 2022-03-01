@@ -684,7 +684,10 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/8bfe956b7c01c2f26300929dfc1e3c6690736f91817e3b0c84be6be5d1603ed1.png"
     ],
     "iris.tests.test_plot.TestPlot.test_y.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/8ff99c067e01e7166101c9c6b04396b5cd4e2f0993163de9c4fe7b79207e36a1.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/8fe896266f068d873b83cb71e435725cd07c607ad07e70fcd0007a7881fe7ab8.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/8fe896066f068d873b83cb71e435725cd07c607ad07c70fcd0007af881fe7bb8.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/8fe896366f0f8d93398bcb71e435f24ed074646ed07670acf010726d81f2798c.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/aff8946c7a14c99fb193d263e42432d8d00c2d27944a3f8dc5223ef703ff6b90.png"
     ],
     "iris.tests.test_plot.TestPlot.test_z.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/8fffc1dc7e019c70f001b70ee4386de1814e7938837b6a7f84d07c9f15b02f21.png"
@@ -874,7 +877,10 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/82ff950b7f81c0d6620199bcfc5e986695734da1816e1b2c85be2b65d96276d1.png"
     ],
     "iris.tests.test_plot.TestQuickplotPlot.test_y.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/a3f9bc067e01c6166009c9c6b5439ee5cd4e0d2993361de9ccf65b79887636a9.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a7ffb6067f008d87339bc973e435d86ef034c87ad07c586cd001da69897e5838.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a7ffb6067f008d87339bc973e435d86ef034c87ad07cd86cd001da68897e58a8.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a7efb6367f008d97338fc973e435d86ef030c86ed070d86cd030d86d89f0d82c.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a2fbb46e7f10c99f2013d863e46498dcd06c0d2798421fa5dd221e7789ff6f10.png"
     ],
     "iris.tests.test_plot.TestQuickplotPlot.test_z.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/a3ffc1de7e009c7030019786f438cde3810fd93c9b734a778ce47c9799b02731.png"
