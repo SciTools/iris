@@ -53,15 +53,15 @@
 		 45.5158, 45.9993]]" shape="(192, 192)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="c20d9238" points="[-5.16102e+06, -5.10719e+06, -5.05336e+06, ...,
+        <dimCoord id="970d5aa6" points="[-5.16102e+06, -5.10719e+06, -5.05336e+06, ...,
 		5.01299e+06, 5.06682e+06, 5.12065e+06]" shape="(192,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
-          <mercator ellipsoid="GeogCS(6378169.0)" longitude_of_projection_origin="0.0" standard_parallel="0.0"/>
+          <mercator ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" longitude_of_projection_origin="0.0" standard_parallel="0.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="745a4735" points="[5.16101e+06, 5.10718e+06, 5.05335e+06, ...,
+        <dimCoord id="072b8f17" points="[5.16101e+06, 5.10718e+06, 5.05335e+06, ...,
 		-5.01294e+06, -5.06678e+06, -5.12061e+06]" shape="(192,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
-          <mercator ellipsoid="GeogCS(6378169.0)" longitude_of_projection_origin="0.0" standard_parallel="0.0"/>
+          <mercator ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" longitude_of_projection_origin="0.0" standard_parallel="0.0"/>
         </dimCoord>
       </coord>
       <coord>

@@ -440,10 +440,13 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
     longitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
     )
+    standard_parallel = getattr(
+        cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
+    )
+    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
     # Iris currently only supports Mercator projections with specific
-    # values for false_easting, false_northing,
-    # scale_factor_at_projection_origin and standard_parallel. These are
-    # checked elsewhere.
+    # scale_factor_at_projection_origin. This is checked elsewhere.
 
     ellipsoid = None
     if (
@@ -454,7 +457,11 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     cs = iris.coord_systems.Mercator(
-        longitude_of_projection_origin, ellipsoid=ellipsoid
+        longitude_of_projection_origin,
+        ellipsoid=ellipsoid,
+        standard_parallel=standard_parallel,
+        false_easting=false_easting,
+        false_northing=false_northing,
     )
 
     return cs
@@ -1244,27 +1251,10 @@ def has_supported_mercator_parameters(engine, cf_name):
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
     scale_factor_at_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
     )
-    standard_parallel = getattr(
-        cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
-    )
 
-    if false_easting is not None and false_easting != 0:
-        warnings.warn(
-            "False eastings other than 0.0 not yet supported "
-            "for Mercator projections"
-        )
-        is_valid = False
-    if false_northing is not None and false_northing != 0:
-        warnings.warn(
-            "False northings other than 0.0 not yet supported "
-            "for Mercator projections"
-        )
-        is_valid = False
     if (
         scale_factor_at_projection_origin is not None
         and scale_factor_at_projection_origin != 1
@@ -1272,12 +1262,6 @@ def has_supported_mercator_parameters(engine, cf_name):
         warnings.warn(
             "Scale factors other than 1.0 not yet supported for "
             "Mercator projections"
-        )
-        is_valid = False
-    if standard_parallel is not None and standard_parallel != 0:
-        warnings.warn(
-            "Standard parallels other than 0.0 not yet "
-            "supported for Mercator projections"
         )
         is_valid = False
 

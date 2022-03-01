@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="Sea Level Pressure" standard_name="air_pressure_at_sea_level" units="Pa" var_name="psl">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.7"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <dimCoord id="7979c65f" long_name="x-coordinate in Cartesian system" points="[-5950000.0, -5925000.0, -5900000.0, -5875000.0,
+		-5850000.0, -5825000.0, -5800000.0, -5775000.0,
+		-5750000.0, -5725000.0]" shape="(10,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
+          <mercator ellipsoid="GeogCS(6371229.0)" false_easting="-12500.0" false_northing="-12500.0" longitude_of_projection_origin="12.0" standard_parallel="-2.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="f5c6807e" long_name="y-coordinate in Cartesian system" points="[-6200000.0, -6175000.0, -6150000.0, -6125000.0,
+		-6100000.0, -6075000.0, -6050000.0, -6025000.0,
+		-6000000.0, -5975000.0]" shape="(10,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
+          <mercator ellipsoid="GeogCS(6371229.0)" false_easting="-12500.0" false_northing="-12500.0" longitude_of_projection_origin="12.0" standard_parallel="-2.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[10410.54, 10440.92]]" id="74a96651" long_name="time" points="[10425.73]" shape="(1,)" standard_name="time" units="Unit('days since 1949-12-01 00:00:00', calendar='proleptic_gregorian')" value_type="float64" var_name="time"/>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xdf56f817" dtype="float32" mask_checksum="no-masked-elements" shape="(1, 10, 10)"/>
+  </cube>
+</cubes>

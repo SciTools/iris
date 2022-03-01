@@ -31,7 +31,8 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@wjbenfold`_ added support for ``false_easting`` and ``false_northing`` to
+   :class:`~iris.coord_system.Mercator`. (:issue:`3107`, :pull:`4524`)
 
 
 🐛 Bugs Fixed
