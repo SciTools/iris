@@ -493,5 +493,18 @@ class TestRoundTrip(tests.IrisTest):
         self.assertArrayAlmostEqual(res_y, y2d)
 
 
+class TestNonEarthPlanet(tests.IrisTest):
+    def test_non_earth_semimajor_axis(self):
+        u, v = uv_cubes()
+        u.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(123)
+        u.coord("grid_longitude").coord_system = iris.coord_systems.GeogCS(123)
+        v.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(123)
+        v.coord("grid_longitude").coord_system = iris.coord_systems.GeogCS(123)
+        other_cs = iris.coord_systems.RotatedGeogCS(
+            0, 0, ellipsoid=iris.coord_systems.GeogCS(123)
+        )
+        rotate_winds(u, v, other_cs)
+
+
 if __name__ == "__main__":
     tests.main()

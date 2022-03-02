@@ -38,9 +38,13 @@ v3.2.1 |build_date| [unreleased]
 
    🐛 **Bugs Fixed**
 
+   #. `@dennissergeev`_ changed _crs_distance_differentials() so that it uses the `Globe`
+      attribute from a given CRS instead of creating a new `ccrs.Globe()` object.
+      Iris can now handle non-Earth semi-major axes, as discussed in :issue:`4582` (:pull:`4605`).
+
    #. `@trexfeathers`_ avoided a dimensionality mismatch when streaming the
       :attr:`~iris.coords.Coord.bounds` array for a scalar
-      :class:`~iris.coords.Coord`. (:pull:`4610`)
+      :class:`~iris.coords.Coord`. (:pull:`4610`).
 
    💼 **Internal**
 
@@ -390,6 +394,7 @@ v3.2.1 |build_date| [unreleased]
 .. _@aaronspring: https://github.com/aaronspring
 .. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@bsherratt: https://github.com/bsherratt
+.. _@dennissergeev: https://github.com/dennissergeev
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw
 .. _@SimonPeatman: https://github.com/SimonPeatman
