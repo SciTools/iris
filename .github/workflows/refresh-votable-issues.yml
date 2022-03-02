@@ -1,0 +1,44 @@
+# Uses Github API to get a list of issues that have votes on and then
+# update a gist with the results in json
+
+name: Refresh Votable Issues
+on:
+  workflow_dispatch:
+    branches: [ votable_issues ]
+jobs:
+  votable_main:
+    runs-on: ubuntu-latest
+    steps:      
+      # Checks-out your repositories under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout iris
+        uses: actions/checkout@v2
+        with:
+          repository: tkknight/iris
+          ref: votable_issues
+          path: iris
+
+      - name: checkout the repo with the json to update
+        uses: actions/checkout@v2
+        with:
+          # TODO: use the proper repo!
+          repository: tkknight/votable_issues
+          ref: main
+          path: votable_issues
+
+      # setup python
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyGithub
+      # run the python scripts passing in the github token
+      - name: Run the python
+        run: |
+          export GH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          python $GITHUB_WORKSPACE/iris/docs/src/query_gh_votable_issues.py
+          ls -al $GITHUB_WORKSPACE
+      # update the reop with the new file, try https://github.com/marketplace/actions/update-files-on-github
+      # JP suggests: https://github.com/MetOffice/ssstack/blob/main/.github/workflows/publish-docs.yml
