@@ -38,7 +38,9 @@ v3.2.1 |build_date| [unreleased]
 
    🐛 **Bugs Fixed**
 
-   #. N/A
+   #. `@trexfeathers`_ avoided a dimensionality mismatch when streaming the
+      :attr:`~iris.coords.Coord.bounds` array for a scalar
+      :class:`~iris.coords.Coord`. (:pull:`4610`)
 
    💼 **Internal**
 
@@ -194,7 +196,7 @@ v3.2.1 |build_date| [unreleased]
    from assuming the globe to be the Earth (:issue:`4408`, :pull:`4497`)
 
 #. `@rcomer`_ corrected the ``long_name`` mapping from UM stash code ``m01s09i215``
-   to indicate cloud fraction greater than 7.9 oktas, rather than 7.5 
+   to indicate cloud fraction greater than 7.9 oktas, rather than 7.5
    (:issue:`3305`, :pull:`4535`)
 
 #. `@lbdreyer`_ fixed a bug in :class:`iris.io.load_http` which was missing an import
