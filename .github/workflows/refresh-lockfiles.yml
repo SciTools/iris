@@ -76,7 +76,7 @@ jobs:
         python: ['38']
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: install conda-lock
         run: |
           source $CONDA/bin/activate base
@@ -98,7 +98,7 @@ jobs:
     needs: gen_lockfiles
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: get artifacts
         uses: actions/download-artifact@v2
         with:
