@@ -40,7 +40,7 @@ v3.2.1 |build_date| [unreleased]
 
    #. `@dennissergeev`_ changed _crs_distance_differentials() so that it uses the `Globe`
       attribute from a given CRS instead of creating a new `ccrs.Globe()` object.
-      This allows iris to deal with non-Earth semi-major axes.
+      Iris can now handle non-Earth semi-major axes, as discussed in :issue:`4582` (:pull:`4605`).
 
    💼 **Internal**
 
