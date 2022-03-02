@@ -34,6 +34,8 @@ v3.2.1 |build_date| [unreleased]
    :body: bg-light
    :animate: fade-in
 
+   📢 **Welcome** to `@dennissergeev`_, who made his first contribution to Iris.  Nice work!
+
    The patches in this release of Iris include:
 
    🐛 **Bugs Fixed**
