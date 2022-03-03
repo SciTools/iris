@@ -21,8 +21,6 @@ table, this is focusing only on the votable issues.
           Note that the list on Github does not show the number of votes 👍
           only the total number of comments for the whole issue.
 
-.. todo:: update the latest.rst to show the PR number when known.
-
 .. _votable-issues.json: https://github.com/scitools/votable_issues/blob/main/votable-issues.json
 
 .. raw:: html
