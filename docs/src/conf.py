@@ -246,8 +246,6 @@ plot_formats = [
 extlinks = {
     "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #"),
     "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #"),
-    "issue_only": ("https://github.com/SciTools/iris/issues/%s", "#"),
-    "author": ("https://github.com/%s", "@"),
 }
 
 # -- Doctest ("make doctest")--------------------------------------------------
