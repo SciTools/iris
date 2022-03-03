@@ -10,8 +10,9 @@ Coord benchmark tests.
 
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE
 from iris import coords
+
+from . import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
 
 
 def setup():
@@ -91,6 +92,23 @@ class AuxCoord(CoordCommon):
 
     def create(self):
         return coords.AuxCoord(**self.create_kwargs)
+
+    def time_points(self):
+        _ = self.component.points
+
+    def time_bounds(self):
+        _ = self.component.bounds
+
+
+@disable_repeat_between_setup
+class AuxCoordLazy(AuxCoord):
+    """Lazy equivalent of :class:`AuxCoord`."""
+
+    def setup(self):
+        super().setup()
+        self.create_kwargs["points"] = self.component.lazy_points()
+        self.create_kwargs["bounds"] = self.component.lazy_bounds()
+        self.setup_common()
 
 
 class CellMeasure(CoordCommon):
