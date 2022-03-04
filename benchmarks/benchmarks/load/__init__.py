@@ -60,12 +60,10 @@ class LoadAndRealise:
         _ = self.load()
 
     def time_realise(self, _, __, ___, ____) -> None:
-        # Cache the original data object and re-apply after realisation, which
-        #  restores original state for the next repeat. The cache/apply steps
-        #  add negligible time to the benchmark result.
-        data_original = self.cube.core_data()
-        _ = self.cube.data
-        self.cube.data = data_original
+        # Don't touch cube.data - permanent realisation plays badly with ASV's
+        #  re-run strategy.
+        assert self.cube.has_lazy_data()
+        self.cube.core_data().compute()
 
 
 class STASHConstraint:
