@@ -16,13 +16,21 @@ if tests.MPL_AVAILABLE:
 
 
 @tests.skip_plot
-class Test_get_plot_objects(tests.IrisTest):
+class Test__get_plot_objects(tests.IrisTest):
     def test_scalar(self):
         cube1 = iris.cube.Cube(1)
         cube2 = iris.cube.Cube(1)
         expected = (cube1, cube2, 1, 1, ())
         result = _get_plot_objects((cube1, cube2))
         self.assertTupleEqual(expected, result)
+
+    def test_mismatched_size(self):
+        cube1 = iris.cube.Cube(1)
+        cube2 = iris.cube.Cube([1, 42])
+        with self.assertRaisesRegex(
+            ValueError, "x and y-axis objects are not compatible"
+        ):
+            _get_plot_objects((cube1, cube2))
 
 
 if __name__ == "__main__":

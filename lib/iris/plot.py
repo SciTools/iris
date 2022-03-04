@@ -658,7 +658,7 @@ def _get_plot_objects(args):
                 "have equal sizes but got ({}: {}) and ({}: {})."
             )
             raise ValueError(
-                msg.format(u_object.name(), len(u), v_object.name(), len(v))
+                msg.format(u_object.name(), u.size, v_object.name(), v.size)
             )
     else:
         # single argument
