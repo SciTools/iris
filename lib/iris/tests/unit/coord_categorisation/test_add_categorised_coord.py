@@ -36,7 +36,7 @@ class Test_add_categorised_coord(tests.IrisTest):
         # The reason we use numpy.vectorize is to support multi-dimensional
         # coordinate points.
         def fn(coord, v):
-            return v ** 2
+            return v**2
 
         with mock.patch(
             "numpy.vectorize", return_value=self.vectorised

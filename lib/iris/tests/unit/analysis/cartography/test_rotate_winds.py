@@ -343,8 +343,8 @@ class TestRotatedToOSGB(tests.IrisTest):
     def test_magnitude_preservation(self):
         u, v = self._uv_cubes_limited_extent()
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
-        orig_sq_mag = u.data ** 2 + v.data ** 2
-        res_sq_mag = ut.data ** 2 + vt.data ** 2
+        orig_sq_mag = u.data**2 + v.data**2
+        res_sq_mag = ut.data**2 + vt.data**2
         self.assertArrayAllClose(orig_sq_mag, res_sq_mag, rtol=5e-4)
 
     def test_data_values(self):
@@ -437,9 +437,9 @@ class TestMasking(tests.IrisTest):
         self.assertArrayEqual(expected_mask, vt.data.mask)
 
         # Check unmasked values have sufficiently small error in mag.
-        expected_mag = np.sqrt(u.data ** 2 + v.data ** 2)
+        expected_mag = np.sqrt(u.data**2 + v.data**2)
         # Use underlying data to ignore mask in calculation.
-        res_mag = np.sqrt(ut.data.data ** 2 + vt.data.data ** 2)
+        res_mag = np.sqrt(ut.data.data**2 + vt.data.data**2)
         # Calculate percentage error (note there are no zero magnitudes
         # so we can divide safely).
         anom = 100.0 * np.abs(res_mag - expected_mag) / expected_mag
