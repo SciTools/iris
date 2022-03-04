@@ -333,7 +333,7 @@ def benchmarks(
           only, and publish the results to the input **publish directory**,
           within a unique subdirectory for this run.
         * ``sperf``: As with CPerf, but for the SPerf suite.
-        * ``custom``: run ASV with the input **ASV command type**, without any
+        * ``custom``: run ASV with the input **ASV sub-command**, without any
           preset arguments - must all be supplied by the user. So just like
           running ASV manually, with the convenience of re-using the session's
           scripted setup steps.
@@ -404,7 +404,7 @@ def benchmarks(
         "branch": "base branch",
         "cperf": "publish directory",
         "sperf": "publish directory",
-        "custom": "ASV command type",
+        "custom": "ASV sub-command",
     }
     if run_type not in run_type_arg.keys():
         message = f"Unsupported run-type: {run_type}"
@@ -438,14 +438,17 @@ def benchmarks(
                 )
                 if shifts:
                     # Write the shifts report to a file.
+                    # Dir is used by .github/workflows/benchmarks.yml,
+                    #  but not cached - intended to be discarded after run.
                     shifts_dir.mkdir(exist_ok=True, parents=True)
-                    shifts_path = shifts_dir / after
+                    shifts_path = (shifts_dir / after).with_suffix(".txt")
                     with shifts_path.open("w") as shifts_file:
                         shifts_file.write(shifts)
 
     # Common ASV arguments for all run_types except `custom`.
     asv_harness = (
-        "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict"
+        "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict "
+        "--show-stderr"
     )
 
     if run_type == "overnight":
@@ -513,5 +516,6 @@ def benchmarks(
         )
 
     else:
-        asv_command_type = first_arg
-        session.run("asv", asv_command_type, *asv_args)
+        asv_subcommand = first_arg
+        assert run_type == "custom"
+        session.run("asv", asv_subcommand, *asv_args)

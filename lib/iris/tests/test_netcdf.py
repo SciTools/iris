@@ -218,6 +218,16 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc.cml"))
 
+    def test_load_merc_false_en_grid(self):
+        # Test loading a single CF-netCDF file with a Mercator grid_mapping that
+        # includes false easting and northing
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "mercator", "false_east_north_merc.nc")
+            )
+        )
+        self.assertCML(cube, ("netcdf", "netcdf_merc_false.cml"))
+
     def test_load_stereographic_grid(self):
         # Test loading a single CF-netCDF file with a stereographic
         # grid_mapping.

@@ -22,7 +22,9 @@ on:
         default: "no"
   schedule:
     # Run once a week on a Saturday night 
-    - cron: 1 0 * * 6
+    # N.B. "should" be quoted, according to
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
+    - cron: "1 0 * * 6"
 
 
 jobs:
@@ -35,7 +37,7 @@ jobs:
       # the lockfile bot has made the head commit, abort the workflow.
       # This job can be manually overridden by running directly from the github actions panel
       # (known as a "workflow_dispatch") and setting the `clobber` input to "yes".
-      - uses: actions/script@v5.1.0
+      - uses: actions/script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -74,7 +76,7 @@ jobs:
         python: ['38']
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: install conda-lock
         run: |
           source $CONDA/bin/activate base
@@ -96,7 +98,7 @@ jobs:
     needs: gen_lockfiles
     
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: get artifacts
         uses: actions/download-artifact@v2
         with:
@@ -109,7 +111,7 @@ jobs:
         
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
+        uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672
         with:
           commit-message: Updated environment lockfiles
           committer: "Lockfile bot <noreply@github.com>"

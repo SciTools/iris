@@ -41,7 +41,9 @@ except (CalledProcessError, FileNotFoundError, PermissionError):
     )
     raise ValueError(error)
 
+# The default location of data files used in benchmarks. Used by CI.
 default_data_dir = (Path(__file__).parents[2] / ".data").resolve()
+# Optionally override the default data location with environment variable.
 BENCHMARK_DATA = Path(environ.get("BENCHMARK_DATA", default_data_dir))
 if BENCHMARK_DATA == default_data_dir:
     BENCHMARK_DATA.mkdir(exist_ok=True)
@@ -50,6 +52,7 @@ elif not BENCHMARK_DATA.is_dir():
     raise ValueError(message)
 
 # Manual flag to allow the rebuilding of synthetic data.
+#  False forces a benchmark run to re-make all the data files.
 REUSE_DATA = True
 
 

@@ -498,7 +498,7 @@ def _actions_activation_stats(engine, cf_name):
 
     print("Rules Triggered:")
 
-    for rule in sorted(list(engine.rule_triggered)):
+    for rule in sorted(list(engine.rules_triggered)):
         print("\t%s" % rule)
 
     print("Case Specific Facts:")
@@ -570,13 +570,21 @@ def _get_cf_var_data(cf_var, filename):
     return as_lazy_data(proxy, chunks=chunks)
 
 
-class OrderedAddableList(list):
-    # Used purely in actions debugging, to accumulate a record of which actions
-    # were activated.
-    # It replaces a set, so as to record the ordering of operations, with
-    # possible repeats, and it also numbers the entries.
-    # Actions routines invoke the 'add' method, which thus effectively converts
-    # a set.add into a list.append.
+class _OrderedAddableList(list):
+    """
+    A custom container object for actions recording.
+
+    Used purely in actions debugging, to accumulate a record of which actions
+    were activated.
+
+    It replaces a set, so as to preserve the ordering of operations, with
+    possible repeats, and it also numbers the entries.
+
+    The actions routines invoke an 'add' method, so this effectively replaces
+    a set.add with a list.append.
+
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._n_add = 0
@@ -602,7 +610,7 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.cube = cube
     engine.cube_parts = {}
     engine.requires = {}
-    engine.rule_triggered = OrderedAddableList()
+    engine.rules_triggered = _OrderedAddableList()
     engine.filename = filename
 
     # Assert all the case-specific facts.
@@ -825,12 +833,12 @@ def _translate_constraints_to_var_callback(constraints):
 
 def load_cubes(filenames, callback=None, constraints=None):
     """
-    Loads cubes from a list of NetCDF filenames/URLs.
+    Loads cubes from a list of NetCDF filenames/OPeNDAP URLs.
 
     Args:
 
     * filenames (string/list):
-        One or more NetCDF filenames/DAP URLs to load from.
+        One or more NetCDF filenames/OPeNDAP URLs to load from.
 
     Kwargs:
 
@@ -2553,10 +2561,8 @@ class Saver:
                     cf_var_grid.longitude_of_projection_origin = (
                         cs.longitude_of_projection_origin
                     )
-                    # The Mercator class has implicit defaults for certain
-                    # parameters
-                    cf_var_grid.false_easting = 0.0
-                    cf_var_grid.false_northing = 0.0
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
                     cf_var_grid.scale_factor_at_projection_origin = 1.0
 
                 # lcc

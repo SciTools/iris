@@ -1,2 +1,2 @@
 <?xml version="1.0" ?>
-<mercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)" longitude_of_projection_origin="90.0" standard_parallel="0.0"/>
+<mercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)" false_easting="0.0" false_northing="0.0" longitude_of_projection_origin="90.0" standard_parallel="0.0"/>

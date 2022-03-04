@@ -1,16 +1,20 @@
 # See https://github.com/actions/stale
 
 name: Stale issues and pull-requests
+
 on:
   schedule:
-    - cron: 0 0 * * *
+    # Run once a day
+    # N.B. "should" be quoted, according to
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
+    - cron: "0 0 * * *"
 
 jobs:
   stale:
     if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v4.1.0
+      - uses: actions/stale@v5
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -59,11 +63,11 @@ jobs:
           stale-pr-label: Stale
 
           # Labels on issues exempted from stale.
-          exempt-issue-labels: |
+          exempt-issue-labels:
             "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue"
 
           # Labels on prs exempted from stale.
-          exempt-pr-labels: |
+          exempt-pr-labels:
             "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue"
 
           # Max number of operations per run.
