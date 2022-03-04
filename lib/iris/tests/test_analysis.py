@@ -931,6 +931,49 @@ class TestAggregators(tests.IrisTest):
             gt6, ("analysis", "count_foo_bar_2d.cml"), checksum=False
         )
 
+    def test_max_run(self):
+        cube = tests.stock.simple_1d()
+        gt5 = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: val in [0, 1, 4, 5, 6, 8, 9],
+        )
+        np.testing.assert_array_almost_equal(gt5.data, np.array([3]))
+        gt5.data = gt5.data.astype("i8")
+        self.assertCML(gt5, ("analysis", "max_run_foo_1d.cml"), checksum=False)
+
+    def test_max_run_2d(self):
+        cube = tests.stock.simple_2d()
+
+        gt6 = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: val in [0, 3, 4, 5, 7, 9, 11],
+        )
+        np.testing.assert_array_almost_equal(
+            gt6.data, np.array([1, 2, 1], dtype=np.float32)
+        )
+        gt6.data = gt6.data.astype("i8")
+        self.assertCML(gt6, ("analysis", "max_run_foo_2d.cml"), checksum=False)
+
+        gt6 = cube.collapsed(
+            "bar",
+            iris.analysis.MAX_RUN,
+            function=lambda val: val in [0, 3, 4, 5, 7, 9, 11],
+        )
+        np.testing.assert_array_almost_equal(
+            gt6.data, np.array([2, 2, 0, 3], dtype=np.float32)
+        )
+        gt6.data = gt6.data.astype("i8")
+        self.assertCML(gt6, ("analysis", "max_run_bar_2d.cml"), checksum=False)
+
+        with self.assertRaises(ValueError):
+            gt6 = cube.collapsed(
+                ("foo", "bar"),
+                iris.analysis.MAX_RUN,
+                function=lambda val: val in [0, 3, 4, 5, 7, 9, 11],
+            )
+
     def test_weighted_sum_consistency(self):
         # weighted sum with unit weights should be the same as a sum
         cube = tests.stock.simple_1d()
