@@ -1,13 +1,13 @@
 .. include:: ../common_links.inc
 
-v3.2 (15 Feb 2022)
-******************
+|iris_version| |build_date| [unreleased]
+****************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` v3.2.0 Release Highlights
+.. dropdown:: :opticon:`report` |iris_version| Release Highlights
    :container: + shadow
    :title: text-primary text-center font-weight-bold
    :body: bg-light
@@ -18,7 +18,8 @@ This document explains the changes made to Iris for this release
 
    * We've added experimental support for
      :ref:`Meshes <ugrid>`, which can now be loaded and
-     attached to a cube. Mesh support is based on the `CF-UGRID`_ model.
+     attached to a cube. Mesh support is based on the based on `CF-UGRID`_
+     model.
    * We've also dropped support for ``Python 3.7``.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
@@ -176,9 +177,6 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ corrected the ``long_name`` mapping from UM stash code ``m01s09i215``
    to indicate cloud fraction greater than 7.9 oktas, rather than 7.5 
    (:issue:`3305`, :pull:`4535`)
-
-#. `@lbdreyer`_ fixed a bug in :class:`iris.io.load_http` which was missing an import
-   (:pull:`4580`)
 
 
 💣 Incompatible Changes
@@ -351,7 +349,7 @@ This document explains the changes made to Iris for this release
 
 #. `@lbdreyer`_ corrected the license PyPI classifier. (:pull:`4435`)
 
-#. `@aaronspring`_ exchanged ``dask`` with
+#. `@aaronspring <https://github.com/aaronspring>`_ exchanged ``dask`` with
    ``dask-core`` in testing environments reducing the number of dependencies
    installed for testing. (:pull:`4434`)
 
