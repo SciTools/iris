@@ -72,7 +72,8 @@ NOTE: section above is a template for bugfix patches
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@wjbenfold`_ improved the speed of linear interpolation using 
+   :meth:`iris.analysis.trajectory.interpolate` (:pull:`4366`)
 
 
 🔥 Deprecations
