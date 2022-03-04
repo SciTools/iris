@@ -79,12 +79,13 @@ jobs:
             cd benchmarks/.asv/performance-shifts
             for commit_file in *
             do
-              pr_number=$(git log "$commit_file"^! --oneline | grep -o "#[0-9]*" | tail -1 | cut -c 2-)
+              commit="${file_path%.*}"
+              pr_number=$(git log "$commit"^! --oneline | grep -o "#[0-9]*" | tail -1 | cut -c 2-)
               assignee=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo $GITHUB_REPOSITORY)
-              title="Performance Shift(s): \`$commit_file\`"
+              title="Performance Shift(s): \`$commit\`"
               body="
           Benchmark comparison has identified performance shifts at commit \
-          $commit_file (#$pr_number). Please review the report below and \
+          $commit (#$pr_number). Please review the report below and \
           take corrective/congratulatory action as appropriate \
           :slightly_smiling_face:
 

@@ -432,7 +432,7 @@ def benchmarks(
                     # Dir is used by .github/workflows/benchmarks.yml,
                     #  but not cached - intended to be discarded after run.
                     shifts_dir.mkdir(exist_ok=True, parents=True)
-                    shifts_path = shifts_dir / after
+                    shifts_path = (shifts_dir / after).with_suffix(".txt")
                     with shifts_path.open("w") as shifts_file:
                         shifts_file.write(shifts)
 
