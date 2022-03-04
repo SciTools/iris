@@ -107,9 +107,9 @@ def _create_um_files(
         six_rec = 20 / 3
         three_rec = six_rec / 2
 
-        new_field.blev = level_1**2 * six_rec - six_rec
+        new_field.blev = level_1 ** 2 * six_rec - six_rec
         new_field.brsvd1 = (
-            level_1**2 * six_rec + (six_rec * level_1) - three_rec
+            level_1 ** 2 * six_rec + (six_rec * level_1) - three_rec
         )
 
         brsvd2_simulated = np.linspace(0.995, 0, len_z)
