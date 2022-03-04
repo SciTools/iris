@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float64" standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -16,13 +16,13 @@
       </coord>
       <coord datadims="[2]">
         <auxCoord id="f1ab3066" points="[-0.1188, -0.1188, -0.1188, ..., -0.1188,
-		-0.1188, -0.1188]" shape="(100,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+		-0.1188, -0.1188]" shape="(100,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
       <coord datadims="[2]">
-        <auxCoord id="d3676747" points="[359.58, 359.58, 359.581, ..., 359.667, 359.668,
-		359.669]" shape="(100,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord id="d3676747" points="[359.57958984, 359.580489954, 359.581390069, ...,
+		359.666900941, 359.667801056, 359.66870117]" shape="(100,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
@@ -94,6 +94,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x66df698f" dtype="float64" shape="(6, 70, 100)"/>
+    <data checksum="0x04132092" dtype="float32" shape="(6, 70, 100)"/>
   </cube>
 </cubes>

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float64" standard_name="air_potential_temperature" units="K">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
     <attributes>
       <attribute name="STASH" value="m01s00i004"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
@@ -14,19 +14,26 @@
         <dimCoord id="9c8bdf81" points="[347921.166667]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f1ab3066" points="[-0.1188, -0.115707, -0.112614, -0.109521,
-		-0.106428, -0.103335, -0.100242, -0.0971485,
-		-0.0940554, -0.0909623, -0.0878693, -0.0847762,
-		-0.081034, -0.0761435, -0.0712529, -0.0663623,
-		-0.0614717, -0.0565812, -0.0516906, -0.0468]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord id="f1ab3066" points="[-0.1188, -0.11570692636, -0.112613852721,
+		-0.109520779081, -0.106427705441,
+		-0.103334631802, -0.100241558162,
+		-0.0971484845225, -0.0940554108829,
+		-0.0909623372432, -0.0878692636036,
+		-0.0847761899639, -0.0810340518516,
+		-0.0761434730157, -0.0712528941797,
+		-0.0663623153438, -0.0614717365078,
+		-0.0565811576719, -0.0516905788359, -0.0468]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="d3676747" points="[359.589, 359.595, 359.601, 359.607, 359.613,
-		359.62, 359.626, 359.632, 359.638, 359.644,
-		359.65, 359.657, 359.659, 359.654, 359.649,
-		359.644, 359.639, 359.634, 359.629, 359.625]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord id="d3676747" points="[359.5886, 359.594786147, 359.600972295,
+		359.607158442, 359.613344589, 359.619530736,
+		359.625716884, 359.631903031, 359.638089178,
+		359.644275326, 359.650461473, 359.65664762,
+		359.658834052, 359.653943473, 359.649052894,
+		359.644162315, 359.639271737, 359.634381158,
+		359.629490579, 359.6246]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
@@ -52,6 +59,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(20,)" state="loaded"/>
+    <data dtype="float32" shape="(20,)" state="loaded"/>
   </cube>
 </cubes>
