@@ -9,6 +9,10 @@ You can help us to prioritise development of new features by leaving a 👍
 reaction on the  header (not subsequent comments) of any issue that has a
 label of ``Feature: Votable``.
 
+.. tip:: We suggest you subscribe to the issue so you will be updated.
+         When viewing the issue there is a **Notifications**
+         section where you can select to subscribe.
+
 Below is a list of all current votable enhancement issues from our github
 project ordered by the amount of 👍.
 
