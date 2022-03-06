@@ -9,7 +9,7 @@ You can help us to prioritise development of new features by leaving a 👍
 reaction on the  header (not subsequent comments) of any issue that has a
 label of ``Feature: Votable``.
 
-Below is a list of all current enhancement issues from our github
+Below is a list of all current votable enhancement issues from our github
 project ordered by the amount of 👍.
 
 Please note that there is more development activity than what is on the below
