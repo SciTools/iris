@@ -7,7 +7,7 @@
 Scripts for generating supporting data for UGRID-related benchmarking.
 """
 from iris import load_cube as iris_loadcube
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 from .stock import (
@@ -88,8 +88,19 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
 
     # File now *should* definitely exist: content is simply the desired cube.
     with PARSE_UGRID_ON_LOAD.context():
-        with load_realised():
-            cube = iris_loadcube(str(filepath))
+        cube = iris_loadcube(str(filepath))
+
+    # Ensure correct laziness.
+    _ = cube.data
+    for coord in cube.coords(mesh_coords=False):
+        assert not coord.has_lazy_points()
+        assert not coord.has_lazy_bounds()
+    if cube.mesh:
+        for coord in cube.mesh.coords():
+            assert coord.has_lazy_points()
+        for conn in cube.mesh.connectivities():
+            assert conn.has_lazy_indices()
+
     return cube
 
 
