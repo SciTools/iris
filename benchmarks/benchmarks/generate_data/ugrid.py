@@ -7,7 +7,7 @@
 Scripts for generating supporting data for UGRID-related benchmarking.
 """
 from iris import load_cube as iris_loadcube
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 from .stock import (
