@@ -55,7 +55,12 @@ class NetcdfSave:
         return mb.addedmem_mb()
 
 
-# Declare a 'Mb' unit for all 'track_addedmem_..' type benchmarks
 for attr in dir(NetcdfSave):
     if attr.startswith("track_addedmem_"):
-        getattr(NetcdfSave, attr).unit = "Mb"
+        # Modify all 'track_addedmem_..' type benchmarks.
+        func = getattr(NetcdfSave, attr)
+        # Don't use the smallest size - result is too noisy.
+        func.params = NetcdfSave.params
+        func.params[0] = func.params[0][1:]
+        # Declare a 'Mb' unit.
+        func.unit = "Mb"

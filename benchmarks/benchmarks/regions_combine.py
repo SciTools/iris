@@ -33,6 +33,8 @@ class MixinCombineRegions:
     # operations on cubesphere-like test data.
     params = [4, 500]
     param_names = ["cubesphere-N"]
+    # For use on 'track_addedmem_..' type benchmarks - result is too noisy.
+    no_small_params = params[1:]
 
     def _parametrised_cache_filename(self, n_cubesphere, content_name):
         return f"cube_C{n_cubesphere}_{content_name}.nc"
@@ -194,7 +196,9 @@ class CombineRegionsCreateCube(MixinCombineRegions):
         return mb.addedmem_mb()
 
 
-CombineRegionsCreateCube.track_addedmem_create_combined_cube.unit = "Mb"
+mem_func = CombineRegionsCreateCube.track_addedmem_create_combined_cube
+mem_func.params = MixinCombineRegions.no_small_params
+mem_func.unit = "Mb"
 
 
 class CombineRegionsComputeRealData(MixinCombineRegions):
@@ -212,7 +216,9 @@ class CombineRegionsComputeRealData(MixinCombineRegions):
         return mb.addedmem_mb()
 
 
-CombineRegionsComputeRealData.track_addedmem_compute_data.unit = "Mb"
+mem_func = CombineRegionsComputeRealData.track_addedmem_compute_data
+mem_func.params = MixinCombineRegions.no_small_params
+mem_func.unit = "Mb"
 
 
 class CombineRegionsSaveData(MixinCombineRegions):
@@ -238,7 +244,10 @@ class CombineRegionsSaveData(MixinCombineRegions):
         return os.path.getsize("tmp.nc") * 1.0e-6
 
 
-CombineRegionsSaveData.track_addedmem_save.unit = "Mb"
+mem_func = CombineRegionsSaveData.track_addedmem_save
+mem_func.params = MixinCombineRegions.no_small_params
+mem_func.unit = "Mb"
+
 CombineRegionsSaveData.track_filesize_saved.unit = "Mb"
 
 
@@ -265,4 +274,9 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         return mb.addedmem_mb()
 
 
-CombineRegionsFileStreamedCalc.track_addedmem_stream_file2file.unit = "Mb"
+mem_func = CombineRegionsFileStreamedCalc.track_addedmem_stream_file2file
+mem_func.params = MixinCombineRegions.no_small_params
+mem_func.unit = "Mb"
+
+# Unset mem_func having used it as a shortcut - don't want ASV picking up.
+mem_func = None
