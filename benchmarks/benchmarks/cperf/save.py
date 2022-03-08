@@ -27,8 +27,6 @@ class NetcdfSave:
 
     params = ["LFRic", "UM"]
     param_names = ["data type"]
-    # Fix result units for the tracking benchmarks.
-    unit = "Mb"
 
     def setup(self, data_type):
         if data_type == "LFRic":
@@ -44,7 +42,6 @@ class NetcdfSave:
     def time_save_data_netcdf(self, data_type):
         self._save_data(self.cube)
 
+    @TrackAddedMemoryAllocation.decorator()
     def track_addedmem_save_data_netcdf(self, data_type):
-        with TrackAddedMemoryAllocation() as mb:
-            self._save_data(self.cube)
-        return mb.addedmem_mb()
+        self._save_data(self.cube)

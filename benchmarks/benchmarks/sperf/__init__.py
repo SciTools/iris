@@ -60,9 +60,7 @@ class CubeComparison(FileMixin):
         self.other_cube = self.load_cube()
 
     def peakmem_eq(self, n_cube):
-        with TrackAddedMemoryAllocation() as mb:
-            _ = self.cube == self.other_cube
-        return mb.addedmem_mb()
+        _ = self.cube == self.other_cube
 
     def time_eq(self, n_cube):
         _ = self.cube == self.other_cube

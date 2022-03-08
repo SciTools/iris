@@ -190,15 +190,9 @@ class CombineRegionsCreateCube(MixinCombineRegions):
     def time_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
+    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
     def track_addedmem_create_combined_cube(self, n_cubesphere):
-        with TrackAddedMemoryAllocation() as mb:
-            self.recombine()
-        return mb.addedmem_mb()
-
-
-mem_func = CombineRegionsCreateCube.track_addedmem_create_combined_cube
-mem_func.params = MixinCombineRegions.no_small_params
-mem_func.unit = "Mb"
+        self.recombine()
 
 
 class CombineRegionsComputeRealData(MixinCombineRegions):
@@ -207,18 +201,11 @@ class CombineRegionsComputeRealData(MixinCombineRegions):
     """
 
     def time_compute_data(self, n_cubesphere):
-        self.recombined_cube.data
+        _ = self.recombined_cube.data
 
+    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
     def track_addedmem_compute_data(self, n_cubesphere):
-        with TrackAddedMemoryAllocation() as mb:
-            self.recombined_cube.data
-
-        return mb.addedmem_mb()
-
-
-mem_func = CombineRegionsComputeRealData.track_addedmem_compute_data
-mem_func.params = MixinCombineRegions.no_small_params
-mem_func.unit = "Mb"
+        _ = self.recombined_cube.data
 
 
 class CombineRegionsSaveData(MixinCombineRegions):
@@ -233,20 +220,14 @@ class CombineRegionsSaveData(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
+    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
     def track_addedmem_save(self, n_cubesphere):
-        with TrackAddedMemoryAllocation() as mb:
-            save(self.recombined_cube, "tmp.nc")
-
-        return mb.addedmem_mb()
+        save(self.recombined_cube, "tmp.nc")
 
     def track_filesize_saved(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
         return os.path.getsize("tmp.nc") * 1.0e-6
 
-
-mem_func = CombineRegionsSaveData.track_addedmem_save
-mem_func.params = MixinCombineRegions.no_small_params
-mem_func.unit = "Mb"
 
 CombineRegionsSaveData.track_filesize_saved.unit = "Mb"
 
@@ -267,16 +248,6 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
+    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
     def track_addedmem_stream_file2file(self, n_cubesphere):
-        with TrackAddedMemoryAllocation() as mb:
-            save(self.recombined_cube, "tmp.nc")
-
-        return mb.addedmem_mb()
-
-
-mem_func = CombineRegionsFileStreamedCalc.track_addedmem_stream_file2file
-mem_func.params = MixinCombineRegions.no_small_params
-mem_func.unit = "Mb"
-
-# Unset mem_func having used it as a shortcut - don't want ASV picking up.
-mem_func = None
+        save(self.recombined_cube, "tmp.nc")

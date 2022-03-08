@@ -41,10 +41,9 @@ class NetcdfSave:
     def time_save_cube(self, n_cubesphere, is_unstructured):
         self._save_cube(self.cube)
 
+    @TrackAddedMemoryAllocation.decorator()
     def track_addedmem_save_cube(self, n_cubesphere, is_unstructured):
-        with TrackAddedMemoryAllocation() as mb:
-            self._save_cube(self.cube)
-        return mb.addedmem_mb()
+        self._save_cube(self.cube)
 
     def time_save_mesh(self, n_cubesphere, is_unstructured):
         if is_unstructured:
