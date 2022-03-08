@@ -31,9 +31,9 @@ jobs:
     outputs:
       matrix: ${{ steps.get_py.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - id: get_py
-        run: echo "::set-output name=matrix::$(ls -1 requirements/ci/py??.yml | xargs -n1 basename | cut -c-4 | jq -cnR '[inputs | select(length>0)]')"
+        run: echo "::set-output name=matrix::$(ls -1 requirements/ci/py??.yml | xargs -n1 basename | sed 's/....$//' | jq -cnR '[inputs]')"
 
   gen_lockfiles:
     # this is a matrix job: it splits to create new lockfiles for each
