@@ -18,7 +18,6 @@ from iris import load_cube
 # TODO: remove uses of PARSE_UGRID_ON_LOAD once UGRID parsing is core behaviour.
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
-from .. import on_demand_benchmark
 from ..generate_data import BENCHMARK_DATA
 from ..generate_data.ugrid import make_cubesphere_testfile
 
@@ -96,51 +95,3 @@ class SingleDiagnosticMixin:
     def load(self):
         with PARSE_UGRID_ON_LOAD.context():
             return load_cube(str(self.file_path))
-
-
-class ComparisonMixin(SingleDiagnosticMixin):
-    """
-    Uses :class:`SingleDiagnosticMixin` as the realistic case will be comparing
-    :class:`~iris.cube.Cube`\\ s that have been loaded from file.
-    """
-
-    # Cut down the parent parameters.
-    params = [["LFRic", "UM"]]
-
-    def setup(self, file_type, three_d=False, three_times=False):
-        super().setup(file_type, three_d, three_times)
-        self.cube = self.load()
-        self.other_cube = self.load()
-
-
-@on_demand_benchmark
-class CubeComparison(ComparisonMixin):
-    """
-    Benchmark time and memory costs of comparing LFRic and UM
-     :class:`~iris.cube.Cube`\\ s.
-    """
-
-    def _comparison(self):
-        _ = self.cube == self.other_cube
-
-    def peakmem_eq(self, file_type):
-        self._comparison()
-
-    def time_eq(self, file_type):
-        self._comparison()
-
-
-@on_demand_benchmark
-class MeshComparison(ComparisonMixin):
-    """Provides extra context for :class:`CubeComparison`."""
-
-    params = [["LFRic"]]
-
-    def _comparison(self):
-        _ = self.cube.mesh == self.other_cube.mesh
-
-    def peakmem_eq(self, file_type):
-        self._comparison()
-
-    def time_eq(self, file_type):
-        self._comparison()
