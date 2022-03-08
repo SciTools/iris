@@ -82,6 +82,8 @@ jobs:
           title: "[iris.ci] environment lockfiles auto-update"
           body: |
             Lockfiles updated to the latest resolvable environment.
+
+            If the CI test suite fails, create a new branch based of this pull request and add the required fixes to that branch.
           labels: |
             New: Pull Request
             Bot
