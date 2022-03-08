@@ -652,13 +652,13 @@ def _get_plot_objects(args):
         u_object, v_object = args[:2]
         u, v = _uv_from_u_object_v_object(u_object, v_object)
         args = args[2:]
-        if len(u) != len(v):
+        if u.size != v.size:
             msg = (
                 "The x and y-axis objects are not compatible. They should "
                 "have equal sizes but got ({}: {}) and ({}: {})."
             )
             raise ValueError(
-                msg.format(u_object.name(), len(u), v_object.name(), len(v))
+                msg.format(u_object.name(), u.size, v_object.name(), v.size)
             )
     else:
         # single argument
