@@ -24,13 +24,21 @@ class Test__get_plot_objects(tests.IrisTest):
         result = _get_plot_objects((cube1, cube2))
         self.assertTupleEqual(expected, result)
 
-    def test_mismatched_size(self):
+    def test_mismatched_size_first_scalar(self):
         cube1 = iris.cube.Cube(1)
         cube2 = iris.cube.Cube([1, 42])
         with self.assertRaisesRegex(
             ValueError, "x and y-axis objects are not compatible"
         ):
             _get_plot_objects((cube1, cube2))
+
+    def test_mismatched_size_second_scalar(self):
+        cube1 = iris.cube.Cube(1)
+        cube2 = iris.cube.Cube([1, 42])
+        with self.assertRaisesRegex(
+            ValueError, "x and y-axis objects are not compatible"
+        ):
+            _get_plot_objects((cube2, cube1))
 
 
 if __name__ == "__main__":
