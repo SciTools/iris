@@ -24,8 +24,8 @@ from iris import load, load_cube, save
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.utils import recombine_submeshes
 
-from . import TrackAddedMemoryAllocation
-from .generate_data.ugrid import make_cube_like_2d_cubesphere
+from ... import TrackAddedMemoryAllocation
+from ...generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
 class MixinCombineRegions:
