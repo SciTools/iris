@@ -165,4 +165,4 @@ For **Iris 2.4** and earlier documentation please see the
    generated/api/iris
    techpapers/index
    copyright
-   votable_issues
+   voted_issues
