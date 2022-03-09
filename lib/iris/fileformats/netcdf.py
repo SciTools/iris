@@ -2871,7 +2871,7 @@ class Saver:
             #  versus the cf_var - to avoid a broadcasting ambiguity.
             # Happens when bounds data is for a scalar point - array is 2D but
             #  contains just 1 row, so the cf_var is 1D.
-            data = data.squeeze()
+            data = data.squeeze(axis=0)
 
         if is_lazy_data(data):
 
