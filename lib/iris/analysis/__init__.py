@@ -1472,6 +1472,33 @@ def _proportion(array, function, axis, **kwargs):
     return result
 
 
+@_build_dask_mdtol_function
+def _lazy_max_run(array, axis=None, **kwargs):
+    array = iris._lazy_data.as_lazy_data(array)
+    func = kwargs.pop("function", None)
+    if not callable(func):
+        emsg = "function must be a callable. Got {}."
+        raise TypeError(emsg.format(type(func)))
+    padding = [(0, 0)] * array.ndim
+    padding[axis] = (0, 1)
+    ones_zeros = da.pad(func(array), padding).astype(int)
+    cum_sum = da.cumsum(ones_zeros, axis=axis)
+    run_totals = da.where(ones_zeros == 0, cum_sum, 0)
+    stepped_run_lengths = da.reductions.cumreduction(
+        np.maximum.accumulate,
+        np.maximum,
+        np.NINF,
+        run_totals,
+        axis=axis,
+        dtype=cum_sum.dtype,
+        out=None,
+        method="sequential",
+        preop=None,
+    )
+    run_lengths = da.diff(stepped_run_lengths)
+    return da.max(run_lengths, axis=axis)
+
+
 def _rms(array, axis, **kwargs):
     # XXX due to the current limitations in `da.average` (see below), maintain
     # an explicit non-lazy aggregation function for now.
@@ -1656,6 +1683,36 @@ To compute the number of *ensemble members* with precipitation exceeding 10
                                    function=lambda values: values > 10)
 
 .. seealso:: The :func:`~iris.analysis.PROPORTION` aggregator.
+
+This aggregator handles masked data.
+
+"""
+
+
+MAX_RUN = Aggregator(
+    "max_run",
+    iris._lazy_data.non_lazy(_lazy_max_run),
+    units_func=lambda units: 1,
+    lazy_func=_lazy_max_run,
+)
+"""
+An :class:`~iris.analysis.Aggregator` instance that finds the longest run of
+:class:`~iris.cube.Cube` data occurrences that satisfy a particular criterion,
+as defined by a user supplied *function*, along the given axis.
+
+**Required** kwargs associated with the use of this aggregator:
+
+* function (callable):
+    A function which converts an array of data values into a corresponding array
+    of True/False values.
+
+**For example**:
+
+The longest run of days with precipitation exceeding 10 (in cube data units) at
+each grid location could be calculated with::
+
+    result = precip_cube.collapsed('time', iris.analysis.MAX_RUN,
+                                   function=lambda values: values > 10)
 
 This aggregator handles masked data.
 
