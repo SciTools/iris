@@ -936,7 +936,7 @@ class TestAggregators(tests.IrisTest):
         gt5 = cube.collapsed(
             "foo",
             iris.analysis.MAX_RUN,
-            function=lambda val: val in [0, 1, 4, 5, 6, 8, 9],
+            function=lambda val: np.isin(val, [0, 1, 4, 5, 6, 8, 9]),
         )
         np.testing.assert_array_almost_equal(gt5.data, np.array([3]))
         gt5.data = gt5.data.astype("i8")
@@ -948,7 +948,7 @@ class TestAggregators(tests.IrisTest):
         gt6 = cube.collapsed(
             "foo",
             iris.analysis.MAX_RUN,
-            function=lambda val: val in [0, 3, 4, 5, 7, 9, 11],
+            function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
         )
         np.testing.assert_array_almost_equal(
             gt6.data, np.array([1, 2, 1], dtype=np.float32)
@@ -959,7 +959,7 @@ class TestAggregators(tests.IrisTest):
         gt6 = cube.collapsed(
             "bar",
             iris.analysis.MAX_RUN,
-            function=lambda val: val in [0, 3, 4, 5, 7, 9, 11],
+            function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
         )
         np.testing.assert_array_almost_equal(
             gt6.data, np.array([2, 2, 0, 3], dtype=np.float32)
@@ -971,7 +971,7 @@ class TestAggregators(tests.IrisTest):
             gt6 = cube.collapsed(
                 ("foo", "bar"),
                 iris.analysis.MAX_RUN,
-                function=lambda val: val in [0, 3, 4, 5, 7, 9, 11],
+                function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
             )
 
     def test_weighted_sum_consistency(self):
