@@ -9,7 +9,16 @@ Iris has various internal convenience functions and utilities available to
 support writing tests. Using these makes tests quicker and easier to write, and
 also consistent with the rest of Iris (which makes it easier to work with the
 code). Most of these conveniences are accessed through the
-:class:`iris.tests.IrisTest` class, from which Iris' test classes inherit.
+:class:`iris.tests.IrisTest` class, from
+which Iris' test classes then inherit.
+
+.. tip::
+
+    All functions listed on this page are defined within
+    :mod:`iris.tests.__init__.py` as methods of
+    :class:`iris.tests.IrisTest_nometa` (which :class:`iris.tests.IrisTest`
+    inherits from). They can be accessed within a test using
+    ``self.exampleFunction``.
 
 Custom assertions
 =================
