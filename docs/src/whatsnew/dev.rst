@@ -78,7 +78,10 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@trexfeathers`_ and `@pp-mo`_ finished implementing a mature benchmarking
+   infrastructure (see :ref:`contributing.benchmarks`), building on 2 hard
+   years of lessons learned 🎉. (:pull:`4477`, :pull:`4562`, :pull:`4571`,
+   :pull:`4583`, :pull:`4621`)
 
 
 .. comment
