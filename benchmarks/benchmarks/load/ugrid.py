@@ -19,7 +19,7 @@ from iris import load_cube as iris_load_cube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid import load_mesh as iris_load_mesh
 
-from .generate_data.stock import create_file__xios_2d_face_half_levels
+from ..generate_data.stock import create_file__xios_2d_face_half_levels
 
 
 def synthetic_data(**kwargs):

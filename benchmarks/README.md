@@ -21,13 +21,20 @@ automated overnight run locally. See the session docstring for detail.
 
 ### Environment variables
 
-* ``DATA_GEN_PYTHON`` - required - path to a Python executable that can be
+* `OVERRIDE_TEST_DATA_REPOSITORY` - required - some benchmarks use
+`iris-test-data` content, and your local `site.cfg` is not available for
+benchmark scripts.
+* `DATA_GEN_PYTHON` - required - path to a Python executable that can be
 used to generate benchmark test objects/files; see
 [Data generation](#data-generation). The Nox session sets this automatically,
 but will defer to any value already set in the shell.
-* ``BENCHMARK_DATA`` - optional - path to a directory for benchmark synthetic
+* `BENCHMARK_DATA` - optional - path to a directory for benchmark synthetic
 test data, which the benchmark scripts will create if it doesn't already
-exist. Defaults to ``<root>/benchmarks/.data/`` if not set.
+exist. Defaults to `<root>/benchmarks/.data/` if not set.
+* `ON_DEMAND_BENCHMARKS` - optional - when set (to any value): benchmarks
+decorated with `@on_demand_benchmark` are included in the ASV run. Usually
+coupled with the ASV `--bench` argument to only run the benchmark(s) of
+interest. Is set during the Nox `cperf` and `sperf` sessions.
 
 ## Writing benchmarks
 
@@ -64,6 +71,16 @@ one value to be as small as possible (e.g. a scalar `Cube`), and the other to
 be significantly larger (e.g. a 1000x1000 `Cube`). Performance differences
 might only be seen for the larger value, or the smaller, or both, getting you
 closer to the root cause.
+
+### On-demand benchmarks
+
+Some benchmarks provide useful insight but are inappropriate to be included in
+a benchmark run by default, e.g. those with long run-times or requiring a local
+file. These benchmarks should be decorated with `@on_demand_benchmark`
+(see [benchmarks init](./benchmarks/__init__.py)), which
+sets the benchmark to only be included in a run when the `ON_DEMAND_BENCHMARKS`
+environment variable is set. Examples include the CPerf and SPerf benchmark
+suites for the UK Met Office NG-VAT project.
 
 ## Benchmark environments
 

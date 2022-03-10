@@ -19,8 +19,8 @@ from iris import AttributeConstraint, Constraint, load, load_cube
 from iris.cube import Cube
 from iris.fileformats.um import structured_um_loading
 
-from .generate_data import BENCHMARK_DATA, REUSE_DATA, run_function_elsewhere
-from .generate_data.um_files import create_um_files
+from ..generate_data import BENCHMARK_DATA, REUSE_DATA, run_function_elsewhere
+from ..generate_data.um_files import create_um_files
 
 
 class LoadAndRealise:
