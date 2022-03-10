@@ -59,4 +59,4 @@ without the repetition logic that execution timing has.
 
 
 .. _Airspeed Velocity: https://github.com/airspeed-velocity/asv
-.. _benchmarks/README.md: https://github.com/trexfeathers/iris/tree/sperf_cperf_benchmarks/benchmarks
+.. _benchmarks/README.md: https://github.com/SciTools/iris/blob/main/benchmarks/README.md
