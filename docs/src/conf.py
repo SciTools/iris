@@ -302,6 +302,15 @@ html_context = {
 html_static_path = ["_static"]
 html_style = "theme_override.css"
 
+# this allows for using datatables: https://datatables.net/
+html_css_files = [
+    "https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css",
+]
+
+html_js_files = [
+    "https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js",
+]
+
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
