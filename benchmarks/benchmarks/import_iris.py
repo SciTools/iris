@@ -3,240 +3,247 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-import sys
+from importlib import import_module, reload
 
 
 class Iris:
-    warmup_time = 0
-    number = 1
-    repeat = 10
+    @staticmethod
+    def _import(module_name):
+        """
+        Have experimented with adding sleep() commands into the imported
+        modules. The results reveal:
 
-    def setup(self):
-        self.before = set(sys.modules.keys())
+        ASV avoids invoking `import x` if nothing gets called in the
+        benchmark (some imports were timed, but only those where calls
+        happened during import).
 
-    def teardown(self):
-        after = set(sys.modules.keys())
-        diff = after - self.before
-        for module in diff:
-            sys.modules.pop(module)
+        Using reload() is not identical to importing, but does produce
+        results that are very close to expected import times, so this is fine
+        for monitoring for regressions.
+        It is also ideal for accurate repetitions, without the need to mess
+        with the ASV `number` attribute etc, since cached imports are not used
+        and the repetitions are therefore no faster than the first run.
+        """
+        mod = import_module(module_name)
+        reload(mod)
 
     def time_iris(self):
-        import iris
+        self._import("iris")
 
     def time__concatenate(self):
-        import iris._concatenate
+        self._import("iris._concatenate")
 
     def time__constraints(self):
-        import iris._constraints
+        self._import("iris._constraints")
 
     def time__data_manager(self):
-        import iris._data_manager
+        self._import("iris._data_manager")
 
     def time__deprecation(self):
-        import iris._deprecation
+        self._import("iris._deprecation")
 
     def time__lazy_data(self):
-        import iris._lazy_data
+        self._import("iris._lazy_data")
 
     def time__merge(self):
-        import iris._merge
+        self._import("iris._merge")
 
     def time__representation(self):
-        import iris._representation
+        self._import("iris._representation")
 
     def time_analysis(self):
-        import iris.analysis
+        self._import("iris.analysis")
 
     def time_analysis__area_weighted(self):
-        import iris.analysis._area_weighted
+        self._import("iris.analysis._area_weighted")
 
     def time_analysis__grid_angles(self):
-        import iris.analysis._grid_angles
+        self._import("iris.analysis._grid_angles")
 
     def time_analysis__interpolation(self):
-        import iris.analysis._interpolation
+        self._import("iris.analysis._interpolation")
 
     def time_analysis__regrid(self):
-        import iris.analysis._regrid
+        self._import("iris.analysis._regrid")
 
     def time_analysis__scipy_interpolate(self):
-        import iris.analysis._scipy_interpolate
+        self._import("iris.analysis._scipy_interpolate")
 
     def time_analysis_calculus(self):
-        import iris.analysis.calculus
+        self._import("iris.analysis.calculus")
 
     def time_analysis_cartography(self):
-        import iris.analysis.cartography
+        self._import("iris.analysis.cartography")
 
     def time_analysis_geomerty(self):
-        import iris.analysis.geometry
+        self._import("iris.analysis.geometry")
 
     def time_analysis_maths(self):
-        import iris.analysis.maths
+        self._import("iris.analysis.maths")
 
     def time_analysis_stats(self):
-        import iris.analysis.stats
+        self._import("iris.analysis.stats")
 
     def time_analysis_trajectory(self):
-        import iris.analysis.trajectory
+        self._import("iris.analysis.trajectory")
 
     def time_aux_factory(self):
-        import iris.aux_factory
+        self._import("iris.aux_factory")
 
     def time_common(self):
-        import iris.common
+        self._import("iris.common")
 
     def time_common_lenient(self):
-        import iris.common.lenient
+        self._import("iris.common.lenient")
 
     def time_common_metadata(self):
-        import iris.common.metadata
+        self._import("iris.common.metadata")
 
     def time_common_mixin(self):
-        import iris.common.mixin
+        self._import("iris.common.mixin")
 
     def time_common_resolve(self):
-        import iris.common.resolve
+        self._import("iris.common.resolve")
 
     def time_config(self):
-        import iris.config
+        self._import("iris.config")
 
     def time_coord_categorisation(self):
-        import iris.coord_categorisation
+        self._import("iris.coord_categorisation")
 
     def time_coord_systems(self):
-        import iris.coord_systems
+        self._import("iris.coord_systems")
 
     def time_coords(self):
-        import iris.coords
+        self._import("iris.coords")
 
     def time_cube(self):
-        import iris.cube
+        self._import("iris.cube")
 
     def time_exceptions(self):
-        import iris.exceptions
+        self._import("iris.exceptions")
 
     def time_experimental(self):
-        import iris.experimental
+        self._import("iris.experimental")
 
     def time_fileformats(self):
-        import iris.fileformats
+        self._import("iris.fileformats")
 
     def time_fileformats__ff(self):
-        import iris.fileformats._ff
+        self._import("iris.fileformats._ff")
 
     def time_fileformats__ff_cross_references(self):
-        import iris.fileformats._ff_cross_references
+        self._import("iris.fileformats._ff_cross_references")
 
     def time_fileformats__pp_lbproc_pairs(self):
-        import iris.fileformats._pp_lbproc_pairs
+        self._import("iris.fileformats._pp_lbproc_pairs")
 
     def time_fileformats_structured_array_identification(self):
-        import iris.fileformats._structured_array_identification
+        self._import("iris.fileformats._structured_array_identification")
 
     def time_fileformats_abf(self):
-        import iris.fileformats.abf
+        self._import("iris.fileformats.abf")
 
     def time_fileformats_cf(self):
-        import iris.fileformats.cf
+        self._import("iris.fileformats.cf")
 
     def time_fileformats_dot(self):
-        import iris.fileformats.dot
+        self._import("iris.fileformats.dot")
 
     def time_fileformats_name(self):
-        import iris.fileformats.name
+        self._import("iris.fileformats.name")
 
     def time_fileformats_name_loaders(self):
-        import iris.fileformats.name_loaders
+        self._import("iris.fileformats.name_loaders")
 
     def time_fileformats_netcdf(self):
-        import iris.fileformats.netcdf
+        self._import("iris.fileformats.netcdf")
 
     def time_fileformats_nimrod(self):
-        import iris.fileformats.nimrod
+        self._import("iris.fileformats.nimrod")
 
     def time_fileformats_nimrod_load_rules(self):
-        import iris.fileformats.nimrod_load_rules
+        self._import("iris.fileformats.nimrod_load_rules")
 
     def time_fileformats_pp(self):
-        import iris.fileformats.pp
+        self._import("iris.fileformats.pp")
 
     def time_fileformats_pp_load_rules(self):
-        import iris.fileformats.pp_load_rules
+        self._import("iris.fileformats.pp_load_rules")
 
     def time_fileformats_pp_save_rules(self):
-        import iris.fileformats.pp_save_rules
+        self._import("iris.fileformats.pp_save_rules")
 
     def time_fileformats_rules(self):
-        import iris.fileformats.rules
+        self._import("iris.fileformats.rules")
 
     def time_fileformats_um(self):
-        import iris.fileformats.um
+        self._import("iris.fileformats.um")
 
     def time_fileformats_um__fast_load(self):
-        import iris.fileformats.um._fast_load
+        self._import("iris.fileformats.um._fast_load")
 
     def time_fileformats_um__fast_load_structured_fields(self):
-        import iris.fileformats.um._fast_load_structured_fields
+        self._import("iris.fileformats.um._fast_load_structured_fields")
 
     def time_fileformats_um__ff_replacement(self):
-        import iris.fileformats.um._ff_replacement
+        self._import("iris.fileformats.um._ff_replacement")
 
     def time_fileformats_um__optimal_array_structuring(self):
-        import iris.fileformats.um._optimal_array_structuring
+        self._import("iris.fileformats.um._optimal_array_structuring")
 
     def time_fileformats_um_cf_map(self):
-        import iris.fileformats.um_cf_map
+        self._import("iris.fileformats.um_cf_map")
 
     def time_io(self):
-        import iris.io
+        self._import("iris.io")
 
     def time_io_format_picker(self):
-        import iris.io.format_picker
+        self._import("iris.io.format_picker")
 
     def time_iterate(self):
-        import iris.iterate
+        self._import("iris.iterate")
 
     def time_palette(self):
-        import iris.palette
+        self._import("iris.palette")
 
     def time_plot(self):
-        import iris.plot
+        self._import("iris.plot")
 
     def time_quickplot(self):
-        import iris.quickplot
+        self._import("iris.quickplot")
 
     def time_std_names(self):
-        import iris.std_names
+        self._import("iris.std_names")
 
     def time_symbols(self):
-        import iris.symbols
+        self._import("iris.symbols")
 
     def time_tests(self):
-        import iris.tests
+        self._import("iris.tests")
 
     def time_time(self):
-        import iris.time
+        self._import("iris.time")
 
     def time_util(self):
-        import iris.util
+        self._import("iris.util")
 
     # third-party imports
 
     def time_third_party_cartopy(self):
-        import cartopy
+        self._import("cartopy")
 
     def time_third_party_cf_units(self):
-        import cf_units
+        self._import("cf_units")
 
     def time_third_party_cftime(self):
-        import cftime
+        self._import("cftime")
 
     def time_third_party_matplotlib(self):
-        import matplotlib
+        self._import("matplotlib")
 
     def time_third_party_numpy(self):
-        import numpy
+        self._import("numpy")
 
     def time_third_party_scipy(self):
-        import scipy
+        self._import("scipy")
