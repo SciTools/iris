@@ -25,8 +25,8 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
-v3.2.1 |build_date| [unreleased]
-********************************
+v3.2.1 (11 Mar 2022)
+====================
 
 .. dropdown:: :opticon:`alert` v3.2.1 Patches
    :container: + shadow
@@ -47,10 +47,6 @@ v3.2.1 |build_date| [unreleased]
    #. `@trexfeathers`_ avoided a dimensionality mismatch when streaming the
       :attr:`~iris.coords.Coord.bounds` array for a scalar
       :class:`~iris.coords.Coord`. (:pull:`4610`).
-
-   💼 **Internal**
-
-   #. N/A
 
 
 📢 Announcements
