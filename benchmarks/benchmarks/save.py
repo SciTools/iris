@@ -25,8 +25,7 @@ class NetcdfSave:
     params = [[1, 600], [False, True]]
     param_names = ["cubesphere-N", "is_unstructured"]
     # For use on 'track_addedmem_..' type benchmarks - result is too noisy.
-    no_small_params = params
-    no_small_params[0] = params[0][1:]
+    no_small_params = [[600], [True]]
 
     def setup(self, n_cubesphere, is_unstructured):
         self.cube = make_cube_like_2d_cubesphere(
