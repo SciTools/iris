@@ -30,7 +30,7 @@ from iris.coord_systems import (
     TransverseMercator,
     VerticalPerspective,
 )
-from iris.coords import DimCoord
+from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
 import iris.tests.stock as stock
@@ -298,6 +298,22 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
             self.assertCDL(nc_path)
+
+    def test_dimensional_to_scalar(self):
+        # Bounds for 1 point are still in a 2D array.
+        scalar_bounds = self.array_lib.arange(2).reshape(1, 2)
+        scalar_point = scalar_bounds.mean()
+        scalar_data = self.array_lib.zeros(1)
+        scalar_coord = AuxCoord(points=scalar_point, bounds=scalar_bounds)
+        cube = Cube(scalar_data, aux_coords_and_dims=[(scalar_coord, 0)])[0]
+        with self.temp_filename(".nc") as nc_path:
+            with Saver(nc_path, "NETCDF4") as saver:
+                saver.write(cube)
+            ds = nc.Dataset(nc_path)
+            # Confirm that the only dimension is the one denoting the number
+            #  of bounds - have successfully saved the 2D bounds array into 1D.
+            self.assertEqual(["bnds"], list(ds.dimensions.keys()))
+            ds.close()
 
 
 class Test__create_cf_bounds(tests.IrisTest):

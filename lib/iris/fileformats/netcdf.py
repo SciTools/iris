@@ -2871,6 +2871,14 @@ class Saver:
 
     @staticmethod
     def _lazy_stream_data(data, fill_value, fill_warn, cf_var):
+        if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
+            # (Don't do this check for string data).
+            # Reduce dimensionality where the data array has an extra dimension
+            #  versus the cf_var - to avoid a broadcasting ambiguity.
+            # Happens when bounds data is for a scalar point - array is 2D but
+            #  contains just 1 row, so the cf_var is 1D.
+            data = data.squeeze(axis=0)
+
         if is_lazy_data(data):
 
             def store(data, cf_var, fill_value):

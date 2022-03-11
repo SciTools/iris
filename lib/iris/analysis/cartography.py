@@ -927,7 +927,7 @@ def _crs_distance_differentials(crs, x, y):
 
     """
     # Make a true-latlon coordinate system for distance calculations.
-    crs_latlon = ccrs.Geodetic(globe=ccrs.Globe(ellipse="sphere"))
+    crs_latlon = ccrs.Geodetic(globe=crs.globe)
     # Transform points to true-latlon (just to get the true latitudes).
     _, true_lat = _transform_xy(crs, x, y, crs_latlon)
     # Get coordinate differentials w.r.t. true-latlon.
