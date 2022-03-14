@@ -34,7 +34,7 @@ dependencies:
   - filelock
   - imagehash >=4.0
   - nose
-  - pillow <7
+  - pillow
   - pre-commit
   - requests
 

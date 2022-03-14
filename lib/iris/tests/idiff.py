@@ -12,12 +12,10 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 """
 
 import argparse
-import codecs
 import contextlib
 from glob import glob
-import json
+import hashlib
 import os.path
-import shutil
 import sys
 import warnings
 
@@ -26,7 +24,6 @@ import warnings
 # gui interface.
 sys.argv.append("-d")
 from PIL import Image  # noqa
-import filelock  # noqa
 import imagehash  # noqa
 import matplotlib.image as mimg  # noqa
 import matplotlib.pyplot as plt  # noqa
@@ -34,14 +31,11 @@ import matplotlib.testing.compare as mcompare  # noqa
 from matplotlib.testing.exceptions import ImageComparisonFailure  # noqa
 import matplotlib.widgets as mwidget  # noqa
 import numpy as np  # noqa
-import requests  # noqa
 
 import iris.tests  # noqa
 import iris.util as iutil  # noqa
 
 _POSTFIX_DIFF = "-failed-diff.png"
-_POSTFIX_JSON = os.path.join("results", "imagerepo.json")
-_POSTFIX_LOCK = os.path.join("results", "imagerepo.lock")
 
 
 @contextlib.contextmanager
@@ -55,10 +49,32 @@ def temp_png(suffix=""):
         os.remove(fname)
 
 
+def image_exists_with_prefix(image_path, directory, prefix):
+    """
+    Does the given image already exist in the given directory with the given
+    prefix?
+    """
+    check_image_hash = hashlib.sha256(
+        open(image_path, "rb").read()
+    ).hexdigest()
+
+    image_found = False
+
+    target = os.path.join(directory, f"{prefix}*")
+
+    for image_name in glob(target):
+        dir_image_hash = hashlib.sha256(
+            open(os.path.join(directory, image_name), "rb").read()
+        ).hexdigest()
+        if dir_image_hash == check_image_hash:
+            image_found = True
+            break
+
+    return image_found
+
+
 def diff_viewer(
-    repo,
     key,
-    repo_fname,
     phash,
     status,
     expected_fname,
@@ -75,31 +91,24 @@ def diff_viewer(
     ax.imshow(mimg.imread(diff_fname))
 
     result_dir = os.path.dirname(result_fname)
-    fname = "{}.png".format(phash)
-    base_uri = "https://scitools.github.io/test-iris-imagehash/images/v4/{}"
-    uri = base_uri.format(fname)
-    phash_fname = os.path.join(result_dir, fname)
 
     def accept(event):
-        if uri not in repo[key]:
+        # TODO: This check should include the dir we're working in, and the main dir
+        if not image_exists_with_prefix(result_fname, result_dir, key):
             # Ensure to maintain strict time order where the first uri
             # associated with the repo key is the oldest, and the last
             # uri is the youngest
-            repo[key].append(uri)
-            # Update the image repo.
-            with open(repo_fname, "wb") as fo:
-                json.dump(
-                    repo,
-                    codecs.getwriter("utf-8")(fo),
-                    indent=4,
-                    sort_keys=True,
-                )
-            os.rename(result_fname, phash_fname)
+            # TODO: Increment the index of the result by 1
+            out_file = os.path.join(
+                result_dir, os.path.basename(expected_fname)
+            )
+            # os.rename(result_fname, out_file)
+            print(f"would rename {result_fname} to {out_file}")
             msg = "ACCEPTED:  {} -> {}"
             print(
                 msg.format(
                     os.path.basename(result_fname),
-                    os.path.basename(phash_fname),
+                    os.path.basename(expected_fname),
                 )
             )
         else:
@@ -107,7 +116,7 @@ def diff_viewer(
             print(
                 msg.format(
                     os.path.basename(result_fname),
-                    os.path.basename(phash_fname),
+                    os.path.basename(expected_fname),
                 )
             )
             os.remove(result_fname)
@@ -115,14 +124,14 @@ def diff_viewer(
         plt.close()
 
     def reject(event):
-        if uri not in repo[key]:
+        if not image_exists_with_prefix(result_fname, result_dir, key):
             print("REJECTED:  {}".format(os.path.basename(result_fname)))
         else:
             msg = "DUPLICATE: {} -> {} (ignored)"
             print(
                 msg.format(
                     os.path.basename(result_fname),
-                    os.path.basename(phash_fname),
+                    os.path.basename(expected_fname),
                 )
             )
         os.remove(result_fname)
@@ -147,12 +156,15 @@ def diff_viewer(
     plt.show()
 
 
-def _calculate_hit(uris, phash, action):
-    # Extract the hex basename strings from the uris.
-    hexes = [os.path.splitext(os.path.basename(uri))[0] for uri in uris]
-    # Create the expected perceptual image hashes from the uris.
-    to_hash = imagehash.hex_to_hash
-    expected = [to_hash(uri_hex) for uri_hex in hexes]
+def _calculate_hit(image_paths, phash, action):
+
+    expected = [
+        imagehash.phash(
+            Image.open(image_path), hash_size=iris.tests._HASH_SIZE
+        )
+        for image_path in image_paths
+    ]
+
     # Calculate the hamming distance vector for the result hash.
     distances = [e - phash for e in expected]
 
@@ -173,8 +185,7 @@ def _calculate_hit(uris, phash, action):
 
 def step_over_diffs(result_dir, action, display=True):
     processed = False
-    dname = os.path.dirname(iris.tests.__file__)
-    lock = filelock.FileLock(os.path.join(dname, _POSTFIX_LOCK))
+
     if action in ["first", "last"]:
         kind = action
     elif action in ["similar", "different"]:
@@ -194,92 +205,83 @@ def step_over_diffs(result_dir, action, display=True):
     for fname in glob(target):
         os.remove(fname)
 
-    with lock.acquire(timeout=30):
-        # Load the imagerepo.
-        repo_fname = os.path.join(dname, _POSTFIX_JSON)
-        with open(repo_fname, "rb") as fi:
-            repo = json.load(codecs.getreader("utf-8")(fi))
-
-        # Filter out all non-test result image files.
-        target_glob = os.path.join(result_dir, "result-*.png")
-        results = []
-        for fname in sorted(glob(target_glob)):
-            # We only care about PNG images.
-            try:
-                im = Image.open(fname)
-                if im.format != "PNG":
-                    # Ignore - it's not a png image.
-                    continue
-            except IOError:
-                # Ignore - it's not an image.
+    # Filter out all non-test result image files.
+    target_glob = os.path.join(result_dir, "result-*.png")
+    results = []
+    for fname in sorted(glob(target_glob)):
+        # We only care about PNG images.
+        try:
+            im = Image.open(fname)
+            if im.format != "PNG":
+                # Ignore - it's not a png image.
                 continue
-            results.append(fname)
+        except IOError:
+            # Ignore - it's not an image.
+            continue
+        results.append(fname)
 
-        count = len(results)
+    count = len(results)
 
-        for count_index, result_fname in enumerate(results):
-            key = os.path.splitext(
-                "-".join(result_fname.split("result-")[1:])
-            )[0]
-            try:
-                # Calculate the test result perceptual image hash.
-                phash = imagehash.phash(
-                    Image.open(result_fname), hash_size=iris.tests._HASH_SIZE
+    reference_images = glob(
+        os.path.join(iris.tests.get_data_path("images"), "*")
+    )
+
+    for count_index, result_fname in enumerate(results):
+        key = os.path.splitext("-".join(result_fname.split("result-")[1:]))[0]
+
+        try:
+            # Calculate the test result perceptual image hash.
+            phash = imagehash.phash(
+                Image.open(result_fname), hash_size=iris.tests._HASH_SIZE
+            )
+            relevant_image_names = [
+                x
+                for x in filter(
+                    lambda x: os.path.basename(x).startswith(key),
+                    reference_images,
                 )
-                uris = repo[key]
-                hash_index, distance = _calculate_hit(uris, phash, action)
-                uri = uris[hash_index]
-            except KeyError:
-                wmsg = "Ignoring unregistered test result {!r}."
-                warnings.warn(wmsg.format(key))
+            ]
+            hash_index, distance = _calculate_hit(
+                relevant_image_names, phash, action
+            )
+            uri = relevant_image_names[hash_index]
+        except KeyError:
+            wmsg = "Ignoring unregistered test result {!r}."
+            warnings.warn(wmsg.format(key))
+            continue
+
+        processed = True
+
+        # Look in test data for our image
+        local_fname = os.path.join(
+            iris.tests.get_data_path("images"), os.path.basename(uri)
+        )
+        if not os.path.isfile(local_fname):
+            emsg = "Bad URI {!r} for test {!r}."
+            raise ValueError(emsg.format(local_fname, key))
+
+        try:
+            mcompare.compare_images(local_fname, result_fname, tol=0)
+        except Exception as e:
+            if isinstance(e, ValueError) or isinstance(
+                e, ImageComparisonFailure
+            ):
+                print("Could not compare {}: {}".format(result_fname, e))
                 continue
-            with temp_png(key) as expected_fname:
-                processed = True
-                resource = requests.get(uri)
-                if resource.status_code == 200:
-                    with open(expected_fname, "wb") as fo:
-                        fo.write(resource.content)
-                else:
-                    # Perhaps the uri has not been pushed into the repo yet,
-                    # so check if a local "developer" copy is available ...
-                    local_fname = os.path.join(
-                        result_dir, os.path.basename(uri)
-                    )
-                    if not os.path.isfile(local_fname):
-                        emsg = "Bad URI {!r} for test {!r}."
-                        raise ValueError(emsg.format(uri, key))
-                    else:
-                        # The temporary expected filename has the test name
-                        # baked into it, and is used in the diff plot title.
-                        # So copy the local file to the exected file to
-                        # maintain this helpfulness.
-                        shutil.copy(local_fname, expected_fname)
-                try:
-                    mcompare.compare_images(
-                        expected_fname, result_fname, tol=0
-                    )
-                except Exception as e:
-                    if isinstance(e, ValueError) or isinstance(
-                        e, ImageComparisonFailure
-                    ):
-                        print(
-                            "Could not compare {}: {}".format(result_fname, e)
-                        )
-                        continue
-                    else:
-                        # Propagate the exception, keeping the stack trace
-                        raise
-                diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
-                args = expected_fname, result_fname, diff_fname
-                if display:
-                    msg = "Image {} of {}: hamming distance = {} " "[{!r}]"
-                    status = msg.format(count_index + 1, count, distance, kind)
-                    prefix = repo, key, repo_fname, phash, status
-                    yield prefix + args
-                else:
-                    yield args
-        if display and not processed:
-            print("\nThere are no iris test result images to process.\n")
+            else:
+                # Propagate the exception, keeping the stack trace
+                raise
+        diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
+        args = local_fname, result_fname, diff_fname
+        if display:
+            msg = "Image {} of {}: hamming distance = {} " "[{!r}]"
+            status = msg.format(count_index + 1, count, distance, kind)
+            prefix = key, phash, status
+            yield prefix + args
+        else:
+            yield args
+    if display and not processed:
+        print("\nThere are no iris test result images to process.\n")
 
 
 if __name__ == "__main__":
