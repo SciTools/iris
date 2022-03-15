@@ -58,6 +58,7 @@ _HAMMING_DISTANCE = 2
 # Prefix for image test results (that aren't yet verified as good to add to
 # reference images)
 _RESULT_PREFIX = "result-"
+_RESULT_NAME_PATTERN = re.compile(_RESULT_PREFIX + r"(.*).png")
 
 
 def _results_dir():
@@ -119,9 +120,6 @@ def _next_reference_image_name(reference_image_lookup, test_id):
         image_index = 0
     fname = Path(f"{test_id}_{image_index}.png")
     return fname
-
-
-_RESULT_NAME_PATTERN = re.compile(r"result-(.*).png")
 
 
 def extract_test_key(result_image_name):
