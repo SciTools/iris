@@ -1044,6 +1044,10 @@ class IrisTest(IrisTest_nometa, metaclass=_TestTimingsMetaclass):
     pass
 
 
+get_data_path = IrisTest.get_data_path
+get_result_path = IrisTest.get_result_path
+
+
 class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
     pass
 
@@ -1051,13 +1055,6 @@ class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
 class GraphicsTest_nometa(graphics.GraphicsTestMixin, IrisTest_nometa):
     # Graphicstest without the metaclass providing test timings.
     pass
-
-
-get_data_path = IrisTest.get_data_path
-
-get_result_path = IrisTest.get_result_path
-
-skip_plot = graphics.skip_plot
 
 
 def skip_data(fn):
@@ -1082,6 +1079,9 @@ def skip_data(fn):
     )
 
     return skip(fn)
+
+
+skip_plot = graphics.skip_plot
 
 
 def skip_gdal(fn):
