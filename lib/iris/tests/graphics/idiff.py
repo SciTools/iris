@@ -12,6 +12,7 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 """
 
 import argparse
+import hashlib
 from pathlib import Path
 import sys
 import warnings
@@ -35,12 +36,22 @@ import iris.tests.graphics as graphics
 _POSTFIX_DIFF = "-failed-diff.png"
 
 
-# TODO: Check the whole expected dir instead? Or all expected dir with right prefix?
-def images_equal(image_path_1, image_path_2):
+def hash_image(image_path):
     """
-    Are these images equal?
+    Get the sha256 of the contents of an image
     """
-    return mcompare.compare_images(image_path_1, image_path_2, tol=0) is None
+    return hashlib.sha256(open(image_path, "rb").read()).hexdigest()
+
+
+def image_already_present(check_path, image_dir):
+    """
+    Check if an image is already in the given directory
+    """
+    check_hash = hash_image(check_path)
+    for dir_image_path in image_dir.iterdir():
+        if check_hash == hash_image(dir_image_path):
+            return True
+    return False
 
 
 def diff_viewer(
@@ -65,7 +76,7 @@ def diff_viewer(
     )
 
     def accept(event):
-        if not images_equal(result_path, expected_path):
+        if not image_already_present(result_path, expected_path.parent):
             # Ensure to maintain strict time order where the first uri
             # associated with the repo key is the oldest, and the last
             # uri is the youngest
@@ -83,7 +94,7 @@ def diff_viewer(
         plt.close()
 
     def reject(event):
-        if not images_equal(result_path, expected_path):
+        if not image_already_present(result_path, expected_path.parent):
             print(f"REJECTED:  {result_path.name}")
         else:
             msg = f"DUPLICATE: {result_path.name} -> {expected_path.name} (ignored)"
@@ -178,19 +189,19 @@ def step_over_diffs(result_dir, action, display=True):
         reference_image_dir
     )
 
-    for count_index, result_fname in enumerate(results):
-        test_key = graphics.extract_test_key(result_fname)
+    for count_index, result_path in enumerate(results):
+        test_key = graphics.extract_test_key(result_path.name)
 
         try:
             # Calculate the test result perceptual image hash.
             phash = imagehash.phash(
-                Image.open(result_fname), hash_size=graphics._HASH_SIZE
+                Image.open(result_path), hash_size=graphics._HASH_SIZE
             )
-            relevant_image_names = reference_images[test_key].values()
+            relevant_image_paths = reference_images[test_key]
             hash_index, distance = _calculate_hit(
-                relevant_image_names, phash, action
+                relevant_image_paths, phash, action
             )
-            relevant_image_name = relevant_image_names[hash_index]
+            relevant_image_path = reference_images[test_key][hash_index]
         except KeyError:
             wmsg = "Ignoring unregistered test result {!r}."
             warnings.warn(wmsg.format(test_key))
@@ -198,31 +209,22 @@ def step_over_diffs(result_dir, action, display=True):
 
         processed = True
 
-        # Look in test data for our image
-        relevant_image_path = reference_image_dir / relevant_image_name
-
-        if not relevant_image_path.is_file():
-            emsg = f"Bad URI {relevant_image_path} for test {test_key}."
-            raise ValueError(emsg)
-
         try:
-            mcompare.compare_images(relevant_image_path, result_fname, tol=0)
+            # Creates the diff file when the images aren't identical
+            mcompare.compare_images(relevant_image_path, result_path, tol=0)
         except Exception as e:
             if isinstance(e, ValueError) or isinstance(
                 e, ImageComparisonFailure
             ):
-                print(f"Could not compare {result_fname}: {e}")
+                print(f"Could not compare {result_path}: {e}")
                 continue
             else:
                 # Propagate the exception, keeping the stack trace
                 raise
-        diff_fname = f"{result_fname.stem}{_POSTFIX_DIFF}"
-        args = relevant_image_path, result_fname, diff_fname
+        diff_path = result_dir / Path(f"{result_path.stem}{_POSTFIX_DIFF}")
+        args = relevant_image_path, result_path, diff_path
         if display:
-            status = (
-                f"Image {count_index + 1} of {count}: hamming distance = {distance} "
-                "[{kind}]"
-            )
+            status = f"Image {count_index + 1} of {count}: hamming distance = {distance} [{kind}]"
             prefix = test_key, status
             yield prefix + args
         else:

@@ -83,27 +83,40 @@ _IMAGE_NAME_PATTERN = re.compile(r"(.*)_([0-9]+).png")
 
 
 def _get_reference_image_lookup(reference_image_dir):
-    reference_image_lookup = defaultdict(dict)
+    tmp_storage = defaultdict(dict)
 
     reference_image_dir = Path(reference_image_dir)
-    for reference_image_name in reference_image_dir.iterdir():
-        name_match = _IMAGE_NAME_PATTERN.match(str(reference_image_name))
+    for reference_image_path in reference_image_dir.iterdir():
+        name_match = _IMAGE_NAME_PATTERN.match(reference_image_path.name)
         if name_match:
             test_name = name_match.group(1)
             image_index = int(name_match.group(2))
-            reference_image_lookup[test_name][
-                image_index
-            ] = reference_image_name
+            tmp_storage[test_name][image_index] = reference_image_path
         else:
-            emsg = f"Incorrectly named image in reference dir: {reference_image_name}"
+            emsg = f"Incorrectly named image in reference dir: {reference_image_path}"
             raise ValueError(emsg)
+
+    reference_image_lookup = {}
+
+    for test_name, index_dict in tmp_storage.items():
+        path_list = [None] * (max(index_dict.keys()) + 1)
+        try:
+            for ind, image_path in index_dict.items():
+                path_list[ind] = image_path
+            assert None not in path_list
+        except (KeyError, AssertionError):
+            emsg = f"Reference images for {test_name} numbered incorrectly"
+            raise ValueError(emsg)
+        reference_image_lookup[test_name] = path_list
 
     return reference_image_lookup
 
 
 def _next_reference_image_name(reference_image_lookup, test_id):
-    current_indices = reference_image_lookup[test_id].keys()
-    image_index = max(current_indices, default=-1) + 1
+    try:
+        image_index = len(reference_image_lookup[test_id])
+    except KeyError:
+        image_index = 0
     fname = Path(f"{test_id}_{image_index}.png")
     return fname
 
@@ -182,7 +195,7 @@ def check_graphic(test_obj):
         buffer.seek(0)
         phash = imagehash.phash(Image.open(buffer), hash_size=_HASH_SIZE)
 
-        reference_image_names = reference_image_lookup[test_id].values()
+        reference_image_names = reference_image_lookup[test_id]
 
         if reference_image_names:
 
