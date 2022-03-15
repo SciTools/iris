@@ -1081,9 +1081,6 @@ def skip_data(fn):
     return skip(fn)
 
 
-skip_plot = graphics.skip_plot
-
-
 def skip_gdal(fn):
     """
     Decorator to choose whether to run tests, based on the availability of the
@@ -1099,6 +1096,9 @@ def skip_gdal(fn):
         condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'."
     )
     return skip(fn)
+
+
+skip_plot = graphics.skip_plot
 
 
 skip_sample_data = unittest.skipIf(
