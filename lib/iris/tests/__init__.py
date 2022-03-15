@@ -11,12 +11,6 @@ Provides testing capabilities and customisations specific to Iris.
 
 The primary class for this module is :class:`IrisTest`.
 
-By default, this module sets the matplotlib backend to "agg". But when
-this module is imported it checks ``sys.argv`` for the flag "-d". If
-found, it is removed from ``sys.argv`` and the matplotlib backend is
-switched to "tkagg" to allow the interactive visual inspection of
-graphical test results.
-
 """
 
 import collections
@@ -37,7 +31,6 @@ import re
 import shutil
 import subprocess
 import sys
-import threading
 import unittest
 from unittest import mock
 import warnings
@@ -50,25 +43,11 @@ import requests
 
 import iris.config
 import iris.cube
+import iris.tests.graphics as graphics
 import iris.util
 
-# Test for availability of matplotlib.
-# (And remove matplotlib as an iris.tests dependency.)
-try:
-    import matplotlib
+MPL_AVAILABLE = graphics.MPL_AVAILABLE
 
-    # Override any user settings e.g. from matplotlibrc file.
-    matplotlib.rcdefaults()
-    # Set backend *after* rcdefaults, as we don't want that overridden (#3846).
-    matplotlib.use("agg")
-    # Standardise the figure size across matplotlib versions.
-    # This permits matplotlib png image comparison.
-    matplotlib.rcParams["figure.figsize"] = [8.0, 6.0]
-    import matplotlib.pyplot as plt
-except ImportError:
-    MPL_AVAILABLE = False
-else:
-    MPL_AVAILABLE = True
 
 try:
     from osgeo import gdal  # noqa
@@ -108,10 +87,6 @@ except ImportError:
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
-#: Default perceptual hash size.
-_HASH_SIZE = 16
-#: Default maximum perceptual hash hamming distance.
-_HAMMING_DISTANCE = 2
 
 if "--data-files-used" in sys.argv:
     sys.argv.remove("--data-files-used")
@@ -126,18 +101,6 @@ if "--create-missing" in sys.argv:
     sys.argv.remove("--create-missing")
     print("Allowing creation of missing test results.")
     os.environ["IRIS_TEST_CREATE_MISSING"] = "true"
-
-
-# Whether to display matplotlib output to the screen.
-_DISPLAY_FIGURES = False
-
-if MPL_AVAILABLE and "-d" in sys.argv:
-    sys.argv.remove("-d")
-    plt.switch_backend("tkagg")
-    _DISPLAY_FIGURES = True
-
-# Threading non re-entrant blocking lock to ensure thread-safe plotting.
-_lock = threading.Lock()
 
 
 def main():
@@ -176,43 +139,6 @@ def main():
         unittest.main()
 
 
-def get_data_path(relative_path):
-    """
-    Return the absolute path to a data file when given the relative path
-    as a string, or sequence of strings.
-
-    """
-    if not isinstance(relative_path, str):
-        relative_path = os.path.join(*relative_path)
-    test_data_dir = iris.config.TEST_DATA_DIR
-    if test_data_dir is None:
-        test_data_dir = ""
-    data_path = os.path.join(test_data_dir, relative_path)
-
-    if _EXPORT_DATAPATHS_FILE is not None:
-        _EXPORT_DATAPATHS_FILE.write(data_path + "\n")
-
-    if isinstance(data_path, str) and not os.path.exists(data_path):
-        # if the file is gzipped, ungzip it and return the path of the ungzipped
-        # file.
-        gzipped_fname = data_path + ".gz"
-        if os.path.exists(gzipped_fname):
-            with gzip.open(gzipped_fname, "rb") as gz_fh:
-                try:
-                    with open(data_path, "wb") as fh:
-                        fh.writelines(gz_fh)
-                except IOError:
-                    # Put ungzipped data file in a temporary path, since we
-                    # can't write to the original path (maybe it is owned by
-                    # the system.)
-                    _, ext = os.path.splitext(data_path)
-                    data_path = iris.util.create_temp_filename(suffix=ext)
-                    with open(data_path, "wb") as fh:
-                        fh.writelines(gz_fh)
-
-    return data_path
-
-
 class IrisTest_nometa(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
@@ -246,6 +172,43 @@ class IrisTest_nometa(unittest.TestCase):
                 "%s do not match: %s\n%s"
                 % (type_comparison_name, reference_filename, diff)
             )
+
+    @staticmethod
+    def get_data_path(relative_path):
+        """
+        Return the absolute path to a data file when given the relative path
+        as a string, or sequence of strings.
+
+        """
+        if not isinstance(relative_path, str):
+            relative_path = os.path.join(*relative_path)
+        test_data_dir = iris.config.TEST_DATA_DIR
+        if test_data_dir is None:
+            test_data_dir = ""
+        data_path = os.path.join(test_data_dir, relative_path)
+
+        if _EXPORT_DATAPATHS_FILE is not None:
+            _EXPORT_DATAPATHS_FILE.write(data_path + "\n")
+
+        if isinstance(data_path, str) and not os.path.exists(data_path):
+            # if the file is gzipped, ungzip it and return the path of the ungzipped
+            # file.
+            gzipped_fname = data_path + ".gz"
+            if os.path.exists(gzipped_fname):
+                with gzip.open(gzipped_fname, "rb") as gz_fh:
+                    try:
+                        with open(data_path, "wb") as fh:
+                            fh.writelines(gz_fh)
+                    except IOError:
+                        # Put ungzipped data file in a temporary path, since we
+                        # can't write to the original path (maybe it is owned by
+                        # the system.)
+                        _, ext = os.path.splitext(data_path)
+                        data_path = iris.util.create_temp_filename(suffix=ext)
+                        with open(data_path, "wb") as fh:
+                            fh.writelines(gz_fh)
+
+        return data_path
 
     @staticmethod
     def get_result_path(relative_path):
@@ -869,143 +832,7 @@ class IrisTest_nometa(unittest.TestCase):
         output directory, and the imagerepo.json file being updated.
 
         """
-        from PIL import Image
-        import imagehash
-
-        dev_mode = os.environ.get("IRIS_TEST_CREATE_MISSING")
-        unique_id = self._unique_id()
-
-        try:
-            #: The path where the images generated by the tests should go.
-            image_output_directory = os.path.join(
-                os.path.dirname(__file__), "result_image_comparison"
-            )
-            if not os.access(image_output_directory, os.W_OK):
-                if not os.access(os.getcwd(), os.W_OK):
-                    raise IOError(
-                        "Write access to a local disk is required "
-                        "to run image tests.  Run the tests from a "
-                        "current working directory you have write "
-                        "access to to avoid this issue."
-                    )
-                else:
-                    image_output_directory = os.path.join(
-                        os.getcwd(), "iris_image_test_output"
-                    )
-            result_fname = os.path.join(
-                image_output_directory, "result-" + unique_id + ".png"
-            )
-
-            if not os.path.isdir(image_output_directory):
-                # Handle race-condition where the directories are
-                # created sometime between the check above and the
-                # creation attempt below.
-                try:
-                    os.makedirs(image_output_directory)
-                except OSError as err:
-                    # Don't care about "File exists"
-                    if err.errno != 17:
-                        raise
-
-            test_result_dir = get_data_path("images")
-            all_image_names = os.listdir(test_result_dir)
-
-            relevant_image_names = [
-                x
-                for x in filter(
-                    lambda x: x.startswith(unique_id), all_image_names
-                )
-            ]
-
-            # If we dont get a match because unique_id isn't fully qualified,
-            # see if we can work out what it should be
-            if not relevant_image_names:
-                unique_id_alternatives = set(
-                    [
-                        x
-                        for x in filter(
-                            lambda x: x[: x.rindex("_")].endswith(unique_id),
-                            all_image_names,
-                        )
-                    ]
-                )
-                if len(unique_id_alternatives) == 1:
-                    (unique_id,) = unique_id_alternatives
-                relevant_image_names = [
-                    x
-                    for x in filter(
-                        lambda x: x.startswith(unique_id), all_image_names
-                    )
-                ]
-
-            def _create_missing():
-
-                current_indices = [
-                    int(
-                        image_name[
-                            image_name.rindex("_") + 1 : image_name.rindex(".")
-                        ]
-                    )
-                    for image_name in relevant_image_names
-                ]
-
-                image_index = max(current_indices, default=-1) + 1
-
-                fname = f"{unique_id}_{image_index}.png"
-                output_fname = os.path.join(image_output_directory, fname)
-
-                print("Creating image file: {}".format(output_fname))
-                figure.savefig(output_fname)
-
-            # Calculate the test result perceptual image hash.
-            buffer = io.BytesIO()
-            figure = plt.gcf()
-            figure.savefig(buffer, format="png")
-            buffer.seek(0)
-            phash = imagehash.phash(Image.open(buffer), hash_size=_HASH_SIZE)
-
-            if relevant_image_names:
-
-                expected = [
-                    imagehash.phash(
-                        Image.open(os.path.join(test_result_dir, image_name)),
-                        hash_size=_HASH_SIZE,
-                    )
-                    for image_name in relevant_image_names
-                ]
-
-                # Calculate hamming distance vector for the result hash.
-                distances = [e - phash for e in expected]
-
-                if np.all([hd > _HAMMING_DISTANCE for hd in distances]):
-                    if dev_mode:
-                        _create_missing()
-                    else:
-                        figure.savefig(result_fname)
-                        msg = (
-                            "Bad phash {} with hamming distance {} "
-                            "for test {}."
-                        )
-                        msg = msg.format(phash, distances, unique_id)
-                        if _DISPLAY_FIGURES:
-                            emsg = "Image comparison would have failed: {}"
-                            print(emsg.format(msg))
-                        else:
-                            emsg = "Image comparison failed: {}"
-                            raise AssertionError(emsg.format(msg))
-            else:
-                if dev_mode:
-                    _create_missing()
-                else:
-                    figure.savefig(result_fname)
-                    emsg = "Missing image test result: {}."
-                    raise AssertionError(emsg.format(unique_id))
-
-            if _DISPLAY_FIGURES:
-                plt.show()
-
-        finally:
-            plt.close()
+        graphics.check_graphic(self)
 
     def _remove_testcase_patches(self):
         """Helper to remove per-testcase patches installed by :meth:`patch`."""
@@ -1217,39 +1044,20 @@ class IrisTest(IrisTest_nometa, metaclass=_TestTimingsMetaclass):
     pass
 
 
-get_result_path = IrisTest.get_result_path
-
-
-class GraphicsTestMixin:
-
-    # nose directive: dispatch tests concurrently.
-    _multiprocess_can_split_ = True
-
-    def setUp(self):
-        # Acquire threading non re-entrant blocking lock to ensure
-        # thread-safe plotting.
-        _lock.acquire()
-        # Make sure we have no unclosed plots from previous tests before
-        # generating this one.
-        if MPL_AVAILABLE:
-            plt.close("all")
-
-    def tearDown(self):
-        # If a plotting test bombs out it can leave the current figure
-        # in an odd state, so we make sure it's been disposed of.
-        if MPL_AVAILABLE:
-            plt.close("all")
-        # Release the non re-entrant blocking lock.
-        _lock.release()
-
-
-class GraphicsTest(GraphicsTestMixin, IrisTest):
+class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
     pass
 
 
-class GraphicsTest_nometa(GraphicsTestMixin, IrisTest_nometa):
+class GraphicsTest_nometa(graphics.GraphicsTestMixin, IrisTest_nometa):
     # Graphicstest without the metaclass providing test timings.
     pass
+
+
+get_data_path = IrisTest.get_data_path
+
+get_result_path = IrisTest.get_result_path
+
+skip_plot = graphics.skip_plot
 
 
 def skip_data(fn):
@@ -1290,25 +1098,6 @@ def skip_gdal(fn):
     skip = unittest.skipIf(
         condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'."
     )
-    return skip(fn)
-
-
-def skip_plot(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of the
-    matplotlib library.
-
-    Example usage:
-        @skip_plot
-        class MyPlotTests(test.GraphicsTest):
-            ...
-
-    """
-    skip = unittest.skipIf(
-        condition=not MPL_AVAILABLE,
-        reason="Graphics tests require the matplotlib library.",
-    )
-
     return skip(fn)
 
 

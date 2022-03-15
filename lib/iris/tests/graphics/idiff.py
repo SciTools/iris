@@ -12,10 +12,7 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 """
 
 import argparse
-import contextlib
-from glob import glob
-import hashlib
-import os.path
+from pathlib import Path
 import sys
 import warnings
 
@@ -33,114 +30,71 @@ import matplotlib.widgets as mwidget  # noqa
 import numpy as np  # noqa
 
 import iris.tests  # noqa
-import iris.util as iutil  # noqa
+import iris.tests.graphics as graphics
 
 _POSTFIX_DIFF = "-failed-diff.png"
 
 
-@contextlib.contextmanager
-def temp_png(suffix=""):
-    if suffix:
-        suffix = "-{}".format(suffix)
-    fname = iutil.create_temp_filename(suffix + ".png")
-    try:
-        yield fname
-    finally:
-        os.remove(fname)
-
-
-def image_exists_with_prefix(image_path, directory, prefix):
+# TODO: Check the whole expected dir instead? Or all expected dir with right prefix?
+def images_equal(image_path_1, image_path_2):
     """
-    Does the given image already exist in the given directory with the given
-    prefix?
+    Are these images equal?
     """
-    check_image_hash = hashlib.sha256(
-        open(image_path, "rb").read()
-    ).hexdigest()
-
-    image_found = False
-
-    target = os.path.join(directory, f"{prefix}*")
-
-    for image_name in glob(target):
-        dir_image_hash = hashlib.sha256(
-            open(os.path.join(directory, image_name), "rb").read()
-        ).hexdigest()
-        if dir_image_hash == check_image_hash:
-            image_found = True
-            break
-
-    return image_found
+    return mcompare.compare_images(image_path_1, image_path_2, tol=0) is None
 
 
 def diff_viewer(
     key,
-    phash,
     status,
-    expected_fname,
-    result_fname,
+    expected_path,
+    result_path,
     diff_fname,
 ):
     fig = plt.figure(figsize=(14, 12))
-    plt.suptitle(os.path.basename(expected_fname))
+    plt.suptitle(expected_path.name)
     ax = plt.subplot(221)
-    ax.imshow(mimg.imread(expected_fname))
+    ax.imshow(mimg.imread(expected_path))
     ax = plt.subplot(222, sharex=ax, sharey=ax)
-    ax.imshow(mimg.imread(result_fname))
+    ax.imshow(mimg.imread(result_path))
     ax = plt.subplot(223, sharex=ax, sharey=ax)
     ax.imshow(mimg.imread(diff_fname))
 
-    result_dir = os.path.dirname(result_fname)
+    result_dir = result_path.parent
+    reference_image_lookup = graphics._get_reference_image_lookup(
+        expected_path.parent
+    )
 
     def accept(event):
-        # TODO: This check should include the dir we're working in, and the main dir
-        if not image_exists_with_prefix(result_fname, result_dir, key):
+        if not images_equal(result_path, expected_path):
             # Ensure to maintain strict time order where the first uri
             # associated with the repo key is the oldest, and the last
             # uri is the youngest
-            # TODO: Increment the index of the result by 1
-            out_file = os.path.join(
-                result_dir, os.path.basename(expected_fname)
+            out_file = result_dir / graphics._next_reference_image_name(
+                reference_image_lookup, key
             )
-            # os.rename(result_fname, out_file)
-            print(f"would rename {result_fname} to {out_file}")
-            msg = "ACCEPTED:  {} -> {}"
-            print(
-                msg.format(
-                    os.path.basename(result_fname),
-                    os.path.basename(expected_fname),
-                )
-            )
+            result_path.rename(out_file)
+            msg = f"ACCEPTED:  {result_path.name} -> {out_file.name}"
+            print(msg)
         else:
-            msg = "DUPLICATE: {} -> {} (ignored)"
-            print(
-                msg.format(
-                    os.path.basename(result_fname),
-                    os.path.basename(expected_fname),
-                )
-            )
-            os.remove(result_fname)
-        os.remove(diff_fname)
+            msg = f"DUPLICATE: {result_path.name} -> {expected_path.name} (ignored)"
+            print(msg)
+            result_path.unlink()
+        diff_fname.unlink()
         plt.close()
 
     def reject(event):
-        if not image_exists_with_prefix(result_fname, result_dir, key):
-            print("REJECTED:  {}".format(os.path.basename(result_fname)))
+        if not images_equal(result_path, expected_path):
+            print(f"REJECTED:  {result_path.name}")
         else:
-            msg = "DUPLICATE: {} -> {} (ignored)"
-            print(
-                msg.format(
-                    os.path.basename(result_fname),
-                    os.path.basename(expected_fname),
-                )
-            )
-        os.remove(result_fname)
-        os.remove(diff_fname)
+            msg = f"DUPLICATE: {result_path.name} -> {expected_path.name} (ignored)"
+            print(msg)
+        result_path.unlink()
+        diff_fname.unlink()
         plt.close()
 
     def skip(event):
         # Let's keep both the result and the diff files.
-        print("SKIPPED:   {}".format(os.path.basename(result_fname)))
+        print(f"SKIPPED:   {result_path.name}")
         plt.close()
 
     ax_accept = plt.axes([0.59, 0.05, 0.1, 0.075])
@@ -159,9 +113,7 @@ def diff_viewer(
 def _calculate_hit(image_paths, phash, action):
 
     expected = [
-        imagehash.phash(
-            Image.open(image_path), hash_size=iris.tests._HASH_SIZE
-        )
+        imagehash.phash(Image.open(image_path), hash_size=graphics._HASH_SIZE)
         for image_path in image_paths
     ]
 
@@ -201,14 +153,12 @@ def step_over_diffs(result_dir, action, display=True):
         print(msg.format(kind))
 
     # Remove old image diff results.
-    target = os.path.join(result_dir, "*{}".format(_POSTFIX_DIFF))
-    for fname in glob(target):
-        os.remove(fname)
+    for fname in result_dir.glob(f"*{_POSTFIX_DIFF}"):
+        fname.unlink()
 
     # Filter out all non-test result image files.
-    target_glob = os.path.join(result_dir, "result-*.png")
     results = []
-    for fname in sorted(glob(target_glob)):
+    for fname in sorted(result_dir.glob(f"{graphics._RESULT_PREFIX}*.png")):
         # We only care about PNG images.
         try:
             im = Image.open(fname)
@@ -222,61 +172,58 @@ def step_over_diffs(result_dir, action, display=True):
 
     count = len(results)
 
-    reference_images = glob(
-        os.path.join(iris.tests.get_data_path("images"), "*")
+    reference_image_dir = Path(iris.tests.get_data_path("images"))
+
+    reference_images = graphics._get_reference_image_lookup(
+        reference_image_dir
     )
 
     for count_index, result_fname in enumerate(results):
-        key = os.path.splitext("-".join(result_fname.split("result-")[1:]))[0]
+        test_key = graphics.extract_test_key(result_fname)
 
         try:
             # Calculate the test result perceptual image hash.
             phash = imagehash.phash(
-                Image.open(result_fname), hash_size=iris.tests._HASH_SIZE
+                Image.open(result_fname), hash_size=graphics._HASH_SIZE
             )
-            relevant_image_names = [
-                x
-                for x in filter(
-                    lambda x: os.path.basename(x).startswith(key),
-                    reference_images,
-                )
-            ]
+            relevant_image_names = reference_images[test_key].values()
             hash_index, distance = _calculate_hit(
                 relevant_image_names, phash, action
             )
-            uri = relevant_image_names[hash_index]
+            relevant_image_name = relevant_image_names[hash_index]
         except KeyError:
             wmsg = "Ignoring unregistered test result {!r}."
-            warnings.warn(wmsg.format(key))
+            warnings.warn(wmsg.format(test_key))
             continue
 
         processed = True
 
         # Look in test data for our image
-        local_fname = os.path.join(
-            iris.tests.get_data_path("images"), os.path.basename(uri)
-        )
-        if not os.path.isfile(local_fname):
-            emsg = "Bad URI {!r} for test {!r}."
-            raise ValueError(emsg.format(local_fname, key))
+        relevant_image_path = reference_image_dir / relevant_image_name
+
+        if not relevant_image_path.is_file():
+            emsg = f"Bad URI {relevant_image_path} for test {test_key}."
+            raise ValueError(emsg)
 
         try:
-            mcompare.compare_images(local_fname, result_fname, tol=0)
+            mcompare.compare_images(relevant_image_path, result_fname, tol=0)
         except Exception as e:
             if isinstance(e, ValueError) or isinstance(
                 e, ImageComparisonFailure
             ):
-                print("Could not compare {}: {}".format(result_fname, e))
+                print(f"Could not compare {result_fname}: {e}")
                 continue
             else:
                 # Propagate the exception, keeping the stack trace
                 raise
-        diff_fname = os.path.splitext(result_fname)[0] + _POSTFIX_DIFF
-        args = local_fname, result_fname, diff_fname
+        diff_fname = f"{result_fname.stem}{_POSTFIX_DIFF}"
+        args = relevant_image_path, result_fname, diff_fname
         if display:
-            msg = "Image {} of {}: hamming distance = {} " "[{!r}]"
-            status = msg.format(count_index + 1, count, distance, kind)
-            prefix = key, phash, status
+            status = (
+                f"Image {count_index + 1} of {count}: hamming distance = {distance} "
+                "[{kind}]"
+            )
+            prefix = test_key, status
             yield prefix + args
         else:
             yield args
@@ -285,8 +232,8 @@ def step_over_diffs(result_dir, action, display=True):
 
 
 if __name__ == "__main__":
-    default = os.path.join(
-        os.path.dirname(iris.tests.__file__), "result_image_comparison"
+    default = Path(iris.tests.__file__).parent / Path(
+        "result_image_comparison"
     )
     description = "Iris graphic test difference tool."
     formatter_class = argparse.RawTextHelpFormatter
@@ -308,9 +255,9 @@ different - compare result image with most unsimilar expected image
         "action", nargs="?", choices=choices, default="similar", help=help
     )
     args = parser.parse_args()
-    result_dir = args.resultdir
-    if not os.path.isdir(result_dir):
-        emsg = "Invalid results directory: {}"
-        raise ValueError(emsg.format(result_dir))
+    result_dir = Path(args.resultdir)
+    if not result_dir.is_dir():
+        emsg = f"Invalid results directory: {result_dir}"
+        raise ValueError(emsg)
     for args in step_over_diffs(result_dir, args.action):
         diff_viewer(*args)
