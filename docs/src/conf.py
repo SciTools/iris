@@ -314,6 +314,7 @@ html_js_files = [
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
+    "http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
     "http://cfconventions.org",
     "http://code.google.com/p/msysgit/downloads/list",
     "http://effbot.org",
