@@ -1479,9 +1479,13 @@ def _lazy_max_run(array, axis=None, **kwargs):
     if not callable(func):
         emsg = "function must be a callable. Got {}."
         raise TypeError(emsg.format(type(func)))
+    bool_array = func(array)
+    bool_array = np.logical_and(
+        bool_array, np.logical_not(da.ma.getmaskarray(array))
+    )
     padding = [(0, 0)] * array.ndim
     padding[axis] = (0, 1)
-    ones_zeros = da.pad(func(array), padding).astype(int)
+    ones_zeros = da.pad(bool_array, padding).astype(int)
     cum_sum = da.cumsum(ones_zeros, axis=axis)
     run_totals = da.where(ones_zeros == 0, cum_sum, 0)
     stepped_run_lengths = da.reductions.cumreduction(
