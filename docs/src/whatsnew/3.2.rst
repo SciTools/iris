@@ -25,6 +25,30 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
+v3.2.1 (11 Mar 2022)
+====================
+
+.. dropdown:: :opticon:`alert` v3.2.1 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   📢 **Welcome** to `@dennissergeev`_, who made his first contribution to Iris.  Nice work!
+
+   The patches in this release of Iris include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@dennissergeev`_ changed _crs_distance_differentials() so that it uses the `Globe`
+      attribute from a given CRS instead of creating a new `ccrs.Globe()` object.
+      Iris can now handle non-Earth semi-major axes, as discussed in :issue:`4582` (:pull:`4605`).
+
+   #. `@trexfeathers`_ avoided a dimensionality mismatch when streaming the
+      :attr:`~iris.coords.Coord.bounds` array for a scalar
+      :class:`~iris.coords.Coord`. (:pull:`4610`).
+
+
 📢 Announcements
 ================
 
@@ -174,7 +198,7 @@ This document explains the changes made to Iris for this release
    from assuming the globe to be the Earth (:issue:`4408`, :pull:`4497`)
 
 #. `@rcomer`_ corrected the ``long_name`` mapping from UM stash code ``m01s09i215``
-   to indicate cloud fraction greater than 7.9 oktas, rather than 7.5 
+   to indicate cloud fraction greater than 7.9 oktas, rather than 7.5
    (:issue:`3305`, :pull:`4535`)
 
 #. `@lbdreyer`_ fixed a bug in :class:`iris.io.load_http` which was missing an import
@@ -368,6 +392,7 @@ This document explains the changes made to Iris for this release
 .. _@aaronspring: https://github.com/aaronspring
 .. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@bsherratt: https://github.com/bsherratt
+.. _@dennissergeev: https://github.com/dennissergeev
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw
 .. _@SimonPeatman: https://github.com/SimonPeatman
