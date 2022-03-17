@@ -20,7 +20,7 @@ the below table.
 
 .. raw:: html
 
-   <table id="example" class="display" style="width:100%">
+   <table id="voted_issues_table" class="display" style="width:100%">
       <thead>
          <tr>
             <th>👍</th>
@@ -37,7 +37,7 @@ the below table.
 
    <script type="text/javascript">
         $(document).ready(function() {
-           $('#example').DataTable( {
+           $('#voted_issues_table').DataTable( {
               <!-- "ajax": 'voted-issues.json', -->
               "ajax": 'https://raw.githubusercontent.com/scitools/voted_issues/main/voted-issues.json',
               "lengthMenu": [10, 25, 50, 100],
@@ -48,8 +48,9 @@ the below table.
    </script>
    <p></p>
 
-.. note:: The data in this table is updated daily and is sourced from
-          `voted-issues.json`_.
+
+.. note:: The data in this table is updated every 30 minutes and is sourced
+          from `voted-issues.json`_.
           For the latest data please see the `issues on GitHub`_.
           Note that the list on Github does not show the number of votes 👍
           only the total number of comments for the whole issue.
