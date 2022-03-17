@@ -13,7 +13,9 @@ auto-transposed, and with the appropriate broadcast shape.
 
 from collections import namedtuple
 from collections.abc import Iterable
+from dataclasses import dataclass
 import logging
+from typing import Any
 
 from dask.array.core import broadcast_shapes
 import numpy as np
@@ -56,10 +58,71 @@ _Item = namedtuple("Item", ["metadata", "coord", "dims"])
 
 _PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
 
-_PreparedItem = namedtuple(
-    "PreparedItem",
-    ["metadata", "points", "bounds", "dims", "container"],
-)
+
+@dataclass
+class _BasePreparedItem:
+    metadata: Any
+    points: Any
+    bounds: Any
+    dims: Any
+    container: Any
+    mesh: Any = None
+    location: Any = None
+    axis: Any = None
+
+
+class _PreparedItem(_BasePreparedItem):
+    def __init__(self, *args, **kwargs):
+        assert len(args) == 0
+        super().__init__(*args, **kwargs)
+
+    def create_coord(self, metadata):
+        # make a regular coord from a _PreparedItem
+        result = self.container(self.points, bounds=self.bounds)
+        result.metadata = metadata
+        return result
+
+
+class _MeshPreparedItem(_PreparedItem):
+    def __init__(self, **kwargs):
+        # N.B. *only* accepts keywords, no positional args.
+        # Also, we don't have points or bounds in this case.
+        assert "points" not in kwargs
+        assert "bounds" not in kwargs
+        # We should have mesh/location/axis instead, but no need to check it.
+        kwargs["points"] = None
+        kwargs["bounds"] = None
+        super().__init__(**kwargs)
+
+    def create_coord(self, metadata):
+        # make a MeshCoord from a _MeshPreparedItem
+        from iris.experimental.ugrid.mesh import MeshCoord
+
+        result = MeshCoord(
+            mesh=self.mesh,
+            location=self.location,
+            axis=self.axis,
+        )
+
+        #
+        # NOTE: we think we *don't* need any of this.
+        # -as for a MeshCoord, the other attributes have no meaning
+        #
+
+        # Set the result metadata, but do *not* set location/axis/mesh, as
+        # these are readonly, and always remain identical to the original.
+
+        # # Convert metadata to ("generic") CoordMetadata for this, so discarding
+        # # the MeshCoord-specific parts (which we can't assign).
+        # from iris.common.metadata import CoordMetadata
+        #
+        # metadata = CoordMetadata.from_metadata(metadata)
+        # # Convert to a dictionary, so we only write the included properties
+        # for property, value in metadata._asdict().items():
+        #     setattr(result, property, value)
+
+        return result
+
 
 _PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
 
@@ -646,7 +709,13 @@ class Resolve:
 
     @staticmethod
     def _create_prepared_item(
-        coord, dims, src_metadata=None, tgt_metadata=None
+        coord,
+        dims,
+        src_metadata=None,
+        tgt_metadata=None,
+        points=None,
+        bounds=None,
+        container=None,
     ):
         """
         Convenience method that creates a :class:`~iris.common.resolve._PreparedItem`
@@ -667,6 +736,15 @@ class Resolve:
         * tgt_metadata:
             The coordinate metadata from the ``tgt`` :class:`~iris.cube.Cube`.
 
+        * points:
+            Override points array.  When not given, use coord.points.
+
+        * points:
+            Override bounds array.  When not given, use coord.bounds.
+
+        * container:
+            Coord type (class constructor).  When not given, use type(coord).
+
         Returns:
             The :class:`~iris.common.resolve._PreparedItem`.
 
@@ -675,19 +753,56 @@ class Resolve:
             combined = src_metadata.combine(tgt_metadata)
         else:
             combined = src_metadata or tgt_metadata
+
         if not isinstance(dims, Iterable):
             dims = (dims,)
+
         prepared_metadata = _PreparedMetadata(
             combined=combined, src=src_metadata, tgt=tgt_metadata
         )
-        bounds = coord.bounds
-        result = _PreparedItem(
-            metadata=prepared_metadata,
-            points=coord.points.copy(),
-            bounds=bounds if bounds is None else bounds.copy(),
-            dims=dims,
-            container=type(coord),
-        )
+
+        if container is None:
+            container = type(coord)
+
+        from iris.experimental.ugrid.mesh import MeshCoord
+
+        if not issubclass(container, MeshCoord):
+            # Build a "normal" prepared-item to make a DimCoord or AuxCoord.
+
+            # points + bounds default to those from the coordinate.
+            if points is None:
+                points = coord.points
+            if bounds is None:
+                bounds = coord.bounds
+
+            # Always duplicate points+bounds, to avoid possible direct
+            # references to existing coord arrays.
+            points = points.copy()
+            if bounds is not None:
+                bounds = bounds.copy()
+
+            result = _PreparedItem(
+                metadata=prepared_metadata,
+                points=points,
+                bounds=bounds,
+                dims=dims,
+                container=type(coord),
+            )
+
+        else:
+            # Build a meshcoord type prepared-item, to make a MeshCoord.
+            assert isinstance(coord, MeshCoord)
+
+            # Uses mesh/location/axis from coord instead of points+bounds.
+            result = _MeshPreparedItem(
+                metadata=prepared_metadata,
+                dims=dims,
+                mesh=coord.mesh,
+                location=coord.location,
+                axis=coord.axis,
+                container=MeshCoord,
+            )
+
         return result
 
     @property
@@ -1422,30 +1537,59 @@ class Resolve:
                 (tgt_item,) = tgt_items
                 src_coord = src_item.coord
                 tgt_coord = tgt_item.coord
-                points, bounds = self._prepare_points_and_bounds(
-                    src_coord,
-                    tgt_coord,
-                    src_item.dims,
-                    tgt_item.dims,
-                    ignore_mismatch=ignore_mismatch,
-                )
-                if points is not None:
-                    src_type = type(src_coord)
-                    tgt_type = type(tgt_coord)
-                    # Downcast to aux if there are mixed container types.
-                    container = src_type if src_type is tgt_type else AuxCoord
-                    prepared_metadata = _PreparedMetadata(
-                        combined=src_metadata.combine(tgt_item.metadata),
-                        src=src_metadata,
-                        tgt=tgt_item.metadata,
+
+                prepared_item = None
+                src_is_mesh, tgt_is_mesh = [
+                    hasattr(coord, "mesh") for coord in (src_coord, tgt_coord)
+                ]
+                if src_is_mesh and tgt_is_mesh:
+                    # MeshCoords are a bit "special" ...
+                    # In this case, we may need to produce an alternative form
+                    # to the 'ordinary' _PreparedItem
+                    # However, this only works if they have identical meshes..
+                    if (
+                        src_coord.location == tgt_coord.location
+                        and src_coord.axis == tgt_coord.axis
+                        and src_coord.mesh == tgt_coord.mesh
+                    ):
+                        prepared_item = self._create_prepared_item(
+                            src_coord,
+                            dims=tgt_item.dims,
+                            src_metadata=src_metadata,
+                            tgt_metadata=tgt_item.metadata,
+                        )
+
+                if prepared_item is None:
+                    # Make a "normal" _PreparedItem, which is specified using
+                    # points + bounds arrays.
+                    # First, convert any un-matching MeshCoords to AuxCoord
+                    if src_is_mesh:
+                        src_coord = AuxCoord.from_coord(src_coord)
+                    if tgt_is_mesh:
+                        tgt_coord = AuxCoord.from_coord(tgt_coord)
+                    points, bounds = self._prepare_points_and_bounds(
+                        src_coord,
+                        tgt_coord,
+                        src_item.dims,
+                        tgt_item.dims,
+                        ignore_mismatch=ignore_mismatch,
                     )
-                    prepared_item = _PreparedItem(
-                        metadata=prepared_metadata,
-                        points=points.copy(),
-                        bounds=bounds if bounds is None else bounds.copy(),
-                        dims=tgt_item.dims,
-                        container=container,
-                    )
+                    if points is not None:
+                        src_type = type(src_coord)
+                        tgt_type = type(tgt_coord)
+                        # Downcast to aux if there are mixed container types.
+                        container = (
+                            src_type if src_type is tgt_type else AuxCoord
+                        )
+                        prepared_item = self._create_prepared_item(
+                            src_coord,
+                            src_metadata=src_metadata,
+                            tgt_metadata=tgt_item.metadata,
+                            dims=tgt_item.dims,
+                            container=container,
+                        )
+
+                if prepared_item is not None:
                     prepared_items.append(prepared_item)
 
     def _prepare_common_dim_payload(
@@ -1499,16 +1643,13 @@ class Resolve:
             )
 
             if points is not None:
-                prepared_metadata = _PreparedMetadata(
-                    combined=src_metadata.combine(tgt_metadata),
-                    src=src_metadata,
-                    tgt=tgt_metadata,
-                )
-                prepared_item = _PreparedItem(
-                    metadata=prepared_metadata,
-                    points=points.copy(),
-                    bounds=bounds if bounds is None else bounds.copy(),
+                prepared_item = self._create_prepared_item(
+                    src_coord,
                     dims=(tgt_dim,),
+                    src_metadata=src_metadata,
+                    tgt_metadata=tgt_metadata,
+                    points=points,
+                    bounds=bounds,
                     container=DimCoord,
                 )
                 self.prepared_category.items_dim.append(prepared_item)
@@ -2333,8 +2474,7 @@ class Resolve:
 
         # Add the prepared dim coordinates.
         for item in self.prepared_category.items_dim:
-            coord = item.container(item.points, bounds=item.bounds)
-            coord.metadata = item.metadata.combined
+            coord = item.create_coord(metadata=item.metadata.combined)
             result.add_dim_coord(coord, item.dims)
 
         # Add the prepared aux and scalar coordinates.
@@ -2343,8 +2483,8 @@ class Resolve:
             + self.prepared_category.items_scalar
         )
         for item in prepared_aux_coords:
-            coord = item.container(item.points, bounds=item.bounds)
-            coord.metadata = item.metadata.combined
+            # These items are "special"
+            coord = item.create_coord(metadata=item.metadata.combined)
             try:
                 result.add_aux_coord(coord, item.dims)
             except ValueError as err:
