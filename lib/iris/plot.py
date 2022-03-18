@@ -978,16 +978,32 @@ def _map_common(
     # is useful in anywhere other than this plotting routine, it may be better
     # placed in the CS.
     if getattr(x_coord, "circular", False):
+        original_length = y.shape[1]
         _, direction = iris.util.monotonic(
             x_coord.points, return_direction=True
         )
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
-        if "_v_data" in kwargs:
-            v_data = kwargs["_v_data"]
-            v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
-            kwargs["_v_data"] = v_data
+        # if "_v_data" in kwargs:
+        #     v_data = kwargs["_v_data"]
+        #     v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
+        #     kwargs["_v_data"] = v_data
+
+        for key, val in kwargs.items():
+            if (
+                isinstance(val, np.ndarray)
+                and val.ndim >= 2
+                and val.shape[1] == original_length
+            ):
+                endslice = tuple(
+                    [
+                        slice(0, 1) if ii == 1 else slice(None)
+                        for ii in range(val.ndim)
+                    ]
+                )
+                val = ma.concatenate([val, val[endslice]], axis=1)
+                kwargs[key] = val
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
