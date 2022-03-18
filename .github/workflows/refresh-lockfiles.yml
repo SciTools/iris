@@ -44,7 +44,7 @@ jobs:
           conda install -y -c conda-forge conda-lock
       - name: generate lockfile
         run: |
-          $CONDA/bin/conda-lock lock -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
+          $CONDA/bin/conda-lock lock -k explicit -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
           mv conda-linux-64.lock py${{matrix.python}}-linux-64.lock
       - name: output lockfile
         uses: actions/upload-artifact@v2
