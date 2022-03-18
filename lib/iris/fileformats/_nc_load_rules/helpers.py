@@ -395,35 +395,16 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    from pyproj import CRS
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    crs = CRS.from_cf(
+        {
+            key: getattr(cf_grid_var, key)
+            for key in cf_grid_var.cf_data.ncattrs()
+        }
     )
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
-    )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    # Iris currently only supports Stereographic projections with a scale
-    # factor of 1.0. This is checked elsewhere.
 
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
-
-    cs = iris.coord_systems.Stereographic(
-        latitude_of_projection_origin,
-        longitude_of_projection_origin,
-        false_easting,
-        false_northing,
-        true_scale_lat=None,
-        ellipsoid=ellipsoid,
-    )
+    cs = iris.coord_systems.Stereographic.from_pyproj(crs)
 
     return cs
 

@@ -13,6 +13,7 @@ import warnings
 
 import cartopy.crs as ccrs
 import numpy as np
+import pyproj
 
 
 def _arg_default(value, default, cast_as=float):
@@ -906,27 +907,41 @@ class Stereographic(CoordSystem):
 
         """
 
-        #: True latitude of planar origin in degrees.
-        self.central_lat = float(central_lat)
-
-        #: True longitude of planar origin in degrees.
-        self.central_lon = float(central_lon)
-
-        #: X offset from planar origin in metres.
-        self.false_easting = _arg_default(false_easting, 0)
-
-        #: Y offset from planar origin in metres.
-        self.false_northing = _arg_default(false_northing, 0)
-
-        #: Latitude of true scale.
-        self.true_scale_lat = _arg_default(
-            true_scale_lat, None, cast_as=_float_or_None
+        self._crs = pyproj.crs.CRS.from_user_input(
+            ccrs.Stereographic(
+                central_latitude=central_lat,
+                central_longitude=central_lon,
+                false_easting=false_easting,
+                false_northing=false_northing,
+                true_scale_latitude=true_scale_lat,
+                scale_factor=None,
+                globe=self._ellipsoid_to_globe(ellipsoid, ccrs.Globe()),
+            )
         )
-        # N.B. the way we use this parameter, we need it to default to None,
-        # and *not* to 0.0 .
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
-        self.ellipsoid = ellipsoid
+    @classmethod
+    def from_pyproj(cls, crs):
+        obj = cls.__new__(cls)
+        super(Stereographic, obj).__init__()
+        obj._crs = crs
+        return obj
+
+    def __getattr__(self, name):
+        if name == "central_lat":
+            return self._crs.to_dict()["lat_0"]
+        if name == "central_lon":
+            return self._crs.to_dict()["lon_0"]
+        if name == "false_easting":
+            return self._crs.to_cf()["false_easting"]
+        if name == "false_northing":
+            return self._crs.to_cf()["false_northing"]
+        if name == "true_scale_lat":
+            return None
+        if name == "ellipsoid":
+            return self._crs.ellipsoid
+        if name == "datum":
+            return self._crs.datum
+        return super(Stereographic, self).__getattribute__(name)
 
     def __repr__(self):
         return (
@@ -944,16 +959,7 @@ class Stereographic(CoordSystem):
         )
 
     def as_cartopy_crs(self):
-        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
-
-        return ccrs.Stereographic(
-            self.central_lat,
-            self.central_lon,
-            self.false_easting,
-            self.false_northing,
-            self.true_scale_lat,
-            globe=globe,
-        )
+        return ccrs.CRS(self._crs)
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
