@@ -62,6 +62,10 @@ NOTE: section above is a template for bugfix patches
 
 #. N/A
 
+#. `@wjbenfold`_ prevented an ``AttributeError`` being logged to ``stderr`` when
+   a `~iris.fileformats.cf.CFReader` that fails to initialise is garbage
+   collected. (:issue:`3312`, :pull:`4646`)
+
 
 💣 Incompatible Changes
 =======================
