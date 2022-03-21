@@ -651,33 +651,19 @@ def _get_plot_objects(args):
         # three arguments
         u_object, v_object1, v_object2 = args[:3]
         u1, v1 = _uv_from_u_object_v_object(u_object, v_object1)
-        u2, v2 = _uv_from_u_object_v_object(u_object, v_object2)
+        _, v2 = _uv_from_u_object_v_object(u_object, v_object2)
         args = args[3:]
-        if not np.array_equal(u1, u2):
-            msg = (
-                "The two y-axis objects are not compatible. They should "
-                "have equal sizes but got ({}: {}) and ({}: {})."
-            )
+        if u1.size != v1.size or u1.size != v2.size:
+            msg = "The x and y-axis objects are not all compatible. They should have equal sizes but got ({}: {}), ({}: {}) and ({}: {})"
             raise ValueError(
                 msg.format(
-                    v_object1.name(), v1.size, v_object2.name(), v2.size
+                    u_object.name(),
+                    u1.size,
+                    v_object1.name(),
+                    v1.size,
+                    v_object2.name(),
+                    v2.size,
                 )
-            )
-        if u1.size != v1.size:
-            msg = (
-                "The x and y-axis objects are not compatible. They should "
-                "have equal sizes but got ({}: {}) and ({}: {})."
-            )
-            raise ValueError(
-                msg.format(u_object.name(), u1.size, v_object1.name(), v1.size)
-            )
-        if u1.size != v2.size:
-            msg = (
-                "The x and y-axis objects are not compatible. They should "
-                "have equal sizes but got ({}: {}) and ({}: {})."
-            )
-            raise ValueError(
-                msg.format(u_object.name(), u1.size, v_object2.name(), v2.size)
             )
         u = u1
         v = (v1, v2)
