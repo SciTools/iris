@@ -326,6 +326,23 @@ class Test1dQuickplotScatter(Test1dScatter):
 
 @tests.skip_data
 @tests.skip_plot
+class Test2dPoints(tests.GraphicsTest):
+    def setUp(self):
+        super().setUp()
+        pp_file = tests.get_data_path(("PP", "globClim1", "u_wind.pp"))
+        self.cube = iris.load(pp_file)[0][0]
+
+    def test_circular_changes(self):
+        # Circular
+        iplt.pcolormesh(self.cube, vmax=50)
+        iplt.points(self.cube, s=self.cube.data)
+        plt.gca().coastlines()
+
+        self.check_graphic()
+
+
+@tests.skip_data
+@tests.skip_plot
 class TestAttributePositive(tests.GraphicsTest):
     def test_1d_positive_up(self):
         path = tests.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
