@@ -792,7 +792,7 @@ class PercentileAggregator(_Aggregator):
             function.
 
         Returns:
-            A lazy array representing the aggregation operation
+            A lazy array representing the result of the aggregation operation
             (:class:`dask.array.Array`).
 
         """
