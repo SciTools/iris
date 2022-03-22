@@ -697,11 +697,6 @@ class PercentileAggregator(_Aggregator):
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
 
-        * lazy_func (callable or None):
-            An alternative to :data:`call_func` implementing a lazy
-            aggregation. Note that, it need not support all features of the
-            main operation, but should raise an error in unhandled cases.
-
         Additional kwargs::
             Passed through to :data:`call_func` and :data:`lazy_func`.
 
@@ -717,7 +712,7 @@ class PercentileAggregator(_Aggregator):
         _Aggregator.__init__(
             self,
             None,
-            functools.partial(_percentile, lazy=False),
+            _real_percentile,
             units_func=units_func,
             lazy_func=_lazy_percentile,
             **kwargs,
@@ -1314,6 +1309,8 @@ def _percentile(
 
     return result
 
+
+_real_percentile = functools.partial(_percentile, lazy=False)
 
 _lazy_percentile = _build_dask_mdtol_function(
     functools.partial(_percentile, lazy=True)
