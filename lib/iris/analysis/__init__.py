@@ -1278,7 +1278,6 @@ def _percentile(
 
     """
     if not isinstance(percent, Iterable):
-        scalar_percent = True
         percent = [percent]
     percent = np.array(percent)
 
@@ -1304,7 +1303,7 @@ def _percentile(
 
     # Check whether to reduce to a scalar result, as per the behaviour
     # of other aggregators.
-    if result.shape == (1,) and scalar_percent:
+    if result.shape == (1,):
         result = np.squeeze(result)
 
     return result
