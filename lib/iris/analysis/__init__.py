@@ -1875,6 +1875,7 @@ To compute the 10th and 90th percentile over *time*::
 This aggregator handles masked data and lazy data.
 
 .. note::
+
     Performance of this aggregator on lazy data is particularly sensitive to
     the dask array chunking, so it may be useful to test with various chunk
     sizes for a given application.  Any chunking along the dimensions to be
