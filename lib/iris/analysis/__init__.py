@@ -712,9 +712,9 @@ class PercentileAggregator(_Aggregator):
         _Aggregator.__init__(
             self,
             None,
-            _real_percentile,
+            _percentile,
             units_func=units_func,
-            lazy_func=_lazy_percentile,
+            lazy_func=_build_dask_mdtol_function(_percentile),
             **kwargs,
         )
 
@@ -1258,9 +1258,7 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
 
 
 @_axis_to_single_trailing
-def _percentile(
-    data, percent, fast_percentile_method=False, lazy=False, **kwargs
-):
+def _percentile(data, percent, fast_percentile_method=False, **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1282,24 +1280,16 @@ def _percentile(
     percent = np.array(percent)
 
     # Perform the percentile calculation.
-    if lazy:
-        _partial_percentile = functools.partial(
-            _calc_percentile,
-            percent=percent,
-            fast_percentile_method=fast_percentile_method,
-            **kwargs,
-        )
+    _partial_percentile = functools.partial(
+        _calc_percentile,
+        percent=percent,
+        fast_percentile_method=fast_percentile_method,
+        **kwargs,
+    )
 
-        result = iris._lazy_data.map_complete_blocks(
-            data, _partial_percentile, (-1,), percent.shape
-        )
-    else:
-        result = _calc_percentile(
-            data,
-            percent,
-            fast_percentile_method=fast_percentile_method,
-            **kwargs,
-        )
+    result = iris._lazy_data.map_complete_blocks(
+        data, _partial_percentile, (-1,), percent.shape
+    )
 
     # Check whether to reduce to a scalar result, as per the behaviour
     # of other aggregators.
@@ -1307,13 +1297,6 @@ def _percentile(
         result = np.squeeze(result)
 
     return result
-
-
-_real_percentile = functools.partial(_percentile, lazy=False)
-
-_lazy_percentile = _build_dask_mdtol_function(
-    functools.partial(_percentile, lazy=True)
-)
 
 
 def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
