@@ -132,14 +132,14 @@ class CalcMixin:
             self.assertArrayEqual(actual, expected)
 
     def test_1d_single(self):
-        data = as_lazy_data(np.arange(11))
+        data = np.arange(11)
         axis = 0
         percent = 50
         expected = 5
         self.check_percentile_calc(data, axis, percent, expected)
 
     def test_1d_multi(self):
-        data = as_lazy_data(np.arange(11))
+        data = np.arange(11)
         percent = np.array([20, 50, 90])
         axis = 0
         expected = [2, 5, 9]
@@ -147,7 +147,7 @@ class CalcMixin:
 
     def test_2d_single(self):
         shape = (2, 11)
-        data = as_lazy_data(np.arange(np.prod(shape)).reshape(shape))
+        data = np.arange(np.prod(shape)).reshape(shape)
         axis = 0
         percent = 50
         expected = np.arange(shape[-1]) + 5.5
@@ -155,7 +155,7 @@ class CalcMixin:
 
     def test_2d_multi(self):
         shape = (2, 10)
-        data = as_lazy_data(np.arange(np.prod(shape)).reshape(shape))
+        data = np.arange(np.prod(shape)).reshape(shape)
         axis = 0
         percent = np.array([10, 50, 90, 100])
         expected = np.tile(np.arange(shape[-1]), percent.size)
