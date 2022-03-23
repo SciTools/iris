@@ -33,7 +33,7 @@ jobs:
 
       - name: Cache environment directories
         id: cache-env-dir
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             .nox
@@ -43,7 +43,7 @@ jobs:
 
       - name: Cache test data directory
         id: cache-test-data
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${{ env.IRIS_TEST_DATA_PATH }}
