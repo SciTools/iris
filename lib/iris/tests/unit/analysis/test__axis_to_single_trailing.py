@@ -46,14 +46,14 @@ class TestInputReshape(tests.IrisTest):
         # Trailing axis chosen, so array should be unchanged.
         data = np.arange(6).reshape(2, 3)
         axis = 1
-        self.stat_func.return_value = np.arange(2)
+        self.stat_func.return_value = np.empty(2)
         self.check_input(data, axis, data)
 
     def test_2d_input_transpose(self):
         # Leading axis chosen, so array should be transposed.
         data = np.arange(6).reshape(2, 3)
         axis = 0
-        self.stat_func.return_value = np.arange(3)
+        self.stat_func.return_value = np.empty(3)
         self.check_input(data, axis, data.T)
 
     def test_3d_input_middle(self):
@@ -139,7 +139,7 @@ class TestOutputReshape(tests.IrisTest):
         # with size determined by the stat function.
         data = np.empty((2, 3, 4))
         axis = 1
-        self.stat_func.return_value = np.arange(8 * 5)
+        self.stat_func.return_value = np.arange(8 * 5).reshape(8, 5)
         expected = np.arange(40).reshape(2, 4, 5)
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         result = wrapped_stat_func(data, axis=axis)
