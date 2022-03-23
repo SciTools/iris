@@ -226,6 +226,8 @@ class MultiAxisMixin:
 
 
 class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin, MultiAxisMixin):
+    """Tests for fast aggregation on lazy data."""
+
     def setUp(self):
         self.fast = True
         self.lazy = True
@@ -247,6 +249,8 @@ class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin, MultiAxisMixin):
 class Test_lazy_aggregate(
     tests.IrisTest, CalcMixin, MaskedCalcMixin, MultiAxisMixin
 ):
+    """Tests for standard aggregation on lazy data."""
+
     def setUp(self):
         self.fast = False
         self.lazy = True
