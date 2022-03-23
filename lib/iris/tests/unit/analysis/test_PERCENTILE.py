@@ -16,88 +16,6 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.analysis import PERCENTILE
 
 
-class Test_aggregate(tests.IrisTest):
-    def test_missing_mandatory_kwarg(self):
-        emsg = "percentile aggregator requires .* keyword argument 'percent'"
-        with self.assertRaisesRegex(ValueError, emsg):
-            PERCENTILE.aggregate("dummy", axis=0)
-
-    def test_1d_single(self):
-        data = np.arange(11)
-        actual = PERCENTILE.aggregate(data, axis=0, percent=50)
-        expected = 5
-        self.assertTupleEqual(actual.shape, ())
-        self.assertEqual(actual, expected)
-
-    def test_masked_1d_single(self):
-        data = ma.arange(11)
-        data[3:7] = ma.masked
-        actual = PERCENTILE.aggregate(data, axis=0, percent=50)
-        expected = 7
-        self.assertTupleEqual(actual.shape, ())
-        self.assertEqual(actual, expected)
-
-    def test_1d_multi(self):
-        data = np.arange(11)
-        percent = np.array([20, 50, 90])
-        actual = PERCENTILE.aggregate(data, axis=0, percent=percent)
-        expected = [2, 5, 9]
-        self.assertTupleEqual(actual.shape, percent.shape)
-        self.assertArrayEqual(actual, expected)
-
-    def test_masked_1d_multi(self):
-        data = ma.arange(11)
-        data[3:9] = ma.masked
-        percent = np.array([25, 50, 75])
-        actual = PERCENTILE.aggregate(data, axis=0, percent=percent)
-        expected = [1, 2, 9]
-        self.assertTupleEqual(actual.shape, percent.shape)
-        self.assertArrayEqual(actual, expected)
-
-    def test_2d_single(self):
-        shape = (2, 11)
-        data = np.arange(np.prod(shape)).reshape(shape)
-        actual = PERCENTILE.aggregate(data, axis=0, percent=50)
-        self.assertTupleEqual(actual.shape, shape[-1:])
-        expected = np.arange(shape[-1]) + 5.5
-        self.assertArrayEqual(actual, expected)
-
-    def test_masked_2d_single(self):
-        shape = (2, 11)
-        data = ma.arange(np.prod(shape)).reshape(shape)
-        data[0, ::2] = ma.masked
-        data[1, 1::2] = ma.masked
-        actual = PERCENTILE.aggregate(data, axis=0, percent=50)
-        self.assertTupleEqual(actual.shape, shape[-1:])
-        expected = np.empty(shape[-1:])
-        expected[1::2] = data[0, 1::2]
-        expected[::2] = data[1, ::2]
-        self.assertArrayEqual(actual, expected)
-
-    def test_2d_multi(self):
-        shape = (2, 10)
-        data = np.arange(np.prod(shape)).reshape(shape)
-        percent = np.array([10, 50, 90, 100])
-        actual = PERCENTILE.aggregate(data, axis=0, percent=percent)
-        self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.tile(np.arange(shape[-1]), percent.size)
-        expected = expected.reshape(percent.size, shape[-1]).T + 1
-        expected = expected + (percent / 10 - 1)
-        self.assertArrayAlmostEqual(actual, expected)
-
-    def test_masked_2d_multi(self):
-        shape = (3, 10)
-        data = ma.arange(np.prod(shape)).reshape(shape)
-        data[1] = ma.masked
-        percent = np.array([10, 50, 70, 80])
-        actual = PERCENTILE.aggregate(data, axis=0, percent=percent)
-        self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        expected = np.tile(np.arange(shape[-1]), percent.size)
-        expected = expected.reshape(percent.size, shape[-1]).T
-        expected = expected + (percent / 10 * 2)
-        self.assertArrayAlmostEqual(actual, expected)
-
-
 class CalcMixin:
     """
     Tests for both numpy and scipy methods within lazy and real percentile
@@ -121,10 +39,13 @@ class CalcMixin:
         )
 
         self.assertTupleEqual(actual.shape, expected.shape)
-        self.assertTrue(is_lazy_data(actual))
+        is_lazy = is_lazy_data(actual)
 
         if self.lazy:
             actual = as_concrete_data(actual)
+            self.assertTrue(is_lazy)
+        else:
+            self.assertFalse(is_lazy)
 
         if approx:
             self.assertArrayAlmostEqual(actual, expected)
@@ -221,6 +142,18 @@ class MaskedCalcMixin:
         self.check_percentile_calc(
             data, axis, percent, expected, mdtol=mdtol, approx=True
         )
+
+
+class Test_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
+    def setUp(self):
+        self.fast = False
+        self.lazy = False
+        self.agg_method = PERCENTILE.aggregate
+
+    def test_missing_mandatory_kwarg(self):
+        emsg = "percentile aggregator requires .* keyword argument 'percent'"
+        with self.assertRaisesRegex(ValueError, emsg):
+            PERCENTILE.aggregate("dummy", axis=0)
 
 
 class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
