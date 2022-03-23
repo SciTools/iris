@@ -156,23 +156,12 @@ class Test_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
             PERCENTILE.aggregate("dummy", axis=0)
 
 
-class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
-    def setUp(self):
-        self.fast = True
-        self.lazy = True
-        self.agg_method = PERCENTILE.lazy_aggregate
+class MultiAxisMixin:
+    """
+    Tests for axis passed as a tuple.  Only relevant for lazy aggregation since
+    axis is specified as int for real aggregation.
 
-    def test_masked(self):
-        shape = (2, 11)
-        data = ma.arange(np.prod(shape)).reshape(shape)
-        data[0, ::2] = ma.masked
-        data = as_lazy_data(data)
-        actual = PERCENTILE.lazy_aggregate(
-            data, axis=0, percent=50, fast_percentile_method=True
-        )
-        emsg = "Cannot use fast np.percentile method with masked array."
-        with self.assertRaisesRegex(TypeError, emsg):
-            as_concrete_data(actual)
+    """
 
     def test_multi_axis(self):
         data = np.arange(24).reshape((2, 3, 4))
@@ -207,6 +196,25 @@ class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
             self.assertArrayAlmostEqual(
                 sub_result, np.percentile(data[:, num, :], percent)
             )
+
+
+class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
+    def setUp(self):
+        self.fast = True
+        self.lazy = True
+        self.agg_method = PERCENTILE.lazy_aggregate
+
+    def test_masked(self):
+        shape = (2, 11)
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        data = as_lazy_data(data)
+        actual = PERCENTILE.lazy_aggregate(
+            data, axis=0, percent=50, fast_percentile_method=True
+        )
+        emsg = "Cannot use fast np.percentile method with masked array."
+        with self.assertRaisesRegex(TypeError, emsg):
+            as_concrete_data(actual)
 
 
 class Test_lazy_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
