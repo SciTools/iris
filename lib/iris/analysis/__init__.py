@@ -1267,12 +1267,24 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
     If a new additive dimension is formed, then it will always be the last
     dimension of the resulting percentile data payload.
 
+    Args:
+
+    * data (array-like)
+        array from which percentiles are to be calculated
+    * axis (int or tuple of int)
+        Axis or axes along which the percentiles are computed
+        (handled by decorator)
+
     Kwargs:
 
-    * fast_percentile_method (boolean) :
+    * fast_percentile_method (boolean)
         When set to True, uses the numpy.percentiles method as a faster
         alternative to the scipy.mstats.mquantiles method. Does not handle
         masked arrays.
+
+    **kwargs
+        passed to scipy.stats.mstats.mquantiles if fast_percentile_method is
+        False
 
     """
     if not isinstance(percent, Iterable):
