@@ -102,6 +102,7 @@ class CalcMixin:
     """
     Tests for both numpy and scipy methods within lazy and real percentile
     aggregation.
+
     """
 
     def check_percentile_calc(
@@ -111,7 +112,7 @@ class CalcMixin:
             data = as_lazy_data(data)
 
         expected = np.array(expected)
-        actual = PERCENTILE.lazy_aggregate(
+        actual = self.agg_method(
             data, axis=axis, percent=percent, fast_percentile_method=self.fast
         )
 
@@ -159,62 +160,12 @@ class CalcMixin:
         self.check_percentile_calc(data, axis, percent, expected, approx=True)
 
 
-class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
-    def setUp(self):
-        self.fast = True
-        self.lazy = True
+class MaskedCalcMixin:
+    """
+    Tests for calculations on masked data.  Will only work if using the scipy
+    method.
 
-    def test_masked(self):
-        shape = (2, 11)
-        data = ma.arange(np.prod(shape)).reshape(shape)
-        data[0, ::2] = ma.masked
-        data = as_lazy_data(data)
-        actual = PERCENTILE.lazy_aggregate(
-            data, axis=0, percent=50, fast_percentile_method=True
-        )
-        emsg = "Cannot use fast np.percentile method with masked array."
-        with self.assertRaisesRegex(TypeError, emsg):
-            as_concrete_data(actual)
-
-    def test_multi_axis(self):
-        data = np.arange(24).reshape((2, 3, 4))
-        collapse_axes = (0, 2)
-        lazy_data = as_lazy_data(data)
-        percent = 30
-        actual = PERCENTILE.lazy_aggregate(
-            lazy_data, axis=collapse_axes, percent=percent
-        )
-        self.assertTrue(is_lazy_data(actual))
-        result = as_concrete_data(actual)
-        self.assertTupleEqual(result.shape, (3,))
-        for num, sub_result in enumerate(result):
-            # results should be the same as percentiles calculated from slices.
-            self.assertArrayAlmostEqual(
-                sub_result, np.percentile(data[:, num, :], percent)
-            )
-
-    def test_multi_axis_multi_percent(self):
-        data = np.arange(24).reshape((2, 3, 4))
-        collapse_axes = (0, 2)
-        lazy_data = as_lazy_data(data)
-        percent = [20, 30, 50, 70, 80]
-        actual = PERCENTILE.lazy_aggregate(
-            lazy_data, axis=collapse_axes, percent=percent
-        )
-        self.assertTrue(is_lazy_data(actual))
-        result = as_concrete_data(actual)
-        self.assertTupleEqual(result.shape, (3, 5))
-        for num, sub_result in enumerate(result):
-            # results should be the same as percentiles calculated from slices.
-            self.assertArrayAlmostEqual(
-                sub_result, np.percentile(data[:, num, :], percent)
-            )
-
-
-class Test_lazy_aggregate(tests.IrisTest, CalcMixin):
-    def setUp(self):
-        self.fast = False
-        self.lazy = True
+    """
 
     def test_masked_1d_single(self):
         data = ma.arange(11)
@@ -273,6 +224,66 @@ class Test_lazy_aggregate(tests.IrisTest, CalcMixin):
             + np.arange(shape[-1])[:, np.newaxis]
         )
         self.assertArrayAlmostEqual(as_concrete_data(actual), expected)
+
+
+class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
+    def setUp(self):
+        self.fast = True
+        self.lazy = True
+        self.agg_method = PERCENTILE.lazy_aggregate
+
+    def test_masked(self):
+        shape = (2, 11)
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        data = as_lazy_data(data)
+        actual = PERCENTILE.lazy_aggregate(
+            data, axis=0, percent=50, fast_percentile_method=True
+        )
+        emsg = "Cannot use fast np.percentile method with masked array."
+        with self.assertRaisesRegex(TypeError, emsg):
+            as_concrete_data(actual)
+
+    def test_multi_axis(self):
+        data = np.arange(24).reshape((2, 3, 4))
+        collapse_axes = (0, 2)
+        lazy_data = as_lazy_data(data)
+        percent = 30
+        actual = PERCENTILE.lazy_aggregate(
+            lazy_data, axis=collapse_axes, percent=percent
+        )
+        self.assertTrue(is_lazy_data(actual))
+        result = as_concrete_data(actual)
+        self.assertTupleEqual(result.shape, (3,))
+        for num, sub_result in enumerate(result):
+            # results should be the same as percentiles calculated from slices.
+            self.assertArrayAlmostEqual(
+                sub_result, np.percentile(data[:, num, :], percent)
+            )
+
+    def test_multi_axis_multi_percent(self):
+        data = np.arange(24).reshape((2, 3, 4))
+        collapse_axes = (0, 2)
+        lazy_data = as_lazy_data(data)
+        percent = [20, 30, 50, 70, 80]
+        actual = PERCENTILE.lazy_aggregate(
+            lazy_data, axis=collapse_axes, percent=percent
+        )
+        self.assertTrue(is_lazy_data(actual))
+        result = as_concrete_data(actual)
+        self.assertTupleEqual(result.shape, (3, 5))
+        for num, sub_result in enumerate(result):
+            # results should be the same as percentiles calculated from slices.
+            self.assertArrayAlmostEqual(
+                sub_result, np.percentile(data[:, num, :], percent)
+            )
+
+
+class Test_lazy_aggregate(tests.IrisTest, CalcMixin):
+    def setUp(self):
+        self.fast = False
+        self.lazy = True
+        self.agg_method = PERCENTILE.lazy_aggregate
 
 
 class Test_name(tests.IrisTest):
