@@ -169,7 +169,10 @@ class MultiAxisMixin:
         lazy_data = as_lazy_data(data)
         percent = 30
         actual = PERCENTILE.lazy_aggregate(
-            lazy_data, axis=collapse_axes, percent=percent
+            lazy_data,
+            axis=collapse_axes,
+            percent=percent,
+            fast_percentile_method=self.fast,
         )
         self.assertTrue(is_lazy_data(actual))
         result = as_concrete_data(actual)
@@ -186,7 +189,10 @@ class MultiAxisMixin:
         lazy_data = as_lazy_data(data)
         percent = [20, 30, 50, 70, 80]
         actual = PERCENTILE.lazy_aggregate(
-            lazy_data, axis=collapse_axes, percent=percent
+            lazy_data,
+            axis=collapse_axes,
+            percent=percent,
+            fast_percentile_method=self.fast,
         )
         self.assertTrue(is_lazy_data(actual))
         result = as_concrete_data(actual)
@@ -198,7 +204,7 @@ class MultiAxisMixin:
             )
 
 
-class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
+class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin, MultiAxisMixin):
     def setUp(self):
         self.fast = True
         self.lazy = True
@@ -217,7 +223,9 @@ class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
             as_concrete_data(actual)
 
 
-class Test_lazy_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
+class Test_lazy_aggregate(
+    tests.IrisTest, CalcMixin, MaskedCalcMixin, MultiAxisMixin
+):
     def setUp(self):
         self.fast = False
         self.lazy = True
