@@ -145,6 +145,8 @@ class MaskedCalcMixin:
 
 
 class Test_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
+    """Tests for standard aggregation method on real data."""
+
     def setUp(self):
         self.fast = False
         self.lazy = False
@@ -156,10 +158,29 @@ class Test_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
             PERCENTILE.aggregate("dummy", axis=0)
 
 
+class Test_fast_aggregate(tests.IrisTest, CalcMixin):
+    """Tests for fast percentile method on real data."""
+
+    def setUp(self):
+        self.fast = True
+        self.lazy = False
+        self.agg_method = PERCENTILE.aggregate
+
+    def test_masked(self):
+        shape = (2, 11)
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        emsg = "Cannot use fast np.percentile method with masked array."
+        with self.assertRaisesRegex(TypeError, emsg):
+            PERCENTILE.aggregate(
+                data, axis=0, percent=50, fast_percentile_method=True
+            )
+
+
 class MultiAxisMixin:
     """
     Tests for axis passed as a tuple.  Only relevant for lazy aggregation since
-    axis is specified as int for real aggregation.
+    axis is always specified as int for real aggregation.
 
     """
 
