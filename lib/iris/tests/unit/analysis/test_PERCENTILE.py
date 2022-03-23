@@ -106,14 +106,18 @@ class CalcMixin:
     """
 
     def check_percentile_calc(
-        self, data, axis, percent, expected, approx=False
+        self, data, axis, percent, expected, approx=False, **kwargs
     ):
         if self.lazy:
             data = as_lazy_data(data)
 
         expected = np.array(expected)
         actual = self.agg_method(
-            data, axis=axis, percent=percent, fast_percentile_method=self.fast
+            data,
+            axis=axis,
+            percent=percent,
+            fast_percentile_method=self.fast,
+            **kwargs,
         )
 
         self.assertTupleEqual(actual.shape, expected.shape)
@@ -170,51 +174,41 @@ class MaskedCalcMixin:
     def test_masked_1d_single(self):
         data = ma.arange(11)
         data[3:7] = ma.masked
-        data = as_lazy_data(data)
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=50)
+        axis = 0
+        percent = 50
         expected = 7
-        self.assertTupleEqual(actual.shape, ())
-        self.assertTrue(is_lazy_data(actual))
-        self.assertEqual(as_concrete_data(actual), expected)
+        self.check_percentile_calc(data, axis, percent, expected)
 
     def test_masked_1d_multi(self):
         data = ma.arange(11)
         data[3:9] = ma.masked
-        data = as_lazy_data(data)
         percent = np.array([25, 50, 75])
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=percent)
+        axis = 0
         expected = [1, 2, 9]
-        self.assertTupleEqual(actual.shape, percent.shape)
-        self.assertTrue(is_lazy_data(actual))
-        self.assertArrayEqual(as_concrete_data(actual), expected)
+        self.check_percentile_calc(data, axis, percent, expected)
 
     def test_masked_2d_single(self):
         shape = (2, 11)
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
         data[1, 1::2] = ma.masked
-        data = as_lazy_data(data)
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=50)
-        self.assertTupleEqual(actual.shape, shape[-1:])
-        self.assertTrue(is_lazy_data(actual))
+        axis = 0
+        percent = 50
         # data has only one value for each column being aggregated, so result
         # should be that value.
         expected = np.empty(shape[-1:])
         expected[1::2] = data[0, 1::2]
         expected[::2] = data[1, ::2]
-        self.assertArrayEqual(as_concrete_data(actual), expected)
+        self.check_percentile_calc(data, axis, percent, expected)
 
     def test_masked_2d_multi(self):
         shape = (3, 10)
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[1] = ma.masked
-        data = as_lazy_data(data)
         percent = np.array([10, 50, 70, 80])
-        actual = PERCENTILE.lazy_aggregate(
-            data, axis=0, percent=percent, mdtol=0.1
-        )
-        self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        self.assertTrue(is_lazy_data(actual))
+        axis = 0
+        mdtol = 0.1
+
         # First column is just 0 and 20.  Percentiles of these can be calculated as
         # linear interpolation.
         expected = percent / 100 * 20
@@ -223,7 +217,10 @@ class MaskedCalcMixin:
             np.broadcast_to(expected, (shape[-1], percent.size))
             + np.arange(shape[-1])[:, np.newaxis]
         )
-        self.assertArrayAlmostEqual(as_concrete_data(actual), expected)
+
+        self.check_percentile_calc(
+            data, axis, percent, expected, mdtol=mdtol, approx=True
+        )
 
 
 class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
@@ -279,7 +276,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin):
             )
 
 
-class Test_lazy_aggregate(tests.IrisTest, CalcMixin):
+class Test_lazy_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
     def setUp(self):
         self.fast = False
         self.lazy = True
