@@ -1271,9 +1271,6 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
 
     * data (array-like)
         array from which percentiles are to be calculated
-    * axis (int or tuple of int)
-        Axis or axes along which the percentiles are computed
-        (handled by decorator)
 
     Kwargs:
 
