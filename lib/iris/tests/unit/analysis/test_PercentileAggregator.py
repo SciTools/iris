@@ -81,7 +81,7 @@ class Test_post_process(tests.IrisTest):
             self.cube_simple, data, coords, **kwargs
         )
         self.assertEqual(actual.shape, percent.shape + self.cube_simple.shape)
-        expected = np.rollaxis(data, -1)
+        expected = data.T
         self.assertArrayEqual(actual.data, expected)
         name = "percentile_over_time"
         coord = actual.coord(name)
@@ -115,7 +115,7 @@ class Test_post_process(tests.IrisTest):
             self.cube_multi, data, coords, **kwargs
         )
         self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
-        expected = np.rollaxis(data, -1)
+        expected = np.moveaxis(data, -1, 0)
         self.assertArrayEqual(actual.data, expected)
         name = "percentile_over_time"
         coord = actual.coord(name)
@@ -135,7 +135,7 @@ class Test_post_process(tests.IrisTest):
         )
         self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
         self.assertTrue(actual.has_lazy_data())
-        expected = np.rollaxis(as_concrete_data(data), -1)
+        expected = np.moveaxis(as_concrete_data(data), -1, 0)
         self.assertArrayEqual(actual.data, expected)
 
 
