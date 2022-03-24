@@ -16,10 +16,10 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.analysis import PERCENTILE
 
 
-class CalcMixin:
+class AggregateMixin:
     """
-    Tests for both numpy and scipy methods within lazy and real percentile
-    aggregation.
+    Percentile aggregation tests for both numpy and scipy methods within lazy
+    and real percentile aggregation.
 
     """
 
@@ -30,6 +30,7 @@ class CalcMixin:
             data = as_lazy_data(data)
 
         expected = np.array(expected)
+
         actual = self.agg_method(
             data,
             axis=axis,
@@ -42,8 +43,8 @@ class CalcMixin:
         is_lazy = is_lazy_data(actual)
 
         if self.lazy:
-            actual = as_concrete_data(actual)
             self.assertTrue(is_lazy)
+            actual = as_concrete_data(actual)
         else:
             self.assertFalse(is_lazy)
 
@@ -85,9 +86,10 @@ class CalcMixin:
         self.check_percentile_calc(data, axis, percent, expected, approx=True)
 
 
-class MaskedCalcMixin:
+class MaskedAggregateMixin:
     """
-    Tests for calculations on masked data.  Will only work if using the scipy
+    Tests for calculations on masked data.  Will only work if using the standard
+    (scipy) method.  Needs to be used with AggregateMixin, as these tests re-use its
     method.
 
     """
@@ -144,7 +146,7 @@ class MaskedCalcMixin:
         )
 
 
-class Test_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
+class Test_aggregate(tests.IrisTest, AggregateMixin, MaskedAggregateMixin):
     """Tests for standard aggregation method on real data."""
 
     def setUp(self):
@@ -158,7 +160,7 @@ class Test_aggregate(tests.IrisTest, CalcMixin, MaskedCalcMixin):
             PERCENTILE.aggregate("dummy", axis=0)
 
 
-class Test_fast_aggregate(tests.IrisTest, CalcMixin):
+class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
     """Tests for fast percentile method on real data."""
 
     def setUp(self):
@@ -225,7 +227,7 @@ class MultiAxisMixin:
             )
 
 
-class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin, MultiAxisMixin):
+class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
     """Tests for fast aggregation on lazy data."""
 
     def setUp(self):
@@ -247,7 +249,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, CalcMixin, MultiAxisMixin):
 
 
 class Test_lazy_aggregate(
-    tests.IrisTest, CalcMixin, MaskedCalcMixin, MultiAxisMixin
+    tests.IrisTest, AggregateMixin, MaskedAggregateMixin, MultiAxisMixin
 ):
     """Tests for standard aggregation on lazy data."""
 
