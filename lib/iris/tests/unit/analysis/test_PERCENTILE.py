@@ -9,6 +9,8 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from unittest import mock
+
 import numpy as np
 import numpy.ma as ma
 
@@ -144,6 +146,26 @@ class MaskedAggregateMixin:
         self.check_percentile_calc(
             data, axis, percent, expected, mdtol=mdtol, approx=True
         )
+
+    @mock.patch("scipy.stats.mstats.mquantiles")
+    def test_default_kwargs_passed(self, mocked_mquantiles):
+        data = np.arange(5)
+        percent = 50
+        axis = 0
+        self.agg_method(data, axis=axis, percent=percent)
+        for key in ["alphap", "betap"]:
+            assert mocked_mquantiles.call_args.kwargs[key] == 1
+
+    @mock.patch("scipy.stats.mstats.mquantiles")
+    def test_chosen_kwargs_passed(self, mocked_mquantiles):
+        data = np.arange(5)
+        percent = 50
+        axis = 0
+        self.agg_method(
+            data, axis=axis, percent=percent, alphap=0.6, betap=0.5
+        )
+        for key, val in zip(["alphap", "betap"], [0.6, 0.5]):
+            assert mocked_mquantiles.call_args.kwargs[key] == val
 
 
 class Test_aggregate(tests.IrisTest, AggregateMixin, MaskedAggregateMixin):
