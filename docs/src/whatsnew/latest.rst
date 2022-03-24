@@ -82,7 +82,7 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ added a page to show the issues that have been voted for.  See
    :ref:`voted_issues_top`. (:issue:`3307`, :pull:`4617`)
 #. `@tkknight`_ adopted the `PyData Sphinx Theme`_ for the documentation.
-   (:discussion:`4344`, :pull:`????`)
+   (:discussion:`4344`, :pull:`4661`)
 
 
 💼 Internal
