@@ -84,9 +84,9 @@ jobs:
               author=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo $GITHUB_REPOSITORY)
               merger=$(gh pr view $pr_number --json mergedBy -q '.["mergedBy"]["login"]' --repo $GITHUB_REPOSITORY)
               # Find a valid assignee from author/merger/nothing.
-              if curl -s https://api.github.com/users/$author | grep -q "login"; then
+              if curl -s https://api.github.com/users/$author | grep -q '"type": "User"'; then
                 assignee=$author
-              elif curl -s https://api.github.com/users/$merger | grep -q "login"; then
+              elif curl -s https://api.github.com/users/$merger | grep -q '"type": "User"'; then
                 assignee=$merger
               else
                 assignee=""
