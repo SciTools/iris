@@ -103,24 +103,10 @@ class _MeshPreparedItem(_PreparedItem):
             location=self.location,
             axis=self.axis,
         )
-
-        #
-        # NOTE: we think we *don't* need any of this.
-        # -as for a MeshCoord, the other attributes have no meaning
-        #
-
-        # Set the result metadata, but do *not* set location/axis/mesh, as
-        # these are readonly, and always remain identical to the original.
-
-        # # Convert metadata to ("generic") CoordMetadata for this, so discarding
-        # # the MeshCoord-specific parts (which we can't assign).
-        # from iris.common.metadata import CoordMetadata
-        #
-        # metadata = CoordMetadata.from_metadata(metadata)
-        # # Convert to a dictionary, so we only write the included properties
-        # for property, value in metadata._asdict().items():
-        #     setattr(result, property, value)
-
+        # Note: we also have 'metadata', containing prepared metadata, but we
+        # do *not* assign that, as we do for an 'ordinary' Coord.
+        # Instead, MeshCoord name/units/attributes are immutable, and set at
+        # create time to those of the underlying mesh node coordinate.
         return result
 
 
@@ -739,7 +725,7 @@ class Resolve:
         * points:
             Override points array.  When not given, use coord.points.
 
-        * points:
+        * bounds:
             Override bounds array.  When not given, use coord.bounds.
 
         * container:
@@ -786,12 +772,15 @@ class Resolve:
                 points=points,
                 bounds=bounds,
                 dims=dims,
-                container=type(coord),
+                container=container,
             )
 
         else:
             # Build a meshcoord type prepared-item, to make a MeshCoord.
-            assert isinstance(coord, MeshCoord)
+            assert container == MeshCoord
+
+            # Does *NOT* use points + bounds
+            assert points is None and bounds is None
 
             # Uses mesh/location/axis from coord instead of points+bounds.
             result = _MeshPreparedItem(
@@ -1586,6 +1575,8 @@ class Resolve:
                             src_metadata=src_metadata,
                             tgt_metadata=tgt_item.metadata,
                             dims=tgt_item.dims,
+                            points=points,
+                            bounds=bounds,
                             container=container,
                         )
 
