@@ -52,7 +52,7 @@ example.
 ..  _data_structured_grid:
 ..  figure:: images/data_structured_grid.svg
     :alt: Diagram of how data is represented on a structured grid
-    :align: right
+    :align: left
     :width: 1280
 
     Data on a structured grid.
@@ -131,7 +131,7 @@ example of what is described above.
 ..  _data_ugrid_mesh:
 ..  figure:: images/data_ugrid_mesh.svg
     :alt: Diagram of how data is represented on an unstructured mesh
-    :align: right
+    :align: left
     :width: 1280
 
     Data on an unstructured mesh
@@ -157,7 +157,7 @@ elements. See :numref:`ugrid_element_centres` for a visualised example.
 ..  _ugrid_element_centres:
 ..  figure:: images/ugrid_element_centres.svg
     :alt: Diagram demonstrating mesh face-centred data.
-    :align: right
+    :align: left
     :width: 1280
 
     Data can be assigned to mesh edge/face/volume 'centres'
@@ -180,7 +180,7 @@ Every node is completely independent - every one can have unique X andY (and Z) 
 ..  _ugrid_node_independence:
 ..  figure:: images/ugrid_node_independence.svg
     :alt: Diagram demonstrating the independence of each mesh node
-    :align: right
+    :align: left
     :width: 300
 
     Every mesh node is completely independent
@@ -199,7 +199,7 @@ array. See :numref:`ugrid_variable_faces`.
 ..  _ugrid_variable_faces:
 ..  figure:: images/ugrid_variable_faces.svg
     :alt: Diagram demonstrating mesh faces with variable node counts
-    :align: right
+    :align: left
     :width: 300
 
     Mesh faces can have different node counts (using masking)
@@ -216,7 +216,7 @@ areas (faces). See :numref:`ugrid_edge_data`.
 ..  _ugrid_edge_data:
 ..  figure:: images/ugrid_edge_data.svg
     :alt: Diagram demonstrating data assigned to mesh edges
-    :align: right
+    :align: left
     :width: 300
 
     Data can be assigned to mesh edges
