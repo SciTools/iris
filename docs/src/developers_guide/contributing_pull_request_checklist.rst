@@ -51,12 +51,12 @@ is merged.  Before submitting a pull request please consider this list.
 #. **Check for updates needed for supporting projects for test or example
    data**.  For example:
 
-    * `iris-test-data`_ is a github project containing all the data to support
-      the tests.
-    * `iris-sample-data`_ is a github project containing all the data to support
-      the gallery and examples.
-    * `test-iris-imagehash`_ is a github project containing reference plot
-      images to support Iris :ref:`testing.graphics`.
+   * `iris-test-data`_ is a github project containing all the data to support
+     the tests.
+   * `iris-sample-data`_ is a github project containing all the data to support
+     the gallery and examples.
+   * `test-iris-imagehash`_ is a github project containing reference plot
+     images to support Iris :ref:`testing.graphics`.
 
    If new files are required by tests or code examples, they must be added to
    the appropriate supporting project via a suitable pull-request.  This pull
