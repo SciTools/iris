@@ -91,7 +91,7 @@ Icons made by `FreePik <https://www.freepik.com>`_ from
 Support
 ~~~~~~~
 
-We, the Iris developers have adopted GitHub `discussions`_ to capture any
+We, the Iris developers have adopted GitHub Discussions`_ to capture any
 discussions or support questions related to Iris.
 
 See also `StackOverflow for "How Do I? <https://stackoverflow.com/questions/tagged/python-iris>`_

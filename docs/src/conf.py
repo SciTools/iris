@@ -45,7 +45,7 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # For local testing purposes we can force being on RTD and the version
-# on_rtd = True  # useful for testing
+# on_rtd = True           # useful for testing
 # rtd_version = "latest"  # useful for testing
 # rtd_version = "stable"  # useful for testing
 
