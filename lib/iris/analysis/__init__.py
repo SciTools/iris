@@ -582,7 +582,11 @@ class _Aggregator:
         mdtol = kwargs.pop("mdtol", None)
 
         result = self.call_func(data, axis=axis, **kwargs)
-        if mdtol is not None and ma.isMaskedArray(data):
+        if (
+            mdtol is not None
+            and ma.is_masked(data)
+            and result is not ma.masked
+        ):
             fraction_not_missing = data.count(axis=axis) / data.shape[axis]
             mask_update = 1 - mdtol > fraction_not_missing
             if ma.isMaskedArray(result):
