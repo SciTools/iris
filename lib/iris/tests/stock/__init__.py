@@ -99,7 +99,12 @@ def simple_1d(with_bounds=True):
     bounds = np.column_stack(
         [np.arange(11, dtype=np.int32), np.arange(11, dtype=np.int32) + 1]
     )
-    coord = DimCoord(points, long_name="foo", units="1", bounds=bounds)
+    coord = DimCoord(
+        points,
+        long_name="foo",
+        units="1",
+        bounds=bounds if with_bounds else None,
+    )
     cube.add_dim_coord(coord, 0)
     return cube
 
