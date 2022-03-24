@@ -755,11 +755,12 @@ class Resolve:
         if not issubclass(container, MeshCoord):
             # Build a "normal" prepared-item to make a DimCoord or AuxCoord.
 
-            # points + bounds default to those from the coordinate.
+            # points + bounds default to those from the coordinate, but
+            # alternative values may be specified.
             if points is None:
                 points = coord.points
-            if bounds is None:
                 bounds = coord.bounds
+            # 'ELSE' points was passed: both points+bounds come from the args
 
             # Always duplicate points+bounds, to avoid possible direct
             # references to existing coord arrays.
