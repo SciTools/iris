@@ -15,7 +15,7 @@ import iris.tests as tests  # isort:skip
 from collections import namedtuple
 from copy import deepcopy
 import unittest.mock as mock
-from unittest.mock import sentinel
+from unittest.mock import Mock, sentinel
 
 from cf_units import Unit
 import numpy as np
@@ -2086,8 +2086,13 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
         #
         # src-to-tgt mapping:
         #   0->1, 1->2, 2->3
-        self.points = (sentinel.points_0, sentinel.points_1, sentinel.points_2)
-        self.bounds = (sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2)
+        self.points = (
+            sentinel.points_0,
+            sentinel.points_1,
+            sentinel.points_2,
+            sentinel.points_3,
+        )
+        self.bounds = sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2
         self.pb_0 = (
             mock.Mock(copy=mock.Mock(return_value=self.points[0])),
             mock.Mock(copy=mock.Mock(return_value=self.bounds[0])),
@@ -2121,9 +2126,13 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
         )
         metadata = [self.src_metadata] * len(self.mapping)
         self.src_coords = [
-            sentinel.src_coord_0,
-            sentinel.src_coord_1,
-            sentinel.src_coord_2,
+            # N.B. these need to mimic a Coord with points and bounds, and
+            # be of a class which is not-a-MeshCoord.
+            # NOTE: strictly, bounds should =above values, and support .copy().
+            # For these tests, just omitting them works + is simpler.
+            Mock(spec=DimCoord, points=self.points[0], bounds=None),
+            Mock(spec=DimCoord, points=self.points[1], bounds=None),
+            Mock(spec=DimCoord, points=self.points[2], bounds=None),
         ]
         self.src_dims_common = [0, 1, 2]
         self.container = DimCoord
@@ -2142,10 +2151,14 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
             sentinel.tgt_metadata_3,
         ]
         self.tgt_coords = [
-            sentinel.tgt_coord_0,
-            sentinel.tgt_coord_1,
-            sentinel.tgt_coord_2,
-            sentinel.tgt_coord_3,
+            # N.B. these need to mimic a Coord with points and bounds, and
+            # be of a class which is not-a-MeshCoord.
+            # NOTE: strictly, bounds should =above values, and support .copy().
+            # For these tests, just omitting them works + is simpler.
+            Mock(spec=DimCoord, points=self.points[0], bounds=None),
+            Mock(spec=DimCoord, points=self.points[1], bounds=None),
+            Mock(spec=DimCoord, points=self.points[2], bounds=None),
+            Mock(spec=DimCoord, points=self.points[3], bounds=None),
         ]
         self.tgt_dims_common = [1, 2, 3]
         self.tgt_dim_coverage = _DimCoverage(
@@ -2275,7 +2288,12 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         #
         # src-to-tgt mapping:
         #   0->1, 1->2, 2->3
-        self.points = (sentinel.points_0, sentinel.points_1, sentinel.points_2)
+        self.points = (
+            sentinel.points_0,
+            sentinel.points_1,
+            sentinel.points_2,
+            sentinel.points_3,
+        )
         self.bounds = (sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2)
         self.pb_0 = (
             mock.Mock(copy=mock.Mock(return_value=self.points[0])),
@@ -2318,9 +2336,13 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
             ),
         ]
         self.src_coords = [
-            sentinel.src_coord_0,
-            sentinel.src_coord_1,
-            sentinel.src_coord_2,
+            # N.B. these need to mimic a Coord with points and bounds, but also
+            # the type() defines the 'container' property of a prepared item.
+            # It seems that 'type()' is not fake-able in Python, so we need to
+            # provide *real* DimCoords, to match "self.container" below.
+            DimCoord(points=[0], bounds=None),
+            DimCoord(points=[1], bounds=None),
+            DimCoord(points=[2], bounds=None),
         ]
         self.src_dims = [(dim,) for dim in self.mapping.keys()]
         self.src_common_items = [
@@ -2329,10 +2351,14 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         ]
         self.tgt_metadata = [sentinel.tgt_metadata_0] + self.src_metadata
         self.tgt_coords = [
-            sentinel.tgt_coord_0,
-            sentinel.tgt_coord_1,
-            sentinel.tgt_coord_2,
-            sentinel.tgt_coord_3,
+            # N.B. these need to mimic a Coord with points and bounds, but also
+            # the type() defines the 'container' property of a prepared item.
+            # It seems that 'type()' is not fake-able in Python, so we need to
+            # provide *real* DimCoords, to match "self.container" below.
+            DimCoord(points=[0], bounds=None),
+            DimCoord(points=[1], bounds=None),
+            DimCoord(points=[2], bounds=None),
+            DimCoord(points=[3], bounds=None),
         ]
         self.tgt_dims = [None] + [(dim,) for dim in self.mapping.values()]
         self.tgt_common_items = [

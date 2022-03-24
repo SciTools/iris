@@ -777,9 +777,8 @@ class Resolve:
 
         else:
             # Build a meshcoord type prepared-item, to make a MeshCoord.
-            assert container == MeshCoord
-
-            # Does *NOT* use points + bounds
+            # Does *NOT* use points + bounds, so alternatives to the coord
+            # content should not have been specified by the caller.
             assert points is None and bounds is None
 
             # Uses mesh/location/axis from coord instead of points+bounds.
