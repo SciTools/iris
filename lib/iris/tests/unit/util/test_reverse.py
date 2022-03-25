@@ -96,30 +96,34 @@ class Test_cube(tests.IrisTest):
             data, dim_coords_and_dims=[(a2, 0), (b2, 1)]
         )
 
-    def test_cube_dim(self):
+    def test_cube_dim0(self):
         cube1_reverse0 = reverse(self.cube1, 0)
+
+        self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
+        self.assertArrayEqual(
+            self.cube2.coord("a").points, cube1_reverse0.coord("a").points
+        )
+        self.assertArrayEqual(
+            self.cube2.coord("a").bounds, cube1_reverse0.coord("a").bounds
+        )
+        self.assertArrayEqual(
+            self.cube1.coord("b").points, cube1_reverse0.coord("b").points
+        )
+
+    def test_cube_dim1(self):
         cube1_reverse1 = reverse(self.cube1, 1)
+
+        self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
+        self.assertArrayEqual(
+            self.cube1.coord("a").points, cube1_reverse1.coord("a").points
+        )
+        self.assertArrayEqual(
+            self.cube2.coord("b").points, cube1_reverse1.coord("b").points
+        )
+
+    def test_cube_dim_both(self):
         cube1_reverse_both = reverse(self.cube1, (0, 1))
 
-        self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
-        self.assertArrayEqual(
-            self.cube2.coord("a").points, cube1_reverse0.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("a").bounds, cube1_reverse0.coord("a").bounds
-        )
-        self.assertArrayEqual(
-            self.cube1.coord("b").points, cube1_reverse0.coord("b").points
-        )
-
-        self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
-        self.assertArrayEqual(
-            self.cube1.coord("a").points, cube1_reverse1.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("b").points, cube1_reverse1.coord("b").points
-        )
-
         self.assertArrayEqual(
             self.cube1.data[::-1, ::-1], cube1_reverse_both.data
         )
@@ -130,11 +134,8 @@ class Test_cube(tests.IrisTest):
             self.cube2.coord("b").points, cube1_reverse_both.coord("b").points
         )
 
-    def test_cube_coord(self):
+    def test_cube_coord0(self):
         cube1_reverse0 = reverse(self.cube1, self.a1)
-        cube1_reverse1 = reverse(self.cube1, "b")
-        cube1_reverse_both = reverse(self.cube1, (self.a1, self.b1))
-        cube1_reverse_spanning = reverse(self.cube1, "spanning")
 
         self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
         self.assertArrayEqual(
@@ -147,6 +148,9 @@ class Test_cube(tests.IrisTest):
             self.cube1.coord("b").points, cube1_reverse0.coord("b").points
         )
 
+    def test_cube_coord1(self):
+        cube1_reverse1 = reverse(self.cube1, "b")
+
         self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
         self.assertArrayEqual(
             self.cube1.coord("a").points, cube1_reverse1.coord("a").points
@@ -154,6 +158,9 @@ class Test_cube(tests.IrisTest):
         self.assertArrayEqual(
             self.cube2.coord("b").points, cube1_reverse1.coord("b").points
         )
+
+    def test_cube_coord_both(self):
+        cube1_reverse_both = reverse(self.cube1, (self.a1, self.b1))
 
         self.assertArrayEqual(
             self.cube1.data[::-1, ::-1], cube1_reverse_both.data
@@ -164,6 +171,9 @@ class Test_cube(tests.IrisTest):
         self.assertArrayEqual(
             self.cube2.coord("b").points, cube1_reverse_both.coord("b").points
         )
+
+    def test_cube_coord_spanning(self):
+        cube1_reverse_spanning = reverse(self.cube1, "spanning")
 
         self.assertArrayEqual(
             self.cube1.data[::-1, ::-1], cube1_reverse_spanning.data
@@ -181,6 +191,7 @@ class Test_cube(tests.IrisTest):
             cube1_reverse_spanning.coord("spanning").points,
         )
 
+    def test_wrong_coord_name(self):
         msg = (
             "Expected to find exactly 1 'latitude' coordinate, but found none."
         )
@@ -189,10 +200,12 @@ class Test_cube(tests.IrisTest):
         ):
             reverse(self.cube1, "latitude")
 
+    def test_empty_list(self):
         msg = "Reverse was expecting a single axis or a 1d array *"
         with self.assertRaisesRegex(ValueError, msg):
             reverse(self.cube1, [])
 
+    def test_wrong_type_cube(self):
         msg = (
             "coords_or_dims must be int, str, coordinate or sequence of "
             "these.  Got cube."
@@ -200,6 +213,7 @@ class Test_cube(tests.IrisTest):
         with self.assertRaisesRegex(TypeError, msg):
             reverse(self.cube1, self.cube1)
 
+    def test_wrong_type_float(self):
         msg = (
             "coords_or_dims must be int, str, coordinate or sequence of "
             "these."
