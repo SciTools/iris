@@ -30,7 +30,7 @@ env:
   # Increment the build number to force new conda cache upload.
   CONDA_CACHE_BUILD: "0"
   # Increment the build number to force new nox cache upload.
-  NOX_CACHE_BUILD: "1"
+  NOX_CACHE_BUILD: "2"
   # Increment the build number to force new pip cache upload.
   PIP_CACHE_BUILD: "0"
   # Pip packages to be upgraded/installed.
