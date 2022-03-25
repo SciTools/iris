@@ -41,13 +41,17 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ reverted part of the change from :pull:`3906` so that
    :func:`iris.plot.plot` no longer defaults to placing a "Y" coordinate (e.g.
    latitude) on the y-axis of the plot. (:issue:`4493`, :pull:`4601`)
-   
-#. `@rcomer`_ enabled passing of scalar objects to :func:`~iris.plot.plot` and 
+
+#. `@rcomer`_ enabled passing of scalar objects to :func:`~iris.plot.plot` and
    :func:`~iris.plot.scatter`. (:pull:`4616`)
 
 #. `@rcomer`_ fixed :meth:`~iris.cube.Cube.aggregated_by` with `mdtol` for 1D
    cubes where an aggregated section is entirely masked, reported at
    :issue:`3190`.  (:pull:`4246`)
+
+#. `@rcomer`_ ensured that a :class:`matplotlib.axes.Axes`'s position is preserved
+   when Iris replaces it with a :class:`cartopy.mpl.geoaxes.GeoAxes`, fixing
+   :issue:`1157`.  (:pull:`4273`)
 
 
 💣 Incompatible Changes
