@@ -74,6 +74,11 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
         target = [0, 0, 0, 0, 0]
         self._test_nearest_neighbour_index(target)
 
+    def test_bounded_float_point(self):
+        coord = DimCoord(1, bounds=[0, 2])
+        result = coord.nearest_neighbour_index(2.5)
+        self.assertEqual(result, 0)
+
 
 class Test_nearest_neighbour_index__descending(tests.IrisTest):
     def setUp(self):
