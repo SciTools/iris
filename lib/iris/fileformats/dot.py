@@ -61,12 +61,16 @@ DOT_AVAILABLE = _dot_path() is not None
 def save(cube, target):
     """Save a dot representation of the cube.
 
-    Args:
+    Args
+    ----
 
-        * cube   - A :class:`iris.cube.Cube`.
-        * target - A filename or open file handle.
+    cube: :class:`iris.cube.Cube`.
+    target
+        A filename or open file handle.
 
-    See also :func:`iris.io.save`.
+    See Also
+    ========
+    :func:`iris.io.save`.
 
     """
     if isinstance(target, str):
@@ -89,17 +93,21 @@ def save_png(source, target, launch=False):
     """
     Produces a "dot" instance diagram by calling dot and optionally launching the resulting image.
 
-    Args:
+    Args
+    ====
 
-        * source - A :class:`iris.cube.Cube`, or dot filename.
-        * target - A filename or open file handle.
-                   If passing a file handle, take care to open it for binary output.
+    source: :class:`iris.cube.Cube`, or dot filename.
+    target
+        A filename or open file handle.
+        If passing a file handle, take care to open it for binary output.
 
-    Kwargs:
+    **kwargs
+        * launch
+            Display the image. Default is False.
 
-        * launch - Display the image. Default is False.
-
-    See also :func:`iris.io.save`.
+    See Also
+    ========
+    :func:`iris.io.save`.
 
     """
     # From cube or dot file?

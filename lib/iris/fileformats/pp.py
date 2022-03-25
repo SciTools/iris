@@ -2192,26 +2192,30 @@ def save(cube, target, append=False, field_coords=None):
     """
     Use the PP saving rules (and any user rules) to save a cube to a PP file.
 
-    Args:
+    Args
+    ====
+    cube: :class:`~iris.fileformats.nimrod.NimrodField`
 
-        * cube         - A :class:`iris.cube.Cube`
-        * target       - A filename or open file handle.
+    target
+        A filename or open file handle.
 
-    Kwargs:
+    **kwargs
+        * append
+            Whether to start a new file afresh or add the cube(s)
+            to the end of the file.
+            Only applicable when target is a filename, not a file
+            handle.
+            Default is False.
+        * field_coords
+            list of 2 coords or coord names which are to be used
+            for reducing the given cube into 2d slices,
+            which will ultimately determine the x and y
+            coordinates of the resulting fields.
+            If None, the final two  dimensions are chosen
+            for slicing.
 
-        * append       - Whether to start a new file afresh or add the cube(s)
-                         to the end of the file.
-                         Only applicable when target is a filename, not a file
-                         handle.
-                         Default is False.
-
-        * field_coords - list of 2 coords or coord names which are to be used
-                         for reducing the given cube into 2d slices,
-                         which will ultimately determine the x and y
-                         coordinates of the resulting fields.
-                         If None, the final two  dimensions are chosen
-                         for slicing.
-
+    Notes
+    =====
     See also :func:`iris.io.save`. Note that :func:`iris.save` is the preferred
     method of saving. This allows a :class:`iris.cube.CubeList` or a sequence
     of cubes to be saved to a PP file.

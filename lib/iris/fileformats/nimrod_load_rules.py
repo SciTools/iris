@@ -905,17 +905,18 @@ def run(field, handle_metadata_errors=True):
     """
     Convert a NIMROD field to an Iris cube.
 
-    Args:
+    Args
+    ----
+    field: :class:`~iris.fileformats.nimrod.NimrodField`
 
-        * field - a :class:`~iris.fileformats.nimrod.NimrodField`
+    handle_metadata_errors
+        Set to False to omit handling of known meta-data deficiencies
+        in Nimrod-format data
 
-        * handle_metadata_errors - Set to False to omit handling of known meta-data deficiencies
-                                   in Nimrod-format data
-
-    Returns:
-
-        * A new :class:`~iris.cube.Cube`, created from the NimrodField.
-
+    Returns
+    -------
+    :class:`~iris.cube.Cube`
+        A new :class:`~iris.cube.Cube`, created from the NimrodField.
     """
     cube = iris.cube.Cube(field.data)
 
