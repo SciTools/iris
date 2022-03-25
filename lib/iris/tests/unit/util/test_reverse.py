@@ -76,12 +76,15 @@ class Test_cube(tests.IrisTest):
         # matching long names but the points array on one cube is reversed
         # with respect to that on the other.
         data = np.arange(12).reshape(3, 4)
+
         self.a1 = iris.coords.DimCoord([1, 2, 3], long_name="a")
         self.a1.guess_bounds()
         self.b1 = iris.coords.DimCoord([1, 2, 3, 4], long_name="b")
+
         a2 = iris.coords.DimCoord([3, 2, 1], long_name="a")
         a2.guess_bounds()
         b2 = iris.coords.DimCoord([4, 3, 2, 1], long_name="b")
+
         self.span = iris.coords.AuxCoord(
             np.arange(12).reshape(3, 4), long_name="spanning"
         )
@@ -118,6 +121,9 @@ class Test_cube(tests.IrisTest):
             self.cube1.coord("a").points, cube1_reverse1.coord("a").points
         )
         self.assertArrayEqual(
+            self.cube1.coord("a").bounds, cube1_reverse1.coord("a").bounds
+        )
+        self.assertArrayEqual(
             self.cube2.coord("b").points, cube1_reverse1.coord("b").points
         )
 
@@ -129,6 +135,9 @@ class Test_cube(tests.IrisTest):
         )
         self.assertArrayEqual(
             self.cube2.coord("a").points, cube1_reverse_both.coord("a").points
+        )
+        self.assertArrayEqual(
+            self.cube2.coord("a").bounds, cube1_reverse_both.coord("a").bounds
         )
         self.assertArrayEqual(
             self.cube2.coord("b").points, cube1_reverse_both.coord("b").points
@@ -156,6 +165,9 @@ class Test_cube(tests.IrisTest):
             self.cube1.coord("a").points, cube1_reverse1.coord("a").points
         )
         self.assertArrayEqual(
+            self.cube1.coord("a").bounds, cube1_reverse1.coord("a").bounds
+        )
+        self.assertArrayEqual(
             self.cube2.coord("b").points, cube1_reverse1.coord("b").points
         )
 
@@ -167,6 +179,9 @@ class Test_cube(tests.IrisTest):
         )
         self.assertArrayEqual(
             self.cube2.coord("a").points, cube1_reverse_both.coord("a").points
+        )
+        self.assertArrayEqual(
+            self.cube2.coord("a").bounds, cube1_reverse_both.coord("a").bounds
         )
         self.assertArrayEqual(
             self.cube2.coord("b").points, cube1_reverse_both.coord("b").points
@@ -181,6 +196,10 @@ class Test_cube(tests.IrisTest):
         self.assertArrayEqual(
             self.cube2.coord("a").points,
             cube1_reverse_spanning.coord("a").points,
+        )
+        self.assertArrayEqual(
+            self.cube2.coord("a").bounds,
+            cube1_reverse_spanning.coord("a").bounds,
         )
         self.assertArrayEqual(
             self.cube2.coord("b").points,
