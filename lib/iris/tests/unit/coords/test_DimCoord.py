@@ -616,8 +616,8 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         self.assertArrayEqual(coord.bounds, bnds[:, ::-1])
 
     def test_flip_contiguous_decreasing(self):
-        pts = np.arange(4, 0)
-        bnds = np.transpose([np.arange(4, 0), np.arange(5, 1)])
+        pts = np.arange(4, 0, -1)
+        bnds = np.transpose([np.arange(4, 0, -1), np.arange(5, 1, -1)])
         coord = DimCoord(pts, bounds=bnds)
         self.assertArrayEqual(coord.bounds, bnds[:, ::-1])
 

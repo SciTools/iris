@@ -2807,6 +2807,10 @@ class DimCoord(Coord):
             * bounds are not masked, and
             * bounds are monotonic in the first dimension.
 
+        Also reverse the order of the second dimension if necessary to match the
+        first dimension's direction.  I.e. both should increase or both should
+        decrease.
+
         """
         # Ensure the bounds are a compatible shape.
         if self.shape != bounds.shape[:-1] and not (
@@ -2874,7 +2878,8 @@ class DimCoord(Coord):
             # Make sure we have an array (any type of array).
             bounds = np.asanyarray(bounds)
 
-            # Check validity requirements for dimension-coordinate bounds.
+            # Check validity requirements for dimension-coordinate bounds and reverse
+            # trailing dimension if necessary.
             bounds = self._new_bounds_requirements(bounds)
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
