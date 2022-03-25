@@ -154,7 +154,7 @@ class MaskedAggregateMixin:
         axis = 0
         self.agg_method(data, axis=axis, percent=percent)
         for key in ["alphap", "betap"]:
-            assert mocked_mquantiles.call_args.kwargs[key] == 1
+            self.assertEqual(mocked_mquantiles.call_args.kwargs[key], 1)
 
     @mock.patch("scipy.stats.mstats.mquantiles")
     def test_chosen_kwargs_passed(self, mocked_mquantiles):
@@ -165,7 +165,7 @@ class MaskedAggregateMixin:
             data, axis=axis, percent=percent, alphap=0.6, betap=0.5
         )
         for key, val in zip(["alphap", "betap"], [0.6, 0.5]):
-            assert mocked_mquantiles.call_args.kwargs[key] == val
+            self.assertEqual(mocked_mquantiles.call_args.kwargs[key], val)
 
 
 class Test_aggregate(tests.IrisTest, AggregateMixin, MaskedAggregateMixin):
