@@ -34,6 +34,8 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ added support for ``false_easting`` and ``false_northing`` to
    :class:`~iris.coord_system.Mercator`. (:issue:`3107`, :pull:`4524`)
 
+#. `@rcomer`_ implemented lazy aggregation for the
+   :obj:`iris.analysis.PERCENTILE` aggregator. (:pull:`3901`)
 
 🐛 Bugs Fixed
 =============
@@ -48,6 +50,14 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ fixed :meth:`~iris.cube.Cube.aggregated_by` with `mdtol` for 1D
    cubes where an aggregated section is entirely masked, reported at
    :issue:`3190`.  (:pull:`4246`)
+
+#. `@rcomer`_ ensured that a :class:`matplotlib.axes.Axes`'s position is preserved
+   when Iris replaces it with a :class:`cartopy.mpl.geoaxes.GeoAxes`, fixing
+   :issue:`1157`.  (:pull:`4273`)
+
+#. `@rcomer`_ fixed :meth:`~iris.coords.Coord.nearest_neighbour_index` for edge
+   cases where the requested point is float and the coordinate has integer
+   bounds, reported at :issue:`2969`. (:pull:`4245`)
 
 
 💣 Incompatible Changes
@@ -81,6 +91,7 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_ added a page to show the issues that have been voted for.  See
    :ref:`voted_issues_top`. (:issue:`3307`, :pull:`4617`)
+
 #. `@tkknight`_ adopted the `PyData Sphinx Theme`_ for the documentation.
    (:discussion:`4344`, :pull:`4661`)
 
@@ -92,6 +103,7 @@ This document explains the changes made to Iris for this release
    infrastructure (see :ref:`contributing.benchmarks`), building on 2 hard
    years of lessons learned 🎉. (:pull:`4477`, :pull:`4562`, :pull:`4571`,
    :pull:`4583`, :pull:`4621`)
+
 #. `@wjbenfold`_ made :func:`iris.tests.stock.simple_1d` respect the
    ``with_bounds`` argument. (:pull:`4658`)
 
