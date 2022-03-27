@@ -162,9 +162,11 @@ def save_png(source, target, launch=False):
 def cube_text(cube):
     """Return a DOT text representation a `iris.cube.Cube`.
 
-    Args:
+    Args
+    ====
 
-     * cube  -  The cube for which to create DOT text.
+    cube
+       The cube for which to create DOT text.
 
     """
     # We use r'' type string constructor as when we type \n in a string without the r'' constructor
