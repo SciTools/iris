@@ -60,7 +60,7 @@ _PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
 
 
 @dataclass
-class _BasePreparedItem:
+class _PreparedItem:
     metadata: Any
     points: Any
     bounds: Any
@@ -70,43 +70,26 @@ class _BasePreparedItem:
     location: Any = None
     axis: Any = None
 
-
-class _PreparedItem(_BasePreparedItem):
-    def __init__(self, *args, **kwargs):
-        assert len(args) == 0
-        super().__init__(*args, **kwargs)
-
     def create_coord(self, metadata):
-        # make a regular coord from a _PreparedItem
-        result = self.container(self.points, bounds=self.bounds)
-        result.metadata = metadata
-        return result
-
-
-class _MeshPreparedItem(_PreparedItem):
-    def __init__(self, **kwargs):
-        # N.B. *only* accepts keywords, no positional args.
-        # Also, we don't have points or bounds in this case.
-        assert "points" not in kwargs
-        assert "bounds" not in kwargs
-        # We should have mesh/location/axis instead, but no need to check it.
-        kwargs["points"] = None
-        kwargs["bounds"] = None
-        super().__init__(**kwargs)
-
-    def create_coord(self, metadata):
-        # make a MeshCoord from a _MeshPreparedItem
         from iris.experimental.ugrid.mesh import MeshCoord
 
-        result = MeshCoord(
-            mesh=self.mesh,
-            location=self.location,
-            axis=self.axis,
-        )
-        # Note: we also have 'metadata', containing prepared metadata, but we
-        # do *not* assign that, as we do for an 'ordinary' Coord.
-        # Instead, MeshCoord name/units/attributes are immutable, and set at
-        # create time to those of the underlying mesh node coordinate.
+        if self.container is not MeshCoord:
+            # make a regular coord, for which we have points/bounds/metadata.
+            result = self.container(self.points, bounds=self.bounds)
+            # Also assign prepared metadata.
+            result.metadata = metadata
+        else:
+            # Make a MeshCoord, for which we have mesh/location/axis.
+            result = MeshCoord(
+                mesh=self.mesh,
+                location=self.location,
+                axis=self.axis,
+            )
+            # Note: in this case we do also have "prepared metadata", but we
+            # do *not* assign it as we do for an 'ordinary' Coord.
+            # Instead, MeshCoord name/units/attributes are immutable, and set at
+            # create time to those of the underlying mesh node coordinate.
+
         return result
 
 
@@ -729,10 +712,21 @@ class Resolve:
             Override bounds array.  When not given, use coord.bounds.
 
         * container:
-            Coord type (class constructor).  When not given, use type(coord).
+            Override coord type (class constructor).
+            When not given, use type(coord).
 
         Returns:
             The :class:`~iris.common.resolve._PreparedItem`.
+
+        .. note::
+
+            If container or type(coord) is DimCoord/AuxCoord (i.e. not
+            MeshCoord), then points+bounds define the built AuxCoord/DimCoord.
+            Theses points+bounds come either from those args, or the 'coord'.
+            Alternatively, when container or type(coord) is MeshCoord, then
+            points==bounds==None and the preparted item contains
+            mesh/location/axis properties for the resulting MeshCoord.
+            These don't have override args: they *always* come from 'coord'.
 
         """
         if src_metadata is not None and tgt_metadata is not None:
@@ -753,7 +747,12 @@ class Resolve:
         from iris.experimental.ugrid.mesh import MeshCoord
 
         if not issubclass(container, MeshCoord):
-            # Build a "normal" prepared-item to make a DimCoord or AuxCoord.
+            # Build a prepared-item to make a DimCoord or AuxCoord.
+
+            # mesh/location/axis are not used.
+            mesh = None
+            location = None
+            axis = None
 
             # points + bounds default to those from the coordinate, but
             # alternative values may be specified.
@@ -762,36 +761,31 @@ class Resolve:
                 bounds = coord.bounds
             # 'ELSE' points was passed: both points+bounds come from the args
 
-            # Always duplicate points+bounds, to avoid possible direct
+            # Always *copy* points+bounds, to avoid any possible direct (shared)
             # references to existing coord arrays.
             points = points.copy()
             if bounds is not None:
                 bounds = bounds.copy()
 
-            result = _PreparedItem(
-                metadata=prepared_metadata,
-                points=points,
-                bounds=bounds,
-                dims=dims,
-                container=container,
-            )
-
         else:
-            # Build a meshcoord type prepared-item, to make a MeshCoord.
-            # Does *NOT* use points + bounds, so alternatives to the coord
-            # content should not have been specified by the caller.
+            # Build a prepared-item to make a MeshCoord.
+            # This case does *NOT* use points + bounds, so alternatives to the
+            # coord content should not have been specified by the caller.
             assert points is None and bounds is None
+            mesh = coord.mesh
+            location = coord.location
+            axis = coord.axis
 
-            # Uses mesh/location/axis from coord instead of points+bounds.
-            result = _MeshPreparedItem(
-                metadata=prepared_metadata,
-                dims=dims,
-                mesh=coord.mesh,
-                location=coord.location,
-                axis=coord.axis,
-                container=MeshCoord,
-            )
-
+        result = _PreparedItem(
+            metadata=prepared_metadata,
+            dims=dims,
+            points=points,
+            bounds=bounds,
+            mesh=mesh,
+            location=location,
+            axis=axis,
+            container=container,
+        )
         return result
 
     @property
