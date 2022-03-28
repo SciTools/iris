@@ -95,14 +95,13 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
 
     def test_slice(self):
         cube = stock.realistic_4d_no_derived()
-        base_ref = self.result_path()
         for dim in range(cube.ndim):
             keys = [slice(None)] * cube.ndim
             keys[dim] = 3
             other = cube[tuple(keys)]
             res = self.cube_func(cube, other)
-            this_path = base_ref + f"_dim{dim}.cml"
-            self.assertCML(res, reference_filename=this_path, checksum=False)
+            # NOTE: only one testfile : any dim collapsed gives SAME result
+            self.assertCML(res, checksum=False)
             # Add the collapsed dimension back in via np.newaxis to enable
             # numpy broadcasting to function.
             keys[dim] = np.newaxis
