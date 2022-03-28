@@ -91,6 +91,8 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_ added a page to show the issues that have been voted for.  See
    :ref:`voted_issues`. (:issue:`3307`, :pull:`4617`)
+#. `@wjbenfold`_ added a note about fixing proxy URLs in lockfiles generated
+   because dependencies have changed. (:pull:`4666`)
 
 
 💼 Internal
