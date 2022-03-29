@@ -10,11 +10,13 @@
 import iris.tests as tests  # isort:skip
 
 from abc import ABCMeta, abstractmethod
+import operator
 
 import numpy as np
 from numpy import ma
 
 from iris.analysis import MEAN
+from iris.analysis.maths import add
 from iris.coords import DimCoord
 from iris.cube import Cube
 import iris.tests.stock as stock
@@ -36,8 +38,43 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
         # I.E. 'iris.analysis.maths.xx'.
         pass
 
+    def _base_testcube(self, include_derived=False):
+        if include_derived:
+            self.cube = stock.realistic_4d()
+        else:
+            self.cube = stock.realistic_4d_no_derived()
+        self.cube_xy_dimcoords = ["grid_latitude", "grid_longitude"]
+        return self.cube
+
+    def _meshcube_collapsesafe(self, cube, coords):
+        # Return the cube, or if need be a modified copy, which can be safely
+        # collapsed over the given coords.
+        # This is needed for mesh-cubes, because the mesh coords have
+        # bounds which are not understood by the standard 'collapse' operation.
+        # TODO: possibly replace with a future 'safe mesh collapse' operation.
+        result = cube
+        if cube.mesh is not None:
+            collapse_dims = set()
+            for co in coords:
+                # Each must produce a single coord, with a single dim
+                (dim,) = cube.coord_dims(co)
+                collapse_dims.add(dim)
+            i_meshdim = cube.mesh_dim()
+            if i_meshdim in collapse_dims:
+                # Make a copy with all mesh coords replaced by their AuxCoord
+                # equivalents.  A simple slicing will do that.
+                slices = [slice(None)] * cube.ndim
+                slices[i_meshdim] = slice(0, None)
+                result = cube[tuple(slices)]
+                # Finally, **remove bounds** from all the former AuxCoords.
+                # This is what enables them to be successfully collapsed.
+                for meshco in cube.coords(mesh_coords=True):
+                    result.coord(meshco.name()).bounds = None
+
+        return result
+
     def test_transposed(self):
-        cube = stock.realistic_4d_no_derived()
+        cube = self._base_testcube()
         other = cube.copy()
         other.transpose()
         res = self.cube_func(cube, other)
@@ -46,7 +83,7 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
         self.assertArrayEqual(res.data, expected_data)
 
     def test_collapse_zeroth_dim(self):
-        cube = stock.realistic_4d_no_derived()
+        cube = self._base_testcube()
         other = cube.collapsed("time", MEAN)
         res = self.cube_func(cube, other)
         self.assertCML(res, checksum=False)
@@ -58,8 +95,10 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
         self.assertMaskedArrayEqual(res.data, expected_data)
 
     def test_collapse_all_dims(self):
-        cube = stock.realistic_4d_no_derived()
-        other = cube.collapsed(cube.coords(dim_coords=True), MEAN)
+        cube = self._base_testcube()
+        collapse_coords = cube.coords(dim_coords=True)
+        other = self._meshcube_collapsesafe(cube, collapse_coords)
+        other = other.collapsed(collapse_coords, MEAN)
         res = self.cube_func(cube, other)
         self.assertCML(res, checksum=False)
         # No modification to other.data is needed as numpy broadcasting
@@ -70,21 +109,28 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
         self.assertArrayEqual(res.data, expected_data)
 
     def test_collapse_last_dims(self):
-        cube = stock.realistic_4d_no_derived()
-        other = cube.collapsed(["grid_latitude", "grid_longitude"], MEAN)
+        cube = self._base_testcube()
+        # Collapse : by 'last' we mean the X+Y ones...
+        other = self._meshcube_collapsesafe(cube, self.cube_xy_dimcoords)
+        other = other.collapsed(self.cube_xy_dimcoords, MEAN)
         res = self.cube_func(cube, other)
         self.assertCML(res, checksum=False)
         # Transpose the dimensions in self.cube that have been collapsed in
         # other to lie at the front, thereby enabling numpy broadcasting to
         # function when applying data operator. Finish by transposing back
         # again to restore order.
+        n_xydims = len(self.cube_xy_dimcoords)
+        cube_dims = tuple(np.arange(cube.ndim))
+        transpose_xy_back2front = cube_dims[-n_xydims:] + cube_dims[:-n_xydims]
+        transpose_xy_front2back = cube_dims[n_xydims:] + cube_dims[:n_xydims]
         expected_data = self.data_op(
-            cube.data.transpose((2, 3, 0, 1)), other.data
-        ).transpose(2, 3, 0, 1)
+            cube.data.transpose(transpose_xy_back2front), other.data
+        ).transpose(transpose_xy_front2back)
+        # Confirm result content is as expected
         self.assertMaskedArrayEqual(res.data, expected_data)
 
     def test_collapse_middle_dim(self):
-        cube = stock.realistic_4d_no_derived()
+        cube = self._base_testcube()
         other = cube.collapsed(["model_level_number"], MEAN)
         res = self.cube_func(cube, other)
         self.assertCML(res, checksum=False)
@@ -94,12 +140,24 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
         self.assertMaskedArrayEqual(res.data, expected_data)
 
     def test_slice(self):
-        cube = stock.realistic_4d_no_derived()
+        cube = self._base_testcube()
         for dim in range(cube.ndim):
             keys = [slice(None)] * cube.ndim
             keys[dim] = 3
             other = cube[tuple(keys)]
+
+            # A special "cheat" for mesh cases...
+            # When a mesh dimension is indexed, this produces scalar versions
+            # of the mesh-coords, which don't match to the originals.
+            # FOR NOW: remove those, for a result matching the other ones.
+            # TODO: coord equivalence may need reviewing, either for cube
+            #  maths or for coord equivalance generally.
+            if cube.mesh and dim == cube.mesh_dim():
+                for co in cube.coords(mesh_coords=True):
+                    other.remove_coord(co.name())
+
             res = self.cube_func(cube, other)
+
             # NOTE: only one testfile : any dim collapsed gives SAME result
             self.assertCML(res, checksum=False)
             # Add the collapsed dimension back in via np.newaxis to enable
@@ -110,6 +168,17 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             self.assertArrayEqual(
                 res.data, expected_data, err_msg=msg.format(dim)
             )
+
+
+class MathsAddOperationMixin:
+    # Test everything with the 'add' operation.
+    @property
+    def data_op(self):
+        return operator.add
+
+    @property
+    def cube_func(self):
+        return add
 
 
 class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):

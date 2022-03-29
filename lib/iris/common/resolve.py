@@ -1541,6 +1541,13 @@ class Resolve:
                             src_metadata=src_metadata,
                             tgt_metadata=tgt_item.metadata,
                         )
+                    else:
+                        emsg = (
+                            f"Mesh coordinate {src_coord.name()!r} does not match between the "
+                            f"LHS cube {self.lhs_cube.name()!r} and "
+                            f"RHS cube {self.rhs_cube.name()!r}."
+                        )
+                        raise ValueError(emsg)
 
                 if prepared_item is None:
                     # Make a "normal" _PreparedItem, which is specified using
