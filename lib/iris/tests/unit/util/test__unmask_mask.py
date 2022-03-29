@@ -17,54 +17,47 @@ import iris._lazy_data
 from iris.util import _unmask_mask
 
 
-class UnmaskMixin:
-    """
-    Define tests to run with either numpy or dask.array library.
-    """
-
-    def test_plain_array(self):
-        in_array = np.array([0, 1, 0, 1])
-        result = _unmask_mask(self.al, in_array)
-        self.assertEquivalent(result, in_array)
-
-    def test_masked_array(self):
-        in_array = ma.masked_array([0, 1, 0, 1], mask=[0, 0, 1, 1])
-        result = _unmask_mask(self.al, in_array)
-        self.assertEquivalent(result, [0, 1, 0, 0])
-
-
-class TestReal(tests.IrisTest, UnmaskMixin):
+class TestReal(tests.IrisTest):
     """Tests with numpy."""
 
     def setUp(self):
         self.al = np
 
-    def assertEquivalent(self, result, expected):
+    def check_result(self, result, expected):
         self.assertFalse(ma.is_masked(result))
         np.testing.assert_array_equal(result, expected)
 
+    def test_plain_array(self):
+        in_array = np.array([0, 1, 0, 1])
+        result = _unmask_mask(self.al, in_array)
+        self.check_result(result, in_array)
 
-class TestLazy(tests.IrisTest, UnmaskMixin):
+    def test_masked_array(self):
+        in_array = ma.masked_array([0, 1, 0, 1], mask=[0, 0, 1, 1])
+        result = _unmask_mask(self.al, in_array)
+        self.check_result(result, [0, 1, 0, 0])
+
+
+class TestLazy(TestReal):
     """Tests with dask."""
 
     def setUp(self):
         self.al = da
 
-    def assertEquivalent(self, result, expected):
+    def check_result(self, result, expected):
         self.assertTrue(iris._lazy_data.is_lazy_data(result))
         computed = result.compute()
-        self.assertFalse(ma.is_masked(computed))
-        np.testing.assert_array_equal(computed, expected)
+        super().check_result(computed, expected)
 
     def test_lazy_array(self):
         in_array = da.from_array([0, 1, 0, 1])
         result = _unmask_mask(self.al, in_array)
-        self.assertEquivalent(result, [0, 1, 0, 1])
+        self.check_result(result, [0, 1, 0, 1])
 
     def test_lazy_masked_array(self):
         in_array = da.ma.masked_array([0, 1, 0, 1], mask=[1, 1, 0, 0])
         result = _unmask_mask(self.al, in_array)
-        self.assertEquivalent(result, [0, 0, 0, 1])
+        self.check_result(result, [0, 0, 0, 1])
 
 
 if __name__ == "__main__":

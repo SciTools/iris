@@ -1770,13 +1770,9 @@ def _unmask_mask(al, points_to_mask):
         Array to be used as a mask in _mask_array.
 
     """
-    ignore_points = al.ma.getmaskarray(points_to_mask)
-    points_to_mask = al.ma.getdata(points_to_mask)
-    points_to_mask = al.logical_and(
-        points_to_mask, al.logical_not(ignore_points)
-    )
+    points_to_mask = points_to_mask.astype(bool)
 
-    return points_to_mask
+    return al.ma.filled(points_to_mask, False)
 
 
 def _mask_array(array, points_to_mask, in_place=False):
