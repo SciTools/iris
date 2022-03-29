@@ -182,7 +182,7 @@ def as_series(cube, copy=True):
     return series
 
 
-def as_data_frame(cube, copy=True, dropna = True):
+def as_data_frame(cube, copy=True, dropna=True):
     """
     Convert a 2D cube to a Pandas DataFrame.
 
@@ -229,11 +229,13 @@ def as_data_frame(cube, copy=True, dropna = True):
     # TODO: Deal with aux coord information
 
     flat_data[cube.name()] = data.ravel()  # Add cube data to flat data dict
-    data_frame = pandas.DataFrame(data)  # Use dict method of creating dataframe
+    data_frame = pandas.DataFrame(
+        data
+    )  # Use dict method of creating dataframe
 
     if not copy:
         _assert_shared(data, data_frame)
     if dropna:
         dataframe.dropna(inplace=True)
-    
+
     return data_frame
