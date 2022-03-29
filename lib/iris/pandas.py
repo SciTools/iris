@@ -182,7 +182,7 @@ def as_series(cube, copy=True):
     return series
 
 
-def as_data_frame(cube, copy=True):
+def as_data_frame(cube, copy=True, dropna = True):
     """
     Convert a 2D cube to a Pandas DataFrame.
 
@@ -195,6 +195,8 @@ def as_data_frame(cube, copy=True):
         * copy - Whether to make a copy of the data.
                  Defaults to True. Must be True for masked data
                  and some data types (see notes below).
+        * dropna - Remove missing values from returned dataframe.
+                    Defaults to True.
 
     .. note::
 
@@ -217,14 +219,21 @@ def as_data_frame(cube, copy=True):
     elif copy:
         data = data.copy()
 
-    index = columns = None
-    if cube.coords(dimensions=[0]):
-        index = _as_pandas_coord(cube.coord(dimensions=[0]))
-    if cube.coords(dimensions=[1]):
-        columns = _as_pandas_coord(cube.coord(dimensions=[1]))
+    # Extract dim coord information
+    coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
+    coord_names = list(map(lambda x: x.standard_name, cube.dim_coords))
+    expand_coords = np.meshgrid(*coords)
+    flat_coords = list(map(lambda x: x.ravel(), expand_coords))
+    flat_data = dict(zip(coord_names, flat_coords))
 
-    data_frame = pandas.DataFrame(data, index, columns)
+    # TODO: Deal with aux coord information
+
+    flat_data[cube.name()] = data.ravel()  # Add cube data to flat data dict
+    data_frame = pandas.DataFrame(data)  # Use dict method of creating dataframe
+
     if not copy:
         _assert_shared(data, data_frame)
-
+    if dropna:
+        dataframe.dropna(inplace=True)
+    
     return data_frame
