@@ -37,6 +37,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ implemented lazy aggregation for the
    :obj:`iris.analysis.PERCENTILE` aggregator. (:pull:`3901`)
 
+#. `@pp-mo`_ fixed cube arithmetic operation for cubes with meshes.
+   (:issue:`3107`, :pull:`4651`)
+
 🐛 Bugs Fixed
 =============
 
