@@ -152,6 +152,7 @@ class TestBasicMeshOperation(tests.IrisTest):
         self.assertEqual(result.units, "m s-1")
 
         # Moreover : *cannot* do this with the 'equivalent' AuxCoord
+        # cf. https://github.com/SciTools/iris/issues/4671
         coord = AuxCoord.from_coord(coord)
         with self.assertRaises(ValueError):
             cube / coord

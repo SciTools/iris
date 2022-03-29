@@ -52,6 +52,7 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
         # This is needed for mesh-cubes, because the mesh coords have
         # bounds which are not understood by the standard 'collapse' operation.
         # TODO: possibly replace with a future 'safe mesh collapse' operation.
+        #  cf. https://github.com/SciTools/iris/issues/4672
         result = cube
         if cube.mesh is not None:
             collapse_dims = set()
@@ -152,6 +153,7 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             # FOR NOW: remove those, for a result matching the other ones.
             # TODO: coord equivalence may need reviewing, either for cube
             #  maths or for coord equivalance generally.
+            #  cf. https://github.com/SciTools/iris/issues/4671
             if cube.mesh and dim == cube.mesh_dim():
                 for co in cube.coords(mesh_coords=True):
                     other.remove_coord(co.name())

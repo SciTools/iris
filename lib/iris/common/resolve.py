@@ -89,6 +89,7 @@ class _PreparedItem:
             # do *not* assign it as we do for an 'ordinary' Coord.
             # Instead, MeshCoord name/units/attributes are immutable, and set at
             # create time to those of the underlying mesh node coordinate.
+            # cf https://github.com/SciTools/iris/issues/4670
 
         return result
 
