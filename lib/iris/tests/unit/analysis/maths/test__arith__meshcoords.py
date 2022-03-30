@@ -39,10 +39,7 @@ def _convert_to_meshcube(cube):
     return cube
 
 
-class MeshLocationsMixin(
-    MathsAddOperationMixin,
-    CubeArithmeticBroadcastingTestMixin,
-):
+class MeshLocationsMixin:
     # Control allowing us to also include test with derived coordinates.
     use_derived_coords = False
 
@@ -61,6 +58,7 @@ class MeshLocationsMixin(
 class TestBroadcastingWithMesh(
     tests.IrisTest_nometa,
     MeshLocationsMixin,
+    MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
 ):
     """
@@ -77,6 +75,7 @@ class TestBroadcastingWithMesh(
 class TestBroadcastingWithMeshAndDerived(
     tests.IrisTest_nometa,
     MeshLocationsMixin,
+    MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
 ):
     """Run broadcasting tests with meshes *and* derived coords."""
@@ -87,15 +86,40 @@ class TestBroadcastingWithMeshAndDerived(
 class TestCoordMatchWithMesh(CubeArithmeticCoordsTest):
     """Run the coordinate-mismatch tests with meshcubes."""
 
-    def test_no_match(self):
+    def _convert_to_meshcubes(self, cubes, i_dim):
+        """Add a mesh to one dim of the 'normal case' test-cubes."""
+        for cube in cubes:
+            n_size = cube.shape[i_dim]
+            mesh = sample_mesh(n_nodes=n_size, n_faces=n_size, n_edges=0)
+            for co in mesh.to_MeshCoords("face"):
+                cube.add_aux_coord(co, i_dim)
+            assert cube.mesh is not None
+
+    def _check_no_match(self, dim):
+        # Duplicate the basic operation, but convert cubes to meshcubes.
         cube1, cube2 = self.SetUpNonMatching()
+        self._convert_to_meshcubes([cube1, cube2], dim)
         with self.assertRaises(ValueError):
             add(cube1, cube2)
 
-    def test_reversed_points(self):
+    def test_no_match_dim0(self):
+        self._check_no_match(0)
+
+    def test_no_match_dim1(self):
+        self._check_no_match(0)
+
+    def _check_reversed_points(self, dim):
+        # Duplicate the basic operation, but convert cubes to meshcubes.
         cube1, cube2 = self.SetUpReversed()
+        self._convert_to_meshcubes([cube1, cube2], dim)
         with self.assertRaises(ValueError):
             add(cube1, cube2)
+
+    def test_reversed_points_dim0(self):
+        self._check_reversed_points(0)
+
+    def test_reversed_points_dim1(self):
+        self._check_reversed_points(1)
 
 
 class TestBasicMeshOperation(tests.IrisTest):
