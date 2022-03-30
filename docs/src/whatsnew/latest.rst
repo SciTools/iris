@@ -92,6 +92,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ added a page to show the issues that have been voted for.  See
    :ref:`voted_issues_top`. (:issue:`3307`, :pull:`4617`)
 
+#. `@wjbenfold`_ added a note about fixing proxy URLs in lockfiles generated
+   because dependencies have changed. (:pull:`4666`)
+
 #. `@tkknight`_ adopted the `PyData Sphinx Theme`_ for the documentation.
    (:discussion:`4344`, :pull:`4661`)
 
