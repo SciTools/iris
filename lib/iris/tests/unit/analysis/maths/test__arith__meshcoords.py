@@ -106,7 +106,7 @@ class TestCoordMatchWithMesh(CubeArithmeticCoordsTest):
         self._check_no_match(0)
 
     def test_no_match_dim1(self):
-        self._check_no_match(0)
+        self._check_no_match(1)
 
     def _check_reversed_points(self, dim):
         # Duplicate the basic operation, but convert cubes to meshcubes.

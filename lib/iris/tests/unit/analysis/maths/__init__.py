@@ -64,10 +64,14 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             if i_meshdim in collapse_dims:
                 # Make a copy with all mesh coords replaced by their AuxCoord
                 # equivalents.  A simple slicing will do that.
-                result = cube[..., 0:]
+                slices = [slice(None)] * cube.ndim
+                slices[i_meshdim] = slice(0, None)
+                result = cube[tuple(slices)]
                 # Finally, **remove bounds** from all the former AuxCoords.
                 # This is what enables them to be successfully collapsed.
                 for meshco in cube.coords(mesh_coords=True):
+                    # Note: select new coord by name, as getting the AuxCoord
+                    # which "matches" a MeshCoord is not possible.
                     result.coord(meshco.name()).bounds = None
 
         return result

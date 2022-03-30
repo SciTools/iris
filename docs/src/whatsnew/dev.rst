@@ -38,7 +38,8 @@ This document explains the changes made to Iris for this release
    :obj:`iris.analysis.PERCENTILE` aggregator. (:pull:`3901`)
 
 #. `@pp-mo`_ fixed cube arithmetic operation for cubes with meshes.
-   (:issue:`3107`, :pull:`4651`)
+   (:issue:`4454`, :pull:`4651`)
+
 
 🐛 Bugs Fixed
 =============

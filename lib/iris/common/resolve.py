@@ -73,12 +73,7 @@ class _PreparedItem:
     def create_coord(self, metadata):
         from iris.experimental.ugrid.mesh import MeshCoord
 
-        if self.container is not MeshCoord:
-            # make a regular coord, for which we have points/bounds/metadata.
-            result = self.container(self.points, bounds=self.bounds)
-            # Also assign prepared metadata.
-            result.metadata = metadata
-        else:
+        if issubclass(self.container, MeshCoord):
             # Make a MeshCoord, for which we have mesh/location/axis.
             result = MeshCoord(
                 mesh=self.mesh,
@@ -90,6 +85,12 @@ class _PreparedItem:
             # Instead, MeshCoord name/units/attributes are immutable, and set at
             # create time to those of the underlying mesh node coordinate.
             # cf https://github.com/SciTools/iris/issues/4670
+
+        else:
+            # make a regular coord, for which we have points/bounds/metadata.
+            result = self.container(self.points, bounds=self.bounds)
+            # Also assign prepared metadata.
+            result.metadata = metadata
 
         return result
 
@@ -697,8 +698,10 @@ class Resolve:
         * coord:
             The coordinate with the ``points`` and ``bounds`` to be extracted.
 
-        * dims:
-            The dimensions that the ``coord`` spans on the resulting resolved :class:`~iris.cube.Cube`.
+        * dims (int or tuple):
+            The dimensions that the ``coord`` spans on the resulting resolved
+            :class:`~iris.cube.Cube`.
+            (Can also be a single dimension number).
 
         * src_metadata:
             The coordinate metadata from the ``src`` :class:`~iris.cube.Cube`.
@@ -730,14 +733,13 @@ class Resolve:
             These don't have override args: they *always* come from 'coord'.
 
         """
+        if not isinstance(dims, Iterable):
+            dims = (dims,)
+
         if src_metadata is not None and tgt_metadata is not None:
             combined = src_metadata.combine(tgt_metadata)
         else:
             combined = src_metadata or tgt_metadata
-
-        if not isinstance(dims, Iterable):
-            dims = (dims,)
-
         prepared_metadata = _PreparedMetadata(
             combined=combined, src=src_metadata, tgt=tgt_metadata
         )
@@ -747,7 +749,16 @@ class Resolve:
 
         from iris.experimental.ugrid.mesh import MeshCoord
 
-        if not issubclass(container, MeshCoord):
+        if issubclass(container, MeshCoord):
+            # Build a prepared-item to make a MeshCoord.
+            # This case does *NOT* use points + bounds, so alternatives to the
+            # coord content should not have been specified by the caller.
+            assert points is None and bounds is None
+            mesh = coord.mesh
+            location = coord.location
+            axis = coord.axis
+
+        else:
             # Build a prepared-item to make a DimCoord or AuxCoord.
 
             # mesh/location/axis are not used.
@@ -767,15 +778,6 @@ class Resolve:
             points = points.copy()
             if bounds is not None:
                 bounds = bounds.copy()
-
-        else:
-            # Build a prepared-item to make a MeshCoord.
-            # This case does *NOT* use points + bounds, so alternatives to the
-            # coord content should not have been specified by the caller.
-            assert points is None and bounds is None
-            mesh = coord.mesh
-            location = coord.location
-            axis = coord.axis
 
         result = _PreparedItem(
             metadata=prepared_metadata,
@@ -1534,7 +1536,7 @@ class Resolve:
                     if src_coord == tgt_coord:
                         prepared_item = self._create_prepared_item(
                             src_coord,
-                            dims=tgt_item.dims,
+                            tgt_item.dims,
                             src_metadata=src_metadata,
                             tgt_metadata=tgt_item.metadata,
                         )
@@ -1570,9 +1572,9 @@ class Resolve:
                         )
                         prepared_item = self._create_prepared_item(
                             src_coord,
+                            tgt_item.dims,
                             src_metadata=src_metadata,
                             tgt_metadata=tgt_item.metadata,
-                            dims=tgt_item.dims,
                             points=points,
                             bounds=bounds,
                             container=container,
@@ -1634,7 +1636,7 @@ class Resolve:
             if points is not None:
                 prepared_item = self._create_prepared_item(
                     src_coord,
-                    dims=(tgt_dim,),
+                    tgt_dim,
                     src_metadata=src_metadata,
                     tgt_metadata=tgt_metadata,
                     points=points,
