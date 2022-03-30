@@ -976,13 +976,26 @@ on dimensions other than the :meth:`~iris.cube.Cube.mesh_dim`, since such
 
 Arithmetic
 ----------
-.. |tagline: arithmetic| replace:: |pending|
+.. |tagline: arithmetic| replace:: |unchanged|
 
 .. rubric:: |tagline: arithmetic|
 
-:class:`~iris.cube.Cube` Arithmetic (described in :doc:`/userguide/cube_maths`)
-has not yet been adapted to handle :class:`~iris.cube.Cube`\s that include
-:class:`~iris.experimental.ugrid.MeshCoord`\s.
+Cube Arithmetic (described in :doc:`/userguide/cube_maths`)
+has been extended to handle :class:`~iris.cube.Cube`\s that include
+:class:`~iris.experimental.ugrid.MeshCoord`\s, and hence have a ``cube.mesh``.
+
+Cubes with meshes can be combined in arithmetic operations like
+"ordinary" cubes. They can combine with other cubes without that mesh
+(and its dimension); or with a matching mesh, which may be on a different
+dimension.
+Arithmetic can also be performed between a cube with a mesh and a mesh
+coordinate with a matching mesh.
+
+In all cases, the result will have the same mesh as the input cubes.
+
+Meshes only match if they are fully equal --  i.e. they contain all the same
+coordinates and connectivities, with identical names, units, attributes and
+data content.
 
 
 .. todo:
