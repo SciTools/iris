@@ -4650,6 +4650,11 @@ class Test_cube(tests.IrisTest):
         self.resolve.prepared_category = prepared_category
         self.resolve.prepared_factories = prepared_factories
 
+        # Required to stop mock 'containers' failing in an 'issubclass' call.
+        self.patch(
+            "iris.common.resolve.issubclass", mock.Mock(return_value=False)
+        )
+
     def test_no_resolved_shape(self):
         self.resolve._broadcast_shape = None
         data = None
