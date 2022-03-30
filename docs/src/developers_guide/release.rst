@@ -184,7 +184,7 @@ back onto the ``SciTools/iris`` ``main`` branch.
 
 To achieve this, first cut a local branch from the latest ``main`` branch,
 and `git merge` the :literal:`.x` release branch into it. Ensure that the
-``iris.__version__``, ``docs/src/whatsnew/index.rst``, ``docs/src/whatsnew/dev.rst``,
+``iris.__version__``, ``docs/src/whatsnew/index.rst``,
 and ``docs/src/whatsnew/latest.rst`` are correct, before committing these changes
 and then proposing a pull-request on the ``main`` branch of ``SciTools/iris``.
 
@@ -219,24 +219,22 @@ Release Steps
 #. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
 #. Update the ``whatsnew`` for the release:
 
-    * Use ``git`` to rename ``docs/src/whatsnew/dev.rst`` to the release
-      version file ``v1.9.rst``
-    * Update the symbolic link ``latest.rst`` to reference the latest
-      whatsnew ``v1.9.rst``
-    * Use ``git`` to delete the ``docs/src/whatsnew/dev.rst.template`` file
-    * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
-      Note that, the Iris version and release date are updated automatically
-      when the documentation is built
-    * Review the file for correctness
-    * Work with the development team to populate the ``Release Highlights``
-      dropdown at the top of the file, which provides extra detail on notable
-      changes
-    * Use ``git`` to add and commit all changes, including removal of
-      ``dev.rst.template`` and update to the ``latest.rst`` symbolic link.
+   * Use ``git`` to rename ``docs/src/whatsnew/latest.rst`` to the release
+     version file ``v1.9.rst``
+   * Use ``git`` to delete the ``docs/src/whatsnew/latest.rst.template`` file
+   * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
+     Note that, the Iris version and release date are updated automatically
+     when the documentation is built
+   * Review the file for correctness
+   * Work with the development team to populate the ``Release Highlights``
+     dropdown at the top of the file, which provides extra detail on notable
+     changes
+   * Use ``git`` to add and commit all changes, including removal of
+     ``latest.rst.template``.
 
 #. Update the ``whatsnew`` index ``docs/src/whatsnew/index.rst``
 
-   * Remove the reference to ``dev.rst``
+   * Remove the reference to ``latest.rst``
    * Add a reference to ``v1.9.rst`` to the top of the list
 
 #. Check your changes by building the documentation and reviewing
