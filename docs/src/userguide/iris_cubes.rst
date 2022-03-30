@@ -38,60 +38,60 @@ Coordinates
 A coordinate is a container to store metadata about some dimension(s) of a
 cube's data array and therefore, by definition, its phenomenon.
 
- * Each coordinate has a name and a unit.
- * When a coordinate is added to a cube, the data dimensions that it
+* Each coordinate has a name and a unit.
+* When a coordinate is added to a cube, the data dimensions that it
    represents are also provided.
 
-    * The shape of a coordinate is always the same as the shape of the
-      associated data dimension(s) on the cube.
-    * A dimension not explicitly listed signifies that the coordinate is
-      independent of that dimension.
-    * Each dimension of a coordinate must be mapped to a data dimension. The
-      only coordinates with no mapping are scalar coordinates.
+   * The shape of a coordinate is always the same as the shape of the
+     associated data dimension(s) on the cube.
+   * A dimension not explicitly listed signifies that the coordinate is
+     independent of that dimension.
+   * Each dimension of a coordinate must be mapped to a data dimension. The
+     only coordinates with no mapping are scalar coordinates.
 
- * Depending on the underlying data that the coordinate is representing, its
-   values may be discrete points or be bounded to represent interval extents
-   (e.g. temperature at *point x* **vs** rainfall accumulation *between
-   0000-1200 hours*).
- * Coordinates have an attributes dictionary which can hold arbitrary extra
-   metadata, excluding certain restricted CF names
- * More complex coordinates may contain a coordinate system which is
-   necessary to fully interpret the values contained within the coordinate.
+* Depending on the underlying data that the coordinate is representing, its
+  values may be discrete points or be bounded to represent interval extents
+  (e.g. temperature at *point x* **vs** rainfall accumulation *between
+  0000-1200 hours*).
+* Coordinates have an attributes dictionary which can hold arbitrary extra
+  metadata, excluding certain restricted CF names
+* More complex coordinates may contain a coordinate system which is
+  necessary to fully interpret the values contained within the coordinate.
 
 There are two classes of coordinates:
 
-   **DimCoord**
+**DimCoord**
 
-      * Numeric
-      * Monotonic
-      * Representative of, at most, a single data dimension (1d)
+* Numeric
+* Monotonic
+* Representative of, at most, a single data dimension (1d)
 
-   **AuxCoord**
+**AuxCoord**
 
-      * May be of any type, including strings
-      * May represent multiple data dimensions (n-dimensional)
+* May be of any type, including strings
+* May represent multiple data dimensions (n-dimensional)
 
 
 Cube
 ====
 A cube consists of:
 
- * a standard name and/or a long name and an appropriate unit
- * a data array who's values are representative of the phenomenon
- * a collection of coordinates and associated data dimensions on the cube's
-   data array, which are split into two separate lists:
+* a standard name and/or a long name and an appropriate unit
+* a data array who's values are representative of the phenomenon
+* a collection of coordinates and associated data dimensions on the cube's
+  data array, which are split into two separate lists:
 
-    * *dimension coordinates* - DimCoords which uniquely map to exactly one
-      data dimension, ordered by dimension.
-    * *auxiliary coordinates* - DimCoords or AuxCoords which map to as many
-      data dimensions as the coordinate has dimensions.
+  * *dimension coordinates* - DimCoords which uniquely map to exactly one
+    data dimension, ordered by dimension.
+  * *auxiliary coordinates* - DimCoords or AuxCoords which map to as many
+    data dimensions as the coordinate has dimensions.
 
- * an attributes dictionary which, other than some protected CF names, can
-   hold arbitrary extra metadata.
- * a list of cell methods to represent operations which have already been
-   applied to the data (e.g. "mean over time")
- * a list of coordinate "factories" used for deriving coordinates from the
-   values of other coordinates in the cube
+* an attributes dictionary which, other than some protected CF names, can
+  hold arbitrary extra metadata.
+* a list of cell methods to represent operations which have already been
+  applied to the data (e.g. "mean over time")
+* a list of coordinate "factories" used for deriving coordinates from the
+  values of other coordinates in the cube
 
 
 Cubes in Practice
@@ -110,26 +110,26 @@ Where dimensions 0, 1, and 2 have lengths 3, 2 and 4 respectively.
 
 The Iris cube to represent this data would consist of:
 
- * a standard name of ``air_temperature`` and a unit of ``kelvin``
- * a data array of shape ``(3, 2, 4)``
- * a coordinate, mapping to dimension 0, consisting of:
+* a standard name of ``air_temperature`` and a unit of ``kelvin``
+* a data array of shape ``(3, 2, 4)``
+* a coordinate, mapping to dimension 0, consisting of:
 
-    * a standard name of ``height`` and unit of ``meters``
-    * an array of length 3 representing the 3 ``height`` points
+  * a standard name of ``height`` and unit of ``meters``
+  * an array of length 3 representing the 3 ``height`` points
 
- * a coordinate, mapping to dimension 1, consisting of:
+* a coordinate, mapping to dimension 1, consisting of:
 
-    * a standard name of ``latitude`` and unit of ``degrees``
-    * an array of length 2 representing the 2 latitude points
-    * a coordinate system such that the ``latitude`` points could be fully
-      located on the globe
+  * a standard name of ``latitude`` and unit of ``degrees``
+  * an array of length 2 representing the 2 latitude points
+  * a coordinate system such that the ``latitude`` points could be fully
+    located on the globe
 
- * a coordinate, mapping to dimension 2, consisting of:
+* a coordinate, mapping to dimension 2, consisting of:
 
-    * a standard name of ``longitude`` and unit of ``degrees``
-    * an array of length 4 representing the 4 longitude points
-    * a coordinate system such that the ``longitude`` points could be fully
-      located on the globe
+  * a standard name of ``longitude`` and unit of ``degrees``
+  * an array of length 4 representing the 4 longitude points
+  * a coordinate system such that the ``longitude`` points could be fully
+    located on the globe
 
 Pictorially the cube has taken on more information than a simple array:
 
@@ -140,27 +140,27 @@ Pictorially the cube has taken on more information than a simple array:
 Additionally further information may be optionally attached to the cube.
 For example, it is possible to attach any of the following:
 
- * a coordinate, not mapping to any data dimensions, consisting of:
+* a coordinate, not mapping to any data dimensions, consisting of:
 
-    * a standard name of ``time`` and unit of ``days since 2000-01-01 00:00``
-    * a data array of length 1 representing the time that the data array is
-      valid for
+  * a standard name of ``time`` and unit of ``days since 2000-01-01 00:00``
+  * a data array of length 1 representing the time that the data array is
+    valid for
 
- * an auxiliary coordinate, mapping to dimensions 1 and 2, consisting of:
+* an auxiliary coordinate, mapping to dimensions 1 and 2, consisting of:
 
-    * a long name of ``place name`` and no unit
-    * a 2d string array of shape ``(2, 4)`` with the names of the 8 places
-      that the lat/lons correspond to
+  * a long name of ``place name`` and no unit
+  * a 2d string array of shape ``(2, 4)`` with the names of the 8 places
+    that the lat/lons correspond to
 
- * an auxiliary coordinate "factory", which can derive its own mapping,
-   consisting of:
+* an auxiliary coordinate "factory", which can derive its own mapping,
+  consisting of:
 
-    * a standard name of ``height`` and a unit of ``feet``
-    * knowledge of how data values for this coordinate can be calculated
-      given the ``height in meters`` coordinate
+  * a standard name of ``height`` and a unit of ``feet``
+  * knowledge of how data values for this coordinate can be calculated
+    given the ``height in meters`` coordinate
 
- * a cell method of "mean" over "ensemble" to indicate that the data has been
-   meaned over a collection of "ensembles" (i.e. multiple model runs).
+* a cell method of "mean" over "ensemble" to indicate that the data has been
+  meaned over a collection of "ensembles" (i.e. multiple model runs).
 
 
 Printing a Cube
@@ -206,22 +206,22 @@ printing a real life cube:
 
 Using this output we can deduce that:
 
- * The cube represents air potential temperature.
- * There are 4 data dimensions, and the data has a shape of ``(3, 7, 204, 187)``
- * The 4 data dimensions are mapped to the ``time``, ``model_level_number``,
-   ``grid_latitude``, ``grid_longitude`` coordinates respectively
- * There are three 1d auxiliary coordinates and one 2d auxiliary
-   (``surface_altitude``)
- * There is a single ``altitude`` derived coordinate, which spans 3 data
-   dimensions
- * There are 7 distinct values in the "model_level_number" coordinate. Similar
-   inferences can
-   be made for the other dimension coordinates.
- * There are 7, not necessarily distinct, values in the ``level_height``
-   coordinate.
- * There is a single ``forecast_reference_time`` scalar coordinate representing
-   the entire cube.
- * The cube has one further attribute relating to the  phenomenon.
-   In this case the originating file format, PP, encodes information in a STASH
-   code which in some cases can be useful for identifying advanced experiment
-   information relating to the phenomenon.
+* The cube represents air potential temperature.
+* There are 4 data dimensions, and the data has a shape of ``(3, 7, 204, 187)``
+* The 4 data dimensions are mapped to the ``time``, ``model_level_number``,
+  ``grid_latitude``, ``grid_longitude`` coordinates respectively
+* There are three 1d auxiliary coordinates and one 2d auxiliary
+  (``surface_altitude``)
+* There is a single ``altitude`` derived coordinate, which spans 3 data
+  dimensions
+* There are 7 distinct values in the "model_level_number" coordinate. Similar
+  inferences can
+  be made for the other dimension coordinates.
+* There are 7, not necessarily distinct, values in the ``level_height``
+  coordinate.
+* There is a single ``forecast_reference_time`` scalar coordinate representing
+  the entire cube.
+* The cube has one further attribute relating to the  phenomenon.
+  In this case the originating file format, PP, encodes information in a STASH
+  code which in some cases can be useful for identifying advanced experiment
+  information relating to the phenomenon.
