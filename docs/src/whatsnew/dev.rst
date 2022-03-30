@@ -102,6 +102,9 @@ This document explains the changes made to Iris for this release
    infrastructure (see :ref:`contributing.benchmarks`), building on 2 hard
    years of lessons learned 🎉. (:pull:`4477`, :pull:`4562`, :pull:`4571`,
    :pull:`4583`, :pull:`4621`)
+#. `@wjbenfold`_ used the aforementioned benchmarking infrastructure to
+   introduce deep (large 3rd dimension) loading and realisation benchmarks.
+   (:pull:`4654`)
 #. `@wjbenfold`_ made :func:`iris.tests.stock.simple_1d` respect the
    ``with_bounds`` argument. (:pull:`4658`)
 
