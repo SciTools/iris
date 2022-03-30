@@ -64,9 +64,7 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             if i_meshdim in collapse_dims:
                 # Make a copy with all mesh coords replaced by their AuxCoord
                 # equivalents.  A simple slicing will do that.
-                slices = [slice(None)] * cube.ndim
-                slices[i_meshdim] = slice(0, None)
-                result = cube[tuple(slices)]
+                result = cube[..., 0:]
                 # Finally, **remove bounds** from all the former AuxCoords.
                 # This is what enables them to be successfully collapsed.
                 for meshco in cube.coords(mesh_coords=True):

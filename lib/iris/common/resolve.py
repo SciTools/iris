@@ -1531,11 +1531,7 @@ class Resolve:
                     # In this case, we may need to produce an alternative form
                     # to the 'ordinary' _PreparedItem
                     # However, this only works if they have identical meshes..
-                    if (
-                        src_coord.location == tgt_coord.location
-                        and src_coord.axis == tgt_coord.axis
-                        and src_coord.mesh == tgt_coord.mesh
-                    ):
+                    if src_coord == tgt_coord:
                         prepared_item = self._create_prepared_item(
                             src_coord,
                             dims=tgt_item.dims,
