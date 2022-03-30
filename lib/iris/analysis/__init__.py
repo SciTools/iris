@@ -37,6 +37,7 @@ The gallery contains several interesting worked examples of how an
 
 from collections import OrderedDict
 from collections.abc import Iterable
+import functools
 from functools import wraps
 
 import dask.array as da
@@ -683,7 +684,7 @@ class PercentileAggregator(_Aggregator):
 
     """
 
-    def __init__(self, units_func=None, lazy_func=None, **kwargs):
+    def __init__(self, units_func=None, **kwargs):
         """
         Create a percentile aggregator.
 
@@ -695,11 +696,6 @@ class PercentileAggregator(_Aggregator):
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
-
-        * lazy_func (callable or None):
-            An alternative to :data:`call_func` implementing a lazy
-            aggregation. Note that, it need not support all features of the
-            main operation, but should raise an error in unhandled cases.
 
         Additional kwargs::
             Passed through to :data:`call_func` and :data:`lazy_func`.
@@ -718,7 +714,7 @@ class PercentileAggregator(_Aggregator):
             None,
             _percentile,
             units_func=units_func,
-            lazy_func=lazy_func,
+            lazy_func=_build_dask_mdtol_function(_percentile),
             **kwargs,
         )
 
@@ -763,6 +759,45 @@ class PercentileAggregator(_Aggregator):
                 raise ValueError(msg.format(self.name(), arg))
 
         return _Aggregator.aggregate(self, data, axis, **kwargs)
+
+    def lazy_aggregate(self, data, axis, **kwargs):
+        """
+        Perform aggregation over the data with a lazy operation, analogous to
+        the 'aggregate' result.
+
+        Keyword arguments are passed through to the data aggregation function
+        (for example, the "percent" keyword for a percentile aggregator).
+        This function is usually used in conjunction with update_metadata(),
+        which should be passed the same keyword arguments.
+
+        Args:
+
+        * data (array):
+            A lazy array (:class:`dask.array.Array`).
+
+        * axis (int or list of int):
+            The dimensions to aggregate over -- note that this is defined
+            differently to the 'aggregate' method 'axis' argument, which only
+            accepts a single dimension index.
+
+        Kwargs:
+
+        * kwargs:
+            All keyword arguments are passed through to the data aggregation
+            function.
+
+        Returns:
+            A lazy array representing the result of the aggregation operation
+            (:class:`dask.array.Array`).
+
+        """
+
+        msg = "{} aggregator requires the mandatory keyword argument {!r}."
+        for arg in self._args:
+            if arg not in kwargs:
+                raise ValueError(msg.format(self.name(), arg))
+
+        return _Aggregator.lazy_aggregate(self, data, axis, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
@@ -1127,7 +1162,9 @@ def _build_dask_mdtol_function(dask_stats_function):
     call signature : "dask_stats_function(data, axis=axis, **kwargs)".
     It must be masked-data tolerant, i.e. it ignores masked input points and
     performs a calculation on only the unmasked points.
-    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
+    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.  If an additional
+    dimension is created by 'dask_function', it is assumed to be the trailing
+    one (as for '_percentile').
 
     The returned value is a new function operating on dask arrays.
     It has the call signature `stat(data, axis=-1, mdtol=None, **kwargs)`.
@@ -1147,6 +1184,12 @@ def _build_dask_mdtol_function(dask_stats_function):
             points_per_calc = array.size / dask_result.size
             masked_point_fractions = point_mask_counts / points_per_calc
             boolean_mask = masked_point_fractions > mdtol
+            if dask_result.ndim > boolean_mask.ndim:
+                # dask_stats_function created trailing dimension.
+                boolean_mask = da.broadcast_to(
+                    boolean_mask.reshape(boolean_mask.shape + (1,)),
+                    dask_result.shape,
+                )
             # Return an mdtol-masked version of the basic result.
             result = da.ma.masked_array(
                 da.ma.getdata(dask_result), boolean_mask
@@ -1156,7 +1199,66 @@ def _build_dask_mdtol_function(dask_stats_function):
     return inner_stat
 
 
-def _percentile(data, axis, percent, fast_percentile_method=False, **kwargs):
+def _axis_to_single_trailing(stats_function):
+    """
+    Given a statistical function that acts on the trailing axis of a 1D or 2D
+    array, wrap it so that higher dimension arrays can be passed, as well as any
+    axis as int or tuple.
+
+    """
+
+    @wraps(stats_function)
+    def inner_stat(data, axis, *args, **kwargs):
+        # Get data as a 1D or 2D view with the target axis as the trailing one.
+        if not isinstance(axis, Iterable):
+            axis = (axis,)
+        end = range(-len(axis), 0)
+
+        data = np.moveaxis(data, axis, end)
+        shape = data.shape[: -len(axis)]  # Shape of dims we won't collapse.
+        if shape:
+            data = data.reshape(np.prod(shape), -1)
+        else:
+            data = data.flatten()
+
+        result = stats_function(data, *args, **kwargs)
+
+        # Ensure to unflatten any leading dimensions.
+        if shape:
+            # Account for the additive dimension if necessary.
+            if result.size > np.prod(shape):
+                shape += (-1,)
+            result = result.reshape(shape)
+
+        return result
+
+    return inner_stat
+
+
+def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
+    """
+    Calculate percentiles along the trailing axis of a 1D or 2D array.
+
+    """
+    if fast_percentile_method:
+        msg = "Cannot use fast np.percentile method with masked array."
+        if ma.is_masked(data):
+            raise TypeError(msg)
+        result = np.percentile(data, percent, axis=-1)
+        result = result.T
+    else:
+        quantiles = percent / 100.0
+        result = scipy.stats.mstats.mquantiles(
+            data, quantiles, axis=-1, **kwargs
+        )
+    if not ma.isMaskedArray(data) and not ma.is_masked(result):
+        return np.asarray(result)
+    else:
+        return ma.MaskedArray(result)
+
+
+@_axis_to_single_trailing
+def _percentile(data, percent, fast_percentile_method=False, **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1165,50 +1267,43 @@ def _percentile(data, axis, percent, fast_percentile_method=False, **kwargs):
     If a new additive dimension is formed, then it will always be the last
     dimension of the resulting percentile data payload.
 
+    Args:
+
+    * data (array-like)
+        array from which percentiles are to be calculated
+
     Kwargs:
 
-    * fast_percentile_method (boolean) :
+    * fast_percentile_method (boolean)
         When set to True, uses the numpy.percentiles method as a faster
         alternative to the scipy.mstats.mquantiles method. Does not handle
         masked arrays.
 
-    """
-    # Ensure that the target axis is the last dimension.
-    data = np.rollaxis(data, axis, start=data.ndim)
-    shape = data.shape[:-1]
-    # Flatten any leading dimensions.
-    if shape:
-        data = data.reshape([np.prod(shape), data.shape[-1]])
-    # Perform the percentile calculation.
-    if fast_percentile_method:
-        msg = "Cannot use fast np.percentile method with masked array."
-        if ma.is_masked(data):
-            raise TypeError(msg)
-        result = np.percentile(data, percent, axis=-1)
-        result = result.T
-    else:
-        quantiles = np.array(percent) / 100.0
-        result = scipy.stats.mstats.mquantiles(
-            data, quantiles, axis=-1, **kwargs
-        )
-    if not ma.isMaskedArray(data) and not ma.is_masked(result):
-        result = np.asarray(result)
-    else:
-        result = ma.MaskedArray(result)
+    **kwargs
+        passed to scipy.stats.mstats.mquantiles if fast_percentile_method is
+        False
 
-    # Ensure to unflatten any leading dimensions.
-    if shape:
-        if not isinstance(percent, Iterable):
-            percent = [percent]
-        percent = np.array(percent)
-        # Account for the additive dimension.
-        if percent.shape > (1,):
-            shape += percent.shape
-        result = result.reshape(shape)
+    """
+    if not isinstance(percent, Iterable):
+        percent = [percent]
+    percent = np.array(percent)
+
+    # Perform the percentile calculation.
+    _partial_percentile = functools.partial(
+        _calc_percentile,
+        percent=percent,
+        fast_percentile_method=fast_percentile_method,
+        **kwargs,
+    )
+
+    result = iris._lazy_data.map_complete_blocks(
+        data, _partial_percentile, (-1,), percent.shape
+    )
+
     # Check whether to reduce to a scalar result, as per the behaviour
     # of other aggregators.
-    if result.shape == (1,) and quantiles.ndim == 0:
-        result = result[0]
+    if result.shape == (1,):
+        result = np.squeeze(result)
 
     return result
 
@@ -1738,9 +1833,10 @@ This aggregator handles masked data.
 
 PERCENTILE = PercentileAggregator(alphap=1, betap=1)
 """
-An :class:`~iris.analysis.PercentileAggregator` instance that calculates the
+A :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
-:func:`scipy.stats.mstats.mquantiles`.
+:func:`scipy.stats.mstats.mquantiles` (default) or :func:`numpy.percentile` (if
+fast_percentile_method is True).
 
 **Required** kwargs associated with the use of this aggregator:
 
@@ -1755,6 +1851,11 @@ Additional kwargs associated with the use of this aggregator:
 * betap (float):
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
     Defaults to 1.
+* fast_percentile_method (boolean):
+    When set to True, uses :func:`numpy.percentile` method as a faster
+    alternative to the :func:`scipy.stats.mstats.mquantiles` method.  alphap and
+    betap are ignored. An exception is raised if the data are masked.
+    Defaults to False.
 
 **For example**:
 
@@ -1762,7 +1863,15 @@ To compute the 10th and 90th percentile over *time*::
 
     result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=[10, 90])
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
+
+.. note::
+
+    Performance of this aggregator on lazy data is particularly sensitive to
+    the dask array chunking, so it may be useful to test with various chunk
+    sizes for a given application.  Any chunking along the dimensions to be
+    aggregated is removed by the aggregator prior to calculating the
+    percentiles.
 
 """
 

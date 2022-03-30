@@ -68,6 +68,13 @@ or simply::
 
 and add the changed lockfiles to your pull request.
 
+.. note::
+
+   If your installation of conda runs through Artifactory or another similar
+   proxy then you will need to amend that lockfile to use URLs that Github
+   Actions can access. A utility to strip out Artifactory exists in the
+   ``ssstack`` tool.
+
 New lockfiles are generated automatically each week to ensure that Iris continues to be
 tested against the latest available version of its dependencies.
 Each week the yaml files in ``requirements/ci`` are resolved by a GitHub Action.
