@@ -127,6 +127,7 @@ class Test_cube(tests.IrisTest):
 
     def test_cube_dim0(self):
         cube1_reverse0 = reverse(self.cube1, 0)
+
         self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
         self.check_coorda_reversed(cube1_reverse0)
         self.check_coordb_unchanged(cube1_reverse0)
