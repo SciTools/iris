@@ -24,8 +24,10 @@ from ..generate_data.um_files import create_um_files
 
 
 class LoadAndRealise:
+    # For data generation
+    timeout = 600.0
     params = [
-        [(2, 2, 2), (1280, 960, 5)],
+        [(2, 2, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
         ["FF", "PP", "NetCDF"],
     ]
@@ -68,7 +70,7 @@ class LoadAndRealise:
 
 class STASHConstraint:
     # xyz sizes mimic LoadAndRealise to maximise file re-use.
-    params = [[(2, 2, 2), (1280, 960, 5)], ["FF", "PP"]]
+    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"]]
     param_names = ["xyz", "file_format"]
 
     def setup_cache(self) -> dict:
@@ -155,7 +157,7 @@ class StructuredFF:
     avoiding the cost of merging.
     """
 
-    params = [[(2, 2, 2), (1280, 960, 5)], [False, True]]
+    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], [False, True]]
     param_names = ["xyz", "structured_loading"]
 
     def setup_cache(self) -> dict:
