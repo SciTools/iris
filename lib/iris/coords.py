@@ -1360,7 +1360,9 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
             else:
                 return self.point == other
         elif isinstance(other, Cell):
-            return (self.point == other.point) and (self.bound == other.bound)
+            return (self.point == other.point) and (
+                self.bound == other.bound or self.bound == other.bound[::-1]
+            )
         elif (
             isinstance(other, str)
             and self.bound is None
@@ -2805,6 +2807,10 @@ class DimCoord(Coord):
             * bounds are not masked, and
             * bounds are monotonic in the first dimension.
 
+        Also reverse the order of the second dimension if necessary to match the
+        first dimension's direction.  I.e. both should increase or both should
+        decrease.
+
         """
         # Ensure the bounds are a compatible shape.
         if self.shape != bounds.shape[:-1] and not (
@@ -2854,6 +2860,16 @@ class DimCoord(Coord):
                         emsg.format(self.name(), self.__class__.__name__)
                     )
 
+                if n_bounds == 2:
+                    # Make ordering of bounds consistent with coord's direction
+                    # if possible.
+                    (direction,) = directions
+                    diffs = bounds[:, 0] - bounds[:, 1]
+                    if np.all(np.sign(diffs) == direction):
+                        bounds = np.flip(bounds, axis=1)
+
+        return bounds
+
     @Coord.bounds.setter
     def bounds(self, bounds):
         if bounds is not None:
@@ -2862,8 +2878,9 @@ class DimCoord(Coord):
             # Make sure we have an array (any type of array).
             bounds = np.asanyarray(bounds)
 
-            # Check validity requirements for dimension-coordinate bounds.
-            self._new_bounds_requirements(bounds)
+            # Check validity requirements for dimension-coordinate bounds and reverse
+            # trailing dimension if necessary.
+            bounds = self._new_bounds_requirements(bounds)
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
 
