@@ -70,7 +70,7 @@ class LoadAndRealise:
 
 class STASHConstraint:
     # xyz sizes mimic LoadAndRealise to maximise file re-use.
-    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 10000)], ["FF", "PP"]]
+    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"]]
     param_names = ["xyz", "file_format"]
 
     def setup_cache(self) -> dict:
