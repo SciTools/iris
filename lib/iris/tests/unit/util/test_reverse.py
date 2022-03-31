@@ -99,33 +99,44 @@ class Test_cube(tests.IrisTest):
             data, dim_coords_and_dims=[(a2, 0), (b2, 1)]
         )
 
+    def check_coorda_reversed(self, result):
+        self.assertArrayEqual(
+            self.cube2.coord("a").points, result.coord("a").points
+        )
+        self.assertArrayEqual(
+            self.cube2.coord("a").bounds, result.coord("a").bounds
+        )
+
+    def check_coorda_unchanged(self, result):
+        self.assertArrayEqual(
+            self.cube1.coord("a").points, result.coord("a").points
+        )
+        self.assertArrayEqual(
+            self.cube1.coord("a").bounds, result.coord("a").bounds
+        )
+
+    def check_coordb_reversed(self, result):
+        self.assertArrayEqual(
+            self.cube2.coord("b").points, result.coord("b").points
+        )
+
+    def check_coordb_unchanged(self, result):
+        self.assertArrayEqual(
+            self.cube1.coord("b").points, result.coord("b").points
+        )
+
     def test_cube_dim0(self):
         cube1_reverse0 = reverse(self.cube1, 0)
-
         self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
-        self.assertArrayEqual(
-            self.cube2.coord("a").points, cube1_reverse0.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("a").bounds, cube1_reverse0.coord("a").bounds
-        )
-        self.assertArrayEqual(
-            self.cube1.coord("b").points, cube1_reverse0.coord("b").points
-        )
+        self.check_coorda_reversed(cube1_reverse0)
+        self.check_coordb_unchanged(cube1_reverse0)
 
     def test_cube_dim1(self):
         cube1_reverse1 = reverse(self.cube1, 1)
 
         self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
-        self.assertArrayEqual(
-            self.cube1.coord("a").points, cube1_reverse1.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube1.coord("a").bounds, cube1_reverse1.coord("a").bounds
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("b").points, cube1_reverse1.coord("b").points
-        )
+        self.check_coordb_reversed(cube1_reverse1)
+        self.check_coorda_unchanged(cube1_reverse1)
 
     def test_cube_dim_both(self):
         cube1_reverse_both = reverse(self.cube1, (0, 1))
@@ -133,43 +144,22 @@ class Test_cube(tests.IrisTest):
         self.assertArrayEqual(
             self.cube1.data[::-1, ::-1], cube1_reverse_both.data
         )
-        self.assertArrayEqual(
-            self.cube2.coord("a").points, cube1_reverse_both.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("a").bounds, cube1_reverse_both.coord("a").bounds
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("b").points, cube1_reverse_both.coord("b").points
-        )
+        self.check_coorda_reversed(cube1_reverse_both)
+        self.check_coordb_reversed(cube1_reverse_both)
 
     def test_cube_coord0(self):
         cube1_reverse0 = reverse(self.cube1, self.a1)
 
         self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
-        self.assertArrayEqual(
-            self.cube2.coord("a").points, cube1_reverse0.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("a").bounds, cube1_reverse0.coord("a").bounds
-        )
-        self.assertArrayEqual(
-            self.cube1.coord("b").points, cube1_reverse0.coord("b").points
-        )
+        self.check_coorda_reversed(cube1_reverse0)
+        self.check_coordb_unchanged(cube1_reverse0)
 
     def test_cube_coord1(self):
         cube1_reverse1 = reverse(self.cube1, "b")
 
         self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
-        self.assertArrayEqual(
-            self.cube1.coord("a").points, cube1_reverse1.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube1.coord("a").bounds, cube1_reverse1.coord("a").bounds
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("b").points, cube1_reverse1.coord("b").points
-        )
+        self.check_coordb_reversed(cube1_reverse1)
+        self.check_coorda_unchanged(cube1_reverse1)
 
     def test_cube_coord_both(self):
         cube1_reverse_both = reverse(self.cube1, (self.a1, self.b1))
@@ -177,15 +167,8 @@ class Test_cube(tests.IrisTest):
         self.assertArrayEqual(
             self.cube1.data[::-1, ::-1], cube1_reverse_both.data
         )
-        self.assertArrayEqual(
-            self.cube2.coord("a").points, cube1_reverse_both.coord("a").points
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("a").bounds, cube1_reverse_both.coord("a").bounds
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("b").points, cube1_reverse_both.coord("b").points
-        )
+        self.check_coorda_reversed(cube1_reverse_both)
+        self.check_coordb_reversed(cube1_reverse_both)
 
     def test_cube_coord_spanning(self):
         cube1_reverse_spanning = reverse(self.cube1, "spanning")
@@ -193,18 +176,9 @@ class Test_cube(tests.IrisTest):
         self.assertArrayEqual(
             self.cube1.data[::-1, ::-1], cube1_reverse_spanning.data
         )
-        self.assertArrayEqual(
-            self.cube2.coord("a").points,
-            cube1_reverse_spanning.coord("a").points,
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("a").bounds,
-            cube1_reverse_spanning.coord("a").bounds,
-        )
-        self.assertArrayEqual(
-            self.cube2.coord("b").points,
-            cube1_reverse_spanning.coord("b").points,
-        )
+        self.check_coorda_reversed(cube1_reverse_spanning)
+        self.check_coordb_reversed(cube1_reverse_spanning)
+
         self.assertArrayEqual(
             self.span.points[::-1, ::-1],
             cube1_reverse_spanning.coord("spanning").points,
