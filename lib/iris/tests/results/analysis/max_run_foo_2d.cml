@@ -11,11 +11,7 @@
         <dimCoord bounds="[[-15, 45]]" id="b0d35dcf" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
-    <cellMethods>
-      <cellMethod method="max_run">
-        <coord name="foo"/>
-      </cellMethod>
-    </cellMethods>
+    <cellMethods/>
     <data dtype="int64" shape="(3,)" state="loaded"/>
   </cube>
 </cubes>

@@ -1487,7 +1487,7 @@ def _lazy_max_run(array, axis=-1, **kwargs):
     )
 
     result = iris._lazy_data.map_complete_blocks(
-        array, _partial_max_run_calc, (axis,), ()
+        array, _partial_max_run_calc, (axis,), (0,)
     )
 
     # Check whether to reduce to a scalar result, as per the behaviour
