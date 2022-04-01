@@ -1043,9 +1043,10 @@ class Aggregator(_Aggregator):
             coord_names.append(coord.name())
 
         # Add a cell method.
-        method_name = self.cell_method.format(**kwargs)
-        cell_method = iris.coords.CellMethod(method_name, coord_names)
-        cube.add_cell_method(cell_method)
+        if self.cell_method is not None:
+            method_name = self.cell_method.format(**kwargs)
+            cell_method = iris.coords.CellMethod(method_name, coord_names)
+            cube.add_cell_method(cell_method)
 
 
 class WeightedAggregator(Aggregator):
@@ -1472,8 +1473,35 @@ def _proportion(array, function, axis, **kwargs):
     return result
 
 
-@_build_dask_mdtol_function
-def _lazy_max_run(array, axis=None, **kwargs):
+def _lazy_max_run(array, axis=-1, **kwargs):
+    """
+    Runs fairly clearly need the axis along which they're being calculated not
+    to be chunked. This wrapper uses
+    :meth:`~iris._lazy_data.map_complete_blocks` to guarantee that.
+    """
+
+    _partial_max_run_calc = functools.partial(
+        _lazy_max_run_calc,
+        axis=axis,
+        **kwargs,
+    )
+
+    result = iris._lazy_data.map_complete_blocks(
+        array, _partial_max_run_calc, (axis,), ()
+    )
+
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,):
+        result = da.squeeze(result)
+
+    return result
+
+
+def _lazy_max_run_calc(array, axis=-1, **kwargs):
+    """
+    Lazily perform the calculation of maximum run lengths along the given axis
+    """
     array = iris._lazy_data.as_lazy_data(array)
     func = kwargs.pop("function", None)
     if not callable(func):
@@ -1499,7 +1527,7 @@ def _lazy_max_run(array, axis=None, **kwargs):
         method="sequential",
         preop=None,
     )
-    run_lengths = da.diff(stepped_run_lengths)
+    run_lengths = da.diff(stepped_run_lengths, axis=axis)
     return da.max(run_lengths, axis=axis)
 
 
@@ -1694,10 +1722,10 @@ This aggregator handles masked data.
 
 
 MAX_RUN = Aggregator(
-    "max_run",
+    None,
     iris._lazy_data.non_lazy(_lazy_max_run),
     units_func=lambda units: 1,
-    lazy_func=_lazy_max_run,
+    lazy_func=_build_dask_mdtol_function(_lazy_max_run),
 )
 """
 An :class:`~iris.analysis.Aggregator` instance that finds the longest run of
@@ -1721,6 +1749,7 @@ each grid location could be calculated with::
 This aggregator handles masked data.
 
 """
+MAX_RUN.name = lambda: "max_run"
 
 
 GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)
