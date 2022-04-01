@@ -52,7 +52,7 @@ class UnmaskedTest(tests.IrisTest):
         self.expected_2d_axis0 = np.array([2, 2, 0, 1, 3, 3, 6])
 
         self.data_2d_axis1 = self.data_2d_axis0.T
-        self.expected_2d_axis1 = np.array([2, 2, 0, 1, 3, 3, 6])
+        self.expected_2d_axis1 = self.expected_2d_axis0
 
 
 class MaskedTest(tests.IrisTest):
@@ -128,7 +128,7 @@ class MaskedTest(tests.IrisTest):
         self.expected_2d_axis0 = np.array([3, 3, 1, 2, 0, 1])
 
         self.data_2d_axis1 = self.data_2d_axis0.T
-        self.expected_2d_axis1 = np.array([3, 3, 1, 2, 0, 1])
+        self.expected_2d_axis1 = self.expected_2d_axis0
 
 
 class RealMixin:
