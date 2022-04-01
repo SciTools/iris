@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Cubesphere-like netcdf saving benchmarks.
+File saving benchmarks.
 
 Where possible benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
@@ -18,12 +18,14 @@ from iris import save
 from iris.experimental.ugrid import save_mesh
 
 from . import TrackAddedMemoryAllocation
-from .generate_data import make_cube_like_2d_cubesphere
+from .generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
 class NetcdfSave:
     params = [[1, 600], [False, True]]
     param_names = ["cubesphere-N", "is_unstructured"]
+    # For use on 'track_addedmem_..' type benchmarks - result is too noisy.
+    no_small_params = [[600], [True]]
 
     def setup(self, n_cubesphere, is_unstructured):
         self.cube = make_cube_like_2d_cubesphere(
@@ -48,14 +50,8 @@ class NetcdfSave:
         if is_unstructured:
             self._save_mesh(self.cube)
 
+    @TrackAddedMemoryAllocation.decorator(no_small_params)
     def track_addedmem_netcdf_save(self, n_cubesphere, is_unstructured):
-        cube = self.cube.copy()  # Do this outside the testing block
-        with TrackAddedMemoryAllocation() as mb:
-            self._save_data(cube, do_copy=False)
-        return mb.addedmem_mb()
-
-
-# Declare a 'Mb' unit for all 'track_addedmem_..' type benchmarks
-for attr in dir(NetcdfSave):
-    if attr.startswith("track_addedmem_"):
-        getattr(NetcdfSave, attr).unit = "Mb"
+        # Don't need to copy the cube here since track_ benchmarks don't
+        #  do repeats between self.setup() calls.
+        self._save_data(self.cube, do_copy=False)

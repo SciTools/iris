@@ -33,7 +33,7 @@ jobs:
 
       - name: Cache environment directories
         id: cache-env-dir
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             .nox
@@ -43,7 +43,7 @@ jobs:
 
       - name: Cache test data directory
         id: cache-test-data
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${{ env.IRIS_TEST_DATA_PATH }}
@@ -81,7 +81,16 @@ jobs:
             do
               commit="${commit_file%.*}"
               pr_number=$(git log "$commit"^! --oneline | grep -o "#[0-9]*" | tail -1 | cut -c 2-)
-              assignee=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo $GITHUB_REPOSITORY)
+              author=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo $GITHUB_REPOSITORY)
+              merger=$(gh pr view $pr_number --json mergedBy -q '.["mergedBy"]["login"]' --repo $GITHUB_REPOSITORY)
+              # Find a valid assignee from author/merger/nothing.
+              if curl -s https://api.github.com/users/$author | grep -q '"type": "User"'; then
+                assignee=$author
+              elif curl -s https://api.github.com/users/$merger | grep -q '"type": "User"'; then
+                assignee=$merger
+              else
+                assignee=""
+              fi
               title="Performance Shift(s): \`$commit\`"
               body="
           Benchmark comparison has identified performance shifts at commit \

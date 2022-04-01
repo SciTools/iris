@@ -5,6 +5,7 @@ For further details, see https://nox.thea.codes/en/stable/#
 
 """
 
+from datetime import datetime
 import hashlib
 import os
 from pathlib import Path
@@ -294,12 +295,12 @@ def linkcheck(session: nox.sessions.Session):
 @nox.session
 @nox.parametrize(
     "run_type",
-    ["overnight", "branch", "custom"],
-    ids=["overnight", "branch", "custom"],
+    ["overnight", "branch", "cperf", "sperf", "custom"],
+    ids=["overnight", "branch", "cperf", "sperf", "custom"],
 )
 def benchmarks(
     session: nox.sessions.Session,
-    run_type: Literal["overnight", "branch", "custom"],
+    run_type: Literal["overnight", "branch", "cperf", "sperf", "custom"],
 ):
     """
     Perform Iris performance benchmarks (using Airspeed Velocity).
@@ -327,6 +328,11 @@ def benchmarks(
           merged.
           **For maximum accuracy, avoid using the machine that is running this
           session. Run time could be >1 hour for the full benchmark suite.**
+        * ``cperf``: Run the on-demand CPerf suite of benchmarks (part of the
+          UK Met Office NG-VAT project) for the ``HEAD`` of ``upstream/main``
+          only, and publish the results to the input **publish directory**,
+          within a unique subdirectory for this run.
+        * ``sperf``: As with CPerf, but for the SPerf suite.
         * ``custom``: run ASV with the input **ASV sub-command**, without any
           preset arguments - must all be supplied by the user. So just like
           running ASV manually, with the convenience of re-using the session's
@@ -338,6 +344,7 @@ def benchmarks(
     * ``nox --session="benchmarks(branch)" -- upstream/main``
     * ``nox --session="benchmarks(branch)" -- upstream/mesh-data-model``
     * ``nox --session="benchmarks(branch)" -- upstream/main --bench=regridding``
+    * ``nox --session="benchmarks(cperf)" -- my_publish_dir
     * ``nox --session="benchmarks(custom)" -- continuous a1b23d4 HEAD --quick``
 
     """
@@ -395,6 +402,8 @@ def benchmarks(
     run_type_arg = {
         "overnight": "first commit",
         "branch": "base branch",
+        "cperf": "publish directory",
+        "sperf": "publish directory",
         "custom": "ASV sub-command",
     }
     if run_type not in run_type_arg.keys():
@@ -436,8 +445,11 @@ def benchmarks(
                     with shifts_path.open("w") as shifts_file:
                         shifts_file.write(shifts)
 
-    # Common ASV arguments used for both `overnight` and `bench` run_types.
-    asv_harness = "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict --show-stderr"
+    # Common ASV arguments for all run_types except `custom`.
+    asv_harness = (
+        "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict "
+        "--show-stderr"
+    )
 
     if run_type == "overnight":
         first_commit = first_arg
@@ -468,6 +480,40 @@ def benchmarks(
             session.run(*asv_command.split(" "), *asv_args)
 
         asv_compare(merge_base, "HEAD")
+
+    elif run_type in ("cperf", "sperf"):
+        publish_dir = Path(first_arg)
+        if not publish_dir.is_dir():
+            message = (
+                f"Input 'publish directory' is not a directory: {publish_dir}"
+            )
+            raise NotADirectoryError(message)
+        publish_subdir = (
+            publish_dir
+            / f"{run_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        )
+        publish_subdir.mkdir()
+
+        # Activate on demand benchmarks (C/SPerf are deactivated for 'standard' runs).
+        session.env["ON_DEMAND_BENCHMARKS"] = "True"
+        commit_range = "upstream/main^!"
+
+        asv_command = (
+            asv_harness.format(posargs=commit_range) + f" --bench={run_type}"
+        )
+        session.run(*asv_command.split(" "), *asv_args)
+
+        asv_command = f"asv publish {commit_range} --html-dir={publish_subdir}"
+        session.run(*asv_command.split(" "))
+
+        # Print completion message.
+        location = Path().cwd() / ".asv"
+        print(
+            f'New ASV results for "{run_type}".\n'
+            f'See "{publish_subdir}",'
+            f'\n  html in "{location / "html"}".'
+            f'\n  or JSON files under "{location / "results"}".'
+        )
 
     else:
         asv_subcommand = first_arg
