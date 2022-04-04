@@ -3840,14 +3840,15 @@ class Cube(CFVariableMixin):
         )
         return result
 
-    def aggregated_by(self, coords, aggregator, **kwargs):
+    def aggregated_by(
+        self, coords, aggregator, result_coord_func=None, **kwargs
+    ):
         """
-        Perform aggregation over the cube given one or more "group
-        coordinates".
+        Perform aggregation over the cube given one or more "group coordinates".
 
         A "group coordinate" is a coordinate where repeating values represent a
-        single group, such as a month coordinate on a daily time slice.
-        Repeated values will form a group even if they are not consecutive.
+        single group, such as a month coordinate on a daily time slice. Repeated
+        values will form a group even if they are not consecutive.
 
         The group coordinates must all be over the same cube dimension. Each
         common value group identified over all the group-by coordinates is
@@ -3872,6 +3873,10 @@ class Cube(CFVariableMixin):
 
         Kwargs:
 
+        * result_coord_func (callable):
+            A callable used to determine the values of the resultant
+            coordinates. Takes an argument of TODO and returns a number (???).
+            Used to avoid BAD STUFF.
         * kwargs:
             Aggregator and aggregation function keyword arguments.
 
@@ -3905,11 +3910,11 @@ x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
                 Cell methods:
-                    mean                        month, year
-                    mean                        year
+                    mean                        month, year mean
+                    year
                 Attributes:
-                    Conventions                 'CF-1.5'
-                    STASH                       m01s00i024
+                    Conventions                 'CF-1.5' STASH
+                    m01s00i024
 
         """
         groupby_coords = []
@@ -3981,7 +3986,9 @@ x            -              -
 
         # Create the aggregation group-by instance.
         groupby = iris.analysis._Groupby(
-            groupby_coords, shared_coords_and_dims
+            groupby_coords,
+            shared_coords_and_dims,
+            result_coord_func=result_coord_func,
         )
 
         # Create the resulting aggregate-by cube and remove the original

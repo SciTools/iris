@@ -2209,7 +2209,9 @@ class _Groupby:
 
     """
 
-    def __init__(self, groupby_coords, shared_coords=None):
+    def __init__(
+        self, groupby_coords, shared_coords=None, result_coord_func=np.mean
+    ):
         """
         Determine the group slices over the group-by coordinates.
 
@@ -2224,6 +2226,10 @@ class _Groupby:
             One or more coordinates (including multidimensional coordinates)
             that share the same group-by coordinate axis.  The `int` identifies
             which dimension of the coord is on the group-by coordinate axis.
+
+        * result_coord_func (callable):
+            A callable used to determine the values of the resultant
+            coordinates. Takes an argument of TODO and returns a number (???).
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -2252,6 +2258,8 @@ class _Groupby:
             # Add valid shared coordinates.
             for coord, dim in shared_coords:
                 self._add_shared_coord(coord, dim)
+
+        self.result_coord_func = result_coord_func
 
     def _add_groupby_coord(self, coord):
         if coord.ndim != 1:
@@ -2501,7 +2509,7 @@ class _Groupby:
 
                 # Now create the new bounded group shared coordinate.
                 try:
-                    new_points = new_bounds.mean(-1)
+                    new_points = self.result_coord_func(new_bounds, -1)
                 except TypeError:
                     msg = (
                         "The {0!r} coordinate on the collapsing dimension"
