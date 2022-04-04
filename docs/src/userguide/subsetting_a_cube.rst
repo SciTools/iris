@@ -10,9 +10,10 @@ However it is often necessary to reduce the dimensionality of a cube down to som
 Iris provides several ways of reducing both the amount of data and/or the number of dimensions in your cube depending on the circumstance.
 In all cases **the subset of a valid cube is itself a valid cube**.
 
+.. _cube_extraction:
 
 Cube Extraction
-^^^^^^^^^^^^^^^^
+---------------
 A subset of a cube can be "extracted" from a multi-dimensional cube in order to reduce its dimensionality:
 
     >>> import iris
@@ -34,15 +35,14 @@ A subset of a cube can be "extracted" from a multi-dimensional cube in order to 
 
 
 In this example we start with a 3 dimensional cube, with dimensions of ``height``, ``grid_latitude`` and ``grid_longitude``,
-and extract every point where the latitude is 0, resulting in a 2d cube with axes of ``height`` and ``grid_longitude``.
-
+and use :class:`iris.Constraint` to extract every point where the latitude is 0, resulting in a 2d cube with axes of ``height`` and ``grid_longitude``.
 
 .. _floating-point-warning:
 .. warning::
 
     Caution is required when using equality constraints with floating point coordinates such as ``grid_latitude``.
     Printing the points of a coordinate does not necessarily show the full precision of the underlying number and it
-    is very easy return no matches to a constraint when one was expected.
+    is very easy to return no matches to a constraint when one was expected.
     This can be avoided by using a function as the argument to the constraint::
 
        def near_zero(cell):
@@ -67,6 +67,33 @@ The two steps required to get ``height`` of 9000 m at the equator can be simplif
 
 	equator_height_9km_slice = cube.extract(iris.Constraint(grid_latitude=0, height=9000))
 	print(equator_height_9km_slice)
+
+Alternatively, constraints can be combined using ``&``::
+
+    cube = iris.load_cube(filename, 'electron density')
+    equator_constraint = iris.Constraint(grid_latitude=0)
+    height_constraint = iris.Constraint(height=9000)
+    equator_height_9km_slice = cube.extract(equator_constraint & height_constraint)
+
+.. note::
+
+    Whilst ``&`` is supported, the ``|`` that might reasonably be expected is
+    not. Explanation as to why is in the :class:`iris.Constraint` reference
+    documentation.
+
+    For an example of constraining to multiple ranges of the same coordinate to
+    generate one cube, see the :class:`iris.Constraint` reference documentation.
+
+A common requirement is to limit the value of a coordinate to a specific range,
+this can be achieved by passing the constraint a function::
+
+    def below_9km(cell):
+        # return True or False as to whether the cell in question should be kept
+        return cell <= 9000
+
+    cube = iris.load_cube(filename, 'electron density')
+    height_below_9km = iris.Constraint(height=below_9km)
+    below_9km_slice = cube.extract(height_below_9km)
 
 As we saw in :doc:`loading_iris_cubes` the result of :func:`iris.load` is a :class:`CubeList <iris.cube.CubeList>`.
 The ``extract`` method also exists on a :class:`CubeList <iris.cube.CubeList>` and behaves in exactly the
@@ -100,9 +127,203 @@ same way as loading with constraints:
             source                      'Data from Met Office Unified Model'
             um_version                  '7.3'
 
+Cube attributes can also be part of the constraint criteria. Supposing a
+cube attribute of ``STASH`` existed, as is the case when loading ``PP`` files,
+then specific STASH codes can be filtered::
+
+    filename = iris.sample_data_path('uk_hires.pp')
+    level_10_with_stash = iris.AttributeConstraint(STASH='m01s00i004') & iris.Constraint(model_level_number=10)
+    cubes = iris.load(filename).extract(level_10_with_stash)
+
+.. seealso::
+
+    For advanced usage there are further examples in the
+    :class:`iris.Constraint` reference documentation.
+
+Constraining a Circular Coordinate Across its Boundary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Occasionally you may need to constrain your cube with a region that crosses the
+boundary of a circular coordinate (this is often the meridian or the dateline /
+antimeridian). An example use-case of this is to extract the entire Pacific Ocean
+from a cube whose longitudes are bounded by the dateline.
+
+This functionality cannot be provided reliably using constraints. Instead you should use the
+functionality provided by :meth:`cube.intersection <iris.cube.Cube.intersection>`
+to extract this region.
+
+
+.. _using-time-constraints:
+
+Constraining on Time
+^^^^^^^^^^^^^^^^^^^^
+Iris follows NetCDF-CF rules in representing time coordinate values as normalised,
+purely numeric, values which are normalised by the calendar specified in the coordinate's
+units (e.g. "days since 1970-01-01").
+However, when constraining by time we usually want to test calendar-related
+aspects such as hours of the day or months of the year, so Iris
+provides special features to facilitate this.
+
+Firstly, when Iris evaluates :class:`iris.Constraint` expressions, it will convert
+time-coordinate values (points and bounds) from numbers into :class:`~datetime.datetime`-like
+objects for ease of calendar-based testing.
+
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
+    >>> print('All times :\n' + str(cube_all.coord('time')))
+    All times :
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+        points: [2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00]
+        shape: (3,)
+        dtype: float64
+        standard_name: 'time'
+    >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
+    >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
+    >>> cube_11 = cube_all.extract(hour_11)
+    >>> print('Selected times :\n' + str(cube_11.coord('time')))
+    Selected times :
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+        points: [2009-11-19 11:00:00]
+        shape: (1,)
+        dtype: float64
+        standard_name: 'time'
+
+Secondly, the :class:`iris.time` module provides flexible time comparison
+facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
+objects such as :class:`datetime.datetime` instances, and this comparison will
+then test only those 'aspects' which the PartialDateTime instance defines:
+
+    >>> import datetime
+    >>> from iris.time import PartialDateTime
+    >>> dt = datetime.datetime(2011, 3, 7)
+    >>> print(dt > PartialDateTime(year=2010, month=6))
+    True
+    >>> print(dt > PartialDateTime(month=6))
+    False
+
+These two facilities can be combined to provide straightforward calendar-based
+time selections when loading or extracting data.
+
+The previous constraint example can now be written as:
+
+    >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
+    >>> print(iris.load_cube(
+    ...     iris.sample_data_path('uk_hires.pp'),
+    ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+        points: [2009-11-19 11:00:00]
+        shape: (1,)
+        dtype: float64
+        standard_name: 'time'
+
+It is common that a cube will need to be constrained between two given dates.
+In the following example we construct a time sequence representing the first
+day of every week for many years:
+
+.. testsetup:: timeseries_range
+
+    import datetime
+    import numpy as np
+    from iris.time import PartialDateTime
+    long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
+    _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
+    long_ts.add_dim_coord(_mondays, 0)
+
+
+.. doctest:: timeseries_range
+    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
+
+    >>> print(long_ts.coord('time'))
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-04-09 00:00:00, 2007-04-16 00:00:00, ...,
+            2010-02-08 00:00:00, 2010-02-15 00:00:00]
+        shape: (150,)
+        dtype: int64
+        standard_name: 'time'
+
+Given two dates in datetime format, we can select all points between them.
+Instead of constraining at loaded time, we already have the time coord so
+we constrain that coord using :class:`iris.cube.Cube.extract`
+
+.. doctest:: timeseries_range
+    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
+
+    >>> d1 = datetime.datetime.strptime('20070715T0000Z', '%Y%m%dT%H%MZ')
+    >>> d2 = datetime.datetime.strptime('20070825T0000Z', '%Y%m%dT%H%MZ')
+    >>> st_swithuns_daterange_07 = iris.Constraint(
+    ...     time=lambda cell: d1 <= cell.point < d2)
+    >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
+    >>> print(within_st_swithuns_07.coord('time'))
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
+        shape: (6,)
+        dtype: int64
+        standard_name: 'time'
+
+Alternatively, we may rewrite this using :class:`iris.time.PartialDateTime`
+objects.
+
+.. doctest:: timeseries_range
+    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
+
+    >>> pdt1 = PartialDateTime(year=2007, month=7, day=15)
+    >>> pdt2 = PartialDateTime(year=2007, month=8, day=25)
+    >>> st_swithuns_daterange_07 = iris.Constraint(
+    ...     time=lambda cell: pdt1 <= cell.point < pdt2)
+    >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
+    >>> print(within_st_swithuns_07.coord('time'))
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
+        shape: (6,)
+        dtype: int64
+        standard_name: 'time'
+
+A more complex example might require selecting points over an annually repeating
+date range. We can select points within a certain part of the year, in this case
+between the 15th of July through to the 25th of August. By making use of
+PartialDateTime this becomes simple:
+
+.. doctest:: timeseries_range
+
+    >>> st_swithuns_daterange = iris.Constraint(
+    ...     time=lambda cell: PartialDateTime(month=7, day=15) <= cell.point < PartialDateTime(month=8, day=25))
+    >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
+    ...
+    >>> # Note: using summary(max_values) to show more of the points
+    >>> print(within_st_swithuns.coord('time').summary(max_values=100))
+    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+        points: [
+            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
+            2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
+            2008-08-11 00:00:00, 2008-08-18 00:00:00, 2009-07-20 00:00:00,
+            2009-07-27 00:00:00, 2009-08-03 00:00:00, 2009-08-10 00:00:00,
+            2009-08-17 00:00:00, 2009-08-24 00:00:00]
+        shape: (17,)
+        dtype: int64
+        standard_name: 'time'
+
+Notice how the dates printed are between the range specified in the ``st_swithuns_daterange``
+and that they span multiple years.
+
+The above examples involve constraining on the points of the time coordinate. Constraining
+on bounds can be done in the following way::
+
+    filename = iris.sample_data_path('ostia_monthly.nc')
+    cube = iris.load_cube(filename, 'surface_temperature')
+    dtmin = datetime.datetime(2008, 1, 1)
+    cube.extract(iris.Constraint(time = lambda cell: any(bound > dtmin for bound in cell.bound)))
+
+The above example constrains to cells where either the upper or lower bound occur
+after 1st January 2008.
 
 Cube Iteration
-^^^^^^^^^^^^^^^
+--------------
 It is not possible to directly iterate over an Iris cube. That is, you cannot use code such as
 ``for x in cube:``. However, you can iterate over cube slices, as this section details.
 
@@ -151,9 +372,10 @@ slicing the 3 dimensional cube (15, 100, 100) by longitude (i starts at 0 and 15
     Once the your code can handle a 2d slice, it is then an easy step to loop over **all** 2d slices within the bigger
     cube using the slices method.
 
+.. _cube_indexing:
 
 Cube Indexing
-^^^^^^^^^^^^^
+-------------
 In the same way that you would expect a numeric multidimensional array to be **indexed** to take a subset of your
 original array, you can **index** a Cube for the same purpose.
 
