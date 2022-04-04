@@ -199,6 +199,12 @@ class _CoordPayload(
 
     @staticmethod
     def _coords_msgs(msgs, coord_group, defns_a, defns_b):
+        defns_a = [
+            iris.coords.DimCoordWrapper.unwrap(defn_a) for defn_a in defns_a
+        ]
+        defns_b = [
+            iris.coords.DimCoordWrapper.unwrap(defn_b) for defn_b in defns_b
+        ]
         if defns_a != defns_b:
             # Get a new list so we can modify it
             defns_b = list(defns_b)

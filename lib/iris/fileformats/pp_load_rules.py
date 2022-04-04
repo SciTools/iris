@@ -14,7 +14,7 @@ import cf_units
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.coords import AuxCoord, CellMethod, DimCoord, DimCoordWrapper
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
     ConversionMetadata,
@@ -1120,7 +1120,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                DimCoordWrapper.from_regular(
                     f.bzx,
                     f.bdx,
                     f.lbnpt,
@@ -1141,7 +1141,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                DimCoordWrapper.from_regular(
                     f.bzx,
                     f.bdx,
                     f.lbnpt,
@@ -1163,7 +1163,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                DimCoordWrapper.from_regular(
                     f.bzy,
                     f.bdy,
                     f.lbrow,
@@ -1183,7 +1183,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                DimCoordWrapper.from_regular(
                     f.bzy,
                     f.bdy,
                     f.lbrow,
@@ -1270,7 +1270,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                DimCoordWrapper.from_regular(
                     f.bzx,
                     f.bdx,
                     f.lbnpt,
@@ -1290,7 +1290,10 @@ def _all_other_rules(f):
         dim_coords_and_dims.append(
             (
                 DimCoord(
-                    f.y, long_name="pressure", units="hPa", bounds=f.y_bounds
+                    f.y,
+                    long_name="pressure",
+                    units="hPa",
+                    bounds=f.y_bounds,
                 ),
                 0,
             )
@@ -1304,7 +1307,10 @@ def _all_other_rules(f):
         dim_coords_and_dims.append(
             (
                 DimCoord(
-                    f.x, long_name="pressure", units="hPa", bounds=f.x_bounds
+                    f.x,
+                    long_name="pressure",
+                    units="hPa",
+                    bounds=f.x_bounds,
                 ),
                 1,
             )
@@ -1380,7 +1386,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                DimCoordWrapper.from_regular(
                     f.bzx, f.bdx, f.lbnpt, long_name="site_number", units="1"
                 ),
                 1,

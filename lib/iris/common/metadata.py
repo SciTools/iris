@@ -1478,6 +1478,16 @@ def metadata_filter(
             instance for instance in result if get_axis(instance) == axis
         ]
 
+    try:
+        obj = obj.unwrap(obj)
+    except AttributeError:
+        pass
+    for ii in range(len(result)):
+        try:
+            result[ii] = result[ii].unwrap(obj)
+        except AttributeError:
+            pass
+
     if obj is not None:
         if hasattr(obj, "__class__") and issubclass(
             obj.__class__, BaseMetadata

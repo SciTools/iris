@@ -1779,7 +1779,9 @@ class Cube(CFVariableMixin):
         def extract_coord(coord_or_factory):
             if isinstance(coord_or_factory, iris.aux_factory.AuxCoordFactory):
                 coord = coord_or_factory.make_coord(self.coord_dims)
-            elif isinstance(coord_or_factory, iris.coords.Coord):
+            elif isinstance(coord_or_factory, iris.coords.Coord) or isinstance(
+                coord_or_factory, iris.coords.DimCoordWrapper
+            ):
                 coord = coord_or_factory
             else:
                 msg = "Expected Coord or AuxCoordFactory, got " "{!r}.".format(

@@ -2919,6 +2919,125 @@ class DimCoord(Coord):
         return element
 
 
+# from inspect import signature
+
+# from_regular_signature = signature(DimCoord.from_regular)
+# dim_coord_signature = signature(DimCoord.__init__)
+
+
+cache = {}
+
+
+def stringify(history):
+    """
+    Make history hashable
+    """
+    return str([str(item) for item in history])
+
+
+def hit_cache(history):
+    """
+    Govern the actual process of extracting from the cache
+    """
+    return cache[stringify(history)]
+
+
+def add_to_cache(history, coord):
+    """
+    Govern the actual process of adding to the cache
+    """
+    cache[stringify(history)] = coord
+
+
+def apply_change(coord, change):
+    """
+    Apply a function, args and kwargs (from change) to the given coord
+    """
+    func_name, args, kwargs = change
+    getattr(coord, func_name)(*args, **kwargs)
+
+
+def cache_best_hit(history):
+    """
+    Return the cache hit that uses as much of the given history as possible, and
+    any remaining history that needs applying
+    """
+    to_apply = []
+    while history:
+        to_apply = [history.pop()] + to_apply
+        try:
+            return hit_cache(history), to_apply
+        except KeyError:
+            pass
+    return None, to_apply
+
+
+def cache_update(history):
+    """
+    Make an addition to the cache that matches the given history if it doesn't
+    already exist, using existing coords as far as possible. If there's no hit,
+    build one using :meth:`~iris.coords.DimCoord.from_regular`
+    """
+    best_hit, to_apply = cache_best_hit(history[:])
+    if best_hit is None:
+        _, args, kwargs = to_apply.pop(0)
+        new_coord = DimCoord.from_regular(*args, **kwargs)
+    else:
+        new_coord = best_hit.copy()
+    for change in to_apply:
+        apply_change(new_coord, change)
+    add_to_cache(history, new_coord)
+
+
+def cache_check(history):
+    try:
+        return hit_cache(history)
+    except KeyError:
+        cache_update(history)
+    return hit_cache(history)
+
+
+class DimCoordWrapper:
+    @classmethod
+    def from_regular(cls, *args, **kwargs):
+        coord = cache_check([("from_regular", args, kwargs)])
+        to_return = DimCoordWrapper(coord, [("from_regular", args, kwargs)])
+        return to_return
+
+    @classmethod
+    def unwrap(cls, possible_wrapper):
+        if isinstance(possible_wrapper, DimCoordWrapper):
+            return possible_wrapper._coord
+        else:
+            return possible_wrapper
+
+    # More complicated because we need to instantiate the DimCoord in cache too
+    # def from_init(cls, *args, **kwargs):
+    #     coord = cache_check([("__init__", args, kwargs)])
+    #     return DimCoordWrapper(coord)
+
+    def __init__(self, coord, history):
+        self._coord = coord
+        self._history = history
+
+    def __getattr__(self, name):
+        if name == "shape":
+            return self._coord.shape
+        return getattr(self._coord, name)
+
+    def __setattr__(self, name, value) -> None:
+        if name in ["_coord", "_history"]:
+            return super().__setattr__(name, value)
+        else:
+            self._history.append("__setattr__", (name, value))
+            coord = cache_check(self._history)
+            self._coord = coord
+            return coord
+
+    def __eq__(self, other):
+        return DimCoordWrapper.unwrap(self) == DimCoordWrapper.unwrap(other)
+
+
 class AuxCoord(Coord):
     """
     A CF auxiliary coordinate.
