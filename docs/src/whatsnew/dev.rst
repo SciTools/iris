@@ -106,7 +106,7 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ added a note about fixing proxy URLs in lockfiles generated
    because dependencies have changed. (:pull:`4666`)
 #. `@lbdreyer`_ moved most of the User Guide's :class:`iris.Constraint` examples
-   from :doc:`loading_iris_cubes` to :ref:`cube_extraction` and added an
+   from :ref:`loading_iris_cubes` to :ref:`cube_extraction` and added an
    example of constraining on bounded time. (:pull:`4656`)
 
 
