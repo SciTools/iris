@@ -1,3 +1,5 @@
+.. _gallery_index:
+
 Gallery
 =======
 

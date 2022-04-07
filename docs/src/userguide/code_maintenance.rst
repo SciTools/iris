@@ -12,17 +12,17 @@ In practice, as Iris develops, most users will want to periodically upgrade
 their installed version to access new features or at least bug fixes.
 
 This is obvious if you are still developing other code that uses Iris, or using
-code from other sources.  
+code from other sources.
 However, even if you have only legacy code that remains untouched, some code
 maintenance effort is probably still necessary:
 
-   * On the one hand, *in principle*, working code will go on working, as long
-     as you don't change anything else.
+* On the one hand, *in principle*, working code will go on working, as long
+  as you don't change anything else.
 
-   * However, such "version stasis" can easily become a growing burden, if you
-     are simply waiting until an update becomes unavoidable, often that will
-     eventually occur when you need to update some other software component,
-     for some completely unconnected reason.
+* However, such "version stasis" can easily become a growing burden, if you
+  are simply waiting until an update becomes unavoidable, often that will
+  eventually occur when you need to update some other software component,
+  for some completely unconnected reason.
 
 
 Principles of Change Management
@@ -35,13 +35,13 @@ In Iris, however, we aim to reduce code maintenance problems to an absolute
 minimum by following defined change management rules.
 These ensure that, *within a major release number* :
 
-    * you can be confident that your code will still work with subsequent minor
-      releases
+* you can be confident that your code will still work with subsequent minor
+  releases
 
-    * you will be aware of future incompatibility problems in advance
+* you will be aware of future incompatibility problems in advance
 
-    * you can defer making code compatibility changes for some time, until it
-      suits you
+* you can defer making code compatibility changes for some time, until it
+  suits you
 
 The above applies to minor version upgrades : e.g. code that works with version
 "1.4.2" should still work with a subsequent minor release such as "1.5.0" or

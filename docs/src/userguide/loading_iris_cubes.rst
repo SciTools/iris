@@ -39,15 +39,15 @@ This shows that there were 2 cubes as a result of loading the file, they were:
 
 The ``surface_altitude`` cube was 2 dimensional with:
 
-   * the two dimensions have extents of 204 and 187 respectively and are
-     represented by the ``grid_latitude`` and ``grid_longitude`` coordinates.
+* the two dimensions have extents of 204 and 187 respectively and are
+  represented by the ``grid_latitude`` and ``grid_longitude`` coordinates.
 
 The ``air_potential_temperature`` cubes were 4 dimensional with:
 
-   * the same length ``grid_latitude`` and ``grid_longitude`` dimensions as
-     ``surface_altitide``
-   * a ``time`` dimension of length 3
-   * a ``model_level_number`` dimension of length 7
+* the same length ``grid_latitude`` and ``grid_longitude`` dimensions as
+  ``surface_altitide``
+* a ``time`` dimension of length 3
+* a ``model_level_number`` dimension of length 7
 
 .. note::
 
@@ -55,7 +55,7 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
      (even if it only contains one :class:`iris.cube.Cube` - see
      :ref:`strict-loading`). Anything that can be done with a Python
      :class:`list` can be done with an :class:`iris.cube.CubeList`.
-     
+
      The order of this list should not be relied upon. Ways of loading a
      specific cube or cubes are covered in :ref:`constrained-loading` and
      :ref:`strict-loading`.

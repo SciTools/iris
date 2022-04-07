@@ -10,8 +10,8 @@ the code and may be read directly in the source or via the :ref:`Iris`.
 
 This document has been influenced by the following PEP's,
 
-   * Attribute Docstrings :pep:`224`
-   * Docstring Conventions :pep:`257`
+* Attribute Docstrings :pep:`224`
+* Docstring Conventions :pep:`257`
 
 For consistency always use:
 

@@ -44,24 +44,24 @@ reference images in the Iris repository itself.
 
 This consists of:
 
- * The ``iris.tests.IrisTest_nometa.check_graphic`` function uses a perceptual
-   **image hash** of the outputs (see https://github.com/JohannesBuchner/imagehash)
-   as the basis for checking test results.
+* The ``iris.tests.IrisTest_nometa.check_graphic`` function uses a perceptual
+  **image hash** of the outputs (see https://github.com/JohannesBuchner/imagehash)
+  as the basis for checking test results.
 
- * The hashes of known **acceptable** results for each test are stored in a
-   lookup dictionary, saved to the repo file
-   ``lib/iris/tests/results/imagerepo.json``
-   (`link <https://github.com/SciTools/iris/blob/main/lib/iris/tests/results/imagerepo.json>`_) .
+* The hashes of known **acceptable** results for each test are stored in a
+  lookup dictionary, saved to the repo file
+  ``lib/iris/tests/results/imagerepo.json``
+  (`link <https://github.com/SciTools/iris/blob/main/lib/iris/tests/results/imagerepo.json>`_) .
 
- * An actual reference image for each hash value is stored in a *separate*
-   public repository https://github.com/SciTools/test-iris-imagehash.
+* An actual reference image for each hash value is stored in a *separate*
+  public repository https://github.com/SciTools/test-iris-imagehash.
 
- * The reference images allow human-eye assessment of whether a new output is
-   judged to be close enough to the older ones, or not.
+* The reference images allow human-eye assessment of whether a new output is
+  judged to be close enough to the older ones, or not.
 
- * The utility script ``iris/tests/idiff.py`` automates checking, enabling the
-   developer to easily compare proposed new **acceptable** result images
-   against the existing accepted reference images, for each failing test.
+* The utility script ``iris/tests/idiff.py`` automates checking, enabling the
+  developer to easily compare proposed new **acceptable** result images
+  against the existing accepted reference images, for each failing test.
 
 The acceptable images for each test can be viewed online. The :ref:`testing.imagehash_index` lists all the graphical tests in the test suite and
 shows the known acceptable result images for comparison.
@@ -92,29 +92,29 @@ you should follow:
 
    If the change is **accepted**:
 
-     * the imagehash value of the new result image is added into the relevant
-       set of 'valid result hashes' in the image result database file,
-       ``tests/results/imagerepo.json``
+   * the imagehash value of the new result image is added into the relevant
+     set of 'valid result hashes' in the image result database file,
+     ``tests/results/imagerepo.json``
 
-     * the relevant output file in ``tests/result_image_comparison`` is
-       renamed according to the image hash value, as ``<hash>.png``.
-       A copy of this new PNG file must then be added into the reference image
-       repository at https://github.com/SciTools/test-iris-imagehash
-       (See below).
+   * the relevant output file in ``tests/result_image_comparison`` is
+     renamed according to the image hash value, as ``<hash>.png``.
+     A copy of this new PNG file must then be added into the reference image
+     repository at https://github.com/SciTools/test-iris-imagehash
+     (See below).
 
    If a change is **skipped**:
 
-     * no further changes are made in the repo.
+   * no further changes are made in the repo.
 
-     * when you run ``iris/tests/idiff.py`` again, the skipped choice will be
-       presented again.
+   * when you run ``iris/tests/idiff.py`` again, the skipped choice will be
+     presented again.
 
    If a change is **rejected**:
 
-     * the output image is deleted from ``result_image_comparison``.
+   * the output image is deleted from ``result_image_comparison``.
 
-     * when you run ``iris/tests/idiff.py`` again, the skipped choice will not
-       appear, unless the relevant failing test is re-run.
+   * when you run ``iris/tests/idiff.py`` again, the skipped choice will not
+     appear, unless the relevant failing test is re-run.
 
 #. **Now re-run the tests**. The **new** result should now be recognised and the
    relevant test should pass.  However, some tests can perform *multiple*
@@ -132,16 +132,16 @@ To add your changes to Iris, you need to make two pull requests (PR).
 #. The first PR is made in the ``test-iris-imagehash`` repository, at
    https://github.com/SciTools/test-iris-imagehash.
 
-    * First, add all the newly-generated referenced PNG files into the
-      ``images/v4`` directory.  In your Iris repo, these files are to be found
-      in the temporary results folder ``iris/tests/result_image_comparison``.
+   * First, add all the newly-generated referenced PNG files into the
+     ``images/v4`` directory.  In your Iris repo, these files are to be found
+     in the temporary results folder ``iris/tests/result_image_comparison``.
 
-    * Then, to update the file which lists available images,
-      ``v4_files_listing.txt``, run from the project root directory::
+   * Then, to update the file which lists available images,
+     ``v4_files_listing.txt``, run from the project root directory::
 
-         python recreate_v4_files_listing.py
+        python recreate_v4_files_listing.py
 
-    * Create a PR proposing these changes, in the usual way.
+   * Create a PR proposing these changes, in the usual way.
 
 #. The second PR is created in the Iris_ repository, and
    should only include the change to the image results database,

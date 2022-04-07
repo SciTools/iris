@@ -4,21 +4,16 @@
 Contributing a "What's New" Entry
 =================================
 
-Iris uses a file named ``dev.rst`` to keep a draft of upcoming development changes
-that will form the next stable release.  Contributions to the :ref:`iris_whatsnew`
-document are written by the developer most familiar with the change made.
-The contribution should be included as part of the Iris Pull Request that
-introduces the change.
+Iris uses a file named ``latest.rst`` to keep a draft of upcoming development
+changes that will form the next stable release.  Contributions to the
+:ref:`iris_whatsnew` document are written by the developer most familiar
+with the change made.  The contribution should be included as part of
+the Iris Pull Request that introduces the change.
 
-The ``dev.rst`` and the past release notes are kept in the
+The ``latest.rst`` and the past release notes are kept in the
 ``docs/src/whatsnew/`` directory. If you are writing the first contribution after
-an Iris release: **create the new** ``dev.rst`` by copying the content from
-``dev.rst.template`` in the same directory.
-
-.. note::
-
-  Ensure that the symbolic link ``latest.rst`` references the ``dev.rst`` file
-  within the ``docs/src/whatsnew`` directory.
+an Iris release: **create the new** ``latest.rst`` by copying the content from
+``latest.rst.template`` in the same directory.
 
 Since the `Contribution categories`_ include Internal changes, **all** Iris
 Pull Requests should be accompanied by a "What's New" contribution.
@@ -27,7 +22,7 @@ Pull Requests should be accompanied by a "What's New" contribution.
 Git Conflicts
 =============
 
-If changes to ``dev.rst`` are being suggested in several simultaneous
+If changes to ``latest.rst`` are being suggested in several simultaneous
 Iris Pull Requests, Git will likely encounter merge conflicts. If this
 situation is thought likely (large PR, high repo activity etc.):
 
@@ -38,7 +33,7 @@ situation is thought likely (large PR, high repo activity etc.):
   a **new pull request** be created specifically for the "What's New" entry,
   which references the main pull request and titled (e.g. for PR#9999):
 
-    What's New for #9999
+   What's New for #9999
 
 * PR author: create the "What's New" pull request
 
@@ -48,7 +43,7 @@ situation is thought likely (large PR, high repo activity etc.):
 
 * PR reviewer: review the "What's New" PR, merge once acceptable
 
-These measures should mean the suggested ``dev.rst`` changes are outstanding
+These measures should mean the suggested ``latest.rst`` changes are outstanding
 for the minimum time, minimising conflicts and minimising the need to rebase or
 merge from trunk.
 

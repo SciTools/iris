@@ -53,6 +53,7 @@ for infile in args.files:
         'lock',
         '--filename-template', ofile_template,
         '--file', infile,
+        '-k', 'explicit',
         '--platform', 'linux-64'
     ])
     print(f"lockfile saved to {ofile_template}".format(platform='linux-64'),
