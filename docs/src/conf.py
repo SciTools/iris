@@ -315,7 +315,7 @@ html_context = {
     # pydata_theme
     "github_repo": "iris",
     "github_user": "scitools",
-    "github_version": "master",
+    "github_version": "main",
     "doc_path": "docs/src",
     # custom
     "on_rtd": on_rtd,
