@@ -131,6 +131,7 @@ CF_ATTR_AXIS = "axis"
 CF_ATTR_BOUNDS = "bounds"
 CF_ATTR_CALENDAR = "calendar"
 CF_ATTR_CLIMATOLOGY = "climatology"
+CF_ATTR_GRID_DATUM = "horizontal_datum_name"
 CF_ATTR_GRID_INVERSE_FLATTENING = "inverse_flattening"
 CF_ATTR_GRID_EARTH_RADIUS = "earth_radius"
 CF_ATTR_GRID_MAPPING_NAME = "grid_mapping_name"
@@ -285,11 +286,14 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     rcs = iris.coord_systems.RotatedGeogCS(
         north_pole_latitude,
         north_pole_longitude,
         north_pole_grid_lon,
         ellipsoid,
+        datum=datum,
     )
 
     return rcs
@@ -335,6 +339,8 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.TransverseMercator(
         latitude_of_projection_origin,
         longitude_of_central_meridian,
@@ -342,6 +348,7 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
         false_northing,
         scale_factor_at_central_meridian,
         ellipsoid,
+        datum=datum,
     )
 
     return cs
@@ -376,6 +383,8 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.LambertConformal(
         latitude_of_projection_origin,
         longitude_of_central_meridian,
@@ -383,6 +392,7 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
         false_northing,
         standard_parallel,
         ellipsoid,
+        datum=datum,
     )
 
     return cs
@@ -416,6 +426,8 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.Stereographic(
         latitude_of_projection_origin,
         longitude_of_projection_origin,
@@ -423,6 +435,7 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
         false_northing,
         true_scale_lat=None,
         ellipsoid=ellipsoid,
+        datum=datum,
     )
 
     return cs
@@ -457,6 +470,8 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.Mercator(
         longitude_of_projection_origin,
         ellipsoid=ellipsoid,
@@ -464,6 +479,7 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
         scale_factor_at_projection_origin=scale_factor_at_projection_origin,
         false_easting=false_easting,
         false_northing=false_northing,
+        datum=datum,
     )
 
     return cs
@@ -495,12 +511,15 @@ def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.LambertAzimuthalEqualArea(
         latitude_of_projection_origin,
         longitude_of_projection_origin,
         false_easting,
         false_northing,
         ellipsoid,
+        datum=datum,
     )
 
     return cs
@@ -535,6 +554,8 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.AlbersEqualArea(
         latitude_of_projection_origin,
         longitude_of_central_meridian,
@@ -542,6 +563,7 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
         false_northing,
         standard_parallels,
         ellipsoid,
+        datum=datum,
     )
 
     return cs
@@ -576,6 +598,8 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.VerticalPerspective(
         latitude_of_projection_origin,
         longitude_of_projection_origin,
@@ -583,6 +607,7 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
         false_easting,
         false_northing,
         ellipsoid,
+        datum=datum,
     )
 
     return cs
@@ -620,6 +645,8 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+
     cs = iris.coord_systems.Geostationary(
         latitude_of_projection_origin,
         longitude_of_projection_origin,
@@ -628,6 +655,7 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
         false_easting,
         false_northing,
         ellipsoid,
+        datum=datum,
     )
 
     return cs
