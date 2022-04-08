@@ -14,6 +14,8 @@ import warnings
 import cartopy.crs as ccrs
 import numpy as np
 
+import iris.Future
+
 
 def _arg_default(value, default, cast_as=float):
     """Apply a default value and type for an optional kwarg."""
@@ -137,6 +139,7 @@ class GeogCS(CoordSystem):
         semi_minor_axis=None,
         inverse_flattening=None,
         longitude_of_prime_meridian=None,
+        datum=None,
     ):
         """
         Creates a new GeogCS.
@@ -144,24 +147,27 @@ class GeogCS(CoordSystem):
         Kwargs:
 
         * semi_major_axis, semi_minor_axis:
-            Axes of ellipsoid, in metres.  At least one must be given
-            (see note below).
+            Axes of ellipsoid, in metres.  At least one must be given (see note
+            below).
 
         * inverse_flattening:
-            Can be omitted if both axes given (see note below).
-            Defaults to 0.0 .
+            Can be omitted if both axes given (see note below). Defaults to 0.0
+            .
 
         * longitude_of_prime_meridian:
-            Specifies the prime meridian on the ellipsoid, in degrees.
-            Defaults to 0.0 .
+            Specifies the prime meridian on the ellipsoid, in degrees. Defaults
+            to 0.0 .
+
+        * datum:
+            If given, specifies the datum of the coordinate system. Only respected if
+            iris.Future.datum_support is set.
 
         If just semi_major_axis is set, with no semi_minor_axis or
         inverse_flattening, then a perfect sphere is created from the given
         radius.
 
-        If just two of semi_major_axis, semi_minor_axis, and
-        inverse_flattening are given the missing element is calculated from the
-        formula:
+        If just two of semi_major_axis, semi_minor_axis, and inverse_flattening
+        are given the missing element is calculated from the formula:
         :math:`flattening = (major - minor) / major`
 
         Currently, Iris will not allow over-specification (all three ellipsoid
@@ -169,9 +175,9 @@ class GeogCS(CoordSystem):
 
         Examples::
 
-            cs = GeogCS(6371229)
-            pp_cs = GeogCS(iris.fileformats.pp.EARTH_RADIUS)
-            airy1830 = GeogCS(semi_major_axis=6377563.396,
+            cs = GeogCS(6371229) pp_cs =
+            GeogCS(iris.fileformats.pp.EARTH_RADIUS) airy1830 =
+            GeogCS(semi_major_axis=6377563.396,
                               semi_minor_axis=6356256.909)
             airy1830 = GeogCS(semi_major_axis=6377563.396,
                               inverse_flattening=299.3249646)
@@ -246,6 +252,8 @@ class GeogCS(CoordSystem):
             longitude_of_prime_meridian, 0
         )
 
+        self.datum = _arg_default(datum, None)
+
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
         if self.semi_major_axis != self.semi_minor_axis:
@@ -305,11 +313,19 @@ class GeogCS(CoordSystem):
     def as_cartopy_globe(self):
         # Explicitly set `ellipse` to None as a workaround for
         # Cartopy setting WGS84 as the default.
-        return ccrs.Globe(
-            semimajor_axis=self.semi_major_axis,
-            semiminor_axis=self.semi_minor_axis,
-            ellipse=None,
-        )
+        if iris.FUTURE.datum_support:
+            return ccrs.Globe(
+                semimajor_axis=self.semi_major_axis,
+                semiminor_axis=self.semi_minor_axis,
+                ellipse=None,
+                datum=self.datum,
+            )
+        else:
+            return ccrs.Globe(
+                semimajor_axis=self.semi_major_axis,
+                semiminor_axis=self.semi_minor_axis,
+                ellipse=None,
+            )
 
 
 class RotatedGeogCS(CoordSystem):
@@ -326,6 +342,7 @@ class RotatedGeogCS(CoordSystem):
         grid_north_pole_longitude,
         north_pole_grid_longitude=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs a coordinate system with rotated pole, on an
@@ -348,6 +365,10 @@ class RotatedGeogCS(CoordSystem):
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
 
+        * datum:
+            If given, specifies the datum of the coordinate system. Only respected if
+            iris.Future.datum_support is set.
+
         Examples::
 
             rotated_cs = RotatedGeogCS(30, 30)
@@ -368,6 +389,8 @@ class RotatedGeogCS(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def _pretty_attrs(self):
         attrs = [
@@ -445,6 +468,7 @@ class TransverseMercator(CoordSystem):
         false_northing=None,
         scale_factor_at_central_meridian=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs a TransverseMercator object.
@@ -476,6 +500,10 @@ class TransverseMercator(CoordSystem):
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
 
+        * datum:
+            If given, specifies the datum of the coordinate system. Only respected if
+            iris.Future.datum_support is set.
+
         Example::
 
             airy1830 = GeogCS(6377563.396, 6356256.909)
@@ -506,6 +534,8 @@ class TransverseMercator(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
@@ -550,6 +580,7 @@ class OSGB(TransverseMercator):
             -100000,
             0.9996012717,
             GeogCS(6377563.396, 6356256.909),
+            "OSGB_1936",
         )
 
     def as_cartopy_crs(self):
@@ -574,6 +605,7 @@ class Orthographic(CoordSystem):
         false_easting=None,
         false_northing=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs an Orthographic coord system.
@@ -597,6 +629,10 @@ class Orthographic(CoordSystem):
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
 
+        * datum:
+          If given, specifies the datumof the coordinate system. Only respected if
+          iris.Future.daum_support is set.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(
@@ -616,6 +652,8 @@ class Orthographic(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
@@ -665,6 +703,7 @@ class VerticalPerspective(CoordSystem):
         false_easting=None,
         false_northing=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs a Vertical Perspective coord system.
@@ -692,6 +731,10 @@ class VerticalPerspective(CoordSystem):
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
 
+        * datum:
+          If given, specifies the datumof the coordinate system. Only respected if
+          iris.Future.daum_support is set.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(
@@ -715,6 +758,8 @@ class VerticalPerspective(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
@@ -765,6 +810,7 @@ class Geostationary(CoordSystem):
         false_easting=None,
         false_northing=None,
         ellipsoid=None,
+        datum=None,
     ):
 
         """
@@ -794,6 +840,10 @@ class Geostationary(CoordSystem):
 
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
+        * datum:
+          If given, specifies the datumof the coordinate system. Only respected if
+          iris.Future.daum_support is set.
 
         """
         #: True latitude of planar origin in degrees.
@@ -828,6 +878,8 @@ class Geostationary(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
@@ -878,6 +930,7 @@ class Stereographic(CoordSystem):
         false_northing=None,
         true_scale_lat=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs a Stereographic coord system.
@@ -904,6 +957,10 @@ class Stereographic(CoordSystem):
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
 
+        * datum:
+          If given, specifies the datumof the coordinate system. Only respected if
+          iris.Future.daum_support is set.
+
         """
 
         #: True latitude of planar origin in degrees.
@@ -927,6 +984,8 @@ class Stereographic(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
@@ -975,6 +1034,7 @@ class LambertConformal(CoordSystem):
         false_northing=None,
         secant_latitudes=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs a LambertConformal coord system.
@@ -999,6 +1059,10 @@ class LambertConformal(CoordSystem):
 
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
+        * datum:
+          If given, specifies the datumof the coordinate system. Only respected if
+          iris.Future.daum_support is set.
 
         .. note:
 
@@ -1028,6 +1092,8 @@ class LambertConformal(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
@@ -1086,6 +1152,7 @@ class Mercator(CoordSystem):
         scale_factor_at_projection_origin=None,
         false_easting=None,
         false_northing=None,
+        datum=None,
     ):
         """
         Constructs a Mercator coord system.
@@ -1109,6 +1176,10 @@ class Mercator(CoordSystem):
 
         * false_northing:
             Y offset from the planar origin in metres. Defaults to 0.0.
+
+        * datum:
+            If given, specifies the datumof the coordinate system. Only
+            respected if iris.Future.daum_support is set.
 
         Note: Only one of ``standard_parallel`` and
         ``scale_factor_at_projection_origin`` should be included.
@@ -1146,6 +1217,8 @@ class Mercator(CoordSystem):
 
         #: Y offset from the planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         res = (
@@ -1191,6 +1264,7 @@ class LambertAzimuthalEqualArea(CoordSystem):
         false_easting=None,
         false_northing=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs a Lambert Azimuthal Equal Area coord system.
@@ -1212,6 +1286,10 @@ class LambertAzimuthalEqualArea(CoordSystem):
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
 
+        * datum:
+          If given, specifies the datumof the coordinate system. Only respected if
+          iris.Future.daum_support is set.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(
@@ -1231,6 +1309,8 @@ class LambertAzimuthalEqualArea(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
@@ -1276,6 +1356,7 @@ class AlbersEqualArea(CoordSystem):
         false_northing=None,
         standard_parallels=None,
         ellipsoid=None,
+        datum=None,
     ):
         """
         Constructs a Albers Conical Equal Area coord system.
@@ -1302,6 +1383,10 @@ class AlbersEqualArea(CoordSystem):
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
 
+        * datum:
+          If given, specifies the datumof the coordinate system. Only respected if
+          iris.Future.daum_support is set.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(
@@ -1326,6 +1411,8 @@ class AlbersEqualArea(CoordSystem):
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+
+        self.datum = _arg_default(datum, None)
 
     def __repr__(self):
         return (
