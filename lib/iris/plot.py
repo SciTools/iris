@@ -843,7 +843,9 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
                 ylabel=ax.get_ylabel(),
             )
         else:
+            position = ax.get_position(original=True)
             _ = fig.add_axes(
+                position,
                 projection=cartopy_proj,
                 title=ax.get_title(),
                 xlabel=ax.get_xlabel(),

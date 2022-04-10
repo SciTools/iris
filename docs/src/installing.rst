@@ -1,7 +1,7 @@
 .. _installing_iris:
 
-Installing Iris
-===============
+Installing
+==========
 
 Iris is available using conda for the following platforms:
 

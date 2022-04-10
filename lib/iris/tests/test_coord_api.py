@@ -49,7 +49,11 @@ class TestCoordSlicing(tests.IrisTest):
     def test_slice_reverse(self):
         b = self.lat[::-1]
         np.testing.assert_array_equal(b.points, self.lat.points[::-1])
-        np.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, :])
+        np.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, ::-1])
+
+        # Check contiguity is preserved.
+        self.assertTrue(self.lat.is_contiguous())
+        self.assertTrue(b.is_contiguous())
 
         c = b[::-1]
         self.assertEqual(self.lat, c)

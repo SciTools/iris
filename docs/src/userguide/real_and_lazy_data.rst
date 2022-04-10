@@ -140,11 +140,11 @@ Core Data
 Cubes have the concept of "core data". This returns the cube's data in its
 current state:
 
- * If a cube has lazy data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
-   will return the cube's lazy dask array. Calling the cube's
-   :meth:`~iris.cube.Cube.core_data` method **will never realise** the cube's data.
- * If a cube has real data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
-   will return the cube's real NumPy array.
+* If a cube has lazy data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
+  will return the cube's lazy dask array. Calling the cube's
+  :meth:`~iris.cube.Cube.core_data` method **will never realise** the cube's data.
+* If a cube has real data, calling the cube's :meth:`~iris.cube.Cube.core_data` method
+  will return the cube's real NumPy array.
 
 For example::
 
@@ -174,14 +174,14 @@ In the same way that Iris cubes contain a data array, Iris coordinates contain a
 points array and an optional bounds array.
 Coordinate points and bounds arrays can also be real or lazy:
 
- * A :class:`~iris.coords.DimCoord` will only ever have **real** points and bounds
-   arrays because of monotonicity checks that realise lazy arrays.
- * An :class:`~iris.coords.AuxCoord` can have **real or lazy** points and bounds.
- * An :class:`~iris.aux_factory.AuxCoordFactory` (or derived coordinate)
-   can have **real or lazy** points and bounds. If all of the
-   :class:`~iris.coords.AuxCoord` instances used to construct the derived coordinate
-   have real points and bounds then the derived coordinate will have real points
-   and bounds, otherwise the derived coordinate will have lazy points and bounds.
+* A :class:`~iris.coords.DimCoord` will only ever have **real** points and bounds
+  arrays because of monotonicity checks that realise lazy arrays.
+* An :class:`~iris.coords.AuxCoord` can have **real or lazy** points and bounds.
+* An :class:`~iris.aux_factory.AuxCoordFactory` (or derived coordinate)
+  can have **real or lazy** points and bounds. If all of the
+  :class:`~iris.coords.AuxCoord` instances used to construct the derived coordinate
+  have real points and bounds then the derived coordinate will have real points
+  and bounds, otherwise the derived coordinate will have lazy points and bounds.
 
 Iris cubes and coordinates have very similar interfaces, which extends to accessing
 coordinates' lazy points and bounds:

@@ -359,7 +359,7 @@ def map_complete_blocks(src, func, dims, out_sizes):
 
     Args:
 
-    * src (:class:`~iris.cube.Cube`):
+    * src (:class:`~iris.cube.Cube` or array-like):
         Source cube that function is applied to.
     * func:
         Function to apply.
@@ -369,10 +369,15 @@ def map_complete_blocks(src, func, dims, out_sizes):
         Output size of dimensions that cannot be chunked.
 
     """
-    if not src.has_lazy_data():
+    if is_lazy_data(src):
+        data = src
+    elif not hasattr(src, "has_lazy_data"):
+        # Not a lazy array and not a cube.  So treat as ordinary numpy array.
+        return func(src)
+    elif not src.has_lazy_data():
         return func(src.data)
-
-    data = src.lazy_data()
+    else:
+        data = src.lazy_data()
 
     # Ensure dims are not chunked
     in_chunks = list(data.chunks)
