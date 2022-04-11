@@ -59,17 +59,17 @@ DOT_AVAILABLE = _dot_path() is not None
 
 
 def save(cube, target):
-    """Save a dot representation of the cube.
+    """
+    Save a dot representation of the cube.
 
     Args
     ----
-
     cube: :class:`iris.cube.Cube`.
     target
         A filename or open file handle.
 
     See Also
-    ========
+    --------
     :func:`iris.io.save`.
 
     """
@@ -91,11 +91,11 @@ def save(cube, target):
 
 def save_png(source, target, launch=False):
     """
-    Produces a "dot" instance diagram by calling dot and optionally launching the resulting image.
+    Produce a "dot" instance diagram by calling dot and optionally launching
+    the resulting image.
 
     Args
-    ====
-
+    ----
     source: :class:`iris.cube.Cube`, or dot filename.
     target
         A filename or open file handle.
@@ -106,7 +106,7 @@ def save_png(source, target, launch=False):
             Display the image. Default is False.
 
     See Also
-    ========
+    --------
     :func:`iris.io.save`.
 
     """
@@ -160,11 +160,11 @@ def save_png(source, target, launch=False):
 
 
 def cube_text(cube):
-    """Return a DOT text representation a `iris.cube.Cube`.
+    """
+    Return a DOT text representation a `iris.cube.Cube`.
 
     Args
-    ====
-
+    ----
     cube
        The cube for which to create DOT text.
 
@@ -293,13 +293,14 @@ digraph CubeGraph{
 
 def _coord_text(label, coord):
     """
-    Returns a string containing the dot representation for a single coordinate node.
+    Return a string containing the dot representation for a single coordinate
+    node.
 
-    Args:
-
-    * label
+    Args
+    ----
+    label
         The dot ID of the coordinate node.
-    * coord
+    coord
         The coordinate to convert.
 
     """
@@ -325,14 +326,16 @@ def _coord_text(label, coord):
 
 def _coord_system_text(cs, uid):
     """
-    Returns a string containing the dot representation for a single coordinate system node.
+    Return a string containing the dot representation for a single coordinate
+    system node.
 
-    Args:
-
-    * cs
+    Args
+    ----
+    cs
         The coordinate system to convert.
-    * uid
-        The uid allows/distinguishes non-identical CoordSystems of the same type.
+    uid
+        The uid allows/distinguishes non-identical CoordSystems of the same
+        type.
 
     """
     attrs = []
@@ -351,15 +354,15 @@ def _coord_system_text(cs, uid):
 
 def _dot_node(indent, id, name, attributes):
     """
-    Returns a string containing the dot representation for a single node.
+    Return a string containing the dot representation for a single node.
 
-    Args:
-
-     * id
+    Args
+    ----
+    id
         The ID of the node.
-     * name
+    name
         The visual name of the node.
-     * attributes
+    attributes
         An iterable of (name, value) attribute pairs.
 
     """
