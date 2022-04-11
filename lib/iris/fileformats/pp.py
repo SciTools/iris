@@ -349,8 +349,8 @@ class SplittableInt:
     >>> print(three_six_two[2])
     3
 
-    Note
-    ----
+    Notes
+    -----
     No support for negative numbers
 
     """
@@ -1136,8 +1136,8 @@ class PPField(metaclass=ABCMeta):
             with open(filename, 'wb') as fh:
                 a_pp_field.save(fh)
 
-        Note
-        ----
+        Notes
+        -----
         The fields which are automatically calculated are: 'lbext',
         'lblrec' and 'lbuser[0]'. Some fields are not currently
         populated, these are: 'lbegin', 'lbnrec', 'lbuser[1]'.
@@ -2046,8 +2046,8 @@ def load_cubes(filenames, callback=None, constraints=None):
         * callback
             a function which can be passed on to :func:`iris.io.run_callback`
 
-    Note
-    ----
+    Notes
+    -----
     The resultant cubes may not be in the order that they are in the file
     (order is not preserved when there is a field with orography
     references)
@@ -2072,8 +2072,8 @@ def load_cubes_little_endian(filenames, callback=None, constraints=None):
         * callback
             a function which can be passed on to :func:`iris.io.run_callback`
 
-    Note
-    ----
+    Notes
+    -----
     The resultant cubes may not be in the order that they are in the file
     (order is not preserved when there is a field with orography
     references)
@@ -2103,8 +2103,8 @@ def load_pairs_from_fields(pp_fields):
     :class:`iris.cube.Cube`
         An iterable of :class:`iris.cube.Cube`\ s.
 
-    Note
-    ----
+    Notes
+    -----
     This capability can be used to filter out fields before they are passed to
     the load pipeline, and amend the cubes once they are created, using
     PP metadata conditions.  Where this filtering
