@@ -34,7 +34,8 @@ is merged.  Before submitting a pull request please consider this list.
    should be generated too, see :ref:`cirrus_test_env`.
 
 #. **Check the source documentation been updated to explain all new or changed
-   features**.  See :ref:`docstrings`.
+   features**.  Note, we now use numpydoc strings.  Any touched code should
+   be updated to use the docstrings formatting. See :ref:`docstrings`.
 
 #. **Include code examples inside the docstrings where appropriate**.  See
    :ref:`contributing.documentation.testing`.
