@@ -47,7 +47,7 @@ jobs:
           $CONDA/bin/conda-lock lock -k explicit -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
           mv conda-linux-64.lock py${{matrix.python}}-linux-64.lock
       - name: output lockfile
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: py${{matrix.python}}-linux-64.lock
     
