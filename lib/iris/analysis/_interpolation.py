@@ -13,7 +13,7 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 import numpy.ma as ma
 
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import AuxCoord, DimCoord, DimCoordWrapper
 import iris.util
 
 _DEFAULT_DTYPE = np.float16
@@ -471,7 +471,10 @@ class RectilinearInterpolator:
                     "rectilinear interpolation."
                 )
 
-            if not isinstance(coord, DimCoord):
+            if not (
+                isinstance(coord, DimCoord)
+                or isinstance(coord, DimCoordWrapper)
+            ):
                 # Check monotonic.
                 if not iris.util.monotonic(coord.points, strict=True):
                     msg = (
@@ -680,7 +683,10 @@ class RectilinearInterpolator:
 
         def gen_new_cube():
             if (
-                isinstance(new_coord, DimCoord)
+                (
+                    isinstance(new_coord, DimCoord)
+                    or isinstance(new_coord, DimCoordWrapper)
+                )
                 and len(dims) > 0
                 and dims[0] not in dims_with_dim_coords
             ):

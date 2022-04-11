@@ -12,6 +12,7 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Container, Iterator
 import copy
+from functools import wraps
 from itertools import chain, zip_longest
 import operator
 import warnings
@@ -2919,12 +2920,6 @@ class DimCoord(Coord):
         return element
 
 
-# from inspect import signature
-
-# from_regular_signature = signature(DimCoord.from_regular)
-# dim_coord_signature = signature(DimCoord.__init__)
-
-
 cache = {}
 
 
@@ -2983,7 +2978,7 @@ def cache_update(history):
         _, args, kwargs = to_apply.pop(0)
         new_coord = DimCoord.from_regular(*args, **kwargs)
     else:
-        new_coord = best_hit.copy()
+        new_coord = copy.deepcopy(best_hit)
     for change in to_apply:
         apply_change(new_coord, change)
     add_to_cache(history, new_coord)
@@ -2997,12 +2992,29 @@ def cache_check(history):
     return hit_cache(history)
 
 
+def clear_cache():
+    global cache
+    cache = {}
+
+
+def cache_coords(fn):
+    @wraps(fn)
+    def wrap_func(*args, **kwargs):
+        return_val = fn(*args, **kwargs)
+        clear_cache()
+        return return_val
+
+    return wrap_func
+
+
 class DimCoordWrapper:
     @classmethod
     def from_regular(cls, *args, **kwargs):
-        coord = cache_check([("from_regular", args, kwargs)])
-        to_return = DimCoordWrapper(coord, [("from_regular", args, kwargs)])
-        return to_return
+        history = [("from_regular", args, kwargs)]
+        coord = cache_check(history)
+        return DimCoordWrapper(coord, history)
+
+    # TODO: from_init
 
     @classmethod
     def unwrap(cls, possible_wrapper):
@@ -3010,11 +3022,6 @@ class DimCoordWrapper:
             return possible_wrapper._coord
         else:
             return possible_wrapper
-
-    # More complicated because we need to instantiate the DimCoord in cache too
-    # def from_init(cls, *args, **kwargs):
-    #     coord = cache_check([("__init__", args, kwargs)])
-    #     return DimCoordWrapper(coord)
 
     def __init__(self, coord, history):
         self._coord = coord
@@ -3026,13 +3033,18 @@ class DimCoordWrapper:
         return getattr(self._coord, name)
 
     def __setattr__(self, name, value) -> None:
+        if name == "bounds":
+            print(name)
         if name in ["_coord", "_history"]:
             return super().__setattr__(name, value)
         else:
-            self._history.append("__setattr__", (name, value))
+            self._history.append(("__setattr__", (name, value), {}))
             coord = cache_check(self._history)
             self._coord = coord
             return coord
+
+    def __getitem__(self, keys):
+        return self._coord.__getitem__(keys)
 
     def __eq__(self, other):
         return DimCoordWrapper.unwrap(self) == DimCoordWrapper.unwrap(other)

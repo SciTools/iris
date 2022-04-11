@@ -1484,7 +1484,7 @@ def metadata_filter(
         pass
     for ii in range(len(result)):
         try:
-            result[ii] = result[ii].unwrap(obj)
+            result[ii] = result[ii].unwrap(result[ii])
         except AttributeError:
             pass
 

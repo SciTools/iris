@@ -1225,7 +1225,7 @@ class GraphicsTestMixin:
     def setUp(self):
         # Acquire threading non re-entrant blocking lock to ensure
         # thread-safe plotting.
-        _lock.acquire()
+        # _lock.acquire()
         # Make sure we have no unclosed plots from previous tests before
         # generating this one.
         if MPL_AVAILABLE:
@@ -1237,7 +1237,7 @@ class GraphicsTestMixin:
         if MPL_AVAILABLE:
             plt.close("all")
         # Release the non re-entrant blocking lock.
-        _lock.release()
+        # _lock.release()
 
 
 class GraphicsTest(GraphicsTestMixin, IrisTest):

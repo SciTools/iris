@@ -29,7 +29,7 @@ import numpy as np
 
 # Be minimal about what we import from iris, to avoid circular imports.
 # Below, other parts of iris.fileformats are accessed via deferred imports.
-from iris.coords import DimCoord
+from iris.coords import DimCoord, DimCoordWrapper
 from iris.cube import CubeList
 from iris.exceptions import TranslationError
 from iris.fileformats.um._fast_load_structured_fields import (
@@ -235,7 +235,10 @@ def _convert_collation(collation):
         # and target everything else at aux_coords.
         for coord, dims in sorted(coords_and_dims, key=key_func):
             if (
-                isinstance(coord, DimCoord)
+                (
+                    isinstance(coord, DimCoord)
+                    or isinstance(coord, DimCoordWrapper)
+                )
                 and dims is not None
                 and len(dims) == 1
                 and dims[0] not in dim_coord_dims

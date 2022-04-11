@@ -99,6 +99,7 @@ import threading
 import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
+from iris.coords import cache_coords
 import iris.io
 
 try:
@@ -280,6 +281,7 @@ def _load_collection(uris, constraints=None, callback=None):
     return result
 
 
+@cache_coords
 def load(uris, constraints=None, callback=None):
     """
     Loads any number of Cubes for each constraint.
@@ -309,6 +311,7 @@ def load(uris, constraints=None, callback=None):
     return _load_collection(uris, constraints, callback).merged().cubes()
 
 
+@cache_coords
 def load_cube(uris, constraint=None, callback=None):
     """
     Loads a single cube.
@@ -349,6 +352,7 @@ def load_cube(uris, constraint=None, callback=None):
     return cube
 
 
+@cache_coords
 def load_cubes(uris, constraints=None, callback=None):
     """
     Loads exactly one Cube for each constraint.
@@ -389,6 +393,7 @@ def load_cubes(uris, constraints=None, callback=None):
     return collection.cubes()
 
 
+@cache_coords
 def load_raw(uris, constraints=None, callback=None):
     """
     Loads non-merged cubes.

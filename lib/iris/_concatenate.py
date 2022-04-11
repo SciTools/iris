@@ -109,7 +109,9 @@ class _CoordMetaData(
         # Add circular flag metadata for dimensional coordinates.
         if hasattr(coord, "circular"):
             kwargs["circular"] = coord.circular
-        if isinstance(coord, iris.coords.DimCoord):
+        if isinstance(coord, iris.coords.DimCoord) or isinstance(
+            coord, iris.coords.DimCoordWrapper
+        ):
             # Mix the monotonic ordering into the metadata.
             if coord.points[0] == coord.points[-1]:
                 order = _CONSTANT

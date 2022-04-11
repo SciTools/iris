@@ -1805,7 +1805,10 @@ class ProtoCube:
             points_dtype = coord.dtype
             return (
                 not np.issubdtype(points_dtype, np.number),
-                not isinstance(coord, iris.coords.DimCoord),
+                not (
+                    isinstance(coord, iris.coords.DimCoord)
+                    or isinstance(coord, iris.coords.DimCoordWrapper)
+                ),
                 hint_dict.get(coord.name(), len(hint_dict) + 1),
                 axis_dict.get(
                     iris.util.guess_coord_axis(coord), len(axis_dict) + 1
@@ -1832,7 +1835,9 @@ class ProtoCube:
                     bounds_dtype = None
                 scalar_values.append(iris.coords.Cell(points[0], bounds))
                 kwargs = {}
-                if isinstance(coord, iris.coords.DimCoord):
+                if isinstance(coord, iris.coords.DimCoord) or isinstance(
+                    coord, iris.coords.DimCoordWrapper
+                ):
                     kwargs["circular"] = coord.circular
                 scalar_metadata.append(
                     _CoordMetaData(points_dtype, bounds_dtype, kwargs)

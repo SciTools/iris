@@ -1427,7 +1427,10 @@ class Cube(CFVariableMixin):
         dims = self.coord_dims(old_coord)
         was_dimensioned = old_coord in self.dim_coords
         self._remove_coord(old_coord)
-        if was_dimensioned and isinstance(new_coord, iris.coords.DimCoord):
+        if was_dimensioned and (
+            isinstance(new_coord, iris.coords.DimCoord)
+            or isinstance(new_coord, iris.coords.DimCoordWrapper)
+        ):
             self.add_dim_coord(new_coord, dims[0])
         else:
             self.add_aux_coord(new_coord, dims)
@@ -1457,10 +1460,22 @@ class Cube(CFVariableMixin):
             coord = self.coord(coord)
             name_provided = True
 
+        try:
+            coord = coord.unwrap(coord)
+        except AttributeError:
+            pass
+
         coord_id = id(coord)
 
         # Dimension of dimension coordinate by object id
-        dims_by_id = {id(c): (d,) for c, d in self._dim_coords_and_dims}
+        dims_by_id = {}
+        for c, d in self._dim_coords_and_dims:
+            try:
+                c = c.unwrap(c)
+            except AttributeError:
+                pass
+            dims_by_id[id(c)] = (d,)
+        # dims_by_id = {id(c): (d,) for c, d in self._dim_coords_and_dims}
         # Check for id match - faster than equality check
         match = dims_by_id.get(coord_id)
 
@@ -2893,7 +2908,9 @@ class Cube(CFVariableMixin):
 
             return subsets
 
-        if isinstance(coord, iris.coords.DimCoord):
+        if isinstance(coord, iris.coords.DimCoord) or isinstance(
+            coord, iris.coords.DimCoordWrapper
+        ):
             if non_zero_step_indices.size:
                 subsets = dim_coord_subset()
             else:
@@ -4020,7 +4037,10 @@ x            -              -
             if (
                 dim_coord is not None
                 and dim_coord.metadata == coord.metadata
-                and isinstance(coord, iris.coords.DimCoord)
+                and (
+                    isinstance(coord, iris.coords.DimCoord)
+                    or isinstance(coord, iris.coords.DimCoordWrapper)
+                )
             ):
                 aggregateby_cube.add_dim_coord(
                     coord.copy(), dimension_to_groupby

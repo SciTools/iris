@@ -165,7 +165,10 @@ def _get_plot_defn(cube, mode, ndims=2):
             aux_coords = [
                 coord
                 for coord in aux_coords
-                if isinstance(coord, iris.coords.DimCoord)
+                if (
+                    isinstance(coord, iris.coords.DimCoord)
+                    or isinstance(coord, iris.coords.DimCoordWrapper)
+                )
             ]
             if aux_coords:
                 aux_coords.sort(key=lambda coord: coord.metadata)

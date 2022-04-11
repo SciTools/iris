@@ -267,7 +267,7 @@ class _CoordConstraint:
         match the constraint.
 
         """
-        from iris.coords import Cell, DimCoord
+        from iris.coords import Cell, DimCoord, DimCoordWrapper
 
         # Cater for scalar cubes by setting the dimensionality to 1
         # when cube.ndim is 0.
@@ -305,9 +305,10 @@ class _CoordConstraint:
             def call_func(c):
                 return c == self._coord_thing
 
-            try_quick = isinstance(coord, DimCoord) and not isinstance(
-                self._coord_thing, Cell
-            )
+            try_quick = (
+                isinstance(coord, DimCoord)
+                or isinstance(coord, DimCoordWrapper)
+            ) and not isinstance(self._coord_thing, Cell)
 
         # Simple, yet dramatic, optimisation for the monotonic case.
         if try_quick:

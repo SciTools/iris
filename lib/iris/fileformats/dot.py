@@ -295,7 +295,9 @@ def _coord_text(label, coord):
     """
     # Which bits to write?
     # Note: This is is not very OO but we are achieving a separation of DOT from cdm by doing this.
-    if isinstance(coord, iris.coords.DimCoord):
+    if isinstance(coord, iris.coords.DimCoord) or isinstance(
+        coord, iris.coords.DimCoordWrapper
+    ):
         _dot_attrs = ("standard_name", "long_name", "units", "circular")
     elif isinstance(coord, iris.coords.AuxCoord):
         _dot_attrs = ("standard_name", "long_name", "units")
