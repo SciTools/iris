@@ -89,11 +89,12 @@ class AggregateMixin:
         self.check_percentile_calc(data, axis, percent, expected, approx=True)
 
 
-class MaskedAggregateMixin:
+class ScipyAggregateMixin:
     """
-    Tests for calculations on masked data.  Will only work if using the standard
-    (scipy) method.  Needs to be used with AggregateMixin, as these tests re-use its
-    method.
+    Tests for calculations specific to the default (scipy) function.  Includes
+    tests on masked data and tests to verify that the function is called with
+    the expected keywords.  Needs to be used with AggregateMixin, as some of
+    these tests re-use its method.
 
     """
 
@@ -181,7 +182,7 @@ class MaskedAggregateMixin:
             self.assertEqual(mocked_mquantiles.call_args.kwargs[key], val)
 
 
-class Test_aggregate(tests.IrisTest, AggregateMixin, MaskedAggregateMixin):
+class Test_aggregate(tests.IrisTest, AggregateMixin, ScipyAggregateMixin):
     """Tests for standard aggregation method on real data."""
 
     def setUp(self):
@@ -303,7 +304,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
 
 
 class Test_lazy_aggregate(
-    tests.IrisTest, AggregateMixin, MaskedAggregateMixin, MultiAxisMixin
+    tests.IrisTest, AggregateMixin, ScipyAggregateMixin, MultiAxisMixin
 ):
     """Tests for standard aggregation on lazy data."""
 
