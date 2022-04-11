@@ -54,15 +54,15 @@
 		 10.449, 10.5996]]" shape="(160, 256)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="3aaada22" points="[-2.28188e+06, -2.24639e+06, -2.21091e+06, ...,
+        <dimCoord id="d2c69764" points="[-2.28188e+06, -2.24639e+06, -2.21091e+06, ...,
 		6.69544e+06, 6.73092e+06, 6.7664e+06]" shape="(256,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
-          <stereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="None"/>
+          <stereographic central_lat="90.0" central_lon="-35.0" datum="None" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="None"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="27f71466" points="[-981693.0, -1.01719e+06, -1.05269e+06, ...,
+        <dimCoord id="0319b443" points="[-981693.0, -1.01719e+06, -1.05269e+06, ...,
 		-6.55525e+06, -6.59075e+06, -6.62625e+06]" shape="(160,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
-          <stereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="None"/>
+          <stereographic central_lat="90.0" central_lon="-35.0" datum="None" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" true_scale_lat="None"/>
         </dimCoord>
       </coord>
       <coord>
