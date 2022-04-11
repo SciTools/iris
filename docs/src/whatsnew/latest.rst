@@ -114,6 +114,10 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ adopted the `PyData Sphinx Theme`_ for the documentation.
    (:discussion:`4344`, :pull:`4661`)
 
+#. `@tkknight`_ updated our developers guidance to show our intent to adopt
+   numpdoc strings and fixed some API documentation rendering.
+   See :ref:`docstrings`. (:issue:`4657`, :pull:`????`)
+
 
 💼 Internal
 ===========
