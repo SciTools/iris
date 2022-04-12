@@ -86,7 +86,7 @@ def name(cube, field, handle_metadata_errors):
 
 def remove_unprintable_chars(input_str):
     """
-    Remove unprintable characters from a string and returns the result.
+    Remove unprintable characters from a string and return the result.
 
     """
     return "".join(
