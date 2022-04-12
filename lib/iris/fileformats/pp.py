@@ -2039,7 +2039,8 @@ def load_cubes(filenames, callback=None, constraints=None):
 
     Args
     ----
-    filenames : list of pp filenames to load
+    filenames
+        list of pp filenames to load
     **kwargs
         * constraints
             a list of Iris constraints
@@ -2066,7 +2067,7 @@ def load_cubes_little_endian(filenames, callback=None, constraints=None):
     ----
     filenames
         list of pp filenames to load
-    Kwargs
+    **kwargs
         * constraints
             a list of Iris constraints
         * callback
@@ -2195,7 +2196,7 @@ def save(cube, target, append=False, field_coords=None):
 
     Args
     ----
-    cube: :class:`~iris.fileformats.nimrod.NimrodField`
+    cube: :class:`iris.cube.Cube`
 
     target
         A filename or open file handle.
