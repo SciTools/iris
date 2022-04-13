@@ -9,8 +9,8 @@
    nipy, NIPY, Nipy, etc...
 
 .. _git: http://git-scm.com/
-.. _github: http://github.com
-.. _github help: http://help.github.com
+.. _github: https://github.com
+.. _github help: https://help.github.com
 .. _git documentation: https://git-scm.com/docs
 
 .. _git clone: http://schacon.github.com/git/git-clone.html

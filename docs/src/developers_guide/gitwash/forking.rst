@@ -7,7 +7,7 @@ Making Your own Copy (fork) of Iris
 ===================================
 
 You need to do this only once.  The instructions here are very similar
-to the instructions at http://help.github.com/forking/, please see
+to the instructions at https://help.github.com/forking/, please see
 that page for more detail.  We're repeating some of it here just to give the
 specifics for the `Iris`_ project, and to suggest some default names.
 
