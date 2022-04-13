@@ -20,6 +20,7 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 
+import iris.FUTURE.datum_support
 import iris.aux_factory
 from iris.common.mixin import _get_valid_standard_name
 import iris.coord_systems
@@ -286,7 +287,10 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     rcs = iris.coord_systems.RotatedGeogCS(
         north_pole_latitude,
@@ -339,7 +343,10 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.TransverseMercator(
         latitude_of_projection_origin,
@@ -383,7 +390,10 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.LambertConformal(
         latitude_of_projection_origin,
@@ -426,7 +436,10 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.Stereographic(
         latitude_of_projection_origin,
@@ -470,7 +483,10 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.Mercator(
         longitude_of_projection_origin,
@@ -511,7 +527,10 @@ def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.LambertAzimuthalEqualArea(
         latitude_of_projection_origin,
@@ -554,7 +573,10 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.AlbersEqualArea(
         latitude_of_projection_origin,
@@ -598,7 +620,10 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.VerticalPerspective(
         latitude_of_projection_origin,
@@ -645,7 +670,10 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
     ):
         ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    if iris.FUTURE.datum_support:
+        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    else:
+        datum = None
 
     cs = iris.coord_systems.Geostationary(
         latitude_of_projection_origin,
