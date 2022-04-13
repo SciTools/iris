@@ -16,6 +16,7 @@ build routines, and which it does not use.
 
 import warnings
 
+import cartopy.crs as ccrs
 import cf_units
 import numpy as np
 import numpy.ma as ma
@@ -395,16 +396,14 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    from pyproj import CRS
-
-    crs = CRS.from_cf(
+    crs = ccrs.CRS.from_cf(
         {
             key: getattr(cf_grid_var, key)
             for key in cf_grid_var.cf_data.ncattrs()
         }
     )
 
-    cs = iris.coord_systems.Stereographic.from_pyproj(crs)
+    cs = iris.coord_systems.Stereographic.from_crs(crs)
 
     return cs
 

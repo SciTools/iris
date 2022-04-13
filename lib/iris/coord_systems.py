@@ -8,12 +8,11 @@ Definitions of coordinate systems.
 
 """
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta  # , abstractmethod
 import warnings
 
 import cartopy.crs as ccrs
 import numpy as np
-import pyproj
 
 
 def _arg_default(value, default, cast_as=float):
@@ -52,6 +51,13 @@ class CoordSystem(metaclass=ABCMeta):
     """
 
     grid_mapping_name = None
+    _crs = None
+
+    def __repr__(self):
+        return repr(self._crs)
+
+    def __str__(self):
+        return str(self._crs)
 
     def __eq__(self, other):
         return (
@@ -92,6 +98,13 @@ class CoordSystem(metaclass=ABCMeta):
 
         return coord_system_xml_element
 
+    @classmethod
+    def from_crs(cls, crs):
+        obj = cls.__new__(cls)
+        super(cls, obj).__init__()
+        obj._crs = crs
+        return obj
+
     @staticmethod
     def _ellipsoid_to_globe(ellipsoid, globe_default):
         if ellipsoid is not None:
@@ -101,16 +114,14 @@ class CoordSystem(metaclass=ABCMeta):
 
         return globe
 
-    @abstractmethod
     def as_cartopy_crs(self):
         """
         Return a cartopy CRS representing our native coordinate
         system.
 
         """
-        pass
+        return self._crs
 
-    @abstractmethod
     def as_cartopy_projection(self):
         """
         Return a cartopy projection representing our native map.
@@ -120,7 +131,12 @@ class CoordSystem(metaclass=ABCMeta):
         projections) we use a map projection, such as PlateCarree.
 
         """
-        pass
+        if isinstance(self._crs, ccrs.Projection):
+            return self._crs
+        else:
+            print(self._crs)
+            print(type(self))
+            raise NotImplementedError
 
 
 class GeogCS(CoordSystem):
@@ -138,6 +154,7 @@ class GeogCS(CoordSystem):
         semi_minor_axis=None,
         inverse_flattening=None,
         longitude_of_prime_meridian=None,
+        datum=None,
     ):
         """
         Creates a new GeogCS.
@@ -179,77 +196,26 @@ class GeogCS(CoordSystem):
             custom_cs = GeogCS(6400000, 6300000)
 
         """
-        # No ellipsoid specified? (0 0 0)
-        if (
-            (semi_major_axis is None)
-            and (semi_minor_axis is None)
-            and (inverse_flattening is None)
-        ):
-            raise ValueError("No ellipsoid specified")
-
-        # Ellipsoid over-specified? (1 1 1)
-        if (
-            (semi_major_axis is not None)
-            and (semi_minor_axis is not None)
-            and (inverse_flattening is not None)
-        ):
-            raise ValueError("Ellipsoid is overspecified")
-
-        # Perfect sphere (semi_major_axis only)? (1 0 0)
-        elif semi_major_axis is not None and (
-            semi_minor_axis is None and not inverse_flattening
-        ):
-            semi_minor_axis = semi_major_axis
-            inverse_flattening = 0.0
-
-        # Calculate semi_major_axis? (0 1 1)
-        elif semi_major_axis is None and (
-            semi_minor_axis is not None and inverse_flattening is not None
-        ):
-            semi_major_axis = -semi_minor_axis / (
-                (1.0 - inverse_flattening) / inverse_flattening
-            )
-
-        # Calculate semi_minor_axis? (1 0 1)
-        elif semi_minor_axis is None and (
-            semi_major_axis is not None and inverse_flattening is not None
-        ):
-            semi_minor_axis = semi_major_axis - (
-                (1.0 / inverse_flattening) * semi_major_axis
-            )
-
-        # Calculate inverse_flattening? (1 1 0)
-        elif inverse_flattening is None and (
-            semi_major_axis is not None and semi_minor_axis is not None
-        ):
-            if semi_major_axis == semi_minor_axis:
-                inverse_flattening = 0.0
-            else:
-                inverse_flattening = 1.0 / (
-                    (semi_major_axis - semi_minor_axis) / semi_major_axis
-                )
-
-        # We didn't get enough to specify an ellipse.
-        else:
-            raise ValueError("Insufficient ellipsoid specification")
-
-        #: Major radius of the ellipsoid in metres.
-        self.semi_major_axis = float(semi_major_axis)
-
-        #: Minor radius of the ellipsoid in metres.
-        self.semi_minor_axis = float(semi_minor_axis)
-
-        #: :math:`1/f` where :math:`f = (a-b)/a`.
-        self.inverse_flattening = float(inverse_flattening)
-
         #: Describes 'zero' on the ellipsoid in degrees.
         self.longitude_of_prime_meridian = _arg_default(
             longitude_of_prime_meridian, 0
         )
 
+        globe = ccrs.Globe(
+            datum=datum,
+            ellipse=None,
+            semimajor_axis=semi_major_axis,
+            semiminor_axis=semi_minor_axis,
+            inverse_flattening=inverse_flattening,
+        )
+        self._crs = ccrs.Geodetic(globe)
+
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
-        if self.semi_major_axis != self.semi_minor_axis:
+        if (
+            self.semi_major_axis != self.semi_minor_axis
+            and self.semi_minor_axis is not None
+        ):
             attrs.append(("semi_minor_axis", self.semi_minor_axis))
         if self.longitude_of_prime_meridian != 0.0:
             attrs.append(
@@ -274,42 +240,56 @@ class GeogCS(CoordSystem):
         attrs = self._pretty_attrs()
         # Special case for 1 pretty attr
         if len(attrs) == 1 and attrs[0][0] == "semi_major_axis":
-            return "GeogCS({:.16})".format(self.semi_major_axis)
+            return f"GeogCS({float(self.semi_major_axis):.16})"
         else:
             text_attrs = []
             for k, v in attrs:
                 if isinstance(v, float):
-                    text_attrs.append("{}={:.16}".format(k, v))
+                    text_attrs.append(f"{k}={float(v):.16}")
                 elif isinstance(v, np.float32):
-                    text_attrs.append("{}={:.8}".format(k, v))
+                    text_attrs.append(f"{k}={float(v):.8}")
                 else:
-                    text_attrs.append("{}={}".format(k, v))
+                    text_attrs.append(f"{k}={float(v)}")
             return "GeogCS({})".format(", ".join(text_attrs))
 
     def xml_element(self, doc):
         # Special output for spheres
         attrs = self._pretty_attrs()
         if len(attrs) == 1 and attrs[0][0] == "semi_major_axis":
-            attrs = [("earth_radius", self.semi_major_axis)]
+            attrs = [("earth_radius", float(self.semi_major_axis))]
 
         return CoordSystem.xml_element(self, doc, attrs)
-
-    def as_cartopy_crs(self):
-        return ccrs.Geodetic(self.as_cartopy_globe())
-
-    def as_cartopy_projection(self):
-        return ccrs.PlateCarree(
-            central_longitude=self.longitude_of_prime_meridian,
-            globe=self.as_cartopy_globe(),
-        )
 
     def as_cartopy_globe(self):
         # Explicitly set `ellipse` to None as a workaround for
         # Cartopy setting WGS84 as the default.
-        return ccrs.Globe(
-            semimajor_axis=self.semi_major_axis,
-            semiminor_axis=self.semi_minor_axis,
-            ellipse=None,
+        return self._crs.globe
+
+    def __getattr__(self, name):
+        if name == "semi_major_axis":
+            return self._crs.globe.semimajor_axis
+        if name == "semi_minor_axis":
+            return self._crs.globe.semiminor_axis
+        if name == "inverse_flattening":
+            return self._crs.globe.inverse_flattening
+        if name == "longitude_of_prime_meridian":
+            return self._crs.globe.longitude_of_prime_meridian
+        if name == "datum":
+            return self._crs.datum
+        return getattr(super(), name)
+
+    def as_cartopy_projection(self):
+        """
+        Return a cartopy projection representing our native map.
+
+        This will be the same as the :func:`~CoordSystem.as_cartopy_crs` for
+        map projections but for spherical coord systems (which are not map
+        projections) we use a map projection, such as PlateCarree.
+
+        """
+        return ccrs.PlateCarree(
+            central_longitude=self.longitude_of_prime_meridian,
+            globe=self._crs.globe,
         )
 
 
@@ -356,19 +336,13 @@ class RotatedGeogCS(CoordSystem):
                                        ellipsoid=GeogCS(6400000, 6300000))
 
         """
-        #: The true latitude of the rotated pole in degrees.
-        self.grid_north_pole_latitude = float(grid_north_pole_latitude)
 
-        #: The true longitude of the rotated pole in degrees.
-        self.grid_north_pole_longitude = float(grid_north_pole_longitude)
-
-        #: Longitude of true north pole in rotated grid in degrees.
-        self.north_pole_grid_longitude = _arg_default(
-            north_pole_grid_longitude, 0
+        self._crs = ccrs.RotatedGeodetic(
+            grid_north_pole_longitude,
+            grid_north_pole_latitude,
+            central_rotated_longitude=north_pole_grid_longitude,
+            globe=self._ellipsoid_to_globe(ellipsoid, None),
         )
-
-        #: Ellipsoid definition (:class:`GeogCS` or None).
-        self.ellipsoid = ellipsoid
 
     def _pretty_attrs(self):
         attrs = [
@@ -412,22 +386,26 @@ class RotatedGeogCS(CoordSystem):
     def xml_element(self, doc):
         return CoordSystem.xml_element(self, doc, self._pretty_attrs())
 
-    def _ccrs_kwargs(self):
-        globe = self._ellipsoid_to_globe(self.ellipsoid, None)
-        cartopy_kwargs = {
-            "central_rotated_longitude": self.north_pole_grid_longitude,
-            "pole_longitude": self.grid_north_pole_longitude,
-            "pole_latitude": self.grid_north_pole_latitude,
-            "globe": globe,
-        }
-
-        return cartopy_kwargs
-
-    def as_cartopy_crs(self):
-        return ccrs.RotatedGeodetic(**self._ccrs_kwargs())
+    def __getattr__(self, name):
+        if name == "grid_north_pole_latitude":
+            return self._crs.to_dict()["o_lat_p"]
+        if name == "grid_north_pole_longitude":
+            return self._crs.to_dict()["lon_0"] - 180
+        if name == "north_pole_grid_longitude":
+            return self._crs.to_dict()["o_lon_p"]
+        if name == "ellipsoid":
+            return self._crs.globe.ellipsoid
+        if name == "datum":
+            return self._crs.datum
+        return getattr(super(), name)
 
     def as_cartopy_projection(self):
-        return ccrs.RotatedPole(**self._ccrs_kwargs())
+        return ccrs.RotatedPole(
+            self.grid_north_pole_longitude,
+            self.grid_north_pole_latitude,
+            self.north_pole_grid_longitude,
+            self._crs.globe,
+        )
 
 
 class TransverseMercator(CoordSystem):
@@ -484,29 +462,15 @@ class TransverseMercator(CoordSystem):
                                       ellipsoid=airy1830)
 
         """
-        #: True latitude of planar origin in degrees.
-        self.latitude_of_projection_origin = float(
-            latitude_of_projection_origin
+
+        self._crs = ccrs.TransverseMercator(
+            central_longitude=longitude_of_central_meridian,
+            central_latitude=latitude_of_projection_origin,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            scale_factor=scale_factor_at_central_meridian,
+            globe=self._ellipsoid_to_globe(ellipsoid, None),
         )
-
-        #: True longitude of planar origin in degrees.
-        self.longitude_of_central_meridian = float(
-            longitude_of_central_meridian
-        )
-
-        #: X offset from planar origin in metres.
-        self.false_easting = _arg_default(false_easting, 0)
-
-        #: Y offset from planar origin in metres.
-        self.false_northing = _arg_default(false_northing, 0)
-
-        #: Scale factor at the centre longitude.
-        self.scale_factor_at_central_meridian = _arg_default(
-            scale_factor_at_central_meridian, 1.0
-        )
-
-        #: Ellipsoid definition (:class:`GeogCS` or None).
-        self.ellipsoid = ellipsoid
 
     def __repr__(self):
         return (
@@ -523,41 +487,29 @@ class TransverseMercator(CoordSystem):
             )
         )
 
-    def as_cartopy_crs(self):
-        globe = self._ellipsoid_to_globe(self.ellipsoid, None)
-
-        return ccrs.TransverseMercator(
-            central_longitude=self.longitude_of_central_meridian,
-            central_latitude=self.latitude_of_projection_origin,
-            false_easting=self.false_easting,
-            false_northing=self.false_northing,
-            scale_factor=self.scale_factor_at_central_meridian,
-            globe=globe,
-        )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
+    def __getattr__(self, name):
+        if name == "latitude_of_projection_origin":
+            return self._crs.to_dict()["lat_0"]
+        if name == "longitude_of_central_meridian":
+            return self._crs.to_dict()["lon_0"]
+        if name == "false_easting":
+            return self._crs.to_cf()["false_easting"]
+        if name == "false_northing":
+            return self._crs.to_cf()["false_northing"]
+        if name == "scale_factor_at_central_meridian":
+            return self._crs.to_cf()["scale_factor_at_central_meridian"]
+        if name == "ellipsoid":
+            return self._crs.ellipsoid
+        if name == "datum":
+            return self._crs.datum
+        return getattr(super(), name)
 
 
 class OSGB(TransverseMercator):
     """A Specific transverse mercator projection on a specific ellipsoid."""
 
     def __init__(self):
-        TransverseMercator.__init__(
-            self,
-            49,
-            -2,
-            400000,
-            -100000,
-            0.9996012717,
-            GeogCS(6377563.396, 6356256.909),
-        )
-
-    def as_cartopy_crs(self):
-        return ccrs.OSGB()
-
-    def as_cartopy_projection(self):
-        return ccrs.OSGB()
+        self._crs = ccrs.OSGB()
 
 
 class Orthographic(CoordSystem):
@@ -618,20 +570,6 @@ class Orthographic(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
-    def __repr__(self):
-        return (
-            "Orthographic(latitude_of_projection_origin={!r}, "
-            "longitude_of_projection_origin={!r}, "
-            "false_easting={!r}, false_northing={!r}, "
-            "ellipsoid={!r})".format(
-                self.latitude_of_projection_origin,
-                self.longitude_of_projection_origin,
-                self.false_easting,
-                self.false_northing,
-                self.ellipsoid,
-            )
-        )
-
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
@@ -645,9 +583,6 @@ class Orthographic(CoordSystem):
             central_latitude=self.latitude_of_projection_origin,
             globe=globe,
         )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
 
 
 class VerticalPerspective(CoordSystem):
@@ -717,22 +652,6 @@ class VerticalPerspective(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
-    def __repr__(self):
-        return (
-            "Vertical Perspective(latitude_of_projection_origin={!r}, "
-            "longitude_of_projection_origin={!r}, "
-            "perspective_point_height={!r}, "
-            "false_easting={!r}, false_northing={!r}, "
-            "ellipsoid={!r})".format(
-                self.latitude_of_projection_origin,
-                self.longitude_of_projection_origin,
-                self.perspective_point_height,
-                self.false_easting,
-                self.false_northing,
-                self.ellipsoid,
-            )
-        )
-
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
@@ -744,9 +663,6 @@ class VerticalPerspective(CoordSystem):
             false_northing=self.false_northing,
             globe=globe,
         )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
 
 
 class Geostationary(CoordSystem):
@@ -830,23 +746,6 @@ class Geostationary(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
-    def __repr__(self):
-        return (
-            "Geostationary(latitude_of_projection_origin={!r}, "
-            "longitude_of_projection_origin={!r}, "
-            "perspective_point_height={!r}, false_easting={!r}, "
-            "false_northing={!r}, sweep_angle_axis={!r}, "
-            "ellipsoid={!r}".format(
-                self.latitude_of_projection_origin,
-                self.longitude_of_projection_origin,
-                self.perspective_point_height,
-                self.false_easting,
-                self.false_northing,
-                self.sweep_angle_axis,
-                self.ellipsoid,
-            )
-        )
-
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
@@ -858,9 +757,6 @@ class Geostationary(CoordSystem):
             globe=globe,
             sweep_axis=self.sweep_angle_axis,
         )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
 
 
 class Stereographic(CoordSystem):
@@ -907,24 +803,15 @@ class Stereographic(CoordSystem):
 
         """
 
-        self._crs = pyproj.crs.CRS.from_user_input(
-            ccrs.Stereographic(
-                central_latitude=central_lat,
-                central_longitude=central_lon,
-                false_easting=false_easting,
-                false_northing=false_northing,
-                true_scale_latitude=true_scale_lat,
-                scale_factor=None,
-                globe=self._ellipsoid_to_globe(ellipsoid, ccrs.Globe()),
-            )
+        self._crs = ccrs.Stereographic(
+            central_latitude=central_lat,
+            central_longitude=central_lon,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            true_scale_latitude=true_scale_lat,
+            scale_factor=None,
+            globe=self._ellipsoid_to_globe(ellipsoid, ccrs.Globe()),
         )
-
-    @classmethod
-    def from_pyproj(cls, crs):
-        obj = cls.__new__(cls)
-        super(Stereographic, obj).__init__()
-        obj._crs = crs
-        return obj
 
     def __getattr__(self, name):
         if name == "central_lat":
@@ -941,28 +828,7 @@ class Stereographic(CoordSystem):
             return self._crs.ellipsoid
         if name == "datum":
             return self._crs.datum
-        return super(Stereographic, self).__getattribute__(name)
-
-    def __repr__(self):
-        return (
-            "Stereographic(central_lat={!r}, central_lon={!r}, "
-            "false_easting={!r}, false_northing={!r}, "
-            "true_scale_lat={!r}, "
-            "ellipsoid={!r})".format(
-                self.central_lat,
-                self.central_lon,
-                self.false_easting,
-                self.false_northing,
-                self.true_scale_lat,
-                self.ellipsoid,
-            )
-        )
-
-    def as_cartopy_crs(self):
-        return ccrs.CRS(self._crs)
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
+        return getattr(super(), name)
 
 
 class LambertConformal(CoordSystem):
@@ -1014,26 +880,44 @@ class LambertConformal(CoordSystem):
             secant_latitudes=(33, 45)
 
         """
+        # We're either north or south polar. Set a cutoff accordingly.
+        if secant_latitudes is not None:
+            lats = secant_latitudes
+            max_lat = lats[0]
+            if len(lats) == 2:
+                max_lat = lats[0] if abs(lats[0]) > abs(lats[1]) else lats[1]
+            cutoff = -30 if max_lat > 0 else 30
+        else:
+            cutoff = None
 
-        #: True latitude of planar origin in degrees.
-        self.central_lat = _arg_default(central_lat, 39.0)
+        globe = self._ellipsoid_to_globe(ellipsoid, ccrs.Globe())
 
-        #: True longitude of planar origin in degrees.
-        self.central_lon = _arg_default(central_lon, -96.0)
-
-        #: X offset from planar origin in metres.
-        self.false_easting = _arg_default(false_easting, 0)
-
-        #: Y offset from planar origin in metres.
-        self.false_northing = _arg_default(false_northing, 0)
-
-        #: The standard parallels of the cone (tuple of 1 or 2 floats).
-        self.secant_latitudes = _arg_default(
-            secant_latitudes, (33, 45), cast_as=_1or2_parallels
+        self._crs = ccrs.LambertConformal(
+            central_longitude=central_lon,
+            central_latitude=central_lat,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            globe=globe,
+            cutoff=cutoff,
+            standard_parallels=secant_latitudes,
         )
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
-        self.ellipsoid = ellipsoid
+    def __getattr__(self, name):
+        if name == "central_lat":
+            return self._crs.to_dict()["lat_0"]
+        if name == "central_lon":
+            return self._crs.to_dict()["lon_0"]
+        if name == "false_easting":
+            return self._crs.to_cf()["false_easting"]
+        if name == "false_northing":
+            return self._crs.to_cf()["false_northing"]
+        if name == "true_scale_lat":
+            return None
+        if name == "ellipsoid":
+            return self._crs.ellipsoid
+        if name == "datum":
+            return self._crs.datum
+        return getattr(super(), name)
 
     def __repr__(self):
         return (
@@ -1049,32 +933,6 @@ class LambertConformal(CoordSystem):
             )
         )
 
-    def as_cartopy_crs(self):
-        # We're either north or south polar. Set a cutoff accordingly.
-        if self.secant_latitudes is not None:
-            lats = self.secant_latitudes
-            max_lat = lats[0]
-            if len(lats) == 2:
-                max_lat = lats[0] if abs(lats[0]) > abs(lats[1]) else lats[1]
-            cutoff = -30 if max_lat > 0 else 30
-        else:
-            cutoff = None
-
-        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
-
-        return ccrs.LambertConformal(
-            central_longitude=self.central_lon,
-            central_latitude=self.central_lat,
-            false_easting=self.false_easting,
-            false_northing=self.false_northing,
-            globe=globe,
-            cutoff=cutoff,
-            standard_parallels=self.secant_latitudes,
-        )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
-
 
 class Mercator(CoordSystem):
     """
@@ -1086,11 +944,11 @@ class Mercator(CoordSystem):
 
     def __init__(
         self,
-        longitude_of_projection_origin=None,
+        longitude_of_projection_origin=0,
         ellipsoid=None,
-        standard_parallel=None,
-        false_easting=None,
-        false_northing=None,
+        standard_parallel=0,
+        false_easting=0,
+        false_northing=0,
     ):
         """
         Constructs a Mercator coord system.
@@ -1113,47 +971,29 @@ class Mercator(CoordSystem):
             Y offset from the planar origin in metres. Defaults to 0.0.
 
         """
-        #: True longitude of planar origin in degrees.
-        self.longitude_of_projection_origin = _arg_default(
-            longitude_of_projection_origin, 0
+
+        self._crs = ccrs.Mercator(
+            central_longitude=longitude_of_projection_origin,
+            globe=self._ellipsoid_to_globe(ellipsoid, ccrs.Globe()),
+            latitude_true_scale=standard_parallel,
+            false_easting=false_easting,
+            false_northing=false_northing,
         )
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
-        self.ellipsoid = ellipsoid
-
-        #: The latitude where the scale is 1.
-        self.standard_parallel = _arg_default(standard_parallel, 0)
-
-        #: X offset from the planar origin in metres.
-        self.false_easting = _arg_default(false_easting, 0)
-
-        #: Y offset from the planar origin in metres.
-        self.false_northing = _arg_default(false_northing, 0)
-
-    def __repr__(self):
-        res = (
-            "Mercator(longitude_of_projection_origin="
-            "{self.longitude_of_projection_origin!r}, "
-            "ellipsoid={self.ellipsoid!r}, "
-            "standard_parallel={self.standard_parallel!r}, "
-            "false_easting={self.false_easting!r}, "
-            "false_northing={self.false_northing!r})"
-        )
-        return res.format(self=self)
-
-    def as_cartopy_crs(self):
-        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
-
-        return ccrs.Mercator(
-            central_longitude=self.longitude_of_projection_origin,
-            globe=globe,
-            latitude_true_scale=self.standard_parallel,
-            false_easting=self.false_easting,
-            false_northing=self.false_northing,
-        )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
+    def __getattr__(self, name):
+        if name == "longitude_of_projection_origin":
+            return self._crs.to_dict()["lon_0"]
+        if name == "standard_parallel":
+            return self._crs.to_cf()["standard_parallel"]
+        if name == "false_easting":
+            return self._crs.to_cf()["false_easting"]
+        if name == "false_northing":
+            return self._crs.to_cf()["false_northing"]
+        if name == "ellipsoid":
+            return self._crs.ellipsoid
+        if name == "datum":
+            return self._crs.datum
+        return getattr(super(), name)
 
 
 class LambertAzimuthalEqualArea(CoordSystem):
@@ -1212,19 +1052,6 @@ class LambertAzimuthalEqualArea(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
-    def __repr__(self):
-        return (
-            "LambertAzimuthalEqualArea(latitude_of_projection_origin={!r},"
-            " longitude_of_projection_origin={!r}, false_easting={!r},"
-            " false_northing={!r}, ellipsoid={!r})"
-        ).format(
-            self.latitude_of_projection_origin,
-            self.longitude_of_projection_origin,
-            self.false_easting,
-            self.false_northing,
-            self.ellipsoid,
-        )
-
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
@@ -1235,9 +1062,6 @@ class LambertAzimuthalEqualArea(CoordSystem):
             false_northing=self.false_northing,
             globe=globe,
         )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
 
 
 class AlbersEqualArea(CoordSystem):
@@ -1307,21 +1131,6 @@ class AlbersEqualArea(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
-    def __repr__(self):
-        return (
-            "AlbersEqualArea(latitude_of_projection_origin={!r},"
-            " longitude_of_central_meridian={!r}, false_easting={!r},"
-            " false_northing={!r}, standard_parallels={!r},"
-            " ellipsoid={!r})"
-        ).format(
-            self.latitude_of_projection_origin,
-            self.longitude_of_central_meridian,
-            self.false_easting,
-            self.false_northing,
-            self.standard_parallels,
-            self.ellipsoid,
-        )
-
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
@@ -1333,6 +1142,3 @@ class AlbersEqualArea(CoordSystem):
             standard_parallels=self.standard_parallels,
             globe=globe,
         )
-
-    def as_cartopy_projection(self):
-        return self.as_cartopy_crs()
