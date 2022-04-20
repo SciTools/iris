@@ -2519,6 +2519,8 @@ class Saver:
                     else:
                         cf_var_grid.semi_major_axis = semi_major
                         cf_var_grid.semi_minor_axis = semi_minor
+                    if ellipsoid._datum is not None:
+                        cf_var_grid.datum = ellipsoid._datum
 
                 # latlon
                 if isinstance(cs, iris.coord_systems.GeogCS):

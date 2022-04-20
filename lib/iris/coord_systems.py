@@ -137,7 +137,6 @@ class GeogCS(CoordSystem):
         semi_minor_axis=None,
         inverse_flattening=None,
         longitude_of_prime_meridian=None,
-        datum=None,
     ):
         """
         Create a new GeogCS.
@@ -246,7 +245,7 @@ class GeogCS(CoordSystem):
             longitude_of_prime_meridian, 0
         )
 
-        self.datum = datum
+        self._datum = None
 
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
@@ -259,11 +258,11 @@ class GeogCS(CoordSystem):
                     self.longitude_of_prime_meridian,
                 )
             )
-        if self.datum is not None:
+        if self._datum is not None:
             attrs.append(
                 (
                     "datum",
-                    self.datum,
+                    self._datum,
                 )
             )
         return attrs
@@ -314,12 +313,30 @@ class GeogCS(CoordSystem):
     def as_cartopy_globe(self):
         # Explicitly set `ellipse` to None as a workaround for
         # Cartopy setting WGS84 as the default.
-        return ccrs.Globe(
-            semimajor_axis=self.semi_major_axis,
-            semiminor_axis=self.semi_minor_axis,
-            ellipse=None,
-            datum=self.datum,
+        if self._datum is not None:
+            return ccrs.Globe(
+                datum=self._datum,
+                ellipse=None,
+            )
+        else:
+            return ccrs.Globe(
+                semimajor_axis=self.semi_major_axis,
+                semiminor_axis=self.semi_minor_axis,
+                ellipse=None,
+            )
+
+    @classmethod
+    def from_datum(cls, datum, longitude_of_prime_meridian=None):
+        # Cartopy doesn't actually enact datums unless they're provided without
+        # ellipsoid axes, so only provide the datum
+        ref_crs = ccrs.Geodetic(ccrs.Globe(datum))
+        crs = cls(
+            ref_crs.ellipsoid.semi_major_metre,
+            ref_crs.ellipsoid.semi_minor_metre,
+            longitude_of_prime_meridian,
         )
+        crs._datum = datum
+        return crs
 
 
 class RotatedGeogCS(CoordSystem):
@@ -572,6 +589,7 @@ class OSGB(TransverseMercator):
 class Orthographic(CoordSystem):
     """
     An orthographic map projection.
+
     """
 
     grid_mapping_name = "orthographic"
@@ -586,18 +604,26 @@ class Orthographic(CoordSystem):
     ):
         """
         Constructs an Orthographic coord system.
+
         Args:
+
         * latitude_of_projection_origin:
             True latitude of planar origin in degrees.
+
         * longitude_of_projection_origin:
             True longitude of planar origin in degrees.
+
         Kwargs:
+
         * false_easting:
             X offset from planar origin in metres. Defaults to 0.0 .
+
         * false_northing:
             Y offset from planar origin in metres. Defaults to 0.0 .
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(
@@ -653,6 +679,7 @@ class Orthographic(CoordSystem):
 class VerticalPerspective(CoordSystem):
     """
     A vertical/near-side perspective satellite image map projection.
+
     """
 
     grid_mapping_name = "vertical_perspective"
@@ -668,21 +695,30 @@ class VerticalPerspective(CoordSystem):
     ):
         """
         Constructs a Vertical Perspective coord system.
+
         Args:
+
         * latitude_of_projection_origin:
             True latitude of planar origin in degrees.
+
         * longitude_of_projection_origin:
             True longitude of planar origin in degrees.
+
         * perspective_point_height:
             Altitude of satellite in metres above the surface of the
             ellipsoid.
+
         Kwargs:
+
         * false_easting:
             X offset from planar origin in metres. Defaults to 0.0 .
+
         * false_northing:
             Y offset from planar origin in metres. Defaults to 0.0 .
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(
@@ -742,6 +778,7 @@ class VerticalPerspective(CoordSystem):
 class Geostationary(CoordSystem):
     """
     A geostationary satellite image map projection.
+
     """
 
     grid_mapping_name = "geostationary"
@@ -759,22 +796,32 @@ class Geostationary(CoordSystem):
 
         """
         Constructs a Geostationary coord system.
+
         Args:
+
         * latitude_of_projection_origin:
             True latitude of planar origin in degrees.
+
         * longitude_of_projection_origin:
             True longitude of planar origin in degrees.
+
         * perspective_point_height:
             Altitude of satellite in metres above the surface of the ellipsoid.
+
         * sweep_angle_axis (string):
             The axis along which the satellite instrument sweeps - 'x' or 'y'.
+
         Kwargs:
+
         * false_easting:
             X offset from planar origin in metres. Defaults to 0.0 .
+
         * false_northing:
             Y offset from planar origin in metres. Defaults to 0.0 .
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(
@@ -845,6 +892,7 @@ class Geostationary(CoordSystem):
 class Stereographic(CoordSystem):
     """
     A stereographic map projection.
+
     """
 
     grid_mapping_name = "stereographic"
@@ -860,20 +908,29 @@ class Stereographic(CoordSystem):
     ):
         """
         Constructs a Stereographic coord system.
+
         Args:
+
         * central_lat:
             The latitude of the pole.
+
         * central_lon:
             The central longitude, which aligns with the y axis.
+
         Kwargs:
+
         * false_easting:
             X offset from planar origin in metres. Defaults to 0.0 .
+
         * false_northing:
             Y offset from planar origin in metres. Defaults to 0.0 .
+
         * true_scale_lat:
             Latitude of true scale.
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         """
 
         #: True latitude of planar origin in degrees.
@@ -932,6 +989,7 @@ class Stereographic(CoordSystem):
 class LambertConformal(CoordSystem):
     """
     A coordinate system in the Lambert Conformal conic projection.
+
     """
 
     grid_mapping_name = "lambert_conformal_conic"
@@ -947,25 +1005,35 @@ class LambertConformal(CoordSystem):
     ):
         """
         Constructs a LambertConformal coord system.
+
         Kwargs:
+
         * central_lat:
                 The latitude of "unitary scale".  Defaults to 39.0 .
+
         * central_lon:
                 The central longitude.  Defaults to -96.0 .
+
         * false_easting:
                 X offset from planar origin in metres.  Defaults to 0.0 .
+
         * false_northing:
                 Y offset from planar origin in metres.  Defaults to 0.0 .
+
         * secant_latitudes (number or iterable of 1 or 2 numbers):
                 Latitudes of secant intersection.  One or two.
                 Defaults to (33.0, 45.0).
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         .. note:
+
             Default arguments are for the familiar USA map:
             central_lon=-96.0, central_lat=39.0,
             false_easting=0.0, false_northing=0.0,
             secant_latitudes=(33, 45)
+
         """
 
         #: True latitude of planar origin in degrees.
@@ -1032,6 +1100,7 @@ class LambertConformal(CoordSystem):
 class Mercator(CoordSystem):
     """
     A coordinate system in the Mercator projection.
+
     """
 
     grid_mapping_name = "mercator"
@@ -1047,19 +1116,27 @@ class Mercator(CoordSystem):
     ):
         """
         Constructs a Mercator coord system.
+
         Kwargs:
+
         * longitude_of_projection_origin:
             True longitude of planar origin in degrees. Defaults to 0.0 .
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         * standard_parallel:
             The latitude where the scale is 1. Defaults to 0.0 .
+
         * scale_factor_at_projection_origin:
             Scale factor at natural origin. Defaults to unused.
+
         * false_easting:
             X offset from the planar origin in metres. Defaults to 0.0.
+
         * false_northing:
             Y offset from the planar origin in metres. Defaults to 0.0.
+
         * datum:
             If given, specifies the datumof the coordinate system. Only
             respected if iris.Future.daum_support is set.
@@ -1133,6 +1210,7 @@ class Mercator(CoordSystem):
 class LambertAzimuthalEqualArea(CoordSystem):
     """
     A coordinate system in the Lambert Azimuthal Equal Area projection.
+
     """
 
     grid_mapping_name = "lambert_azimuthal_equal_area"
@@ -1147,17 +1225,24 @@ class LambertAzimuthalEqualArea(CoordSystem):
     ):
         """
         Constructs a Lambert Azimuthal Equal Area coord system.
+
         Kwargs:
+
         * latitude_of_projection_origin:
             True latitude of planar origin in degrees. Defaults to 0.0 .
+
         * longitude_of_projection_origin:
             True longitude of planar origin in degrees. Defaults to 0.0 .
+
         * false_easting:
                 X offset from planar origin in metres. Defaults to 0.0 .
+
         * false_northing:
                 Y offset from planar origin in metres. Defaults to 0.0 .
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(
@@ -1209,6 +1294,7 @@ class LambertAzimuthalEqualArea(CoordSystem):
 class AlbersEqualArea(CoordSystem):
     """
     A coordinate system in the Albers Conical Equal Area projection.
+
     """
 
     grid_mapping_name = "albers_conical_equal_area"
@@ -1224,21 +1310,29 @@ class AlbersEqualArea(CoordSystem):
     ):
         """
         Constructs a Albers Conical Equal Area coord system.
+
         Kwargs:
+
         * latitude_of_projection_origin:
             True latitude of planar origin in degrees. Defaults to 0.0 .
+
         * longitude_of_central_meridian:
             True longitude of planar central meridian in degrees.
             Defaults to 0.0 .
+
         * false_easting:
             X offset from planar origin in metres. Defaults to 0.0 .
+
         * false_northing:
             Y offset from planar origin in metres. Defaults to 0.0 .
+
         * standard_parallels (number or iterable of 1 or 2 numbers):
             The one or two latitudes of correct scale.
             Defaults to (20.0, 50.0).
+
         * ellipsoid (:class:`GeogCS`):
             If given, defines the ellipsoid.
+
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(

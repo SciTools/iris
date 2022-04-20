@@ -30,7 +30,6 @@ def osgb():
         false_northing=100,
         scale_factor_at_central_meridian=0.9996012717,
         ellipsoid=GeogCS(6377563.396, 6356256.909),
-        datum="OSGB_1936",
     )
 
 
@@ -41,7 +40,6 @@ def stereo():
         false_easting=100,
         false_northing=200,
         ellipsoid=GeogCS(6377563.396, 6356256.909),
-        datum="WGS_1984",
     )
 
 
@@ -165,24 +163,28 @@ class Test_GeogCS_construction(tests.IrisTest):
 
 class Test_GeogCS_repr(tests.IrisTest):
     def test_repr(self):
-        cs = GeogCS(6543210, 6500000, datum="WGS_1984")
-        expected = "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0, datum=WGS_1984)"
+        cs = GeogCS(6543210, 6500000)
+        expected = (
+            "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
+        )
         self.assertEqual(expected, repr(cs))
 
 
 class Test_GeogCS_str(tests.IrisTest):
     def test_str(self):
-        cs = GeogCS(6543210, 6500000, datum="WGS_1984")
-        expected = "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0, datum=WGS_1984)"
+        cs = GeogCS(6543210, 6500000)
+        expected = (
+            "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
+        )
         self.assertEqual(expected, str(cs))
 
 
 class Test_GeogCS_as_cartopy_globe(tests.IrisTest):
     def test_as_cartopy_globe(self):
-        cs = GeogCS(6543210, 6500000, datum="WGS_1984")
+        cs = GeogCS(6543210, 6500000)
         # Can't check equality directly, so use the proj4 params instead.
         res = cs.as_cartopy_globe().to_proj4_params()
-        expected = {"a": 6543210, "b": 6500000, "datum": "WGS_1984"}
+        expected = {"a": 6543210, "b": 6500000}
         self.assertEqual(res, expected)
 
 
@@ -192,7 +194,6 @@ class Test_GeogCS_as_cartopy_projection(tests.IrisTest):
             "semi_major_axis": 6543210,
             "semi_minor_axis": 6500000,
             "longitude_of_prime_meridian": 30,
-            "datum": "WGS_1984",
         }
         cs = GeogCS(**geogcs_args)
         res = cs.as_cartopy_projection()
@@ -201,7 +202,6 @@ class Test_GeogCS_as_cartopy_projection(tests.IrisTest):
             semimajor_axis=geogcs_args["semi_major_axis"],
             semiminor_axis=geogcs_args["semi_minor_axis"],
             ellipse=None,
-            datum="WGS_1984",
         )
         expected = ccrs.PlateCarree(
             globe=globe,
@@ -213,13 +213,12 @@ class Test_GeogCS_as_cartopy_projection(tests.IrisTest):
 
 class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
     def test_as_cartopy_crs(self):
-        cs = GeogCS(6543210, 6500000, datum="WGS_1984")
+        cs = GeogCS(6543210, 6500000)
         res = cs.as_cartopy_crs()
         globe = ccrs.Globe(
             semimajor_axis=6543210.0,
             semiminor_axis=6500000.0,
             ellipse=None,
-            datum="WGS_1984",
         )
         expected = ccrs.Geodetic(globe)
         self.assertEqual(res, expected)
@@ -250,22 +249,19 @@ class Test_RotatedGeogCS_repr(tests.IrisTest):
             40,
             north_pole_grid_longitude=50,
             ellipsoid=GeogCS(6371229),
-            datum="WGS_1984",
         )
         expected = (
             "RotatedGeogCS(30.0, 40.0, "
-            "north_pole_grid_longitude=50.0, ellipsoid=GeogCS(6371229.0), datum=WGS_1984)"
+            "north_pole_grid_longitude=50.0, ellipsoid=GeogCS(6371229.0))"
         )
         self.assertEqual(expected, repr(rcs))
 
-        rcs = RotatedGeogCS(
-            30, 40, north_pole_grid_longitude=50, datum="WGS_1984"
-        )
-        expected = "RotatedGeogCS(30.0, 40.0, north_pole_grid_longitude=50.0, datum=WGS_1984)"
+        rcs = RotatedGeogCS(30, 40, north_pole_grid_longitude=50)
+        expected = "RotatedGeogCS(30.0, 40.0, north_pole_grid_longitude=50.0)"
         self.assertEqual(expected, repr(rcs))
 
-        rcs = RotatedGeogCS(30, 40, datum="WGS_1984")
-        expected = "RotatedGeogCS(30.0, 40.0, datum=WGS_1984)"
+        rcs = RotatedGeogCS(30, 40)
+        expected = "RotatedGeogCS(30.0, 40.0)"
         self.assertEqual(expected, repr(rcs))
 
 
@@ -276,22 +272,19 @@ class Test_RotatedGeogCS_str(tests.IrisTest):
             40,
             north_pole_grid_longitude=50,
             ellipsoid=GeogCS(6371229),
-            datum="WGS_1984",
         )
         expected = (
             "RotatedGeogCS(30.0, 40.0, "
-            "north_pole_grid_longitude=50.0, ellipsoid=GeogCS(6371229.0), datum=WGS_1984)"
+            "north_pole_grid_longitude=50.0, ellipsoid=GeogCS(6371229.0))"
         )
         self.assertEqual(expected, str(rcs))
 
-        rcs = RotatedGeogCS(
-            30, 40, north_pole_grid_longitude=50, datum="WGS_1984"
-        )
-        expected = "RotatedGeogCS(30.0, 40.0, north_pole_grid_longitude=50.0, datum=WGS_1984)"
+        rcs = RotatedGeogCS(30, 40, north_pole_grid_longitude=50)
+        expected = "RotatedGeogCS(30.0, 40.0, north_pole_grid_longitude=50.0)"
         self.assertEqual(expected, str(rcs))
 
-        rcs = RotatedGeogCS(30, 40, datum="WGS_1984")
-        expected = "RotatedGeogCS(30.0, 40.0, datum=WGS_1984)"
+        rcs = RotatedGeogCS(30, 40)
+        expected = "RotatedGeogCS(30.0, 40.0)"
         self.assertEqual(expected, str(rcs))
 
 
@@ -309,7 +302,7 @@ class Test_TransverseMercator_repr(tests.IrisTest):
         expected = (
             "TransverseMercator(latitude_of_projection_origin=49.0, longitude_of_central_meridian=-2.0, "
             "false_easting=-400.0, false_northing=100.0, scale_factor_at_central_meridian=0.9996012717, "
-            "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909), datum=WGS_1984)"
+            "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909))"
         )
         self.assertEqual(expected, repr(tm))
 
@@ -324,7 +317,6 @@ class Test_TransverseMercator_as_cartopy_crs(tests.IrisTest):
         ellipsoid = GeogCS(
             semi_major_axis=6377563.396, semi_minor_axis=6356256.909
         )
-        datum = "WGS_1984"
 
         tmerc_cs = TransverseMercator(
             latitude_of_projection_origin,
@@ -333,7 +325,6 @@ class Test_TransverseMercator_as_cartopy_crs(tests.IrisTest):
             false_northing,
             scale_factor_at_central_meridian,
             ellipsoid=ellipsoid,
-            datum=datum,
         )
 
         expected = ccrs.TransverseMercator(
@@ -346,7 +337,6 @@ class Test_TransverseMercator_as_cartopy_crs(tests.IrisTest):
                 semimajor_axis=6377563.396,
                 semiminor_axis=6356256.909,
                 ellipse=None,
-                datum=datum,
             ),
         )
 
@@ -364,7 +354,6 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
         ellipsoid = GeogCS(
             semi_major_axis=6377563.396, semi_minor_axis=6356256.909
         )
-        datum = "WGS_1984"
 
         tmerc_cs = TransverseMercator(
             latitude_of_projection_origin,
@@ -373,7 +362,6 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
             false_northing,
             scale_factor_at_central_meridian,
             ellipsoid=ellipsoid,
-            datum=datum,
         )
 
         expected = ccrs.TransverseMercator(
@@ -386,7 +374,6 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
                 semimajor_axis=6377563.396,
                 semiminor_axis=6356256.909,
                 ellipse=None,
-                datum="WGS_1984",
             ),
         )
 
@@ -406,7 +393,7 @@ class Test_Stereographic_repr(tests.IrisTest):
         expected = (
             "Stereographic(central_lat=-90.0, central_lon=-45.0, "
             "false_easting=100.0, false_northing=200.0, true_scale_lat=None, "
-            "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909), datum=WGS_1984)"
+            "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909))"
         )
         self.assertEqual(expected, repr(st))
 
@@ -418,7 +405,6 @@ class Test_Stereographic_as_cartopy_crs(tests.IrisTest):
         false_easting = 100.0
         false_northing = 200.0
         ellipsoid = GeogCS(6377563.396, 6356256.909)
-        datum = "WGS_1984"
 
         st = Stereographic(
             central_lat=latitude_of_projection_origin,
@@ -426,7 +412,6 @@ class Test_Stereographic_as_cartopy_crs(tests.IrisTest):
             false_easting=false_easting,
             false_northing=false_northing,
             ellipsoid=ellipsoid,
-            datum=datum,
         )
         expected = ccrs.Stereographic(
             central_latitude=latitude_of_projection_origin,
@@ -437,7 +422,6 @@ class Test_Stereographic_as_cartopy_crs(tests.IrisTest):
                 semimajor_axis=6377563.396,
                 semiminor_axis=6356256.909,
                 ellipse=None,
-                datum=datum,
             ),
         )
 
@@ -452,7 +436,6 @@ class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
         false_easting = 100.0
         false_northing = 200.0
         ellipsoid = GeogCS(6377563.396, 6356256.909)
-        datum = "WGS_1984"
 
         st = Stereographic(
             central_lat=latitude_of_projection_origin,
@@ -460,7 +443,6 @@ class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
             false_easting=false_easting,
             false_northing=false_northing,
             ellipsoid=ellipsoid,
-            datum=datum,
         )
         expected = ccrs.Stereographic(
             central_latitude=latitude_of_projection_origin,
@@ -471,7 +453,6 @@ class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
                 semimajor_axis=6377563.396,
                 semiminor_axis=6356256.909,
                 ellipse=None,
-                datum=datum,
             ),
         )
 
@@ -513,6 +494,24 @@ class Test_LambertConformal(tests.GraphicsTest):
         lcc = LambertConformal(0, 0, secant_latitudes=(-30, -60))
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(ccrs.cutoff, 30)
+
+
+class Test_Datums(tests.IrisTest):
+    def test_default_none(self):
+        cs = GeogCS(6543210, 6500000)
+        cartopy_crs = cs.as_cartopy_crs()
+        self.assertStringEqual(cartopy_crs.datum.name, "unknown")
+
+    def test_set_persist(self):
+        cs = GeogCS.from_datum(datum="WGS84")
+        cartopy_crs = cs.as_cartopy_crs()
+        self.assertStringEqual(
+            cartopy_crs.datum.name, "World Geodetic System 1984"
+        )
+
+        cs = GeogCS.from_datum(datum="OSGB36")
+        cartopy_crs = cs.as_cartopy_crs()
+        self.assertStringEqual(cartopy_crs.datum.name, "OSGB 1936")
 
 
 if __name__ == "__main__":

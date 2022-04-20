@@ -24,6 +24,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.coord_systems
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import (
@@ -32,6 +33,7 @@ from iris.fileformats.netcdf import (
     UnknownCellMethodWarning,
 )
 import iris.tests.stock as stock
+import iris.tests.unit.fileformats.netcdf.test_load_cubes as tlc
 
 
 @tests.skip_data
@@ -484,6 +486,12 @@ class TestCellMethod_unknown(tests.IrisTest):
 
 @tests.skip_data
 class TestCoordSystem(tests.IrisTest):
+    def setUp(self):
+        tlc.setUpModule()
+
+    def tearDown(self):
+        tlc.tearDownModule()
+
     def test_load_laea_grid(self):
         cube = iris.load_cube(
             tests.get_data_path(
@@ -491,6 +499,91 @@ class TestCoordSystem(tests.IrisTest):
             )
         )
         self.assertCML(cube, ("netcdf", "netcdf_laea.cml"))
+
+    datum_cf_var_cdl = """
+        netcdf output {
+        dimensions:
+            bar = 3 ;
+            foo = 4 ;
+        variables:
+            int thingness(bar, foo) ;
+                thingness:long_name = "thingness" ;
+                thingness:units = "1" ;
+                thingness:grid_mapping = "latitude_longitude" ;
+            int latitude_longitude ;
+                latitude_longitude:grid_mapping_name = "latitude_longitude" ;
+                latitude_longitude:longitude_of_prime_meridian = 0. ;
+                latitude_longitude:earth_radius = 6000000. ;
+                latitude_longitude:datum = "wibble" ;
+            double bar(bar) ;
+                bar:units = "1" ;
+                bar:long_name = "bar" ;
+            double foo(foo) ;
+                foo:units = "1" ;
+                foo:long_name = "foo" ;
+
+        // global attributes:
+                :Conventions = "CF-1.7" ;
+        data:
+
+        thingness =
+        0, 1, 2, 3,
+        4, 5, 6, 7,
+        8, 9, 10, 11 ;
+
+        latitude_longitude = _ ;
+
+        bar = 2.5, 7.5, 12.5 ;
+
+        foo = -7.5, 7.5, 22.5, 37.5 ;
+        }
+    """
+
+    def test_load_datum_wkt(self):
+        expected = "wibble"
+        nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
+        with iris.FUTURE.context(datum_support=True):
+            cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("foo").coord_system
+        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        self.assertStringEqual(expected, actual)
+
+    def test_no_load_datum_wkt(self):
+        nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
+        cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("foo").coord_system
+        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        self.assertIsNone(actual)
+
+    def test_load_datum_cf_var(self):
+        expected = "wibble"
+        nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
+        with iris.FUTURE.context(datum_support=True):
+            cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("foo").coord_system
+        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        self.assertStringEqual(expected, actual)
+
+    def test_no_load_datum_cf_var(self):
+        nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
+        cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("foo").coord_system
+        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        self.assertIsNone(actual)
+
+    def test_save_datum(self):
+        expected = "OSGB 1936"
+        test_cube = stock.realistic_3d()
+        test_crs = iris.coord_systems.GeogCS.from_datum(datum="OSGB36")
+        test_cube.coord("grid_latitude").coord_system = test_crs
+        test_cube.coord("grid_longitude").coord_system = test_crs
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(test_cube, filename)
+            with iris.FUTURE.context(datum_support=True):
+                cube = iris.load_cube(filename)
+        test_crs = cube.coord("grid_latitude").coord_system
+        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        self.assertStringEqual(expected, actual)
 
 
 def _get_scale_factor_add_offset(cube, datatype):

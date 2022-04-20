@@ -165,8 +165,8 @@ class Future(threading.local):
 
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future()"
-        return msg.format()
+        msg = "Future(datum_support={})"
+        return msg.format(self.datum_support)
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
