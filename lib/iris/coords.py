@@ -12,6 +12,7 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Container, Iterator
 import copy
+from functools import lru_cache
 from itertools import chain, zip_longest
 import operator
 import warnings
@@ -2531,6 +2532,17 @@ class DimCoord(Coord):
     """
 
     @classmethod
+    @lru_cache
+    def regular_points(cls, zeroth, step, count):
+        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+        _, regular = iris.util.points_step(points)
+        if not regular:
+            points = (zeroth + step) + step * np.arange(
+                count, dtype=np.float64
+            )
+        return points
+
+    @classmethod
     def from_regular(
         cls,
         zeroth,
@@ -2570,12 +2582,7 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = iris.util.points_step(points)
-        if not regular:
-            points = (zeroth + step) + step * np.arange(
-                count, dtype=np.float64
-            )
+        points = cls.regular_points(zeroth, step, count).copy()
         points.flags.writeable = False
 
         if with_bounds:
