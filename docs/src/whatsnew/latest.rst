@@ -81,7 +81,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@wjbenfold`_ added caching to the calculation of the points array in a
+   :class:`~iris.coords.DimCoord` created using
+   :meth:`~iris.coords.DimCoord.from_regular`. (:pull:`4698`)
 
 
 🔥 Deprecations
