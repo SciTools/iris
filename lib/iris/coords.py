@@ -2524,6 +2524,10 @@ class Coord(_DimensionalMetadata):
         return unique_value
 
 
+_regular_points = lru_cache(iris.util.regular_points)
+"""Caching version of iris.util.regular_points"""
+
+
 class DimCoord(Coord):
     """
     A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
@@ -2573,9 +2577,7 @@ class DimCoord(Coord):
         """
         # Use lru_cache because this is done repeatedly with the same arguments
         # (particularly in field-based file loading).
-        points = lru_cache(iris.util.regular_points)(
-            zeroth, step, count
-        ).copy()
+        points = _regular_points(zeroth, step, count).copy()
         points.flags.writeable = False
 
         if with_bounds:
