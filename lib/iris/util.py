@@ -1281,6 +1281,32 @@ def regular_step(coord):
     return avdiff.astype(coord.points.dtype)
 
 
+def regular_points(zeroth, step, count):
+    """Make an array of regular points.
+
+    Create an array of `count` points from `zeroth` + `step`, adding `step` each
+    time. In float32 if this gives a sufficiently regular array (tested with
+    points_step) and float64 if not.
+
+    Parameters
+    ----------
+    zeroth : number
+        The value *prior* to the first point value.
+
+    step : number
+        The numeric difference between successive point values.
+
+    count : number
+        The number of point values.
+
+    """
+    points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+    _, regular = iris.util.points_step(points)
+    if not regular:
+        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
+    return points
+
+
 def points_step(points):
     """Determine whether `points` has a regular step.
 

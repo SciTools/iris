@@ -12,6 +12,7 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Container, Iterator
 import copy
+from functools import lru_cache
 from itertools import chain, zip_longest
 import operator
 import warnings
@@ -2523,6 +2524,10 @@ class Coord(_DimensionalMetadata):
         return unique_value
 
 
+_regular_points = lru_cache(iris.util.regular_points)
+"""Caching version of iris.util.regular_points"""
+
+
 class DimCoord(Coord):
     """
     A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
@@ -2570,12 +2575,9 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = iris.util.points_step(points)
-        if not regular:
-            points = (zeroth + step) + step * np.arange(
-                count, dtype=np.float64
-            )
+        # Use lru_cache because this is done repeatedly with the same arguments
+        # (particularly in field-based file loading).
+        points = _regular_points(zeroth, step, count).copy()
         points.flags.writeable = False
 
         if with_bounds:
