@@ -12,9 +12,10 @@ Integration tests for merging cubes.
 # before importing anything else.
 import iris.tests as tests  # isort:skip
 
+import numpy as np
+
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
-import numpy as np
 
 
 class TestContiguous(tests.IrisTest):
