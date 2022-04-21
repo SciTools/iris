@@ -2532,17 +2532,6 @@ class DimCoord(Coord):
     """
 
     @classmethod
-    @lru_cache
-    def regular_points(cls, zeroth, step, count):
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = iris.util.points_step(points)
-        if not regular:
-            points = (zeroth + step) + step * np.arange(
-                count, dtype=np.float64
-            )
-        return points
-
-    @classmethod
     def from_regular(
         cls,
         zeroth,
@@ -2582,7 +2571,11 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = cls.regular_points(zeroth, step, count).copy()
+        # Use lru_cache because this is done repeatedly with the same arguments
+        # (particularly in field-based file loading).
+        points = lru_cache(iris.util.regular_points)(
+            zeroth, step, count
+        ).copy()
         points.flags.writeable = False
 
         if with_bounds:
