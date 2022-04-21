@@ -25,7 +25,7 @@ import numpy.ma as ma
 
 import iris
 import iris.coord_systems
-from iris.coords import CellMethod
+from iris.coords import CellMethod, DimCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import (
     CF_CONVENTIONS_VERSION,
@@ -503,40 +503,93 @@ class TestCoordSystem(tests.IrisTest):
     datum_cf_var_cdl = """
         netcdf output {
         dimensions:
-            bar = 3 ;
-            foo = 4 ;
+            y = 4 ;
+            x = 3 ;
         variables:
-            int thingness(bar, foo) ;
-                thingness:long_name = "thingness" ;
-                thingness:units = "1" ;
-                thingness:grid_mapping = "latitude_longitude" ;
-            int latitude_longitude ;
-                latitude_longitude:grid_mapping_name = "latitude_longitude" ;
-                latitude_longitude:longitude_of_prime_meridian = 0. ;
-                latitude_longitude:earth_radius = 6000000. ;
-                latitude_longitude:datum = "wibble" ;
-            double bar(bar) ;
-                bar:units = "1" ;
-                bar:long_name = "bar" ;
-            double foo(foo) ;
-                foo:units = "1" ;
-                foo:long_name = "foo" ;
+            float data(y, x) ;
+                data :standard_name = "toa_brightness_temperature" ;
+                data :units = "K" ;
+                data :grid_mapping = "mercator" ;
+            int mercator ;
+                mercator:grid_mapping_name = "mercator" ;
+                mercator:longitude_of_prime_meridian = 0. ;
+                mercator:earth_radius = 6378169. ;
+                mercator:datum = "wibble" ;
+            float y(y) ;
+                y:axis = "Y" ;
+                y:units = "m" ;
+                y:standard_name = "projection_y_coordinate" ;
+            float x(x) ;
+                x:axis = "X" ;
+                x:units = "m" ;
+                x:standard_name = "projection_x_coordinate" ;
 
         // global attributes:
                 :Conventions = "CF-1.7" ;
+                :standard_name_vocabulary = "CF Standard Name Table v27" ;
+
         data:
 
-        thingness =
-        0, 1, 2, 3,
-        4, 5, 6, 7,
-        8, 9, 10, 11 ;
+        data =
+        0, 1, 2,
+        3, 4, 5,
+        6, 7, 8,
+        9, 10, 11 ;
 
-        latitude_longitude = _ ;
+        mercator = _ ;
 
-        bar = 2.5, 7.5, 12.5 ;
+        y = 1, 2, 3, 5 ;
 
-        foo = -7.5, 7.5, 22.5, 37.5 ;
+        x = -6, -4, -2 ;
+
         }
+    """
+
+    datum_wkt_cdl = """
+netcdf output5 {
+dimensions:
+    y = 4 ;
+    x = 3 ;
+variables:
+    float data(y, x) ;
+        data :standard_name = "toa_brightness_temperature" ;
+        data :units = "K" ;
+        data :grid_mapping = "mercator" ;
+    int mercator ;
+        mercator:grid_mapping_name = "mercator" ;
+        mercator:longitude_of_prime_meridian = 0. ;
+        mercator:earth_radius = 6378169. ;
+        mercator:longitude_of_projection_origin = 0. ;
+        mercator:false_easting = 0. ;
+        mercator:false_northing = 0. ;
+        mercator:scale_factor_at_projection_origin = 1. ;
+        mercator:crs_wkt = "PROJCRS[\\"unknown\\",BASEGEOGCRS[\\"unknown\\",DATUM[\\"WGS84\\",ELLIPSOID[\\"unknown\\",6378169,0,LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]],PRIMEM[\\"Greenwich\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8901]]],CONVERSION[\\"unknown\\",METHOD[\\"Mercator (variant B)\\",ID[\\"EPSG\\",9805]],PARAMETER[\\"Latitude of 1st standard parallel\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8823]],PARAMETER[\\"Longitude of natural origin\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8802]],PARAMETER[\\"False easting\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8806]],PARAMETER[\\"False northing\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8807]]],CS[Cartesian,2],AXIS[\\"(E)\\",east,ORDER[1],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]],AXIS[\\"(N)\\",north,ORDER[2],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]]" ;
+    float y(y) ;
+        y:axis = "Y" ;
+        y:units = "m" ;
+        y:standard_name = "projection_y_coordinate" ;
+    float x(x) ;
+        x:axis = "X" ;
+        x:units = "m" ;
+        x:standard_name = "projection_x_coordinate" ;
+
+// global attributes:
+        :standard_name_vocabulary = "CF Standard Name Table v27" ;
+        :Conventions = "CF-1.7" ;
+data:
+
+ data =
+  0, 1, 2,
+  3, 4, 5,
+  6, 7, 8,
+  9, 10, 11 ;
+
+ mercator = _ ;
+
+ y = 1, 2, 3, 5 ;
+
+ x = -6, -4, -2 ;
+}
     """
 
     def test_load_datum_wkt(self):
@@ -544,45 +597,74 @@ class TestCoordSystem(tests.IrisTest):
         nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
-        test_crs = cube.coord("foo").coord_system
-        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
         self.assertStringEqual(expected, actual)
 
     def test_no_load_datum_wkt(self):
         nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
         cube = iris.load_cube(nc_path)
-        test_crs = cube.coord("foo").coord_system
-        actual = test_crs.as_cartopy_crs().ellipsoid.datum
-        self.assertIsNone(actual)
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
+        self.assertStringEqual(actual, "unknown")
 
     def test_load_datum_cf_var(self):
         expected = "wibble"
         nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
-        test_crs = cube.coord("foo").coord_system
-        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
         self.assertStringEqual(expected, actual)
 
     def test_no_load_datum_cf_var(self):
         nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
         cube = iris.load_cube(nc_path)
-        test_crs = cube.coord("foo").coord_system
-        actual = test_crs.as_cartopy_crs().ellipsoid.datum
-        self.assertIsNone(actual)
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
+        self.assertStringEqual(actual, "unknown")
 
     def test_save_datum(self):
         expected = "OSGB 1936"
-        test_cube = stock.realistic_3d()
-        test_crs = iris.coord_systems.GeogCS.from_datum(datum="OSGB36")
-        test_cube.coord("grid_latitude").coord_system = test_crs
-        test_cube.coord("grid_longitude").coord_system = test_crs
+        # saved_crs = iris.coord_systems.GeogCS.from_datum(datum="OSGB36")
+        saved_crs = iris.coord_systems.Mercator(
+            ellipsoid=iris.coord_systems.GeogCS.from_datum(datum="OSGB36")
+        )
+
+        base_cube = stock.realistic_3d()
+        base_lat_coord = base_cube.coord("grid_latitude")
+        test_lat_coord = DimCoord(
+            base_lat_coord.points,
+            standard_name="projection_y_coordinate",
+            coord_system=saved_crs,
+        )
+        base_lon_coord = base_cube.coord("grid_longitude")
+        test_lon_coord = DimCoord(
+            base_lon_coord.points,
+            standard_name="projection_x_coordinate",
+            coord_system=saved_crs,
+        )
+        test_cube = Cube(
+            base_cube.data,
+            standard_name=base_cube.standard_name,
+            units=base_cube.units,
+            dim_coords_and_dims=(
+                (base_cube.coord("time"), 0),
+                (test_lat_coord, 1),
+                (test_lon_coord, 2),
+            ),
+        )
+
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(test_cube, filename)
             with iris.FUTURE.context(datum_support=True):
                 cube = iris.load_cube(filename)
-        test_crs = cube.coord("grid_latitude").coord_system
-        actual = test_crs.as_cartopy_crs().ellipsoid.datum
+        print(cube)
+        for coord in cube.coords():
+            print(coord)
+
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
         self.assertStringEqual(expected, actual)
 
 
