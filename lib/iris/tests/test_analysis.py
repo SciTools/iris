@@ -9,7 +9,7 @@
 import iris.tests as tests  # isort:skip
 
 import cf_units
-import dask.Array as da
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
