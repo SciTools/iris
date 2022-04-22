@@ -1483,8 +1483,8 @@ def _lazy_max_run(array, axis=-1, **kwargs):
         emsg = "function must be a callable. Got {}."
         raise TypeError(emsg.format(type(func)))
     bool_array = func(array)
-    bool_array = np.logical_and(
-        bool_array, np.logical_not(da.ma.getmaskarray(array))
+    bool_array = da.logical_and(
+        bool_array, da.logical_not(da.ma.getmaskarray(array))
     )
     padding = [(0, 0)] * array.ndim
     padding[axis] = (0, 1)
