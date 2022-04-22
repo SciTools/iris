@@ -1475,31 +1475,6 @@ def _proportion(array, function, axis, **kwargs):
 
 def _lazy_max_run(array, axis=-1, **kwargs):
     """
-    Runs fairly clearly need the axis along which they're being calculated not
-    to be chunked. This wrapper uses
-    :meth:`~iris._lazy_data.map_complete_blocks` to guarantee that.
-    """
-
-    _partial_max_run_calc = functools.partial(
-        _lazy_max_run_calc,
-        axis=axis,
-        **kwargs,
-    )
-
-    result = iris._lazy_data.map_complete_blocks(
-        array, _partial_max_run_calc, (axis,), (0,)
-    )
-
-    # Check whether to reduce to a scalar result, as per the behaviour
-    # of other aggregators.
-    if result.shape == (1,):
-        result = da.squeeze(result)
-
-    return result
-
-
-def _lazy_max_run_calc(array, axis=-1, **kwargs):
-    """
     Lazily perform the calculation of maximum run lengths along the given axis
     """
     array = iris._lazy_data.as_lazy_data(array)
@@ -1528,7 +1503,14 @@ def _lazy_max_run_calc(array, axis=-1, **kwargs):
         preop=None,
     )
     run_lengths = da.diff(stepped_run_lengths, axis=axis)
-    return da.max(run_lengths, axis=axis)
+    result = da.max(run_lengths, axis=axis)
+
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,):
+        result = da.squeeze(result)
+
+    return result
 
 
 def _rms(array, axis, **kwargs):
