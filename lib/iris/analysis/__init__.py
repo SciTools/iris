@@ -1482,7 +1482,7 @@ def _lazy_max_run(array, axis=-1, **kwargs):
     if not callable(func):
         emsg = "function must be a callable. Got {}."
         raise TypeError(emsg.format(type(func)))
-    bool_array = func(array)
+    bool_array = da.ma.getdata(func(array))
     bool_array = da.logical_and(
         bool_array, da.logical_not(da.ma.getmaskarray(array))
     )
@@ -1728,7 +1728,7 @@ each grid location could be calculated with::
     result = precip_cube.collapsed('time', iris.analysis.MAX_RUN,
                                    function=lambda values: values > 10)
 
-This aggregator handles masked data.
+This aggregator handles masked data, which it treats as interrupting a run.
 
 """
 MAX_RUN.name = lambda: "max_run"

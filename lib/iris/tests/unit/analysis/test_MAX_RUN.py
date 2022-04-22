@@ -90,6 +90,12 @@ class MaskedTest(tests.IrisTest):
             ),  # Partially mask run
             (
                 ma.masked_array(
+                    np.array([3, 1, 1, 1, 1, 3]), np.array([0, 0, 1, 0, 0, 0])
+                ),
+                2,
+            ),  # Mask interrupts run
+            (
+                ma.masked_array(
                     np.array([1, 1, 1, 3, 1, 3]), np.array([1, 1, 1, 1, 1, 1])
                 ),
                 0,
