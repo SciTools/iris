@@ -26,9 +26,9 @@ pip-cache
 .tox
 .pytest_cache
 
-# asv environments, results
+# asv data, environments, results
 .asv
-.data
+benchmarks/.data
 
 #Translations
 *.mo
