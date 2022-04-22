@@ -40,6 +40,10 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ fixed cube arithmetic operation for cubes with meshes.
    (:issue:`4454`, :pull:`4651`)
 
+#. `@wjbenfold`_ added support for CF-compliant treatment of
+   ``standard_parallel`` and ``scale_factor_at_projection_origin`` to
+   :class:`~iris.coord_system.Mercator`. (:issue:`3844`, :pull:`4609`)
+
 
 🐛 Bugs Fixed
 =============
