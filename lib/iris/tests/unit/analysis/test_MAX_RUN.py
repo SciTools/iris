@@ -9,10 +9,11 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import dask.Array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.analysis import MAX_RUN
 
 
@@ -185,7 +186,7 @@ class TestBasic(UnmaskedTest, RealMixin):
 class TestLazy(UnmaskedTest, LazyMixin):
     def test_1d(self):
         for data, expected in self.data_1ds:
-            data = as_lazy_data(data)
+            data = da.from_array(data)
             result = self.run_func(
                 data,
                 axis=0,
@@ -194,7 +195,7 @@ class TestLazy(UnmaskedTest, LazyMixin):
             self.check_array(result, expected)
 
     def test_2d_axis0(self):
-        data = as_lazy_data(self.data_2d_axis0)
+        data = da.from_array(self.data_2d_axis0)
         result = self.run_func(
             data,
             axis=0,
@@ -203,7 +204,7 @@ class TestLazy(UnmaskedTest, LazyMixin):
         self.check_array(result, self.expected_2d_axis0)
 
     def test_2d_axis1(self):
-        data = as_lazy_data(self.data_2d_axis1)
+        data = da.from_array(self.data_2d_axis1)
         result = self.run_func(
             data,
             axis=1,
@@ -215,8 +216,7 @@ class TestLazy(UnmaskedTest, LazyMixin):
 class TestLazyChunked(UnmaskedTest, LazyMixin):
     def test_1d(self):
         for data, expected in self.data_1ds:
-            data = as_lazy_data(data)
-            data.rechunk(1)
+            data = da.from_array(data, chunks=(1,))
             result = self.run_func(
                 data,
                 axis=0,
@@ -225,8 +225,7 @@ class TestLazyChunked(UnmaskedTest, LazyMixin):
             self.check_array(result, expected)
 
     def test_2d_axis0_chunk0(self):
-        data = as_lazy_data(self.data_2d_axis0)
-        data.rechunk(1, -1)
+        data = da.from_array(self.data_2d_axis0, chunks=(1, -1))
         result = self.run_func(
             data,
             axis=0,
@@ -235,8 +234,7 @@ class TestLazyChunked(UnmaskedTest, LazyMixin):
         self.check_array(result, self.expected_2d_axis0)
 
     def test_2d_axis0_chunk1(self):
-        data = as_lazy_data(self.data_2d_axis0)
-        data.rechunk(-1, 1)
+        data = da.from_array(self.data_2d_axis0, chunks=(-1, 1))
         result = self.run_func(
             data,
             axis=0,
@@ -245,8 +243,7 @@ class TestLazyChunked(UnmaskedTest, LazyMixin):
         self.check_array(result, self.expected_2d_axis0)
 
     def test_2d_axis1_chunk0(self):
-        data = as_lazy_data(self.data_2d_axis1)
-        data.rechunk(1, -1)
+        data = da.from_array(self.data_2d_axis1, chunks=(1, -1))
         result = self.run_func(
             data,
             axis=1,
@@ -255,8 +252,7 @@ class TestLazyChunked(UnmaskedTest, LazyMixin):
         self.check_array(result, self.expected_2d_axis1)
 
     def test_2d_axis1_chunk1(self):
-        data = as_lazy_data(self.data_2d_axis1)
-        data.rechunk(-1, 1)
+        data = da.from_array(self.data_2d_axis1, chunks=(-1, 1))
         result = self.run_func(
             data,
             axis=1,

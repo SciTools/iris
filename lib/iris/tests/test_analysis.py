@@ -9,11 +9,11 @@
 import iris.tests as tests  # isort:skip
 
 import cf_units
+import dask.Array as da
 import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris._lazy_data import as_lazy_data
 import iris.analysis.cartography
 import iris.analysis.maths
 import iris.coord_systems
@@ -952,7 +952,7 @@ class TestAggregators(tests.IrisTest):
         cube = tests.stock.simple_1d()
         # [ 0  1  2  3  4  5  6  7  8  9 10]
         # Make data lazy
-        cube.data = as_lazy_data(cube.data)
+        cube.data = da.from_array(cube.data)
         result = cube.collapsed(
             "foo",
             iris.analysis.MAX_RUN,
