@@ -260,19 +260,11 @@ def _get_ellipsoid(cf_grid_var):
             if crs_wkt is not None:
                 proj_crs = pyproj.crs.CRS.from_wkt(crs_wkt)
                 if proj_crs.datum is not None:
-                    print(dir(proj_crs.datum))
-                    print(proj_crs.datum.ellipsoid)
-                    print(proj_crs.datum.type_name)
-                    print(proj_crs.datum.name)
-                    print(proj_crs.datum.to_json_dict())
-                    print(dir(proj_crs))
-                    print(proj_crs.to_proj4())
-                    print(proj_crs.source_crs)
                     datum = proj_crs.datum.name
     else:
         datum = None
 
-    if datum is not None and (
+    if isinstance(datum, str) and (
         datum.startswith("Unknown") or datum.startswith("unknown")
     ):
         datum = None

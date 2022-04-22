@@ -514,7 +514,7 @@ class TestCoordSystem(tests.IrisTest):
                 mercator:grid_mapping_name = "mercator" ;
                 mercator:longitude_of_prime_meridian = 0. ;
                 mercator:earth_radius = 6378169. ;
-                mercator:datum = "wibble" ;
+                mercator:horizontal_datum_name = "OSGB36" ;
             float y(y) ;
                 y:axis = "Y" ;
                 y:units = "m" ;
@@ -563,7 +563,7 @@ variables:
         mercator:false_easting = 0. ;
         mercator:false_northing = 0. ;
         mercator:scale_factor_at_projection_origin = 1. ;
-        mercator:crs_wkt = "PROJCRS[\\"unknown\\",BASEGEOGCRS[\\"unknown\\",DATUM[\\"WGS84\\",ELLIPSOID[\\"unknown\\",6378169,0,LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]],PRIMEM[\\"Greenwich\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8901]]],CONVERSION[\\"unknown\\",METHOD[\\"Mercator (variant B)\\",ID[\\"EPSG\\",9805]],PARAMETER[\\"Latitude of 1st standard parallel\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8823]],PARAMETER[\\"Longitude of natural origin\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8802]],PARAMETER[\\"False easting\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8806]],PARAMETER[\\"False northing\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8807]]],CS[Cartesian,2],AXIS[\\"(E)\\",east,ORDER[1],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]],AXIS[\\"(N)\\",north,ORDER[2],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]]" ;
+        mercator:crs_wkt = "PROJCRS[\\"unknown\\",BASEGEOGCRS[\\"unknown\\",DATUM[\\"OSGB36\\",ELLIPSOID[\\"unknown\\",6378169,0,LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]],PRIMEM[\\"Greenwich\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8901]]],CONVERSION[\\"unknown\\",METHOD[\\"Mercator (variant B)\\",ID[\\"EPSG\\",9805]],PARAMETER[\\"Latitude of 1st standard parallel\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8823]],PARAMETER[\\"Longitude of natural origin\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8802]],PARAMETER[\\"False easting\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8806]],PARAMETER[\\"False northing\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8807]]],CS[Cartesian,2],AXIS[\\"(E)\\",east,ORDER[1],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]],AXIS[\\"(N)\\",north,ORDER[2],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]]" ;
     float y(y) ;
         y:axis = "Y" ;
         y:units = "m" ;
@@ -593,7 +593,7 @@ data:
     """
 
     def test_load_datum_wkt(self):
-        expected = "wibble"
+        expected = "OSGB 1936"
         nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
@@ -609,7 +609,7 @@ data:
         self.assertStringEqual(actual, "unknown")
 
     def test_load_datum_cf_var(self):
-        expected = "wibble"
+        expected = "OSGB 1936"
         nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
@@ -628,7 +628,7 @@ data:
         expected = "OSGB 1936"
         # saved_crs = iris.coord_systems.GeogCS.from_datum(datum="OSGB36")
         saved_crs = iris.coord_systems.Mercator(
-            ellipsoid=iris.coord_systems.GeogCS.from_datum(datum="OSGB36")
+            ellipsoid=iris.coord_systems.GeogCS.from_datum("OSGB36")
         )
 
         base_cube = stock.realistic_3d()
