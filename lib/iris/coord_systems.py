@@ -1083,6 +1083,7 @@ class Mercator(CoordSystem):
         longitude_of_projection_origin=None,
         ellipsoid=None,
         standard_parallel=None,
+        scale_factor_at_projection_origin=None,
         false_easting=None,
         false_northing=None,
     ):
@@ -1100,11 +1101,17 @@ class Mercator(CoordSystem):
         * standard_parallel:
             The latitude where the scale is 1. Defaults to 0.0 .
 
+        * scale_factor_at_projection_origin:
+            Scale factor at natural origin. Defaults to unused.
+
         * false_easting:
             X offset from the planar origin in metres. Defaults to 0.0.
 
         * false_northing:
             Y offset from the planar origin in metres. Defaults to 0.0.
+
+        Note: Only one of ``standard_parallel`` and
+        ``scale_factor_at_projection_origin`` should be included.
 
         """
         #: True longitude of planar origin in degrees.
@@ -1115,8 +1122,24 @@ class Mercator(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
+        # Initialise to None, then set based on arguments
         #: The latitude where the scale is 1.
-        self.standard_parallel = _arg_default(standard_parallel, 0)
+        self.standard_parallel = None
+        # The scale factor at the origin of the projection
+        self.scale_factor_at_projection_origin = None
+        if scale_factor_at_projection_origin is None:
+            self.standard_parallel = _arg_default(standard_parallel, 0)
+        else:
+            if standard_parallel is None:
+                self.scale_factor_at_projection_origin = _arg_default(
+                    scale_factor_at_projection_origin, 0
+                )
+            else:
+                raise ValueError(
+                    "It does not make sense to provide both "
+                    '"scale_factor_at_projection_origin" and '
+                    '"standard_parallel".'
+                )
 
         #: X offset from the planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
@@ -1130,6 +1153,8 @@ class Mercator(CoordSystem):
             "{self.longitude_of_projection_origin!r}, "
             "ellipsoid={self.ellipsoid!r}, "
             "standard_parallel={self.standard_parallel!r}, "
+            "scale_factor_at_projection_origin="
+            "{self.scale_factor_at_projection_origin!r}, "
             "false_easting={self.false_easting!r}, "
             "false_northing={self.false_northing!r})"
         )
@@ -1142,6 +1167,7 @@ class Mercator(CoordSystem):
             central_longitude=self.longitude_of_projection_origin,
             globe=globe,
             latitude_true_scale=self.standard_parallel,
+            scale_factor=self.scale_factor_at_projection_origin,
             false_easting=self.false_easting,
             false_northing=self.false_northing,
         )

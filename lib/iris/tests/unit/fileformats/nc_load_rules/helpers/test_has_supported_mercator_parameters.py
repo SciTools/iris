@@ -79,9 +79,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
 
         self.assertTrue(is_valid)
 
-    def test_invalid_scale_factor(self):
-        # Iris does not yet support scale factors other than one for
-        # Mercator projections
+    def test_valid_scale_factor(self):
         cf_name = "mercator"
         cf_grid_var = mock.Mock(
             spec=[],
@@ -94,13 +92,37 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
         )
         engine = _engine(cf_grid_var, cf_name)
 
+        is_valid = has_supported_mercator_parameters(engine, cf_name)
+
+        self.assertTrue(is_valid)
+
+    def test_invalid_scale_factor_and_standard_parallel(self):
+        # Scale factor and standard parallel cannot both be specified for
+        # Mercator projections
+        cf_name = "mercator"
+        cf_grid_var = mock.Mock(
+            spec=[],
+            longitude_of_projection_origin=0,
+            false_easting=0,
+            false_northing=0,
+            scale_factor_at_projection_origin=0.9,
+            standard_parallel=20,
+            semi_major_axis=6377563.396,
+            semi_minor_axis=6356256.909,
+        )
+        engine = _engine(cf_grid_var, cf_name)
+
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
             is_valid = has_supported_mercator_parameters(engine, cf_name)
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegex(str(warns[0]), "Scale factor")
+        self.assertRegex(
+            str(warns[0]),
+            "both "
+            '"scale_factor_at_projection_origin" and "standard_parallel"',
+        )
 
 
 if __name__ == "__main__":

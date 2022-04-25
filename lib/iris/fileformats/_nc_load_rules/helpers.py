@@ -445,8 +445,9 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
     )
     false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
     false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    # Iris currently only supports Mercator projections with specific
-    # scale_factor_at_projection_origin. This is checked elsewhere.
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
 
     ellipsoid = None
     if (
@@ -460,6 +461,7 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
         longitude_of_projection_origin,
         ellipsoid=ellipsoid,
         standard_parallel=standard_parallel,
+        scale_factor_at_projection_origin=scale_factor_at_projection_origin,
         false_easting=false_easting,
         false_northing=false_northing,
     )
@@ -1251,17 +1253,20 @@ def has_supported_mercator_parameters(engine, cf_name):
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
+    standard_parallel = getattr(
+        cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
+    )
     scale_factor_at_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
     )
 
     if (
         scale_factor_at_projection_origin is not None
-        and scale_factor_at_projection_origin != 1
+        and standard_parallel is not None
     ):
         warnings.warn(
-            "Scale factors other than 1.0 not yet supported for "
-            "Mercator projections"
+            "It does not make sense to provide both "
+            '"scale_factor_at_projection_origin" and "standard_parallel".'
         )
         is_valid = False
 
