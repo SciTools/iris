@@ -86,7 +86,7 @@ The required content, in order, is as follows:
 For example::
 
   #. `@tkknight <https://github.com/tkknight>`_ and
-     `@trexfeathers <<https://github.com/trexfeathers>`_ (reviewer) changed
+     `@trexfeathers <https://github.com/trexfeathers>`_ (reviewer) changed
      argument ``x`` to be optional in :class:`~iris.module.class` and
      :meth:`iris.module.method`. This allows greater flexibility as requested in
      :issue:`9999`. (:pull:`1111`, :pull:`9999`)
