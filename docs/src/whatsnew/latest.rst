@@ -71,9 +71,9 @@ This document explains the changes made to Iris for this release
    coordinate's direction is reversed. (:issue:`3249`, :issue:`423`,
    :issue:`4078`, :issue:`3756`, :pull:`4466`)
 
-#. `@wjbenfold`_ prevented an ``AttributeError`` being logged to ``stderr`` when
-   a :class:`~iris.fileformats.cf.CFReader` that fails to initialise is garbage
-   collected. (:issue:`3312`, :pull:`4646`)
+#. `@wjbenfold`_ and `@evertrol`_ prevented an ``AttributeError`` being logged
+   to ``stderr`` when a :class:`~iris.fileformats.cf.CFReader` that fails to
+   initialise is garbage collected. (:issue:`3312`, :pull:`4646`)
 
 
 💣 Incompatible Changes
@@ -145,7 +145,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@evertrol: https://github.com/evertrol
 
 
 .. comment
