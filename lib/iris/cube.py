@@ -3713,6 +3713,10 @@ class Cube(CFVariableMixin):
             for coord in coords:
                 dims_to_collapse.update(self.coord_dims(coord))
 
+        if aggregator.name() == "max_run" and len(dims_to_collapse) > 1:
+            msg = "Not possible to calculate runs over more than one dimension"
+            raise ValueError(msg)
+
         if not dims_to_collapse:
             msg = (
                 "Cannot collapse a dimension which does not describe any "
@@ -3818,6 +3822,7 @@ class Cube(CFVariableMixin):
             data_result = aggregator.aggregate(
                 unrolled_data, axis=-1, **kwargs
             )
+
         aggregator.update_metadata(
             collapsed_cube, coords, axis=collapse_axis, **kwargs
         )

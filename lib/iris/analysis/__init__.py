@@ -1043,9 +1043,10 @@ class Aggregator(_Aggregator):
             coord_names.append(coord.name())
 
         # Add a cell method.
-        method_name = self.cell_method.format(**kwargs)
-        cell_method = iris.coords.CellMethod(method_name, coord_names)
-        cube.add_cell_method(cell_method)
+        if self.cell_method is not None:
+            method_name = self.cell_method.format(**kwargs)
+            cell_method = iris.coords.CellMethod(method_name, coord_names)
+            cube.add_cell_method(cell_method)
 
 
 class WeightedAggregator(Aggregator):
@@ -1472,6 +1473,46 @@ def _proportion(array, function, axis, **kwargs):
     return result
 
 
+def _lazy_max_run(array, axis=-1, **kwargs):
+    """
+    Lazily perform the calculation of maximum run lengths along the given axis
+    """
+    array = iris._lazy_data.as_lazy_data(array)
+    func = kwargs.pop("function", None)
+    if not callable(func):
+        emsg = "function must be a callable. Got {}."
+        raise TypeError(emsg.format(type(func)))
+    bool_array = da.ma.getdata(func(array))
+    bool_array = da.logical_and(
+        bool_array, da.logical_not(da.ma.getmaskarray(array))
+    )
+    padding = [(0, 0)] * array.ndim
+    padding[axis] = (0, 1)
+    ones_zeros = da.pad(bool_array, padding).astype(int)
+    cum_sum = da.cumsum(ones_zeros, axis=axis)
+    run_totals = da.where(ones_zeros == 0, cum_sum, 0)
+    stepped_run_lengths = da.reductions.cumreduction(
+        np.maximum.accumulate,
+        np.maximum,
+        np.NINF,
+        run_totals,
+        axis=axis,
+        dtype=cum_sum.dtype,
+        out=None,
+        method="sequential",
+        preop=None,
+    )
+    run_lengths = da.diff(stepped_run_lengths, axis=axis)
+    result = da.max(run_lengths, axis=axis)
+
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,):
+        result = da.squeeze(result)
+
+    return result
+
+
 def _rms(array, axis, **kwargs):
     # XXX due to the current limitations in `da.average` (see below), maintain
     # an explicit non-lazy aggregation function for now.
@@ -1660,6 +1701,37 @@ To compute the number of *ensemble members* with precipitation exceeding 10
 This aggregator handles masked data.
 
 """
+
+
+MAX_RUN = Aggregator(
+    None,
+    iris._lazy_data.non_lazy(_lazy_max_run),
+    units_func=lambda units: 1,
+    lazy_func=_build_dask_mdtol_function(_lazy_max_run),
+)
+"""
+An :class:`~iris.analysis.Aggregator` instance that finds the longest run of
+:class:`~iris.cube.Cube` data occurrences that satisfy a particular criterion,
+as defined by a user supplied *function*, along the given axis.
+
+**Required** kwargs associated with the use of this aggregator:
+
+* function (callable):
+    A function which converts an array of data values into a corresponding array
+    of True/False values.
+
+**For example**:
+
+The longest run of days with precipitation exceeding 10 (in cube data units) at
+each grid location could be calculated with::
+
+    result = precip_cube.collapsed('time', iris.analysis.MAX_RUN,
+                                   function=lambda values: values > 10)
+
+This aggregator handles masked data, which it treats as interrupting a run.
+
+"""
+MAX_RUN.name = lambda: "max_run"
 
 
 GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)

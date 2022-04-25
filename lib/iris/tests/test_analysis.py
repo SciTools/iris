@@ -9,6 +9,7 @@
 import iris.tests as tests  # isort:skip
 
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -19,6 +20,7 @@ import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.tests.stock
+import iris.util
 
 
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
@@ -929,6 +931,104 @@ class TestAggregators(tests.IrisTest):
         gt6.data = gt6.data.astype("i8")
         self.assertCML(
             gt6, ("analysis", "count_foo_bar_2d.cml"), checksum=False
+        )
+
+    def test_max_run_1d(self):
+        cube = tests.stock.simple_1d()
+        # [ 0  1  2  3  4  5  6  7  8  9 10]
+        result = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 1, 4, 5, 6, 8, 9]),
+        )
+        self.assertArrayEqual(result.data, np.array(3))
+        self.assertEqual(result.units, 1)
+        self.assertTupleEqual(result.cell_methods, ())
+        self.assertCML(
+            result, ("analysis", "max_run_foo_1d.cml"), checksum=False
+        )
+
+    def test_max_run_lazy(self):
+        cube = tests.stock.simple_1d()
+        # [ 0  1  2  3  4  5  6  7  8  9 10]
+        # Make data lazy
+        cube.data = da.from_array(cube.data)
+        result = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 1, 4, 5, 6, 8, 9]),
+        )
+        self.assertTrue(result.has_lazy_data())
+        # Realise data
+        _ = result.data
+        self.assertArrayEqual(result.data, np.array(3))
+        self.assertEqual(result.units, 1)
+        self.assertTupleEqual(result.cell_methods, ())
+        self.assertCML(
+            result, ("analysis", "max_run_foo_1d.cml"), checksum=False
+        )
+
+    def test_max_run_2d(self):
+        cube = tests.stock.simple_2d()
+        # [[ 0  1  2  3]
+        #  [ 4  5  6  7]
+        #  [ 8  9 10 11]]
+        foo_result = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
+        )
+        self.assertArrayEqual(
+            foo_result.data, np.array([1, 2, 1], dtype=np.float32)
+        )
+        self.assertEqual(foo_result.units, 1)
+        self.assertTupleEqual(foo_result.cell_methods, ())
+        self.assertCML(
+            foo_result, ("analysis", "max_run_foo_2d.cml"), checksum=False
+        )
+
+        bar_result = cube.collapsed(
+            "bar",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
+        )
+        self.assertArrayEqual(
+            bar_result.data, np.array([2, 2, 0, 3], dtype=np.float32)
+        )
+        self.assertEqual(bar_result.units, 1)
+        self.assertTupleEqual(bar_result.cell_methods, ())
+        self.assertCML(
+            bar_result, ("analysis", "max_run_bar_2d.cml"), checksum=False
+        )
+
+        with self.assertRaises(ValueError):
+            _ = cube.collapsed(
+                ("foo", "bar"),
+                iris.analysis.MAX_RUN,
+                function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
+            )
+
+    def test_max_run_masked(self):
+        cube = tests.stock.simple_2d()
+        # [[ 0  1  2  3]
+        #  [ 4  5  6  7]
+        #  [ 8  9 10 11]]
+        iris.util.mask_cube(cube, np.isin(cube.data, [0, 2, 3, 5, 7, 11]))
+        # [[--  1 -- --]
+        #  [ 4 --  6 --]
+        #  [ 8  9 10 --]]
+        result = cube.collapsed(
+            "bar",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 1, 4, 5, 6, 9, 10, 11]),
+        )
+        self.assertArrayEqual(
+            result.data, np.array([1, 1, 2, 0], dtype=np.float32)
+        )
+        self.assertEqual(result.units, 1)
+        self.assertTupleEqual(result.cell_methods, ())
+        self.assertCML(
+            result, ("analysis", "max_run_bar_2d_masked.cml"), checksum=False
         )
 
     def test_weighted_sum_consistency(self):
