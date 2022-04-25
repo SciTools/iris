@@ -366,8 +366,7 @@ def map_complete_blocks(src, func, dims, out_sizes):
     * dims (tuple of int):
         Dimensions that cannot be chunked.
     * out_sizes (tuple of int):
-        Output size of dimensions that cannot be chunked. If the size is 0 then
-        the dimension will be dropped.
+        Output size of dimensions that cannot be chunked.
 
     """
     if is_lazy_data(src):
@@ -387,20 +386,8 @@ def map_complete_blocks(src, func, dims, out_sizes):
     data = data.rechunk(in_chunks)
 
     # Determine output chunks
-    drop_axis = []
     out_chunks = list(data.chunks)
     for dim, size in zip(dims, out_sizes):
-        if size == 0:
-            drop_axis.append(dim)
-        else:
-            out_chunks[dim] = size
+        out_chunks[dim] = size
 
-    out_chunks = [
-        chunk_size
-        for dim, chunk_size in enumerate(out_chunks)
-        if dim not in drop_axis
-    ]
-
-    return data.map_blocks(
-        func, chunks=out_chunks, dtype=src.dtype, drop_axis=drop_axis
-    )
+    return data.map_blocks(func, chunks=out_chunks, dtype=src.dtype)
