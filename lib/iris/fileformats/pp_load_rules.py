@@ -515,8 +515,7 @@ def _new_coord_and_dims(
 _HOURS_UNIT = cf_units.Unit("hours")
 
 
-@lru_cache
-def _epoch_date_hours(epoch_hours_unit, datetime):
+def _epoch_date_hours_base(epoch_hours_unit, datetime):
     """
     Return an 'hours since epoch' number for a date.
 
@@ -589,6 +588,16 @@ def _epoch_date_hours(epoch_hours_unit, datetime):
         epoch_hours -= 24.0 * days_offset
 
     return epoch_hours
+
+
+def _epoch_date_hours(*args, **kwargs):
+    try:
+        return _epoch_date_hours_cached(*args, **kwargs)
+    except TypeError:
+        return _epoch_date_hours_base(*args, **kwargs)
+
+
+_epoch_date_hours_cached = lru_cache(_epoch_date_hours_base)
 
 
 def _convert_time_coords(
