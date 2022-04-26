@@ -9,12 +9,13 @@
 # SciTools/iris-code-generators:tools/gen_rules.py
 
 import calendar
+from functools import lru_cache
 
 import cf_units
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.coords import AuxCoord, CellMethod, DimCoord, dim_coord_from_regular
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
     ConversionMetadata,
@@ -514,6 +515,7 @@ def _new_coord_and_dims(
 _HOURS_UNIT = cf_units.Unit("hours")
 
 
+@lru_cache
 def _epoch_date_hours(epoch_hours_unit, datetime):
     """
     Return an 'hours since epoch' number for a date.
@@ -1120,7 +1122,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                dim_coord_from_regular(
                     f.bzx,
                     f.bdx,
                     f.lbnpt,
@@ -1141,7 +1143,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                dim_coord_from_regular(
                     f.bzx,
                     f.bdx,
                     f.lbnpt,
@@ -1163,7 +1165,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                dim_coord_from_regular(
                     f.bzy,
                     f.bdy,
                     f.lbrow,
@@ -1183,7 +1185,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                dim_coord_from_regular(
                     f.bzy,
                     f.bdy,
                     f.lbrow,
@@ -1270,7 +1272,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                dim_coord_from_regular(
                     f.bzx,
                     f.bdx,
                     f.lbnpt,
@@ -1380,7 +1382,7 @@ def _all_other_rules(f):
     ):
         dim_coords_and_dims.append(
             (
-                DimCoord.from_regular(
+                dim_coord_from_regular(
                     f.bzx, f.bdx, f.lbnpt, long_name="site_number", units="1"
                 ),
                 1,

@@ -2921,6 +2921,24 @@ class DimCoord(Coord):
         return element
 
 
+_dim_coord_cache = {}
+
+
+def dim_coord_from_regular(*args, **kwargs):
+    coord_system = kwargs.pop("coord_system", None)
+    key = (args, tuple(kwargs.items()))
+    if key in _dim_coord_cache:
+        cached_coord, cached_coord_system = _dim_coord_cache[key]
+        if coord_system == cached_coord_system:
+            return cached_coord
+    else:
+        new_coord = DimCoord.from_regular(
+            *args, coord_system=coord_system, **kwargs
+        )
+        _dim_coord_cache[key] = (new_coord, coord_system)
+        return new_coord
+
+
 class AuxCoord(Coord):
     """
     A CF auxiliary coordinate.

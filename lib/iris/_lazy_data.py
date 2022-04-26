@@ -10,7 +10,7 @@ To avoid replicating implementation-dependent test and conversion code.
 
 """
 
-from functools import wraps
+from functools import lru_cache, wraps
 
 import dask
 import dask.array as da
@@ -48,6 +48,17 @@ def is_lazy_data(data):
 
 
 def _optimum_chunksize(chunks, shape, limit=None, dtype=np.dtype("f4")):
+    if isinstance(chunks, list):
+        chunks = tuple(chunks)
+    if isinstance(shape, list):
+        shape = tuple(shape)
+    return _optimum_chunksize_internals(chunks, shape, limit, dtype)
+
+
+@lru_cache
+def _optimum_chunksize_internals(
+    chunks, shape, limit=None, dtype=np.dtype("f4")
+):
     """
     Reduce or increase an initial chunk shape to get close to a chosen ideal
     size, while prioritising the splitting of the earlier (outer) dimensions
