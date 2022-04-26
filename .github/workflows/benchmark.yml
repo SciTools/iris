@@ -93,8 +93,11 @@ jobs:
               fi
               title="Performance Shift(s): \`$commit\`"
               body="
-          Benchmark comparison has identified performance shifts at commit \
-          $commit (#$pr_number). Please review the report below and \
+          Benchmark comparison has identified performance shifts at
+          
+          * commit $commit (#$pr_number).
+          
+          Please review the report below and \
           take corrective/congratulatory action as appropriate \
           :slightly_smiling_face:
 
