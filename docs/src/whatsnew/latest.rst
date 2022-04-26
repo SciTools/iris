@@ -34,7 +34,7 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ added support for ``false_easting`` and ``false_northing`` to
    :class:`~iris.coord_system.Mercator`. (:issue:`3107`, :pull:`4524`)
 
-#. `@rcomer`_ implemented lazy aggregation for the
+#. `@rcomer`_ and `@wjbenfold`_ (reviewer) implemented lazy aggregation for the
    :obj:`iris.analysis.PERCENTILE` aggregator. (:pull:`3901`)
 
 #. `@pp-mo`_ fixed cube arithmetic operation for cubes with meshes.
