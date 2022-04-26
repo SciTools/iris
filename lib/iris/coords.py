@@ -2930,7 +2930,7 @@ def dim_coord_from_regular(*args, **kwargs):
     if key in _dim_coord_cache:
         cached_coord, cached_coord_system = _dim_coord_cache[key]
         if coord_system == cached_coord_system:
-            return cached_coord
+            return cached_coord.copy()
     else:
         new_coord = DimCoord.from_regular(
             *args, coord_system=coord_system, **kwargs
