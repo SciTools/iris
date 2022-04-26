@@ -3841,7 +3841,7 @@ class Cube(CFVariableMixin):
         return result
 
     def aggregated_by(
-        self, coords, aggregator, result_coord_func=None, **kwargs
+        self, coords, aggregator, climatological=False, **kwargs
     ):
         """
         Perform aggregation over the cube given one or more "group coordinates".
@@ -3873,10 +3873,10 @@ class Cube(CFVariableMixin):
 
         Kwargs:
 
-        * result_coord_func (callable):
-            A callable used to determine the values of the resultant
-            coordinates. Takes an argument of TODO and returns a number (???).
-            Used to avoid BAD STUFF.
+        * climatological (bool):
+            Indicates whether the output is expected to be climatological. This
+            causes the climatological flag to be set on the resulting coord(s)
+            and the value of the collapsed coord to be set sensibly.
         * kwargs:
             Aggregator and aggregation function keyword arguments.
 
@@ -3988,7 +3988,7 @@ x            -              -
         groupby = iris.analysis._Groupby(
             groupby_coords,
             shared_coords_and_dims,
-            result_coord_func=result_coord_func,
+            climatological=climatological,
         )
 
         # Create the resulting aggregate-by cube and remove the original
@@ -4110,17 +4110,24 @@ x            -              -
             dimensions=dimension_to_groupby, dim_coords=True
         ) or [None]
         for coord in groupby.coords:
+            new_coord = coord.copy()
+
+            try:
+                if climatological:
+                    new_coord.climatological = True
+            except TypeError:
+                # Can't set this if coordinate is unitless
+                pass
+
             if (
                 dim_coord is not None
                 and dim_coord.metadata == coord.metadata
                 and isinstance(coord, iris.coords.DimCoord)
             ):
-                aggregateby_cube.add_dim_coord(
-                    coord.copy(), dimension_to_groupby
-                )
+                aggregateby_cube.add_dim_coord(new_coord, dimension_to_groupby)
             else:
                 aggregateby_cube.add_aux_coord(
-                    coord.copy(), self.coord_dims(coord)
+                    new_coord, self.coord_dims(coord)
                 )
 
         # Attach the aggregate-by data into the aggregate-by cube.

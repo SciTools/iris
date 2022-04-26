@@ -2210,7 +2210,7 @@ class _Groupby:
     """
 
     def __init__(
-        self, groupby_coords, shared_coords=None, result_coord_func=np.mean
+        self, groupby_coords, shared_coords=None, climatological=False
     ):
         """
         Determine the group slices over the group-by coordinates.
@@ -2227,9 +2227,10 @@ class _Groupby:
             that share the same group-by coordinate axis.  The `int` identifies
             which dimension of the coord is on the group-by coordinate axis.
 
-        * result_coord_func (callable):
-            A callable used to determine the values of the resultant
-            coordinates. Takes an argument of TODO and returns a number (???).
+        * climatological (bool):
+            Indicates whether the output is expected to be climatological. This
+            causes the climatological flag to be set on the resulting coord(s)
+            and the value of the collapsed coord to be set sensibly.
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -2259,7 +2260,7 @@ class _Groupby:
             for coord, dim in shared_coords:
                 self._add_shared_coord(coord, dim)
 
-        self.result_coord_func = result_coord_func
+        self.climatological = climatological
 
     def _add_groupby_coord(self, coord):
         if coord.ndim != 1:
@@ -2457,11 +2458,15 @@ class _Groupby:
                     maxmin_axis = (dim, -1)
                     first_choices = coord.bounds.take(0, -1)
                     last_choices = coord.bounds.take(1, -1)
+
                 else:
                     # Derive new coord's bounds from points.
                     item = coord.points
                     maxmin_axis = dim
                     first_choices = last_choices = coord.points
+
+                if self.climatological:
+                    new_points = []
 
                 # Check whether item is monotonic along the dimension of interest.
                 deltas = np.diff(item, 1, dim)
@@ -2500,6 +2505,10 @@ class _Groupby:
                             ]
                         )
 
+                if self.climatological:
+                    for indices in groupby_indices:
+                        new_points.append([coord.points.take(indices, dim)])
+
                 # Bounds needs to be an array with the length 2 start-stop
                 # dimension last, and the aggregated dimension back in its
                 # original position.
@@ -2507,15 +2516,27 @@ class _Groupby:
                     np.array(new_bounds), (0, 1), (dim, -1)
                 )
 
+                if self.climatological:
+                    new_points = np.moveaxis(
+                        np.array(new_points), (0, 1), (dim, -1)
+                    )
+
                 # Now create the new bounded group shared coordinate.
                 try:
-                    new_points = self.result_coord_func(new_bounds, -1)
+                    if self.climatological:
+                        # Pick the first point
+                        new_points = new_points[..., 0, 0]
+                    else:
+                        new_points = new_bounds.mean(-1)
                 except TypeError:
                     msg = (
                         "The {0!r} coordinate on the collapsing dimension"
                         " cannot be collapsed.".format(coord.name())
                     )
                     raise ValueError(msg)
+
+            print(new_points)
+            print(new_bounds)
 
             try:
                 self.coords.append(
