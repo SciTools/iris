@@ -51,10 +51,6 @@ class CoordCommon:
         specified in the subclass."""
         self.create()
 
-    def time_return(self):
-        """Return an instance of the benchmarked coord."""
-        self.component
-
 
 class DimCoord(CoordCommon):
     def setup(self):
