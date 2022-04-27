@@ -302,7 +302,7 @@ class GeogCS(CoordSystem):
             return self._crs.ellipsoid.inverse_flattening
         if name == "datum":
             datum = self._crs.datum.name
-            if datum.startswith("unknown") or datum.startswith("Unknown"):
+            if datum == "unknown":
                 return None
             return datum
         return getattr(super(), name)
