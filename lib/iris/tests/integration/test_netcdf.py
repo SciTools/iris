@@ -603,7 +603,8 @@ data:
 
     def test_no_load_datum_wkt(self):
         nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
-        cube = iris.load_cube(nc_path)
+        with self.assertWarnsRegexp("iris.FUTURE.datum_support"):
+            cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         self.assertStringEqual(actual, "unknown")
@@ -619,7 +620,8 @@ data:
 
     def test_no_load_datum_cf_var(self):
         nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
-        cube = iris.load_cube(nc_path)
+        with self.assertWarnsRegexp("iris.FUTURE.datum_support"):
+            cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         self.assertStringEqual(actual, "unknown")

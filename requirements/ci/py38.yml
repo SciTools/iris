@@ -18,6 +18,7 @@ dependencies:
   - netcdf4
   - numpy >=1.19
   - python-xxhash
+  - pyproj
   - scipy
 
 # Optional dependencies.

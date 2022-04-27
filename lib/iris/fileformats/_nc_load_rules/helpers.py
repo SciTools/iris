@@ -237,7 +237,10 @@ def build_cube_metadata(engine):
 
 ################################################################################
 def _get_ellipsoid(cf_grid_var):
-    """Return the ellipsoid definition."""
+    """
+    Return a :class:`iris.coord_systems.GeogCS` using the relevant properties of
+    `cf_grid_var`. Returns None if no relevant properties are specified.
+    """
     major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
     minor = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MINOR_AXIS, None)
     inverse_flattening = getattr(
@@ -252,21 +255,26 @@ def _get_ellipsoid(cf_grid_var):
     if major is None and minor is None and inverse_flattening is None:
         major = getattr(cf_grid_var, CF_ATTR_GRID_EARTH_RADIUS, None)
 
-    if iris.FUTURE.datum_support:
-        datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
-        # Check crs_wkt if no datum
-        if datum is None:
-            crs_wkt = getattr(cf_grid_var, CF_ATTR_GRID_CRS_WKT, None)
-            if crs_wkt is not None:
-                proj_crs = pyproj.crs.CRS.from_wkt(crs_wkt)
-                if proj_crs.datum is not None:
-                    datum = proj_crs.datum.name
-    else:
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    # Check crs_wkt if no datum
+    if datum is None:
+        crs_wkt = getattr(cf_grid_var, CF_ATTR_GRID_CRS_WKT, None)
+        if crs_wkt is not None:
+            proj_crs = pyproj.crs.CRS.from_wkt(crs_wkt)
+            if proj_crs.datum is not None:
+                datum = proj_crs.datum.name
+
+    if datum == "unknown":
         datum = None
 
-    if isinstance(datum, str) and (
-        datum.startswith("Unknown") or datum.startswith("unknown")
-    ):
+    if not iris.FUTURE.datum_support:
+        wmsg = (
+            "Ignoring a datum in netCDF load for consistency with existing "
+            "behaviour. In a future version of Iris, this datum will be "
+            "applied. To apply the datum when loading, use the "
+            "iris.FUTURE.datum_support flag."
+        )
+        warnings.warn(wmsg)
         datum = None
 
     if datum is not None:
