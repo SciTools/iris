@@ -2717,6 +2717,8 @@ class Saver:
                         "type %r is not yet implemented." % type(cs)
                     )
 
+                cf_var_grid.crs_wkt = cs.as_cartopy_crs().to_wkt()
+
                 self._coord_systems.append(cs)
 
             # Refer to grid var
