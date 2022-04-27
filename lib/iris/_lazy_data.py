@@ -10,7 +10,7 @@ To avoid replicating implementation-dependent test and conversion code.
 
 """
 
-from functools import lru_cache, wraps
+from functools import wraps
 
 import dask
 import dask.array as da
@@ -47,7 +47,9 @@ def is_lazy_data(data):
     return result
 
 
-def _optimum_chunksize(chunks, shape, limit=None, dtype=np.dtype("f4")):
+def _optimum_chunksize_internals(
+    chunks, shape, limit=None, dtype=np.dtype("f4")
+):
     """
     Reduce or increase an initial chunk shape to get close to a chosen ideal
     size, while prioritising the splitting of the earlier (outer) dimensions
@@ -83,17 +85,6 @@ def _optimum_chunksize(chunks, shape, limit=None, dtype=np.dtype("f4")):
         "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
 
     """
-    if isinstance(chunks, list):
-        chunks = tuple(chunks)
-    if isinstance(shape, list):
-        shape = tuple(shape)
-    return _optimum_chunksize_internals(chunks, shape, limit, dtype)
-
-
-@lru_cache
-def _optimum_chunksize_internals(
-    chunks, shape, limit=None, dtype=np.dtype("f4")
-):
     # Set the chunksize limit.
     if limit is None:
         # Fetch the default 'optimal' chunksize from the dask config.
@@ -155,6 +146,30 @@ def _optimum_chunksize_internals(
             i_reduce += 1
 
     return tuple(result)
+
+
+_optimum_chunksize_cache = {}
+
+
+@wraps(_optimum_chunksize_internals)
+def _optimum_chunksize(chunks, shape, limit=None, dtype=np.dtype("f4")):
+
+    key = tuple(
+        [
+            tuple(chunks),
+            tuple(shape),
+            limit,
+            dtype,
+            dask.config.get("array.chunk-size"),
+        ]
+    )
+
+    if key not in _optimum_chunksize_cache:
+        _optimum_chunksize_cache[key] = _optimum_chunksize_internals(
+            chunks, shape, limit, dtype
+        )
+
+    return _optimum_chunksize_cache[key]
 
 
 def as_lazy_data(data, chunks=None, asarray=False):

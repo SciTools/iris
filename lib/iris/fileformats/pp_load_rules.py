@@ -9,7 +9,7 @@
 # SciTools/iris-code-generators:tools/gen_rules.py
 
 import calendar
-from functools import lru_cache
+from functools import wraps
 
 import cf_units
 import numpy as np
@@ -515,7 +515,7 @@ def _new_coord_and_dims(
 _HOURS_UNIT = cf_units.Unit("hours")
 
 
-def _epoch_date_hours_base(epoch_hours_unit, datetime):
+def _epoch_date_hours_internals(epoch_hours_unit, datetime):
     """
     Return an 'hours since epoch' number for a date.
 
@@ -590,14 +590,20 @@ def _epoch_date_hours_base(epoch_hours_unit, datetime):
     return epoch_hours
 
 
-def _epoch_date_hours(*args, **kwargs):
-    try:
-        return _epoch_date_hours_cached(*args, **kwargs)
-    except TypeError:
-        return _epoch_date_hours_base(*args, **kwargs)
+_epoch_date_hours_cache = {}
 
 
-_epoch_date_hours_cached = lru_cache(_epoch_date_hours_base)
+@wraps(_epoch_date_hours_internals)
+def _epoch_date_hours(epoch_hours_unit, datetime):
+
+    key = (epoch_hours_unit, datetime)
+
+    if key not in _epoch_date_hours_cache:
+        _epoch_date_hours_cache[key] = _epoch_date_hours_internals(
+            epoch_hours_unit, datetime
+        )
+
+    return _epoch_date_hours_cache[key]
 
 
 def _convert_time_coords(
