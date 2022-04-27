@@ -2926,27 +2926,18 @@ _dim_coord_cache = {}
 
 def dim_coord_from_regular(*args, **kwargs):
     # Throughout this function we treat the coord_system specially as it is
-    # mutable and therefore not hashable. It's therefore cached under the key
-    # with the coord and checked separately before we believe we have a cache
-    # hit.
+    # mutable and therefore not hashable. It is assumed to be identical to any
+    # coord_system with the same __repr__ output.
     coord_system = kwargs.pop("coord_system", None)
-    key = (args, tuple(kwargs.items()))
+    key = (args, tuple(kwargs.items()), repr(coord_system))
 
     # Check for cache hit
-    if key in _dim_coord_cache:
-        cached_coord, cached_coord_system = _dim_coord_cache[key]
-        if coord_system == cached_coord_system:
-            return cached_coord.copy()
+    if key not in _dim_coord_cache:
+        _dim_coord_cache[key] = DimCoord.from_regular(
+            *args, coord_system=coord_system, **kwargs
+        )
 
-    # Cache miss requires a new coord
-    new_coord = DimCoord.from_regular(
-        *args, coord_system=coord_system, **kwargs
-    )
-
-    # The versions in the cache should be copies so they can't be mutated
-    # outside of this function.
-    _dim_coord_cache[key] = (new_coord.copy(), coord_system.copy())
-    return new_coord
+    return _dim_coord_cache[key].copy()
 
 
 class AuxCoord(Coord):
