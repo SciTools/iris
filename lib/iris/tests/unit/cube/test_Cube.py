@@ -1175,11 +1175,34 @@ class Test_aggregated_by__lazy(tests.IrisTest):
             "simple_agg", SUM, weights=self.simple_weights, returned=True
         )
 
+        self.assertTrue(self.cube.has_lazy_data())
+
         self.assertTrue(isinstance(output, tuple))
         self.assertEqual(len(output), 2)
 
-        weights = output[1]
+        cube = output[0]
+        self.assertTrue(isinstance(cube, Cube))
+        self.assertTrue(cube.has_lazy_data())
+        self.assertEqual(cube.shape, (2, 11))
+        row_0 = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        row_1 = [
+            110.0,
+            114.0,
+            118.0,
+            122.0,
+            126.0,
+            130.0,
+            134.0,
+            138.0,
+            142.0,
+            146.0,
+            150.0,
+        ]
+        np.testing.assert_array_almost_equal(
+            cube.data, np.array([row_0, row_1])
+        )
 
+        weights = output[1]
         self.assertEqual(weights.shape, (2, 11))
         np.testing.assert_array_almost_equal(
             weights,
