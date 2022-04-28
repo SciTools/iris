@@ -154,12 +154,20 @@ def _optimum_chunksize_internals(
 
 
 @wraps(_optimum_chunksize_internals)
-def _optimum_chunksize(*args, **kwargs):
+def _optimum_chunksize(
+    chunks,
+    shape,
+    limit=None,
+    dtype=np.dtype("f4"),
+    dask_array_chunksize=dask.config.get("array.chunk-size"),
+):
 
     return _optimum_chunksize_internals(
-        *args,
+        tuple(chunks),
+        tuple(shape),
+        limit=None,
+        dtype=np.dtype("f4"),
         dask_array_chunksize=dask.config.get("array.chunk-size"),
-        **kwargs,
     )
 
 
