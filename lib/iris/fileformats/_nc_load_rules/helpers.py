@@ -288,7 +288,11 @@ def _get_ellipsoid(cf_grid_var):
 ################################################################################
 def build_coordinate_system(engine, cf_grid_var):
     """Create a coordinate system from the CF-netCDF grid mapping variable."""
-    return _get_ellipsoid(cf_grid_var)
+    coord_system = _get_ellipsoid(cf_grid_var)
+    if coord_system is None:
+        raise ValueError("No ellipsoid specified")
+    else:
+        return coord_system
 
 
 ################################################################################
