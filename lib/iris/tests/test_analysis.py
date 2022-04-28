@@ -1662,5 +1662,43 @@ class TestRollingWindow(tests.IrisTest):
         self.assertArrayAlmostEqual(expected_result, res_cube.data)
 
 
+class TestCreateWeightedAggregatorFn(tests.IrisTest):
+    @staticmethod
+    def aggregator_fn(data, axis, **kwargs):
+        return (data, axis, kwargs)
+
+    def test_no_weights_supplied(self):
+        aggregator_fn = iris.analysis.create_weighted_aggregator_fn(
+            self.aggregator_fn, 42, test_kwarg="test"
+        )
+        output = aggregator_fn("dummy_array", None)
+        self.assertEqual(len(output), 3)
+        self.assertEqual(output[0], "dummy_array")
+        self.assertEqual(output[1], 42)
+        self.assertEqual(output[2], {"test_kwarg": "test"})
+
+    def test_weights_supplied(self):
+        aggregator_fn = iris.analysis.create_weighted_aggregator_fn(
+            self.aggregator_fn, 42, test_kwarg="test"
+        )
+        output = aggregator_fn("dummy_array", "w")
+        self.assertEqual(len(output), 3)
+        self.assertEqual(output[0], "dummy_array")
+        self.assertEqual(output[1], 42)
+        self.assertEqual(output[2], {"test_kwarg": "test", "weights": "w"})
+
+    def test_weights_in_kwargs(self):
+        kwargs = {"test_kwarg": "test", "weights": "ignored"}
+        aggregator_fn = iris.analysis.create_weighted_aggregator_fn(
+            self.aggregator_fn, 42, **kwargs
+        )
+        output = aggregator_fn("dummy_array", "w")
+        self.assertEqual(len(output), 3)
+        self.assertEqual(output[0], "dummy_array")
+        self.assertEqual(output[1], 42)
+        self.assertEqual(output[2], {"test_kwarg": "test", "weights": "w"})
+        self.assertEqual(kwargs, {"test_kwarg": "test", "weights": "ignored"})
+
+
 if __name__ == "__main__":
     tests.main()

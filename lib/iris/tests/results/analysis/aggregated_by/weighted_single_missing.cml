@@ -31,6 +31,6 @@
         <coord name="height"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x0a036160" dtype="float64" mask_checksum="0x5d2e43b6" shape="(8, 3, 3)"/>
+    <data checksum="0xf9d5b713" dtype="float64" mask_checksum="0x5d2e43b6" shape="(8, 3, 3)"/>
   </cube>
 </cubes>

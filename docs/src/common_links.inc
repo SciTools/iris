@@ -63,6 +63,7 @@
 .. _@QuLogic: https://github.com/QuLogic
 .. _@rcomer: https://github.com/rcomer
 .. _@rhattersley: https://github.com/rhattersley
+.. _@schlunma: https://github.com/schlunma
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers

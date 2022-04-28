@@ -3844,6 +3844,15 @@ class Cube(CFVariableMixin):
         common value group identified over all the group-by coordinates is
         collapsed using the provided aggregator.
 
+        Weighted aggregations (:class:`iris.analysis.WeightedAggregator`) may
+        also be supplied. These include :data:`~iris.analysis.MEAN` and
+        sum :data:`~iris.analysis.SUM`.
+
+        Weighted aggregations support an optional *weights* keyword argument.
+        If set, this should be supplied as an array of weights whose shape
+        matches the cube or as 1D array whose length matches the dimension over
+        which is aggregated.
+
         Args:
 
         * coords (list of coord names or :class:`iris.coords.Coord` instances):
@@ -3897,14 +3906,6 @@ x            -              -
         groupby_coords = []
         dimension_to_groupby = None
 
-        # We can't handle weights
-        if isinstance(
-            aggregator, iris.analysis.WeightedAggregator
-        ) and aggregator.uses_weighting(**kwargs):
-            raise ValueError(
-                "Invalid Aggregation, aggregated_by() cannot use" " weights."
-            )
-
         coords = self._as_list_of_coords(coords)
         for coord in sorted(coords, key=lambda coord: coord.metadata):
             if coord.ndim > 1:
@@ -3926,6 +3927,31 @@ x            -              -
                 msg = "Cannot group-by coordinates over different dimensions."
                 raise iris.exceptions.CoordinateCollapseError(msg)
             groupby_coords.append(coord)
+
+        # Check shape of weights. These must either match the shape of the cube
+        # or be 1D (in this case, their length must be equal to the length of the
+        # dimension we are aggregating over).
+        weights = kwargs.get("weights")
+        return_weights = kwargs.get("returned", False)
+        if weights is not None:
+            if weights.ndim == 1:
+                if len(weights) != self.shape[dimension_to_groupby]:
+                    raise ValueError(
+                        f"1D weights must have the same length as the dimension "
+                        f"that is aggregated, got {len(weights):d}, expected "
+                        f"{self.shape[dimension_to_groupby]:d}"
+                    )
+                weights = iris.util.broadcast_to_shape(
+                    weights,
+                    self.shape,
+                    (dimension_to_groupby,),
+                )
+            if weights.shape != self.shape:
+                raise ValueError(
+                    f"Weights must either be 1D or have the same shape as the "
+                    f"cube, got shape {weights.shape} for weights, "
+                    f"{self.shape} for cube"
+                )
 
         # Determine the other coordinates that share the same group-by
         # coordinate dimension.
@@ -3972,16 +3998,41 @@ x            -              -
             back_slice = (slice(None, None),) * (
                 len(data_shape) - dimension_to_groupby - 1
             )
+
+            # Create cube and weights slices
             groupby_subcubes = map(
                 lambda groupby_slice: self[
                     front_slice + (groupby_slice,) + back_slice
                 ].lazy_data(),
                 groupby.group(),
             )
-            agg = partial(
+            if weights is not None:
+                groupby_subweights = map(
+                    lambda groupby_slice: weights[
+                        front_slice + (groupby_slice,) + back_slice
+                    ],
+                    groupby.group(),
+                )
+            else:
+                groupby_subweights = (None for _ in range(len(groupby)))
+
+            agg = iris.analysis.create_weighted_aggregator_fn(
                 aggregator.lazy_aggregate, axis=dimension_to_groupby, **kwargs
             )
-            result = list(map(agg, groupby_subcubes))
+            result = list(map(agg, groupby_subcubes, groupby_subweights))
+
+            # If weights are returned, "result" is a list of tuples (each tuple
+            # contains two elements; the first is the aggregated data, the
+            # second is the aggregated weights). Convert these to two lists
+            # (one for the aggregated data and one for the aggregated weights)
+            # before combining the different slices.
+            if return_weights:
+                result, weights_result = list(zip(*result))
+                aggregateby_weights = da.stack(
+                    weights_result, axis=dimension_to_groupby
+                )
+            else:
+                aggregateby_weights = None
             aggregateby_data = da.stack(result, axis=dimension_to_groupby)
         else:
             cube_slice = [slice(None, None)] * len(data_shape)
@@ -3990,13 +4041,23 @@ x            -              -
                 # sub-cube.
                 cube_slice[dimension_to_groupby] = groupby_slice
                 groupby_sub_cube = self[tuple(cube_slice)]
+
+                # Slice the weights
+                if weights is not None:
+                    groupby_sub_weights = weights[tuple(cube_slice)]
+                    kwargs["weights"] = groupby_sub_weights
+
                 # Perform the aggregation over the group-by sub-cube and
-                # repatriate the aggregated data into the aggregate-by
-                # cube data.
-                cube_slice[dimension_to_groupby] = i
+                # repatriate the aggregated data into the aggregate-by cube
+                # data. If weights are also returned, handle them separately.
                 result = aggregator.aggregate(
                     groupby_sub_cube.data, axis=dimension_to_groupby, **kwargs
                 )
+                if return_weights:
+                    weights_result = result[1]
+                    result = result[0]
+                else:
+                    weights_result = None
 
                 # Determine aggregation result data type for the aggregate-by
                 # cube data on first pass.
@@ -4009,7 +4070,20 @@ x            -              -
                         aggregateby_data = np.zeros(
                             data_shape, dtype=result.dtype
                         )
+                    if weights_result is not None:
+                        aggregateby_weights = np.zeros(
+                            data_shape, dtype=weights_result.dtype
+                        )
+                    else:
+                        aggregateby_weights = None
+                cube_slice[dimension_to_groupby] = i
                 aggregateby_data[tuple(cube_slice)] = result
+                if weights_result is not None:
+                    aggregateby_weights[tuple(cube_slice)] = weights_result
+
+            # Restore original weights.
+            if weights is not None:
+                kwargs["weights"] = weights
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
@@ -4034,8 +4108,12 @@ x            -              -
                 )
 
         # Attach the aggregate-by data into the aggregate-by cube.
+        if aggregateby_weights is None:
+            data_result = aggregateby_data
+        else:
+            data_result = (aggregateby_data, aggregateby_weights)
         aggregateby_cube = aggregator.post_process(
-            aggregateby_cube, aggregateby_data, coords, **kwargs
+            aggregateby_cube, data_result, coords, **kwargs
         )
 
         return aggregateby_cube

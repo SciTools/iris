@@ -25,12 +25,22 @@
 		[21, 27],
 		[28, 35]]" id="2e7cc9c8" points="[0.0, 1.5, 4.0, 7.5, 12.0, 17.5, 24.0, 31.5]" shape="(8,)" standard_name="model_level_number" units="Unit('1')" value_type="float64"/>
       </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[0, 0],
+		[1, 2],
+		[3, 5],
+		[6, 9],
+		[10, 14],
+		[15, 20],
+		[21, 27],
+		[28, 35]]" id="10b8e1fc" long_name="wibble" points="[0.0, 1.5, 4.0, 7.5, 12.0, 17.5, 24.0, 31.5]" shape="(8,)" units="Unit('1')" value_type="float64"/>
+      </coord>
     </coords>
     <cellMethods>
       <cellMethod method="mean">
         <coord name="height"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x0a036160" dtype="float64" mask_checksum="0x5d2e43b6" shape="(8, 3, 3)"/>
+    <data checksum="0x25fc1e00" dtype="float64" shape="(8, 3, 3)"/>
   </cube>
 </cubes>

@@ -18,7 +18,7 @@ import numpy.ma as ma
 
 from iris._lazy_data import as_lazy_data
 import iris.analysis
-from iris.analysis import MEAN, Aggregator, WeightedAggregator
+from iris.analysis import MEAN, SUM, Aggregator, WeightedAggregator
 import iris.aux_factory
 from iris.aux_factory import HybridHeightFactory
 from iris.common.metadata import BaseMetadata
@@ -725,12 +725,32 @@ class Test_aggregated_by(tests.IrisTest):
         self.mock_agg.lazy_func = None
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
+        self.mock_weighted_agg = mock.Mock(spec=WeightedAggregator)
+        self.mock_weighted_agg.cell_method = []
+
+        def mock_weighted_aggregate(*_, **kwargs):
+            if kwargs.get("returned", False):
+                return (mock.Mock(dtype="object"), mock.Mock(dtype="object"))
+            return mock.Mock(dtype="object")
+
+        self.mock_weighted_agg.aggregate = mock.Mock(
+            side_effect=mock_weighted_aggregate
+        )
+        self.mock_weighted_agg.aggregate_shape = mock.Mock(return_value=())
+        self.mock_weighted_agg.lazy_func = None
+        self.mock_weighted_agg.post_process = mock.Mock(
+            side_effect=lambda x, y, z, **kwargs: y
+        )
+
         self.ancillary_variable = AncillaryVariable(
             [0, 1, 2, 3], long_name="foo"
         )
         self.cube.add_ancillary_variable(self.ancillary_variable, 0)
         self.cell_measure = CellMeasure([0, 1, 2, 3], long_name="bar")
         self.cube.add_cell_measure(self.cell_measure, 0)
+
+        self.simple_weights = np.array([1.0, 0.0, 2.0, 2.0])
+        self.val_weights = np.ones_like(self.cube.data, dtype=np.float32)
 
     def test_2d_coord_simple_agg(self):
         # For 2d coords, slices of aggregated coord should be the same as
@@ -855,6 +875,136 @@ class Test_aggregated_by(tests.IrisTest):
         self.assertEqual(cube_agg.ancillary_variables(), [])
         self.assertEqual(cube_agg.cell_measures(), [])
 
+    def test_1d_weights(self):
+        self.cube.aggregated_by(
+            "simple_agg", self.mock_weighted_agg, weights=self.simple_weights
+        )
+
+        self.assertEqual(self.mock_weighted_agg.aggregate.call_count, 2)
+
+        # A simple mock.assert_called_with does not work due to ValueError: The
+        # truth value of an array with more than one element is ambiguous. Use
+        # a.any() or a.all()
+        call_1 = self.mock_weighted_agg.aggregate.mock_calls[0]
+        np.testing.assert_array_equal(
+            call_1.args[0],
+            np.array(
+                [
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                    [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+                ]
+            ),
+        )
+        self.assertEqual(call_1.kwargs["axis"], 0)
+        np.testing.assert_array_almost_equal(
+            call_1.kwargs["weights"],
+            np.array(
+                [
+                    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                ]
+            ),
+        )
+
+        call_2 = self.mock_weighted_agg.aggregate.mock_calls[1]
+        np.testing.assert_array_equal(
+            call_2.args[0],
+            np.array(
+                [
+                    [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32],
+                    [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43],
+                ]
+            ),
+        )
+        self.assertEqual(call_2.kwargs["axis"], 0)
+        np.testing.assert_array_almost_equal(
+            call_2.kwargs["weights"],
+            np.array(
+                [
+                    [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+                    [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+                ]
+            ),
+        )
+
+    def test_2d_weights(self):
+        self.cube.aggregated_by(
+            "val", self.mock_weighted_agg, weights=self.val_weights
+        )
+
+        self.assertEqual(self.mock_weighted_agg.aggregate.call_count, 3)
+
+        # A simple mock.assert_called_with does not work due to ValueError: The
+        # truth value of an array with more than one element is ambiguous. Use
+        # a.any() or a.all()
+        call_1 = self.mock_weighted_agg.aggregate.mock_calls[0]
+        np.testing.assert_array_equal(
+            call_1.args[0],
+            np.array(
+                [
+                    [0, 1, 2, 6, 7, 9],
+                    [11, 12, 13, 17, 18, 20],
+                    [22, 23, 24, 28, 29, 31],
+                    [33, 34, 35, 39, 40, 42],
+                ]
+            ),
+        )
+        self.assertEqual(call_1.kwargs["axis"], 1)
+        np.testing.assert_array_almost_equal(
+            call_1.kwargs["weights"], np.ones((4, 6))
+        )
+
+        call_2 = self.mock_weighted_agg.aggregate.mock_calls[1]
+        np.testing.assert_array_equal(
+            call_2.args[0],
+            np.array([[3, 4, 10], [14, 15, 21], [25, 26, 32], [36, 37, 43]]),
+        )
+        self.assertEqual(call_2.kwargs["axis"], 1)
+        np.testing.assert_array_almost_equal(
+            call_2.kwargs["weights"], np.ones((4, 3))
+        )
+
+        call_3 = self.mock_weighted_agg.aggregate.mock_calls[2]
+        np.testing.assert_array_equal(
+            call_3.args[0], np.array([[5, 8], [16, 19], [27, 30], [38, 41]])
+        )
+        self.assertEqual(call_3.kwargs["axis"], 1)
+        np.testing.assert_array_almost_equal(
+            call_3.kwargs["weights"], np.ones((4, 2))
+        )
+
+    def test_returned(self):
+        output = self.cube.aggregated_by(
+            "simple_agg", self.mock_weighted_agg, returned=True
+        )
+
+        self.assertTrue(isinstance(output, tuple))
+        self.assertEqual(len(output), 2)
+        self.assertEqual(output[0].shape, (2, 11))
+        self.assertEqual(output[1].shape, (2, 11))
+
+    def test_fail_1d_weights_wrong_len(self):
+        wrong_weights = np.array([1.0, 2.0])
+        msg = (
+            r"1D weights must have the same length as the dimension that is "
+            r"aggregated, got 2, expected 11"
+        )
+        with self.assertRaisesRegex(ValueError, msg):
+            self.cube.aggregated_by(
+                "val", self.mock_weighted_agg, weights=wrong_weights
+            )
+
+    def test_fail_weights_wrong_shape(self):
+        wrong_weights = np.ones((42, 1))
+        msg = (
+            r"Weights must either be 1D or have the same shape as the cube, "
+            r"got shape \(42, 1\) for weights, \(4, 11\) for cube"
+        )
+        with self.assertRaisesRegex(ValueError, msg):
+            self.cube.aggregated_by(
+                "val", self.mock_weighted_agg, weights=wrong_weights
+            )
+
 
 class Test_aggregated_by__lazy(tests.IrisTest):
     def setUp(self):
@@ -904,6 +1054,9 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         self.cube.add_aux_coord(simple_agg_coord, 0)
         self.cube.add_aux_coord(val_coord, 1)
         self.cube.add_aux_coord(label_coord, 1)
+
+        self.simple_weights = np.array([1.0, 0.0, 2.0, 2.0])
+        self.val_weights = 2.0 * np.ones(self.cube.shape, dtype=np.float32)
 
     def test_agg_by_label__lazy(self):
         # Aggregate a cube on a string coordinate label where label
@@ -962,6 +1115,104 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         )
         self.assertArrayEqual(result.data, means)
         self.assertFalse(result.has_lazy_data())
+
+    def test_1d_weights__lazy(self):
+        self.assertTrue(self.cube.has_lazy_data())
+
+        cube_agg = self.cube.aggregated_by(
+            "simple_agg", SUM, weights=self.simple_weights
+        )
+
+        self.assertTrue(self.cube.has_lazy_data())
+        self.assertTrue(cube_agg.has_lazy_data())
+        self.assertEqual(cube_agg.shape, (2, 11))
+
+        row_0 = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        row_1 = [
+            110.0,
+            114.0,
+            118.0,
+            122.0,
+            126.0,
+            130.0,
+            134.0,
+            138.0,
+            142.0,
+            146.0,
+            150.0,
+        ]
+        np.testing.assert_array_almost_equal(
+            cube_agg.data, np.array([row_0, row_1])
+        )
+
+    def test_2d_weights__lazy(self):
+        self.assertTrue(self.cube.has_lazy_data())
+
+        cube_agg = self.cube.aggregated_by(
+            "val", SUM, weights=self.val_weights
+        )
+
+        self.assertTrue(self.cube.has_lazy_data())
+        self.assertTrue(cube_agg.has_lazy_data())
+
+        self.assertEqual(cube_agg.shape, (4, 3))
+        np.testing.assert_array_almost_equal(
+            cube_agg.data,
+            np.array(
+                [
+                    [50.0, 34.0, 26.0],
+                    [182.0, 100.0, 70.0],
+                    [314.0, 166.0, 114.0],
+                    [446.0, 232.0, 158.0],
+                ]
+            ),
+        )
+
+    def test_returned__lazy(self):
+        self.assertTrue(self.cube.has_lazy_data())
+
+        output = self.cube.aggregated_by(
+            "simple_agg", SUM, weights=self.simple_weights, returned=True
+        )
+
+        self.assertTrue(self.cube.has_lazy_data())
+
+        self.assertTrue(isinstance(output, tuple))
+        self.assertEqual(len(output), 2)
+
+        cube = output[0]
+        self.assertTrue(isinstance(cube, Cube))
+        self.assertTrue(cube.has_lazy_data())
+        self.assertEqual(cube.shape, (2, 11))
+        row_0 = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        row_1 = [
+            110.0,
+            114.0,
+            118.0,
+            122.0,
+            126.0,
+            130.0,
+            134.0,
+            138.0,
+            142.0,
+            146.0,
+            150.0,
+        ]
+        np.testing.assert_array_almost_equal(
+            cube.data, np.array([row_0, row_1])
+        )
+
+        weights = output[1]
+        self.assertEqual(weights.shape, (2, 11))
+        np.testing.assert_array_almost_equal(
+            weights,
+            np.array(
+                [
+                    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                    [4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0],
+                ]
+            ),
+        )
 
 
 class Test_rolling_window(tests.IrisTest):
