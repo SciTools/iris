@@ -35,12 +35,13 @@ class TestLazyAggregateBy(test_aggregate_by.TestAggregateBy):
     def tearDown(self):
         super().tearDown()
 
-        # Note: easy cubes are not expected to have lazy data since PERCENTILE
-        # and WPERCENTILE are not lazy.
+        # Note: weighted easy cube is not expected to have lazy data since
+        # WPERCENTILE is not lazy.
         assert self.cube_single.has_lazy_data()
         assert self.cube_multi.has_lazy_data()
         assert self.cube_single_masked.has_lazy_data()
         assert self.cube_multi_masked.has_lazy_data()
+        assert self.cube_easy.has_lazy_data()
 
 
 if __name__ == "__main__":
