@@ -3932,6 +3932,7 @@ x            -              -
         # or be 1D (in this case, their length must be equal to the length of the
         # dimension we are aggregating over).
         weights = kwargs.get("weights")
+        return_weights = kwargs.get("returned", False)
         if weights is not None:
             if weights.ndim == 1:
                 if len(weights) != self.shape[dimension_to_groupby]:
@@ -4025,7 +4026,7 @@ x            -              -
             # second is the aggregated weights). Convert these to two lists
             # (one for the aggregated data and one for the aggregated weights)
             # before combining the different slices.
-            if kwargs.get("returned", False):
+            if return_weights:
                 result, weights_result = list(zip(*result))
                 aggregateby_weights = da.stack(
                     weights_result, axis=dimension_to_groupby
@@ -4052,7 +4053,7 @@ x            -              -
                 result = aggregator.aggregate(
                     groupby_sub_cube.data, axis=dimension_to_groupby, **kwargs
                 )
-                if kwargs.get("returned", False):
+                if return_weights:
                     weights_result = result[1]
                     result = result[0]
                 else:
