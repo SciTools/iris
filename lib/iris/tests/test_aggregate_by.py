@@ -14,7 +14,6 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris._lazy_data import as_concrete_data
 import iris.analysis
 import iris.coord_systems
 import iris.coords
@@ -786,10 +785,10 @@ class TestAggregateBy(tests.IrisTest):
                 [[8.0, 15.0], [10.0, 17.0], [15.0, 8.0]], dtype=np.float32
             ),
         )
+
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "easy.cml"),
-            checksum=False,
         )
 
         aggregateby_cube = self.cube_easy.aggregated_by(
@@ -915,6 +914,7 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_easy_weighted.aggregated_by(
             "longitude", iris.analysis.MEAN, weights=lon_weights
         )
+
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array([[3.0, 8.0], [0.2, 4.0]], dtype=np.float32),
@@ -922,7 +922,6 @@ class TestAggregateBy(tests.IrisTest):
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_easy.cml"),
-            checksum=False,
         )
 
         aggregateby_cube = self.cube_easy_weighted.aggregated_by(
@@ -1052,13 +1051,9 @@ class TestAggregateBy(tests.IrisTest):
             "height", iris.analysis.MEAN
         )
 
-        # Realize data so that tests with lazy data pass (see
-        # test_lazy_aggregate_by.py).
-        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_missing.cml"),
-            checksum=False,
         )
         self.assertMaskedArrayAlmostEqual(
             aggregateby_cube.data, single_expected
@@ -1116,13 +1111,9 @@ class TestAggregateBy(tests.IrisTest):
             weights=self.weights_single,
         )
 
-        # Realize data so that tests with lazy data pass (see
-        # test_lazy_aggregate_by.py).
-        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
-            ("analysis", "aggregated_by", "single_missing.cml"),
-            checksum=False,
+            ("analysis", "aggregated_by", "weighted_single_missing.cml"),
         )
         self.assertMaskedArrayAlmostEqual(
             aggregateby_cube.data,
@@ -1184,13 +1175,9 @@ class TestAggregateBy(tests.IrisTest):
             ["height", "level"], iris.analysis.MEAN
         )
 
-        # Realize data so that tests with lazy data pass (see
-        # test_lazy_aggregate_by.py).
-        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "multi_missing.cml"),
-            checksum=False,
         )
         self.assertMaskedArrayAlmostEqual(
             aggregateby_cube.data, multi_expected
@@ -1252,14 +1239,9 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-
-        # Realize data so that tests with lazy data pass (see
-        # test_lazy_aggregate_by.py).
-        aggregateby_cube.data = as_concrete_data(aggregateby_cube.data)
         self.assertCML(
             aggregateby_cube,
-            ("analysis", "aggregated_by", "multi_missing.cml"),
-            checksum=False,
+            ("analysis", "aggregated_by", "weighted_multi_missing.cml"),
         )
         self.assertMaskedArrayAlmostEqual(
             aggregateby_cube.data,

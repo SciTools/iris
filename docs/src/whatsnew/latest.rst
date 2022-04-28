@@ -31,6 +31,11 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
+#. `@schlunma`_ added weighted aggregation over "group coordinates":
+   :meth:`~iris.cube.Cube.aggregated_by` now accepts the keyword `weights` if a
+   :class:`~iris.analysis.WeightedAggregator` is used. (:issue:`4581`,
+   :pull:`4589`)
+
 #. `@wjbenfold`_ added support for ``false_easting`` and ``false_northing`` to
    :class:`~iris.coord_system.Mercator`. (:issue:`3107`, :pull:`4524`)
 

@@ -18,6 +18,6 @@
         <coord name="longitude"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float32" shape="(2, 2)" state="loaded"/>
+    <data checksum="0x18ac8879" dtype="float32" shape="(2, 2)"/>
   </cube>
 </cubes>
