@@ -159,14 +159,13 @@ def _optimum_chunksize(
     shape,
     limit=None,
     dtype=np.dtype("f4"),
-    dask_array_chunksize=dask.config.get("array.chunk-size"),
 ):
 
     return _optimum_chunksize_internals(
         tuple(chunks),
         tuple(shape),
-        limit=None,
-        dtype=np.dtype("f4"),
+        limit=limit,
+        dtype=dtype,
         dask_array_chunksize=dask.config.get("array.chunk-size"),
     )
 
