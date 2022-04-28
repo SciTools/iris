@@ -93,7 +93,7 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.DimCoord` created using
    :meth:`~iris.coords.DimCoord.from_regular`. (:pull:`4698`)
 
-#. `@pp-mo`_ streamlined :meth:`~iris.cube.Cube.add_aux_factory`.
+#. `@pp-mo`_ made :meth:`~iris.cube.Cube.add_aux_factory` faster.
    (:pull:`4718`)
 
 

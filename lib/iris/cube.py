@@ -1189,13 +1189,15 @@ class Cube(CFVariableMixin):
                 "iris.aux_factory.AuxCoordFactory."
             )
 
+        # Get all 'real' coords (i.e. not derived ones) : use private data
+        # rather than cube.coords(), as that is quite slow.
         def coordsonly(coords_and_dims):
             return [coord for coord, dims in coords_and_dims]
 
         cube_coords = coordsonly(self._dim_coords_and_dims) + coordsonly(
             self._aux_coords_and_dims
         )
-        # self.coords()
+
         for dependency in aux_factory.dependencies:
             ref_coord = aux_factory.dependencies[dependency]
             if ref_coord is not None and ref_coord not in cube_coords:
