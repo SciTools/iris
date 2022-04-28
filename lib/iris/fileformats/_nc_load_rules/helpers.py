@@ -264,6 +264,7 @@ def _get_ellipsoid(cf_grid_var):
             if proj_crs.datum is not None:
                 datum = proj_crs.datum.name
 
+    # An unknown crs datum will be treated as None
     if datum == "unknown":
         datum = None
 

@@ -238,6 +238,7 @@ class GeogCS(CoordSystem):
                     self.longitude_of_prime_meridian,
                 )
             )
+        # An unknown crs datum will be treated as None
         if self.datum is not None and self.datum != "unknown":
             attrs.append(
                 (
@@ -302,6 +303,7 @@ class GeogCS(CoordSystem):
             return self._crs.ellipsoid.inverse_flattening
         if name == "datum":
             datum = self._crs.datum.name
+            # An unknown crs datum will be treated as None
             if datum == "unknown":
                 return None
             return datum

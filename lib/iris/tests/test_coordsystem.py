@@ -498,7 +498,7 @@ class Test_LambertConformal(tests.GraphicsTest):
 
 class Test_Datums(tests.IrisTest):
     def test_default_none(self):
-        cs = GeogCS(6543210, 6500000)
+        cs = GeogCS(6543210, 6500000)  # Arbitrary radii
         cartopy_crs = cs.as_cartopy_crs()
         self.assertStringEqual(cartopy_crs.datum.name, "unknown")
 

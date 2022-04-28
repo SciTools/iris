@@ -151,12 +151,14 @@ class Future(threading.local):
         .. note::
 
             iris.FUTURE.example_future_flag does not exist. It is provided
-            as an example because there are currently no flags in
-            iris.Future.
+            as an example.
 
         """
-        # The flag 'example_future_flag' is provided as a future reference
-        # for the structure of this class.
+        # The flag 'example_future_flag' is provided as a reference for the
+        # structure of this class.
+        #
+        # Note that self.__dict__ is used explicitly due to the manner in which
+        # __setattr__ is overridden.
         #
         # self.__dict__['example_future_flag'] = example_future_flag
         self.__dict__["datum_support"] = datum_support
@@ -211,8 +213,7 @@ class Future(threading.local):
         .. note::
 
             iris.FUTURE.example_future_flag does not exist and is
-            provided only as an example since there are currently no
-            flags in Future.
+            provided only as an example.
 
         """
         # Save the current context
