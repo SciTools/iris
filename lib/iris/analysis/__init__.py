@@ -80,6 +80,7 @@ __all__ = (
     "WPERCENTILE",
     "WeightedAggregator",
     "clear_phenomenon_identity",
+    "create_weighted_aggregator_fn",
 )
 
 
@@ -1153,6 +1154,43 @@ class WeightedAggregator(Aggregator):
             )
 
         return result
+
+
+def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
+    """Return an aggregator function that can explicitely handle weights.
+
+    Args:
+
+    * aggregator_fn (callable):
+        An aggregator function, i.e., a callable that takes arguments ``data``,
+        ``axis`` and ``**kwargs`` and returns an array. Examples:
+        :meth:`Aggregator.aggregate`, :meth:`Aggregator.lazy_aggregate`.
+        This function should accept the keyword argument ``weights``.
+    * axis (int):
+        Axis to aggregate over. This argument is directly passed to
+        ``aggregator_fn``.
+
+    Kwargs:
+
+    * Arbitrary keyword arguments passed to ``aggregator_fn``. Should not
+      include ``weights`` (this will be removed if present).
+
+    Returns:
+        A function that takes two arguments ``data_arr`` and ``weights`` (both
+        should be an array of the same shape) and returns an array.
+
+    """
+    kwargs_copy = dict(kwargs)
+    kwargs_copy.pop("weights", None)
+    aggregator_fn = functools.partial(aggregator_fn, axis=axis, **kwargs_copy)
+
+    def new_aggregator_fn(data_arr, weights):
+        """Weighted aggregation."""
+        if weights is None:
+            return aggregator_fn(data_arr)
+        return aggregator_fn(data_arr, weights=weights)
+
+    return new_aggregator_fn
 
 
 def _build_dask_mdtol_function(dask_stats_function):

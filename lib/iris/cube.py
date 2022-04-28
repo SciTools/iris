@@ -3831,21 +3831,6 @@ class Cube(CFVariableMixin):
         )
         return result
 
-    @staticmethod
-    def _get_aggregator_fn(aggregator_fn, axis, **kwargs):
-        """Return aggregator function that can handle weights."""
-        kwargs_copy = dict(kwargs)
-        kwargs_copy.pop("weights", None)
-        aggregator_fn = partial(aggregator_fn, axis=axis, **kwargs_copy)
-
-        def new_aggregator_fn(data_arr, weights):
-            """Weighted aggregation."""
-            if weights is None:
-                return aggregator_fn(data_arr)
-            return aggregator_fn(data_arr, weights=weights)
-
-        return new_aggregator_fn
-
     def aggregated_by(self, coords, aggregator, **kwargs):
         """
         Perform aggregation over the cube given one or more "group
@@ -4030,7 +4015,7 @@ x            -              -
             else:
                 groupby_subweights = (None for _ in range(len(groupby)))
 
-            agg = self._get_aggregator_fn(
+            agg = iris.analysis.create_weighted_aggregator_fn(
                 aggregator.lazy_aggregate, axis=dimension_to_groupby, **kwargs
             )
             result = list(map(agg, groupby_subcubes, groupby_subweights))
