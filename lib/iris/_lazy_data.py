@@ -10,7 +10,7 @@ To avoid replicating implementation-dependent test and conversion code.
 
 """
 
-from functools import wraps
+from functools import lru_cache, wraps
 
 import dask
 import dask.array as da
@@ -47,8 +47,13 @@ def is_lazy_data(data):
     return result
 
 
+@lru_cache
 def _optimum_chunksize_internals(
-    chunks, shape, limit=None, dtype=np.dtype("f4")
+    chunks,
+    shape,
+    limit=None,
+    dtype=np.dtype("f4"),
+    dask_array_chunksize=dask.config.get("array.chunk-size"),
 ):
     """
     Reduce or increase an initial chunk shape to get close to a chosen ideal
@@ -57,9 +62,9 @@ def _optimum_chunksize_internals(
 
     Args:
 
-    * chunks (iterable of int, or None):
+    * chunks (tuple of int, or None):
         Pre-existing chunk shape of the target data : None if unknown.
-    * shape (iterable of int):
+    * shape (tuple of int):
         The full array shape of the target data.
     * limit (int):
         The 'ideal' target chunk size, in bytes.  Default from dask.config.
@@ -88,7 +93,7 @@ def _optimum_chunksize_internals(
     # Set the chunksize limit.
     if limit is None:
         # Fetch the default 'optimal' chunksize from the dask config.
-        limit = dask.config.get("array.chunk-size")
+        limit = dask_array_chunksize
         # Convert to bytes
         limit = dask.utils.parse_bytes(limit)
 
@@ -148,28 +153,14 @@ def _optimum_chunksize_internals(
     return tuple(result)
 
 
-_optimum_chunksize_cache = {}
-
-
 @wraps(_optimum_chunksize_internals)
-def _optimum_chunksize(chunks, shape, limit=None, dtype=np.dtype("f4")):
+def _optimum_chunksize(*args, **kwargs):
 
-    key = tuple(
-        [
-            tuple(chunks),
-            tuple(shape),
-            limit,
-            dtype,
-            dask.config.get("array.chunk-size"),
-        ]
+    return _optimum_chunksize_internals(
+        *args,
+        dask_array_chunksize=dask.config.get("array.chunk-size"),
+        **kwargs,
     )
-
-    if key not in _optimum_chunksize_cache:
-        _optimum_chunksize_cache[key] = _optimum_chunksize_internals(
-            chunks, shape, limit, dtype
-        )
-
-    return _optimum_chunksize_cache[key]
 
 
 def as_lazy_data(data, chunks=None, asarray=False):

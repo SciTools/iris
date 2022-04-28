@@ -101,15 +101,6 @@ class CoordSystem(metaclass=ABCMeta):
         return globe
 
     @abstractmethod
-    def __repr__(self):
-        """
-        Return a string representing this coordinate system, such that the same
-        string implies the coordinate system is the same.
-
-        """
-        pass
-
-    @abstractmethod
     def as_cartopy_crs(self):
         """
         Return a cartopy CRS representing our native coordinate
