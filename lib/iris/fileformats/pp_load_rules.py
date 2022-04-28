@@ -595,6 +595,8 @@ _epoch_date_hours_cache = {}
 
 @wraps(_epoch_date_hours_internals)
 def _epoch_date_hours(epoch_hours_unit, datetime):
+    # Not using functools.lru_cache because it does an equality check that fails
+    # on datetime objects from different calendars.
 
     key = (epoch_hours_unit, datetime)
 
