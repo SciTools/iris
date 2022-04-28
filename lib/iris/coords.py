@@ -1353,24 +1353,27 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         compared.
 
         """
+
+        def nan_equality(x, y):
+            return (
+                isinstance(x, (float, np.number))
+                and np.isnan(x)
+                and isinstance(y, (float, np.number))
+                and np.isnan(y)
+            )
+
         if isinstance(other, (int, float, np.number)) or hasattr(
             other, "timetuple"
         ):
             if self.bound is not None:
                 return self.contains_point(other)
-            elif isinstance(other, (float, np.number)) and np.isnan(other):
-                return isinstance(self.point, (float, np.number)) and np.isnan(
-                    self.point
-                )
+            elif nan_equality(self.point, other):
+                return True
             else:
                 return self.point == other
         elif isinstance(other, Cell):
-            if isinstance(other.point, (float, np.number)) and np.isnan(
-                other.point
-            ):
-                return isinstance(self.point, (float, np.number)) and np.isnan(
-                    self.point
-                )
+            if nan_equality(self.point, other.point):
+                return True
             return (self.point == other.point) and (
                 self.bound == other.bound or self.bound == other.bound[::-1]
             )
