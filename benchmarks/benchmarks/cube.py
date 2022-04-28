@@ -68,10 +68,6 @@ class ComponentCommon:
         general_cube_copy = general_cube.copy(data=data_2d)
         self.add_method(general_cube_copy, *self.add_args)
 
-    def time_return(self):
-        """Return a cube that includes an instance of the benchmarked component."""
-        self.cube
-
 
 class Cube:
     def time_basic(self):
@@ -205,9 +201,6 @@ class MeshCoord:
     @disable_repeat_between_setup
     def time_remove(self, n_faces):
         self.cube.remove_coord(self.mesh_coord)
-
-    def time_return(self, n_faces):
-        _ = self.cube
 
 
 class Merge:

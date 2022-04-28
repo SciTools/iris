@@ -44,10 +44,6 @@ class FactoryCommon:
         specified in the subclass."""
         self.create()
 
-    def time_return(self):
-        """Return an instance of the benchmarked factory."""
-        self.factory
-
 
 class HybridHeightFactory(FactoryCommon):
     def setup(self):

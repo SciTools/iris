@@ -47,10 +47,6 @@ class UGridCommon:
         specified in the subclass."""
         self.create()
 
-    def time_return(self, *params):
-        """Return an instance of the benchmarked object."""
-        _ = self.object
-
 
 class Connectivity(UGridCommon):
     def setup(self, n_faces):
