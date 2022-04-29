@@ -69,6 +69,9 @@ The required content, in order, is as follows:
   user name. Link the name to their GitHub profile. E.g.
   ```@tkknight <https://github.com/tkknight>`_ changed...``
 
+  * Bigger changes take a lot of effort to review, too! Make sure you credit
+    the reviewer(s) where appropriate.
+
 * The new/changed behaviour
 
 * Context to the change. Possible examples include: what this fixes, why
@@ -82,8 +85,9 @@ The required content, in order, is as follows:
 
 For example::
 
-  #. `@tkknight <https://github.com/tkknight>`_ changed changed argument ``x``
-     to be optional in :class:`~iris.module.class` and
+  #. `@tkknight <https://github.com/tkknight>`_ and
+     `@trexfeathers <https://github.com/trexfeathers>`_ (reviewer) changed
+     argument ``x`` to be optional in :class:`~iris.module.class` and
      :meth:`iris.module.method`. This allows greater flexibility as requested in
      :issue:`9999`. (:pull:`1111`, :pull:`9999`)
 
