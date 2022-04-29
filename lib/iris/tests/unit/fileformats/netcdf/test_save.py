@@ -273,26 +273,24 @@ class Test_HdfSaveBug(tests.IrisTest):
         """
         A special tolerant cube compare.
 
-        Either both are unstructured, or neither.
-        Strip off any Meshes (as we can't compare unstructured cubes).
         Ignore any 'Conventions' attributes.
         Ignore all var-names.
 
         """
-        # Either they both have a mesh, or neither.
-        self.assertEqual(cube1.mesh is None, cube2.mesh is None)
 
         def clean_cube(cube):
             cube = cube.copy()  # dont modify the original
-            if cube.mesh:
-                # "Strip" off mesh, reducing MeshCoords to AuxCoords
-                cube = cube[..., 0:]  # magic "non-trivial" slice form
             # Remove any 'Conventions' attributes
             cube.attributes.pop("Conventions", None)
             # Remove var-names (as original mesh components wouldn't have them)
             cube.var_name = None
             for coord in cube.coords():
                 coord.var_name = None
+            mesh = cube.mesh
+            if mesh:
+                mesh.var_name = None
+                for component in mesh.coords() + mesh.connectivities():
+                    component.var_name = None
 
             return cube
 
@@ -312,7 +310,6 @@ class Test_HdfSaveBug(tests.IrisTest):
     def test_anonymous_dim_varname_collision(self):
         # Second cube is going to name an anonymous dim.
         cube_2 = Cube([0, 1], var_name="cube_2")
-        # cube_2 = Cube(0, var_name="cube_2")
         # First cube has a varname which collides with the dim-name.
         cube_1 = Cube([0, 1], long_name="cube_1", var_name="dim0")
         # Add a dimcoord to prevent the *first* cube having an anonymous dim.
