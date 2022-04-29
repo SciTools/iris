@@ -408,6 +408,8 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertArrayEqual(categorised_coord.points, np.arange(2))
         self.assertIsNone(categorised_coord.bounds)
         # TODO: I assume the categorised coord shouldn't be climatological?
+        # Currently we're not really testing that behaviour because it doesn't
+        # have units that would allow climatologicalness
         self.assertFalse(categorised_coord.climatological)
 
     def test_2d_other_coord(self):
@@ -424,16 +426,16 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         )
         self.assertTrue(aligned_coord.climatological)
 
-        categorised_coord = result.coord("cat1")
-        self.assertArrayEqual(categorised_coord.points, np.arange(2))
-        self.assertIsNone(categorised_coord.bounds)
-        # TODO: I assume the categorised coord shouldn't be climatological?
-        self.assertFalse(categorised_coord.climatological)
-
-        # TODO: Check the partially aligned coord - should that be climatological?
         part_aligned_coord = result.coord("part_aligned")
-        self.assertArrayEqual(part_aligned_coord.points, np.arange(2))
-        self.assertIsNone(part_aligned_coord.bounds)
+        self.assertArrayEqual(
+            part_aligned_coord.points, np.arange(46, 56).reshape(2, 5)
+        )
+        self.assertArrayEqual(
+            part_aligned_coord.bounds,
+            np.array([np.arange(1, 11), np.arange(91, 101)]).T.reshape(
+                2, 5, 2
+            ),
+        )
         # TODO: I assume the partially aligned coord shouldn't be climatological?
         self.assertFalse(part_aligned_coord.climatological)
 

@@ -2420,6 +2420,7 @@ class _Groupby:
 
         # Create new shared bounded coordinates.
         for coord, dim in self._shared_coords:
+            climatological_coord = self.climatological and coord.ndim == 1
             if coord.points.dtype.kind in "SU":
                 if coord.bounds is None:
                     new_points = []
@@ -2465,7 +2466,7 @@ class _Groupby:
                     maxmin_axis = dim
                     first_choices = last_choices = coord.points
 
-                if self.climatological:
+                if climatological_coord:
                     new_points = []
 
                 # Check whether item is monotonic along the dimension of interest.
@@ -2505,7 +2506,7 @@ class _Groupby:
                             ]
                         )
 
-                if self.climatological:
+                if climatological_coord:
                     for indices in groupby_indices:
                         new_points.append([coord.points.take(indices, dim)])
 
@@ -2516,14 +2517,14 @@ class _Groupby:
                     np.array(new_bounds), (0, 1), (dim, -1)
                 )
 
-                if self.climatological:
+                if climatological_coord:
                     new_points = np.moveaxis(
                         np.array(new_points), (0, 1), (dim, -1)
                     )
 
                 # Now create the new bounded group shared coordinate.
                 try:
-                    if self.climatological:
+                    if climatological_coord:
                         # Pick the first point
                         new_points = new_points[..., 0, 0]
                     else:
@@ -2534,9 +2535,6 @@ class _Groupby:
                         " cannot be collapsed.".format(coord.name())
                     )
                     raise ValueError(msg)
-
-            print(new_points)
-            print(new_bounds)
 
             try:
                 self.coords.append(
