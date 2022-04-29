@@ -84,6 +84,12 @@ This document explains the changes made to Iris for this release
    to ``stderr`` when a :class:`~iris.fileformats.cf.CFReader` that fails to
    initialise is garbage collected. (:issue:`3312`, :pull:`4646`)
 
+#. `@stephenworsley`_ aligned the behaviour of :obj:`~iris.coords.Cell` equality
+   to match :obj:`~iris.coords.Coord` equality with respect to NaN values.
+   Two NaN valued Cells are now considered equal. This fixes :issue:`4681` and
+   causes NaN valued scalar coordinates to be able to merge be preserved during
+   cube merging. (:pull:`4701`)
+
 
 💣 Incompatible Changes
 =======================
