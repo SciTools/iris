@@ -58,7 +58,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
     node_x = AuxCoord(
         1100 + arr.arange(n_nodes),
         standard_name="longitude",
-        units="degrees",
+        units="degrees_east",
         long_name="long-name",
         var_name="var-name",
         attributes={
