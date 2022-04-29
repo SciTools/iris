@@ -3863,37 +3863,41 @@ class Cube(CFVariableMixin):
         matches the cube or as 1D array whose length matches the dimension over
         which is aggregated.
 
-        Args:
-
-        * coords (list of coord names or :class:`iris.coords.Coord` instances):
+        Parameters
+        ----------
+        coords : (list of coord names or :class:`iris.coords.Coord` instances)
             One or more coordinates over which group aggregation is to be
             performed.
-        * aggregator (:class:`iris.analysis.Aggregator`):
+        aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied to each group.
-
-        Kwargs:
-
-        * climatological (bool):
+        climatological : bool
             Indicates whether the output is expected to be climatological. This
-            causes the climatological flag to be set on the resulting coord(s)
-            and the value of the collapsed coord to be set sensibly.
-        * kwargs:
-            Aggregator and aggregation function keyword arguments.
+            causes the points of the collapsed coord to be set to match the
+            points of the first value in each group and the climatological
+            attribute to be set True on the resulting coord(s) (if the units of
+            the coords are compatible with this).
 
-        Returns:
+        Returns
+        -------
             :class:`iris.cube.Cube`.
 
-        For example:
+        Other Parameters
+        ----------------
+        kwargs:
+            Aggregator and aggregation function keyword arguments.
 
-            >>> import iris
-            >>> import iris.analysis
-            >>> import iris.coord_categorisation as cat
-            >>> fname = iris.sample_data_path('ostia_monthly.nc')
-            >>> cube = iris.load_cube(fname, 'surface_temperature')
-            >>> cat.add_year(cube, 'time', name='year')
-            >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
-            >>> print(new_cube)
-            surface_temperature / (K)           \
+        Examples
+        --------
+
+        >>> import iris
+        >>> import iris.analysis
+        >>> import iris.coord_categorisation as cat
+        >>> fname = iris.sample_data_path('ostia_monthly.nc')
+        >>> cube = iris.load_cube(fname, 'surface_temperature')
+        >>> cat.add_year(cube, 'time', name='year')
+        >>> new_cube = cube.aggregated_by('year', iris.analysis.MEAN)
+        >>> print(new_cube)
+        surface_temperature / (K)           \
 (time: 5; latitude: 18; longitude: 432)
                 Dimension coordinates:
                     time                             \
@@ -3910,11 +3914,9 @@ x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
                 Cell methods:
-                    mean                        month, year mean
-                    year
+                    mean                        month, year mean year
                 Attributes:
-                    Conventions                 'CF-1.5' STASH
-                    m01s00i024
+                    Conventions                 'CF-1.5' STASH m01s00i024
 
         """
         groupby_coords = []
