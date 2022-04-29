@@ -1376,6 +1376,8 @@ class Saver:
                     unlimited_dim_names.append(dim_name)
 
         for dim_name in dimension_names:
+            # NOTE: these dim-names have been chosen by _get_dim_names, and
+            # were already checked+fixed to avoid any name collisions.
             if dim_name not in self._dataset.dimensions:
                 if dim_name in unlimited_dim_names:
                     size = None
@@ -1468,6 +1470,10 @@ class Saver:
                     last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
                     # Create if it does not already exist.
                     if last_dim not in self._dataset.dimensions:
+                        while last_dim in self._dataset.variables:
+                            # Also avoid collision with variable names.
+                            # See '_get_dim_names' for reason.
+                            last_dim = self._increment_name(last_dim)
                         length = conn.shape[1 - conn.location_axis]
                         self._dataset.createDimension(last_dim, length)
 
@@ -1869,8 +1875,19 @@ class Saver:
                         assert dim_name is not None
                         # Ensure it is a valid variable name.
                         dim_name = self.cf_valid_var_name(dim_name)
-                        # Disambiguate if it matches an existing one.
-                        while dim_name in self._existing_dim:
+                        # Disambiguate if it has the same name as an existing
+                        # dimension.
+                        # NOTE: *OR* if it matches the name of an existing file
+                        # variable.  Because there is a bug ...
+                        # See https://github.com/Unidata/netcdf-c/issues/1772
+                        # N.B. the workarounds here *ONLY* function because the
+                        # caller (write) will not create any more variables
+                        # in between choosing dim names (here), and creating
+                        # the new dims (via '_create_cf_dimensions').
+                        while (
+                            dim_name in self._existing_dim
+                            or dim_name in self._dataset.variables
+                        ):
                             dim_name = self._increment_name(dim_name)
 
                         # Record the new dimension.
@@ -1915,9 +1932,15 @@ class Saver:
                             dim_name = self._get_coord_variable_name(
                                 cube, coord
                             )
+                            # Disambiguate if it has the same name as an
+                            # existing dimension.
+                            # OR if it matches an existing file variable name.
+                            # NOTE: check against variable names is needed
+                            # because of a netcdf bug ... see note in the
+                            # mesh dimensions block above.
                             while (
                                 dim_name in self._existing_dim
-                                or dim_name in self._name_coord_map.names
+                                or dim_name in self._dataset.variables
                             ):
                                 dim_name = self._increment_name(dim_name)
 
@@ -1925,16 +1948,18 @@ class Saver:
                         # No CF-netCDF coordinates describe this data dimension.
                         # Make up a new, distinct dimension name
                         dim_name = f"dim{dim}"
-                        if dim_name in self._existing_dim:
-                            # Increment name if conflicted with one already existing.
-                            if self._existing_dim[dim_name] != cube.shape[dim]:
-                                while (
-                                    dim_name in self._existing_dim
-                                    and self._existing_dim[dim_name]
-                                    != cube.shape[dim]
-                                    or dim_name in self._name_coord_map.names
-                                ):
-                                    dim_name = self._increment_name(dim_name)
+                        # Increment name if conflicted with one already existing
+                        # (or planned)
+                        # NOTE: check against variable names is needed because
+                        # of a netcdf bug ... see note in the mesh dimensions
+                        # block above.
+                        while (
+                            dim_name in self._existing_dim
+                            and (
+                                self._existing_dim[dim_name] != cube.shape[dim]
+                            )
+                        ) or dim_name in self._dataset.variables:
+                            dim_name = self._increment_name(dim_name)
 
                 # Record the dimension.
                 record_dimension(
@@ -2065,6 +2090,12 @@ class Saver:
 
             if bounds_dimension_name not in self._dataset.dimensions:
                 # Create the bounds dimension with the appropriate extent.
+                while bounds_dimension_name in self._dataset.variables:
+                    # Also avoid collision with variable names.
+                    # See '_get_dim_names' for reason.
+                    bounds_dimension_name = self._increment_name(
+                        bounds_dimension_name
+                    )
                 self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
             boundsvar_name = "{}_{}".format(cf_name, varname_extra)
@@ -2345,6 +2376,12 @@ class Saver:
 
             # Determine whether to create the string length dimension.
             if string_dimension_name not in self._dataset.dimensions:
+                while string_dimension_name in self._dataset.variables:
+                    # Also avoid collision with variable names.
+                    # See '_get_dim_names' for reason.
+                    string_dimension_name = self._increment_name(
+                        string_dimension_name
+                    )
                 self._dataset.createDimension(
                     string_dimension_name, string_dimension_depth
                 )
