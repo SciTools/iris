@@ -2261,7 +2261,12 @@ class _Groupby:
             for coord, dim in shared_coords:
                 self._add_shared_coord(coord, dim)
 
+        # Aggregation is climatological in nature
         self.climatological = climatological
+
+        # Stores mapping from original cube coords to new ones, as metadata may
+        # not match
+        self.coord_replacement_mapping = []
 
     def _add_groupby_coord(self, coord):
         if coord.ndim != 1:
@@ -2551,6 +2556,7 @@ class _Groupby:
                 new_coord.climatological = True
 
             self.coords.append(new_coord)
+            self.coord_replacement_mapping.append((coord, new_coord))
 
     def __len__(self):
         """Calculate the number of groups given the group-by coordinates."""
