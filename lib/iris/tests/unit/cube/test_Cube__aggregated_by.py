@@ -509,7 +509,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         result = self.get_result(invalid_units=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(2))
+        self.assertArrayEqual(aligned_coord.points, np.arange(9, 11))
         self.assertArrayEqual(
             aligned_coord.bounds, np.array([[0, 18], [1, 19]])
         )

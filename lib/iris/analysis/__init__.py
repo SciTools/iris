@@ -2512,9 +2512,6 @@ class _Groupby:
                         )
 
                 if climatological_coord:
-                    print(f"{coord.points=}")
-                    print(f"{groupby_indices=}")
-                    print(f"{new_points=}")
                     for indices in groupby_indices:
                         new_points.append([coord.points.take(indices[0], dim)])
 
@@ -2528,15 +2525,11 @@ class _Groupby:
                 if climatological_coord:
                     new_points = np.moveaxis(np.array(new_points), 0, dim)
 
-                    print(f"{new_points=}")
-                    print(f"{new_bounds=}")
-
                 # Now create the new bounded group shared coordinate.
                 try:
                     if climatological_coord:
                         # Pick the first point
                         new_points = new_points[..., 0]
-                        print(f"{new_points=}")
                     else:
                         new_points = new_bounds.mean(-1)
                 except TypeError:

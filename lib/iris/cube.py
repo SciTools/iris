@@ -4120,8 +4120,10 @@ x            -              -
             ):
                 aggregateby_cube.add_dim_coord(new_coord, dimension_to_groupby)
             else:
+                # Use coord.name() because metadata may have changed
+                # (specifically climatology may be True)
                 aggregateby_cube.add_aux_coord(
-                    new_coord, self.coord_dims(coord)
+                    new_coord, self.coord_dims(coord.name())
                 )
 
         # Attach the aggregate-by data into the aggregate-by cube.
