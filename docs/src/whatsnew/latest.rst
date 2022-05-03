@@ -49,6 +49,9 @@ This document explains the changes made to Iris for this release
    ``standard_parallel`` and ``scale_factor_at_projection_origin`` to
    :class:`~iris.coord_system.Mercator`. (:issue:`3844`, :pull:`4609`)
 
+#. `@wjbenfold`_ and `@stephenworsley`_ (reviewer) added a maximum run length
+   aggregator (:class:`~iris.analysis.MAX_RUN`). (:pull:`4676`)
+
 
 🐛 Bugs Fixed
 =============

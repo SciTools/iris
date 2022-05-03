@@ -64,6 +64,7 @@ __all__ = (
     "HMEAN",
     "Linear",
     "MAX",
+    "MAX_RUN",
     "MEAN",
     "MEDIAN",
     "MIN",
