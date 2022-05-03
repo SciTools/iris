@@ -255,6 +255,9 @@ Post Release Steps
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
    see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
+#. Make a new `latest.rst` from `latest.rst.template` and remove the `..
+   _iris_whatsnew` from the top of the what's new for the release that has just
+   happened.
 #. Merge back to ``main``
 
 
