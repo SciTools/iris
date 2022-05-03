@@ -1,5 +1,7 @@
 .. include:: ../common_links.inc
 
+.. _iris_whatsnew:
+
 |iris_version| |build_date| [unreleased]
 ****************************************
 
