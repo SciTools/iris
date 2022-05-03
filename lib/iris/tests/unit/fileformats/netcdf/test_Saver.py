@@ -769,7 +769,7 @@ class Test__cf_coord_identity(tests.IrisTest):
         self.assertEqual(result, expected_units)
 
     def test_geogcs_latitude(self):
-        crs = iris.coord_systems.GeogCS(60, 0)
+        crs = iris.coord_systems.GeogCS(60, 30)
         self.check_call(
             "latitude",
             coord_system=crs,
@@ -778,7 +778,7 @@ class Test__cf_coord_identity(tests.IrisTest):
         )
 
     def test_geogcs_longitude(self):
-        crs = iris.coord_systems.GeogCS(60, 0)
+        crs = iris.coord_systems.GeogCS(60, 30)
         self.check_call(
             "longitude",
             coord_system=crs,

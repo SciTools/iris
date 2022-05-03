@@ -122,6 +122,12 @@ class CoordSystem(metaclass=ABCMeta):
         pass
 
 
+_short_datum_names = {
+    "OSGB 1936": "OSGB36",
+    "WGS 84": "WGS84",
+}
+
+
 class GeogCS(CoordSystem):
     """
     A geographic (ellipsoidal) coordinate system, defined by the shape of
@@ -139,29 +145,28 @@ class GeogCS(CoordSystem):
         longitude_of_prime_meridian=None,
     ):
         """
-        Creates a new GeogCS.
+        Create a new GeogCS.
 
-        Kwargs:
-
+        Parameters
+        ----------
         * semi_major_axis, semi_minor_axis:
-            Axes of ellipsoid, in metres.  At least one must be given
-            (see note below).
-
+            Axes of ellipsoid, in metres.  At least one must be given (see note
+            below).
         * inverse_flattening:
-            Can be omitted if both axes given (see note below).
-            Defaults to 0.0 .
-
+            Can be omitted if both axes given (see note below). Default 0.0
         * longitude_of_prime_meridian:
-            Specifies the prime meridian on the ellipsoid, in degrees.
-            Defaults to 0.0 .
+            Specifies the prime meridian on the ellipsoid, in degrees. Default 0.0
+        * datum:
+            Name of the datum used to modify the ellipsoid. Default None
 
+        Notes
+        -----
         If just semi_major_axis is set, with no semi_minor_axis or
         inverse_flattening, then a perfect sphere is created from the given
         radius.
 
-        If just two of semi_major_axis, semi_minor_axis, and
-        inverse_flattening are given the missing element is calculated from the
-        formula:
+        If just two of semi_major_axis, semi_minor_axis, and inverse_flattening
+        are given the missing element is calculated from the formula:
         :math:`flattening = (major - minor) / major`
 
         Currently, Iris will not allow over-specification (all three ellipsoid
@@ -194,57 +199,33 @@ class GeogCS(CoordSystem):
         ):
             raise ValueError("Ellipsoid is overspecified")
 
-        # Perfect sphere (semi_major_axis only)? (1 0 0)
-        elif semi_major_axis is not None and (
-            semi_minor_axis is None and not inverse_flattening
+        # We didn't get enough to specify an ellipse.
+        if semi_major_axis is None and (
+            semi_minor_axis is None or inverse_flattening is None
         ):
-            semi_minor_axis = semi_major_axis
-            inverse_flattening = 0.0
+            raise ValueError("Insufficient ellipsoid specification")
 
-        # Calculate semi_major_axis? (0 1 1)
-        elif semi_major_axis is None and (
-            semi_minor_axis is not None and inverse_flattening is not None
-        ):
+        # Making a globe needs a semi_major_axis and a semi_minor_axis
+        if semi_major_axis is None:
             semi_major_axis = -semi_minor_axis / (
                 (1.0 - inverse_flattening) / inverse_flattening
             )
-
-        # Calculate semi_minor_axis? (1 0 1)
-        elif semi_minor_axis is None and (
-            semi_major_axis is not None and inverse_flattening is not None
-        ):
+        if semi_minor_axis is None and inverse_flattening:
             semi_minor_axis = semi_major_axis - (
                 (1.0 / inverse_flattening) * semi_major_axis
             )
-
-        # Calculate inverse_flattening? (1 1 0)
-        elif inverse_flattening is None and (
-            semi_major_axis is not None and semi_minor_axis is not None
-        ):
-            if semi_major_axis == semi_minor_axis:
-                inverse_flattening = 0.0
-            else:
-                inverse_flattening = 1.0 / (
-                    (semi_major_axis - semi_minor_axis) / semi_major_axis
-                )
-
-        # We didn't get enough to specify an ellipse.
-        else:
-            raise ValueError("Insufficient ellipsoid specification")
-
-        #: Major radius of the ellipsoid in metres.
-        self.semi_major_axis = float(semi_major_axis)
-
-        #: Minor radius of the ellipsoid in metres.
-        self.semi_minor_axis = float(semi_minor_axis)
-
-        #: :math:`1/f` where :math:`f = (a-b)/a`.
-        self.inverse_flattening = float(inverse_flattening)
 
         #: Describes 'zero' on the ellipsoid in degrees.
         self.longitude_of_prime_meridian = _arg_default(
             longitude_of_prime_meridian, 0
         )
+
+        globe = ccrs.Globe(
+            ellipse=None,
+            semimajor_axis=semi_major_axis,
+            semiminor_axis=semi_minor_axis,
+        )
+        self._crs = ccrs.Geodetic(globe)
 
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
@@ -255,6 +236,14 @@ class GeogCS(CoordSystem):
                 (
                     "longitude_of_prime_meridian",
                     self.longitude_of_prime_meridian,
+                )
+            )
+        # An unknown crs datum will be treated as None
+        if self.datum is not None and self.datum != "unknown":
+            attrs.append(
+                (
+                    "datum",
+                    self.datum,
                 )
             )
         return attrs
@@ -294,7 +283,7 @@ class GeogCS(CoordSystem):
         return CoordSystem.xml_element(self, doc, attrs)
 
     def as_cartopy_crs(self):
-        return ccrs.Geodetic(self.as_cartopy_globe())
+        return self._crs
 
     def as_cartopy_projection(self):
         return ccrs.PlateCarree(
@@ -303,13 +292,38 @@ class GeogCS(CoordSystem):
         )
 
     def as_cartopy_globe(self):
-        # Explicitly set `ellipse` to None as a workaround for
-        # Cartopy setting WGS84 as the default.
-        return ccrs.Globe(
-            semimajor_axis=self.semi_major_axis,
-            semiminor_axis=self.semi_minor_axis,
-            ellipse=None,
+        return self._crs.globe
+
+    def __getattr__(self, name):
+        if name == "semi_major_axis":
+            return self._crs.ellipsoid.semi_major_metre
+        if name == "semi_minor_axis":
+            return self._crs.ellipsoid.semi_minor_metre
+        if name == "inverse_flattening":
+            return self._crs.ellipsoid.inverse_flattening
+        if name == "datum":
+            datum = self._crs.datum.name
+            # An unknown crs datum will be treated as None
+            if datum == "unknown":
+                return None
+            return datum
+        return getattr(super(), name)
+
+    @classmethod
+    def from_datum(cls, datum, longitude_of_prime_meridian=None):
+
+        short_datum = _short_datum_names.get(datum, datum)
+
+        # Cartopy doesn't actually enact datums unless they're provided without
+        # ellipsoid axes, so only provide the datum
+        crs = super().__new__(cls)
+        crs._crs = ccrs.Geodetic(ccrs.Globe(short_datum, ellipse=None))
+
+        #: Describes 'zero' on the ellipsoid in degrees.
+        crs.longitude_of_prime_meridian = _arg_default(
+            longitude_of_prime_meridian, 0
         )
+        return crs
 
 
 class RotatedGeogCS(CoordSystem):
@@ -1109,6 +1123,10 @@ class Mercator(CoordSystem):
 
         * false_northing:
             Y offset from the planar origin in metres. Defaults to 0.0.
+
+        * datum:
+            If given, specifies the datumof the coordinate system. Only
+            respected if iris.Future.daum_support is set.
 
         Note: Only one of ``standard_parallel`` and
         ``scale_factor_at_projection_origin`` should be included.

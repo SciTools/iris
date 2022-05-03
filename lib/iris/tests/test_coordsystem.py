@@ -216,7 +216,9 @@ class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
         cs = GeogCS(6543210, 6500000)
         res = cs.as_cartopy_crs()
         globe = ccrs.Globe(
-            semimajor_axis=6543210.0, semiminor_axis=6500000.0, ellipse=None
+            semimajor_axis=6543210.0,
+            semiminor_axis=6500000.0,
+            ellipse=None,
         )
         expected = ccrs.Geodetic(globe)
         self.assertEqual(res, expected)
@@ -243,7 +245,10 @@ class Test_RotatedGeogCS_construction(tests.IrisTest):
 class Test_RotatedGeogCS_repr(tests.IrisTest):
     def test_repr(self):
         rcs = RotatedGeogCS(
-            30, 40, north_pole_grid_longitude=50, ellipsoid=GeogCS(6371229)
+            30,
+            40,
+            north_pole_grid_longitude=50,
+            ellipsoid=GeogCS(6371229),
         )
         expected = (
             "RotatedGeogCS(30.0, 40.0, "
@@ -263,7 +268,10 @@ class Test_RotatedGeogCS_repr(tests.IrisTest):
 class Test_RotatedGeogCS_str(tests.IrisTest):
     def test_str(self):
         rcs = RotatedGeogCS(
-            30, 40, north_pole_grid_longitude=50, ellipsoid=GeogCS(6371229)
+            30,
+            40,
+            north_pole_grid_longitude=50,
+            ellipsoid=GeogCS(6371229),
         )
         expected = (
             "RotatedGeogCS(30.0, 40.0, "
@@ -486,6 +494,24 @@ class Test_LambertConformal(tests.GraphicsTest):
         lcc = LambertConformal(0, 0, secant_latitudes=(-30, -60))
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(ccrs.cutoff, 30)
+
+
+class Test_Datums(tests.IrisTest):
+    def test_default_none(self):
+        cs = GeogCS(6543210, 6500000)  # Arbitrary radii
+        cartopy_crs = cs.as_cartopy_crs()
+        self.assertStringEqual(cartopy_crs.datum.name, "unknown")
+
+    def test_set_persist(self):
+        cs = GeogCS.from_datum(datum="WGS84")
+        cartopy_crs = cs.as_cartopy_crs()
+        self.assertStringEqual(
+            cartopy_crs.datum.name, "World Geodetic System 1984"
+        )
+
+        cs = GeogCS.from_datum(datum="OSGB36")
+        cartopy_crs = cs.as_cartopy_crs()
+        self.assertStringEqual(cartopy_crs.datum.name, "OSGB 1936")
 
 
 if __name__ == "__main__":

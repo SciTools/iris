@@ -37,7 +37,7 @@ This document explains the changes made to Iris for this release
    :pull:`4589`)
 
 #. `@wjbenfold`_ added support for ``false_easting`` and ``false_northing`` to
-   :class:`~iris.coord_system.Mercator`. (:issue:`3107`, :pull:`4524`)
+   :class:`~iris.coord_systems.Mercator`. (:issue:`3107`, :pull:`4524`)
 
 #. `@rcomer`_ and `@wjbenfold`_ (reviewer) implemented lazy aggregation for the
    :obj:`iris.analysis.PERCENTILE` aggregator. (:pull:`3901`)
@@ -47,7 +47,13 @@ This document explains the changes made to Iris for this release
 
 #. `@wjbenfold`_ added support for CF-compliant treatment of
    ``standard_parallel`` and ``scale_factor_at_projection_origin`` to
-   :class:`~iris.coord_system.Mercator`. (:issue:`3844`, :pull:`4609`)
+   :class:`~iris.coord_systems.Mercator`. (:issue:`3844`, :pull:`4609`)
+
+#. `@wjbenfold`_ added support datums associated with coordinate systems (e.g.
+   :class:`~iris.coord_systems.GeogCS` other subclasses of
+   :class:`~iris.coord_systems.CoordSystem`). Loading of datum information from
+   a netCDF file only happens when the :obj:`iris.FUTURE.datum_support` flag is
+   set. (:issue:`4619`, :pull:`4704`)
 
 #. `@wjbenfold`_ and `@stephenworsley`_ (reviewer) added a maximum run length
    aggregator (:class:`~iris.analysis.MAX_RUN`). (:pull:`4676`)
