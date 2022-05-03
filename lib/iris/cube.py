@@ -3872,10 +3872,9 @@ class Cube(CFVariableMixin):
             Aggregator to be applied to each group.
         climatological : bool
             Indicates whether the output is expected to be climatological. This
-            causes the points of the collapsed coord to be set to match the
-            points of the first value in each group and the climatological
-            attribute to be set True on the resulting coord(s) (if the units of
-            the coords are compatible with this).
+            causes the climatological flag to be set on the resulting coord(s)
+            and the value of any aggregated time coord to be set to the
+            first point of the corresponding source time coord.
 
         Returns
         -------
@@ -4113,13 +4112,6 @@ x            -              -
         ) or [None]
         for coord in groupby.coords:
             new_coord = coord.copy()
-
-            try:
-                if climatological:
-                    new_coord.climatological = True
-            except TypeError:
-                # Can't set this if coordinate is unitless
-                pass
 
             if (
                 dim_coord is not None

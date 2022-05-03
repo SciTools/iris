@@ -2230,7 +2230,8 @@ class _Groupby:
         * climatological (bool):
             Indicates whether the output is expected to be climatological. This
             causes the climatological flag to be set on the resulting coord(s)
-            and the value of the collapsed coord to be set sensibly.
+            and the value of any aggregated time coord to be set to the first
+            point of the corresponding source time coord.
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -2420,7 +2421,11 @@ class _Groupby:
 
         # Create new shared bounded coordinates.
         for coord, dim in self._shared_coords:
-            climatological_coord = self.climatological and coord.ndim == 1
+            climatological_coord = (
+                self.climatological
+                and coord.ndim == 1
+                and coord.unit.is_time()
+            )
             if coord.points.dtype.kind in "SU":
                 if coord.bounds is None:
                     new_points = []
@@ -2508,7 +2513,7 @@ class _Groupby:
 
                 if climatological_coord:
                     for indices in groupby_indices:
-                        new_points.append([coord.points.take(indices, dim)])
+                        new_points.append([coord.points.take(indices[0], dim)])
 
                 # Bounds needs to be an array with the length 2 start-stop
                 # dimension last, and the aggregated dimension back in its
@@ -2518,9 +2523,7 @@ class _Groupby:
                 )
 
                 if climatological_coord:
-                    new_points = np.moveaxis(
-                        np.array(new_points), (0, 1), (dim, -1)
-                    )
+                    new_points = np.moveaxis(np.array(new_points), 0, dim)
 
                 # Now create the new bounded group shared coordinate.
                 try:
@@ -2537,16 +2540,17 @@ class _Groupby:
                     raise ValueError(msg)
 
             try:
-                self.coords.append(
-                    coord.copy(points=new_points, bounds=new_bounds)
-                )
+                new_coord = coord.copy(points=new_points, bounds=new_bounds)
             except ValueError:
                 # non monotonic points/bounds
-                self.coords.append(
-                    iris.coords.AuxCoord.from_coord(coord).copy(
-                        points=new_points, bounds=new_bounds
-                    )
+                new_coord = iris.coords.AuxCoord.from_coord(coord).copy(
+                    points=new_points, bounds=new_bounds
                 )
+
+            if climatological_coord:
+                new_coord.climatological = True
+
+            self.coords.append(new_coord)
 
     def __len__(self):
         """Calculate the number of groups given the group-by coordinates."""
