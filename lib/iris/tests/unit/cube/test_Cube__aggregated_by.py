@@ -765,3 +765,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
             aligned_coord.bounds, np.array([[0, 18], [1, 19]])
         )
         self.assertFalse(aligned_coord.climatological)
+
+
+if __name__ == "__main__":
+    tests.main()
