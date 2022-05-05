@@ -3913,11 +3913,11 @@ x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
                 Cell methods:
-                    mean                        month, year mean
-                    year
+                    mean                        month, year
+                    mean                        year
                 Attributes:
-                    Conventions                 'CF-1.5' STASH
-                    m01s00i024
+                    Conventions                 'CF-1.5'
+                    STASH                       m01s00i024
 
         """
         groupby_coords = []
