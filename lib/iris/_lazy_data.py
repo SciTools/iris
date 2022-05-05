@@ -160,7 +160,9 @@ def _optimum_chunksize(
     limit=None,
     dtype=np.dtype("f4"),
 ):
-
+    # By providing dask_array_chunksize as an argument, we make it so that the
+    # output of _optimum_chunksize_internals depends only on its arguments (and
+    # thus we can use lru_cache)
     return _optimum_chunksize_internals(
         tuple(chunks),
         tuple(shape),

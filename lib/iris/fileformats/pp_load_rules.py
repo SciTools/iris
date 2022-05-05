@@ -591,6 +591,7 @@ def _epoch_date_hours_internals(epoch_hours_unit, datetime):
 
 
 _epoch_date_hours_cache = {}
+_epoch_date_hours_cache_max_size = 128  # lru_cache default
 
 
 @wraps(_epoch_date_hours_internals)
@@ -604,6 +605,11 @@ def _epoch_date_hours(epoch_hours_unit, datetime):
         _epoch_date_hours_cache[key] = _epoch_date_hours_internals(
             epoch_hours_unit, datetime
         )
+
+        # Limit cache size
+        while len(_epoch_date_hours_cache) > _epoch_date_hours_cache_max_size:
+            oldest_item = next(iter(_epoch_date_hours_cache))
+            _epoch_date_hours_cache.pop(oldest_item, None)
 
     return _epoch_date_hours_cache[key]
 
