@@ -599,7 +599,7 @@ def _epoch_date_hours(epoch_hours_unit, datetime):
     # Not using functools.lru_cache because it does an equality check that fails
     # on datetime objects from different calendars.
 
-    key = (epoch_hours_unit, datetime)
+    key = (epoch_hours_unit, hash(datetime))
 
     if key not in _epoch_date_hours_cache:
         _epoch_date_hours_cache[key] = _epoch_date_hours_internals(
