@@ -577,7 +577,10 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         second_categorised: bool = False,
         bounds: bool = False,
         partially_aligned: bool = False,
+        partially_aligned_timelike: bool = False,
         invalid_units: bool = False,
+        already_climatological: bool = False,
+        climatological_op: bool = True,
     ) -> Cube:
         cube_data = self.data
         if transpose:
@@ -589,15 +592,23 @@ class Test_aggregated_by__climatology(tests.IrisTest):
             units = Unit("days since 1970-01-01")
         else:
             units = Unit("m")
+        if partially_aligned_timelike:
+            pa_units = Unit("days since 1970-01-01")
+        else:
+            pa_units = Unit("m")
 
         # DimCoords
         aligned_coord = DimCoord(
-            np.arange(20), long_name="aligned", units=units
+            np.arange(20),
+            long_name="aligned",
+            units=units,
         )
         orthogonal_coord = DimCoord(np.arange(5), long_name="orth")
 
         if bounds:
             aligned_coord.guess_bounds()
+
+        aligned_coord.climatological = already_climatological
 
         dim_coords_and_dims = zip([aligned_coord, orthogonal_coord], axes)
 
@@ -623,7 +634,9 @@ class Test_aggregated_by__climatology(tests.IrisTest):
 
         if partially_aligned:
             partially_aligned_coord = AuxCoord(
-                cube_data + 1, long_name="part_aligned"
+                cube_data + 1,
+                long_name="part_aligned",
+                units=pa_units,
             )
             aux_coords_and_dims.append((partially_aligned_coord, (0, 1)))
 
@@ -636,7 +649,9 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         )
 
         out_cube = in_cube.aggregated_by(
-            categorised_coords, self.aggregator, climatological=True
+            categorised_coords,
+            self.aggregator,
+            climatological=climatological_op,
         )
 
         return out_cube
@@ -658,9 +673,6 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         categorised_coord = result.coord("cat1")
         self.assertArrayEqual(categorised_coord.points, np.arange(2))
         self.assertIsNone(categorised_coord.bounds)
-        # TODO: I assume the categorised coord shouldn't be climatological?
-        # Currently we're not really testing that behaviour because it doesn't
-        # have units that would allow climatologicalness
         self.assertFalse(categorised_coord.climatological)
 
     def test_2d_other_coord(self):
@@ -687,8 +699,35 @@ class Test_aggregated_by__climatology(tests.IrisTest):
                 2, 5, 2
             ),
         )
-        # TODO: I assume the partially aligned coord shouldn't be climatological?
         self.assertFalse(part_aligned_coord.climatological)
+
+    def test_2d_timelike_other_coord(self):
+        """
+        Check that we can handle aggregation applying to a 2d AuxCoord that
+        covers the aggregation dimension and another one.
+        """
+        result = self.get_result(
+            partially_aligned=True, partially_aligned_timelike=True
+        )
+
+        aligned_coord = result.coord("aligned")
+        self.assertArrayEqual(aligned_coord.points, np.arange(2))
+        self.assertArrayEqual(
+            aligned_coord.bounds, np.array([[0, 18], [1, 19]])
+        )
+        self.assertTrue(aligned_coord.climatological)
+
+        part_aligned_coord = result.coord("part_aligned")
+        self.assertArrayEqual(
+            part_aligned_coord.points, np.arange(1, 11).reshape(2, 5)
+        )
+        self.assertArrayEqual(
+            part_aligned_coord.bounds,
+            np.array([np.arange(1, 11), np.arange(91, 101)]).T.reshape(
+                2, 5, 2
+            ),
+        )
+        self.assertTrue(part_aligned_coord.climatological)
 
     def test_transposed(self):
         """
@@ -706,7 +745,6 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         categorised_coord = result.coord("cat1")
         self.assertArrayEqual(categorised_coord.points, np.arange(2))
         self.assertIsNone(categorised_coord.bounds)
-        # TODO: I assume the categorised coord shouldn't be climatological?
         self.assertFalse(categorised_coord.climatological)
 
     def test_bounded(self):
@@ -716,7 +754,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         result = self.get_result(bounds=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(2))
+        self.assertArrayEqual(aligned_coord.points, [-0.5, 0.5])
         self.assertArrayEqual(
             aligned_coord.bounds, np.array([[-0.5, 18.5], [0.5, 19.5]])
         )
@@ -741,7 +779,6 @@ class Test_aggregated_by__climatology(tests.IrisTest):
             categorised_coord1.points, np.tile(np.arange(2), 5)
         )
         self.assertIsNone(categorised_coord1.bounds)
-        # TODO: I assume the categorised coord shouldn't be climatological?
         self.assertFalse(categorised_coord1.climatological)
 
         categorised_coord2 = result.coord("cat2")
@@ -749,7 +786,6 @@ class Test_aggregated_by__climatology(tests.IrisTest):
             categorised_coord2.points, np.tile(np.arange(5), 2)
         )
         self.assertIsNone(categorised_coord2.bounds)
-        # TODO: I assume the categorised coord shouldn't be climatological?
         self.assertFalse(categorised_coord2.climatological)
 
     def test_non_climatological_units(self):
@@ -765,6 +801,48 @@ class Test_aggregated_by__climatology(tests.IrisTest):
             aligned_coord.bounds, np.array([[0, 18], [1, 19]])
         )
         self.assertFalse(aligned_coord.climatological)
+
+    def test_clim_in_clim_op(self):
+        """
+        Check the least complicated version works (set climatological, set
+        points correctly).
+        """
+        # For the input coordinate to be climatological, it must have bounds
+        result = self.get_result(bounds=True, already_climatological=True)
+
+        aligned_coord = result.coord("aligned")
+        self.assertArrayEqual(aligned_coord.points, [-0.5, 0.5])
+        self.assertArrayEqual(
+            aligned_coord.bounds, np.array([[-0.5, 18.5], [0.5, 19.5]])
+        )
+        self.assertTrue(aligned_coord.climatological)
+
+        categorised_coord = result.coord("cat1")
+        self.assertArrayEqual(categorised_coord.points, np.arange(2))
+        self.assertIsNone(categorised_coord.bounds)
+        self.assertFalse(categorised_coord.climatological)
+
+    def test_clim_in_no_clim_op(self):
+        """
+        Check the least complicated version works (set climatological, set
+        points correctly).
+        """
+        # For the input coordinate to be climatological, it must have bounds
+        result = self.get_result(
+            bounds=True, already_climatological=True, climatological_op=False
+        )
+
+        aligned_coord = result.coord("aligned")
+        self.assertArrayEqual(aligned_coord.points, np.arange(9, 11))
+        self.assertArrayEqual(
+            aligned_coord.bounds, np.array([[-0.5, 18.5], [0.5, 19.5]])
+        )
+        self.assertTrue(aligned_coord.climatological)
+
+        categorised_coord = result.coord("cat1")
+        self.assertArrayEqual(categorised_coord.points, np.arange(2))
+        self.assertIsNone(categorised_coord.bounds)
+        self.assertFalse(categorised_coord.climatological)
 
 
 if __name__ == "__main__":

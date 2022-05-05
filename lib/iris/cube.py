@@ -3855,13 +3855,13 @@ class Cube(CFVariableMixin):
         collapsed using the provided aggregator.
 
         Weighted aggregations (:class:`iris.analysis.WeightedAggregator`) may
-        also be supplied. These include :data:`~iris.analysis.MEAN` and
-        sum :data:`~iris.analysis.SUM`.
+        also be supplied. These include :data:`~iris.analysis.MEAN` and sum
+        :data:`~iris.analysis.SUM`.
 
-        Weighted aggregations support an optional *weights* keyword argument.
-        If set, this should be supplied as an array of weights whose shape
-        matches the cube or as 1D array whose length matches the dimension over
-        which is aggregated.
+        Weighted aggregations support an optional *weights* keyword argument. If
+        set, this should be supplied as an array of weights whose shape matches
+        the cube or as 1D array whose length matches the dimension over which is
+        aggregated.
 
         Parameters
         ----------
@@ -3873,8 +3873,8 @@ class Cube(CFVariableMixin):
         climatological : bool
             Indicates whether the output is expected to be climatological. This
             causes the climatological flag to be set on the resulting coord(s)
-            and the value of any aggregated time coord to be set to the
-            first point of the corresponding source time coord.
+            and the values of any aggregated time coord to be set to the first
+            bound of each group from the corresponding source time coord.
 
         Returns
         -------
@@ -3913,11 +3913,11 @@ x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
                 Cell methods:
-                    mean                        month, year
-                    mean                        year
+                    mean                        month, year mean
+                    year
                 Attributes:
-                    Conventions                 'CF-1.5'
-                    STASH                       m01s00i024
+                    Conventions                 'CF-1.5' STASH
+                    m01s00i024
 
         """
         groupby_coords = []
