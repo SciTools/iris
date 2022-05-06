@@ -104,7 +104,6 @@ class Mixin__nc_load_actions:
                 "applied. To apply the datum when loading, use the "
                 "iris.FUTURE.datum_support flag.",
                 category=FutureWarning,
-                module="iris.fileformats._nc_load_rules.helpers",
             )
             # Call the main translation function to load a single cube.
             # _load_cube establishes per-cube facts, activates rules and
