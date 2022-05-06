@@ -9,6 +9,7 @@ Definitions of coordinate systems.
 """
 
 from abc import ABCMeta, abstractmethod
+from functools import cached_property
 import warnings
 
 import cartopy.crs as ccrs
@@ -53,10 +54,18 @@ class CoordSystem(metaclass=ABCMeta):
     grid_mapping_name = None
 
     def __eq__(self, other):
-        return (
-            self.__class__ == other.__class__
-            and self.__dict__ == other.__dict__
-        )
+        if self.__class__ != other.__class__:
+            return False
+        self_keys = set(self.__dict__.keys())
+        other_keys = set(other.__dict__.keys())
+        check_keys = (self_keys | other_keys) - {"_globe", "_crs"}
+        for key in check_keys:
+            try:
+                if self.__dict__[key] != other.__dict__[key]:
+                    return False
+            except KeyError:
+                return False
+        return True
 
     def __ne__(self, other):
         # Must supply __ne__, Python does not defer to __eq__ for
@@ -199,33 +208,59 @@ class GeogCS(CoordSystem):
         ):
             raise ValueError("Ellipsoid is overspecified")
 
-        # We didn't get enough to specify an ellipse.
-        if semi_major_axis is None and (
-            semi_minor_axis is None or inverse_flattening is None
+        # Perfect sphere (semi_major_axis only)? (1 0 0)
+        elif semi_major_axis is not None and (
+            semi_minor_axis is None and not inverse_flattening
         ):
-            raise ValueError("Insufficient ellipsoid specification")
+            semi_minor_axis = semi_major_axis
+            inverse_flattening = 0.0
 
-        # Making a globe needs a semi_major_axis and a semi_minor_axis
-        if semi_major_axis is None:
+        # Calculate semi_major_axis? (0 1 1)
+        elif semi_major_axis is None and (
+            semi_minor_axis is not None and inverse_flattening is not None
+        ):
             semi_major_axis = -semi_minor_axis / (
                 (1.0 - inverse_flattening) / inverse_flattening
             )
-        if semi_minor_axis is None and inverse_flattening:
+
+        # Calculate semi_minor_axis? (1 0 1)
+        elif semi_minor_axis is None and (
+            semi_major_axis is not None and inverse_flattening is not None
+        ):
             semi_minor_axis = semi_major_axis - (
                 (1.0 / inverse_flattening) * semi_major_axis
             )
+
+        # Calculate inverse_flattening? (1 1 0)
+        elif inverse_flattening is None and (
+            semi_major_axis is not None and semi_minor_axis is not None
+        ):
+            if semi_major_axis == semi_minor_axis:
+                inverse_flattening = 0.0
+            else:
+                inverse_flattening = 1.0 / (
+                    (semi_major_axis - semi_minor_axis) / semi_major_axis
+                )
+
+        # We didn't get enough to specify an ellipse.
+        else:
+            raise ValueError("Insufficient ellipsoid specification")
+
+        #: Major radius of the ellipsoid in metres.
+        self._semi_major_axis = float(semi_major_axis)
+
+        #: Minor radius of the ellipsoid in metres.
+        self._semi_minor_axis = float(semi_minor_axis)
+
+        #: :math:`1/f` where :math:`f = (a-b)/a`.
+        self._inverse_flattening = float(inverse_flattening)
+
+        self._datum = None
 
         #: Describes 'zero' on the ellipsoid in degrees.
         self.longitude_of_prime_meridian = _arg_default(
             longitude_of_prime_meridian, 0
         )
-
-        globe = ccrs.Globe(
-            ellipse=None,
-            semimajor_axis=semi_major_axis,
-            semiminor_axis=semi_minor_axis,
-        )
-        self._crs = ccrs.Geodetic(globe)
 
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
@@ -292,37 +327,109 @@ class GeogCS(CoordSystem):
         )
 
     def as_cartopy_globe(self):
-        return self._crs.globe
+        return self._globe
 
-    def __getattr__(self, name):
-        if name == "semi_major_axis":
+    @cached_property
+    def _globe(self):
+        if self._datum is not None:
+            short_datum = _short_datum_names.get(self._datum, self._datum)
+            # Cartopy doesn't actually enact datums unless they're provided without
+            # ellipsoid axes, so only provide the datum
+            return ccrs.Globe(short_datum, ellipse=None)
+        else:
+            return ccrs.Globe(
+                ellipse=None,
+                semimajor_axis=self._semi_major_axis,
+                semiminor_axis=self._semi_minor_axis,
+            )
+
+    @cached_property
+    def _crs(self):
+        return ccrs.Geodetic(self._globe)
+
+    def _wipe_cached_properties(self):
+        try:
+            delattr(self, "_crs")
+        except AttributeError:
+            pass
+        try:
+            delattr(self, "_globe")
+        except AttributeError:
+            pass
+
+    @property
+    def semi_major_axis(self):
+        if self._semi_major_axis is not None:
+            return self._semi_major_axis
+        else:
             return self._crs.ellipsoid.semi_major_metre
-        if name == "semi_minor_axis":
+
+    @semi_major_axis.setter
+    def semi_major_axis(self, value):
+        if not np.isclose(self._semi_major_axis, value):
+            self._datum = None
+            self._wipe_cached_properties()
+        self._semi_major_axis = value
+
+    @property
+    def semi_minor_axis(self):
+        if self._semi_minor_axis is not None:
+            return self._semi_minor_axis
+        else:
             return self._crs.ellipsoid.semi_minor_metre
-        if name == "inverse_flattening":
-            return self._crs.ellipsoid.inverse_flattening
-        if name == "datum":
-            datum = self._crs.datum.name
-            # An unknown crs datum will be treated as None
-            if datum == "unknown":
-                return None
+
+    @semi_minor_axis.setter
+    def semi_minor_axis(self, value):
+        if not np.isclose(self._semi_minor_axis, value):
+            self._datum = None
+            self._wipe_cached_properties()
+        self._semi_minor_axis = value
+
+    @property
+    def inverse_flattening(self):
+        if self._inverse_flattening is not None:
+            return self._inverse_flattening
+        else:
+            self._crs.ellipsoid.inverse_flattening
+
+    @inverse_flattening.setter
+    def inverse_flattening(self, value):
+        # TODO: Should we warn here that this does nothing?
+        self._inverse_flattening = value
+
+    @property
+    def datum(self):
+        if self._datum is None:
+            return None
+        else:
+            datum = self._datum
             return datum
-        return getattr(super(), name)
+
+    @datum.setter
+    def datum(self, value):
+        if self._datum != value:
+            self._semi_major_axis = None
+            self._semi_minor_axis = None
+            self._inverse_flattening = None
+            self._wipe_cached_properties()
+        self._datum = value
 
     @classmethod
     def from_datum(cls, datum, longitude_of_prime_meridian=None):
 
-        short_datum = _short_datum_names.get(datum, datum)
-
-        # Cartopy doesn't actually enact datums unless they're provided without
-        # ellipsoid axes, so only provide the datum
         crs = super().__new__(cls)
-        crs._crs = ccrs.Geodetic(ccrs.Globe(short_datum, ellipse=None))
+
+        crs._semi_major_axis = None
+        crs._semi_minor_axis = None
+        crs._inverse_flattening = None
 
         #: Describes 'zero' on the ellipsoid in degrees.
         crs.longitude_of_prime_meridian = _arg_default(
             longitude_of_prime_meridian, 0
         )
+
+        crs._datum = datum
+
         return crs
 
 
