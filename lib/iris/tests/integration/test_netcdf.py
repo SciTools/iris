@@ -661,9 +661,6 @@ data:
             iris.save(test_cube, filename)
             with iris.FUTURE.context(datum_support=True):
                 cube = iris.load_cube(filename)
-        print(cube)
-        for coord in cube.coords():
-            print(coord)
 
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
