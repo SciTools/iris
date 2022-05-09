@@ -54,6 +54,16 @@ class CoordSystem(metaclass=ABCMeta):
     grid_mapping_name = None
 
     def __eq__(self, other):
+        """
+        Override equality
+
+        The `_globe` and `_crs` attributes are not compared because they are
+        cached properties and completely derived from other attributes. The
+        nature of caching means that they can appear on one object and not on
+        another despite the objects being identical, and them being completely
+        derived from other attributes means they will only differ if other
+        attributes that are being tested for equality differ.
+        """
         if self.__class__ != other.__class__:
             return False
         self_keys = set(self.__dict__.keys())
@@ -141,7 +151,6 @@ class GeogCS(CoordSystem):
     """
     A geographic (ellipsoidal) coordinate system, defined by the shape of
     the Earth and a prime meridian.
-
     """
 
     grid_mapping_name = "latitude_longitude"
@@ -165,8 +174,6 @@ class GeogCS(CoordSystem):
             Can be omitted if both axes given (see note below). Default 0.0
         * longitude_of_prime_meridian:
             Specifies the prime meridian on the ellipsoid, in degrees. Default 0.0
-        * datum:
-            Name of the datum used to modify the ellipsoid. Default None
 
         Notes
         -----
@@ -331,6 +338,15 @@ class GeogCS(CoordSystem):
 
     @cached_property
     def _globe(self):
+        """
+        A representation of this CRS as a Cartopy Globe.
+
+        Note
+        ----
+        This property is created when required and then cached for speed. That
+        cached value is cleared when an assignment is made to a property of the
+        class that invalidates the cache.
+        """
         if self._datum is not None:
             short_datum = _short_datum_names.get(self._datum, self._datum)
             # Cartopy doesn't actually enact datums unless they're provided without
@@ -345,9 +361,22 @@ class GeogCS(CoordSystem):
 
     @cached_property
     def _crs(self):
+        """
+        A representation of this CRS as a Cartopy CRS.
+
+        Note
+        ----
+        This property is created when required and then cached for speed. That
+        cached value is cleared when an assignment is made to a property of the
+        class that invalidates the cache.
+        """
         return ccrs.Geodetic(self._globe)
 
     def _wipe_cached_properties(self):
+        """
+        Wipes the cached properties on the object as part of any update to a
+        value that invalidates the cache.
+        """
         try:
             delattr(self, "_crs")
         except AttributeError:
@@ -366,6 +395,11 @@ class GeogCS(CoordSystem):
 
     @semi_major_axis.setter
     def semi_major_axis(self, value):
+        """
+        Setting this property to a different value invalidates the current datum
+        (if any) because a datum encodes a specific semi-major axis. This also
+        invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
+        """
         if not np.isclose(self._semi_major_axis, value):
             self._datum = None
             self._wipe_cached_properties()
@@ -380,6 +414,11 @@ class GeogCS(CoordSystem):
 
     @semi_minor_axis.setter
     def semi_minor_axis(self, value):
+        """
+        Setting this property to a different value invalidates the current datum
+        (if any) because a datum encodes a specific semi-minor axis. This also
+        invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
+        """
         if not np.isclose(self._semi_minor_axis, value):
             self._datum = None
             self._wipe_cached_properties()
@@ -394,7 +433,10 @@ class GeogCS(CoordSystem):
 
     @inverse_flattening.setter
     def inverse_flattening(self, value):
-        # TODO: Should we warn here that this does nothing?
+        """
+        Setting this property to a different value does not affect the behaviour
+        of this object any further than the value of this property.
+        """
         self._inverse_flattening = value
 
     @property
@@ -407,6 +449,12 @@ class GeogCS(CoordSystem):
 
     @datum.setter
     def datum(self, value):
+        """
+        Setting this property to a different value invalidates the current
+        values of the ellipsoid measurements because a datum encodes its own
+        ellipse. This also invalidates the cached `cartopy.Globe` and
+        `cartopy.CRS`.
+        """
         if self._datum != value:
             self._semi_major_axis = None
             self._semi_minor_axis = None
