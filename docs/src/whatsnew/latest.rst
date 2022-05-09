@@ -58,6 +58,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ and `@stephenworsley`_ (reviewer) added a maximum run length
    aggregator (:class:`~iris.analysis.MAX_RUN`). (:pull:`4676`)
 
+#. `@wjbenfold`_ added `crs_wkt` to the attributes saved out to a netCDF file.
+   (:issue:`3796`, :pull:`4719`)
+
 
 🐛 Bugs Fixed
 =============
