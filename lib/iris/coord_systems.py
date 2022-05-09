@@ -400,7 +400,8 @@ class GeogCS(CoordSystem):
         (if any) because a datum encodes a specific semi-major axis. This also
         invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
         """
-        if not np.isclose(self._semi_major_axis, value):
+        value = float(value)
+        if not np.isclose(self.semi_major_axis, value):
             self._datum = None
             self._wipe_cached_properties()
         self._semi_major_axis = value
@@ -419,7 +420,8 @@ class GeogCS(CoordSystem):
         (if any) because a datum encodes a specific semi-minor axis. This also
         invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
         """
-        if not np.isclose(self._semi_minor_axis, value):
+        value = float(value)
+        if not np.isclose(self.semi_minor_axis, value):
             self._datum = None
             self._wipe_cached_properties()
         self._semi_minor_axis = value
@@ -437,6 +439,7 @@ class GeogCS(CoordSystem):
         Setting this property to a different value does not affect the behaviour
         of this object any further than the value of this property.
         """
+        value = float(value)
         self._inverse_flattening = value
 
     @property
