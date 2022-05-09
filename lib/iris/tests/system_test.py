@@ -21,7 +21,7 @@ import numpy as np
 import iris
 
 
-class SystemInitialTest(tests.IrisTest):
+class TestSystemInitial(tests.IrisTest):
     def test_supported_filetypes(self):
         nx, ny = 60, 60
         data = np.arange(nx * ny, dtype=">f4").reshape(nx, ny)

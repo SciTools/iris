@@ -34,9 +34,11 @@ dependencies:
 # Test dependencies.
   - filelock
   - imagehash >=4.0
-  - nose
   - pillow <7
   - pre-commit
+  - psutil
+  - pytest
+  - pytest-xdist
   - requests
 
 # Documentation dependencies.
