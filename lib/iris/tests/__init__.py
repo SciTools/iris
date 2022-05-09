@@ -1218,10 +1218,6 @@ get_result_path = IrisTest.get_result_path
 
 
 class GraphicsTestMixin:
-
-    # nose directive: dispatch tests concurrently.
-    _multiprocess_can_split_ = True
-
     def setUp(self):
         # Acquire threading non re-entrant blocking lock to ensure
         # thread-safe plotting.
