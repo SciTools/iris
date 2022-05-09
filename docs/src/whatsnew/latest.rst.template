@@ -92,10 +92,6 @@ NOTE: section above is a template for bugfix patches
 
 #. N/A
 
-#. `@wjbenfold`_ added developer documentation to highlight some of the
-   utilities offered by :class:`iris.IrisTest` and how to update CML and other
-   output files. (:issue:`4544`, :pull:`4600`)
-
 
 💼 Internal
 ===========
