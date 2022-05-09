@@ -10,6 +10,7 @@ Provides testing capabilities for installed copies of Iris.
 
 # Because this file is imported by setup.py, there may be additional runtime
 # imports later in the file.
+import multiprocessing
 import os
 import sys
 
@@ -94,7 +95,9 @@ class TestRunner:
         if self.stop:
             print("Stopping tests after the first error or failure")
         if self.num_processors is None:
-            self.num_processors = "auto"
+            # Choose a magic number that works reasonably well for the default
+            # number of processes.
+            self.num_processors = (multiprocessing.cpu_count() + 1) // 4 + 1
         else:
             self.num_processors = int(self.num_processors)
 
