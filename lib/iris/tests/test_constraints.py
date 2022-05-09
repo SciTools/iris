@@ -91,7 +91,7 @@ class TestSimple(tests.IrisTest):
         self.assertEqual(len(sub_list), 0)
 
 
-class TestMixin:
+class ConstraintMixin:
     """
     Mix-in class for attributes & utilities common to the "normal" and "strict" test cases.
 
@@ -134,7 +134,7 @@ class TestMixin:
         self.lat_gt_45 = iris.Constraint(latitude=lambda c: c > 45)
 
 
-class RelaxedConstraintMixin(TestMixin):
+class RelaxedConstraintMixin(ConstraintMixin):
     @staticmethod
     def fixup_sigma_to_be_aux(cubes):
         # XXX Fix the cubes such that the sigma coordinate is always an AuxCoord. Pending gh issue #18
@@ -296,11 +296,11 @@ class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestCubeExtract__names(TestMixin, tests.IrisTest):
+class TestCubeExtract__names(ConstraintMixin, tests.IrisTest):
     def setUp(self):
         fname = iris.sample_data_path("atlantic_profiles.nc")
         self.cubes = iris.load(fname)
-        TestMixin.setUp(self)
+        ConstraintMixin.setUp(self)
         cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
@@ -353,11 +353,11 @@ class TestCubeExtract__names(TestMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
+class TestCubeExtract__name_constraint(ConstraintMixin, tests.IrisTest):
     def setUp(self):
         fname = iris.sample_data_path("atlantic_profiles.nc")
         self.cubes = iris.load(fname)
-        TestMixin.setUp(self)
+        ConstraintMixin.setUp(self)
         cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
@@ -579,9 +579,9 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestCubeExtract(TestMixin, tests.IrisTest):
+class TestCubeExtract(ConstraintMixin, tests.IrisTest):
     def setUp(self):
-        TestMixin.setUp(self)
+        ConstraintMixin.setUp(self)
         self.cube = iris.load_cube(self.theta_path)
 
     def test_attribute_constraint(self):
@@ -644,7 +644,7 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestConstraints(TestMixin, tests.IrisTest):
+class TestConstraints(ConstraintMixin, tests.IrisTest):
     def test_constraint_expressions(self):
         rt = repr(self.theta)
         rl10 = repr(self.level_10)

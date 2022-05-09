@@ -36,6 +36,7 @@ dependencies:
   - imagehash >=4.0
   - pillow <7
   - pre-commit
+  - psutil
   - pytest
   - pytest-xdist
   - requests
