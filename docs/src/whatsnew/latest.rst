@@ -112,6 +112,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ added caching to the calculation of the points array in a
    :class:`~iris.coords.DimCoord` created using
    :meth:`~iris.coords.DimCoord.from_regular`. (:pull:`4698`)
+#. `@wjbenfold`_ introduced caching in :func:`_lazy_data._optimum_chunksize` and
+   :func:`iris.fileformats.pp_load_rules._epoch_date_hours` to reduce time spent
+   repeating calculations. (:pull:`4716`)
 
 #. `@pp-mo`_ made :meth:`~iris.cube.Cube.add_aux_factory` faster.
    (:pull:`4718`)
