@@ -3855,7 +3855,7 @@ class Cube(CFVariableMixin):
         collapsed using the provided aggregator.
 
         Weighted aggregations (:class:`iris.analysis.WeightedAggregator`) may
-        also be supplied. These include :data:`~iris.analysis.MEAN` and sum
+        also be supplied. These include :data:`~iris.analysis.MEAN` and
         :data:`~iris.analysis.SUM`.
 
         Weighted aggregations support an optional *weights* keyword argument. If
@@ -3878,7 +3878,7 @@ class Cube(CFVariableMixin):
 
         Returns
         -------
-            :class:`iris.cube.Cube`.
+            :class:`iris.cube.Cube`
 
         Other Parameters
         ----------------
