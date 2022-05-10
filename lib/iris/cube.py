@@ -3871,10 +3871,10 @@ class Cube(CFVariableMixin):
         aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied to each group.
         climatological : bool
-            Indicates whether the output is expected to be climatological. This
-            causes the climatological flag to be set on the resulting coord(s)
-            and the values of any aggregated time coord to be set to the first
-            bound of each group from the corresponding source time coord.
+            Indicates whether the output is expected to be climatological. For
+            any aggregated time coord(s), this causes the climatological flag to
+            be set and the point for each cell to equal its first bound, thereby
+            preserving the time of year
 
         Returns
         -------
@@ -4115,23 +4115,23 @@ x            -              -
         for coord in groupby.coords:
             new_coord = coord.copy()
 
+            # The metadata may have changed (e.g. climatology), so check if
+            # there's a better coord to pass to self.coord_dims
+            lookup_coord = coord
+            for (
+                cube_coord,
+                groupby_coord,
+            ) in groupby.coord_replacement_mapping:
+                if coord == groupby_coord:
+                    lookup_coord = cube_coord
+
             if (
                 dim_coord is not None
-                and dim_coord.metadata == coord.metadata
+                and dim_coord.metadata == lookup_coord.metadata
                 and isinstance(coord, iris.coords.DimCoord)
             ):
                 aggregateby_cube.add_dim_coord(new_coord, dimension_to_groupby)
             else:
-                # The metadata may have changed (e.g. climatology), so check if
-                # there's a better coord to pass to self.coord_dims
-                lookup_coord = coord
-                for (
-                    cube_coord,
-                    groupby_coord,
-                ) in groupby.coord_replacement_mapping:
-                    if coord == groupby_coord:
-                        lookup_coord = cube_coord
-
                 aggregateby_cube.add_aux_coord(
                     new_coord, self.coord_dims(lookup_coord)
                 )

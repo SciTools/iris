@@ -2542,9 +2542,9 @@ class _Groupby:
 
             if climatological_coord:
                 new_coord.climatological = True
+                self.coord_replacement_mapping.append((coord, new_coord))
 
             self.coords.append(new_coord)
-            self.coord_replacement_mapping.append((coord, new_coord))
 
     def __len__(self):
         """Calculate the number of groups given the group-by coordinates."""

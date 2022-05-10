@@ -654,8 +654,10 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         return out_cube
 
     def test_basic(self):
-        # Check the least complicated version works (set climatological, set
-        # points correctly).
+        """
+        Check the least complicated version works (set climatological, set
+        points correctly).
+        """
         result = self.get_result()
 
         aligned_coord = result.coord("aligned")
@@ -664,6 +666,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
             aligned_coord.bounds, np.array([[0, 18], [1, 19]])
         )
         self.assertTrue(aligned_coord.climatological)
+        self.assertIn(aligned_coord, result.dim_coords)
 
         categorised_coord = result.coord("cat1")
         self.assertArrayEqual(categorised_coord.points, np.arange(2))
@@ -671,8 +674,10 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(categorised_coord.climatological)
 
     def test_2d_other_coord(self):
-        # Check that we can handle aggregation applying to a 2d AuxCoord that
-        # covers the aggregation dimension and another one.
+        """
+        Check that we can handle aggregation applying to a 2d AuxCoord that
+        covers the aggregation dimension and another one.
+        """
         result = self.get_result(partially_aligned=True)
 
         aligned_coord = result.coord("aligned")
@@ -695,8 +700,10 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(part_aligned_coord.climatological)
 
     def test_2d_timelike_other_coord(self):
-        # Check that we can handle aggregation applying to a 2d AuxCoord that
-        # covers the aggregation dimension and another one.
+        """
+        Check that we can handle aggregation applying to a 2d AuxCoord that
+        covers the aggregation dimension and another one.
+        """
         result = self.get_result(
             partially_aligned=True, partially_aligned_timelike=True
         )
@@ -721,8 +728,9 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertTrue(part_aligned_coord.climatological)
 
     def test_transposed(self):
-        # Check that we can handle the axis of aggregation being a different
-        # one.
+        """
+        Check that we can handle the axis of aggregation being a different one.
+        """
         result = self.get_result(transpose=True)
 
         aligned_coord = result.coord("aligned")
@@ -738,7 +746,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(categorised_coord.climatological)
 
     def test_bounded(self):
-        # Check that we handle bounds correctly.
+        """Check that we handle bounds correctly."""
         result = self.get_result(bounds=True)
 
         aligned_coord = result.coord("aligned")
@@ -749,7 +757,9 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertTrue(aligned_coord.climatological)
 
     def test_multiple_agg_coords(self):
-        # Check that we can aggregate on multiple coords on the same axis.
+        """
+        Check that we can aggregate on multiple coords on the same axis.
+        """
         result = self.get_result(second_categorised=True)
 
         aligned_coord = result.coord("aligned")
@@ -775,8 +785,10 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(categorised_coord2.climatological)
 
     def test_non_climatological_units(self):
-        # Check that the failure to set the climatological flag on an
-        # incompatible unit is handled quietly.
+        """
+        Check that the failure to set the climatological flag on an incompatible
+        unit is handled quietly.
+        """
         result = self.get_result(invalid_units=True)
 
         aligned_coord = result.coord("aligned")
@@ -787,9 +799,11 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(aligned_coord.climatological)
 
     def test_clim_in_clim_op(self):
-        # Check the least complicated version works (set climatological, set
-        # points correctly). For the input coordinate to be climatological, it
-        # must have bounds
+        """
+        Check the least complicated version works (set climatological, set
+        points correctly). For the input coordinate to be climatological, it
+        must have bounds
+        """
         result = self.get_result(bounds=True, already_climatological=True)
 
         aligned_coord = result.coord("aligned")
@@ -805,9 +819,11 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(categorised_coord.climatological)
 
     def test_clim_in_no_clim_op(self):
-        # Check the least complicated version works (set climatological, set
-        # points correctly). For the input coordinate to be climatological, it
-        # must have bounds
+        """
+        Check the least complicated version works (set climatological, set
+        points correctly). For the input coordinate to be climatological, it
+        must have bounds.
+        """
         result = self.get_result(
             bounds=True, already_climatological=True, climatological_op=False
         )
