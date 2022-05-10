@@ -58,6 +58,11 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ and `@stephenworsley`_ (reviewer) added a maximum run length
    aggregator (:class:`~iris.analysis.MAX_RUN`). (:pull:`4676`)
 
+#. `@wjbenfold`_ and `@rcomer`_ (reviewer) added a ``climatological`` keyword to
+   :meth:`~iris.cube.Cube.aggregated_by` that causes the climatological flag to
+   be set and the point for each cell to equal its first bound, thereby
+   preserving the time of year.
+
 
 🐛 Bugs Fixed
 =============
