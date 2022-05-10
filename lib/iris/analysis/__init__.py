@@ -2228,7 +2228,7 @@ class _Groupby:
             which dimension of the coord is on the group-by coordinate axis.
 
         * climatological (bool):
-            Indicates whether the output is expected to be climatological. For 
+            Indicates whether the output is expected to be climatological. For
             any aggregated time coord(s), this causes the climatological flag to
             be set and the point for each cell to equal its first bound, thereby
             preserving the time of year.
