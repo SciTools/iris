@@ -2209,7 +2209,9 @@ class _Groupby:
 
     """
 
-    def __init__(self, groupby_coords, shared_coords=None):
+    def __init__(
+        self, groupby_coords, shared_coords=None, climatological=False
+    ):
         """
         Determine the group slices over the group-by coordinates.
 
@@ -2224,6 +2226,12 @@ class _Groupby:
             One or more coordinates (including multidimensional coordinates)
             that share the same group-by coordinate axis.  The `int` identifies
             which dimension of the coord is on the group-by coordinate axis.
+
+        * climatological (bool):
+            Indicates whether the output is expected to be climatological. For
+            any aggregated time coord(s), this causes the climatological flag to
+            be set and the point for each cell to equal its first bound, thereby
+            preserving the time of year.
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -2252,6 +2260,13 @@ class _Groupby:
             # Add valid shared coordinates.
             for coord, dim in shared_coords:
                 self._add_shared_coord(coord, dim)
+
+        # Aggregation is climatological in nature
+        self.climatological = climatological
+
+        # Stores mapping from original cube coords to new ones, as metadata may
+        # not match
+        self.coord_replacement_mapping = []
 
     def _add_groupby_coord(self, coord):
         if coord.ndim != 1:
@@ -2411,6 +2426,9 @@ class _Groupby:
 
         # Create new shared bounded coordinates.
         for coord, dim in self._shared_coords:
+            climatological_coord = (
+                self.climatological and coord.units.is_time_reference()
+            )
             if coord.points.dtype.kind in "SU":
                 if coord.bounds is None:
                     new_points = []
@@ -2449,6 +2467,7 @@ class _Groupby:
                     maxmin_axis = (dim, -1)
                     first_choices = coord.bounds.take(0, -1)
                     last_choices = coord.bounds.take(1, -1)
+
                 else:
                     # Derive new coord's bounds from points.
                     item = coord.points
@@ -2501,7 +2520,11 @@ class _Groupby:
 
                 # Now create the new bounded group shared coordinate.
                 try:
-                    new_points = new_bounds.mean(-1)
+                    if climatological_coord:
+                        # Use the first bound as the point
+                        new_points = new_bounds[..., 0]
+                    else:
+                        new_points = new_bounds.mean(-1)
                 except TypeError:
                     msg = (
                         "The {0!r} coordinate on the collapsing dimension"
@@ -2510,16 +2533,18 @@ class _Groupby:
                     raise ValueError(msg)
 
             try:
-                self.coords.append(
-                    coord.copy(points=new_points, bounds=new_bounds)
-                )
+                new_coord = coord.copy(points=new_points, bounds=new_bounds)
             except ValueError:
                 # non monotonic points/bounds
-                self.coords.append(
-                    iris.coords.AuxCoord.from_coord(coord).copy(
-                        points=new_points, bounds=new_bounds
-                    )
+                new_coord = iris.coords.AuxCoord.from_coord(coord).copy(
+                    points=new_points, bounds=new_bounds
                 )
+
+            if climatological_coord:
+                new_coord.climatological = True
+                self.coord_replacement_mapping.append((coord, new_coord))
+
+            self.coords.append(new_coord)
 
     def __len__(self):
         """Calculate the number of groups given the group-by coordinates."""

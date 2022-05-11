@@ -3840,14 +3840,15 @@ class Cube(CFVariableMixin):
         )
         return result
 
-    def aggregated_by(self, coords, aggregator, **kwargs):
+    def aggregated_by(
+        self, coords, aggregator, climatological=False, **kwargs
+    ):
         """
-        Perform aggregation over the cube given one or more "group
-        coordinates".
+        Perform aggregation over the cube given one or more "group coordinates".
 
         A "group coordinate" is a coordinate where repeating values represent a
-        single group, such as a month coordinate on a daily time slice.
-        Repeated values will form a group even if they are not consecutive.
+        single group, such as a month coordinate on a daily time slice. Repeated
+        values will form a group even if they are not consecutive.
 
         The group coordinates must all be over the same cube dimension. Each
         common value group identified over all the group-by coordinates is
@@ -3855,30 +3856,37 @@ class Cube(CFVariableMixin):
 
         Weighted aggregations (:class:`iris.analysis.WeightedAggregator`) may
         also be supplied. These include :data:`~iris.analysis.MEAN` and
-        sum :data:`~iris.analysis.SUM`.
+        :data:`~iris.analysis.SUM`.
 
-        Weighted aggregations support an optional *weights* keyword argument.
-        If set, this should be supplied as an array of weights whose shape
-        matches the cube or as 1D array whose length matches the dimension over
-        which is aggregated.
+        Weighted aggregations support an optional *weights* keyword argument. If
+        set, this should be supplied as an array of weights whose shape matches
+        the cube or as 1D array whose length matches the dimension over which is
+        aggregated.
 
-        Args:
-
-        * coords (list of coord names or :class:`iris.coords.Coord` instances):
+        Parameters
+        ----------
+        coords : (list of coord names or :class:`iris.coords.Coord` instances)
             One or more coordinates over which group aggregation is to be
             performed.
-        * aggregator (:class:`iris.analysis.Aggregator`):
+        aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied to each group.
+        climatological : bool
+            Indicates whether the output is expected to be climatological. For
+            any aggregated time coord(s), this causes the climatological flag to
+            be set and the point for each cell to equal its first bound, thereby
+            preserving the time of year
 
-        Kwargs:
+        Returns
+        -------
+            :class:`iris.cube.Cube`
 
-        * kwargs:
+        Other Parameters
+        ----------------
+        kwargs:
             Aggregator and aggregation function keyword arguments.
 
-        Returns:
-            :class:`iris.cube.Cube`.
-
-        For example:
+        Examples
+        --------
 
             >>> import iris
             >>> import iris.analysis
@@ -3981,7 +3989,9 @@ x            -              -
 
         # Create the aggregation group-by instance.
         groupby = iris.analysis._Groupby(
-            groupby_coords, shared_coords_and_dims
+            groupby_coords,
+            shared_coords_and_dims,
+            climatological=climatological,
         )
 
         # Create the resulting aggregate-by cube and remove the original
@@ -4103,17 +4113,27 @@ x            -              -
             dimensions=dimension_to_groupby, dim_coords=True
         ) or [None]
         for coord in groupby.coords:
+            new_coord = coord.copy()
+
+            # The metadata may have changed (e.g. climatology), so check if
+            # there's a better coord to pass to self.coord_dims
+            lookup_coord = coord
+            for (
+                cube_coord,
+                groupby_coord,
+            ) in groupby.coord_replacement_mapping:
+                if coord == groupby_coord:
+                    lookup_coord = cube_coord
+
             if (
                 dim_coord is not None
-                and dim_coord.metadata == coord.metadata
+                and dim_coord.metadata == lookup_coord.metadata
                 and isinstance(coord, iris.coords.DimCoord)
             ):
-                aggregateby_cube.add_dim_coord(
-                    coord.copy(), dimension_to_groupby
-                )
+                aggregateby_cube.add_dim_coord(new_coord, dimension_to_groupby)
             else:
                 aggregateby_cube.add_aux_coord(
-                    coord.copy(), self.coord_dims(coord)
+                    new_coord, self.coord_dims(lookup_coord)
                 )
 
         # Attach the aggregate-by data into the aggregate-by cube.
