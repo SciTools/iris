@@ -104,6 +104,9 @@ This document explains the changes made to Iris for this release
    causes NaN valued scalar coordinates to be able to merge be preserved during
    cube merging. (:pull:`4701`)
 
+#. `@wjbenfold`_ fixed plotting of circular coordinates to extend kwarg arrays
+   as well as the data. (:issue:`466`, :pull:`4649`)
+
 
 💣 Incompatible Changes
 =======================
