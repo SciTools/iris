@@ -143,7 +143,7 @@ as the **nodes** when creating the Iris
         >>> y_maxs = (face_centres_y + 0.5 * face_size_y).reshape(-1, 1)
 
         >>> face_corners_x = np.hstack([x_mins, x_maxs, x_maxs, x_mins])
-        >>> face_corners_y = np.hstack([y_mins, y_maxs, y_maxs, y_mins])
+        >>> face_corners_y = np.hstack([y_mins, y_mins, y_maxs, y_maxs])
 
         # Add face corners as coordinate bounds.
         >>> faces_x.bounds = face_corners_x
