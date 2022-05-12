@@ -24,30 +24,12 @@ def _create_um_files(
     from datetime import datetime
     from tempfile import NamedTemporaryFile
 
-    from mo_pack import compress_wgdos as mo_pack_compress
     from mule import ArrayDataProvider, Field3, FieldsFile
     from mule.pp import fields_to_pp_file
     import numpy as np
 
     from iris import load_cube
     from iris import save as save_cube
-
-    def packing_patch(*compress_args, **compress_kwargs) -> bytes:
-        """
-        Force conversion from returned :class:`memoryview` to :class:`bytes`.
-
-        Downstream uses of :func:`mo_pack.compress_wgdos` were written
-        for the ``Python2`` behaviour, where the returned buffer had a
-        different ``__len__`` value to the current :class:`memoryview`.
-        Unable to fix directly in Mule, so monkey patching for now.
-        """
-        return mo_pack_compress(*compress_args, **compress_kwargs).tobytes()
-
-    import mo_pack
-
-    mo_pack.compress_wgdos = packing_patch
-
-    ########
 
     template = {
         "fixed_length_header": {"dataset_type": 3, "grid_staggering": 3},
