@@ -13,6 +13,10 @@ examples demonstrating how this works for various mesh formats.
 
 `FESOM 1.4`_ Voronoi Polygons
 -----------------------------
+..  figure:: images/fesom_mesh.png
+    :width: 300
+    :alt: Sample of FESOM mesh voronoi polygons, with variable numbers of sides.
+
 A FESOM mesh encoded in a NetCDF file includes:
 
     * X+Y point coordinates
@@ -80,6 +84,10 @@ as the **nodes** when creating the Iris
 
 `WAVEWATCH III`_ Spherical Multi-Cell (SMC) WAVE Quad Grid
 ----------------------------------------------------------
+..  figure:: images/smc_mesh.png
+    :width: 300
+    :alt: Sample of an SMC mesh, with decreasing quad sizes at the coastlines.
+
 An SMC grid encoded in a NetCDF file includes:
 
     * X+Y face centre coordinates
@@ -180,9 +188,6 @@ as the **nodes** when creating the Iris
                 base_lat_size                     0.029296871
                 base_lon_size                     0.043945305
                 ...
-
-
-
 
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3
 .. _FESOM 1.4: https://fesom.de/models/fesom14/
