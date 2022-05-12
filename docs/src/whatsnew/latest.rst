@@ -61,7 +61,8 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ and `@rcomer`_ (reviewer) added a ``climatological`` keyword to
    :meth:`~iris.cube.Cube.aggregated_by` that causes the climatological flag to
    be set and the point for each cell to equal its first bound, thereby
-   preserving the time of year.
+   preserving the time of year. (:issue:`1422`, :issue:`4098`, :issue:`4665`,
+   :pull:`4723`)
 
 
 🐛 Bugs Fixed
