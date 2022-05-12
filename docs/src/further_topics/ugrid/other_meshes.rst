@@ -82,6 +82,21 @@ as the **nodes** when creating the Iris
                 grid                        'FESOM 1.4 (unstructured grid in the horizontal with 126859 wet nodes;...
                 ...
 
+        >>> print(temperature_cube.mesh)
+        Mesh : 'unknown'
+            topology_dimension: 2
+            node
+                node_dimension: 'Mesh2d_node'
+                node coordinates
+                    <AuxCoord: longitude / (degrees)  <lazy>  shape(2283462,)>
+                    <AuxCoord: latitude / (degrees)  <lazy>  shape(2283462,)>
+            face
+                face_dimension: 'Mesh2d_face'
+                face_node_connectivity: <Connectivity: unknown / (unknown)  <lazy>  shape(126859, 18)>
+                face coordinates
+                    <AuxCoord: longitude / (degrees)  <lazy>  shape(126859,)>
+                    <AuxCoord: latitude / (degrees)  <lazy>  shape(126859,)>
+
 `WAVEWATCH III`_ Spherical Multi-Cell (SMC) WAVE Quad Grid
 ----------------------------------------------------------
 ..  figure:: images/smc_mesh.png
@@ -188,6 +203,21 @@ as the **nodes** when creating the Iris
                 base_lat_size                     0.029296871
                 base_lon_size                     0.043945305
                 ...
+
+        >>> print(wave_cube.mesh)
+        Mesh : 'unknown'
+            topology_dimension: 2
+            node
+                node_dimension: 'Mesh2d_node'
+                node coordinates
+                    <AuxCoord: longitude / (degrees)  [...]  shape(2665312,)>
+                    <AuxCoord: latitude / (degrees)  [...]  shape(2665312,)>
+            face
+                face_dimension: 'Mesh2d_face'
+                face_node_connectivity: <Connectivity: unknown / (unknown)  [...]  shape(666328, 4)>
+                face coordinates
+                    <AuxCoord: longitude / (degrees)  [...]  shape(666328,)>
+                    <AuxCoord: latitude / (degrees)  [...]  shape(666328,)>
 
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3
 .. _FESOM 1.4: https://fesom.de/models/fesom14/
