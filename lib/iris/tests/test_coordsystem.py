@@ -347,11 +347,15 @@ class Test_GeogCS_mutation(tests.IrisTest):
 
     def test_inverse_flattening_change(self):
         # Caches untouched
-        #
         # Axes unchanged (this behaviour is odd, but matches existing behaviour)
+        # Warning about lack of effect on other aspects
         cs = GeogCS(6543210, 6500000)
         initial_crs = cs.as_cartopy_crs()
-        cs.inverse_flattening = cs.inverse_flattening + 1
+        with self.assertWarnsRegex(
+            UserWarning,
+            "Setting inverse_flattening does not affect other properties of the GeogCS object.",
+        ):
+            cs.inverse_flattening = cs.inverse_flattening + 1
         new_crs = cs.as_cartopy_crs()
         self.assertIs(new_crs, initial_crs)
         self.assertEqual(cs.semi_major_axis, 6543210)

@@ -188,6 +188,10 @@ class GeogCS(CoordSystem):
         Currently, Iris will not allow over-specification (all three ellipsoid
         parameters).
 
+        After object creation, altering any of these properties will not update
+        the others. semi_major_axis and semi_minor_axis are used when creating
+        Cartopy objects.
+
         Examples::
 
             cs = GeogCS(6371229)
@@ -439,6 +443,12 @@ class GeogCS(CoordSystem):
         Setting this property to a different value does not affect the behaviour
         of this object any further than the value of this property.
         """
+        wmsg = (
+            "Setting inverse_flattening does not affect other properties of "
+            "the GeogCS object. To change other properties set them explicitly"
+            " or create a new GeogCS instance."
+        )
+        warnings.warn(wmsg, UserWarning)
         value = float(value)
         self._inverse_flattening = value
 
