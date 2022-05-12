@@ -19,9 +19,9 @@ examples demonstrating how this works for various mesh formats.
 
 A FESOM mesh encoded in a NetCDF file includes:
 
-    * X+Y point coordinates
-    * X+Y corners coordinates of the Voronoi Polygons around these points -
-      represented as the bounds of the coordinates
+* X+Y point coordinates
+* X+Y corners coordinates of the Voronoi Polygons around these points -
+  represented as the bounds of the coordinates
 
 To represent the Voronoi Polygons as faces, the corner coordinates will be used
 as the **nodes** when creating the Iris
@@ -90,9 +90,9 @@ as the **nodes** when creating the Iris
 
 An SMC grid encoded in a NetCDF file includes:
 
-    * X+Y face centre coordinates
-    * X+Y base face sizes
-    * X+Y face size factors
+* X+Y face centre coordinates
+* X+Y base face sizes
+* X+Y face size factors
 
 From this information we can derive face corner coordinates, which will be used
 as the **nodes** when creating the Iris
