@@ -164,6 +164,9 @@ This document explains the changes made to Iris for this release
 # `@trexfeathers`_ added a page with examples of converting various mesh
   formats into the Iris Mesh Data Model. (:pull:`4739`)
 
+#. `@rcomer`_ updated the "Load a Time Series of Data From the NEMO Model"
+   gallery example. (:pull:`4741`)
+
 
 💼 Internal
 ===========

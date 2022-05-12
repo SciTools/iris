@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
-from iris.util import promote_aux_coord_to_dim_coord
+from iris.util import equalise_attributes, promote_aux_coord_to_dim_coord
 
 
 def main():
@@ -21,16 +21,13 @@ def main():
     fname = iris.sample_data_path("NEMO/nemo_1m_*.nc")
     cubes = iris.load(fname)
 
-    # Some attributes are unique to each file and must be blanked
-    # to allow concatenation.
-    differing_attrs = ["file_name", "name", "timeStamp", "TimeStamp"]
-    for cube in cubes:
-        for attribute in differing_attrs:
-            cube.attributes[attribute] = ""
+    # Some attributes are unique to each file and must be removed to allow
+    # concatenation.
+    equalise_attributes(cubes)
 
     # The cubes still cannot be concatenated because their time dimension is
-    # time_counter rather than time. time needs to be promoted to allow
-    # concatenation.
+    # time_counter, which has the same value for each cube, rather than time,
+    # which varies. time needs to be promoted to allow concatenation.
     for cube in cubes:
         promote_aux_coord_to_dim_coord(cube, "time")
 
