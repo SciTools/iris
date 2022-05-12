@@ -72,6 +72,10 @@ This document explains the changes made to Iris for this release
    :func:`numpy.percentile` keywords through the :obj:`~iris.analysis.PERCENTILE`
    aggregator. (:pull:`4791`)
 
+#. `@wjbenfold`_ and `@bjlittle`_ (reviewer) implemented
+   :func:`iris.plot.fill_between` and :func:`iris.quickplot.fill_between`.
+   (:issue:`3493`, :pull:`4647`)
+
 
 🐛 Bugs Fixed
 =============
