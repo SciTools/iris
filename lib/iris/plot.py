@@ -989,23 +989,17 @@ def _map_common(
         # Having extended the data, we also need to extend extra kwargs for
         # matplotlib (e.g. point colours)
         for key, val in kwargs.items():
-            if (
-                isinstance(val, np.ndarray)
-                and val.ndim >= 2
-                and val.shape[1] == original_length
-            ):
-                # Construct indices that take only the first column of the data,
-                # regardless of its current shape.
-                endslice = tuple(
-                    [
-                        slice(0, 1) if ii == 1 else slice(None)
-                        for ii in range(val.ndim)
-                    ]
-                )
+            try:
+                val_arr = np.array(val)
+            except TypeError:
+                continue
+            if val_arr.ndim >= 2 and val_arr.shape[1] == original_length:
                 # Concatenate the first column to the end of the data then
                 # update kwargs
-                val = ma.concatenate([val, val[endslice]], axis=1)
-                kwargs[key] = val
+                val_arr = ma.concatenate(
+                    [val_arr, val_arr[:, 0:1, ...]], axis=1
+                )
+                kwargs[key] = val_arr
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
