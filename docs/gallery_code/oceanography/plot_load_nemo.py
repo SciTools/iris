@@ -25,9 +25,11 @@ def main():
     # concatenation.
     equalise_attributes(cubes)
 
-    # The cubes still cannot be concatenated because their time dimension is
-    # time_counter, which has the same value for each cube, rather than time,
-    # which varies. time needs to be promoted to allow concatenation.
+    # The cubes still cannot be concatenated because their dimension coordinate
+    # is "time_counter", which has the same value for each cube.  concatenate
+    # needs distinct values in order to create a new DimCoord for the output
+    # cube.  Here, each cube has a "time" auxiliary coordinate, and these do
+    # have distinct values, so we can promote them to allow concatenation.
     for cube in cubes:
         promote_aux_coord_to_dim_coord(cube, "time")
 
