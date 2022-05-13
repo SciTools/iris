@@ -59,7 +59,8 @@ as the **nodes** when creating the Iris
             standard_name: 'longitude'
             var_name: 'lon'
 
-        # Replace existing face AuxCoords with MeshCoords.
+        # Use a Mesh to represent the Cube's horizontal geography, by replacing
+        #  the existing face AuxCoords with new MeshCoords.
         >>> fesom_mesh = Mesh.from_coords(temperature_cube.coord('longitude'),
         ...                               temperature_cube.coord('latitude'))
         >>> for new_coord in fesom_mesh.to_MeshCoords("face"):
@@ -172,7 +173,8 @@ as the **nodes** when creating the Iris
         >>> faces_x.bounds = face_corners_x
         >>> faces_y.bounds = face_corners_y
 
-        # Replace existing face AuxCoords with new MeshCoords.
+        # Use a Mesh to represent the Cube's horizontal geography, by replacing
+        #  the existing face AuxCoords with new MeshCoords.
         >>> smc_mesh = Mesh.from_coords(faces_x, faces_y)
         >>> for new_coord in smc_mesh.to_MeshCoords("face"):
         ...     old_coord = wave_cube.coord(new_coord.name())
