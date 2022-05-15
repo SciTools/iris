@@ -161,8 +161,8 @@ This document explains the changes made to Iris for this release
    numpydoc strings and fixed some API documentation rendering.
    See :ref:`docstrings`. (:issue:`4657`, :pull:`4689`)
 
-# `@trexfeathers`_ added a page with examples of converting various mesh
-  formats into the Iris Mesh Data Model. (:pull:`4739`)
+#. `@trexfeathers`_ added a page with examples of converting various mesh
+   formats into the Iris Mesh Data Model. (:pull:`4739`)
 
 #. `@rcomer`_ updated the "Load a Time Series of Data From the NEMO Model"
    gallery example. (:pull:`4741`)
