@@ -9,6 +9,7 @@ from datetime import datetime
 import hashlib
 import os
 from pathlib import Path
+import re
 from tempfile import NamedTemporaryFile
 from typing import Literal
 
@@ -314,7 +315,7 @@ def benchmarks(
     ----------
     session: object
         A `nox.sessions.Session` object.
-    run_type: {"overnight", "branch", "custom"}
+    run_type: {"overnight", "branch", "cperf", "sperf", "custom"}
         * ``overnight``: benchmarks all commits between the input **first
           commit** to ``HEAD``, comparing each to its parent for performance
           shifts. If a commit causes shifts, the output is saved to a file:
@@ -501,6 +502,11 @@ def benchmarks(
         asv_command = (
             asv_harness.format(posargs=commit_range) + f" --bench={run_type}"
         )
+        # C/SPerf benchmarks are much bigger than the CI ones:
+        # Don't fail the whole run if memory blows on 1 benchmark.
+        asv_command = asv_command.replace(" --strict", "")
+        # Only do a single round.
+        asv_command = re.sub(r"rounds=\d", "rounds=1", asv_command)
         session.run(*asv_command.split(" "), *asv_args)
 
         asv_command = f"asv publish {commit_range} --html-dir={publish_subdir}"
