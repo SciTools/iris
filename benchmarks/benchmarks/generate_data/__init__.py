@@ -22,6 +22,7 @@ from os import environ
 from pathlib import Path
 from subprocess import CalledProcessError, check_output, run
 from textwrap import dedent
+from warnings import warn
 
 from iris._lazy_data import as_concrete_data
 from iris.fileformats import netcdf
@@ -47,6 +48,11 @@ default_data_dir = (Path(__file__).parents[2] / ".data").resolve()
 BENCHMARK_DATA = Path(environ.get("BENCHMARK_DATA", default_data_dir))
 if BENCHMARK_DATA == default_data_dir:
     BENCHMARK_DATA.mkdir(exist_ok=True)
+    message = (
+        f"No BENCHMARK_DATA env var, defaulting to {BENCHMARK_DATA}. "
+        "Note that some benchmark files are GB in size."
+    )
+    warn(message)
 elif not BENCHMARK_DATA.is_dir():
     message = f"Not a directory: {BENCHMARK_DATA} ."
     raise ValueError(message)
