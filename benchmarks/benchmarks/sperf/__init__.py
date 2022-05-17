@@ -34,6 +34,11 @@ class FileMixin:
             c_size=c_size, n_levels=n_levels, n_times=n_times
         )
 
+    def teardown(self, _):
+        # All the params together could fill >4TB.
+        #  Better to take longer to setup and use less file space.
+        self.file_path.unlink(missing_ok=True)
+
     def load_cube(self):
         with PARSE_UGRID_ON_LOAD.context():
             return load_cube(str(self.file_path))
