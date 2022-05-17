@@ -9,11 +9,21 @@ Wrappers for using :mod:`iris.tests.stock` methods for benchmarking.
 See :mod:`benchmarks.generate_data` for an explanation of this structure.
 """
 
+from hashlib import sha256
+import json
 from pathlib import Path
 
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
+
+
+def hash_args(*args, **kwargs):
+    """Convert arguments into a short hash - for preserving args in filenames."""
+    arg_string = str(args)
+    kwarg_string = json.dumps(kwargs)
+    full_string = arg_string + kwarg_string
+    return sha256(full_string.encode()).hexdigest()[:10]
 
 
 def _create_file__xios_common(func_name, **kwargs):
@@ -23,7 +33,7 @@ def _create_file__xios_common(func_name, **kwargs):
         func = getattr(netcdf, func_name_)
         print(func(temp_file_dir, **kwargs_), end="")
 
-    args_hash = hash(str(kwargs))
+    args_hash = hash_args(**kwargs)
     save_path = (BENCHMARK_DATA / f"{func_name}_{args_hash}").with_suffix(
         ".nc"
     )
@@ -95,7 +105,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         save_mesh(new_mesh, save_path_)
 
     arg_list = [n_nodes, n_faces, n_edges]
-    args_hash = hash(str(arg_list))
+    args_hash = hash_args(*arg_list)
     save_path = (BENCHMARK_DATA / f"sample_mesh_{args_hash}").with_suffix(
         ".nc"
     )
@@ -139,7 +149,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
         new_meshcoord = sample_meshcoord(mesh=input_mesh)
         save_mesh(new_meshcoord.mesh, save_path_)
 
-    args_hash = hash(str(sample_mesh_kwargs))
+    args_hash = hash_args(**sample_mesh_kwargs)
     save_path = (
         BENCHMARK_DATA / f"sample_mesh_coord_{args_hash}"
     ).with_suffix(".nc")
