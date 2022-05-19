@@ -628,7 +628,6 @@ data:
 
     def test_save_datum(self):
         expected = "OSGB 1936"
-        # saved_crs = iris.coord_systems.GeogCS.from_datum(datum="OSGB36")
         saved_crs = iris.coord_systems.Mercator(
             ellipsoid=iris.coord_systems.GeogCS.from_datum("OSGB36")
         )

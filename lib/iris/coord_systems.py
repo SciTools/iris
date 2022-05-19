@@ -143,6 +143,7 @@ class CoordSystem(metaclass=ABCMeta):
 
 _short_datum_names = {
     "OSGB 1936": "OSGB36",
+    "OSGB_1936": "OSGB36",
     "WGS 84": "WGS84",
 }
 
