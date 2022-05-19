@@ -208,11 +208,24 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         shape = (2, 11)
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
-        emsg = "Cannot use fast np.percentile method with masked array."
+        emsg = (
+            "Cannot use fast np.percentile method with masked array unless "
+            "mdtol is 0."
+        )
         with self.assertRaisesRegex(TypeError, emsg):
             PERCENTILE.aggregate(
                 data, axis=0, percent=50, fast_percentile_method=True
             )
+
+    def test_masked_mdtol_0(self):
+        shape = (2, 11)
+        axis = 0
+        percent = 50
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        expected = np.arange(shape[-1]) + 5.5
+        expected[0] = ma.masked
+        self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
 
     @mock.patch("numpy.percentile")
     def test_numpy_percentile_called(self, mocked_percentile):
@@ -286,9 +299,23 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         actual = PERCENTILE.lazy_aggregate(
             data, axis=0, percent=50, fast_percentile_method=True
         )
-        emsg = "Cannot use fast np.percentile method with masked array."
+        emsg = (
+            "Cannot use fast np.percentile method with masked array unless "
+            "mdtol is 0."
+        )
         with self.assertRaisesRegex(TypeError, emsg):
             as_concrete_data(actual)
+
+    def test_masked_mdtol_0(self):
+        shape = (2, 11)
+        axis = 0
+        percent = 50
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        data = as_lazy_data(data)
+        expected = np.arange(shape[-1]) + 5.5
+        expected[0] = ma.masked
+        self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
 
     @mock.patch("numpy.percentile", return_value=np.array([2, 4]))
     def test_numpy_percentile_called(self, mocked_percentile):

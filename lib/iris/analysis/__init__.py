@@ -720,6 +720,25 @@ class PercentileAggregator(_Aggregator):
             **kwargs,
         )
 
+    def _base_aggregate(self, data, axis, lazy, **kwargs):
+        """
+        Method to avoid duplication of checks in aggregate and lazy_aggregate.
+        """
+        msg = "{} aggregator requires the mandatory keyword argument {!r}."
+        for arg in self._args:
+            if arg not in kwargs:
+                raise ValueError(msg.format(self.name(), arg))
+
+        if kwargs.get("fast_percentile_method", False) and (
+            kwargs.get("mdtol", 1) != 0
+        ):
+            kwargs["error_on_masked"] = True
+
+        if lazy:
+            return _Aggregator.lazy_aggregate(self, data, axis, **kwargs)
+        else:
+            return _Aggregator.aggregate(self, data, axis, **kwargs)
+
     def aggregate(self, data, axis, **kwargs):
         """
         Perform the percentile aggregation over the given data.
@@ -755,12 +774,7 @@ class PercentileAggregator(_Aggregator):
 
         """
 
-        msg = "{} aggregator requires the mandatory keyword argument {!r}."
-        for arg in self._args:
-            if arg not in kwargs:
-                raise ValueError(msg.format(self.name(), arg))
-
-        return _Aggregator.aggregate(self, data, axis, **kwargs)
+        return self._base_aggregate(data, axis, lazy=False, **kwargs)
 
     def lazy_aggregate(self, data, axis, **kwargs):
         """
@@ -794,12 +808,7 @@ class PercentileAggregator(_Aggregator):
 
         """
 
-        msg = "{} aggregator requires the mandatory keyword argument {!r}."
-        for arg in self._args:
-            if arg not in kwargs:
-                raise ValueError(msg.format(self.name(), arg))
-
-        return _Aggregator.lazy_aggregate(self, data, axis, **kwargs)
+        return self._base_aggregate(data, axis, lazy=True, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
@@ -1281,9 +1290,13 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
 
     """
     if fast_percentile_method:
-        msg = "Cannot use fast np.percentile method with masked array."
-        if ma.is_masked(data):
-            raise TypeError(msg)
+        if kwargs.pop("error_on_masked", False):
+            msg = (
+                "Cannot use fast np.percentile method with masked array unless"
+                " mdtol is 0."
+            )
+            if ma.is_masked(data):
+                raise TypeError(msg)
         result = np.percentile(data, percent, axis=-1)
         result = result.T
     else:
@@ -1965,7 +1978,8 @@ Additional kwargs associated with the use of this aggregator:
 * fast_percentile_method (boolean):
     When set to True, uses :func:`numpy.percentile` method as a faster
     alternative to the :func:`scipy.stats.mstats.mquantiles` method.  alphap and
-    betap are ignored. An exception is raised if the data are masked.
+    betap are ignored. An exception is raised if the data are masked and the
+    missing data tolerance is not 0.
     Defaults to False.
 
 **For example**:
