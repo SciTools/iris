@@ -23,6 +23,7 @@ class FileMixin:
     # Allows time for large file generation.
     timeout = 3600.0
     # Largest file with these params: ~90GB.
+    #  Total disk space: ~410GB.
     params = [
         [12, 384, 640, 960, 1280, 1668],
         [1, 36, 72],
