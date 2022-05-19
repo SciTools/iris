@@ -20,10 +20,13 @@ from ..generate_data.ugrid import make_cubesphere_testfile
 class FileMixin:
     """For use in any benchmark classes that work on a file."""
 
+    # Allows time for large file generation.
+    timeout = 3600.0
+    # Largest file with these params: ~90GB.
     params = [
         [12, 384, 640, 960, 1280, 1668],
         [1, 36, 72],
-        [1, 3, 36, 72],
+        [1, 3, 10],
     ]
     param_names = ["cubesphere_C<N>", "N levels", "N time steps"]
     # cubesphere_C<N>: notation refers to faces per panel.
@@ -33,11 +36,6 @@ class FileMixin:
         self.file_path = make_cubesphere_testfile(
             c_size=c_size, n_levels=n_levels, n_times=n_times
         )
-
-    def teardown(self, _):
-        # All the params together could fill >4TB.
-        #  Better to take longer to setup and use less file space.
-        self.file_path.unlink(missing_ok=True)
 
     def load_cube(self):
         with PARSE_UGRID_ON_LOAD.context():
