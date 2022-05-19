@@ -517,7 +517,6 @@ def benchmarks(
         print(
             f'New ASV results for "{run_type}".\n'
             f'See "{publish_subdir}",'
-            f'\n  html in "{location / "html"}".'
             f'\n  or JSON files under "{location / "results"}".'
         )
 
