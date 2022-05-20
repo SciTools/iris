@@ -92,6 +92,7 @@
     "iris.tests.test_plot.Test1dScatter.test_coord_cube.0": "be812fc1c078c03e930e3627672369c1d8d85c5b96463662e1fc699d9b9f7e03",
     "iris.tests.test_plot.Test1dScatter.test_cube_coord.0": "edda96cb9a256b4765c26d9892dbc665693a1a9494b796c86c4b37ad92864c32",
     "iris.tests.test_plot.Test1dScatter.test_cube_cube.0": "edb23c529649c78de38773e538650c729e92279be12de1edc4f246b2139c3b01",
+    "iris.tests.test_plot.Test2dPoints.test_circular_changes.0": "fa81c57a857e93bd9b193e436ec4ccb03b01c14a857e3e34911f3b816e81c57b",
     "iris.tests.test_plot.TestAttributePositive.test_1d_positive_down.0": "a7fe781b708487c360079e3bb4789869816bdb64c76b4a3cce7b4e749a6130c5",
     "iris.tests.test_plot.TestAttributePositive.test_1d_positive_up.0": "a7ff958b7a00b09c661761c9907fcb0d9163ce7895289a618f381bffccf97200",
     "iris.tests.test_plot.TestAttributePositive.test_2d_positive_down.0": "fb966ba6846194dbd01f3665c0e4399a3f1bc2653f90c99e2f613e64c01e3f81",

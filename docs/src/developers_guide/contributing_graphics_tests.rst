@@ -95,7 +95,7 @@ unregistered test result...``. In this case,
    * removing the ``result-`` prefix
 
    * fully qualifying the test name if it isn't already (i.e. it should start
-     ``iris.tests...``)
+     ``iris.tests...``or ``gallery_tests...``)
    
 #. and then add them to the Iris test data as covered in
    :ref:`add-graphics-test-changes`.
