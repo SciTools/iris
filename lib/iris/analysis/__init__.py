@@ -39,6 +39,7 @@ from collections import OrderedDict
 from collections.abc import Iterable
 import functools
 from functools import wraps
+import warnings
 
 import dask.array as da
 import numpy as np
@@ -1297,7 +1298,12 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
             )
             if ma.is_masked(data):
                 raise TypeError(msg)
-        result = np.percentile(data, percent, axis=-1)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                "Warning: 'partition' will ignore the 'mask' of the MaskedArray.",
+            )
+            result = np.percentile(data, percent, axis=-1)
         result = result.T
     else:
         quantiles = percent / 100.0
