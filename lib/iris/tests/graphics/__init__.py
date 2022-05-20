@@ -65,6 +65,9 @@ IMAGE_REPO_PATH = IMAGE_REPO_DIR / "imagerepo.json"
 IMAGE_REPO_LOCK_PATH = IMAGE_REPO_DIR / "imagerepo.lock"
 
 
+__all__ = []
+
+
 def _output_dir():
     test_output_dir = Path(__file__).parents[1] / Path(
         "result_image_comparison"
@@ -103,6 +106,15 @@ def write_repo_json(data: Dict[str, str]) -> None:
         )
 
 
+def repos_equal(repo1, repo2):
+    if sorted(repo1.keys()) != sorted(repo2.keys()):
+        return False
+    for key, val in repo1.items():
+        if str(val) != str(repo2[key]):
+            return False
+    return True
+
+
 def get_phash(input):
     from PIL import Image
     import imagehash
@@ -110,16 +122,21 @@ def get_phash(input):
     return imagehash.phash(Image.open(input), hash_size=_HASH_SIZE)
 
 
-def generate_repo_from_baselines(
-    baseline_image_dir: Path, as_strings: bool = False
-):
+def generate_repo_from_baselines(baseline_image_dir: Path):
     repo = {}
     for path in baseline_image_dir.iterdir():
         phash = get_phash(path)
-        if as_strings:
-            phash = str(phash)
         repo[path.stem] = phash
     return repo
+
+
+def fully_qualify(test_id, repo):
+    # If the test_id isn't in the repo as it stands, look for it
+    if test_id not in repo:
+        test_id_candidates = [x for x in repo.keys() if x.endswith(test_id)]
+        if len(test_id_candidates) == 1:
+            (test_id,) = test_id_candidates
+    return test_id
 
 
 def check_graphic(test_id: str, results_dir: Union[str, Path]):
@@ -149,10 +166,7 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]):
 
     # Check if test_id is fully qualified, if it's not then try to work
     # out what it should be
-    if test_id not in repo:
-        test_id_candidates = [x for x in repo.keys() if x.endswith(test_id)]
-        if len(test_id_candidates) == 1:
-            (test_id,) = test_id_candidates
+    test_id = fully_qualify(test_id, repo)
 
     try:
 

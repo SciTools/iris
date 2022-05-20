@@ -13,6 +13,7 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 
 import argparse
 from pathlib import Path
+import re
 import sys
 import warnings
 
@@ -30,13 +31,30 @@ import matplotlib.widgets as mwidget  # noqa
 import iris.tests  # noqa
 import iris.tests.graphics as graphics  # noqa
 
+# Allows restoration of test id from result image name
+_RESULT_NAME_PATTERN = re.compile(graphics._RESULT_PREFIX + r"(.*).png")
+
+
+def extract_test_key(result_image_name):
+    """
+    Extracts the name of the test which a result image refers to
+    """
+    name_match = _RESULT_NAME_PATTERN.match(str(result_image_name))
+    if name_match:
+        test_key = name_match.group(1)
+    else:
+        emsg = f"Incorrectly named image in result dir: {result_image_name}"
+        raise ValueError(emsg)
+    return test_key
+
+
 _POSTFIX_DIFF = "-failed-diff.png"
 
 
 def diff_viewer(
     test_id,
-    phash,
     status,
+    phash,
     expected_path,
     result_path,
     diff_fname,
@@ -114,11 +132,12 @@ def step_over_diffs(result_dir, display=True):
         reference_image_dir
     )
 
-    if repo != repo_from_baseline_images:
+    if not graphics.repos_equal(repo, repo_from_baseline_images):
         msg = (
             f"The hashes from {reference_image_dir} and the contents of "
-            f"{graphics.IMAGE_REPO_PATH} are inconsistent. Consider recreating "
-            f"{graphics.IMAGE_REPO_PATH.name}."
+            f"{graphics.IMAGE_REPO_PATH} are inconsistent. \nConsider "
+            f"recreating {graphics.IMAGE_REPO_PATH.name} using "
+            f"{Path(graphics.__file__).parent}/recreate_imagerepo.py"
         )
         raise AssertionError(msg)
 
@@ -139,14 +158,15 @@ def step_over_diffs(result_dir, display=True):
     count = len(results)
 
     for count_index, result_path in enumerate(results):
-        test_key = result_path.stem
+        test_key = extract_test_key(result_path.name)
+        test_key = graphics.fully_qualify(test_key, repo)
         reference_image_path = reference_image_dir / (test_key + ".png")
 
         try:
             # Calculate the test result perceptual image hash.
             phash = graphics.get_phash(result_path)
             distance = graphics.get_phash(reference_image_path) - phash
-        except KeyError:
+        except FileNotFoundError:
             wmsg = "Ignoring unregistered test result {!r}."
             warnings.warn(wmsg.format(test_key))
             continue
@@ -166,7 +186,7 @@ def step_over_diffs(result_dir, display=True):
                 # Propagate the exception, keeping the stack trace
                 raise
         diff_path = result_dir / Path(f"{result_path.stem}{_POSTFIX_DIFF}")
-        args = reference_image_path, result_path, diff_path
+        args = phash, reference_image_path, result_path, diff_path
         if display:
             status = f"Image {count_index + 1} of {count}: hamming distance = {distance}"
             prefix = test_key, status

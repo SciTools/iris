@@ -18,11 +18,9 @@ import iris.tests.graphics as graphics
 
 def update_json(baseline_image_dir: Path, dry_run: bool = False):
     old_repo = graphics.read_repo_json()
-    new_repo = graphics.generate_repo_from_baselines(
-        baseline_image_dir, as_strings=True
-    )
+    new_repo = graphics.generate_repo_from_baselines(baseline_image_dir)
 
-    if old_repo == new_repo:
+    if graphics.repos_equal(old_repo, new_repo):
         msg = (
             f"No change in contents of {graphics.IMAGE_REPO_PATH} based on "
             f"{baseline_image_dir}"
@@ -32,8 +30,9 @@ def update_json(baseline_image_dir: Path, dry_run: bool = False):
         for key in set(old_repo.keys()) | set(new_repo.keys()):
             old_val = old_repo.get(key, None)
             new_val = new_repo.get(key, None)
-            if old_val != new_val:
-                print(f"{old_val} -> {new_val}")
+            if str(old_val) != str(new_val):
+                print(key)
+                print(f"\t{old_val} -> {new_val}")
         if not dry_run:
             graphics.write_repo_json(new_repo)
 

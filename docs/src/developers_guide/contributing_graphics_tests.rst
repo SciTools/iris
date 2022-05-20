@@ -2,72 +2,17 @@
 
 .. _testing.graphics:
 
-Graphics Tests
-**************
+Adding or Updating Graphics Tests
+=================================
 
-Iris may be used to create various forms of graphical output; to ensure
-the output is consistent, there are automated tests to check against
-known acceptable graphical output.  See :ref:`developer_running_tests` for
-more information.
+.. note::
 
-At present graphical tests are used in the following areas of Iris:
+  If a large number of images tests are failing due to an update to the
+  libraries used for image hashing, follow the instructions on
+  :ref:`refresh-imagerepo`.
 
-* Module ``iris.tests.test_plot``
-* Module ``iris.tests.test_quickplot``
-* :ref:`sphx_glr_generated_gallery` plots contained in
-  ``docs/gallery_tests``.
-
-
-Challenges
-==========
-
-Iris uses many dependencies that provide functionality, an example that
-applies here is matplotlib_.  For more information on the dependences, see
-:ref:`installing_iris`.  When there are updates to the matplotlib_ or a
-dependency of matplotlib, this may result in a change in the rendered graphical
-output.  This means that there may be no changes to Iris_, but due to an
-updated dependency any automated tests that compare a graphical output to a
-known acceptable output may fail.  The failure may also not be visually
-perceived as it may be a simple pixel shift.
-
-
-Testing Strategy
-================
-
-Our `Iris GitHub Actions`_ define multiple test runs that use
-different versions of Python to ensure Iris is working as expected.
-
-To make this manageable, the ``iris.tests.IrisTest_nometa.check_graphic`` test
-routine tests against multiple alternative **acceptable** results.  It does
-this using an image **hash** comparison technique which avoids storing
-reference images in the Iris repository itself.
-
-This consists of:
-
-* The ``iris.tests.IrisTest_nometa.check_graphic`` function uses a perceptual
-  **image hash** of the outputs (see https://github.com/JohannesBuchner/imagehash)
-  as the basis for checking test results.
-
-* The hashes of known **acceptable** results for each test are stored in a
-  lookup dictionary, saved to the repo file
-  ``lib/iris/tests/results/imagerepo.json``
-  (`link <https://github.com/SciTools/iris/blob/main/lib/iris/tests/results/imagerepo.json>`_) .
-
-* An actual reference image for each hash value is stored in a *separate*
-  public repository https://github.com/SciTools/test-iris-imagehash.
-
-* The reference images allow human-eye assessment of whether a new output is
-  judged to be close enough to the older ones, or not.
-
-* The utility script ``iris/tests/idiff.py`` automates checking, enabling the
-  developer to easily compare proposed new **acceptable** result images
-  against the existing accepted reference images, for each failing test.
-
-The acceptable images for each test can be viewed online. The :ref:`testing.imagehash_index` lists all the graphical tests in the test suite and
-shows the known acceptable result images for comparison.
-
-Reviewing Failing Tests
-=======================
+Generating New Results
+----------------------
 
 When you find that a graphics test in the Iris testing suite has failed,
 following changes in Iris or the run dependencies, this is the process
@@ -76,14 +21,26 @@ you should follow:
 #. Create a new, empty directory to store temporary image results, at the path
    ``lib/iris/tests/result_image_comparison`` in your Iris repository checkout.
 
-#. **In your Iris repo root directory**, run the relevant (failing) tests
-   directly as python scripts, or by using a command such as::
+#. Run the relevant (failing) tests directly as python scripts, or by using a
+   command such as::
 
      python -m unittest discover paths/to/test/files
 
-#. In the ``iris/lib/iris/tests`` folder, run the command::
+The results of the failing image tests will now be available in
+``lib/iris/tests/result_image_comparison``.
 
-     python idiff.py
+.. note::
+
+  The ``result_image_comparison`` folder is covered by a project
+  ``.gitignore`` setting, so those files *will not show up* in a
+  ``git status`` check.
+
+Reviewing Failing Tests
+-----------------------
+
+#. Run ``iris/lib/iris/tests/graphics/idiff.py`` with python, e.g.:
+
+    python idiff.py
 
    This will open a window for you to visually inspect
    side-by-side **old**, **new** and **difference** images for each failed
@@ -123,43 +80,47 @@ you should follow:
    re-run may encounter further (new) graphical test failures.  If that
    happens, simply repeat the check-and-accept process until all tests pass.
 
+#. You're now ready to :ref:`add-graphics-test-changes`
+
+
+Adding a New Image Test
+-----------------------
+
+If you attempt to run ``idiff.py`` when there are new graphical tests for which
+no baseline yet exists, you will get a warning that ``idiff.py`` is ``Ignoring
+unregistered test result...``. In this case,
+
+#. rename the relevant images from ``iris/tests/result_image_comparison`` by
+
+   * removing the ``result-`` prefix
+
+   * fully qualifying the test name if it isn't already (i.e. it should start
+     ``iris.tests...``)
+   
+#. and then add them to the Iris test data as covered in
+   :ref:`add-graphics-test-changes`.
+
+
+.. _add_graphics_test_changes:
 
 Add Your Changes to Iris
-========================
+------------------------
 
 To add your changes to Iris, you need to make two pull requests (PR).
 
-#. The first PR is made in the ``test-iris-imagehash`` repository, at
-   https://github.com/SciTools/test-iris-imagehash.
+#. The first PR is made in the ``iris-test-data`` repository, at
+   https://github.com/SciTools/iris-test-data.
 
-   * First, add all the newly-generated referenced PNG files into the
-     ``images/v4`` directory.  In your Iris repo, these files are to be found
+   * Add all the newly-generated referenced PNG files into the
+     ``test_data/images`` directory.  In your Iris repo, these files are to be found
      in the temporary results folder ``iris/tests/result_image_comparison``.
-
-   * Then, to update the file which lists available images,
-     ``v4_files_listing.txt``, run from the project root directory::
-
-        python recreate_v4_files_listing.py
 
    * Create a PR proposing these changes, in the usual way.
 
-#. The second PR is created in the Iris_ repository, and
-   should only include the change to the image results database,
-   ``tests/results/imagerepo.json``.
+#. The second PR is the one that makes the changes you intend to the Iris_ repository.
    The description box of this pull request should contain a reference to
-   the matching one in ``test-iris-imagehash``.
+   the matching one in ``iris-test-data``.
 
-.. note::
-
-  The ``result_image_comparison`` folder is covered by a project
-  ``.gitignore`` setting, so those files *will not show up* in a
-  ``git status`` check.
-
-.. important::
-
-  The `Iris GitHub Actions`_ of a pull request will not pass successfully until the
-  associated ``test-iris-imagehash`` pull request has been merged.  This is because there
-  is an Iris_ test which ensures the existence of the reference images (URIs)
-  for all the targets in the image results database.  It will also fail
-  if you forgot to run ``recreate_v4_files_listing.py`` to update the
-  image-listing file in ``test-iris-imagehash``.
+   * This PR should include updating the version of the test data in
+     ``.github/workflows/ci-docs-tests.yml`` to the new version created by the merging of your
+     ``iris-test-data`` PR.
