@@ -52,9 +52,9 @@ class AggregateMixin:
             self.assertFalse(is_lazy)
 
         if approx:
-            self.assertArrayAlmostEqual(actual, expected)
+            self.assertMaskedArrayAlmostEqual(actual, expected)
         else:
-            self.assertArrayEqual(actual, expected)
+            self.assertMaskedArrayEqual(actual, expected)
 
     def test_1d_single(self):
         data = np.arange(11)
@@ -223,7 +223,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         percent = 50
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
-        expected = np.arange(shape[-1]) + 5.5
+        expected = ma.arange(shape[-1]) + 5.5
         expected[0] = ma.masked
         self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
 
@@ -313,7 +313,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
         data = as_lazy_data(data)
-        expected = np.arange(shape[-1]) + 5.5
+        expected = ma.arange(shape[-1]) + 5.5
         expected[0] = ma.masked
         self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
 
