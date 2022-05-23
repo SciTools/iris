@@ -169,7 +169,7 @@ class Mixin:
         )
         return result
 
-    def save(self):
+    def save_recombined_cube(self):
         save(self.recombined_cube, self.temp_save_path)
 
 
@@ -222,14 +222,14 @@ class SaveData(Mixin):
 
     def time_save(self, n_cubesphere):
         # Save to disk, which must compute data + stream it to file.
-        self.save()
+        self.save_recombined_cube()
 
     @TrackAddedMemoryAllocation.decorator()
     def track_addedmem_save(self, n_cubesphere):
-        self.save()
+        self.save_recombined_cube()
 
     def track_filesize_saved(self, n_cubesphere):
-        self.save()
+        self.save_recombined_cube()
         return self.temp_save_path.stat().st_size * 1.0e-6
 
 
@@ -250,8 +250,8 @@ class FileStreamedCalc(Mixin):
 
     def time_stream_file2file(self, n_cubesphere):
         # Save to disk, which must compute data + stream it to file.
-        self.save()
+        self.save_recombined_cube()
 
     @TrackAddedMemoryAllocation.decorator()
     def track_addedmem_stream_file2file(self, n_cubesphere):
-        self.save()
+        self.save_recombined_cube()
