@@ -9,6 +9,8 @@ from pathlib import Path
 from string import Template
 import subprocess
 
+import dask
+from dask import array as da
 import netCDF4
 import numpy as np
 
@@ -79,11 +81,13 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
             # so it can be a dim-coord.
             data_size = np.prod(shape)
             data = np.arange(1, data_size + 1, dtype=var.dtype).reshape(shape)
+            var[:] = data
         else:
             # Fill with a plain value.  But avoid zeros, so we can simulate
             # valid ugrid connectivities even when start_index=1.
-            data = np.ones(shape, dtype=var.dtype)  # Do not use zero
-        var[:] = data
+            with dask.config.set({"array.chunk-size": "2048MiB"}):
+                data = da.ones(shape, dtype=var.dtype)  # Do not use zero
+            da.store(data, var)
 
     ds.close()
 

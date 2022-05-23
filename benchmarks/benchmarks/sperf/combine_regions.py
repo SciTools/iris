@@ -16,20 +16,21 @@ from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.utils import recombine_submeshes
 
 from .. import TrackAddedMemoryAllocation, on_demand_benchmark
-from ..generate_data.ugrid import make_cube_like_2d_cubesphere
+from ..generate_data.ugrid import BENCHMARK_DATA, make_cube_like_2d_cubesphere
 
 
 class Mixin:
     # Characterise time taken + memory-allocated, for various stages of combine
     # operations on cubesphere-like test data.
-    timeout = 180.0
+    timeout = 300.0
     params = [100, 200, 300, 500, 1000, 1668]
     param_names = ["cubesphere_C<N>"]
     # Fix result units for the tracking benchmarks.
     unit = "Mb"
+    temp_save_path = BENCHMARK_DATA / "tmp.nc"
 
     def _parametrised_cache_filename(self, n_cubesphere, content_name):
-        return f"cube_C{n_cubesphere}_{content_name}.nc"
+        return BENCHMARK_DATA / f"cube_C{n_cubesphere}_{content_name}.nc"
 
     def _make_region_cubes(self, full_mesh_cube):
         """Make a fixed number of region cubes from a full meshcube."""
@@ -139,6 +140,9 @@ class Mixin:
         # Fix dask usage mode for all the subsequent performance tests.
         self.fix_dask_settings()
 
+    def teardown(self, _):
+        self.temp_save_path.unlink(missing_ok=True)
+
     def fix_dask_settings(self):
         """
         Fix "standard" dask behaviour for time+space testing.
@@ -164,6 +168,9 @@ class Mixin:
             index_coord_name="i_mesh_face",
         )
         return result
+
+    def save_recombined_cube(self):
+        save(self.recombined_cube, self.temp_save_path)
 
 
 @on_demand_benchmark
@@ -215,15 +222,15 @@ class SaveData(Mixin):
 
     def time_save(self, n_cubesphere):
         # Save to disk, which must compute data + stream it to file.
-        save(self.recombined_cube, "tmp.nc")
+        self.save_recombined_cube()
 
     @TrackAddedMemoryAllocation.decorator()
     def track_addedmem_save(self, n_cubesphere):
-        save(self.recombined_cube, "tmp.nc")
+        self.save_recombined_cube()
 
     def track_filesize_saved(self, n_cubesphere):
-        save(self.recombined_cube, "tmp.nc")
-        return os.path.getsize("tmp.nc") * 1.0e-6
+        self.save_recombined_cube()
+        return self.temp_save_path.stat().st_size * 1.0e-6
 
 
 @on_demand_benchmark
@@ -243,8 +250,8 @@ class FileStreamedCalc(Mixin):
 
     def time_stream_file2file(self, n_cubesphere):
         # Save to disk, which must compute data + stream it to file.
-        save(self.recombined_cube, "tmp.nc")
+        self.save_recombined_cube()
 
     @TrackAddedMemoryAllocation.decorator()
     def track_addedmem_stream_file2file(self, n_cubesphere):
-        save(self.recombined_cube, "tmp.nc")
+        self.save_recombined_cube()
