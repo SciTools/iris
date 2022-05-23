@@ -297,8 +297,6 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         self.agg_method = PERCENTILE.lazy_aggregate
 
     def test_masked(self):
-        # Using (3,11) because np.percentile returns a masked array anyway with
-        # (2, 11)
         shape = (2, 11)
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
@@ -314,6 +312,8 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
             as_concrete_data(actual)
 
     def test_masked_mdtol_0(self):
+        # Using (3,11) because np.percentile returns a masked array anyway with
+        # (2, 11)
         shape = (3, 11)
         axis = 0
         percent = 50

@@ -108,6 +108,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ fixed plotting of circular coordinates to extend kwarg arrays
    as well as the data. (:issue:`466`, :pull:`4649`)
 
+#. `@wjbenfold`_ corrected the axis on which masking is applied when an
+   aggregator adds a trailing dimension. (:pull:`4755`)
+
 
 💣 Incompatible Changes
 =======================
