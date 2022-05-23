@@ -593,6 +593,12 @@ class _Aggregator:
         ):
             fraction_not_missing = data.count(axis=axis) / data.shape[axis]
             mask_update = 1 - mdtol > fraction_not_missing
+            if result.ndim > mask_update.ndim:
+                # call_func created trailing dimension.
+                mask_update = np.broadcast_to(
+                    mask_update.reshape(mask_update.shape + (1,)),
+                    result.shape,
+                )
             if ma.isMaskedArray(result):
                 result.mask = result.mask | mask_update
             else:
