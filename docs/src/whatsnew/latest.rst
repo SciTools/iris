@@ -108,6 +108,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ fixed plotting of circular coordinates to extend kwarg arrays
    as well as the data. (:issue:`466`, :pull:`4649`)
 
+#. `@wjbenfold`_ corrected the axis on which masking is applied when an
+   aggregator adds a trailing dimension. (:pull:`4755`)
+
 
 💣 Incompatible Changes
 =======================
@@ -121,6 +124,7 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ added caching to the calculation of the points array in a
    :class:`~iris.coords.DimCoord` created using
    :meth:`~iris.coords.DimCoord.from_regular`. (:pull:`4698`)
+
 #. `@wjbenfold`_ introduced caching in :func:`_lazy_data._optimum_chunksize` and
    :func:`iris.fileformats.pp_load_rules._epoch_date_hours` to reduce time spent
    repeating calculations. (:pull:`4716`)
@@ -128,6 +132,9 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ made :meth:`~iris.cube.Cube.add_aux_factory` faster.
    (:pull:`4718`)
 
+#. `@wjbenfold`_ permitted the fast percentile aggregation method to be used on
+   masked data when the missing data tolerance is set to 0. (:issue:`4735`,
+   :pull:`4755`)
 
 
 🔥 Deprecations

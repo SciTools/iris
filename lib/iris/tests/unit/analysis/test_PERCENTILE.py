@@ -32,7 +32,7 @@ class AggregateMixin:
         if self.lazy:
             data = as_lazy_data(data)
 
-        expected = np.array(expected)
+        expected = ma.array(expected)
 
         actual = self.agg_method(
             data,
@@ -52,9 +52,9 @@ class AggregateMixin:
             self.assertFalse(is_lazy)
 
         if approx:
-            self.assertArrayAlmostEqual(actual, expected)
+            self.assertMaskedArrayAlmostEqual(actual, expected)
         else:
-            self.assertArrayEqual(actual, expected)
+            self.assertMaskedArrayEqual(actual, expected)
 
     def test_1d_single(self):
         data = np.arange(11)
@@ -131,7 +131,7 @@ class ScipyAggregateMixin:
     def test_masked_2d_multi(self):
         shape = (3, 10)
         data = ma.arange(np.prod(shape)).reshape(shape)
-        data[1] = ma.masked
+        data[1, ::2] = ma.masked
         percent = np.array([10, 50, 70, 80])
         axis = 0
         mdtol = 0.1
@@ -140,10 +140,11 @@ class ScipyAggregateMixin:
         # linear interpolation.
         expected = percent / 100 * 20
         # Other columns are first column plus column number.
-        expected = (
+        expected = ma.array(
             np.broadcast_to(expected, (shape[-1], percent.size))
             + np.arange(shape[-1])[:, np.newaxis]
         )
+        expected[::2] = ma.masked
 
         self.check_percentile_calc(
             data, axis, percent, expected, mdtol=mdtol, approx=True
@@ -205,14 +206,31 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         self.agg_method = PERCENTILE.aggregate
 
     def test_masked(self):
-        shape = (2, 11)
+        # Using (3,11) because np.percentile returns a masked array anyway with
+        # (2, 11)
+        shape = (3, 11)
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
-        emsg = "Cannot use fast np.percentile method with masked array."
+        emsg = (
+            "Cannot use fast np.percentile method with masked array unless "
+            "mdtol is 0."
+        )
         with self.assertRaisesRegex(TypeError, emsg):
             PERCENTILE.aggregate(
                 data, axis=0, percent=50, fast_percentile_method=True
             )
+
+    def test_masked_mdtol_0(self):
+        # Using (3,11) because np.percentile returns a masked array anyway with
+        # (2, 11)
+        shape = (3, 11)
+        axis = 0
+        percent = 50
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        expected = ma.arange(shape[-1]) + 11
+        expected[::2] = ma.masked
+        self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
 
     @mock.patch("numpy.percentile")
     def test_numpy_percentile_called(self, mocked_percentile):
@@ -286,9 +304,25 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         actual = PERCENTILE.lazy_aggregate(
             data, axis=0, percent=50, fast_percentile_method=True
         )
-        emsg = "Cannot use fast np.percentile method with masked array."
+        emsg = (
+            "Cannot use fast np.percentile method with masked array unless "
+            "mdtol is 0."
+        )
         with self.assertRaisesRegex(TypeError, emsg):
             as_concrete_data(actual)
+
+    def test_masked_mdtol_0(self):
+        # Using (3,11) because np.percentile returns a masked array anyway with
+        # (2, 11)
+        shape = (3, 11)
+        axis = 0
+        percent = 50
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        data = as_lazy_data(data)
+        expected = ma.arange(shape[-1]) + 11
+        expected[::2] = ma.masked
+        self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
 
     @mock.patch("numpy.percentile", return_value=np.array([2, 4]))
     def test_numpy_percentile_called(self, mocked_percentile):
