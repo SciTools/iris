@@ -87,7 +87,7 @@ class TestCoordSystemSame(tests.IrisTest):
     def test_different_class(self):
         a = self.cs1
         b = self.cs3
-        self.assertNotEquals(a, b)
+        self.assertNotEqual(a, b)
 
     def test_different_public_attributes(self):
         a = self.cs1
@@ -98,7 +98,7 @@ class TestCoordSystemSame(tests.IrisTest):
         self.assertEqual(a.foo, "a")
 
         # a and b should not be the same
-        self.assertNotEquals(a, b)
+        self.assertNotEqual(a, b)
 
         # a and b should be the same
         b.foo = "a"
@@ -106,7 +106,7 @@ class TestCoordSystemSame(tests.IrisTest):
 
         b.foo = "b"
         # a and b should not be the same
-        self.assertNotEquals(a, b)
+        self.assertNotEqual(a, b)
 
 
 class Test_CoordSystem_xml_element(tests.IrisTest):
