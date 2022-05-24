@@ -112,7 +112,7 @@ class TestUnstructured(tests.IrisTest):
 class TestZonalMean_global(tests.IrisTest):
     def setUp(self):
         np.random.seed(0)
-        self.src = iris.cube.Cube(np.random.random_integers(0, 10, (140, 1)))
+        self.src = iris.cube.Cube(np.random.randint(0, 10, size=(140, 1)))
         s_crs = iris.coord_systems.GeogCS(6371229.0)
         sy_coord = iris.coords.DimCoord(
             np.linspace(-90, 90, 140),

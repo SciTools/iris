@@ -144,7 +144,7 @@ class TestClipString(tests.IrisTest):
 
     def test_default_values(self):
         # Get the default values specified in the function
-        argspec = inspect.getargspec(iris.util.clip_string)
+        argspec = inspect.getfullargspec(iris.util.clip_string)
         arg_dict = dict(zip(argspec.args[-2:], argspec.defaults))
 
         result = iris.util.clip_string(
