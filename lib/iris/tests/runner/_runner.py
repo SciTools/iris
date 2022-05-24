@@ -131,6 +131,7 @@ class TestRunner:
         args = [
             None,
             "-v",
+            "--disable-warnings",
             f"-n={self.num_processors}",
         ]
 
