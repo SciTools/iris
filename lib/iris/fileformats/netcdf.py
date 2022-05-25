@@ -19,6 +19,7 @@ import os
 import os.path
 import re
 import string
+from typing import List
 import warnings
 
 import cf_units
@@ -185,13 +186,14 @@ _CM_EXTRA = "extra"
 _CM_INTERVAL = "interval"
 _CM_METHOD = "method"
 _CM_NAME = "name"
+_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s+)+")
 _CM_PARSE = re.compile(
     r"""
                            (?P<name>([\w_]+\s*?:\s+)+)
                            (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
                            (?:
                                \(\s*
-                               (?P<extra>[^\)]+)
+                               (?P<extra>.+)
                                \)\s*
                            )?
                        """,
@@ -201,6 +203,69 @@ _CM_PARSE = re.compile(
 
 class UnknownCellMethodWarning(Warning):
     pass
+
+
+def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
+    """
+    Split a CF cell_methods attribute string into a list of zero or more cell
+    methods, each of which is then parsed with a regex to return a list of match
+    objects.
+
+    Args:
+
+    * nc_cell_methods: The value of the cell methods attribute to be split.
+
+    Returns:
+
+    * nc_cell_methods_matches: A list of the re.Match objects associated with
+      each parsed cell method
+
+    Splitting is done based on words followed by colons outside of any brackets.
+    Validation of anything other than being laid out in the expected format is
+    left to the calling function.
+    """
+
+    # Find name candidates
+    name_start_inds = []
+    for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
+        name_start_inds.append(m.start())
+
+    # Remove those that fall inside brackets
+    bracket_depth = 0
+    for ind, cha in enumerate(nc_cell_methods):
+        if cha == "(":
+            bracket_depth += 1
+        elif cha == ")":
+            bracket_depth -= 1
+            if bracket_depth < 0:
+                msg = (
+                    "Cell methods may be incorrectly parsed due to mismatched "
+                    "brackets"
+                )
+                warnings.warn(msg, UserWarning, stacklevel=2)
+        if bracket_depth > 0 and ind in name_start_inds:
+            name_start_inds.remove(ind)
+
+    # List tuples of indices of starts and ends of the cell methods in the string
+    method_indices = []
+    for ii in range(len(name_start_inds) - 1):
+        method_indices.append((name_start_inds[ii], name_start_inds[ii + 1]))
+    method_indices.append((name_start_inds[-1], len(nc_cell_methods)))
+
+    # Index the string and match against each substring
+    nc_cell_methods_matches = []
+    for start_ind, end_ind in method_indices:
+        nc_cell_method_str = nc_cell_methods[start_ind:end_ind]
+        nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str.strip())
+        if not nc_cell_method_match:
+            msg = (
+                f"Failed to fully parse cell method string: {nc_cell_methods}"
+            )
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            continue
+        nc_cell_methods_matches.append(nc_cell_method_match)
+
+    return nc_cell_methods_matches
 
 
 def parse_cell_methods(nc_cell_methods):
@@ -226,7 +291,7 @@ def parse_cell_methods(nc_cell_methods):
 
     cell_methods = []
     if nc_cell_methods is not None:
-        for m in _CM_PARSE.finditer(nc_cell_methods):
+        for m in _split_cell_methods(nc_cell_methods):
             d = m.groupdict()
             method = d[_CM_METHOD]
             method = method.strip()

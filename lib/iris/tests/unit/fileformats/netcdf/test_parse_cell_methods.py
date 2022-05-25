@@ -41,6 +41,20 @@ class Test(tests.IrisTest):
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
+    def test_multiple_axes(self):
+        cell_method_strings = [
+            "lat: lon: standard_deviation",
+            "lat: lon : standard_deviation",
+            "lat : lon: standard_deviation",
+            "lat : lon : standard_deviation",
+        ]
+        expected = (
+            CellMethod(method="standard_deviation", coords=["lat", "lon"]),
+        )
+        for cell_method_str in cell_method_strings:
+            res = parse_cell_methods(cell_method_str)
+            self.assertEqual(res, expected)
+
     def test_multiple(self):
         cell_method_strings = [
             "time: maximum (interval: 1 hr) time: mean (interval: 1 day)",
@@ -84,6 +98,51 @@ class Test(tests.IrisTest):
         for cell_method_str in cell_method_strings:
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
+
+    def test_comment_brackets(self):
+        cell_method_strings = [
+            "time: minimum within days (comment: 18h(day-1)-18h)",
+            "time : minimum within days (comment: 18h(day-1)-18h)",
+        ]
+        expected = (
+            CellMethod(
+                method="minimum within days",
+                coords="time",
+                intervals=None,
+                comments="18h(day-1)-18h",
+            ),
+        )
+        for cell_method_str in cell_method_strings:
+            res = parse_cell_methods(cell_method_str)
+            self.assertEqual(res, expected)
+
+    def test_comment_bracket_mismatch_warning(self):
+        cell_method_strings = [
+            "time: minimum within days (comment: 18h day-1)-18h)",
+            "time : minimum within days (comment: 18h day-1)-18h)",
+        ]
+        for cell_method_str in cell_method_strings:
+            with self.assertWarns(
+                UserWarning,
+                msg="Cell methods may be incorrectly parsed due to mismatched brackets",
+            ):
+                _ = parse_cell_methods(cell_method_str)
+
+    def test_badly_formatted_warning(self):
+        cell_method_strings = [
+            # "time: maximum (interval: 1 hr comment: first bit "
+            # "time: mean (interval: 1 day comment: second bit)",
+            "time: (interval: 1 hr comment: first bit) "
+            "time: mean (interval: 1 day comment: second bit)",
+            "time: maximum (interval: 1 hr comment: first bit) "
+            "time: (interval: 1 day comment: second bit)",
+        ]
+        for cell_method_str in cell_method_strings:
+            with self.assertWarns(
+                UserWarning,
+                msg=f"Failed to fully parse cell method string: {cell_method_str}",
+            ):
+                _ = parse_cell_methods(cell_method_str)
 
     def test_portions_of_cells(self):
         cell_method_strings = [
