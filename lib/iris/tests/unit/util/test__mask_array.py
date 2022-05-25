@@ -20,6 +20,7 @@ from iris.util import _mask_array
 # Set up some arrays to use through the tests.
 array_1d = np.arange(4)
 masked_arr_1d = ma.array(np.arange(4), mask=[1, 0, 0, 1])
+array_2by3 = np.arange(6).reshape(2, 3)
 
 # Any masked points on the mask itself should be ignored.  So result with mask_1d
 # and masked_mask_1d should be the same.
@@ -71,7 +72,7 @@ def test_1d_not_in_place(array, mask, expected, lazy_array, lazy_mask):
     assert_masked_array_equal(expected, result)
 
 
-# In place tests.
+# 1D in place tests.
 
 
 def test_plain_array_in_place():
@@ -134,37 +135,51 @@ def test_lazy_array_in_place():
     assert_masked_array_equal(result.compute(), expected_computed)
 
 
-class TestBroadcast(tests.IrisTest):
-    def setUp(self):
-        self.arr2by3 = np.arange(6).reshape(2, 3)
+# Broadcasting tests.
 
-    def test_trailing_mask(self):
-        arr = self.arr2by3
-        mask = np.array([0, 1, 0])
-        expected = ma.array(arr, mask=[[0, 1, 0], [0, 1, 0]])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertMaskedArrayEqual(result, expected)
+IN_PLACE_PARAMETRIZE = pytest.mark.parametrize(
+    "in_place", [False, True], ids=["not-in-place", "in-place"]
+)
 
-    def test_leading_mask(self):
-        arr = ma.masked_array(self.arr2by3, mask=[[0, 0, 0], [0, 0, 1]])
-        mask = np.array([1, 0]).reshape(2, 1)
-        expected = ma.array(arr.data, mask=[[1, 1, 1], [0, 0, 1]])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertMaskedArrayEqual(result, expected)
 
-    def test_lazy_trailing_mask(self):
-        arr = da.ma.masked_array(self.arr2by3, mask=[[0, 1, 1], [0, 0, 0]])
-        mask = np.array([0, 1, 0])
-        expected_computed = ma.array(self.arr2by3, mask=[[0, 1, 1], [0, 1, 0]])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertMaskedArrayEqual(result.compute(), expected_computed)
+@IN_PLACE_PARAMETRIZE
+def test_trailing_mask(in_place):
+    array = ma.array(array_2by3.copy())
+    mask = np.array([0, 1, 0])
+    expected = ma.array(array_2by3, mask=[[0, 1, 0], [0, 1, 0]])
+    result = _mask_array(array, mask, in_place=in_place)
+    assert_masked_array_equal(result, expected)
+    if in_place:
+        assert_masked_array_equal(array, expected)
 
-    def test_lazy_leading_mask(self):
-        arr = da.from_array(self.arr2by3)
-        mask = da.from_array([0, 1]).reshape(2, 1)
-        expected_computed = ma.array(self.arr2by3, mask=[[0, 0, 0], [1, 1, 1]])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertMaskedArrayEqual(result.compute(), expected_computed)
+
+@IN_PLACE_PARAMETRIZE
+def test_leading_mask(in_place):
+    arr = ma.masked_array(array_2by3.copy(), mask=[[0, 0, 0], [0, 0, 1]])
+    mask = np.array([1, 0]).reshape(2, 1)
+    expected = ma.array(arr.data, mask=[[1, 1, 1], [0, 0, 1]])
+    result = _mask_array(arr, mask, in_place=in_place)
+    assert_masked_array_equal(result, expected)
+    if in_place:
+        assert_masked_array_equal(arr, expected)
+
+
+def test_lazy_trailing_mask():
+    arr = da.ma.masked_array(array_2by3, mask=[[0, 1, 1], [0, 0, 0]])
+    mask = np.array([0, 1, 0])
+    expected_computed = ma.array(array_2by3, mask=[[0, 1, 1], [0, 1, 0]])
+    result = _mask_array(arr, mask, in_place=False)
+    assert iris._lazy_data.is_lazy_data(result)
+    assert_masked_array_equal(result.compute(), expected_computed)
+
+
+def test_lazy_leading_mask():
+    arr = da.from_array(array_2by3)
+    mask = da.from_array([0, 1]).reshape(2, 1)
+    expected_computed = ma.array(array_2by3, mask=[[0, 0, 0], [1, 1, 1]])
+    result = _mask_array(arr, mask, in_place=False)
+    assert iris._lazy_data.is_lazy_data(result)
+    assert_masked_array_equal(result.compute(), expected_computed)
 
 
 if __name__ == "__main__":
