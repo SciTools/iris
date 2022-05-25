@@ -225,12 +225,6 @@ class CubeList(list):
 
         super(CubeList, self).__setitem__(key, cube_or_sequence)
 
-    #  __setslice__ is only required for python2.7 compatibility.
-    def __setslice__(self, *args):
-        args_list = list(args)
-        args_list[-1] = CubeList(args[-1])
-        super(CubeList, self).__setslice__(*args_list)
-
     def append(self, cube):
         """
         Append a cube.
