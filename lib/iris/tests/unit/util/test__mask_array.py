@@ -32,6 +32,16 @@ expected2 = ma.array(array_1d, mask=[1, 1, 0, 1])
 array_choices = [(array_1d, expected1), (masked_arr_1d, expected2)]
 
 
+def assert_masked_array_equal(array1, array2):
+    """
+    Given two numpy masked arrays, check that their masks are the same and that
+    any unmasked values are equal.
+
+    """
+    np.testing.assert_array_equal(array1.mask, array2.mask)
+    np.testing.assert_array_equal(array1.compressed(), array2.compressed())
+
+
 @pytest.mark.parametrize(
     "mask", [mask_1d, masked_mask_1d], ids=["plain-mask", "masked-mask"]
 )
@@ -58,48 +68,70 @@ def test_1d_not_in_place(array, mask, expected, lazy_array, lazy_mask):
         assert iris._lazy_data.is_lazy_data(result)
         result = iris._lazy_data.as_concrete_data(result)
 
-    np.testing.assert_array_equal(expected.mask, result.mask)
-    np.testing.assert_array_equal(expected.compressed(), result.compressed())
+    assert_masked_array_equal(expected, result)
 
 
-class Test1DInPlace(tests.IrisTest):
-    """Simple 1D in-place cases to check how various types of array interact."""
+# In place tests.
 
-    def test_plain_array(self):
-        arr = np.arange(4)
-        mask = None
-        with self.assertRaisesRegex(
-            TypeError, "Cannot apply a mask in-place to a plain numpy array."
-        ):
-            _mask_array(arr, mask, in_place=True)
 
-    def test_masked_array_plain_mask(self):
-        arr = ma.array(range(4))
-        mask = np.array([0, 1, 0, 1])
-        expected = ma.array(arr.data, mask=mask)
-        result = _mask_array(arr, mask, in_place=True)
-        self.assertMaskedArrayEqual(arr, expected)
-        # Resolve uses returned value regardless of whether we're working
-        # in_place.
-        self.assertMaskedArrayEqual(result, expected)
+def test_plain_array_in_place():
+    """
+    Test we get an informative error when trying to add a mask to a plain numpy
+    array.
 
-    def test_masked_array_lazy_mask(self):
-        arr = ma.array(np.arange(4))
-        mask = da.from_array([0, 1, 0, 1])
-        with self.assertRaisesRegex(
-            TypeError, "Cannot apply lazy mask in-place to a non-lazy array."
-        ):
-            _mask_array(arr, mask, in_place=True)
+    """
+    arr = array_1d
+    mask = None
+    with pytest.raises(
+        TypeError, match="Cannot apply a mask in-place to a plain numpy array."
+    ):
+        _mask_array(arr, mask, in_place=True)
 
-    def test_lazy_array(self):
-        arr = da.from_array(np.arange(4))
-        mask = np.array([0, 1, 0, 1])
-        expected_computed = ma.array(range(4), mask=[0, 1, 0, 1])
-        # in_place is ignored for lazy array as this is handled by
-        # _math_op_common.
-        result = _mask_array(arr, mask, in_place=True)
-        self.assertTrue(iris._lazy_data.is_lazy_data(result))
-        self.assertMaskedArrayEqual(result.compute(), expected_computed)
+
+def test_masked_array_lazy_mask_in_place():
+    """
+    Test we get an informative error when trying to apply a lazy mask in-place
+    to a non-lazy array.
+
+    """
+    arr = masked_arr_1d
+    mask = da.from_array([0, 1, 0, 1])
+    with pytest.raises(
+        TypeError, match="Cannot apply lazy mask in-place to a non-lazy array."
+    ):
+        _mask_array(arr, mask, in_place=True)
+
+
+@pytest.mark.parametrize(
+    "mask", [mask_1d, masked_mask_1d], ids=["plain-mask", "masked-mask"]
+)
+def test_real_masked_array_in_place(mask):
+    """
+    Check expected behaviour for applying masks in-place to a masked array.
+
+    """
+    arr = masked_arr_1d.copy()
+    result = _mask_array(arr, mask, in_place=True)
+    assert_masked_array_equal(arr, expected2)
+    # Resolve uses returned value regardless of whether we're working
+    # in_place.
+    assert_masked_array_equal(result, expected2)
+
+
+def test_lazy_array_in_place():
+    """
+    Test that in place flag is ignored for lazy arrays, and result is the same
+    as the not in_place case.
+
+    """
+    arr = da.from_array(np.arange(4))
+    mask = np.array([0, 1, 0, 1])
+    expected_computed = ma.array(range(4), mask=[0, 1, 0, 1])
+    # in_place is ignored for lazy array as this is handled by
+    # _math_op_common.
+    result = _mask_array(arr, mask, in_place=True)
+    assert iris._lazy_data.is_lazy_data(result)
+    assert_masked_array_equal(result.compute(), expected_computed)
 
 
 class TestBroadcast(tests.IrisTest):
