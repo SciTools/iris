@@ -320,20 +320,59 @@ def interpolate(cube, sample_points, method=None):
             break
 
     if method in ["linear", None]:
-        for i in range(trajectory_size):
-            point = [(coord, values[i]) for coord, values in sample_points]
-            column = cube.interpolate(point, Linear())
-            new_cube.data[..., i] = column.data
-            # Fill in the empty squashed (non derived) coords.
-            for column_coord in column.dim_coords + column.aux_coords:
-                src_dims = cube.coord_dims(column_coord)
-                if not squish_my_dims.isdisjoint(src_dims):
-                    if len(column_coord.points) != 1:
-                        msg = "Expected to find exactly one point. Found {}."
-                        raise Exception(msg.format(column_coord.points))
-                    new_cube.coord(column_coord.name()).points[
-                        i
-                    ] = column_coord.points[0]
+        # Using cube.interpolate will generate extra values that we don't need
+        # as it makes a grid from the provided coordinates (like a meshgrid)
+        # and then does interpolation for all of them. This is memory
+        # inefficient, but significantly more time efficient than calling
+        # cube.interpolate (or the underlying method on the interpolator)
+        # repeatedly, so using this approach for now. In future, it would be
+        # ideal if we only interpolated at the points we care about
+        columns = cube.interpolate(sample_points, Linear())
+        # np.einsum(a, [0, 0], [0]) is like np.diag(a)
+        # We're using einsum here to do an n-dimensional diagonal, leaving the
+        # other dimensions unaffected and putting the diagonal's direction on
+        # the final axis
+        initial_inds = list(range(1, columns.ndim + 1))
+        for ind in squish_my_dims:
+            initial_inds[ind] = 0
+        final_inds = list(filter(lambda x: x != 0, initial_inds)) + [0]
+        new_cube.data = np.einsum(columns.data, initial_inds, final_inds)
+
+        # Fill in the empty squashed (non derived) coords.
+        # We're using the same einstein summation plan as for the cube, but
+        # redoing those indices to match the indices in the coordinates
+        for columns_coord in columns.dim_coords + columns.aux_coords:
+            src_dims = cube.coord_dims(columns_coord)
+            if not squish_my_dims.isdisjoint(src_dims):
+                # Mapping the cube indicies onto the coord
+                initial_coord_inds = [initial_inds[ind] for ind in src_dims]
+                # Making the final ones the same way as for the cube
+                # 0 will always appear in the initial ones because we know this
+                # coord overlaps the squish dims
+                final_coord_inds = list(
+                    filter(lambda x: x != 0, initial_coord_inds)
+                ) + [0]
+                new_coord_points = np.einsum(
+                    columns_coord.points, initial_coord_inds, final_coord_inds
+                )
+                # Check we're not overwriting coord.points with the wrong shape
+                if (
+                    not new_cube.coord(columns_coord.name()).points.shape
+                    == new_coord_points.shape
+                ):
+                    msg = (
+                        "Coord {} was expected to have new points of shape {}. "
+                        "Found shape of {}."
+                    )
+                    raise ValueError(
+                        msg.format(
+                            columns_coord.name(),
+                            new_cube.coord(columns_coord.name()).points.shape,
+                            new_coord_points.shape,
+                        )
+                    )
+                # Replace the points
+                new_cube.coord(columns_coord.name()).points = new_coord_points
 
     elif method == "nearest":
         # Use a cache with _nearest_neighbour_indices_ndcoords()

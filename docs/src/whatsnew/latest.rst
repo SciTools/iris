@@ -136,6 +136,10 @@ This document explains the changes made to Iris for this release
    aggregation method to be used on masked data when the missing data tolerance
    is set to 0. (:issue:`4735`, :pull:`4755`)
 
+#. `@wjbenfold`_ improved the speed of linear interpolation using 
+   :meth:`iris.analysis.trajectory.interpolate` (:pull:`4366`)
+
+
 
 🔥 Deprecations
 ===============
