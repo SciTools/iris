@@ -12,60 +12,54 @@ import iris.tests as tests  # isort:skip
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris._lazy_data
 from iris.util import _mask_array
 
+# Set up some arrays to use through the tests.
+array_1d = np.arange(4)
+masked_arr_1d = ma.array(np.arange(4), mask=[1, 0, 0, 1])
 
-class Test1DNotInPlace(tests.IrisTest):
-    """Simple 1D cases to check how various types of array interact."""
+# Any masked points on the mask itself should be ignored.  So result with mask_1d
+# and masked_mask_1d should be the same.
+mask_1d = np.array([0, 1, 0, 1])
+masked_mask_1d = ma.array([0, 1, 1, 1], mask=[0, 0, 1, 0])
 
-    def test_both_plain_arrays(self):
-        arr = np.arange(4)
-        mask = np.array([0, 1, 0, 1])
-        expected = ma.array(arr, mask=mask)
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertMaskedArrayEqual(result, expected)
+# Expected output depends whether input array is masked or not.
+expected1 = ma.array(array_1d, mask=mask_1d)
+expected2 = ma.array(array_1d, mask=[1, 1, 0, 1])
+array_choices = [(array_1d, expected1), (masked_arr_1d, expected2)]
 
-    def test_plain_array_masked_mask(self):
-        arr = np.arange(4)
-        mask = ma.array([0, 1, 0, 1], mask=[1, 1, 0, 0])
-        # masked points of mask should be ignored.
-        expected = ma.array(arr, mask=[0, 0, 0, 1])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertMaskedArrayEqual(result, expected)
 
-    def test_plain_array_lazy_mask(self):
-        arr = np.arange(4)
-        mask = da.from_array([0, 1, 0, 1])
-        expected_computed = ma.array(arr, mask=[0, 1, 0, 1])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertTrue(iris._lazy_data.is_lazy_data(result))
-        self.assertMaskedArrayEqual(result.compute(), expected_computed)
+@pytest.mark.parametrize(
+    "mask", [mask_1d, masked_mask_1d], ids=["plain-mask", "masked-mask"]
+)
+@pytest.mark.parametrize("lazy_mask", [False, True], ids=["real", "lazy"])
+@pytest.mark.parametrize(
+    "array, expected", array_choices, ids=["plain-array", "masked-array"]
+)
+@pytest.mark.parametrize("lazy_array", [False, True], ids=["real", "lazy"])
+def test_1d_not_in_place(array, mask, expected, lazy_array, lazy_mask):
+    """
+    Basic test for expected behaviour when working not in place with various
+    array types for input.
 
-    def test_masked_array_plain_mask(self):
-        arr = ma.array(range(4))
-        mask = np.array([0, 1, 0, 1])
-        expected = ma.array(arr.data, mask=mask)
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertMaskedArrayEqual(result, expected)
-        self.assertFalse(ma.is_masked(arr))
+    """
+    if lazy_array:
+        array = iris._lazy_data.as_lazy_data(array)
 
-    def test_masked_array_lazy_mask(self):
-        arr = ma.array(range(4))
-        mask = da.from_array([0, 1, 0, 1])
-        expected_computed = ma.array(arr.data, mask=[0, 1, 0, 1])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertTrue(iris._lazy_data.is_lazy_data(result))
-        self.assertMaskedArrayEqual(result.compute(), expected_computed)
+    if lazy_mask:
+        mask = iris._lazy_data.as_lazy_data(mask)
 
-    def test_lazy_array_plain_mask(self):
-        arr = da.from_array(np.arange(4))
-        mask = np.array([0, 1, 0, 1])
-        expected_computed = ma.array(range(4), mask=[0, 1, 0, 1])
-        result = _mask_array(arr, mask, in_place=False)
-        self.assertTrue(iris._lazy_data.is_lazy_data(result))
-        self.assertMaskedArrayEqual(result.compute(), expected_computed)
+    result = _mask_array(array, mask)
+
+    if lazy_array or lazy_mask:
+        assert iris._lazy_data.is_lazy_data(result)
+        result = iris._lazy_data.as_concrete_data(result)
+
+    np.testing.assert_array_equal(expected.mask, result.mask)
+    np.testing.assert_array_equal(expected.compressed(), result.compressed())
 
 
 class Test1DInPlace(tests.IrisTest):
