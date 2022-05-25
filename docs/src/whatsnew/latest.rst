@@ -181,6 +181,10 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ updated the "Load a Time Series of Data From the NEMO Model"
    gallery example. (:pull:`4741`)
 
+#. `@wjbenfold`_ added developer documentation to highlight some of the
+   utilities offered by :class:`iris.IrisTest` and how to update CML and other
+   output files. (:issue:`4544`, :pull:`4600`)
+
 
 💼 Internal
 ===========
