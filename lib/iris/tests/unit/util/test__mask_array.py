@@ -5,10 +5,6 @@
 # licensing details.
 """Test function :func:`iris.util._mask_array"""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -183,4 +179,4 @@ def test_lazy_leading_mask():
 
 
 if __name__ == "__main__":
-    tests.main()
+    pytest.main([__file__])
