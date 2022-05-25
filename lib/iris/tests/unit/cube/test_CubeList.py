@@ -10,9 +10,8 @@
 import iris.tests as tests  # isort:skip
 
 import collections
-from unittest import mock
-
 import copy
+from unittest import mock
 
 from cf_units import Unit
 import numpy as np
@@ -25,14 +24,15 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 import iris.tests.stock
 
-NOT_CUBE_MSG = "Object of type '{}' does not belong in a cubelist."
+NOT_CUBE_MSG = "cannot be put in a cubelist, as it is not a Cube."
+NON_ITERABLE_MSG = "object is not iterable"
 
 
 class Test_append(tests.IrisTest):
     def setUp(self):
         self.cubelist = iris.cube.CubeList()
-        self.cube1 = iris.cube.Cube(1, long_name='foo')
-        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
 
     def test_pass(self):
         self.cubelist.append(self.cube1)
@@ -41,8 +41,7 @@ class Test_append(tests.IrisTest):
         self.assertEqual(self.cubelist[-1], self.cube2)
 
     def test_fail(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     NOT_CUBE_MSG.format('NoneType')):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
             self.cubelist.append(None)
 
 
@@ -94,8 +93,8 @@ class Test_concatenate_cube(tests.IrisTest):
 
 class Test_extend(tests.IrisTest):
     def setUp(self):
-        self.cube1 = iris.cube.Cube(1, long_name='foo')
-        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
         self.cubelist1 = iris.cube.CubeList([self.cube1])
         self.cubelist2 = iris.cube.CubeList([self.cube2])
 
@@ -107,12 +106,11 @@ class Test_extend(tests.IrisTest):
         self.assertEqual(cubelist[-1], self.cube2)
 
     def test_fail(self):
-        with self.assertRaisesRegexp(TypeError, 'Cube is not iterable'):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
             self.cubelist1.extend(self.cube1)
-        msg = "'NoneType' object is not iterable"
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
             self.cubelist1.extend(None)
-        with self.assertRaisesRegexp(ValueError, NOT_CUBE_MSG.format('int')):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
             self.cubelist1.extend(range(3))
 
 
@@ -178,8 +176,8 @@ class Test_extract_overlapping(tests.IrisTest):
 
 class Test_iadd(tests.IrisTest):
     def setUp(self):
-        self.cube1 = iris.cube.Cube(1, long_name='foo')
-        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
         self.cubelist1 = iris.cube.CubeList([self.cube1])
         self.cubelist2 = iris.cube.CubeList([self.cube2])
 
@@ -191,20 +189,18 @@ class Test_iadd(tests.IrisTest):
         self.assertEqual(cubelist[-1], self.cube2)
 
     def test_fail(self):
-        msg = 'Cube is not iterable'
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
             self.cubelist1 += self.cube1
-        msg = "'float' object is not iterable"
-        with self.assertRaisesRegexp(TypeError, msg):
-            self.cubelist1 += 1.
-        with self.assertRaisesRegexp(ValueError, NOT_CUBE_MSG.format('int')):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1 += 1.0
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
             self.cubelist1 += range(3)
 
 
 class Test_insert(tests.IrisTest):
     def setUp(self):
-        self.cube1 = iris.cube.Cube(1, long_name='foo')
-        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
         self.cubelist = iris.cube.CubeList([self.cube1] * 3)
 
     def test_pass(self):
@@ -212,8 +208,7 @@ class Test_insert(tests.IrisTest):
         self.assertEqual(self.cubelist[1], self.cube2)
 
     def test_fail(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     NOT_CUBE_MSG.format('NoneType')):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
             self.cubelist.insert(0, None)
 
 
@@ -363,9 +358,9 @@ class Test_merge__time_triple(tests.IrisTest):
 
 class Test_setitem(tests.IrisTest):
     def setUp(self):
-        self.cube1 = iris.cube.Cube(1, long_name='foo')
-        self.cube2 = iris.cube.Cube(1, long_name='bar')
-        self.cube3 = iris.cube.Cube(1, long_name='boo')
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cube3 = iris.cube.Cube(1, long_name="boo")
         self.cubelist = iris.cube.CubeList([self.cube1] * 3)
 
     def test_pass(self):
@@ -374,20 +369,18 @@ class Test_setitem(tests.IrisTest):
         self.cubelist[:2] = (self.cube2, self.cube3)
         self.assertEqual(
             self.cubelist,
-            iris.cube.CubeList([self.cube2, self.cube3, self.cube1]))
+            iris.cube.CubeList([self.cube2, self.cube3, self.cube1]),
+        )
 
     def test_fail(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     NOT_CUBE_MSG.format('NoneType')):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
             self.cubelist[0] = None
-        with self.assertRaisesRegexp(ValueError,
-                                     NOT_CUBE_MSG.format('NoneType')):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
             self.cubelist[0:2] = [self.cube3, None]
 
-        msg = "can only assign an iterable"
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
             self.cubelist[:1] = 2.5
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
             self.cubelist[:1] = self.cube1
 
 

@@ -152,16 +152,13 @@ class CubeList(list):
 
     """
 
-    def __new__(cls, list_of_cubes=None):
-        """Given a :class:`list` of cubes, return a CubeList instance."""
-        cube_list = list.__new__(cls, list_of_cubes)
-
-        # Check that all items in the incoming list are cubes.
-        if not all([isinstance(cube, Cube) for cube in cube_list]):
-            raise ValueError(
-                "All items in list_of_cubes must be Cube " "instances."
-            )
-        return cube_list
+    def __init__(self, *args, **kwargs):
+        """Given an iterable of cubes, return a CubeList instance."""
+        # Do whatever a list does, to initialise ourself "as a list"
+        super().__init__(*args, **kwargs)
+        # Check that all items in the list are cubes.
+        for cube in self:
+            self._assert_is_cube(cube)
 
     def __str__(self):
         """Runs short :meth:`Cube.summary` on every cube."""
@@ -177,13 +174,16 @@ class CubeList(list):
 
     def __repr__(self):
         """Runs repr on every cube."""
-        return '[%s]' % ',\n'.join([repr(cube) for cube in self])
+        return "[%s]" % ",\n".join([repr(cube) for cube in self])
 
     @staticmethod
     def _assert_is_cube(obj):
-        if not isinstance(obj, Cube):
-            msg = ("Object of type '{}' does not belong in a cubelist.")
-            raise ValueError(msg.format(type(obj).__name__))
+        if not hasattr(obj, "add_aux_coord"):
+            msg = (
+                r"Object {obj} cannot be put in a cubelist, "
+                "as it is not a Cube."
+            )
+            raise ValueError(msg)
 
     # TODO #370 Which operators need overloads?
 
@@ -212,7 +212,7 @@ class CubeList(list):
         """
         Add a sequence of cubes to the cubelist in place.
         """
-        super(CubeList, self).__iadd__(CubeList(other_cubes))
+        return super(CubeList, self).__iadd__(CubeList(other_cubes))
 
     def __setitem__(self, key, cube_or_sequence):
         """Set self[key] to cube or sequence of cubes"""
