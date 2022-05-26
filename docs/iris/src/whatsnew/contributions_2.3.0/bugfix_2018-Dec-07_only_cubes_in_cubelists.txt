@@ -1,3 +1,0 @@
-* The `append`, `extend` and `insert` methods of :class:`iris.cube.CubeList`
-now perform a check to ensure that only :class:`iris.cube.Cube` instances are
-added.
