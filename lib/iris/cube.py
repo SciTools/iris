@@ -152,19 +152,13 @@ class CubeList(list):
 
     """
 
-    def __new__(cls, list_of_cubes=None):
-        """Given a :class:`list` of cubes, return a CubeList instance."""
-        cube_list = list.__new__(cls, list_of_cubes)
-
-        # Check that all items in the incoming list are cubes. Note that this
-        # checking does not guarantee that a CubeList instance *always* has
-        # just cubes in its list as the append & __getitem__ methods have not
-        # been overridden.
-        if not all([isinstance(cube, Cube) for cube in cube_list]):
-            raise ValueError(
-                "All items in list_of_cubes must be Cube " "instances."
-            )
-        return cube_list
+    def __init__(self, *args, **kwargs):
+        """Given an iterable of cubes, return a CubeList instance."""
+        # Do whatever a list does, to initialise ourself "as a list"
+        super().__init__(*args, **kwargs)
+        # Check that all items in the list are cubes.
+        for cube in self:
+            self._assert_is_cube(cube)
 
     def __str__(self):
         """Runs short :meth:`Cube.summary` on every cube."""
@@ -182,13 +176,17 @@ class CubeList(list):
         """Runs repr on every cube."""
         return "[%s]" % ",\n".join([repr(cube) for cube in self])
 
-    def _repr_html_(self):
-        from iris.experimental.representation import CubeListRepresentation
-
-        representer = CubeListRepresentation(self)
-        return representer.repr_html()
+    @staticmethod
+    def _assert_is_cube(obj):
+        if not hasattr(obj, "add_aux_coord"):
+            msg = (
+                r"Object {obj} cannot be put in a cubelist, "
+                "as it is not a Cube."
+            )
+            raise ValueError(msg)
 
     # TODO #370 Which operators need overloads?
+
     def __add__(self, other):
         return CubeList(list.__add__(self, other))
 
@@ -209,6 +207,48 @@ class CubeList(list):
         result = super().__getslice__(start, stop)
         result = CubeList(result)
         return result
+
+    def __iadd__(self, other_cubes):
+        """
+        Add a sequence of cubes to the cubelist in place.
+        """
+        return super(CubeList, self).__iadd__(CubeList(other_cubes))
+
+    def __setitem__(self, key, cube_or_sequence):
+        """Set self[key] to cube or sequence of cubes"""
+        if isinstance(key, int):
+            # should have single cube.
+            self._assert_is_cube(cube_or_sequence)
+        else:
+            # key is a slice (or exception will come from list method).
+            cube_or_sequence = CubeList(cube_or_sequence)
+
+        super(CubeList, self).__setitem__(key, cube_or_sequence)
+
+    def append(self, cube):
+        """
+        Append a cube.
+        """
+        self._assert_is_cube(cube)
+        super(CubeList, self).append(cube)
+
+    def extend(self, other_cubes):
+        """
+        Extend cubelist by appending the cubes contained in other_cubes.
+
+        Args:
+
+        * other_cubes:
+           A cubelist or other sequence of cubes.
+        """
+        super(CubeList, self).extend(CubeList(other_cubes))
+
+    def insert(self, index, cube):
+        """
+        Insert a cube before index.
+        """
+        self._assert_is_cube(cube)
+        super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
