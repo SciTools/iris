@@ -64,6 +64,9 @@ This document explains the changes made to Iris for this release
    preserving the time of year. (:issue:`1422`, :issue:`4098`, :issue:`4665`,
    :pull:`4723`)
 
+#. `@wjbenfold`_ implemented the :class:`~iris.coord_systems.PolarStereographic`
+   CRS. (:issue:`4770`, :pull:`4773`)
+
 
 🐛 Bugs Fixed
 =============
