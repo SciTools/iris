@@ -528,6 +528,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "        longitude                         -               x",
             "    Auxiliary coordinates:",
             "        mesh_face_aux                     -               x",
+            "    Mesh:",
+            "        name                        unknown",
+            "        location                    face",
         ]
         self.assertEqual(rep, expected)
 

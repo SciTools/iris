@@ -132,7 +132,7 @@ class VectorSummary(CoordSummary):
             self.extra = ""
 
 
-class ScalarSummary(CoordSummary):
+class ScalarCoordSummary(CoordSummary):
     def __init__(self, cube, coord):
         self.name = coord.name()
         if (
@@ -188,10 +188,12 @@ class VectorSection(Section):
         ]
 
 
-class ScalarSection(Section):
+class ScalarCoordSection(Section):
     def __init__(self, title, cube, scalars):
         self.title = title
-        self.contents = [ScalarSummary(cube, scalar) for scalar in scalars]
+        self.contents = [
+            ScalarCoordSummary(cube, scalar) for scalar in scalars
+        ]
 
 
 class ScalarCellMeasureSection(Section):
@@ -213,6 +215,25 @@ class AttributeSection(Section):
             self.values.append(value)
             content = "{}: {}".format(name, value)
             self.contents.append(content)
+
+
+class ScalarMeshSection(AttributeSection):
+    # This happens to behave just like an attribute sections, but it
+    # initialises direct from the cube.
+    def __init__(self, title, cube):
+        self.title = title
+        self.names = []
+        self.values = []
+        self.contents = []
+        if cube.mesh is not None:
+            self.names.extend(["name", "location"])
+            self.values.extend([cube.mesh.name(), cube.location])
+            self.contents.extend(
+                [
+                    "{}: {}".format(name, value)
+                    for name, value in zip(self.names, self.values)
+                ]
+            )
 
 
 class CellMethodSection(Section):
@@ -322,8 +343,10 @@ class CubeSummary:
         def add_scalar_section(section_class, title, *args):
             self.scalar_sections[title] = section_class(title, *args)
 
+        add_scalar_section(ScalarMeshSection, "Mesh:", cube)
+
         add_scalar_section(
-            ScalarSection, "Scalar coordinates:", cube, scalar_coords
+            ScalarCoordSection, "Scalar coordinates:", cube, scalar_coords
         )
         add_scalar_section(
             ScalarCellMeasureSection,
