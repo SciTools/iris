@@ -1069,7 +1069,7 @@ class Stereographic(CoordSystem):
         Parameters
         ----------
 
-        central_lat : {90, -90}
+        central_lat : float
             The latitude of the pole.
 
         central_lon : float
