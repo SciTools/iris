@@ -405,6 +405,9 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
             Mesh coordinates:
                 latitude                        x          -
                 longitude                       x          -
+            Mesh:
+                name                        my_mesh
+                location                    edge
 
         >>> print(edge_cube.location)
         edge
