@@ -2709,26 +2709,23 @@ class Saver:
 
                 # stereo
                 elif isinstance(cs, iris.coord_systems.Stereographic):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = cs.central_lon
+                    cf_var_grid.latitude_of_projection_origin = cs.central_lat
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    # Only one of these should be set
                     if cs.true_scale_lat is not None:
-                        warnings.warn(
-                            "Stereographic coordinate systems with "
-                            "true scale latitude specified are not "
-                            "yet handled"
+                        cf_var_grid.true_scale_lat = cs.true_scale_lat
+                    elif cs.scale_factor_at_projection_origin is not None:
+                        cf_var_grid.scale_factor_at_projection_origin = (
+                            cs.scale_factor_at_projection_origin
                         )
                     else:
-                        if cs.ellipsoid:
-                            add_ellipsoid(cs.ellipsoid)
-                        cf_var_grid.longitude_of_projection_origin = (
-                            cs.central_lon
+                        cf_var_grid.scale_factor_at_projection_origin = (
+                            1.0  # TODO: Is this right?
                         )
-                        cf_var_grid.latitude_of_projection_origin = (
-                            cs.central_lat
-                        )
-                        cf_var_grid.false_easting = cs.false_easting
-                        cf_var_grid.false_northing = cs.false_northing
-                        # The Stereographic class has an implicit scale
-                        # factor
-                        cf_var_grid.scale_factor_at_projection_origin = 1.0
 
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
