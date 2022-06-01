@@ -221,6 +221,8 @@ Release Steps
 
    * Use ``git`` to rename ``docs/src/whatsnew/latest.rst`` to the release
      version file ``v1.9.rst``
+   * Update ``docs/src/whatsnews/whatsnew.rst`` to rename ``latest.rst`` in the
+     include statement and toctree.
    * Use ``git`` to delete the ``docs/src/whatsnew/latest.rst.template`` file
    * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
      Note that, the Iris version and release date are updated automatically
@@ -255,9 +257,8 @@ Post Release Steps
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
    see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
-#. Make a new `latest.rst` from `latest.rst.template` and remove the `..
-   _iris_whatsnew` from the top of the what's new for the release that has just
-   happened.
+#. Make a new `latest.rst` from `latest.rst.template` and update the include
+   statement and the toctree in `whatsnew.rst` to point at the new `latest.rst`.
 #. Merge back to ``main``
 
 
