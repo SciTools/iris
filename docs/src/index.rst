@@ -144,6 +144,6 @@ The legacy support resources:
    :name: whats_new_index
    :hidden:
 
-   What's New in Iris <whatsnew/latest>
+   whatsnew/whatsnew
 
 .. todolist::
