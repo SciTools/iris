@@ -379,6 +379,46 @@ class Test__make_content(tests.IrisTest):
             self.assertNotIn(heading, self.result)
 
 
+class Test__make_content__string_attrs(tests.IrisTest):
+    # Check how we handle "multi-line" string attributes.
+    # NOTE: before the adoption of iris._representation.CubeSummary, these
+    # used to appear as extra items in sections_data, identifiable by
+    # their not containing a ":", and which required to be combined into a
+    # single cell.
+    # This case no longer occurs.  For now, just snapshot some current
+    # 'correct' behaviours, for change security and any future refactoring.
+
+    @staticmethod
+    def _cube_stringattribute_html(name, attr):
+        cube = Cube([0])
+        cube.attributes[name] = attr
+        representer = CubeRepresentation(cube)
+        representer._get_bits(representer._get_lines())
+        result = representer._make_content()
+        return result
+
+    def test_simple_string_attribute(self):
+        html = self._cube_stringattribute_html(
+            "single-string", "single string"
+        )
+        self.assertString(html)
+
+    def test_long_string_attribute(self):
+        attr = "long string.. " * 20
+        html = self._cube_stringattribute_html("long-string", attr)
+        self.assertString(html)
+
+    def test_embedded_newlines_string_attribute(self):
+        attr = "string\nwith\nnewlines"
+        html = self._cube_stringattribute_html("newlines-string", attr)
+        self.assertString(html)
+
+    def test_multi_string_attribute(self):
+        attr = ["vector", "of", "strings"]
+        html = self._cube_stringattribute_html("multi-string", attr)
+        self.assertString(html)
+
+
 @tests.skip_data
 class Test_repr_html(tests.IrisTest):
     def setUp(self):
