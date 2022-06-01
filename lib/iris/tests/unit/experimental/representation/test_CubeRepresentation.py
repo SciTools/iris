@@ -31,7 +31,7 @@ class Test__instantiation(tests.IrisTest):
         self.assertStringEqual(str(self.cube), self.representer.cube_str)
 
     def test__heading_contents(self):
-        content = set(self.representer.str_headings.values())
+        content = set(self.representer.sections_data.values())
         self.assertEqual(len(content), 1)
         self.assertIsNone(list(content)[0])
 
@@ -131,21 +131,21 @@ class Test__get_bits(tests.IrisTest):
     def test_population(self):
         nonmesh_values = [
             value
-            for key, value in self.representer.str_headings.items()
+            for key, value in self.representer.sections_data.items()
             if "Mesh" not in key
         ]
         for v in nonmesh_values:
             self.assertIsNotNone(v)
 
     def test_headings__dimcoords(self):
-        contents = self.representer.str_headings["Dimension coordinates:"]
+        contents = self.representer.sections_data["Dimension coordinates:"]
         content_str = ",".join(content for content in contents)
         dim_coords = [c.name() for c in self.cube.dim_coords]
         for coord in dim_coords:
             self.assertIn(coord, content_str)
 
     def test_headings__auxcoords(self):
-        contents = self.representer.str_headings["Auxiliary coordinates:"]
+        contents = self.representer.sections_data["Auxiliary coordinates:"]
         content_str = ",".join(content for content in contents)
         aux_coords = [
             c.name() for c in self.cube.aux_coords if c.shape != (1,)
@@ -154,14 +154,14 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(coord, content_str)
 
     def test_headings__derivedcoords(self):
-        contents = self.representer.str_headings["Derived coordinates:"]
+        contents = self.representer.sections_data["Derived coordinates:"]
         content_str = ",".join(content for content in contents)
         derived_coords = [c.name() for c in self.cube.derived_coords]
         for coord in derived_coords:
             self.assertIn(coord, content_str)
 
     def test_headings__cellmeasures(self):
-        contents = self.representer.str_headings["Cell measures:"]
+        contents = self.representer.sections_data["Cell measures:"]
         content_str = ",".join(content for content in contents)
         cell_measures = [
             c.name() for c in self.cube.cell_measures() if c.shape != (1,)
@@ -170,7 +170,7 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(coord, content_str)
 
     def test_headings__ancillaryvars(self):
-        contents = self.representer.str_headings["Ancillary variables:"]
+        contents = self.representer.sections_data["Ancillary variables:"]
         content_str = ",".join(content for content in contents)
         ancillary_variables = [
             c.name() for c in self.cube.ancillary_variables()
@@ -179,7 +179,7 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(coord, content_str)
 
     def test_headings__scalarcellmeasures(self):
-        contents = self.representer.str_headings["Scalar cell measures:"]
+        contents = self.representer.sections_data["Scalar cell measures:"]
         content_str = ",".join(content for content in contents)
         scalar_cell_measures = [
             c.name() for c in self.cube.cell_measures() if c.shape == (1,)
@@ -188,7 +188,7 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(coord, content_str)
 
     def test_headings__scalarcoords(self):
-        contents = self.representer.str_headings["Scalar coordinates:"]
+        contents = self.representer.sections_data["Scalar coordinates:"]
         content_str = ",".join(content for content in contents)
         scalar_coords = [
             c.name() for c in self.cube.coords() if c.shape == (1,)
@@ -197,14 +197,14 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(coord, content_str)
 
     def test_headings__attributes(self):
-        contents = self.representer.str_headings["Attributes:"]
+        contents = self.representer.sections_data["Attributes:"]
         content_str = ",".join(content for content in contents)
         for attr_name, attr_value in self.cube.attributes.items():
             self.assertIn(attr_name, content_str)
             self.assertIn(attr_value, content_str)
 
     def test_headings__cellmethods(self):
-        contents = self.representer.str_headings["Cell methods:"]
+        contents = self.representer.sections_data["Cell methods:"]
         content_str = ",".join(content for content in contents)
         for method in self.cube.cell_methods:
             name = method.method
@@ -329,22 +329,6 @@ class Test__make_row(tests.IrisTest):
 
 
 @tests.skip_data
-class Test__expand_last_cell(tests.IrisTest):
-    def setUp(self):
-        self.cube = stock.simple_3d()
-        self.representer = CubeRepresentation(self.cube)
-        self.representer._get_bits(self.representer._get_lines())
-        col_span = self.representer.ndims
-        self.row = self.representer._make_row(
-            "title", body="first", col_span=col_span
-        )
-
-    def test_add_line(self):
-        cell = self.representer._expand_last_cell(self.row[-2], "second")
-        self.assertIn("first<br>second", cell)
-
-
-@tests.skip_data
 class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
@@ -372,7 +356,7 @@ class Test__make_content(tests.IrisTest):
 
     def test_not_included(self):
         # `stock.simple_3d()` only contains the `Dimension coordinates` attr.
-        not_included = list(self.representer.str_headings.keys())
+        not_included = list(self.representer.sections_data.keys())
         not_included.pop(not_included.index("Dimension coordinates:"))
         for heading in not_included:
             self.assertNotIn(heading, self.result)
@@ -389,7 +373,7 @@ class Test__make_content(tests.IrisTest):
 
     def test_mesh_not_included(self):
         # self.mesh_cube _only_ contains a `Mesh coordinates` section.
-        not_included = list(self.representer.str_headings.keys())
+        not_included = list(self.representer.sections_data.keys())
         not_included.pop(not_included.index("Mesh coordinates:"))
         for heading in not_included:
             self.assertNotIn(heading, self.result)
