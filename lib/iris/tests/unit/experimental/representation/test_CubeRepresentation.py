@@ -363,8 +363,9 @@ class Test__make_content(tests.IrisTest):
 
     def test_mesh_included(self):
         # self.mesh_cube contains a `Mesh coordinates` section.
-        included = "Mesh coordinates"
-        self.assertIn(included, self.mesh_result)
+        self.assertIn(">Mesh coordinates<", self.mesh_result)
+        # and a `Mesh:` section.
+        self.assertIn(">Mesh<", self.mesh_result)
         mesh_coord_names = [
             c.name() for c in self.mesh_cube.coords(mesh_coords=True)
         ]
@@ -377,6 +378,10 @@ class Test__make_content(tests.IrisTest):
         not_included.pop(not_included.index("Mesh coordinates:"))
         for heading in not_included:
             self.assertNotIn(heading, self.result)
+
+    def test_mesh_result(self):
+        # A plain snapshot of a simple meshcube case.
+        self.assertString(self.mesh_result)
 
 
 class Test__make_content__string_attrs(tests.IrisTest):

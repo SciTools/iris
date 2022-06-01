@@ -98,6 +98,7 @@ class CubeRepresentation:
             "Ancillary variables:",
         ]
         self.scalar_section_names = [
+            "Mesh:",
             "Scalar coordinates:",
             "Scalar cell measures:",
             "Cell methods:",
