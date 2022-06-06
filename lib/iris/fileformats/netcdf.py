@@ -2703,9 +2703,7 @@ class Saver:
                             cs.scale_factor_at_projection_origin
                         )
                     else:
-                        cf_var_grid.scale_factor_at_projection_origin = (
-                            1.0  # TODO: Is this right?
-                        )
+                        cf_var_grid.scale_factor_at_projection_origin = 1.0
 
                 # stereo
                 elif isinstance(cs, iris.coord_systems.Stereographic):
@@ -2717,15 +2715,17 @@ class Saver:
                     cf_var_grid.false_northing = cs.false_northing
                     # Only one of these should be set
                     if cs.true_scale_lat is not None:
-                        cf_var_grid.true_scale_lat = cs.true_scale_lat
+                        msg = (
+                            "It is not valid CF to save a true_scale_lat for "
+                            "a Stereographic grid mapping."
+                        )
+                        raise ValueError(msg)
                     elif cs.scale_factor_at_projection_origin is not None:
                         cf_var_grid.scale_factor_at_projection_origin = (
                             cs.scale_factor_at_projection_origin
                         )
                     else:
-                        cf_var_grid.scale_factor_at_projection_origin = (
-                            1.0  # TODO: Is this right?
-                        )
+                        cf_var_grid.scale_factor_at_projection_origin = 1.0
 
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):

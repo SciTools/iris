@@ -1212,8 +1212,8 @@ class PolarStereographic(Stereographic):
 
         Notes
         -----
-        It is only valid to provide one of `true_scale_lat` and `scale_factor_at_projection_origin`.
-        TODO: What if you give neither?
+        It is only valid to provide at most one of `true_scale_lat` and
+        `scale_factor_at_projection_origin`.
 
 
         """
