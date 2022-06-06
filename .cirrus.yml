@@ -26,11 +26,11 @@ env:
   # Maximum cache period (in weeks) before forcing a new cache upload.
   CACHE_PERIOD: "2"
   # Increment the build number to force new cartopy cache upload.
-  CARTOPY_CACHE_BUILD: "0"
+  CARTOPY_CACHE_BUILD: "3"
   # Increment the build number to force new conda cache upload.
   CONDA_CACHE_BUILD: "0"
   # Increment the build number to force new nox cache upload.
-  NOX_CACHE_BUILD: "0"
+  NOX_CACHE_BUILD: "2"
   # Increment the build number to force new pip cache upload.
   PIP_CACHE_BUILD: "0"
   # Pip packages to be upgraded/installed.
@@ -38,7 +38,7 @@ env:
   # Conda packages to be installed.
   CONDA_CACHE_PACKAGES: "nox pip"
   # Git commit hash for iris test data.
-  IRIS_TEST_DATA_VERSION: "2.0.0"
+  IRIS_TEST_DATA_VERSION: "2.8"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
 
@@ -60,7 +60,6 @@ linux_task_template: &LINUX_TASK_TEMPLATE
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CONDA_CACHE_BUILD}"
       - uname -r
     populate_script:
-      - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
       - bash miniconda.sh -b -p ${HOME}/miniconda
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
@@ -72,6 +71,14 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     fingerprint_script:
       - echo "${CIRRUS_OS}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CARTOPY_CACHE_BUILD}"
+    populate_script:
+      - conda create --quiet --name cartopy-cache cartopy
+      - source ${HOME}/miniconda/etc/profile.d/conda.sh >/dev/null 2>&1
+      - conda activate cartopy-cache >/dev/null 2>&1
+      - cd $(mktemp -d)
+      - wget --quiet https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
+      - python cartopy_feature_download.py physical --output ${HOME}/.local/share/cartopy --no-warn
+      - conda deactivate >/dev/null 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
     reupload_on_changes: true
@@ -134,8 +141,6 @@ task:
   << : *CREDITS_TEMPLATE
   matrix:
     env:
-      PY_VER: 3.7
-    env:
       PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests"
   container:
@@ -145,7 +150,6 @@ task:
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
@@ -166,7 +170,6 @@ task:
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
@@ -189,7 +192,6 @@ task:
   name: "${CIRRUS_OS}: py${PY_VER} link check"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}

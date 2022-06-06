@@ -591,7 +591,7 @@ def _fixup_dates(coord, values):
             r = [datetime.datetime(*date) for date in dates]
         else:
             try:
-                import nc_time_axis
+                import nc_time_axis  # noqa: F401
             except ImportError:
                 msg = (
                     "Cannot plot against time in a non-gregorian "
@@ -603,12 +603,10 @@ def _fixup_dates(coord, values):
                 raise IrisError(msg)
 
             r = [
-                nc_time_axis.CalendarDateTime(
-                    cftime.datetime(*date, calendar=coord.units.calendar),
-                    coord.units.calendar,
-                )
+                cftime.datetime(*date, calendar=coord.units.calendar)
                 for date in dates
             ]
+
         values = np.empty(len(r), dtype=object)
         values[:] = r
     return values
@@ -654,13 +652,13 @@ def _get_plot_objects(args):
         u_object, v_object = args[:2]
         u, v = _uv_from_u_object_v_object(u_object, v_object)
         args = args[2:]
-        if len(u) != len(v):
+        if u.size != v.size:
             msg = (
                 "The x and y-axis objects are not compatible. They should "
                 "have equal sizes but got ({}: {}) and ({}: {})."
             )
             raise ValueError(
-                msg.format(u_object.name(), len(u), v_object.name(), len(v))
+                msg.format(u_object.name(), u.size, v_object.name(), v.size)
             )
     else:
         # single argument
@@ -675,7 +673,7 @@ def _get_plot_objects(args):
         if (
             isinstance(v_object, iris.cube.Cube)
             and isinstance(u_object, iris.coords.Coord)
-            and iris.util.guess_coord_axis(u_object) in ["Y", "Z"]
+            and iris.util.guess_coord_axis(u_object) == "Z"
         ):
             u_object, v_object = v_object, u_object
             u, v = v, u
@@ -845,7 +843,9 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
                 ylabel=ax.get_ylabel(),
             )
         else:
+            position = ax.get_position(original=True)
             _ = fig.add_axes(
+                position,
                 projection=cartopy_proj,
                 title=ax.get_title(),
                 xlabel=ax.get_xlabel(),
@@ -858,9 +858,9 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
 
 def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     """
-    Replace the current non-cartopy axes with :class:`cartopy.mpl.GeoAxes`
-    and return the appropriate kwargs dict based on the provided coordinates
-    and kwargs.
+    Replace the current non-cartopy axes with
+    :class:`cartopy.mpl.geoaxes.GeoAxes` and return the appropriate kwargs dict
+    based on the provided coordinates and kwargs.
 
     """
     # Determine projection.
@@ -874,7 +874,7 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     else:
         cartopy_proj = ccrs.PlateCarree()
 
-    # Ensure the current axes are a cartopy.mpl.GeoAxes instance.
+    # Ensure the current axes are a cartopy.mpl.geoaxes.GeoAxes instance.
     axes = kwargs.get("axes")
     if axes is None:
         if (
@@ -978,16 +978,28 @@ def _map_common(
     # is useful in anywhere other than this plotting routine, it may be better
     # placed in the CS.
     if getattr(x_coord, "circular", False):
+        original_length = y.shape[1]
         _, direction = iris.util.monotonic(
             x_coord.points, return_direction=True
         )
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
-        if "_v_data" in kwargs:
-            v_data = kwargs["_v_data"]
-            v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
-            kwargs["_v_data"] = v_data
+
+        # Having extended the data, we also need to extend extra kwargs for
+        # matplotlib (e.g. point colours)
+        for key, val in kwargs.items():
+            try:
+                val_arr = np.array(val)
+            except TypeError:
+                continue
+            if val_arr.ndim >= 2 and val_arr.shape[1] == original_length:
+                # Concatenate the first column to the end of the data then
+                # update kwargs
+                val_arr = ma.concatenate(
+                    [val_arr, val_arr[:, 0:1, ...]], axis=1
+                )
+                kwargs[key] = val_arr
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
@@ -1088,17 +1100,6 @@ def contourf(cube, *args, **kwargs):
             # any boundary shift.
             zorder = result.collections[0].zorder - 0.1
             axes = kwargs.get("axes", None)
-
-            # Workaround for cartopy#1780.  We do not want contour to shrink
-            # extent.
-            if axes is None:
-                _axes = plt.gca()
-            else:
-                _axes = axes
-
-            # Subsequent calls to dataLim.update_from_data_xy should not ignore
-            # current extent.
-            _axes.dataLim.ignore(False)
 
             contour(
                 cube,
@@ -1441,7 +1442,8 @@ def barbs(u_cube, v_cube, *args, **kwargs):
         :func:`iris.analysis.cartography.rotate_grid_vectors`.
         To transform coordinate grid points, you will need to create
         2-dimensional arrays of x and y values.  These can be transformed with
-        :meth:`cartopy.crs.CRS.transform_points`.
+        the :meth:`~cartopy.crs.CRS.transform_points` method of
+        :class:`cartopy.crs.CRS`.
 
     Kwargs:
 
@@ -1489,7 +1491,8 @@ def quiver(u_cube, v_cube, *args, **kwargs):
         :func:`iris.analysis.cartography.rotate_grid_vectors`.
         To transform coordinate grid points, you will need to create
         2-dimensional arrays of x and y values.  These can be transformed with
-        :meth:`cartopy.crs.CRS.transform_points`.
+        the :meth:`~cartopy.crs.CRS.transform_points` method of
+        :class:`cartopy.crs.CRS`.
 
     Kwargs:
 

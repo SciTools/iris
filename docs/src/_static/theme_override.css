@@ -1,33 +1,10 @@
 /* import the standard theme css */
 @import url("css/theme.css"); 
 
-/* now we can add custom any css */
-
-/* set the width of the logo */
-.wy-side-nav-search>a img.logo,
-.wy-side-nav-search .wy-dropdown>a img.logo {
-  width: 12rem
-}
-
-/* color of the logo background in the top left corner */
-.wy-side-nav-search {
-  background-color: lightgray;
-}
-
-/* color of the font for the version in the top left corner */
-.wy-side-nav-search>div.version {
-  color: black;
-  font-weight: bold;
-}
-
-/* Ensures tables do now have width scroll bars */
-table.docutils td {
-    white-space: unset;
-    word-wrap: break-word;
-}
+/* now we can add custom css.... */
 
 /* Used for very strong warning */
-#slim-red-box-message {
+#slim-red-box-banner {
   background: #ff0000;
   box-sizing: border-box;
   color: #ffffff;
@@ -35,8 +12,17 @@ table.docutils td {
   padding: 0.5em;
 }
 
-#slim-red-box-message a {
+#slim-red-box-banner a {
   color: #ffffff;
-  font-weight: normal;  
-  text-decoration:underline;
+  font-weight: normal;
+  text-decoration: underline;
+}
+
+/* bullet point list with green ticks */
+ul.squarelist {
+  /* https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type */
+  list-style-type: "\2705";
+  margin-left: 0;
+  text-indent: 1em;
+  padding-left: 5em;
 }

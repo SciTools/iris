@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" long_name="soil_temperature" units="K" var_name="soil_temperature">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="21600 s"/>
+      <attribute name="name" value="lfric_ngvat_3D_soil_pseudo_levels_1t_face_half_levels_main_soil_temperature"/>
+      <attribute name="online_operation" value="instant"/>
+      <attribute name="timeStamp" value="2020-Oct-18 21:20:18 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="bcb9d574-1c71-40bc-99a2-67ae2ba08e18"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <meshCoord bounds="[[28.4835, 31.3314, 38.4268, 35.2644],
+		[31.3314, 33.605, 40.8934, 38.4268],
+		[33.605, 35.3335, 42.7342, 40.8934],
+		..., 
+		[-42.7342, -40.8934, -46.161, -48.912],
+		[-40.8934, -38.4268, -42.6612, -46.161],
+		[-38.4268, -35.2644, -38.4268, -42.6612]]" id="21594c35" long_name="Latitude of mesh nodes." points="[33.4328, 36.1226, 38.2012, ..., -44.791,
+		-42.1583, -38.815]" shape="(864,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[2]">
+        <meshCoord bounds="[[-45.0, -37.5, -37.5, -45.0],
+		[-37.5, -30.0, -30.0, -37.5],
+		[-30.0, -22.5, -22.5, -30.0],
+		..., 
+		[-112.5, -120.0, -126.958, -118.361],
+		[-120.0, -127.5, -135.0, -126.958],
+		[-127.5, -135.0, -142.5, -135.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[-41.3152, -33.8068, -26.296, ..., -119.377,
+		-127.321, -135.0]" shape="(864,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[21600.0, 21600.0]]" id="17a27d05" long_name="Time axis" points="[21600.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='gregorian')" value_type="float64" var_name="time_instant">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="point">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x987cd39b" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 4, 864)"/>
+  </cube>
+</cubes>

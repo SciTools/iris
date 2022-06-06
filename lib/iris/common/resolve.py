@@ -13,7 +13,9 @@ auto-transposed, and with the appropriate broadcast shape.
 
 from collections import namedtuple
 from collections.abc import Iterable
+from dataclasses import dataclass
 import logging
+from typing import Any
 
 from dask.array.core import broadcast_shapes
 import numpy as np
@@ -56,10 +58,42 @@ _Item = namedtuple("Item", ["metadata", "coord", "dims"])
 
 _PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
 
-_PreparedItem = namedtuple(
-    "PreparedItem",
-    ["metadata", "points", "bounds", "dims", "container"],
-)
+
+@dataclass
+class _PreparedItem:
+    metadata: Any
+    points: Any
+    bounds: Any
+    dims: Any
+    container: Any
+    mesh: Any = None
+    location: Any = None
+    axis: Any = None
+
+    def create_coord(self, metadata):
+        from iris.experimental.ugrid.mesh import MeshCoord
+
+        if issubclass(self.container, MeshCoord):
+            # Make a MeshCoord, for which we have mesh/location/axis.
+            result = MeshCoord(
+                mesh=self.mesh,
+                location=self.location,
+                axis=self.axis,
+            )
+            # Note: in this case we do also have "prepared metadata", but we
+            # do *not* assign it as we do for an 'ordinary' Coord.
+            # Instead, MeshCoord name/units/attributes are immutable, and set at
+            # create time to those of the underlying mesh node coordinate.
+            # cf https://github.com/SciTools/iris/issues/4670
+
+        else:
+            # make a regular coord, for which we have points/bounds/metadata.
+            result = self.container(self.points, bounds=self.bounds)
+            # Also assign prepared metadata.
+            result.metadata = metadata
+
+        return result
+
 
 _PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
 
@@ -112,10 +146,10 @@ class Resolve:
             Cell methods:
                 mean                        time (6 hour)
             Attributes:
-                Conventions                 CF-1.5
-                Model scenario              A1B
+                Conventions                 'CF-1.5'
+                Model scenario              'A1B'
                 STASH                       m01s03i236
-                source                      Data from Met Office Unified Model 6.05
+                source                      'Data from Met Office Unified Model 6.05'
 
         >>> print(cube2)
         air_temperature / (K)               (longitude: 49; latitude: 37)
@@ -130,10 +164,10 @@ class Resolve:
             Cell methods:
                 mean                        time (6 hour)
             Attributes:
-                Conventions                 CF-1.5
-                Model scenario              E1
+                Conventions                 'CF-1.5'
+                Model scenario              'E1'
                 STASH                       m01s03i236
-                source                      Data from Met Office Unified Model 6.05
+                source                      'Data from Met Office Unified Model 6.05'
 
         >>> print(data.shape)
         (240, 37, 49)
@@ -153,9 +187,9 @@ class Resolve:
             Cell methods:
                 mean                        time (6 hour)
             Attributes:
-                Conventions                 CF-1.5
+                Conventions                 'CF-1.5'
                 STASH                       m01s03i236
-                source                      Data from Met Office Unified Model 6.05
+                source                      'Data from Met Office Unified Model 6.05'
 
     Secondly, creating an *empty* ``resolver`` instance, that may be called *multiple*
     times with *different* :class:`~iris.cube.Cube` operands and *different* ``data``,
@@ -646,7 +680,13 @@ class Resolve:
 
     @staticmethod
     def _create_prepared_item(
-        coord, dims, src_metadata=None, tgt_metadata=None
+        coord,
+        dims,
+        src_metadata=None,
+        tgt_metadata=None,
+        points=None,
+        bounds=None,
+        container=None,
     ):
         """
         Convenience method that creates a :class:`~iris.common.resolve._PreparedItem`
@@ -658,8 +698,10 @@ class Resolve:
         * coord:
             The coordinate with the ``points`` and ``bounds`` to be extracted.
 
-        * dims:
-            The dimensions that the ``coord`` spans on the resulting resolved :class:`~iris.cube.Cube`.
+        * dims (int or tuple):
+            The dimensions that the ``coord`` spans on the resulting resolved
+            :class:`~iris.cube.Cube`.
+            (Can also be a single dimension number).
 
         * src_metadata:
             The coordinate metadata from the ``src`` :class:`~iris.cube.Cube`.
@@ -667,26 +709,85 @@ class Resolve:
         * tgt_metadata:
             The coordinate metadata from the ``tgt`` :class:`~iris.cube.Cube`.
 
+        * points:
+            Override points array.  When not given, use coord.points.
+
+        * bounds:
+            Override bounds array.  When not given, use coord.bounds.
+
+        * container:
+            Override coord type (class constructor).
+            When not given, use type(coord).
+
         Returns:
             The :class:`~iris.common.resolve._PreparedItem`.
 
+        .. note::
+
+            If container or type(coord) is DimCoord/AuxCoord (i.e. not
+            MeshCoord), then points+bounds define the built AuxCoord/DimCoord.
+            Theses points+bounds come either from those args, or the 'coord'.
+            Alternatively, when container or type(coord) is MeshCoord, then
+            points==bounds==None and the preparted item contains
+            mesh/location/axis properties for the resulting MeshCoord.
+            These don't have override args: they *always* come from 'coord'.
+
         """
+        if not isinstance(dims, Iterable):
+            dims = (dims,)
+
         if src_metadata is not None and tgt_metadata is not None:
             combined = src_metadata.combine(tgt_metadata)
         else:
             combined = src_metadata or tgt_metadata
-        if not isinstance(dims, Iterable):
-            dims = (dims,)
         prepared_metadata = _PreparedMetadata(
             combined=combined, src=src_metadata, tgt=tgt_metadata
         )
-        bounds = coord.bounds
+
+        if container is None:
+            container = type(coord)
+
+        from iris.experimental.ugrid.mesh import MeshCoord
+
+        if issubclass(container, MeshCoord):
+            # Build a prepared-item to make a MeshCoord.
+            # This case does *NOT* use points + bounds, so alternatives to the
+            # coord content should not have been specified by the caller.
+            assert points is None and bounds is None
+            mesh = coord.mesh
+            location = coord.location
+            axis = coord.axis
+
+        else:
+            # Build a prepared-item to make a DimCoord or AuxCoord.
+
+            # mesh/location/axis are not used.
+            mesh = None
+            location = None
+            axis = None
+
+            # points + bounds default to those from the coordinate, but
+            # alternative values may be specified.
+            if points is None:
+                points = coord.points
+                bounds = coord.bounds
+            # 'ELSE' points was passed: both points+bounds come from the args
+
+            # Always *copy* points+bounds, to avoid any possible direct (shared)
+            # references to existing coord arrays.
+            points = points.copy()
+            if bounds is not None:
+                bounds = bounds.copy()
+
         result = _PreparedItem(
             metadata=prepared_metadata,
-            points=coord.points.copy(),
-            bounds=bounds if bounds is None else bounds.copy(),
             dims=dims,
-            container=type(coord),
+            points=points,
+            bounds=bounds,
+            mesh=mesh,
+            location=location,
+            axis=axis,
+            container=container,
         )
         return result
 
@@ -1422,30 +1523,64 @@ class Resolve:
                 (tgt_item,) = tgt_items
                 src_coord = src_item.coord
                 tgt_coord = tgt_item.coord
-                points, bounds = self._prepare_points_and_bounds(
-                    src_coord,
-                    tgt_coord,
-                    src_item.dims,
-                    tgt_item.dims,
-                    ignore_mismatch=ignore_mismatch,
-                )
-                if points is not None:
-                    src_type = type(src_coord)
-                    tgt_type = type(tgt_coord)
-                    # Downcast to aux if there are mixed container types.
-                    container = src_type if src_type is tgt_type else AuxCoord
-                    prepared_metadata = _PreparedMetadata(
-                        combined=src_metadata.combine(tgt_item.metadata),
-                        src=src_metadata,
-                        tgt=tgt_item.metadata,
+
+                prepared_item = None
+                src_is_mesh, tgt_is_mesh = [
+                    hasattr(coord, "mesh") for coord in (src_coord, tgt_coord)
+                ]
+                if src_is_mesh and tgt_is_mesh:
+                    # MeshCoords are a bit "special" ...
+                    # In this case, we may need to produce an alternative form
+                    # to the 'ordinary' _PreparedItem
+                    # However, this only works if they have identical meshes..
+                    if src_coord == tgt_coord:
+                        prepared_item = self._create_prepared_item(
+                            src_coord,
+                            tgt_item.dims,
+                            src_metadata=src_metadata,
+                            tgt_metadata=tgt_item.metadata,
+                        )
+                    else:
+                        emsg = (
+                            f"Mesh coordinate {src_coord.name()!r} does not match between the "
+                            f"LHS cube {self.lhs_cube.name()!r} and "
+                            f"RHS cube {self.rhs_cube.name()!r}."
+                        )
+                        raise ValueError(emsg)
+
+                if prepared_item is None:
+                    # Make a "normal" _PreparedItem, which is specified using
+                    # points + bounds arrays.
+                    # First, convert any un-matching MeshCoords to AuxCoord
+                    if src_is_mesh:
+                        src_coord = AuxCoord.from_coord(src_coord)
+                    if tgt_is_mesh:
+                        tgt_coord = AuxCoord.from_coord(tgt_coord)
+                    points, bounds = self._prepare_points_and_bounds(
+                        src_coord,
+                        tgt_coord,
+                        src_item.dims,
+                        tgt_item.dims,
+                        ignore_mismatch=ignore_mismatch,
                     )
-                    prepared_item = _PreparedItem(
-                        metadata=prepared_metadata,
-                        points=points.copy(),
-                        bounds=bounds if bounds is None else bounds.copy(),
-                        dims=tgt_item.dims,
-                        container=container,
-                    )
+                    if points is not None:
+                        src_type = type(src_coord)
+                        tgt_type = type(tgt_coord)
+                        # Downcast to aux if there are mixed container types.
+                        container = (
+                            src_type if src_type is tgt_type else AuxCoord
+                        )
+                        prepared_item = self._create_prepared_item(
+                            src_coord,
+                            tgt_item.dims,
+                            src_metadata=src_metadata,
+                            tgt_metadata=tgt_item.metadata,
+                            points=points,
+                            bounds=bounds,
+                            container=container,
+                        )
+
+                if prepared_item is not None:
                     prepared_items.append(prepared_item)
 
     def _prepare_common_dim_payload(
@@ -1499,16 +1634,13 @@ class Resolve:
             )
 
             if points is not None:
-                prepared_metadata = _PreparedMetadata(
-                    combined=src_metadata.combine(tgt_metadata),
-                    src=src_metadata,
-                    tgt=tgt_metadata,
-                )
-                prepared_item = _PreparedItem(
-                    metadata=prepared_metadata,
-                    points=points.copy(),
-                    bounds=bounds if bounds is None else bounds.copy(),
-                    dims=(tgt_dim,),
+                prepared_item = self._create_prepared_item(
+                    src_coord,
+                    tgt_dim,
+                    src_metadata=src_metadata,
+                    tgt_metadata=tgt_metadata,
+                    points=points,
+                    bounds=bounds,
                     container=DimCoord,
                 )
                 self.prepared_category.items_dim.append(prepared_item)
@@ -2333,8 +2465,7 @@ class Resolve:
 
         # Add the prepared dim coordinates.
         for item in self.prepared_category.items_dim:
-            coord = item.container(item.points, bounds=item.bounds)
-            coord.metadata = item.metadata.combined
+            coord = item.create_coord(metadata=item.metadata.combined)
             result.add_dim_coord(coord, item.dims)
 
         # Add the prepared aux and scalar coordinates.
@@ -2343,8 +2474,8 @@ class Resolve:
             + self.prepared_category.items_scalar
         )
         for item in prepared_aux_coords:
-            coord = item.container(item.points, bounds=item.bounds)
-            coord.metadata = item.metadata.combined
+            # These items are "special"
+            coord = item.create_coord(metadata=item.metadata.combined)
             try:
                 result.add_aux_coord(coord, item.dims)
             except ValueError as err:
@@ -2413,10 +2544,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              A1B
+                    Conventions                 'CF-1.5'
+                    Model scenario              'A1B'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> print(cube2)
             air_temperature / (K)               (longitude: 49; latitude: 37)
                 Dimension coordinates:
@@ -2430,10 +2561,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              E1
+                    Conventions                 'CF-1.5'
+                    Model scenario              'E1'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> Resolve().mapped is None
             True
             >>> resolver = Resolve(cube1, cube2)
@@ -2481,10 +2612,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              A1B
+                    Conventions                 'CF-1.5'
+                    Model scenario              'A1B'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> print(cube2)
             air_temperature / (K)               (longitude: 49; latitude: 37)
                 Dimension coordinates:
@@ -2498,10 +2629,10 @@ class Resolve:
                 Cell methods:
                     mean                        time (6 hour)
                 Attributes:
-                    Conventions                 CF-1.5
-                    Model scenario              E1
+                    Conventions                 'CF-1.5'
+                    Model scenario              'E1'
                     STASH                       m01s03i236
-                    source                      Data from Met Office Unified Model 6.05
+                    source                      'Data from Met Office Unified Model 6.05'
             >>> Resolve().shape is None
             True
             >>> Resolve(cube1, cube2).shape

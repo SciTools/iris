@@ -14,8 +14,8 @@ reST is a lightweight markup language intended to be highly readable in
 source format. This guide will cover some of the more frequently used advanced
 reST markup syntaxes, for the basics of reST the following links may be useful:
 
- * https://www.sphinx-doc.org/en/master/usage/restructuredtext/
- * http://packages.python.org/an_example_pypi_project/sphinx.html
+* https://www.sphinx-doc.org/en/master/usage/restructuredtext/
+* http://packages.python.org/an_example_pypi_project/sphinx.html
 
 Reference documentation for reST can be found at http://docutils.sourceforge.net/rst.html.
 

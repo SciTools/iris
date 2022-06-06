@@ -10,14 +10,16 @@ Definitions of coordinates and other dimensional metadata.
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from collections.abc import Iterator
+from collections.abc import Container, Iterator
 import copy
+from functools import lru_cache
 from itertools import chain, zip_longest
 import operator
 import warnings
 import zlib
 
 import cftime
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -55,6 +57,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         _MODE_DIV: "/",
         _MODE_RDIV: "/",
     }
+
+    # Used by printout methods : __str__ and __repr__
+    # Overridden in subclasses : Coord->'points', Connectivity->'indices'
+    _values_array_name = "data"
 
     @abstractmethod
     def __init__(
@@ -267,94 +273,348 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """
         return self._values_dm.has_lazy_data()
 
-    def _repr_other_metadata(self):
-        fmt = ""
-        if self.long_name:
-            fmt = ", long_name={self.long_name!r}"
-        if self.var_name:
-            fmt += ", var_name={self.var_name!r}"
-        if len(self.attributes) > 0:
-            fmt += ", attributes={self.attributes}"
-        result = fmt.format(self=self)
-        return result
+    def summary(
+        self,
+        shorten=False,
+        max_values=None,
+        edgeitems=2,
+        linewidth=None,
+        precision=None,
+        convert_dates=True,
+        _section_indices=None,
+    ):
+        r"""
+        Make a printable text summary.
 
-    def _str_dates(self, dates_as_numbers):
-        date_obj_array = self.units.num2date(dates_as_numbers)
-        kwargs = {"separator": ", ", "prefix": "      "}
-        return np.core.arrayprint.array2string(
-            date_obj_array, formatter={"all": str}, **kwargs
-        )
+        Parameters
+        ----------
+        shorten : bool, default = False
+            If True, produce an abbreviated one-line summary.
+            If False, produce a multi-line summary, with embedded newlines.
+        max_values : int or None, default = None
+            If more than this many data values, print truncated data arrays
+            instead of full contents.
+            If 0, print only the shape.
+            The default is 5 if :attr:`shorten`\ =True, or 15 otherwise.
+            This overrides ``numpy.get_printoptions['threshold']``\ .
+        linewidth : int or None, default = None
+            Character-width controlling line splitting of array outputs.
+            If unset, defaults to ``numpy.get_printoptions['linewidth']``\ .
+        edgeitems : int = 2
+            Controls truncated array output.
+            Overrides ``numpy.getprintoptions['edgeitems']``\ .
+        precision : int or None, default = None
+            Controls number decimal formatting.
+            When :attr:`shorten`\ =True this is defaults to 3, in which case it
+            overrides ``numpy.get_printoptions()['precision']``\ .
+        convert_dates : bool, default = True
+            If the units has a calendar, then print array values as date
+            strings instead of the actual numbers.
+
+        Returns
+        -------
+        result : str
+            Output text, with embedded newlines when :attr:`shorten`\ =False.
+
+
+        .. note::
+            Arrays are formatted using :meth:`numpy.array2string`. Some aspects
+            of the array formatting are controllable in the usual way, via
+            :meth:`numpy.printoptions`, but others are overridden as detailed
+            above.
+            Control of those aspects is still available, but only via the call
+            arguments.
+
+        """
+        # NOTE: the *private* key "_section_indices" can be set to a dict, to
+        # return details of which (line, character) each particular section of
+        # the output text begins at.
+        # Currently only used by MeshCoord.summary(), which needs this info to
+        # modify the result string, for idiosyncratic reasons.
+
+        def array_summary(data, n_max, n_edge, linewidth, precision):
+            # Return a text summary of an array.
+            # Take account of strings, dates and masked data.
+            result = ""
+            formatter = None
+            if convert_dates and self.units.is_time_reference():
+                # Account for dates, if enabled.
+                # N.B. a time unit with a long time interval ("months"
+                # or "years") cannot be converted to a date using
+                # `num2date`, so gracefully fall back to printing
+                # values as numbers.
+                if not self.units.is_long_time_interval():
+                    # Otherwise ... replace all with strings.
+                    if ma.is_masked(data):
+                        mask = data.mask
+                    else:
+                        mask = None
+                    data = np.array(self.units.num2date(data))
+                    data = data.astype(str)
+                    # Masked datapoints do not survive num2date.
+                    if mask is not None:
+                        data = np.ma.masked_array(data, mask)
+
+            if ma.is_masked(data):
+                # Masks are not handled by np.array2string, whereas
+                # MaskedArray.__str__ is using a private method to convert to
+                # objects.
+                # Our preferred solution is to convert to strings *and* fill
+                # with '--'.   This is not ideal because numbers will not align
+                # with a common numeric format, but there is no *public* logic
+                # in numpy to arrange that, so let's not overcomplicate.
+                # It happens that array2string *also* does not use a common
+                # format (width) for strings, but we fix that below...
+                data = data.astype(str).filled("--")
+
+            if data.dtype.kind == "U":
+                # Strings : N.B. includes all missing data
+                # find the longest.
+                length = max(len(str(x)) for x in data.flatten())
+                # Pre-apply a common formatting width.
+                formatter = {"all": lambda x: str(x).ljust(length)}
+
+            result = np.array2string(
+                data,
+                separator=", ",
+                edgeitems=n_edge,
+                threshold=n_max,
+                max_line_width=linewidth,
+                formatter=formatter,
+                precision=precision,
+            )
+
+            return result
+
+        units_str = str(self.units)
+        if self.units.calendar and not shorten:
+            units_str += f", {self.units.calendar} calendar"
+        title_str = f"{self.name()} / ({units_str})"
+        cls_str = type(self).__name__
+        shape_str = str(self.shape)
+
+        # Implement conditional defaults for control args.
+        if max_values is None:
+            max_values = 5 if shorten else 15
+        precision = 3 if shorten else None
+        n_indent = 4
+        indent = " " * n_indent
+        newline_indent = "\n" + indent
+        if linewidth is not None:
+            given_array_width = linewidth
+        else:
+            given_array_width = np.get_printoptions()["linewidth"]
+        using_array_width = given_array_width - n_indent * 2
+        # Make a printout of the main data array (or maybe not, if lazy).
+        if self._has_lazy_values():
+            data_str = "<lazy>"
+        elif max_values == 0:
+            data_str = "[...]"
+        else:
+            data_str = array_summary(
+                self._values,
+                n_max=max_values,
+                n_edge=edgeitems,
+                linewidth=using_array_width,
+                precision=precision,
+            )
+
+        # The output under construction, divided into lines for convenience.
+        output_lines = [""]
+
+        def add_output(text, section=None):
+            # Append output text and record locations of named 'sections'
+            if section and _section_indices is not None:
+                # defined a named 'section', recording the current line number
+                # and character position as its start position
+                i_line = len(output_lines) - 1
+                i_char = len(output_lines[-1])
+                _section_indices[section] = (i_line, i_char)
+            # Split the text-to-add into lines
+            lines = text.split("\n")
+            # Add initial text (before first '\n') to the current line
+            output_lines[-1] += lines[0]
+            # Add subsequent lines as additional output lines
+            for line in lines[1:]:
+                output_lines.append(line)  # Add new lines
+
+        if shorten:
+            add_output(f"<{cls_str}: ")
+            add_output(f"{title_str}  ", section="title")
+
+            if data_str != "<lazy>":
+                # Flatten to a single line, reducing repeated spaces.
+                def flatten_array_str(array_str):
+                    array_str = array_str.replace("\n", " ")
+                    array_str = array_str.replace("\t", " ")
+                    while "  " in array_str:
+                        array_str = array_str.replace("  ", " ")
+                    return array_str
+
+                data_str = flatten_array_str(data_str)
+                # Adjust maximum-width to allow for the title width in the
+                # repr form.
+                current_line_len = len(output_lines[-1])
+                using_array_width = given_array_width - current_line_len
+                # Work out whether to include a summary of the data values
+                if len(data_str) > using_array_width:
+                    # Make one more attempt, printing just the *first* point,
+                    # as this is useful for dates.
+                    data_str = data_str = array_summary(
+                        self._values[:1],
+                        n_max=max_values,
+                        n_edge=edgeitems,
+                        linewidth=using_array_width,
+                        precision=precision,
+                    )
+                    data_str = flatten_array_str(data_str)
+                    data_str = data_str[:-1] + ", ...]"
+                    if len(data_str) > using_array_width:
+                        # Data summary is still too long : replace with array
+                        # "placeholder" representation.
+                        data_str = "[...]"
+
+            if self.has_bounds():
+                data_str += "+bounds"
+
+            if self.shape != (1,):
+                # Anything non-scalar : show shape as well.
+                data_str += f"  shape{shape_str}"
+
+            # single-line output in 'shorten' mode
+            add_output(f"{data_str}>", section="data")
+
+        else:
+            # Long (multi-line) output format.
+            add_output(f"{cls_str} :  ")
+            add_output(f"{title_str}", section="title")
+
+            def reindent_data_string(text, n_indent):
+                lines = [line for line in text.split("\n")]
+                indent = " " * (n_indent - 1)  # allow 1 for the initial '['
+                # Indent all but the *first* line.
+                line_1, rest_lines = lines[0], lines[1:]
+                rest_lines = ["\n" + indent + line for line in rest_lines]
+                result = line_1 + "".join(rest_lines)
+                return result
+
+            data_array_str = reindent_data_string(data_str, 2 * n_indent)
+
+            # NOTE: actual section name is variable here : data/points/indices
+            data_text = f"{self._values_array_name}: "
+            if "\n" in data_array_str:
+                # Put initial '[' here, and the rest on subsequent lines
+                data_text += "[" + newline_indent + indent + data_array_str[1:]
+            else:
+                # All on one line
+                data_text += data_array_str
+
+            # N.B. indent section and record section start after that
+            add_output(newline_indent)
+            add_output(data_text, section="data")
+
+            if self.has_bounds():
+                # Add a bounds section : basically just like the 'data'.
+                if self._bounds_dm.has_lazy_data():
+                    bounds_array_str = "<lazy>"
+                elif max_values == 0:
+                    bounds_array_str = "[...]"
+                else:
+                    bounds_array_str = array_summary(
+                        self._bounds_dm.data,
+                        n_max=max_values,
+                        n_edge=edgeitems,
+                        linewidth=using_array_width,
+                        precision=precision,
+                    )
+                    bounds_array_str = reindent_data_string(
+                        bounds_array_str, 2 * n_indent
+                    )
+
+                bounds_text = "bounds: "
+                if "\n" in bounds_array_str:
+                    # Put initial '[' here, and the rest on subsequent lines
+                    bounds_text += (
+                        "[" + newline_indent + indent + bounds_array_str[1:]
+                    )
+                else:
+                    # All on one line
+                    bounds_text += bounds_array_str
+
+                # N.B. indent section and record section start after that
+                add_output(newline_indent)
+                add_output(bounds_text, section="bounds")
+
+            if self.has_bounds():
+                shape_str += f"  bounds{self._bounds_dm.shape}"
+
+            # Add shape section (always)
+            add_output(newline_indent)
+            add_output(f"shape: {shape_str}", section="shape")
+
+            # Add dtype section (always)
+            add_output(newline_indent)
+            add_output(f"dtype: {self.dtype}", section="dtype")
+
+            for name in self._metadata_manager._fields:
+                if name == "units":
+                    # This was already included in the header line
+                    continue
+                val = getattr(self, name, None)
+                if isinstance(val, Container):
+                    # Don't print empty containers, like attributes={}
+                    show = bool(val)
+                else:
+                    # Don't print properties when not present, or set to None,
+                    # or False.
+                    # This works OK as long as we are happy to treat all
+                    # boolean properties as 'off' when False :  Which happens to
+                    # work for all those defined so far.
+                    show = val is not None and val is not False
+                if show:
+                    if name == "attributes":
+                        # Use a multi-line form for this.
+                        add_output(newline_indent)
+                        add_output("attributes:", section="attributes")
+                        max_attname_len = max(len(attr) for attr in val.keys())
+                        for attrname, attrval in val.items():
+                            attrname = attrname.ljust(max_attname_len)
+                            if isinstance(attrval, str):
+                                # quote strings
+                                attrval = repr(attrval)
+                                # and abbreviate really long ones
+                                attrval = iris.util.clip_string(attrval)
+                            attr_string = f"{attrname}  {attrval}"
+                            add_output(newline_indent + indent + attr_string)
+                    else:
+                        # add a one-line section for this property
+                        # (aka metadata field)
+                        add_output(newline_indent)
+                        add_output(f"{name}: {val!r}", section=name)
+
+        return "\n".join(output_lines)
 
     def __str__(self):
-        # Note: this method includes bounds handling code, but it only runs
-        # within Coord type instances, as only these allow bounds to be set.
-        if self.units.is_time_reference():
-            fmt = (
-                "{cls}({values}{bounds}"
-                ", standard_name={self.standard_name!r}"
-                ", calendar={self.units.calendar!r}{other_metadata})"
-            )
-            if self.units.is_long_time_interval():
-                # A time unit with a long time interval ("months" or "years")
-                # cannot be converted to a date using `num2date` so gracefully
-                # fall back to printing points as numbers, not datetimes.
-                values = self._values
-            else:
-                values = self._str_dates(self._values)
-            bounds = ""
-            if self.has_bounds():
-                if self.units.is_long_time_interval():
-                    bounds_vals = self.bounds
-                else:
-                    bounds_vals = self._str_dates(self.bounds)
-                bounds = ", bounds={vals}".format(vals=bounds_vals)
-            result = fmt.format(
-                self=self,
-                cls=type(self).__name__,
-                values=values,
-                bounds=bounds,
-                other_metadata=self._repr_other_metadata(),
-            )
-        else:
-            result = repr(self)
-
-        return result
+        return self.summary()
 
     def __repr__(self):
-        # Note: this method includes bounds handling code, but it only runs
-        # within Coord type instances, as only these allow bounds to be set.
-        fmt = (
-            "{cls}({self._values!r}{bounds}"
-            ", standard_name={self.standard_name!r}, units={self.units!r}"
-            "{other_metadata})"
-        )
-        bounds = ""
-        # if coordinate, handle the bounds
-        if self.has_bounds():
-            bounds = ", bounds=" + repr(self.bounds)
-        result = fmt.format(
-            self=self,
-            cls=type(self).__name__,
-            bounds=bounds,
-            other_metadata=self._repr_other_metadata(),
-        )
-        return result
+        return self.summary(shorten=True)
 
     def __eq__(self, other):
         # Note: this method includes bounds handling code, but it only runs
-        # within Coord type instances, as only these allow bounds to be set.
+        #  within Coord type instances, as only these allow bounds to be set.
 
         eq = NotImplemented
         # If the other object has a means of getting its definition, then do
-        # the  comparison, otherwise return a NotImplemented to let Python try
-        # to resolve the operator elsewhere.
+        #  the comparison, otherwise return a NotImplemented to let Python try
+        #  to resolve the operator elsewhere.
         if hasattr(other, "metadata"):
             # metadata comparison
             eq = self.metadata == other.metadata
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
-                    self._values, other._values, withnans=True
+                    self._core_values(), other._core_values(), withnans=True
                 )
 
             # Also consider bounds, if we have them.
@@ -362,7 +622,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             if eq and eq is not NotImplemented:
                 if self.has_bounds() and other.has_bounds():
                     eq = iris.util.array_equal(
-                        self.bounds, other.bounds, withnans=True
+                        self.core_bounds(), other.core_bounds(), withnans=True
                     )
                 else:
                     eq = not self.has_bounds() and not other.has_bounds()
@@ -579,8 +839,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         Returns:
             The :class:`xml.dom.minidom.Element` that will describe this
-            :class:`_DimensionalMetadata`, and the dictionary of attributes
-            that require to be added to this element.
+            :class:`_DimensionalMetadata`.
 
         """
         # Create the XML element as the camelCaseEquivalent of the
@@ -627,6 +886,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
+        # TODO: replace with isinstance(self, Connectivity) once Connectivity
+        # is re-integrated here (currently in experimental.ugrid).
+        elif hasattr(self, "indices"):
+            values_term = "indices"
         else:
             values_term = "data"
         element.setAttribute(values_term, self._xml_array_repr(self._values))
@@ -856,23 +1119,6 @@ class CellMeasure(AncillaryVariable):
             emsg = f"measure must be 'area' or 'volume', got {measure!r}"
             raise ValueError(emsg)
         self._metadata_manager.measure = measure
-
-    def __str__(self):
-        result = repr(self)
-        return result
-
-    def __repr__(self):
-        fmt = (
-            "{cls}({self.data!r}, "
-            "measure={self.measure!r}, standard_name={self.standard_name!r}, "
-            "units={self.units!r}{other_metadata})"
-        )
-        result = fmt.format(
-            self=self,
-            cls=type(self).__name__,
-            other_metadata=self._repr_other_metadata(),
-        )
-        return result
 
     def cube_dims(self, cube):
         """
@@ -1107,15 +1353,30 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         compared.
 
         """
+
+        def nan_equality(x, y):
+            return (
+                isinstance(x, (float, np.number))
+                and np.isnan(x)
+                and isinstance(y, (float, np.number))
+                and np.isnan(y)
+            )
+
         if isinstance(other, (int, float, np.number)) or hasattr(
             other, "timetuple"
         ):
             if self.bound is not None:
                 return self.contains_point(other)
+            elif nan_equality(self.point, other):
+                return True
             else:
                 return self.point == other
         elif isinstance(other, Cell):
-            return (self.point == other.point) and (self.bound == other.bound)
+            if nan_equality(self.point, other.point):
+                return True
+            return (self.point == other.point) and (
+                self.bound == other.bound or self.bound == other.bound[::-1]
+            )
         elif (
             isinstance(other, str)
             and self.bound is None
@@ -1298,6 +1559,8 @@ class Coord(_DimensionalMetadata):
     Abstract base class for coordinates.
 
     """
+
+    _values_array_name = "points"
 
     @abstractmethod
     def __init__(
@@ -1597,14 +1860,6 @@ class Coord(_DimensionalMetadata):
         result = False
         if self.has_bounds():
             result = self._bounds_dm.has_lazy_data()
-        return result
-
-    def _repr_other_metadata(self):
-        result = super()._repr_other_metadata()
-        if self.coord_system:
-            result += ", coord_system={}".format(self.coord_system)
-        if self.climatological:
-            result += ", climatological={}".format(self.climatological)
         return result
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
@@ -1936,7 +2191,6 @@ class Coord(_DimensionalMetadata):
 
         Replaces the points & bounds with a simple bounded region.
         """
-        import dask.array as da
 
         # Ensure dims_to_collapse is a tuple to be able to pass
         # through to numpy
@@ -2202,7 +2456,9 @@ class Coord(_DimensionalMetadata):
         if self.has_bounds():
             # make bounds ranges complete+separate, so point is in at least one
             increasing = self.bounds[0, 1] > self.bounds[0, 0]
-            bounds = bounds.copy()
+            # identify data type that bounds and point can safely cast to
+            dtype = np.result_type(bounds, point)
+            bounds = bounds.astype(dtype)
             # sort the bounds cells by their centre values
             sort_inds = np.argsort(np.mean(bounds, axis=1))
             bounds = bounds[sort_inds]
@@ -2262,8 +2518,7 @@ class Coord(_DimensionalMetadata):
 
         Returns:
             The :class:`xml.dom.minidom.Element` that will describe this
-            :class:`DimCoord`, and the dictionary of attributes that require
-            to be added to this element.
+            :class:`DimCoord`.
 
         """
         # Create the XML element as the camelCaseEquivalent of the
@@ -2280,6 +2535,10 @@ class Coord(_DimensionalMetadata):
         """Coord specific stuff for the xml id"""
         unique_value += str(self.coord_system).encode("utf-8") + b"\0"
         return unique_value
+
+
+_regular_points = lru_cache(iris.util.regular_points)
+"""Caching version of iris.util.regular_points"""
 
 
 class DimCoord(Coord):
@@ -2329,12 +2588,9 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = iris.util.points_step(points)
-        if not regular:
-            points = (zeroth + step) + step * np.arange(
-                count, dtype=np.float64
-            )
+        # Use lru_cache because this is done repeatedly with the same arguments
+        # (particularly in field-based file loading).
+        points = _regular_points(zeroth, step, count).copy()
         points.flags.writeable = False
 
         if with_bounds:
@@ -2510,12 +2766,6 @@ class DimCoord(Coord):
         coord.circular = False
         return coord
 
-    def _repr_other_metadata(self):
-        result = Coord._repr_other_metadata(self)
-        if self.circular:
-            result += ", circular=%r" % self.circular
-        return result
-
     def _new_points_requirements(self, points):
         """
         Confirm that a new set of coord points adheres to the requirements for
@@ -2572,6 +2822,10 @@ class DimCoord(Coord):
             * bounds are not masked, and
             * bounds are monotonic in the first dimension.
 
+        Also reverse the order of the second dimension if necessary to match the
+        first dimension's direction.  I.e. both should increase or both should
+        decrease.
+
         """
         # Ensure the bounds are a compatible shape.
         if self.shape != bounds.shape[:-1] and not (
@@ -2621,6 +2875,16 @@ class DimCoord(Coord):
                         emsg.format(self.name(), self.__class__.__name__)
                     )
 
+                if n_bounds == 2:
+                    # Make ordering of bounds consistent with coord's direction
+                    # if possible.
+                    (direction,) = directions
+                    diffs = bounds[:, 0] - bounds[:, 1]
+                    if np.all(np.sign(diffs) == direction):
+                        bounds = np.flip(bounds, axis=1)
+
+        return bounds
+
     @Coord.bounds.setter
     def bounds(self, bounds):
         if bounds is not None:
@@ -2629,8 +2893,9 @@ class DimCoord(Coord):
             # Make sure we have an array (any type of array).
             bounds = np.asanyarray(bounds)
 
-            # Check validity requirements for dimension-coordinate bounds.
-            self._new_bounds_requirements(bounds)
+            # Check validity requirements for dimension-coordinate bounds and reverse
+            # trailing dimension if necessary.
+            bounds = self._new_bounds_requirements(bounds)
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
 

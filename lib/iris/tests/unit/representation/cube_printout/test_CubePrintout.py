@@ -18,6 +18,7 @@ from iris.coords import (
     DimCoord,
 )
 from iris.cube import Cube
+from iris.tests.stock.mesh import sample_mesh_cube
 
 
 class TestCubePrintout___str__(tests.IrisTest):
@@ -141,7 +142,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             (
                 "        very_very_very_very_very_long_name "
-                "longish string extends beyond dim columns"
+                "'longish string extends beyond dim columns'"
             ),
         ]
         self.assertEqual(rep, expected)
@@ -441,7 +442,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             "        list                        [3]",
             "        number                      1.2",
-            "        string                      four five in a string",
+            "        string                      'four five in a string'",
             "        z_tupular                   (6, (7, 8))",
         ]
         self.assertEqual(rep, expected)
@@ -463,7 +464,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             "        escaped                     'escaped\\tstring'",
             (
-                "        long                        this is very very very "
+                "        long                        'this is very very very "
                 "very very very very very very very very very very..."
             ),
             (
@@ -510,6 +511,23 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Cell methods:",
             "        stdev                       area",
             "        mean                        y (10m, vertical), time (3min, =duration)",
+        ]
+        self.assertEqual(rep, expected)
+
+    def test_unstructured_cube(self):
+        # Check a sample mesh-cube against the expected result.
+        cube = sample_mesh_cube()
+        rep = cube_replines(cube)
+        expected = [
+            "mesh_phenom / (unknown)             (level: 2; i_mesh_face: 3)",
+            "    Dimension coordinates:",
+            "        level                             x               -",
+            "        i_mesh_face                       -               x",
+            "    Mesh coordinates:",
+            "        latitude                          -               x",
+            "        longitude                         -               x",
+            "    Auxiliary coordinates:",
+            "        mesh_face_aux                     -               x",
         ]
         self.assertEqual(rep, expected)
 

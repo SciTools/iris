@@ -25,6 +25,8 @@ def create_mock_cube(array):
     cube.has_lazy_data = unittest.mock.Mock(return_value=is_lazy_data(array))
     cube.lazy_data = unittest.mock.Mock(return_value=array)
     cube.shape = array.shape
+    # Remove compute so cube is not interpreted as dask array.
+    del cube.compute
     return cube, cube_data
 
 
@@ -57,6 +59,14 @@ class Test_map_complete_blocks(tests.IrisTest):
         # check correct data was accessed
         cube.lazy_data.assert_called_once()
         cube_data.assert_not_called()
+
+    def test_dask_array_input(self):
+        lazy_array = da.asarray(self.array, chunks=((1, 1), (4,)))
+        result = map_complete_blocks(
+            lazy_array, self.func, dims=(1,), out_sizes=(4,)
+        )
+        self.assertTrue(is_lazy_data(result))
+        self.assertArrayEqual(result.compute(), self.func_result)
 
     def test_rechunk(self):
         lazy_array = da.asarray(self.array, chunks=((1, 1), (2, 2)))

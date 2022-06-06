@@ -20,7 +20,6 @@ from subprocess import check_call
 import tempfile
 from unittest import mock
 
-from cf_units import as_unit
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -29,7 +28,6 @@ import iris
 from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
-from iris.coords import AncillaryVariable, CellMeasure
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import load_cubes as nc_load_cubes
@@ -220,6 +218,26 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc.cml"))
 
+    def test_load_complex_merc_grid(self):
+        # Test loading a single CF-netCDF file with a Mercator grid_mapping that
+        # includes false easting and northing and a standard parallel
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "mercator", "false_east_north_merc.nc")
+            )
+        )
+        self.assertCML(cube, ("netcdf", "netcdf_merc_false.cml"))
+
+    def test_load_merc_grid_non_unit_scale_factor(self):
+        # Test loading a single CF-netCDF file with a Mercator grid_mapping that
+        # includes a non-unit scale factor at projection origin
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "mercator", "non_unit_scale_factor_merc.nc")
+            )
+        )
+        self.assertCML(cube, ("netcdf", "netcdf_merc_scale_factor.cml"))
+
     def test_load_stereographic_grid(self):
         # Test loading a single CF-netCDF file with a stereographic
         # grid_mapping.
@@ -250,153 +268,6 @@ class TestNetCDFLoad(tests.IrisTest):
             cube.data = ma.masked_equal(cube.data, -2147483647)
 
         self.assertCML(cubes, ("netcdf", "netcdf_cell_methods.cml"))
-
-    def test_ancillary_variables(self):
-        # Note: using a CDL string as a test data reference, rather than a binary file.
-        ref_cdl = """
-            netcdf cm_attr {
-            dimensions:
-                axv = 3 ;
-            variables:
-                int64 qqv(axv) ;
-                    qqv:long_name = "qq" ;
-                    qqv:units = "1" ;
-                    qqv:ancillary_variables = "my_av" ;
-                int64 axv(axv) ;
-                    axv:units = "1" ;
-                    axv:long_name = "x" ;
-                double my_av(axv) ;
-                    my_av:units = "1" ;
-                    my_av:long_name = "refs" ;
-                    my_av:custom = "extra-attribute";
-            data:
-                axv = 1, 2, 3;
-                my_av = 11., 12., 13.;
-            }
-            """
-        self.tmpdir = tempfile.mkdtemp()
-        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
-        nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        cubes = list(nc_load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        avs = cubes[0].ancillary_variables()
-        self.assertEqual(len(avs), 1)
-        expected = AncillaryVariable(
-            np.ma.array([11.0, 12.0, 13.0]),
-            long_name="refs",
-            var_name="my_av",
-            units="1",
-            attributes={"custom": "extra-attribute"},
-        )
-        self.assertEqual(avs[0], expected)
-
-    def test_status_flags(self):
-        # Note: using a CDL string as a test data reference, rather than a binary file.
-        ref_cdl = """
-            netcdf cm_attr {
-            dimensions:
-                axv = 3 ;
-            variables:
-                int64 qqv(axv) ;
-                    qqv:long_name = "qq" ;
-                    qqv:units = "1" ;
-                    qqv:ancillary_variables = "my_av" ;
-                int64 axv(axv) ;
-                    axv:units = "1" ;
-                    axv:long_name = "x" ;
-                byte my_av(axv) ;
-                    my_av:long_name = "qq status_flag" ;
-                    my_av:flag_values = 1b, 2b ;
-                    my_av:flag_meanings = "a b" ;
-            data:
-                axv = 11, 21, 31;
-                my_av = 1b, 1b, 2b;
-            }
-            """
-        self.tmpdir = tempfile.mkdtemp()
-        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
-        nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        cubes = list(nc_load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        avs = cubes[0].ancillary_variables()
-        self.assertEqual(len(avs), 1)
-        expected = AncillaryVariable(
-            np.ma.array([1, 1, 2], dtype=np.int8),
-            long_name="qq status_flag",
-            var_name="my_av",
-            units="no_unit",
-            attributes={
-                "flag_values": np.array([1, 2], dtype=np.int8),
-                "flag_meanings": "a b",
-            },
-        )
-        self.assertEqual(avs[0], expected)
-
-    def test_cell_measures(self):
-        # Note: using a CDL string as a test data reference, rather than a binary file.
-        ref_cdl = """
-            netcdf cm_attr {
-            dimensions:
-                axv = 3 ;
-                ayv = 2 ;
-            variables:
-                int64 qqv(ayv, axv) ;
-                    qqv:long_name = "qq" ;
-                    qqv:units = "1" ;
-                    qqv:cell_measures = "area: my_areas" ;
-                int64 ayv(ayv) ;
-                    ayv:units = "1" ;
-                    ayv:long_name = "y" ;
-                int64 axv(axv) ;
-                    axv:units = "1" ;
-                    axv:long_name = "x" ;
-                double my_areas(ayv, axv) ;
-                    my_areas:units = "m2" ;
-                    my_areas:long_name = "standardised cell areas" ;
-                    my_areas:custom = "extra-attribute";
-            data:
-                axv = 11, 12, 13;
-                ayv = 21, 22;
-                my_areas = 110., 120., 130., 221., 231., 241.;
-            }
-            """
-        self.tmpdir = tempfile.mkdtemp()
-        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
-        nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        cubes = list(nc_load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        cms = cubes[0].cell_measures()
-        self.assertEqual(len(cms), 1)
-        expected = CellMeasure(
-            np.ma.array([[110.0, 120.0, 130.0], [221.0, 231.0, 241.0]]),
-            measure="area",
-            var_name="my_areas",
-            long_name="standardised cell areas",
-            units="m2",
-            attributes={"custom": "extra-attribute"},
-        )
-        self.assertEqual(cms[0], expected)
 
     def test_deferred_loading(self):
         # Test exercising CF-netCDF deferred loading and deferred slicing.
@@ -448,55 +319,6 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertCML(
             cube[0][(0, 2), (1, 3)], ("netcdf", "netcdf_deferred_mix_1.cml")
-        )
-
-    def test_default_units(self):
-        # Note: using a CDL string as a test data reference, rather than a binary file.
-        ref_cdl = """
-            netcdf cm_attr {
-            dimensions:
-                axv = 3 ;
-                ayv = 2 ;
-            variables:
-                int64 qqv(ayv, axv) ;
-                    qqv:long_name = "qq" ;
-                    qqv:ancillary_variables = "my_av" ;
-                    qqv:cell_measures = "area: my_areas" ;
-                int64 ayv(ayv) ;
-                    ayv:long_name = "y" ;
-                int64 axv(axv) ;
-                    axv:units = "1" ;
-                    axv:long_name = "x" ;
-                double my_av(axv) ;
-                    my_av:long_name = "refs" ;
-                double my_areas(ayv, axv) ;
-                    my_areas:long_name = "areas" ;
-            data:
-                axv = 11, 12, 13;
-                ayv = 21, 22;
-                my_areas = 110., 120., 130., 221., 231., 241.;
-            }
-            """
-        self.tmpdir = tempfile.mkdtemp()
-        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
-        nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        cubes = list(nc_load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        self.assertEqual(cubes[0].units, as_unit("unknown"))
-        self.assertEqual(cubes[0].coord("y").units, as_unit("unknown"))
-        self.assertEqual(cubes[0].coord("x").units, as_unit(1))
-        self.assertEqual(
-            cubes[0].ancillary_variable("refs").units, as_unit("unknown")
-        )
-        self.assertEqual(
-            cubes[0].cell_measure("areas").units, as_unit("unknown")
         )
 
     def test_um_stash_source(self):

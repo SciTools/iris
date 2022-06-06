@@ -2,6 +2,7 @@
     Common resources in alphabetical order:
 
 .. _black: https://black.readthedocs.io/en/stable/
+.. _cartopy: https://github.com/SciTools/cartopy
 .. _.cirrus.yml: https://github.com/SciTools/iris/blob/main/.cirrus.yml
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
@@ -11,7 +12,7 @@
 .. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
 .. _GitHub Help Documentation: https://docs.github.com/en/github
-.. _Iris GitHub Discussions: https://github.com/SciTools/iris/discussions
+.. _GitHub Discussions: https://github.com/SciTools/iris/discussions
 .. _Iris: https://github.com/SciTools/iris
 .. _Iris GitHub: https://github.com/SciTools/iris
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
@@ -34,6 +35,9 @@
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _using git: https://docs.github.com/en/github/using-git
+.. _requirements/ci/: https://github.com/SciTools/iris/tree/main/requirements/ci
+.. _CF-UGRID: https://ugrid-conventions.github.io/ugrid-conventions/
+.. _issues on GitHub: https://github.com/SciTools/iris/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc
 
 
 .. comment
@@ -59,7 +63,9 @@
 .. _@QuLogic: https://github.com/QuLogic
 .. _@rcomer: https://github.com/rcomer
 .. _@rhattersley: https://github.com/rhattersley
+.. _@schlunma: https://github.com/schlunma
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers
+.. _@wjbenfold: https://github.com/wjbenfold
 .. _@zklaus: https://github.com/zklaus

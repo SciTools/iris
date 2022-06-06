@@ -10,8 +10,6 @@ Miscellaneous utility functions.
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
-from contextlib import contextmanager
-import copy
 import functools
 import inspect
 import os
@@ -20,10 +18,12 @@ import sys
 import tempfile
 
 import cf_units
+from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.exceptions
 
 
@@ -344,7 +344,7 @@ def array_equal(array1, array2, withnans=False):
     Args:
 
     * array1, array2 (arraylike):
-        args to be compared, after normalising with :func:`np.asarray`.
+        args to be compared, normalised if necessary with :func:`np.asarray`.
 
     Kwargs:
 
@@ -358,7 +358,13 @@ def array_equal(array1, array2, withnans=False):
     with additional support for arrays of strings and NaN-tolerant operation.
 
     """
-    array1, array2 = np.asarray(array1), np.asarray(array2)
+
+    def normalise_array(array):
+        if not is_lazy_data(array):
+            array = np.asarray(array)
+        return array
+
+    array1, array2 = normalise_array(array1), normalise_array(array2)
 
     eq = array1.shape == array2.shape
     if eq:
@@ -366,23 +372,46 @@ def array_equal(array1, array2, withnans=False):
 
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             nans1, nans2 = np.isnan(array1), np.isnan(array2)
-            if not np.all(nans1 == nans2):
-                eq = False  # simply fail
-            else:
-                eqs[nans1] = True  # fix NaNs; check all the others
+            eq = as_concrete_data(np.all(nans1 == nans2))
+
+            if eq:
+                eqs = as_concrete_data(eqs)
+                if not is_lazy_data(nans1):
+                    idxs = nans1
+                elif not is_lazy_data(nans2):
+                    idxs = nans2
+                else:
+                    idxs = as_concrete_data(nans1)
+
+                if np.any(idxs):
+                    eqs[idxs] = True
 
         if eq:
-            eq = np.all(eqs)  # check equal at all points
+            eq = as_concrete_data(np.all(eqs))  # check equal at all points
 
     return eq
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
     """
-    Returns whether two numbers are almost equal, allowing for the
-    finite precision of floating point numbers.
+    Returns whether two numbers are almost equal, allowing for the finite
+    precision of floating point numbers.
+
+    .. deprecated:: 3.2.0
+
+       Instead use :func:`math.isclose`. For example, rather than calling
+       ``approx_equal(a, b, max_abs, max_rel)`` replace with ``math.isclose(a,
+       b, max_rel, max_abs)``. Note that :func:`~math.isclose` will return True
+       if the actual error equals the maximum, whereas :func:`util.approx_equal`
+       will return False.
 
     """
+    wmsg = (
+        "iris.util.approx_equal has been deprecated and will be removed, "
+        "please use math.isclose instead."
+    )
+    warn_deprecated(wmsg)
+
     # Deal with numbers close to zero
     if abs(a - b) < max_absolute_error:
         return True
@@ -1037,18 +1066,20 @@ def format_array(arr):
 
     """
 
-    summary_insert = ""
     summary_threshold = 85
+    summary_insert = "..." if arr.size > summary_threshold else ""
     edge_items = 3
     ffunc = str
-    formatArray = np.core.arrayprint._formatArray
     max_line_len = 50
-    legacy = "1.13"
-    if arr.size > summary_threshold:
-        summary_insert = "..."
-    options = np.get_printoptions()
-    options["legacy"] = legacy
-    with _printopts_context(**options):
+
+    # Format the array with version 1.13 legacy behaviour
+    with np.printoptions(legacy="1.13"):
+        # Use this (private) routine for more control.
+        formatArray = np.core.arrayprint._formatArray
+        # N.B. the 'legacy' arg had different forms in different numpy versions
+        # -- fetch the required form from the internal options dict
+        format_options_legacy = np.core.arrayprint._format_options["legacy"]
+
         result = formatArray(
             arr,
             ffunc,
@@ -1057,27 +1088,10 @@ def format_array(arr):
             separator=", ",
             edge_items=edge_items,
             summary_insert=summary_insert,
-            legacy=legacy,
+            legacy=format_options_legacy,
         )
 
     return result
-
-
-@contextmanager
-def _printopts_context(**kwargs):
-    """
-    Update the numpy printoptions for the life of this context manager.
-
-    Note: this function can be removed with numpy>=1.15 thanks to
-          https://github.com/numpy/numpy/pull/10406
-
-    """
-    original_opts = np.get_printoptions()
-    np.set_printoptions(**kwargs)
-    try:
-        yield
-    finally:
-        np.set_printoptions(**original_opts)
 
 
 def new_axis(src_cube, scalar_coord=None):
@@ -1148,133 +1162,6 @@ def new_axis(src_cube, scalar_coord=None):
     for factory in src_cube.aux_factories:
         new_factory = factory.updated(coord_mapping)
         new_cube.add_aux_factory(new_factory)
-
-    return new_cube
-
-
-def as_compatible_shape(src_cube, target_cube):
-    """
-    Return a cube with added length one dimensions to match the dimensionality
-    and dimension ordering of `target_cube`.
-
-    This function can be used to add the dimensions that have been collapsed,
-    aggregated or sliced out, promoting scalar coordinates to length one
-    dimension coordinates where necessary. It operates by matching coordinate
-    metadata to infer the dimensions that need modifying, so the provided
-    cubes must have coordinates with the same metadata
-    (see :class:`iris.common.CoordMetadata`).
-
-    .. note:: This function will load and copy the data payload of `src_cube`.
-
-    .. deprecated:: 3.0.0
-
-       Instead use :class:`~iris.common.resolve.Resolve`. For example, rather
-       than calling ``as_compatible_shape(src_cube, target_cube)`` replace
-       with ``Resolve(src_cube, target_cube)(target_cube.core_data())``.
-
-    Args:
-
-    * src_cube:
-        An instance of :class:`iris.cube.Cube` with missing dimensions.
-
-    * target_cube:
-        An instance of :class:`iris.cube.Cube` with the desired dimensionality.
-
-    Returns:
-        A instance of :class:`iris.cube.Cube` with the same dimensionality as
-        `target_cube` but with the data and coordinates from `src_cube`
-        suitably reshaped to fit.
-
-    """
-    from iris.cube import Cube
-
-    wmsg = (
-        "iris.util.as_compatible_shape has been deprecated and will be "
-        "removed, please use iris.common.resolve.Resolve instead."
-    )
-    warn_deprecated(wmsg)
-
-    dim_mapping = {}
-    for coord in target_cube.aux_coords + target_cube.dim_coords:
-        dims = target_cube.coord_dims(coord)
-        try:
-            collapsed_dims = src_cube.coord_dims(coord)
-        except iris.exceptions.CoordinateNotFoundError:
-            continue
-        if collapsed_dims:
-            if len(collapsed_dims) == len(dims):
-                for dim_from, dim_to in zip(dims, collapsed_dims):
-                    dim_mapping[dim_from] = dim_to
-        elif dims:
-            for dim_from in dims:
-                dim_mapping[dim_from] = None
-
-    if len(dim_mapping) != target_cube.ndim:
-        raise ValueError(
-            "Insufficient or conflicting coordinate "
-            "metadata. Cannot infer dimension mapping "
-            "to restore cube dimensions."
-        )
-
-    new_shape = [1] * target_cube.ndim
-    for dim_from, dim_to in dim_mapping.items():
-        if dim_to is not None:
-            new_shape[dim_from] = src_cube.shape[dim_to]
-
-    new_data = src_cube.data.copy()
-
-    # Transpose the data (if necessary) to prevent assignment of
-    # new_shape doing anything except adding length one dims.
-    order = [v for k, v in sorted(dim_mapping.items()) if v is not None]
-    if order != sorted(order):
-        new_order = [order.index(i) for i in range(len(order))]
-        new_data = np.transpose(new_data, new_order).copy()
-
-    new_cube = Cube(new_data.reshape(new_shape))
-    new_cube.metadata = copy.deepcopy(src_cube.metadata)
-
-    # Record a mapping from old coordinate IDs to new coordinates,
-    # for subsequent use in creating updated aux_factories.
-    coord_mapping = {}
-
-    reverse_mapping = {v: k for k, v in dim_mapping.items() if v is not None}
-
-    def add_coord(coord):
-        """Closure used to add a suitably reshaped coord to new_cube."""
-        all_dims = target_cube.coord_dims(coord)
-        src_dims = [
-            dim
-            for dim in src_cube.coord_dims(coord)
-            if src_cube.shape[dim] > 1
-        ]
-        mapped_dims = [reverse_mapping[dim] for dim in src_dims]
-        length1_dims = [dim for dim in all_dims if new_cube.shape[dim] == 1]
-        dims = length1_dims + mapped_dims
-        shape = [new_cube.shape[dim] for dim in dims]
-        if not shape:
-            shape = [1]
-        points = coord.points.reshape(shape)
-        bounds = None
-        if coord.has_bounds():
-            bounds = coord.bounds.reshape(shape + [coord.nbounds])
-        new_coord = coord.copy(points=points, bounds=bounds)
-        # If originally in dim_coords, add to dim_coords, otherwise add to
-        # aux_coords.
-        if target_cube.coords(coord, dim_coords=True):
-            try:
-                new_cube.add_dim_coord(new_coord, dims)
-            except ValueError:
-                # Catch cases where the coord is an AuxCoord and therefore
-                # cannot be added to dim_coords.
-                new_cube.add_aux_coord(new_coord, dims)
-        else:
-            new_cube.add_aux_coord(new_coord, dims)
-        coord_mapping[id(coord)] = new_coord
-
-    for coord in src_cube.aux_coords + src_cube.dim_coords:
-        add_coord(coord)
-    for factory in src_cube.aux_factories:
-        new_cube.add_aux_factory(factory.updated(coord_mapping))
 
     return new_cube
 
@@ -1394,12 +1281,55 @@ def regular_step(coord):
     return avdiff.astype(coord.points.dtype)
 
 
+def regular_points(zeroth, step, count):
+    """Make an array of regular points.
+
+    Create an array of `count` points from `zeroth` + `step`, adding `step` each
+    time. In float32 if this gives a sufficiently regular array (tested with
+    points_step) and float64 if not.
+
+    Parameters
+    ----------
+    zeroth : number
+        The value *prior* to the first point value.
+
+    step : number
+        The numeric difference between successive point values.
+
+    count : number
+        The number of point values.
+
+    """
+    points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+    _, regular = iris.util.points_step(points)
+    if not regular:
+        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
+    return points
+
+
 def points_step(points):
-    """Determine whether a NumPy array has a regular step."""
-    diffs = np.diff(points)
-    avdiff = np.mean(diffs)
-    # TODO: This value for `rtol` is set for test_analysis to pass...
-    regular = np.allclose(diffs, avdiff, rtol=0.001)
+    """Determine whether `points` has a regular step.
+
+    Parameters
+    ----------
+    points : numeric, array-like
+        The sequence of values to check for a regular difference.
+
+    Returns
+    -------
+    numeric, bool
+        A tuple containing the average difference between values, and whether the difference is regular.
+    """
+    # Calculations only make sense with multiple points
+    points = np.asanyarray(points)
+    if points.size >= 2:
+        diffs = np.diff(points)
+        avdiff = np.mean(diffs)
+        # TODO: This value for `rtol` is set for test_analysis to pass...
+        regular = np.allclose(diffs, avdiff, rtol=0.001)
+    else:
+        avdiff = np.nan
+        regular = True
     return avdiff, regular
 
 
@@ -1853,20 +1783,28 @@ def equalise_attributes(cubes):
     """
     Delete cube attributes that are not identical over all cubes in a group.
 
-    This function simply deletes any attributes which are not the same for
-    all the given cubes.  The cubes will then have identical attributes.  The
-    given cubes are modified in-place.
+    This function deletes any attributes which are not the same for all the
+    given cubes.  The cubes will then have identical attributes, and the
+    removed attributes are returned.  The given cubes are modified in-place.
 
     Args:
 
     * cubes (iterable of :class:`iris.cube.Cube`):
         A collection of cubes to compare and adjust.
 
+    Returns:
+
+    * removed (list):
+        A list of dicts holding the removed attributes.
+
     """
+    removed = []
     # Work out which attributes are identical across all the cubes.
     common_keys = list(cubes[0].attributes.keys())
+    keys_to_remove = set(common_keys)
     for cube in cubes[1:]:
         cube_keys = list(cube.attributes.keys())
+        keys_to_remove.update(cube_keys)
         common_keys = [
             key
             for key in common_keys
@@ -1875,12 +1813,39 @@ def equalise_attributes(cubes):
                 and np.all(cube.attributes[key] == cubes[0].attributes[key])
             )
         ]
+    keys_to_remove.difference_update(common_keys)
 
     # Remove all the other attributes.
     for cube in cubes:
-        for key in list(cube.attributes.keys()):
-            if key not in common_keys:
-                del cube.attributes[key]
+        deleted_attributes = {
+            key: cube.attributes.pop(key)
+            for key in keys_to_remove
+            if key in cube.attributes
+        }
+        removed.append(deleted_attributes)
+    return removed
+
+
+def is_masked(array):
+    """
+    Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
+
+    Parameters
+    ----------
+    array : :class:`numpy.Array` or `dask.array.Array`
+            The array to be checked for masks.
+
+    Returns
+    -------
+    bool
+        Whether or not the array has any masks.
+
+    """
+    if is_lazy_data(array):
+        result = da.ma.getmaskarray(array).any().compute()
+    else:
+        result = ma.is_masked(array)
+    return result
 
 
 def _strip_metadata_from_dims(cube, dims):

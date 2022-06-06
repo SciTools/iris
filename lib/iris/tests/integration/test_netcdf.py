@@ -24,7 +24,8 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris.coords import CellMethod
+import iris.coord_systems
+from iris.coords import CellMethod, DimCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import (
     CF_CONVENTIONS_VERSION,
@@ -32,6 +33,42 @@ from iris.fileformats.netcdf import (
     UnknownCellMethodWarning,
 )
 import iris.tests.stock as stock
+import iris.tests.unit.fileformats.netcdf.test_load_cubes as tlc
+
+
+@tests.skip_data
+class TestAtmosphereSigma(tests.IrisTest):
+    def setUp(self):
+        # Modify stock cube so it is suitable to have a atmosphere sigma
+        # factory added to it.
+        cube = stock.realistic_4d_no_derived()
+        cube.coord("surface_altitude").rename("surface_air_pressure")
+        cube.coord("surface_air_pressure").units = "Pa"
+        cube.coord("sigma").units = "1"
+        ptop_coord = iris.coords.AuxCoord(1000.0, var_name="ptop", units="Pa")
+        cube.add_aux_coord(ptop_coord, ())
+        cube.remove_coord("level_height")
+        # Construct and add atmosphere sigma factory.
+        factory = iris.aux_factory.AtmosphereSigmaFactory(
+            cube.coord("ptop"),
+            cube.coord("sigma"),
+            cube.coord("surface_air_pressure"),
+        )
+        cube.add_aux_factory(factory)
+        self.cube = cube
+
+    def test_save(self):
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(self.cube, filename)
+            self.assertCDL(filename)
+
+    def test_save_load_loop(self):
+        # Ensure that the AtmosphereSigmaFactory is automatically loaded
+        # when loading the file.
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(self.cube, filename)
+            cube = iris.load_cube(filename, "air_potential_temperature")
+            assert cube.coords("air_pressure")
 
 
 @tests.skip_data
@@ -238,10 +275,16 @@ class TestLazySave(tests.IrisTest):
         )
         acube = iris.load_cube(fpath, "air_temperature")
         self.assertTrue(acube.has_lazy_data())
+        # Also check a coord with lazy points + bounds.
+        self.assertTrue(acube.coord("forecast_period").has_lazy_points())
+        self.assertTrue(acube.coord("forecast_period").has_lazy_bounds())
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(acube)
+        # Check that cube data is not realised, also coord points + bounds.
         self.assertTrue(acube.has_lazy_data())
+        self.assertTrue(acube.coord("forecast_period").has_lazy_points())
+        self.assertTrue(acube.coord("forecast_period").has_lazy_bounds())
 
 
 @tests.skip_data
@@ -375,7 +418,7 @@ class TestSelfReferencingVarLoad(tests.IrisTest):
         levels.units = "centimeters"
         levels.positive = "down"
         levels.axis = "Z"
-        levels[:] = np.linspace(0, 10 ** 5, 3)
+        levels[:] = np.linspace(0, 10**5, 3)
 
         volcello.id = "volcello"
         volcello.out_name = "volcello"
@@ -443,6 +486,12 @@ class TestCellMethod_unknown(tests.IrisTest):
 
 @tests.skip_data
 class TestCoordSystem(tests.IrisTest):
+    def setUp(self):
+        tlc.setUpModule()
+
+    def tearDown(self):
+        tlc.tearDownModule()
+
     def test_load_laea_grid(self):
         cube = iris.load_cube(
             tests.get_data_path(
@@ -450,6 +499,171 @@ class TestCoordSystem(tests.IrisTest):
             )
         )
         self.assertCML(cube, ("netcdf", "netcdf_laea.cml"))
+
+    datum_cf_var_cdl = """
+        netcdf output {
+        dimensions:
+            y = 4 ;
+            x = 3 ;
+        variables:
+            float data(y, x) ;
+                data :standard_name = "toa_brightness_temperature" ;
+                data :units = "K" ;
+                data :grid_mapping = "mercator" ;
+            int mercator ;
+                mercator:grid_mapping_name = "mercator" ;
+                mercator:longitude_of_prime_meridian = 0. ;
+                mercator:earth_radius = 6378169. ;
+                mercator:horizontal_datum_name = "OSGB36" ;
+            float y(y) ;
+                y:axis = "Y" ;
+                y:units = "m" ;
+                y:standard_name = "projection_y_coordinate" ;
+            float x(x) ;
+                x:axis = "X" ;
+                x:units = "m" ;
+                x:standard_name = "projection_x_coordinate" ;
+
+        // global attributes:
+                :Conventions = "CF-1.7" ;
+                :standard_name_vocabulary = "CF Standard Name Table v27" ;
+
+        data:
+
+        data =
+        0, 1, 2,
+        3, 4, 5,
+        6, 7, 8,
+        9, 10, 11 ;
+
+        mercator = _ ;
+
+        y = 1, 2, 3, 5 ;
+
+        x = -6, -4, -2 ;
+
+        }
+    """
+
+    datum_wkt_cdl = """
+netcdf output5 {
+dimensions:
+    y = 4 ;
+    x = 3 ;
+variables:
+    float data(y, x) ;
+        data :standard_name = "toa_brightness_temperature" ;
+        data :units = "K" ;
+        data :grid_mapping = "mercator" ;
+    int mercator ;
+        mercator:grid_mapping_name = "mercator" ;
+        mercator:longitude_of_prime_meridian = 0. ;
+        mercator:earth_radius = 6378169. ;
+        mercator:longitude_of_projection_origin = 0. ;
+        mercator:false_easting = 0. ;
+        mercator:false_northing = 0. ;
+        mercator:scale_factor_at_projection_origin = 1. ;
+        mercator:crs_wkt = "PROJCRS[\\"unknown\\",BASEGEOGCRS[\\"unknown\\",DATUM[\\"OSGB36\\",ELLIPSOID[\\"unknown\\",6378169,0,LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]],PRIMEM[\\"Greenwich\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8901]]],CONVERSION[\\"unknown\\",METHOD[\\"Mercator (variant B)\\",ID[\\"EPSG\\",9805]],PARAMETER[\\"Latitude of 1st standard parallel\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8823]],PARAMETER[\\"Longitude of natural origin\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8802]],PARAMETER[\\"False easting\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8806]],PARAMETER[\\"False northing\\",0,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8807]]],CS[Cartesian,2],AXIS[\\"(E)\\",east,ORDER[1],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]],AXIS[\\"(N)\\",north,ORDER[2],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]]" ;
+    float y(y) ;
+        y:axis = "Y" ;
+        y:units = "m" ;
+        y:standard_name = "projection_y_coordinate" ;
+    float x(x) ;
+        x:axis = "X" ;
+        x:units = "m" ;
+        x:standard_name = "projection_x_coordinate" ;
+
+// global attributes:
+        :standard_name_vocabulary = "CF Standard Name Table v27" ;
+        :Conventions = "CF-1.7" ;
+data:
+
+ data =
+  0, 1, 2,
+  3, 4, 5,
+  6, 7, 8,
+  9, 10, 11 ;
+
+ mercator = _ ;
+
+ y = 1, 2, 3, 5 ;
+
+ x = -6, -4, -2 ;
+}
+    """
+
+    def test_load_datum_wkt(self):
+        expected = "OSGB 1936"
+        nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
+        with iris.FUTURE.context(datum_support=True):
+            cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
+        self.assertStringEqual(expected, actual)
+
+    def test_no_load_datum_wkt(self):
+        nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
+        with self.assertWarnsRegexp("iris.FUTURE.datum_support"):
+            cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
+        self.assertStringEqual(actual, "unknown")
+
+    def test_load_datum_cf_var(self):
+        expected = "OSGB 1936"
+        nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
+        with iris.FUTURE.context(datum_support=True):
+            cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
+        self.assertStringEqual(expected, actual)
+
+    def test_no_load_datum_cf_var(self):
+        nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
+        with self.assertWarnsRegexp("iris.FUTURE.datum_support"):
+            cube = iris.load_cube(nc_path)
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
+        self.assertStringEqual(actual, "unknown")
+
+    def test_save_datum(self):
+        expected = "OSGB 1936"
+        saved_crs = iris.coord_systems.Mercator(
+            ellipsoid=iris.coord_systems.GeogCS.from_datum("OSGB36")
+        )
+
+        base_cube = stock.realistic_3d()
+        base_lat_coord = base_cube.coord("grid_latitude")
+        test_lat_coord = DimCoord(
+            base_lat_coord.points,
+            standard_name="projection_y_coordinate",
+            coord_system=saved_crs,
+        )
+        base_lon_coord = base_cube.coord("grid_longitude")
+        test_lon_coord = DimCoord(
+            base_lon_coord.points,
+            standard_name="projection_x_coordinate",
+            coord_system=saved_crs,
+        )
+        test_cube = Cube(
+            base_cube.data,
+            standard_name=base_cube.standard_name,
+            units=base_cube.units,
+            dim_coords_and_dims=(
+                (base_cube.coord("time"), 0),
+                (test_lat_coord, 1),
+                (test_lon_coord, 2),
+            ),
+        )
+
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(test_cube, filename)
+            with iris.FUTURE.context(datum_support=True):
+                cube = iris.load_cube(filename)
+
+        test_crs = cube.coord("projection_y_coordinate").coord_system
+        actual = str(test_crs.as_cartopy_crs().datum)
+        self.assertStringEqual(expected, actual)
 
 
 def _get_scale_factor_add_offset(cube, datatype):
@@ -466,9 +680,9 @@ def _get_scale_factor_add_offset(cube, datatype):
     else:
         masked = False
     if masked:
-        scale_factor = (cmax - cmin) / (2 ** n - 2)
+        scale_factor = (cmax - cmin) / (2**n - 2)
     else:
-        scale_factor = (cmax - cmin) / (2 ** n - 1)
+        scale_factor = (cmax - cmin) / (2**n - 1)
     if dt.kind == "u":
         add_offset = cmin
     elif dt.kind == "i":
@@ -672,6 +886,7 @@ data:
         self.assertEqual(cs.false_northing, 0.0)
 
 
+@tests.skip_data
 class TestConstrainedLoad(tests.IrisTest):
     filename = tests.get_data_path(
         ("NetCDF", "label_and_climate", "A1B-99999a-river-sep-2070-2099.nc")

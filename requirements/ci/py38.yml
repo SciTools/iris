@@ -10,35 +10,35 @@ dependencies:
   - setuptools >=40.8.0
 
 # Core dependencies.
-  - cartopy >=0.18
-  - cf-units
+  - cartopy >=0.20
+  - cf-units >=3
   - cftime >=1.5
-  - dask >=2
+  - dask-core >=2
   - matplotlib
   - netcdf4
-  - numpy >=1.14
+  - numpy >=1.19
   - python-xxhash
+  - pyproj
   - scipy
 
 # Optional dependencies.
   - esmpy >=7.0
   - graphviz
-  - iris-sample-data
+  - iris-sample-data >=2.4.0
   - mo_pack
-  - nc-time-axis
+  - nc-time-axis >=1.4
   - pandas
   - pip
   - python-stratify
-  - pyugrid
 
 # Test dependencies.
-  - asv
   - filelock
-  - flake8
   - imagehash >=4.0
-  - nose
   - pillow <7
   - pre-commit
+  - psutil
+  - pytest
+  - pytest-xdist
   - requests
 
 # Documentation dependencies.
@@ -47,4 +47,4 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery
   - sphinx-panels
-  - sphinx_rtd_theme
+  - pydata-sphinx-theme

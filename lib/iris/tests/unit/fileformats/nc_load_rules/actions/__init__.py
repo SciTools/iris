@@ -6,14 +6,12 @@
 """
 Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`.
 
-This module provides the engine.activate() call used in the function
-`iris.fileformats.netcdf._load_cube`.
-
 """
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import warnings
 
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
@@ -98,10 +96,19 @@ class Mixin__nc_load_actions:
         # Use 'patch' so it is restored after the test.
         self.patch("iris.fileformats.netcdf.DEBUG", self.debug)
 
-        # Call the main translation function to load a single cube.
-        # _load_cube establishes per-cube facts, activates rules and
-        # produces an actual cube.
-        cube = _load_cube(engine, cf, cf_var, nc_path)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="Ignoring a datum in netCDF load for consistency with existing "
+                "behaviour. In a future version of Iris, this datum will be "
+                "applied. To apply the datum when loading, use the "
+                "iris.FUTURE.datum_support flag.",
+                category=FutureWarning,
+            )
+            # Call the main translation function to load a single cube.
+            # _load_cube establishes per-cube facts, activates rules and
+            # produces an actual cube.
+            cube = _load_cube(engine, cf, cf_var, nc_path)
 
         # Also Record, on the cubes, which hybrid coord elements were identified
         # by the rules operation.

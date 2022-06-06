@@ -1809,7 +1809,8 @@ class ProtoCube:
 
         # Order the coordinates by hints, axis, and definition.
         for coord in sorted(coords, key=key_func):
-            if not cube.coord_dims(coord) and coord.shape == (1,):
+            dims = tuple(cube.coord_dims(coord))
+            if not dims and coord.shape == (1,):
                 # Extract the scalar coordinate data and metadata.
                 scalar_defns.append(coord.metadata)
                 # Because we know there's a single Cell in the
@@ -1834,11 +1835,11 @@ class ProtoCube:
                 # Extract the vector coordinate and metadata.
                 if id(coord) in cube_aux_coord_ids:
                     vector_aux_coords_and_dims.append(
-                        _CoordAndDims(coord, tuple(cube.coord_dims(coord)))
+                        _CoordAndDims(coord, dims)
                     )
                 else:
                     vector_dim_coords_and_dims.append(
-                        _CoordAndDims(coord, tuple(cube.coord_dims(coord)))
+                        _CoordAndDims(coord, dims)
                     )
 
         factory_defns = []

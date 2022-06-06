@@ -12,7 +12,16 @@ import os
 import subprocess
 
 import iris
+from iris._deprecation import warn_deprecated
 import iris.util
+
+wmsg = (
+    "iris.fileformats.dot has been deprecated and will be removed in a "
+    "future release. If you make use of this functionality, please contact "
+    "the Iris Developers to discuss how to retain it (which may involve "
+    "reversing the deprecation)."
+)
+warn_deprecated(wmsg)
 
 _GRAPH_INDENT = " " * 4
 _SUBGRAPH_INDENT = " " * 8
@@ -50,14 +59,18 @@ DOT_AVAILABLE = _dot_path() is not None
 
 
 def save(cube, target):
-    """Save a dot representation of the cube.
+    """
+    Save a dot representation of the cube.
 
-    Args:
+    Args
+    ----
+    cube: :class:`iris.cube.Cube`.
+    target
+        A filename or open file handle.
 
-        * cube   - A :class:`iris.cube.Cube`.
-        * target - A filename or open file handle.
-
-    See also :func:`iris.io.save`.
+    See Also
+    --------
+    :func:`iris.io.save`.
 
     """
     if isinstance(target, str):
@@ -78,19 +91,23 @@ def save(cube, target):
 
 def save_png(source, target, launch=False):
     """
-    Produces a "dot" instance diagram by calling dot and optionally launching the resulting image.
+    Produce a "dot" instance diagram by calling dot and optionally launching
+    the resulting image.
 
-    Args:
+    Args
+    ----
+    source: :class:`iris.cube.Cube`, or dot filename.
+    target
+        A filename or open file handle.
+        If passing a file handle, take care to open it for binary output.
 
-        * source - A :class:`iris.cube.Cube`, or dot filename.
-        * target - A filename or open file handle.
-                   If passing a file handle, take care to open it for binary output.
+    **kwargs
+        * launch
+            Display the image. Default is False.
 
-    Kwargs:
-
-        * launch - Display the image. Default is False.
-
-    See also :func:`iris.io.save`.
+    See Also
+    --------
+    :func:`iris.io.save`.
 
     """
     # From cube or dot file?
@@ -143,11 +160,13 @@ def save_png(source, target, launch=False):
 
 
 def cube_text(cube):
-    """Return a DOT text representation a `iris.cube.Cube`.
+    """
+    Return a DOT text representation a `iris.cube.Cube`.
 
-    Args:
-
-     * cube  -  The cube for which to create DOT text.
+    Args
+    ----
+    cube
+       The cube for which to create DOT text.
 
     """
     # We use r'' type string constructor as when we type \n in a string without the r'' constructor
@@ -274,13 +293,14 @@ digraph CubeGraph{
 
 def _coord_text(label, coord):
     """
-    Returns a string containing the dot representation for a single coordinate node.
+    Return a string containing the dot representation for a single coordinate
+    node.
 
-    Args:
-
-    * label
+    Args
+    ----
+    label
         The dot ID of the coordinate node.
-    * coord
+    coord
         The coordinate to convert.
 
     """
@@ -306,14 +326,16 @@ def _coord_text(label, coord):
 
 def _coord_system_text(cs, uid):
     """
-    Returns a string containing the dot representation for a single coordinate system node.
+    Return a string containing the dot representation for a single coordinate
+    system node.
 
-    Args:
-
-    * cs
+    Args
+    ----
+    cs
         The coordinate system to convert.
-    * uid
-        The uid allows/distinguishes non-identical CoordSystems of the same type.
+    uid
+        The uid allows/distinguishes non-identical CoordSystems of the same
+        type.
 
     """
     attrs = []
@@ -332,15 +354,15 @@ def _coord_system_text(cs, uid):
 
 def _dot_node(indent, id, name, attributes):
     """
-    Returns a string containing the dot representation for a single node.
+    Return a string containing the dot representation for a single node.
 
-    Args:
-
-     * id
+    Args
+    ----
+    id
         The ID of the node.
-     * name
+    name
         The visual name of the node.
-     * attributes
+    attributes
         An iterable of (name, value) attribute pairs.
 
     """

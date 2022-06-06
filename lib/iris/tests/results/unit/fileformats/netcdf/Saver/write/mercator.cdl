@@ -13,7 +13,7 @@ variables:
 		mercator:longitude_of_projection_origin = 49. ;
 		mercator:false_easting = 0. ;
 		mercator:false_northing = 0. ;
-		mercator:scale_factor_at_projection_origin = 1. ;
+		mercator:standard_parallel = 0. ;
 	int64 projection_y_coordinate(projection_y_coordinate) ;
 		projection_y_coordinate:axis = "Y" ;
 		projection_y_coordinate:units = "m" ;

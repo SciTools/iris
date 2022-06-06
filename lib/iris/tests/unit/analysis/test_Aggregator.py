@@ -156,6 +156,19 @@ class Test_aggregate(tests.IrisTest):
             self.assertArrayAlmostEqual(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
+    def test_allmasked_1D_with_mdtol(self):
+        data = ma.masked_all((3,))
+        axis = 0
+        mdtol = 0.5
+        mock_return = ma.masked
+        with mock.patch.object(
+            self.TEST, "call_func", return_value=mock_return
+        ) as mock_method:
+            result = self.TEST.aggregate(data, axis, mdtol=mdtol)
+
+        self.assertIs(result, mock_return)
+        mock_method.assert_called_once_with(data, axis=axis)
+
     def test_returning_scalar_mdtol(self):
         # Test the case when the data aggregation function returns a scalar and
         # turns it into a masked array.

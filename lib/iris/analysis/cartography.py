@@ -28,6 +28,8 @@ from ._grid_angles import gridcell_angles, rotate_grid_vectors
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
 __all__ = [
+    "DistanceDifferential",
+    "PartialDifferential",
     "area_weights",
     "cosine_latitude_weights",
     "get_xy_contiguous_bounded_grids",
@@ -39,8 +41,6 @@ __all__ = [
     "rotate_winds",
     "unrotate_pole",
     "wrap_lons",
-    "DistanceDifferential",
-    "PartialDifferential",
 ]
 
 # This value is used as a fall-back if the cube does not define the earth
@@ -70,7 +70,7 @@ def wrap_lons(lons, base, period):
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
     lons = lons.astype(np.float64)
-    return ((lons - base + period * 2) % period) + base
+    return ((lons - base) % period) + base
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
@@ -335,7 +335,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
         raise ValueError("Bounds must be [n,2] array")
 
     # fill in a new array of areas
-    radius_sqr = radius_of_earth ** 2
+    radius_sqr = radius_of_earth**2
     radian_lat_64 = radian_lat_bounds.astype(np.float64)
     radian_lon_64 = radian_lon_bounds.astype(np.float64)
 
@@ -927,7 +927,7 @@ def _crs_distance_differentials(crs, x, y):
 
     """
     # Make a true-latlon coordinate system for distance calculations.
-    crs_latlon = ccrs.Geodetic(globe=ccrs.Globe(ellipse="sphere"))
+    crs_latlon = ccrs.Geodetic(globe=crs.globe)
     # Transform points to true-latlon (just to get the true latitudes).
     _, true_lat = _transform_xy(crs, x, y, crs_latlon)
     # Get coordinate differentials w.r.t. true-latlon.
@@ -1010,8 +1010,8 @@ def _transform_distance_vectors_tolerance_mask(
     # Squared magnitudes should be equal to one within acceptable tolerance.
     # A value of atol=2e-3 is used, which corresponds to a change in magnitude
     # of approximately 0.1%.
-    sqmag_1_0 = u_one_t ** 2 + v_zero_t ** 2
-    sqmag_0_1 = u_zero_t ** 2 + v_one_t ** 2
+    sqmag_1_0 = u_one_t**2 + v_zero_t**2
+    sqmag_0_1 = u_zero_t**2 + v_one_t**2
     mask = np.logical_not(
         np.logical_and(
             np.isclose(sqmag_1_0, ones, atol=2e-3),

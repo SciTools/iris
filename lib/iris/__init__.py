@@ -36,13 +36,17 @@ To persist a cube to the file-system, use the :func:`save` function.
 All the load functions share very similar arguments:
 
     * uris:
-        Either a single filename/URI expressed as a string, or an
-        iterable of filenames/URIs.
+        Either a single filename/URI expressed as a string or
+        :class:`pathlib.PurePath`, or an iterable of filenames/URIs.
 
         Filenames can contain `~` or `~user` abbreviations, and/or
         Unix shell-style wildcards (e.g. `*` and `?`). See the
         standard library function :func:`os.path.expanduser` and
         module :mod:`fnmatch` for more details.
+
+        .. warning::
+
+            If supplying a URL, only OPeNDAP Data Sources are supported.
 
     * constraints:
         Either a single constraint, or an iterable of constraints.
@@ -89,6 +93,7 @@ import contextlib
 import glob
 import itertools
 import os.path
+import pathlib
 import threading
 
 import iris._constraints
@@ -103,23 +108,23 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = "3.1.dev0"
+__version__ = "3.3.dev0"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
+    "AttributeConstraint",
+    "Constraint",
+    "FUTURE",
+    "Future",
+    "IrisDeprecation",
+    "NameConstraint",
     "load",
     "load_cube",
     "load_cubes",
     "load_raw",
-    "save",
-    "Constraint",
-    "AttributeConstraint",
-    "NameConstraint",
     "sample_data_path",
+    "save",
     "site_configuration",
-    "Future",
-    "FUTURE",
-    "IrisDeprecation",
 ]
 
 
@@ -131,7 +136,7 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self):
+    def __init__(self, datum_support=False):
         """
         A container for run-time options controls.
 
@@ -146,22 +151,24 @@ class Future(threading.local):
         .. note::
 
             iris.FUTURE.example_future_flag does not exist. It is provided
-            as an example because there are currently no flags in
-            iris.Future.
+            as an example.
 
         """
-        # The flag 'example_future_flag' is provided as a future reference
-        # for the structure of this class.
+        # The flag 'example_future_flag' is provided as a reference for the
+        # structure of this class.
+        #
+        # Note that self.__dict__ is used explicitly due to the manner in which
+        # __setattr__ is overridden.
         #
         # self.__dict__['example_future_flag'] = example_future_flag
-        pass
+        self.__dict__["datum_support"] = datum_support
 
     def __repr__(self):
 
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future()"
-        return msg.format()
+        msg = "Future(datum_support={})"
+        return msg.format(self.datum_support)
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
@@ -206,8 +213,7 @@ class Future(threading.local):
         .. note::
 
             iris.FUTURE.example_future_flag does not exist and is
-            provided only as an example since there are currently no
-            flags in Future.
+            provided only as an example.
 
         """
         # Save the current context
@@ -241,7 +247,7 @@ else:
 
 def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, str):
+    if isinstance(uris, (str, pathlib.PurePath)):
         uris = [uris]
 
     # Group collections of uris by their iris handler
@@ -285,7 +291,8 @@ def load(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -313,7 +320,8 @@ def load_cube(uris, constraint=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -352,7 +360,8 @@ def load_cubes(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -397,7 +406,8 @@ def load_raw(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 

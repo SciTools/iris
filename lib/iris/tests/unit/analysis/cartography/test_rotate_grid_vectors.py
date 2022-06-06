@@ -33,7 +33,7 @@ class TestRotateGridVectors(tests.IrisTest):
         u_cube.rename("dx")
         u_cube.data[...] = 0
         v_cube = u_cube.copy()
-        v_cube.name("dy")
+        v_cube.rename("dy")
 
         # Define 6 different vectors, repeated in each data row.
         in_vu = np.array([(0, 1), (2, -1), (-1, -1), (-3, 1), (2, 0), (0, 0)])
@@ -71,7 +71,7 @@ class TestRotateGridVectors(tests.IrisTest):
         ang_diffs = out_angs - expect_angs
         # Fix for null vectors, and +/-360 differences.
         ang_diffs[np.abs(out_mags) < 0.001] = 0.0
-        ang_diffs = ang_diffs % 360.0
+        ang_diffs[np.isclose(np.abs(ang_diffs), 360.0)] = 0.0
         # Check that any differences are very small.
         self.assertArrayAllClose(ang_diffs, 0.0)
 
@@ -97,7 +97,7 @@ class TestRotateGridVectors(tests.IrisTest):
         u_cube.rename("dx")
         u_cube.data[...] = 1.0
         v_cube = u_cube.copy()
-        v_cube.name("dy")
+        v_cube.rename("dy")
         v_cube.data[...] = 0.0
 
         # Setup a fake angles result from the inner call to 'gridcell_angles'.

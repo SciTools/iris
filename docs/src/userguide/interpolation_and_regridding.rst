@@ -19,14 +19,14 @@ In Iris we refer to the available types of interpolation and regridding as
 `schemes`. The following are the interpolation schemes that are currently
 available in Iris:
 
- * linear interpolation (:class:`iris.analysis.Linear`), and
- * nearest-neighbour interpolation (:class:`iris.analysis.Nearest`).
+* linear interpolation (:class:`iris.analysis.Linear`), and
+* nearest-neighbour interpolation (:class:`iris.analysis.Nearest`).
 
 The following are the regridding schemes that are currently available in Iris:
 
- * linear regridding (:class:`iris.analysis.Linear`),
- * nearest-neighbour regridding (:class:`iris.analysis.Nearest`), and
- * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order conservative).
+* linear regridding (:class:`iris.analysis.Linear`),
+* nearest-neighbour regridding (:class:`iris.analysis.Nearest`), and
+* area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order conservative).
 
 The linear, nearest-neighbor, and area-weighted regridding schemes support
 lazy regridding, i.e. if the source cube has lazy data, the resulting cube
@@ -42,8 +42,8 @@ Interpolation
 Interpolating a cube is achieved with the :meth:`~iris.cube.Cube.interpolate`
 method. This method expects two arguments:
 
- #. the sample points to interpolate, and
- #. the second argument being the interpolation scheme to use.
+#. the sample points to interpolate, and
+#. the interpolation scheme to use.
 
 The result is a new cube, interpolated at the sample points.
 
@@ -51,9 +51,9 @@ Sample points must be defined as an iterable of ``(coord, value(s))`` pairs.
 The `coord` argument can be either a coordinate name or coordinate instance.
 The specified coordinate must exist on the cube being interpolated! For example:
 
- * coordinate names and scalar sample points: ``[('latitude', 51.48), ('longitude', 0)]``,
- * a coordinate instance and a scalar sample point: ``[(cube.coord('latitude'), 51.48)]``, and
- * a coordinate name and a NumPy array of sample points: ``[('longitude', np.linspace(-11, 2, 14))]``
+* coordinate names and scalar sample points: ``[('latitude', 51.48), ('longitude', 0)]``,
+* a coordinate instance and a scalar sample point: ``[(cube.coord('latitude'), 51.48)]``, and
+* a coordinate name and a NumPy array of sample points: ``[('longitude', np.linspace(-11, 2, 14))]``
 
 are all examples of valid sample points.
 
@@ -79,7 +79,7 @@ Let's take the air temperature cube we've seen previously:
             mean over years             time
         Attributes:
             STASH                       m01s16i203
-            source                      Data from Met Office Unified Model
+            source                      'Data from Met Office Unified Model'
 
 We can interpolate specific values from the coordinates of the cube:
 
@@ -98,7 +98,7 @@ We can interpolate specific values from the coordinates of the cube:
             mean over years             time
         Attributes:
             STASH                       m01s16i203
-            source                      Data from Met Office Unified Model
+            source                      'Data from Met Office Unified Model'
 
 As we can see, the resulting cube is scalar and has longitude and latitude coordinates with
 the values defined in our sample points.
@@ -175,11 +175,11 @@ The extrapolation mode is controlled by the ``extrapolation_mode`` keyword.
 For the available interpolation schemes available in Iris, the ``extrapolation_mode``
 keyword must be one of:
 
- * ``extrapolate`` -- the extrapolation points will be calculated by extending the gradient of the closest two points,
- * ``error`` -- a ValueError exception will be raised, notifying an attempt to extrapolate,
- * ``nan`` -- the extrapolation points will be be set to NaN,
- * ``mask`` -- the extrapolation points will always be masked, even if the source data is not a MaskedArray, or
- * ``nanmask`` -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
+* ``extrapolate`` -- the extrapolation points will be calculated by extending the gradient of the closest two points,
+* ``error`` -- a ValueError exception will be raised, notifying an attempt to extrapolate,
+* ``nan`` -- the extrapolation points will be be set to NaN,
+* ``mask`` -- the extrapolation points will always be masked, even if the source data is not a MaskedArray, or
+* ``nanmask`` -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
 
 Using an extrapolation mode is achieved by constructing an interpolation scheme
 with the extrapolation mode keyword set as required. The constructed scheme
@@ -206,8 +206,8 @@ intensive part of an interpolation is setting up the interpolator.
 To cache an interpolator you must set up an interpolator scheme and call the
 scheme's interpolator method. The interpolator method takes as arguments:
 
- #. a cube to be interpolated, and
- #. an iterable of coordinate names or coordinate instances of the coordinates that are to be interpolated over.
+#. a cube to be interpolated, and
+#. an iterable of coordinate names or coordinate instances of the coordinates that are to be interpolated over.
 
 For example:
 
@@ -244,8 +244,8 @@ regridding is based on the **horizontal** grid of *another cube*.
 Regridding a cube is achieved with the :meth:`cube.regrid() <iris.cube.Cube.regrid>` method.
 This method expects two arguments:
 
- #. *another cube* that defines the target grid onto which the cube should be regridded, and
- #. the regridding scheme to use.
+#. *another cube* that defines the target grid onto which the cube should be regridded, and
+#. the regridding scheme to use.
 
 .. note::
 
@@ -278,15 +278,15 @@ mode when defining the regridding scheme.
 For the available regridding schemes in Iris, the ``extrapolation_mode`` keyword
 must be one of:
 
- * ``extrapolate`` --
+* ``extrapolate`` --
 
-    * for :class:`~iris.analysis.Linear` the extrapolation points will be calculated by extending the gradient of the closest two points.
-    * for :class:`~iris.analysis.Nearest` the extrapolation points will take their value from the nearest source point.
+  * for :class:`~iris.analysis.Linear` the extrapolation points will be calculated by extending the gradient of the closest two points.
+  * for :class:`~iris.analysis.Nearest` the extrapolation points will take their value from the nearest source point.
 
- * ``nan`` -- the extrapolation points will be be set to NaN.
- * ``error`` -- a ValueError exception will be raised, notifying an attempt to extrapolate.
- * ``mask`` -- the extrapolation points will always be masked, even if the source data is not a MaskedArray.
- * ``nanmask`` -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
+* ``nan`` -- the extrapolation points will be be set to NaN.
+* ``error`` -- a ValueError exception will be raised, notifying an attempt to extrapolate.
+* ``mask`` -- the extrapolation points will always be masked, even if the source data is not a MaskedArray.
+* ``nanmask`` -- if the source data is a MaskedArray the extrapolation points will be masked. Otherwise they will be set to NaN.
 
 The ``rotated_psl`` cube is defined on a limited area rotated pole grid. If we regridded
 the ``rotated_psl`` cube onto the global grid as defined by the ``global_air_temp`` cube
@@ -395,8 +395,8 @@ intensive part of a regrid is setting up the regridder.
 To cache a regridder you must set up a regridder scheme and call the
 scheme's regridder method. The regridder method takes as arguments:
 
- #. a cube (that is to be regridded) defining the source grid, and
- #. a cube defining the target grid to regrid the source cube to.
+#. a cube (that is to be regridded) defining the source grid, and
+#. a cube defining the target grid to regrid the source cube to.
 
 For example:
 

@@ -93,30 +93,29 @@ class Tests(tests.IrisTest):
         copy_measure = self.measure.copy(new_vals)
         self.assertArrayEqual(copy_measure.data, new_vals)
 
-    def test_repr_other_metadata(self):
-        expected = (
-            ", long_name='measured_area', "
-            "var_name='area', attributes={'notes': '1m accuracy'}"
-        )
-        self.assertEqual(self.measure._repr_other_metadata(), expected)
-
     def test___str__(self):
-        expected = (
-            "CellMeasure(array([10., 12., 16.,  9.]), "
-            "measure='area', standard_name='cell_area', "
-            "units=Unit('m^2'), long_name='measured_area', "
-            "var_name='area', attributes={'notes': '1m accuracy'})"
+        expected = "\n".join(
+            [
+                "CellMeasure :  cell_area / (m^2)",
+                "    data: [10., 12., 16.,  9.]",
+                "    shape: (4,)",
+                "    dtype: float64",
+                "    standard_name: 'cell_area'",
+                "    long_name: 'measured_area'",
+                "    var_name: 'area'",
+                "    attributes:",
+                "        notes  '1m accuracy'",
+                "    measure: 'area'",
+            ]
         )
         self.assertEqual(self.measure.__str__(), expected)
 
     def test___repr__(self):
         expected = (
-            "CellMeasure(array([10., 12., 16.,  9.]), "
-            "measure='area', standard_name='cell_area', "
-            "units=Unit('m^2'), long_name='measured_area', "
-            "var_name='area', attributes={'notes': '1m accuracy'})"
+            "<CellMeasure: cell_area / (m^2)  "
+            "[10., 12., 16., 9.]  shape(4,)>"
         )
-        self.assertEqual(self.measure.__repr__(), expected)
+        self.assertEqual(expected, self.measure.__repr__())
 
     def test__eq__(self):
         self.assertEqual(self.measure, self.measure)

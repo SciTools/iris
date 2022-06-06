@@ -38,7 +38,7 @@ Let's load some air temperature which runs from 1860 to 2100::
     air_temp = iris.load_cube(filename, 'air_temperature')
 
 We can now get the first and last time slices using indexing 
-(see :ref:`subsetting_a_cube` for a reminder)::
+(see :ref:`cube_indexing` for a reminder)::
 
     t_first = air_temp[0, :, :]
     t_last = air_temp[-1, :, :]
@@ -63,9 +63,9 @@ but with the data representing their difference:
             forecast_reference_time     1859-09-01 06:00:00
             height                      1.5 m
         Attributes:
-            Conventions                 CF-1.5
-            Model scenario              E1
-            source                      Data from Met Office Unified Model 6.05
+            Conventions                 'CF-1.5'
+            Model scenario              'E1'
+            source                      'Data from Met Office Unified Model 6.05'
 
 
 .. note::

@@ -692,7 +692,7 @@ class TestIteration(TestCube2d):
                 pass
 
     def test_not_iterable(self):
-        self.assertFalse(isinstance(self.t, collections.Iterable))
+        self.assertFalse(isinstance(self.t, collections.abc.Iterable))
 
 
 class Test2dSlicing(TestCube2d):

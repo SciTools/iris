@@ -5,10 +5,9 @@ Plotting a Cube
 ===============
 
 Iris utilises the power of Python's 
-`Matplotlib <http://matplotlib.sourceforge.net/>`_ package in order to generate 
+`Matplotlib <https://matplotlib.org/>`_ package in order to generate 
 high quality, production ready 1D and 2D plots. 
-The functionality of the Matplotlib 
-`pyplot <http://matplotlib.sourceforge.net/api/pyplot_api.html>`_ module has 
+The functionality of the Matplotlib :py:mod:`~matplotlib.pyplot` module has 
 been extended within Iris to facilitate easy visualisation of a cube's data.
 
 
@@ -102,15 +101,15 @@ see :py:func:`matplotlib.pyplot.savefig`).
 
 Some of the formats which are supported by **plt.savefig**:
 
-	======  ======  ======================================================================
-	Format  Type    Description
-	======  ======  ======================================================================
-	EPS     Vector  Encapsulated PostScript
-	PDF     Vector  Portable Document Format
-	PNG     Raster  Portable Network Graphics, a format with a lossless compression method
-	PS      Vector  PostScript, ideal for printer output
-	SVG     Vector  Scalable Vector Graphics, XML based
-	======  ======  ======================================================================
+======  ======  ======================================================================
+Format  Type    Description
+======  ======  ======================================================================
+EPS     Vector  Encapsulated PostScript
+PDF     Vector  Portable Document Format
+PNG     Raster  Portable Network Graphics, a format with a lossless compression method
+PS      Vector  PostScript, ideal for printer output
+SVG     Vector  Scalable Vector Graphics, XML based
+======  ======  ======================================================================
 
 ******************
 Iris Cube Plotting
@@ -126,12 +125,12 @@ wrapper functions.
 
 As a rule of thumb:
 
-   * if you wish to do a visualisation with a cube, use ``iris.plot`` or 
-     ``iris.quickplot``.
-   * if you wish to show, save or manipulate **any** visualisation, 
-     including ones created with Iris, use ``matplotlib.pyplot``.
-   * if you wish to create a non cube visualisation, also use 
-     ``matplotlib.pyplot``.
+* if you wish to do a visualisation with a cube, use ``iris.plot`` or
+  ``iris.quickplot``.
+* if you wish to show, save or manipulate **any** visualisation,
+  including ones created with Iris, use ``matplotlib.pyplot``.
+* if you wish to create a non cube visualisation, also use
+  ``matplotlib.pyplot``.
 
 The ``iris.quickplot`` module is exactly the same as the ``iris.plot`` module, 
 except that ``quickplot`` will add a title, x and y labels and a colorbar 
@@ -218,7 +217,7 @@ Plotting 2-Dimensional Cubes
 Creating Maps
 -------------
 Whenever a 2D plot is created using an :class:`iris.coord_systems.CoordSystem`,
-a cartopy :class:`~cartopy.mpl.GeoAxes` instance is created, which can be
+a cartopy :class:`~cartopy.mpl.geoaxes.GeoAxes` instance is created, which can be
 accessed with the :func:`matplotlib.pyplot.gca` function.
 
 Given the current map, you can draw gridlines and coastlines amongst other 
@@ -226,8 +225,8 @@ things.
 
 .. seealso::
 
-    :meth:`cartopy's gridlines() <cartopy.mpl.GeoAxes.gridlines>`,
-    :meth:`cartopy's coastlines() <cartopy.mpl.GeoAxes.coastlines>`.
+    :meth:`cartopy's gridlines() <cartopy.mpl.geoaxes.GeoAxes.gridlines>`,
+    :meth:`cartopy's coastlines() <cartopy.mpl.geoaxes.GeoAxes.coastlines>`.
 
 
 Cube Contour

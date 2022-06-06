@@ -8,8 +8,8 @@ Test Categories
 
 There are two main categories of tests within Iris:
 
- - :ref:`testing.unit_test`
- - :ref:`testing.integration`
+- :ref:`testing.unit_test`
+- :ref:`testing.integration`
 
 Ideally, all code changes should be accompanied by one or more unit
 tests, and by zero or more integration tests.

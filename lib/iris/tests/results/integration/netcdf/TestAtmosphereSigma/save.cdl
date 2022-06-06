@@ -1,0 +1,62 @@
+dimensions:
+	bnds = 2 ;
+	grid_latitude = 100 ;
+	grid_longitude = 100 ;
+	model_level_number = 70 ;
+	time = 6 ;
+variables:
+	float air_potential_temperature(time, model_level_number, grid_latitude, grid_longitude) ;
+		air_potential_temperature:standard_name = "air_potential_temperature" ;
+		air_potential_temperature:units = "K" ;
+		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
+		air_potential_temperature:coordinates = "forecast_period ptop sigma surface_air_pressure" ;
+	int rotated_latitude_longitude ;
+		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
+		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
+		rotated_latitude_longitude:earth_radius = 6371229. ;
+		rotated_latitude_longitude:grid_north_pole_latitude = 37.5 ;
+		rotated_latitude_longitude:grid_north_pole_longitude = 177.5 ;
+		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
+	double time(time) ;
+		time:axis = "T" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "gregorian" ;
+	int model_level_number(model_level_number) ;
+		model_level_number:axis = "Z" ;
+		model_level_number:units = "1" ;
+		model_level_number:standard_name = "model_level_number" ;
+		model_level_number:positive = "up" ;
+	float grid_latitude(grid_latitude) ;
+		grid_latitude:axis = "Y" ;
+		grid_latitude:bounds = "grid_latitude_bnds" ;
+		grid_latitude:units = "degrees" ;
+		grid_latitude:standard_name = "grid_latitude" ;
+	float grid_latitude_bnds(grid_latitude, bnds) ;
+	float grid_longitude(grid_longitude) ;
+		grid_longitude:axis = "X" ;
+		grid_longitude:bounds = "grid_longitude_bnds" ;
+		grid_longitude:units = "degrees" ;
+		grid_longitude:standard_name = "grid_longitude" ;
+	float grid_longitude_bnds(grid_longitude, bnds) ;
+	double forecast_period ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
+	double ptop ;
+		ptop:units = "Pa" ;
+	float sigma(model_level_number) ;
+		sigma:bounds = "sigma_bnds" ;
+		sigma:units = "1" ;
+		sigma:long_name = "sigma" ;
+		sigma:standard_name = "atmosphere_sigma_coordinate" ;
+		sigma:axis = "Z" ;
+		sigma:formula_terms = "ptop: ptop sigma: sigma ps: surface_air_pressure" ;
+	float sigma_bnds(model_level_number, bnds) ;
+	float surface_air_pressure(grid_latitude, grid_longitude) ;
+		surface_air_pressure:units = "Pa" ;
+		surface_air_pressure:standard_name = "surface_air_pressure" ;
+
+// global attributes:
+		:source = "Iris test case" ;
+		:Conventions = "CF-1.7" ;
+}

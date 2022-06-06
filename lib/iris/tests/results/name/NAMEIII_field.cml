@@ -51,7 +51,11 @@
         <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
     </coords>
     <cellMethods>
@@ -112,7 +116,11 @@
         <dimCoord bounds="[[349218.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer average]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
     </coords>
     <cellMethods>
@@ -172,7 +180,11 @@
         <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="e92ff7b7" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
     </coords>
     <cellMethods>
@@ -232,7 +244,11 @@
         <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="e92ff7b7" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
     </coords>
     <cellMethods>
@@ -292,7 +308,11 @@
         <dimCoord bounds="[[349215.0, 349219.0]]" id="cb784457" points="[349219.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="e92ff7b7" long_name="z" points="[]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
     </coords>
     <cellMethods>

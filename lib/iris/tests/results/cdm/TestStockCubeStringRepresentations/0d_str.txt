@@ -10,4 +10,4 @@ air_potential_temperature / (K)     (scalar cube)
         surface_altitude            413.93686 m
         time                        2009-09-09 17:10:00
     Attributes:
-        source                      Iris test case
+        source                      'Iris test case'

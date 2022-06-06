@@ -1,0 +1,39 @@
+dimensions:
+	Mesh1_edge_N_nodes = 2 ;
+	nMesh1_edge = 4 ;
+	nMesh1_node = 5 ;
+variables:
+	int Mesh1 ;
+		Mesh1:cf_role = "mesh_topology" ;
+		Mesh1:topology_dimension = 1 ;
+		Mesh1:long_name = "Topology data of 1D network" ;
+		Mesh1:node_coordinates = "Mesh1_node_x Mesh1_node_y" ;
+		Mesh1:edge_coordinates = "Mesh1_edge_x Mesh1_edge_y" ;
+		Mesh1:edge_node_connectivity = "Mesh1_edge_nodes" ;
+	double Mesh1_node_x(nMesh1_node) ;
+		Mesh1_node_x:units = "degrees_east" ;
+		Mesh1_node_x:standard_name = "longitude" ;
+		Mesh1_node_x:long_name = "Longitude of 1D network nodes." ;
+	double Mesh1_node_y(nMesh1_node) ;
+		Mesh1_node_y:units = "degrees_north" ;
+		Mesh1_node_y:standard_name = "latitude" ;
+		Mesh1_node_y:long_name = "Latitude of 1D network nodes." ;
+	double Mesh1_edge_x(nMesh1_edge) ;
+		Mesh1_edge_x:units = "degrees_east" ;
+		Mesh1_edge_x:standard_name = "longitude" ;
+		Mesh1_edge_x:long_name = "Characteristic longitude of 1D network edge (e.g. midpoint of the edge)." ;
+	double Mesh1_edge_y(nMesh1_edge) ;
+		Mesh1_edge_y:units = "degrees_north" ;
+		Mesh1_edge_y:standard_name = "latitude" ;
+		Mesh1_edge_y:long_name = "Characteristic latitude of 1D network edge (e.g. midpoint of the edge)." ;
+	int Mesh1_edge_nodes(nMesh1_edge, Mesh1_edge_N_nodes) ;
+		Mesh1_edge_nodes:long_name = "Maps every edge/link to the two nodes that it connects." ;
+		Mesh1_edge_nodes:cf_role = "edge_node_connectivity" ;
+		Mesh1_edge_nodes:start_index = 1 ;
+	float datavar(nMesh1_edge) ;
+		datavar:mesh = "Mesh1" ;
+		datavar:location = "edge" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

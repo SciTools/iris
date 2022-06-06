@@ -74,6 +74,11 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
         target = [0, 0, 0, 0, 0]
         self._test_nearest_neighbour_index(target)
 
+    def test_bounded_float_point(self):
+        coord = DimCoord(1, bounds=[0, 2])
+        result = coord.nearest_neighbour_index(2.5)
+        self.assertEqual(result, 0)
+
 
 class Test_nearest_neighbour_index__descending(tests.IrisTest):
     def setUp(self):
@@ -883,9 +888,14 @@ class Test___str__(tests.IrisTest):
         coord = DimCoord(
             [5], standard_name="time", units="days since 1970-01-01"
         )
-        expected = (
-            "DimCoord([1970-01-06 00:00:00], standard_name='time', "
-            "calendar='gregorian')"
+        expected = "\n".join(
+            [
+                "DimCoord :  time / (days since 1970-01-01, gregorian calendar)",
+                "    points: [1970-01-06 00:00:00]",
+                "    shape: (1,)",
+                "    dtype: int64",
+                "    standard_name: 'time'",
+            ]
         )
         result = coord.__str__()
         self.assertEqual(expected, result)
@@ -895,11 +905,17 @@ class Test___str__(tests.IrisTest):
             [5, 6], standard_name="time", units="days since 1970-01-01"
         )
         coord.guess_bounds()
-        expected = (
-            "DimCoord([1970-01-06 00:00:00, 1970-01-07 00:00:00], "
-            "bounds=[[1970-01-05 12:00:00, 1970-01-06 12:00:00],\n"
-            "       [1970-01-06 12:00:00, 1970-01-07 12:00:00]], "
-            "standard_name='time', calendar='gregorian')"
+        expected = "\n".join(
+            [
+                "DimCoord :  time / (days since 1970-01-01, gregorian calendar)",
+                "    points: [1970-01-06 00:00:00, 1970-01-07 00:00:00]",
+                "    bounds: [",
+                "        [1970-01-05 12:00:00, 1970-01-06 12:00:00],",
+                "        [1970-01-06 12:00:00, 1970-01-07 12:00:00]]",
+                "    shape: (2,)  bounds(2, 2)",
+                "    dtype: int64",
+                "    standard_name: 'time'",
+            ]
         )
         result = coord.__str__()
         self.assertEqual(expected, result)
@@ -908,7 +924,15 @@ class Test___str__(tests.IrisTest):
         coord = DimCoord(
             [5], standard_name="time", units="years since 1970-01-01"
         )
-        expected = "DimCoord([5], standard_name='time', calendar='gregorian')"
+        expected = "\n".join(
+            [
+                "DimCoord :  time / (years since 1970-01-01, gregorian calendar)",
+                "    points: [5]",
+                "    shape: (1,)",
+                "    dtype: int64",
+                "    standard_name: 'time'",
+            ]
+        )
         result = coord.__str__()
         self.assertEqual(expected, result)
 
@@ -917,16 +941,31 @@ class Test___str__(tests.IrisTest):
             [5, 6], standard_name="time", units="years since 1970-01-01"
         )
         coord.guess_bounds()
-        expected = (
-            "DimCoord([5 6], bounds=[[4.5 5.5]\n [5.5 6.5]], "
-            "standard_name='time', calendar='gregorian')"
+        expected = "\n".join(
+            [
+                "DimCoord :  time / (years since 1970-01-01, gregorian calendar)",
+                "    points: [5, 6]",
+                "    bounds: [",
+                "        [4.5, 5.5],",
+                "        [5.5, 6.5]]",
+                "    shape: (2,)  bounds(2, 2)",
+                "    dtype: int64",
+                "    standard_name: 'time'",
+            ]
         )
         result = coord.__str__()
         self.assertEqual(expected, result)
 
     def test_non_time_unit(self):
         coord = DimCoord([1.0])
-        expected = repr(coord)
+        expected = "\n".join(
+            [
+                "DimCoord :  unknown / (unknown)",
+                "    points: [1.]",
+                "    shape: (1,)",
+                "    dtype: float64",
+            ]
+        )
         result = coord.__str__()
         self.assertEqual(expected, result)
 

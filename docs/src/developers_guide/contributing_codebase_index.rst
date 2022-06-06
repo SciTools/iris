@@ -1,7 +1,7 @@
 .. _contributing.documentation.codebase:
 
-Contributing to the Code Base
-=============================
+Working with the Code Base
+==========================
 
 .. toctree::
    :maxdepth: 3

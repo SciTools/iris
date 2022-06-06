@@ -6,15 +6,34 @@
 """
 Support for conservative regridding via ESMPy.
 
+.. note::
+
+    .. deprecated:: 3.2.0
+
+    This package will be removed in a future release.
+    Please use
+    `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
+    instead.
+
 """
 
 import cartopy.crs as ccrs
 import numpy as np
 
 import iris
+from iris._deprecation import warn_deprecated
 from iris.analysis._interpolation import get_xy_dim_coords
 from iris.analysis._regrid import RectilinearRegridder
 from iris.util import _meshgrid
+
+wmsg = (
+    "The 'iris.experimental.regrid_conservative' package is deprecated since "
+    "version 3.2, and will be removed in a future release.  Please use "
+    "iris-emsf-regrid instead. "
+    "See https://github.com/SciTools-incubator/iris-esmf-regrid."
+)
+warn_deprecated(wmsg)
+
 
 #: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
 _CRS_TRUELATLON = ccrs.Geodetic()
@@ -131,6 +150,22 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     """
     Perform a conservative regridding with ESMPy.
 
+    .. note ::
+
+        .. deprecated:: 3.2.0
+
+        This function is scheduled to be removed in a future release.
+        Please use
+        `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
+        instead.
+
+        For example :
+
+        .. code::
+
+            from emsf_regrid.schemes import ESMFAreaWeighted
+            result = src_cube.regrid(grid_cube, ESMFAreaWeighted())
+
     Regrids the data of a source cube onto a new grid defined by a destination
     cube.
 
@@ -169,6 +204,15 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         To alter this, make a prior call to ESMF.Manager().
 
     """
+    wmsg = (
+        "The function "
+        "'iris.experimental.regrid_conservative."
+        "regrid_weighted_curvilinear_to_rectilinear' "
+        "has been deprecated, and will be removed in a future release.  "
+        "Please consult the docstring for details."
+    )
+    warn_deprecated(wmsg)
+
     # Lazy import so we can build the docs with no ESMF.
     import ESMF
 

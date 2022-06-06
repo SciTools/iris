@@ -21,6 +21,7 @@ import iris.analysis
 from iris.analysis import MEAN, Aggregator, WeightedAggregator
 import iris.aux_factory
 from iris.aux_factory import HybridHeightFactory
+from iris.common.metadata import BaseMetadata
 import iris.coords
 from iris.coords import (
     AncillaryVariable,
@@ -38,6 +39,11 @@ from iris.exceptions import (
     UnitConversionError,
 )
 import iris.tests.stock as stock
+from iris.tests.stock.mesh import (
+    sample_mesh,
+    sample_mesh_cube,
+    sample_meshcoord,
+)
 
 
 class Test___init___data(tests.IrisTest):
@@ -668,272 +674,6 @@ class Test_is_compatible(tests.IrisTest):
         self.test_cube.attributes["array_test"] = np.array([1.0, 2, 3])
         self.other_cube.attributes["array_test"] = np.array([1.0, 2, 777.7])
         self.assertFalse(self.test_cube.is_compatible(self.other_cube))
-
-
-class Test_aggregated_by(tests.IrisTest):
-    def setUp(self):
-        self.cube = Cube(np.arange(44).reshape(4, 11))
-
-        val_coord = AuxCoord(
-            [0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1], long_name="val"
-        )
-        label_coord = AuxCoord(
-            [
-                "alpha",
-                "alpha",
-                "beta",
-                "beta",
-                "alpha",
-                "gamma",
-                "alpha",
-                "alpha",
-                "alpha",
-                "gamma",
-                "beta",
-            ],
-            long_name="label",
-            units="no_unit",
-        )
-        simple_agg_coord = AuxCoord([1, 1, 2, 2], long_name="simple_agg")
-        spanning_coord = AuxCoord(
-            np.arange(44).reshape(4, 11), long_name="spanning"
-        )
-        spanning_label_coord = AuxCoord(
-            np.arange(1, 441, 10).reshape(4, 11).astype(str),
-            long_name="span_label",
-            units="no_unit",
-        )
-
-        self.cube.add_aux_coord(simple_agg_coord, 0)
-        self.cube.add_aux_coord(val_coord, 1)
-        self.cube.add_aux_coord(label_coord, 1)
-        self.cube.add_aux_coord(spanning_coord, (0, 1))
-        self.cube.add_aux_coord(spanning_label_coord, (0, 1))
-
-        self.mock_agg = mock.Mock(spec=Aggregator)
-        self.mock_agg.cell_method = []
-        self.mock_agg.aggregate = mock.Mock(
-            return_value=mock.Mock(dtype="object")
-        )
-        self.mock_agg.aggregate_shape = mock.Mock(return_value=())
-        self.mock_agg.lazy_func = None
-        self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
-
-        self.ancillary_variable = AncillaryVariable(
-            [0, 1, 2, 3], long_name="foo"
-        )
-        self.cube.add_ancillary_variable(self.ancillary_variable, 0)
-        self.cell_measure = CellMeasure([0, 1, 2, 3], long_name="bar")
-        self.cube.add_cell_measure(self.cell_measure, 0)
-
-    def test_2d_coord_simple_agg(self):
-        # For 2d coords, slices of aggregated coord should be the same as
-        # aggregated slices.
-        res_cube = self.cube.aggregated_by("simple_agg", self.mock_agg)
-        for res_slice, cube_slice in zip(
-            res_cube.slices("simple_agg"), self.cube.slices("simple_agg")
-        ):
-            cube_slice_agg = cube_slice.aggregated_by(
-                "simple_agg", self.mock_agg
-            )
-            self.assertEqual(
-                res_slice.coord("spanning"), cube_slice_agg.coord("spanning")
-            )
-            self.assertEqual(
-                res_slice.coord("span_label"),
-                cube_slice_agg.coord("span_label"),
-            )
-
-    def test_agg_by_label(self):
-        # Aggregate a cube on a string coordinate label where label
-        # and val entries are not in step; the resulting cube has a val
-        # coord of bounded cells and a label coord of single string entries.
-        res_cube = self.cube.aggregated_by("label", self.mock_agg)
-        val_coord = AuxCoord(
-            np.array([1.0, 0.5, 1.0]),
-            bounds=np.array([[0, 2], [0, 1], [2, 0]]),
-            long_name="val",
-        )
-        label_coord = AuxCoord(
-            np.array(["alpha", "beta", "gamma"]),
-            long_name="label",
-            units="no_unit",
-        )
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
-
-    def test_2d_agg_by_label(self):
-        res_cube = self.cube.aggregated_by("label", self.mock_agg)
-        # For 2d coord, slices of aggregated coord should be the same as
-        # aggregated slices.
-        for res_slice, cube_slice in zip(
-            res_cube.slices("val"), self.cube.slices("val")
-        ):
-            cube_slice_agg = cube_slice.aggregated_by("label", self.mock_agg)
-            self.assertEqual(
-                res_slice.coord("spanning"), cube_slice_agg.coord("spanning")
-            )
-
-    def test_agg_by_val(self):
-        # Aggregate a cube on a numeric coordinate val where label
-        # and val entries are not in step; the resulting cube has a label
-        # coord with serialised labels from the aggregated cells.
-        res_cube = self.cube.aggregated_by("val", self.mock_agg)
-        val_coord = AuxCoord(np.array([0, 1, 2]), long_name="val")
-        exp0 = "alpha|alpha|beta|alpha|alpha|gamma"
-        exp1 = "beta|alpha|beta"
-        exp2 = "gamma|alpha"
-        label_coord = AuxCoord(
-            np.array((exp0, exp1, exp2)), long_name="label", units="no_unit"
-        )
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
-
-    def test_2d_agg_by_val(self):
-        res_cube = self.cube.aggregated_by("val", self.mock_agg)
-        # For 2d coord, slices of aggregated coord should be the same as
-        # aggregated slices.
-        for res_slice, cube_slice in zip(
-            res_cube.slices("val"), self.cube.slices("val")
-        ):
-            cube_slice_agg = cube_slice.aggregated_by("val", self.mock_agg)
-            self.assertEqual(
-                res_slice.coord("spanning"), cube_slice_agg.coord("spanning")
-            )
-
-    def test_single_string_aggregation(self):
-        aux_coords = [
-            (AuxCoord(["a", "b", "a"], long_name="foo"), 0),
-            (AuxCoord(["a", "a", "a"], long_name="bar"), 0),
-        ]
-        cube = iris.cube.Cube(
-            np.arange(12).reshape(3, 4), aux_coords_and_dims=aux_coords
-        )
-        result = cube.aggregated_by("foo", MEAN)
-        self.assertEqual(result.shape, (2, 4))
-        self.assertEqual(
-            result.coord("bar"), AuxCoord(["a|a", "a"], long_name="bar")
-        )
-
-    def test_ancillary_variables_and_cell_measures_kept(self):
-        cube_agg = self.cube.aggregated_by("val", self.mock_agg)
-        self.assertEqual(
-            cube_agg.ancillary_variables(), [self.ancillary_variable]
-        )
-        self.assertEqual(cube_agg.cell_measures(), [self.cell_measure])
-
-    def test_ancillary_variables_and_cell_measures_removed(self):
-        cube_agg = self.cube.aggregated_by("simple_agg", self.mock_agg)
-        self.assertEqual(cube_agg.ancillary_variables(), [])
-        self.assertEqual(cube_agg.cell_measures(), [])
-
-
-class Test_aggregated_by__lazy(tests.IrisTest):
-    def setUp(self):
-        self.data = np.arange(44).reshape(4, 11)
-        self.lazydata = as_lazy_data(self.data)
-        self.cube = Cube(self.lazydata)
-
-        val_coord = AuxCoord(
-            [0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1], long_name="val"
-        )
-        label_coord = AuxCoord(
-            [
-                "alpha",
-                "alpha",
-                "beta",
-                "beta",
-                "alpha",
-                "gamma",
-                "alpha",
-                "alpha",
-                "alpha",
-                "gamma",
-                "beta",
-            ],
-            long_name="label",
-            units="no_unit",
-        )
-        simple_agg_coord = AuxCoord([1, 1, 2, 2], long_name="simple_agg")
-
-        self.label_mean = np.array(
-            [
-                [4.0 + 1.0 / 3.0, 5.0, 7.0],
-                [15.0 + 1.0 / 3.0, 16.0, 18.0],
-                [26.0 + 1.0 / 3.0, 27.0, 29.0],
-                [37.0 + 1.0 / 3.0, 38.0, 40.0],
-            ]
-        )
-        self.val_mean = np.array(
-            [
-                [4.0 + 1.0 / 6.0, 5.0 + 2.0 / 3.0, 6.5],
-                [15.0 + 1.0 / 6.0, 16.0 + 2.0 / 3.0, 17.5],
-                [26.0 + 1.0 / 6.0, 27.0 + 2.0 / 3.0, 28.5],
-                [37.0 + 1.0 / 6.0, 38.0 + 2.0 / 3.0, 39.5],
-            ]
-        )
-
-        self.cube.add_aux_coord(simple_agg_coord, 0)
-        self.cube.add_aux_coord(val_coord, 1)
-        self.cube.add_aux_coord(label_coord, 1)
-
-    def test_agg_by_label__lazy(self):
-        # Aggregate a cube on a string coordinate label where label
-        # and val entries are not in step; the resulting cube has a val
-        # coord of bounded cells and a label coord of single string entries.
-        res_cube = self.cube.aggregated_by("label", MEAN)
-        val_coord = AuxCoord(
-            np.array([1.0, 0.5, 1.0]),
-            bounds=np.array([[0, 2], [0, 1], [2, 0]]),
-            long_name="val",
-        )
-        label_coord = AuxCoord(
-            np.array(["alpha", "beta", "gamma"]),
-            long_name="label",
-            units="no_unit",
-        )
-        self.assertTrue(res_cube.has_lazy_data())
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
-        self.assertArrayEqual(res_cube.data, self.label_mean)
-        self.assertFalse(res_cube.has_lazy_data())
-
-    def test_agg_by_val__lazy(self):
-        # Aggregate a cube on a numeric coordinate val where label
-        # and val entries are not in step; the resulting cube has a label
-        # coord with serialised labels from the aggregated cells.
-        res_cube = self.cube.aggregated_by("val", MEAN)
-        val_coord = AuxCoord(np.array([0, 1, 2]), long_name="val")
-        exp0 = "alpha|alpha|beta|alpha|alpha|gamma"
-        exp1 = "beta|alpha|beta"
-        exp2 = "gamma|alpha"
-        label_coord = AuxCoord(
-            np.array((exp0, exp1, exp2)), long_name="label", units="no_unit"
-        )
-        self.assertTrue(res_cube.has_lazy_data())
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
-        self.assertArrayEqual(res_cube.data, self.val_mean)
-        self.assertFalse(res_cube.has_lazy_data())
-
-    def test_single_string_aggregation__lazy(self):
-        aux_coords = [
-            (AuxCoord(["a", "b", "a"], long_name="foo"), 0),
-            (AuxCoord(["a", "a", "a"], long_name="bar"), 0),
-        ]
-        cube = iris.cube.Cube(
-            as_lazy_data(np.arange(12).reshape(3, 4)),
-            aux_coords_and_dims=aux_coords,
-        )
-        means = np.array([[4.0, 5.0, 6.0, 7.0], [4.0, 5.0, 6.0, 7.0]])
-        result = cube.aggregated_by("foo", MEAN)
-        self.assertTrue(result.has_lazy_data())
-        self.assertEqual(result.shape, (2, 4))
-        self.assertEqual(
-            result.coord("bar"), AuxCoord(["a|a", "a"], long_name="bar")
-        )
-        self.assertArrayEqual(result.data, means)
-        self.assertFalse(result.has_lazy_data())
 
 
 class Test_rolling_window(tests.IrisTest):
@@ -1656,11 +1396,8 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
         cube = create_cube(0, 360)
         cube.coord("longitude").convert_units("radians")
         result = cube.intersection(longitude=(-1, 0.5))
-        self.assertEqual(
-            result.coord("longitude").points[0], -0.99483767363676634
-        )
-        self.assertEqual(
-            result.coord("longitude").points[-1], 0.48869219055841207
+        self.assertArrayAllClose(
+            result.coord("longitude").points, np.arange(-57, 29) * np.pi / 180
         )
         self.assertEqual(result.data[0, 0, 0], 303)
         self.assertEqual(result.data[0, 0, -1], 28)
@@ -1789,6 +1526,16 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 180)
         self.assertEqual(result.data[0, 0, -1], 179)
 
+    def test_negative_aligned_bounds_at_modulus(self):
+        cube = create_cube(0.5, 360.5, bounds=True)
+        result = cube.intersection(longitude=(-180, 180))
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[0], [-180, -179]
+        )
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [179, 180])
+        self.assertEqual(result.data[0, 0, 0], 180)
+        self.assertEqual(result.data[0, 0, -1], 179)
+
     def test_negative_misaligned_points_inside(self):
         cube = create_cube(0, 360, bounds=True)
         result = cube.intersection(longitude=(-10.25, 10.25))
@@ -1893,6 +1640,71 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         np.testing.assert_array_almost_equal(
             result_lons.bounds[-1], np.array([60.0, 60.1], dtype=dtype)
         )
+
+    def test_ignore_bounds_wrapped(self):
+        # Test `ignore_bounds` fully ignores bounds when wrapping
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(
+            longitude=(10.25, 370.25), ignore_bounds=True
+        )
+        # Expect points 11..370 not bounds [9.5, 10.5] .. [368.5, 369.5]
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[0], [10.5, 11.5]
+        )
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[-1], [369.5, 370.5]
+        )
+        self.assertEqual(result.data[0, 0, 0], 11)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_within_cell(self):
+        # Test cell is included when it entirely contains the requested range
+        cube = create_cube(0, 10, bounds=True)
+        result = cube.intersection(longitude=(0.7, 0.8))
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [0.5, 1.5])
+        self.assertEqual(result.data[0, 0, 0], 1)
+        self.assertEqual(result.data[0, 0, -1], 1)
+
+    def test_threshold_half(self):
+        cube = create_cube(0, 10, bounds=True)
+        result = cube.intersection(longitude=(1, 6.999), threshold=0.5)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [5.5, 6.5])
+        self.assertEqual(result.data[0, 0, 0], 1)
+        self.assertEqual(result.data[0, 0, -1], 6)
+
+    def test_threshold_full(self):
+        cube = create_cube(0, 10, bounds=True)
+        result = cube.intersection(longitude=(0.5, 7.499), threshold=1)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [5.5, 6.5])
+        self.assertEqual(result.data[0, 0, 0], 1)
+        self.assertEqual(result.data[0, 0, -1], 6)
+
+    def test_threshold_wrapped(self):
+        # Test that a cell is wrapped to `maximum` if required to exceed
+        # the threshold
+        cube = create_cube(-180, 180, bounds=True)
+        result = cube.intersection(longitude=(0.4, 360.4), threshold=0.2)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[-1], [359.5, 360.5]
+        )
+        self.assertEqual(result.data[0, 0, 0], 181)
+        self.assertEqual(result.data[0, 0, -1], 180)
+
+    def test_threshold_wrapped_gap(self):
+        # Test that a cell is wrapped to `maximum` if required to exceed
+        # the threshold (even with a gap in the range)
+        cube = create_cube(-180, 180, bounds=True)
+        result = cube.intersection(longitude=(0.4, 360.35), threshold=0.2)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[-1], [359.5, 360.5]
+        )
+        self.assertEqual(result.data[0, 0, 0], 181)
+        self.assertEqual(result.data[0, 0, -1], 180)
 
 
 def unrolled_cube():
@@ -2040,6 +1852,400 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
 
+def _add_test_meshcube(self, nomesh=False, n_z=2, **meshcoord_kwargs):
+    """
+    Common setup action : Create a standard mesh test cube with a variety of coords, and save the cube and various of
+    its components as properties of the 'self' TestCase.
+
+    """
+    nomesh_faces = 5 if nomesh else None
+    cube, parts = sample_mesh_cube(
+        nomesh_faces=nomesh_faces, n_z=n_z, with_parts=True, **meshcoord_kwargs
+    )
+    mesh, zco, mesh_dimco, auxco_x, meshx, meshy = parts
+    self.mesh = mesh
+    self.dimco_z = zco
+    self.dimco_mesh = mesh_dimco
+    if not nomesh:
+        self.meshco_x = meshx
+        self.meshco_y = meshy
+    self.auxco_x = auxco_x
+    self.allcoords = [meshx, meshy, zco, mesh_dimco, auxco_x]
+    self.cube = cube
+
+
+class Test_coords__mesh_coords(tests.IrisTest):
+    """
+    Checking *only* the new "mesh_coords" keyword of the coord/coords methods.
+
+    This is *not* attached to the existing tests for this area, as they are
+    very old and patchy legacy tests.  See: iris.tests.test_cdm.TestQueryCoord.
+
+    """
+
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        _add_test_meshcube(self)
+
+    def _assert_lists_equal(self, items_a, items_b):
+        """
+        Check that two lists of coords, cubes etc contain the same things.
+        Lists must contain the same items, including any repeats, but can be in
+        a different order.
+
+        """
+        # Compare (and thus sort) by their *common* metadata.
+        def sortkey(item):
+            return BaseMetadata.from_metadata(item.metadata)
+
+        items_a = sorted(items_a, key=sortkey)
+        items_b = sorted(items_b, key=sortkey)
+        self.assertEqual(items_a, items_b)
+
+    def test_coords__all__meshcoords_default(self):
+        # coords() includes mesh-coords along with the others.
+        result = self.cube.coords()
+        expected = self.allcoords
+        self._assert_lists_equal(expected, result)
+
+    def test_coords__all__meshcoords_only(self):
+        # Coords(mesh_coords=True) returns only mesh-coords.
+        result = self.cube.coords(mesh_coords=True)
+        expected = [self.meshco_x, self.meshco_y]
+        self._assert_lists_equal(expected, result)
+
+    def test_coords__all__meshcoords_omitted(self):
+        # Coords(mesh_coords=False) omits the mesh-coords.
+        result = self.cube.coords(mesh_coords=False)
+        expected = set(self.allcoords) - set([self.meshco_x, self.meshco_y])
+        self._assert_lists_equal(expected, result)
+
+    def test_coords__axis__meshcoords(self):
+        # Coord (singular) with axis + mesh_coords=True
+        result = self.cube.coord(axis="x", mesh_coords=True)
+        self.assertIs(result, self.meshco_x)
+
+    def test_coords__dimcoords__meshcoords(self):
+        # dim_coords and mesh_coords should be mutually exclusive.
+        result = self.cube.coords(dim_coords=True, mesh_coords=True)
+        self.assertEqual(result, [])
+
+    def test_coords__nodimcoords__meshcoords(self):
+        # When mesh_coords=True, dim_coords=False should have no effect.
+        result = self.cube.coords(dim_coords=False, mesh_coords=True)
+        expected = [self.meshco_x, self.meshco_y]
+        self._assert_lists_equal(expected, result)
+
+
+class Test_mesh(tests.IrisTest):
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        _add_test_meshcube(self)
+
+    def test_mesh(self):
+        result = self.cube.mesh
+        self.assertIs(result, self.mesh)
+
+    def test_no_mesh(self):
+        # Replace standard setUp cube with a no-mesh version.
+        _add_test_meshcube(self, nomesh=True)
+        result = self.cube.mesh
+        self.assertIsNone(result)
+
+
+class Test_location(tests.IrisTest):
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        _add_test_meshcube(self)
+
+    def test_no_mesh(self):
+        # Replace standard setUp cube with a no-mesh version.
+        _add_test_meshcube(self, nomesh=True)
+        result = self.cube.location
+        self.assertIsNone(result)
+
+    def test_mesh(self):
+        cube = self.cube
+        result = cube.location
+        self.assertEqual(result, self.meshco_x.location)
+
+    def test_alternate_location(self):
+        # Replace standard setUp cube with an edge-based version.
+        _add_test_meshcube(self, location="edge")
+        cube = self.cube
+        result = cube.location
+        self.assertEqual(result, "edge")
+
+
+class Test_mesh_dim(tests.IrisTest):
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        _add_test_meshcube(self)
+
+    def test_no_mesh(self):
+        # Replace standard setUp cube with a no-mesh version.
+        _add_test_meshcube(self, nomesh=True)
+        result = self.cube.mesh_dim()
+        self.assertIsNone(result)
+
+    def test_mesh(self):
+        cube = self.cube
+        result = cube.mesh_dim()
+        self.assertEqual(result, 1)
+
+    def test_alternate(self):
+        # Replace standard setUp cube with an edge-based version.
+        _add_test_meshcube(self, location="edge")
+        cube = self.cube
+        # Transpose the cube : the mesh dim is then 0
+        cube.transpose()
+        result = cube.mesh_dim()
+        self.assertEqual(result, 0)
+
+
+class Test__init__mesh(tests.IrisTest):
+    """
+    Test that creation with mesh-coords functions, and prevents a cube having
+    incompatible mesh-coords.
+
+    """
+
+    def setUp(self):
+        # Create a standard test mesh and other useful components.
+        mesh = sample_mesh()
+        meshco = sample_meshcoord(mesh=mesh)
+        self.mesh = mesh
+        self.meshco = meshco
+        self.nz = 2
+        self.n_faces = meshco.shape[0]
+
+    def test_mesh(self):
+        # Create a new cube from some of the parts.
+        nz, n_faces = self.nz, self.n_faces
+        dimco_z = DimCoord(np.arange(nz), long_name="z")
+        dimco_mesh = DimCoord(np.arange(n_faces), long_name="x")
+        meshco = self.meshco
+        cube = Cube(
+            np.zeros((nz, n_faces)),
+            dim_coords_and_dims=[(dimco_z, 0), (dimco_mesh, 1)],
+            aux_coords_and_dims=[(meshco, 1)],
+        )
+        self.assertEqual(cube.mesh, meshco.mesh)
+
+    def test_fail_dim_meshcoord(self):
+        # As "test_mesh", but attempt to use the meshcoord as a dim-coord.
+        # This should not be allowed.
+        nz, n_faces = self.nz, self.n_faces
+        dimco_z = DimCoord(np.arange(nz), long_name="z")
+        meshco = self.meshco
+        with self.assertRaisesRegex(ValueError, "may not be an AuxCoord"):
+            Cube(
+                np.zeros((nz, n_faces)),
+                dim_coords_and_dims=[(dimco_z, 0), (meshco, 1)],
+            )
+
+    def test_multi_meshcoords(self):
+        meshco_x = sample_meshcoord(axis="x", mesh=self.mesh)
+        meshco_y = sample_meshcoord(axis="y", mesh=self.mesh)
+        n_faces = meshco_x.shape[0]
+        cube = Cube(
+            np.zeros(n_faces),
+            aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],
+        )
+        self.assertEqual(cube.mesh, meshco_x.mesh)
+
+    def test_multi_meshcoords_same_axis(self):
+        # *Not* an error, as long as the coords are distinguishable.
+        meshco_1 = sample_meshcoord(axis="x", mesh=self.mesh)
+        meshco_2 = sample_meshcoord(axis="x", mesh=self.mesh)
+        # Can't make these different at creation, owing to the limited
+        # constructor args, but we can adjust common metadata afterwards.
+        meshco_2.rename("junk_name")
+
+        n_faces = meshco_1.shape[0]
+        cube = Cube(
+            np.zeros(n_faces),
+            aux_coords_and_dims=[(meshco_1, 0), (meshco_2, 0)],
+        )
+        self.assertEqual(cube.mesh, meshco_1.mesh)
+
+    def test_fail_meshcoords_different_locations(self):
+        # Same as successful 'multi_mesh', but different locations.
+        # N.B. must have a mesh with n-faces == n-edges to test this
+        mesh = sample_mesh(n_faces=7, n_edges=7)
+        meshco_1 = sample_meshcoord(axis="x", mesh=mesh, location="face")
+        meshco_2 = sample_meshcoord(axis="y", mesh=mesh, location="edge")
+        # They should still have the same *shape* (or would fail anyway)
+        self.assertEqual(meshco_1.shape, meshco_2.shape)
+        n_faces = meshco_1.shape[0]
+        msg = "does not match existing cube location"
+        with self.assertRaisesRegex(ValueError, msg):
+            Cube(
+                np.zeros(n_faces),
+                aux_coords_and_dims=[(meshco_1, 0), (meshco_2, 0)],
+            )
+
+    def test_meshcoords_equal_meshes(self):
+        meshco_x = sample_meshcoord(axis="x")
+        meshco_y = sample_meshcoord(axis="y")
+        n_faces = meshco_x.shape[0]
+        Cube(
+            np.zeros(n_faces),
+            aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],
+        )
+
+    def test_fail_meshcoords_different_meshes(self):
+        meshco_x = sample_meshcoord(axis="x")
+        meshco_y = sample_meshcoord(axis="y")  # Own (different) mesh
+        meshco_y.mesh.long_name = "new_name"
+        n_faces = meshco_x.shape[0]
+        with self.assertRaisesRegex(ValueError, "Mesh.* does not match"):
+            Cube(
+                np.zeros(n_faces),
+                aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],
+            )
+
+    def test_fail_meshcoords_different_dims(self):
+        # Same as 'test_mesh', but meshcoords on different dimensions.
+        # Replace standard setup with one where n_z == n_faces.
+        n_z, n_faces = 4, 4
+        mesh = sample_mesh(n_faces=n_faces)
+        meshco_x = sample_meshcoord(mesh=mesh, axis="x")
+        meshco_y = sample_meshcoord(mesh=mesh, axis="y")
+        msg = "does not match existing cube mesh dimension"
+        with self.assertRaisesRegex(ValueError, msg):
+            Cube(
+                np.zeros((n_z, n_faces)),
+                aux_coords_and_dims=[(meshco_x, 1), (meshco_y, 0)],
+            )
+
+
+class Test__add_aux_coord__mesh(tests.IrisTest):
+    """
+    Test that "Cube.add_aux_coord" functions with a mesh-coord, and prevents a
+    cube having incompatible mesh-coords.
+
+    """
+
+    def setUp(self):
+        _add_test_meshcube(self)
+        # Remove the existing "meshco_y", so we can add similar ones without
+        # needing to distinguish from the existing.
+        self.cube.remove_coord(self.meshco_y)
+
+    def test_add_compatible(self):
+        cube = self.cube
+        meshco_y = self.meshco_y
+        # Add the y-meshco back into the cube.
+        cube.add_aux_coord(meshco_y, 1)
+        self.assertIn(meshco_y, cube.coords(mesh_coords=True))
+
+    def test_add_multiple(self):
+        # Show that we can add extra mesh coords.
+        cube = self.cube
+        meshco_y = self.meshco_y
+        # Add the y-meshco back into the cube.
+        cube.add_aux_coord(meshco_y, 1)
+        # Make a duplicate y-meshco, renamed so it can add into the cube.
+        new_meshco_y = meshco_y.copy()
+        new_meshco_y.rename("alternative")
+        cube.add_aux_coord(new_meshco_y, 1)
+        self.assertEqual(len(cube.coords(mesh_coords=True)), 3)
+
+    def test_add_equal_mesh(self):
+        # Make a duplicate y-meshco, and rename so it can add into the cube.
+        cube = self.cube
+        # Create 'meshco_y' duplicate, but a new mesh
+        meshco_y = sample_meshcoord(axis="y")
+        cube.add_aux_coord(meshco_y, 1)
+        self.assertIn(meshco_y, cube.coords(mesh_coords=True))
+
+    def test_fail_different_mesh(self):
+        # Make a duplicate y-meshco, and rename so it can add into the cube.
+        cube = self.cube
+        # Create 'meshco_y' duplicate, but a new mesh
+        meshco_y = sample_meshcoord(axis="y")
+        meshco_y.mesh.long_name = "new_name"
+        msg = "does not match existing cube mesh"
+        with self.assertRaisesRegex(ValueError, msg):
+            cube.add_aux_coord(meshco_y, 1)
+
+    def test_fail_different_location(self):
+        # Make a new mesh with equal n_faces and n_edges
+        mesh = sample_mesh(n_faces=4, n_edges=4)
+        # Re-make the test objects based on that.
+        _add_test_meshcube(self, mesh=mesh)
+        cube = self.cube
+        cube.remove_coord(self.meshco_y)  # Remove y-coord, as in setUp()
+        # Create a new meshco_y, same mesh but based on edges.
+        meshco_y = sample_meshcoord(axis="y", mesh=self.mesh, location="edge")
+        msg = "does not match existing cube location"
+        with self.assertRaisesRegex(ValueError, msg):
+            cube.add_aux_coord(meshco_y, 1)
+
+    def test_fail_different_dimension(self):
+        # Re-make the test objects with the non-mesh dim equal in length.
+        n_faces = self.cube.shape[1]
+        _add_test_meshcube(self, n_z=n_faces)
+        cube = self.cube
+        meshco_y = self.meshco_y
+        cube.remove_coord(meshco_y)  # Remove y-coord, as in setUp()
+
+        # Attempt to re-attach the 'y' meshcoord, to a different cube dimension.
+        msg = "does not match existing cube mesh dimension"
+        with self.assertRaisesRegex(ValueError, msg):
+            cube.add_aux_coord(meshco_y, 0)
+
+
+class Test__add_dim_coord__mesh(tests.IrisTest):
+    """
+    Test that "Cube.add_dim_coord" cannot work with a mesh-coord.
+
+    """
+
+    def test(self):
+        # Create a mesh with only 2 faces, so coord *can't* be non-monotonic.
+        mesh = sample_mesh(n_faces=2)
+        meshco = sample_meshcoord(mesh=mesh)
+        cube = Cube([0, 1])
+        with self.assertRaisesRegex(ValueError, "may not be an AuxCoord"):
+            cube.add_dim_coord(meshco, 0)
+
+
+class Test__eq__mesh(tests.IrisTest):
+    """
+    Check that cubes with meshes support == as expected.
+
+    Note: there is no special code for this in iris.cube.Cube : it is
+    provided by the coord comparisons.
+
+    """
+
+    def setUp(self):
+        # Create a 'standard' test cube.
+        _add_test_meshcube(self)
+
+    def test_copied_cube_match(self):
+        cube = self.cube
+        cube2 = cube.copy()
+        self.assertEqual(cube, cube2)
+
+    def test_equal_mesh_match(self):
+        cube1 = self.cube
+        # re-create an identical cube, using the same mesh.
+        _add_test_meshcube(self)
+        cube2 = self.cube
+        self.assertEqual(cube1, cube2)
+
+    def test_new_mesh_different(self):
+        cube1 = self.cube
+        # re-create an identical cube, using a different mesh.
+        _add_test_meshcube(self)
+        self.cube.mesh.long_name = "new_name"
+        cube2 = self.cube
+        self.assertNotEqual(cube1, cube2)
+
+
 class Test_dtype(tests.IrisTest):
     def setUp(self):
         self.dtypes = (
@@ -2122,6 +2328,15 @@ class TestSubset(tests.IrisTest):
     def test_different_coordinate(self):
         cube = Cube(0, long_name="raspberry", units="1")
         cube.add_aux_coord(DimCoord([0], long_name="loganberry", units="1"))
+        different_coord = DimCoord([2], long_name="loganberry", units="1")
+        result = cube.subset(different_coord)
+        self.assertEqual(result, None)
+
+    def test_different_coordinate_vector(self):
+        cube = Cube([0, 1], long_name="raspberry", units="1")
+        cube.add_dim_coord(
+            DimCoord([0, 1], long_name="loganberry", units="1"), 0
+        )
         different_coord = DimCoord([2], long_name="loganberry", units="1")
         result = cube.subset(different_coord)
         self.assertEqual(result, None)

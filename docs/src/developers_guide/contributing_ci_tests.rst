@@ -5,6 +5,10 @@
 Continuous Integration (CI) Testing
 ===================================
 
+.. note:: Iris is currently supported and tested against |python_support|
+          running on Linux.  We do not currently actively test on other
+          platforms such as Windows or macOS.
+
 The `Iris`_ GitHub repository is configured to run checks against all its
 branches automatically whenever a pull-request is created, updated or merged.
 The checks performed are:
@@ -64,18 +68,22 @@ or simply::
 
 and add the changed lockfiles to your pull request.
 
+.. note::
+
+   If your installation of conda runs through Artifactory or another similar
+   proxy then you will need to amend that lockfile to use URLs that Github
+   Actions can access. A utility to strip out Artifactory exists in the
+   ``ssstack`` tool.
+
 New lockfiles are generated automatically each week to ensure that Iris continues to be
 tested against the latest available version of its dependencies.
 Each week the yaml files in ``requirements/ci`` are resolved by a GitHub Action.
 If the resolved environment has changed, a pull request is created with the new lock files.
-The CI test suite will run on this pull request and fixes for failed tests can be pushed to
-the ``auto-update-lockfiles`` branch to be included in the PR. 
-Once a developer has pushed to this branch, the auto-update process will not run again until
-the PR is merged, to prevent overwriting developer commits.
-The auto-updater can still be invoked manually in this situation by going to the `GitHub Actions`_
-page for the workflow, and manually running using the "Run Workflow" button.  
-By default, this will also not override developer commits.  To force an update, you must 
-confirm "yes" in the "Run Worflow" prompt.
+The CI test suite will run on this pull request. If the tests fail, a developer
+will need to create a new branch based off the ``auto-update-lockfiles`` branch 
+and add the required fixes to this new branch. If the fixes are made to the
+``auto-update-lockfiles`` branch these will be overwritten the next time the 
+Github Action is run.
 
 
 .. _skipping Cirrus-CI tasks:

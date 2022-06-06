@@ -8,4 +8,4 @@ air_temperature / (K)               (scalar cube)
         time                        1998-12-01 00:00:00
     Attributes:
         STASH                       m01s16i203
-        source                      Data from Met Office Unified Model
+        source                      'Data from Met Office Unified Model'

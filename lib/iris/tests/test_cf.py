@@ -11,6 +11,8 @@ Test the cf module.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
+import contextlib
+import io
 from unittest import mock
 
 import iris
@@ -266,6 +268,34 @@ class TestCFReader(tests.IrisTest):
                 ("units", "degrees_north"),
             ),
         )
+
+    def test_destructor(self):
+        """Test the destructor when reading the dataset fails.
+        Related to issue #3312: previously, the `CFReader` would
+        always call `close()` on its `_dataset` attribute, even if it
+        didn't exist because opening the dataset had failed.
+        """
+        with self.temp_filename(suffix=".nc") as fn:
+
+            with open(fn, "wb+") as fh:
+
+                fh.write(
+                    b"\x89HDF\r\n\x1a\nBroken file with correct signature"
+                )
+                fh.flush()
+
+                with io.StringIO() as buf:
+                    with contextlib.redirect_stderr(buf):
+                        try:
+                            _ = cf.CFReader(fn)
+                        except OSError:
+                            pass
+                        try:
+                            _ = iris.load_cubes(fn)
+                        except OSError:
+                            pass
+                    buf.seek(0)
+                    self.assertStringEqual("", buf.read())
 
 
 @tests.skip_data

@@ -57,5 +57,13 @@ will look similar to::
 .. note:: You can also run `black`_ and `flake8`_ manually.  Please see the
           their officially documentation for more information.
 
+Type Hinting
+------------
+Iris is gradually adding
+`type hints <https://docs.python.org/3/library/typing.html>`_ into the
+codebase. The reviewer will look for type hints in a pull request; if you're
+not confident with these, feel free to work together with the reviewer to
+add/improve them.
+
 
 .. _pre-commit: https://pre-commit.com/

@@ -46,6 +46,17 @@ class Test_init_defaults(tests.IrisTest):
         )
         self._check_crs_defaults(crs)
 
+    def test_zero_inverse_flattening_on_perfect_sphere(self):
+        # allow inverse_flattening to be 0 for a perfect sphere
+        # i.e. semi-major axis defined, semi-minor is None.
+        crs = GeogCS(
+            1.0,
+            semi_minor_axis=None,
+            inverse_flattening=0.0,
+            longitude_of_prime_meridian=None,
+        )
+        self._check_crs_defaults(crs)
+
 
 if __name__ == "__main__":
     tests.main()

@@ -16,9 +16,10 @@ import io
 import pickle
 
 import cf_units
+import numpy as np
 
 import iris
-from iris._lazy_data import as_concrete_data
+from iris._lazy_data import as_concrete_data, as_lazy_data
 
 
 class TestPickle(tests.IrisTest):
@@ -73,6 +74,14 @@ class TestPickle(tests.IrisTest):
         cube = iris.load_cube(filename)
         # Pickle and unpickle. Do not perform any CML tests
         # to avoid side effects.
+        _, recon_cube = next(self.pickle_then_unpickle(cube))
+        self.assertEqual(recon_cube, cube)
+
+    def test_cube_with_deferred_unit_conversion(self):
+        real_data = np.arange(12.0).reshape((3, 4))
+        lazy_data = as_lazy_data(real_data)
+        cube = iris.cube.Cube(lazy_data, units="m")
+        cube.convert_units("ft")
         _, recon_cube = next(self.pickle_then_unpickle(cube))
         self.assertEqual(recon_cube, cube)
 
