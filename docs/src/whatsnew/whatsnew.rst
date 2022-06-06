@@ -9,6 +9,7 @@ What's New in Iris
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    latest.rst
    3.2.rst

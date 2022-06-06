@@ -257,8 +257,9 @@ Post Release Steps
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
    see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
-#. Make a new `latest.rst` from `latest.rst.template` and update the include
-   statement and the toctree in `whatsnew.rst` to point at the new `latest.rst`.
+#. Make a new ``latest.rst`` from ``latest.rst.template`` and update the include
+   statement and the toctree in ``whatsnew.rst`` to point at the new
+   ``latest.rst``.
 #. Merge back to ``main``
 
 
