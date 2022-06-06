@@ -221,7 +221,7 @@ Release Steps
 
    * Use ``git`` to rename ``docs/src/whatsnew/latest.rst`` to the release
      version file ``v1.9.rst``
-   * Update ``docs/src/whatsnews/whatsnew.rst`` to rename ``latest.rst`` in the
+   * Update ``docs/src/whatsnews/index.rst`` to rename ``latest.rst`` in the
      include statement and toctree.
    * Use ``git`` to delete the ``docs/src/whatsnew/latest.rst.template`` file
    * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
