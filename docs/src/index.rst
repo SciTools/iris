@@ -144,6 +144,6 @@ The legacy support resources:
    :name: whats_new_index
    :hidden:
 
-   whatsnew/whatsnew
+   whatsnew/index
 
 .. todolist::
