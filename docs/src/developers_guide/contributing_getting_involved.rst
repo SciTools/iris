@@ -59,7 +59,7 @@ If you are new to using GitHub we recommend reading the
    :hidden:
 
    ../generated/api/iris
-   ../whatsnew/whatsnew
+   ../whatsnew/index
    ../techpapers/index
    ../copyright
    ../voted_issues
