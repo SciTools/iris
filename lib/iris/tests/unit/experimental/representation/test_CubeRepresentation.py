@@ -363,9 +363,14 @@ class Test__make_content(tests.IrisTest):
 
     def test_mesh_included(self):
         # self.mesh_cube contains a `Mesh coordinates` section.
-        self.assertIn(">Mesh coordinates<", self.mesh_result)
+        self.assertIn(
+            '<td class="iris-title iris-word-cell">Mesh coordinates</td>',
+            self.mesh_result,
+        )
         # and a `Mesh:` section.
-        self.assertIn(">Mesh<", self.mesh_result)
+        self.assertIn(
+            '<td class="iris-title iris-word-cell">Mesh</td>', self.mesh_result
+        )
         mesh_coord_names = [
             c.name() for c in self.mesh_cube.coords(mesh_coords=True)
         ]
