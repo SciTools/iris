@@ -263,37 +263,11 @@ doctest_global_setup = "import iris"
 
 # -- Options for HTML output --------------------------------------------------
 
-# Generate logos.
-from importlib.util import module_from_spec, spec_from_file_location
-from pathlib import Path
-from tempfile import TemporaryDirectory
-
-import requests
-
-logo_gen_url = "https://raw.githubusercontent.com/SciTools/marketing/master/iris/logo/generate_logo.py"
-logo_gen_request = requests.get(logo_gen_url, allow_redirects=True)
-with TemporaryDirectory() as tmp_dir:
-    logo_gen_path = Path(tmp_dir) / "generate_logo.py"
-    logo_gen_path.open("wb").write(logo_gen_request.content)
-    logo_gen_spec = spec_from_file_location("generate_logo", logo_gen_path)
-    generate_logo = module_from_spec(logo_gen_spec)
-    logo_gen_spec.loader.exec_module(generate_logo)
-
-logo_paths = generate_logo.generate_logo(
-    filename_prefix=project.lower(),
-    write_dir=Path("_static"),
-    banner_text=project,
-    banner_width=588,
-    banner_version=f"v{version}",
-    rotate=False,
-)
-
-
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = str(logo_paths["logo-title"])
-html_favicon = str(logo_paths["logo"])
+html_logo = "_static/iris-logo-title.svg"
+html_favicon = "_static/iris-logo.svg"
 html_theme = "pydata_sphinx_theme"
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html#configure-the-search-bar-position
