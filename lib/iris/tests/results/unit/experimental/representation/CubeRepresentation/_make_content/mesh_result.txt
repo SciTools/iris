@@ -1,0 +1,24 @@
+<tr class="iris">
+    <td class="iris-title iris-word-cell">Mesh coordinates</td>
+    <td class="iris-title"></td>
+</tr>
+<tr class="iris">
+    <td class="iris-word-cell iris-subheading-cell">	latitude</td>
+    <td class="iris-inclusion-cell">x</td>
+</tr>
+<tr class="iris">
+    <td class="iris-word-cell iris-subheading-cell">	longitude</td>
+    <td class="iris-inclusion-cell">x</td>
+</tr>
+<tr class="iris">
+    <td class="iris-title iris-word-cell">Mesh</td>
+    <td class="iris-title"></td>
+</tr>
+<tr class="iris">
+    <td class="iris-word-cell iris-subheading-cell">	name</td>
+    <td class="iris-word-cell" colspan="1">unknown</td>
+</tr>
+<tr class="iris">
+    <td class="iris-word-cell iris-subheading-cell">	location</td>
+    <td class="iris-word-cell" colspan="1">face</td>
+</tr>

@@ -189,6 +189,9 @@ Creating a :class:`~iris.cube.Cube` is unchanged; the
             Mesh coordinates:
                 latitude                        x          -
                 longitude                       x          -
+            Mesh:
+                name                        my_mesh
+                location                    edge
 
 
 Save
@@ -392,6 +395,9 @@ etcetera:
             Mesh coordinates:
                 latitude                        x          -
                 longitude                       x          -
+            Mesh:
+                name                        my_mesh
+                location                    face
             Attributes:
                 Conventions                 'CF-1.7'
 
@@ -620,6 +626,9 @@ the link between :class:`~iris.cube.Cube` and
             Mesh coordinates:
                 latitude                        x          -
                 longitude                       x          -
+            Mesh:
+                name                        my_mesh
+                location                    edge
 
         # Sub-setted MeshCoords have become AuxCoords.
         >>> print(edge_cube[:-1])

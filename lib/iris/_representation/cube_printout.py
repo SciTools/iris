@@ -252,15 +252,15 @@ class CubePrinter:
                 # Add a row for each item
                 # NOTE: different section types need different handling
                 title = sect_name.lower()
-                if "scalar coordinate" in title:
+                if title == "scalar coordinates:":
                     for item in sect.contents:
                         add_scalar_row(item.name, item.content)
                         if item.extra:
                             add_scalar_row(item_to_extra_indent + item.extra)
-                elif "attribute" in title or "cell method" in title:
+                elif title in ("attributes:", "cell methods:", "mesh:"):
                     for title, value in zip(sect.names, sect.values):
                         add_scalar_row(title, value)
-                elif "scalar cell measure" in title:
+                elif title == "scalar cell measures:":
                     # These are just strings: nothing in the 'value' column.
                     for name in sect.contents:
                         add_scalar_row(name)
