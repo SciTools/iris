@@ -48,11 +48,25 @@ class FullHeader:
         self.dimension_header = DimensionHeader(cube)
 
 
-def string_repr(text, quote_strings=False):
+def string_repr(text, quote_strings=False, clip_strings=False):
     """Produce a one-line printable form of a text string."""
-    if re.findall("[\n\t]", text) or quote_strings:
+    force_quoted = re.findall("[\n\t]", text) or quote_strings
+    if force_quoted:
         # Replace the string with its repr (including quotes).
         text = repr(text)
+    if clip_strings:
+        # First check for quotes.
+        # N.B. not just 'quote_strings', but also array values-as-strings
+        has_quotes = text[0] in "\"'"
+        if has_quotes:
+            # Strip off (and store) any outer quotes before clipping.
+            pre_quote, post_quote = text[0], text[-1]
+            text = text[1:-1]
+        # clipping : use 'rider' with extra space in case it ends in a '.'
+        text = iris.util.clip_string(text, rider=" ...")
+        if has_quotes:
+            # Replace in original quotes
+            text = pre_quote + text + post_quote
     return text
 
 
@@ -62,17 +76,20 @@ def array_repr(arr):
     text = repr(arr)
     # ..then reduce any multiple spaces and newlines.
     text = re.sub("[ \t\n]+", " ", text)
+    text = string_repr(text, quote_strings=False, clip_strings=True)
     return text
 
 
-def value_repr(value, quote_strings=False):
+def value_repr(value, quote_strings=False, clip_strings=False):
     """
     Produce a single-line printable version of an attribute or scalar value.
     """
     if hasattr(value, "dtype"):
         value = array_repr(value)
     elif isinstance(value, str):
-        value = string_repr(value, quote_strings=quote_strings)
+        value = string_repr(
+            value, quote_strings=quote_strings, clip_strings=clip_strings
+        )
     value = str(value)
     return value
 
@@ -209,8 +226,7 @@ class AttributeSection(Section):
         self.values = []
         self.contents = []
         for name, value in sorted(attributes.items()):
-            value = value_repr(value, quote_strings=True)
-            value = iris.util.clip_string(value)
+            value = value_repr(value, quote_strings=True, clip_strings=True)
             self.names.append(name)
             self.values.append(value)
             content = "{}: {}".format(name, value)
