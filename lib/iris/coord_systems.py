@@ -1061,31 +1061,38 @@ class Stereographic(CoordSystem):
         false_northing=None,
         true_scale_lat=None,
         ellipsoid=None,
+        scale_factor_at_projection_origin=None,
     ):
         """
         Constructs a Stereographic coord system.
 
-        Args:
+        Parameters
+        ----------
 
-        * central_lat:
+        central_lat : float
             The latitude of the pole.
 
-        * central_lon:
+        central_lon : float
             The central longitude, which aligns with the y axis.
 
-        Kwargs:
+        false_easting : float, optional
+            X offset from planar origin in metres.
 
-        * false_easting:
-            X offset from planar origin in metres. Defaults to 0.0 .
+        false_northing : float, optional
+            Y offset from planar origin in metres.
 
-        * false_northing:
-            Y offset from planar origin in metres. Defaults to 0.0 .
-
-        * true_scale_lat:
+        true_scale_lat : float, optional
             Latitude of true scale.
 
-        * ellipsoid (:class:`GeogCS`):
+        scale_factor_at_projection_origin : float, optional
+            Scale factor at the origin of the projection
+
+        ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
+
+        Notes
+        -----
+        It is only valid to provide one of true_scale_lat and scale_factor_at_projection_origin
 
         """
 
@@ -1105,26 +1112,41 @@ class Stereographic(CoordSystem):
         self.true_scale_lat = _arg_default(
             true_scale_lat, None, cast_as=_float_or_None
         )
-        # N.B. the way we use this parameter, we need it to default to None,
+        #: Scale factor at projection origin.
+        self.scale_factor_at_projection_origin = _arg_default(
+            scale_factor_at_projection_origin, None, cast_as=_float_or_None
+        )
+        # N.B. the way we use these parameters, we need them to default to None,
         # and *not* to 0.0 .
+
+        if (
+            self.true_scale_lat is not None
+            and self.scale_factor_at_projection_origin is not None
+        ):
+            raise ValueError(
+                "It does not make sense to provide both "
+                '"scale_factor_at_projection_origin" and "true_scale_latitude". '
+            )
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
-    def __repr__(self):
-        return (
-            "Stereographic(central_lat={!r}, central_lon={!r}, "
-            "false_easting={!r}, false_northing={!r}, "
-            "true_scale_lat={!r}, "
-            "ellipsoid={!r})".format(
-                self.central_lat,
-                self.central_lon,
-                self.false_easting,
-                self.false_northing,
-                self.true_scale_lat,
-                self.ellipsoid,
+    def _repr_attributes(self):
+        if self.scale_factor_at_projection_origin is None:
+            scale_info = "true_scale_lat={!r}, ".format(self.true_scale_lat)
+        else:
+            scale_info = "scale_factor_at_projection_origin={!r}, ".format(
+                self.scale_factor_at_projection_origin
             )
+        return (
+            f"(central_lat={self.central_lat}, central_lon={self.central_lon}, "
+            f"false_easting={self.false_easting}, false_northing={self.false_northing}, "
+            f"{scale_info}"
+            f"ellipsoid={self.ellipsoid})"
         )
+
+    def __repr__(self):
+        return "Stereographic" + self._repr_attributes()
 
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
@@ -1135,11 +1157,79 @@ class Stereographic(CoordSystem):
             self.false_easting,
             self.false_northing,
             self.true_scale_lat,
+            self.scale_factor_at_projection_origin,
             globe=globe,
         )
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
+
+
+class PolarStereographic(Stereographic):
+    """
+    A subclass of the stereographic map projection centred on a pole.
+
+    """
+
+    grid_mapping_name = "polar_stereographic"
+
+    def __init__(
+        self,
+        central_lat,
+        central_lon,
+        false_easting=None,
+        false_northing=None,
+        true_scale_lat=None,
+        scale_factor_at_projection_origin=None,
+        ellipsoid=None,
+    ):
+        """
+        Construct a Polar Stereographic coord system.
+
+        Parameters
+        ----------
+
+        central_lat : {90, -90}
+            The latitude of the pole.
+
+        central_lon : float
+            The central longitude, which aligns with the y axis.
+
+        false_easting : float, optional
+            X offset from planar origin in metres.
+
+        false_northing : float, optional
+            Y offset from planar origin in metres.
+
+        true_scale_lat : float, optional
+            Latitude of true scale.
+
+        scale_factor_at_projection_origin : float, optional
+            Scale factor at the origin of the projection
+
+        ellipsoid : :class:`GeogCS`, optional
+            If given, defines the ellipsoid.
+
+        Notes
+        -----
+        It is only valid to provide at most one of `true_scale_lat` and
+        `scale_factor_at_projection_origin`.
+
+
+        """
+
+        super().__init__(
+            central_lat=central_lat,
+            central_lon=central_lon,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            true_scale_lat=true_scale_lat,
+            scale_factor_at_projection_origin=scale_factor_at_projection_origin,
+            ellipsoid=ellipsoid,
+        )
+
+    def __repr__(self):
+        return "PolarStereographic" + self._repr_attributes()
 
 
 class LambertConformal(CoordSystem):

@@ -144,7 +144,6 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         # Add a specified scale-factor, if requested.
         if mapping_scalefactor is not None:
             # Add a specific scale-factor term to the grid mapping.
-            # (Non-unity scale is not supported for Mercator/Stereographic).
             sfapo_name = hh.CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
             g_string += f"""
                 {g_varname}:{sfapo_name} = {mapping_scalefactor} ;
@@ -196,6 +195,22 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
             saa_name = hh.CF_ATTR_GRID_SWEEP_ANGLE_AXIS
             g_string += f"""
                 {g_varname}:{saa_name} = "y" ;
+            """
+        # Polar stereo needs a special 'latitude of projection origin', a
+        # 'straight_vertical_longitude_from_pole' and a `standard_parallel` or
+        # `scale_factor_at_projection_origin` so treat it specially
+        if mapping_type_name in (hh.CF_GRID_MAPPING_POLAR,):
+            latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
+            g_string += f"""
+                {g_varname}:{latpo_name} = 90.0 ;
+            """
+            svl_name = hh.CF_ATTR_GRID_STRAIGHT_VERT_LON
+            g_string += f"""
+                {g_varname}:{svl_name} = 0.0 ;
+            """
+            stanpar_name = hh.CF_ATTR_GRID_STANDARD_PARALLEL
+            g_string += f"""
+                {g_varname}:{stanpar_name} = 1.0 ;
             """
 
         # y-coord values
@@ -445,8 +460,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     #
     # All non-latlon coordinate systems ...
     # These all have projection-x/y coordinates with units of metres.
-    # They all work the same way, except that Stereographic has
-    # parameter checking routines that can fail.
+    # They all work the same way.
     # NOTE: various mapping types *require* certain addtional properties
     #   - without which an error will occur during translation.
     #   - run_testcase/_make_testcase_cdl know how to provide these
@@ -494,28 +508,9 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_STEREO)
         self.check_result(result, cube_cstype=ics.Stereographic)
 
-    def test_mapping_stereographic__fail_unsupported(self):
-        # Provide a non-unity scale factor, which we cannot handle.
-        # Result : fails to convert into a coord-system, and emits a warning.
-        #
-        # Rules Triggered:
-        #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_(stereographic) --(FAILED check has_supported_stereographic_parameters)
-        #     003 : fc_provides_coordinate_(projection_y)
-        #     004 : fc_provides_coordinate_(projection_x)
-        #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
-        #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
-        # Notes:
-        #     * grid-mapping identified : NONE
-        #     * dim-coords identified : proj-x and -y
-        #     * coords built : NONE  (no dim or aux coords: cube has no coords)
-        warning = "not yet supported for stereographic"
-        result = self.run_testcase(
-            warning=warning,
-            mapping_type_name=hh.CF_GRID_MAPPING_STEREO,
-            mapping_scalefactor=2.0,
-        )
-        self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
+    def test_mapping_polar_stereographic(self):
+        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_POLAR)
+        self.check_result(result, cube_cstype=ics.PolarStereographic)
 
     def test_mapping_transverse_mercator(self):
         result = self.run_testcase(

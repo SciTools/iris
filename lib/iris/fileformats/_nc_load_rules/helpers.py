@@ -145,6 +145,7 @@ CF_ATTR_GRID_SEMI_MAJOR_AXIS = "semi_major_axis"
 CF_ATTR_GRID_SEMI_MINOR_AXIS = "semi_minor_axis"
 CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN = "latitude_of_projection_origin"
 CF_ATTR_GRID_LON_OF_PROJ_ORIGIN = "longitude_of_projection_origin"
+CF_ATTR_GRID_STRAIGHT_VERT_LON = "straight_vertical_longitude_from_pole"
 CF_ATTR_GRID_STANDARD_PARALLEL = "standard_parallel"
 CF_ATTR_GRID_FALSE_EASTING = "false_easting"
 CF_ATTR_GRID_FALSE_NORTHING = "false_northing"
@@ -418,8 +419,6 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     )
     false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
     false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    # Iris currently only supports Stereographic projections with a scale
-    # factor of 1.0. This is checked elsewhere.
 
     cs = iris.coord_systems.Stereographic(
         latitude_of_projection_origin,
@@ -427,6 +426,42 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
         false_easting,
         false_northing,
         true_scale_lat=None,
+        ellipsoid=ellipsoid,
+    )
+
+    return cs
+
+
+################################################################################
+def build_polar_stereographic_coordinate_system(engine, cf_grid_var):
+    """
+    Create a polar stereographic coordinate system from the CF-netCDF
+    grid mapping variable.
+
+    """
+    ellipsoid = _get_ellipsoid(cf_grid_var)
+
+    latitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    )
+    longitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_STRAIGHT_VERT_LON, None
+    )
+    true_scale_lat = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
+
+    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+
+    cs = iris.coord_systems.PolarStereographic(
+        latitude_of_projection_origin,
+        longitude_of_projection_origin,
+        false_easting,
+        false_northing,
+        true_scale_lat,
+        scale_factor_at_projection_origin,
         ellipsoid=ellipsoid,
     )
 
@@ -1239,24 +1274,45 @@ def has_supported_mercator_parameters(engine, cf_name):
 
 
 ################################################################################
-def has_supported_stereographic_parameters(engine, cf_name):
-    """Determine whether the CF grid mapping variable has a value of 1.0
-    for the scale_factor_at_projection_origin attribute."""
+def has_supported_polar_stereographic_parameters(engine, cf_name):
+    """Determine whether the CF grid mapping variable has the supported
+    values for the parameters of the Polar Stereographic projection."""
 
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
+    latitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    )
+
+    standard_parallel = getattr(
+        cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
+    )
     scale_factor_at_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
     )
 
     if (
+        latitude_of_projection_origin != 90
+        and latitude_of_projection_origin != -90
+    ):
+        warnings.warn('"latitude_of_projection_origin" must be +90 or -90.')
+        is_valid = False
+
+    if (
         scale_factor_at_projection_origin is not None
-        and scale_factor_at_projection_origin != 1
+        and standard_parallel is not None
     ):
         warnings.warn(
-            "Scale factors other than 1.0 not yet supported for "
-            "stereographic projections"
+            "It does not make sense to provide both "
+            '"scale_factor_at_projection_origin" and "standard_parallel".'
+        )
+        is_valid = False
+
+    if scale_factor_at_projection_origin is None and standard_parallel is None:
+        warnings.warn(
+            'One of "scale_factor_at_projection_origin" and '
+            '"standard_parallel" is required.'
         )
         is_valid = False
 
