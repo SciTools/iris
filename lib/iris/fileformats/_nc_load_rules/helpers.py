@@ -31,9 +31,9 @@ import iris.fileformats.cf as cf
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import (
     UnknownCellMethodWarning,
-    _get_cf_var_data,
     parse_cell_methods,
 )
+from iris.fileformats.netcdf.loader import _get_cf_var_data
 import iris.std_names
 import iris.util
 
