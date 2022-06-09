@@ -530,12 +530,6 @@ class CubeList(list):
 
         return merged_cubes
 
-    def mergenate(self, coords=None, extend_coords=False):
-        # Order is only guaranteed if coords are monotonic and all ascending or all descending
-        from iris._mergenate import mergenate
-
-        return mergenate(self, coords=coords, extend_coords=extend_coords)
-
     def concatenate_cube(
         self,
         check_aux_coords=True,
