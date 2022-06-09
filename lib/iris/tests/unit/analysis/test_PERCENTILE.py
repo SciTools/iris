@@ -239,6 +239,23 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         self.agg_method(data, axis=0, percent=42, fast_percentile_method=True)
         mocked_percentile.assert_called_once()
 
+    @mock.patch("numpy.percentile")
+    def test_chosen_kwarg_passed(self, mocked_percentile):
+        data = np.arange(5)
+        percent = [42, 75]
+        axis = 0
+
+        self.agg_method(
+            data,
+            axis=axis,
+            percent=percent,
+            fast_percentile_method=True,
+            method="nearest",
+        )
+        self.assertEqual(
+            mocked_percentile.call_args.kwargs["method"], "nearest"
+        )
+
 
 class MultiAxisMixin:
     """
@@ -335,6 +352,26 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         self.assertTrue(is_lazy_data(result))
         as_concrete_data(result)
         mocked_percentile.assert_called()
+
+    @mock.patch("numpy.percentile")
+    def test_chosen_kwarg_passed(self, mocked_percentile):
+        data = da.arange(5)
+        percent = [42, 75]
+        axis = 0
+
+        result = self.agg_method(
+            data,
+            axis=axis,
+            percent=percent,
+            fast_percentile_method=True,
+            method="nearest",
+        )
+
+        self.assertTrue(is_lazy_data(result))
+        as_concrete_data(result)
+        self.assertEqual(
+            mocked_percentile.call_args.kwargs["method"], "nearest"
+        )
 
 
 class Test_lazy_aggregate(

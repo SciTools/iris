@@ -1296,6 +1296,10 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
     Calculate percentiles along the trailing axis of a 1D or 2D array.
 
     """
+    # Get hold of method keyword to pass it to numpy.percentile, or just remove it
+    # from kwargs so it's ignored for scipy mquantiles.  Note that kwargs always
+    # contains alphap and betap so we can't pass it to numpy.percentile.
+    method = kwargs.pop("method", "linear")
     if fast_percentile_method:
         if kwargs.pop("error_on_masked", False):
             msg = (
@@ -1309,7 +1313,7 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
                 "ignore",
                 "Warning: 'partition' will ignore the 'mask' of the MaskedArray.",
             )
-            result = np.percentile(data, percent, axis=-1)
+            result = np.percentile(data, percent, axis=-1, method=method)
         result = result.T
     else:
         quantiles = percent / 100.0
@@ -1346,7 +1350,7 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
 
     **kwargs
         passed to scipy.stats.mstats.mquantiles if fast_percentile_method is
-        False
+        False.  Otherwise "method" is extracted and passed to numpy.percentile.
 
     """
     if not isinstance(percent, Iterable):
@@ -1993,6 +1997,9 @@ Additional kwargs associated with the use of this aggregator:
     betap are ignored. An exception is raised if the data are masked and the
     missing data tolerance is not 0.
     Defaults to False.
+* method (str):
+    Passed to :func:`numpy.percentile`, if fast_percentile_method is True.
+    Otherwise ignored.  Defaults to "linear".
 
 **For example**:
 
