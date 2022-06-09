@@ -1275,7 +1275,9 @@ class Saver:
 
         """
 
-        def record_dimension(names_list, dim_name, length, matching_coords=[]):
+        def record_dimension(
+            names_list, dim_name, length, matching_coords=None
+        ):
             """
             Record a file dimension, its length and associated "coordinates"
             (which may in fact also be connectivities).
@@ -1284,6 +1286,8 @@ class Saver:
             matches the earlier finding.
 
             """
+            if matching_coords is None:
+                matching_coords = []
             if dim_name not in self._existing_dim:
                 self._existing_dim[dim_name] = length
             else:
