@@ -10,8 +10,10 @@ to run the gallery tests.
 
 """
 
+import collections
 import contextlib
 import os.path
+import pathlib
 import sys
 import warnings
 
@@ -21,6 +23,7 @@ import iris
 from iris._deprecation import IrisDeprecation
 import iris.plot as iplt
 import iris.quickplot as qplt
+from iris.tests import check_graphic
 
 GALLERY_DIRECTORY = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "gallery_code"
@@ -47,17 +50,20 @@ def add_gallery_to_path():
 
 
 @contextlib.contextmanager
-def show_replaced_by_check_graphic(test_case):
+def show_replaced_by_check_graphic(test_id):
     """
     Creates a context manager which can be used to replace the functionality
     of matplotlib.pyplot.show with a function which calls the check_graphic
-    method on the given test_case (iris.tests.IrisTest.check_graphic).
+    function (iris.tests.check_graphic).
 
     """
+    assertion_counts = collections.defaultdict(int)
 
     def replacement_show():
         # form a closure on test_case and tolerance
-        test_case.check_graphic()
+        unique_id = f"{test_id}.{assertion_counts[test_id]}"
+        assertion_counts[test_id] += 1
+        check_graphic(unique_id)
 
     orig_show = plt.show
     plt.show = iplt.show = qplt.show = replacement_show
@@ -84,3 +90,11 @@ def fail_any_deprecation_warnings():
             del default_future_kwargs[dead_option]
         with iris.FUTURE.context(**default_future_kwargs):
             yield
+
+
+def gallery_examples():
+    """Generator to yield all current gallery examples."""
+    current_dir = pathlib.Path(__file__).resolve()
+    code_dir = current_dir.parents[1] / "gallery_code"
+    for example_file in code_dir.glob("*/plot*.py"):
+        yield example_file.stem

@@ -15,9 +15,12 @@ import matplotlib.pyplot as plt
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
+import iris.util
 
 
 def main():
+    iris.util.approx_equal(3, 4)
+
     # load a single cube of surface temperature between +/- 5 latitude
     fname = iris.sample_data_path("ostia_monthly.nc")
     cube = iris.load_cube(

@@ -56,7 +56,7 @@ def main():
     # Manually set the orientation and tick marks on your colour bar
     ticklist = np.linspace(np.min(region.data), np.max(region.data), 4)
     plt.colorbar(orientation="horizontal", ticks=ticklist)
-    ax_sub.set_title("Data Region")
+    ax_sub.set_title("Data Region", color="r")
     # Add coastlines
     ax_sub.coastlines()
     # request to show entire map, using the colour mesh on the data region only
