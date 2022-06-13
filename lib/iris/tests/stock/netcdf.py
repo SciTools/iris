@@ -14,6 +14,31 @@ from dask import array as da
 import netCDF4
 import numpy as np
 
+import iris.tests
+
+NCGEN_PATHSTR = str(iris.tests.env_bin_path("ncgen"))
+
+
+def ncgen_from_cdl(cdl_str: str, cdl_path: str, nc_path: str):
+    """
+    Generate a test netcdf file from a cdl string.
+
+    Parameters
+    ----------
+    cdl_str : str
+        String containing a CDL description of a netcdf file.
+    cdl_path : str
+        Path of temporary text file where cdl_str is written.
+    nc_path : str
+        Path of temporary netcdf file where converted result is put.
+
+    """
+    with open(cdl_path, "w") as f_out:
+        f_out.write(cdl_str)
+    # Use ncgen to convert this into an actual (temporary) netCDF file.
+    command = f"{NCGEN_PATHSTR} -o {nc_path} {cdl_path}"
+    subprocess.check_call(command, shell=True)
+
 
 def _file_from_cdl_template(
     temp_file_dir, dataset_name, dataset_type, template_subs
@@ -40,7 +65,7 @@ def _file_from_cdl_template(
     # Spawn an "ncgen" command to create an actual NetCDF file from the
     # CDL string.
     subprocess.run(
-        ["ncgen", "-o" + str(nc_write_path)],
+        [NCGEN_PATHSTR, "-o" + str(nc_write_path)],
         input=cdl,
         encoding="ascii",
         check=True,

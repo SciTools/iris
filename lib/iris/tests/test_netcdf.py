@@ -16,7 +16,6 @@ import os
 import os.path
 import shutil
 import stat
-from subprocess import check_call
 import tempfile
 from unittest import mock
 
@@ -33,6 +32,7 @@ import iris.fileformats.netcdf
 from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.tests.stock as stock
+from iris.tests.stock.netcdf import ncgen_from_cdl
 import iris.util
 
 
@@ -363,12 +363,8 @@ class TestNetCDFLoad(tests.IrisTest):
         self.tmpdir = tempfile.mkdtemp()
         cdl_path = os.path.join(self.tmpdir, "tst.cdl")
         nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
+        # Create a temporary netcdf file from the CDL string.
+        ncgen_from_cdl(ref_cdl, cdl_path, nc_path)
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
@@ -412,12 +408,8 @@ class TestNetCDFLoad(tests.IrisTest):
         self.tmpdir = tempfile.mkdtemp()
         cdl_path = os.path.join(self.tmpdir, "tst.cdl")
         nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
+        # Create a temporary netcdf file from the CDL string.
+        ncgen_from_cdl(ref_cdl, cdl_path, nc_path)
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
@@ -457,12 +449,8 @@ class TestNetCDFLoad(tests.IrisTest):
         self.tmpdir = tempfile.mkdtemp()
         cdl_path = os.path.join(self.tmpdir, "tst.cdl")
         nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
+        # Create a temporary netcdf file from the CDL string.
+        ncgen_from_cdl(ref_cdl, cdl_path, nc_path)
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)

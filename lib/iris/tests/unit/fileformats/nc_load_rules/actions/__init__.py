@@ -9,7 +9,6 @@ Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`.
 """
 from pathlib import Path
 import shutil
-import subprocess
 import tempfile
 import warnings
 
@@ -17,6 +16,7 @@ import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import _load_cube
+from iris.tests.stock.netcdf import ncgen_from_cdl
 
 """
 Notes on testing method.
@@ -30,9 +30,7 @@ WHERE:
 As it's hard to construct a suitable CFReader from scratch, it would seem
 simpler (for now) to use an ACTUAL FILE.
 Likewise, the easiest approach to that is with CDL and "ncgen".
-To do this, we need a test "fixture" that can create suitable test files in a
-temporary directory.
-
+For this, we just use 'tests.stock.netcdf.ncgen_from_cdl'.
 """
 
 
@@ -78,12 +76,7 @@ class Mixin__nc_load_actions:
 
         """
         # Write the CDL to a file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(cdl_string)
-
-        # Create a netCDF file from the CDL file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        subprocess.check_call(command, shell=True)
+        ncgen_from_cdl(cdl_string, cdl_path, nc_path)
 
         # Simulate the inner part of the file reading process.
         cf = CFReader(nc_path)

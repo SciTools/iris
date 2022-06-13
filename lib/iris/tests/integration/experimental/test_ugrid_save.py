@@ -20,11 +20,10 @@ import tempfile
 import iris
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 import iris.fileformats.netcdf
-from iris.tests import IrisTest
-from iris.tests.stock.netcdf import _add_standard_data
+from iris.tests.stock.netcdf import NCGEN_PATHSTR, _add_standard_data
 
 
-class TestBasicSave(IrisTest):
+class TestBasicSave(tests.IrisTest):
     @classmethod
     def setUpClass(cls):
         cls.temp_dir = Path(tempfile.mkdtemp())
@@ -50,7 +49,8 @@ class TestBasicSave(IrisTest):
             target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
             # Create a netcdf file from the test CDL.
             check_call(
-                f"ncgen {filepath} -k4 -o {target_ncfile_path}", shell=True
+                f"{NCGEN_PATHSTR} {filepath} -k4 -o {target_ncfile_path}",
+                shell=True,
             )
             # Fill in blank data-variables.
             _add_standard_data(target_ncfile_path)
@@ -75,7 +75,8 @@ class TestBasicSave(IrisTest):
             target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
             # Create a netcdf file from the test CDL.
             check_call(
-                f"ncgen {filepath} -k4 -o {target_ncfile_path}", shell=True
+                f"{NCGEN_PATHSTR} {filepath} -k4 -o {target_ncfile_path}",
+                shell=True,
             )
             # Fill in blank data-variables.
             _add_standard_data(target_ncfile_path)

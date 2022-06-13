@@ -13,11 +13,12 @@ from os.path import dirname
 from os.path import join as path_join
 from os.path import sep as os_sep
 import shutil
-from subprocess import check_call
 import tempfile
 
 import iris
+import iris.tests
 from iris.tests import stock
+from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
 class TestClimatology(iris.tests.IrisTest):
@@ -58,12 +59,13 @@ class TestClimatology(iris.tests.IrisTest):
         cls.temp_dir = tempfile.mkdtemp()
         cls.path_ref_cdl = path_join(cls.temp_dir, "standard.cdl")
         cls.path_ref_nc = path_join(cls.temp_dir, "standard.nc")
-        # Create reference CDL file.
-        with open(cls.path_ref_cdl, "w") as f_out:
-            f_out.write(cls._simple_cdl_string())
-        # Create reference netCDF file from reference CDL.
-        command = "ncgen -o {} {}".format(cls.path_ref_nc, cls.path_ref_cdl)
-        check_call(command, shell=True)
+        # Create reference CDL and netcdf files (with ncgen).
+        ncgen_from_cdl(
+            cdl_str=cls._simple_cdl_string(),
+            cdl_path=cls.path_ref_cdl,
+            nc_path=cls.path_ref_nc,
+        )
+
         cls.path_temp_nc = path_join(cls.temp_dir, "tmp.nc")
 
         # Create reference cube.
