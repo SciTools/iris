@@ -14,9 +14,9 @@ from dask import array as da
 import netCDF4
 import numpy as np
 
-import iris.tests
+from iris.tests import env_bin_path
 
-NCGEN_PATHSTR = str(iris.tests.env_bin_path("ncgen"))
+NCGEN_PATHSTR = str(env_bin_path("ncgen"))
 
 
 def ncgen_from_cdl(cdl_str: str, cdl_path: str, nc_path: str):

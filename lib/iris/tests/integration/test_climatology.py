@@ -16,12 +16,11 @@ import shutil
 import tempfile
 
 import iris
-import iris.tests
 from iris.tests import stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
-class TestClimatology(iris.tests.IrisTest):
+class TestClimatology(tests.IrisTest):
     reference_cdl_path = os_sep.join(
         [
             dirname(tests.__file__),
