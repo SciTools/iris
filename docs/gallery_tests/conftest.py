@@ -10,12 +10,10 @@ Pytest fixtures for the gallery tests.
 """
 
 import sys
-import warnings
 
 import pytest
 
 import iris
-from iris._deprecation import IrisDeprecation
 
 from .gallerytest_util import gallery_path
 
@@ -41,21 +39,16 @@ def add_gallery_to_path():
 
 
 @pytest.fixture
-def fail_any_deprecation_warnings():
+def iris_future_defaults():
     """
-    Create a fixture in which any deprecation warning will cause an error.
-
-    The context also resets all the iris.FUTURE settings to the defaults, as
-    otherwise changes made in one test can affect subsequent ones.
+    Create a fixture which resets all the iris.FUTURE settings to the defaults,
+    as otherwise changes made in one test can affect subsequent ones.
 
     """
-    with warnings.catch_warnings():
-        # Detect and error all and any Iris deprecation warnings.
-        warnings.simplefilter("error", IrisDeprecation)
-        # Run with all default settings in iris.FUTURE.
-        default_future_kwargs = iris.Future().__dict__.copy()
-        for dead_option in iris.Future.deprecated_options:
-            # Avoid a warning when setting these !
-            del default_future_kwargs[dead_option]
-        with iris.FUTURE.context(**default_future_kwargs):
-            yield
+    # Run with all default settings in iris.FUTURE.
+    default_future_kwargs = iris.Future().__dict__.copy()
+    for dead_option in iris.Future.deprecated_options:
+        # Avoid a warning when setting these !
+        del default_future_kwargs[dead_option]
+    with iris.FUTURE.context(**default_future_kwargs):
+        yield
