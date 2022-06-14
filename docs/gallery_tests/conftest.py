@@ -5,8 +5,7 @@
 # licensing details.
 
 """
-Provides context managers which are fundamental to the ability
-to run the gallery tests.
+Pytest fixtures for the gallery tests.
 
 """
 

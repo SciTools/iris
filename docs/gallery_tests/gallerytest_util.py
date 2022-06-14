@@ -5,7 +5,7 @@
 # licensing details.
 
 """
-Provides context managers which are fundamental to the ability
+Provides context manager and utility functions which are fundamental to the ability
 to run the gallery tests.
 
 """
