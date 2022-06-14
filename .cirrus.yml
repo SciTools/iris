@@ -167,6 +167,8 @@ task:
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
   name: "${CIRRUS_OS}: py${PY_VER} doctests and gallery"
+  container:
+    memory: 6G
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
