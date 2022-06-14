@@ -10,7 +10,6 @@ to run the gallery tests.
 
 """
 
-import os.path
 import sys
 import warnings
 
@@ -19,12 +18,11 @@ import pytest
 import iris
 from iris._deprecation import IrisDeprecation
 
-GALLERY_DIRECTORY = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "gallery_code"
-)
+from .gallerytest_util import gallery_path
+
+GALLERY_DIRECTORY = gallery_path()
 GALLERY_DIRECTORIES = [
-    os.path.join(GALLERY_DIRECTORY, the_dir)
-    for the_dir in os.listdir(GALLERY_DIRECTORY)
+    str(path) for path in GALLERY_DIRECTORY.iterdir() if path.is_dir()
 ]
 
 

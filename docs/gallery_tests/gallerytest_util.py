@@ -43,9 +43,13 @@ def show_replaced_by_check_graphic(test_id):
     plt.show = iplt.show = qplt.show = orig_show
 
 
+def gallery_path():
+    """Return path to gallery code."""
+    current_dir = pathlib.Path(__file__).resolve()
+    return current_dir.parents[1] / "gallery_code"
+
+
 def gallery_examples():
     """Generator to yield all current gallery examples."""
-    current_dir = pathlib.Path(__file__).resolve()
-    code_dir = current_dir.parents[1] / "gallery_code"
-    for example_file in code_dir.glob("*/plot*.py"):
+    for example_file in gallery_path().glob("*/plot*.py"):
         yield example_file.stem
