@@ -8,6 +8,7 @@
 from pathlib import Path
 from string import Template
 import subprocess
+from typing import Optional
 
 import dask
 from dask import array as da
@@ -19,25 +20,43 @@ from iris.tests import env_bin_path
 NCGEN_PATHSTR = str(env_bin_path("ncgen"))
 
 
-def ncgen_from_cdl(cdl_str: str, cdl_path: str, nc_path: str):
+def ncgen_from_cdl(
+    cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str
+):
     """
     Generate a test netcdf file from a cdl string.
 
     Parameters
     ----------
-    cdl_str : str
+    cdl_str : str or None
         String containing a CDL description of a netcdf file.
+        If None, 'cdl_path' must be an existing file.
     cdl_path : str
         Path of temporary text file where cdl_str is written.
+        If None, 'cdl_str' must be present, and is piped direct to ncgen.
     nc_path : str
         Path of temporary netcdf file where converted result is put.
 
     """
-    with open(cdl_path, "w") as f_out:
-        f_out.write(cdl_str)
+    if cdl_str and cdl_path:
+        with open(cdl_path, "w") as f_out:
+            f_out.write(cdl_str)
     # Use ncgen to convert this into an actual (temporary) netCDF file.
-    command = f"{NCGEN_PATHSTR} -o {nc_path} {cdl_path}"
-    subprocess.check_call(command, shell=True)
+    if cdl_path:
+        # Create netcdf from stored CDL file.
+        command_args = [NCGEN_PATHSTR, cdl_path, "-k4", "-o", nc_path]
+        subprocess.check_call(command_args)
+    else:
+        if not cdl_str:
+            raise ValueError("Must provide either 'cdl_str' or 'cdl_path'.")
+        # No CDL file : pipe 'cdl_str' directly into the ncgen program.
+        command_args = [NCGEN_PATHSTR, "-k4", "-o", nc_path]
+        subprocess.run(
+            command_args,
+            input=cdl_str,
+            encoding="ascii",
+            check=True,
+        )
 
 
 def _file_from_cdl_template(
@@ -64,12 +83,7 @@ def _file_from_cdl_template(
 
     # Spawn an "ncgen" command to create an actual NetCDF file from the
     # CDL string.
-    subprocess.run(
-        [NCGEN_PATHSTR, "-o" + str(nc_write_path)],
-        input=cdl,
-        encoding="ascii",
-        check=True,
-    )
+    ncgen_from_cdl(cdl_str=cdl, cdl_path=None, nc_path=nc_write_path)
 
     return nc_write_path
 
