@@ -146,7 +146,7 @@ task:
   container:
     image: gcc:latest
     cpu: 6
-    memory: 8G
+    memory: 12G
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
