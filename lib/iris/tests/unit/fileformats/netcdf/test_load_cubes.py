@@ -11,6 +11,10 @@ todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
 
 """
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from pathlib import Path
 from shutil import rmtree
 import tempfile
@@ -22,7 +26,6 @@ from iris.coords import AncillaryVariable, CellMeasure
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.mesh import MeshCoord
 from iris.fileformats.netcdf import load_cubes, logger
-import iris.tests as tests
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
