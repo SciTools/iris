@@ -11,6 +11,7 @@ Pytest fixtures for the gallery tests.
 
 import sys
 
+import matplotlib.pyplot as plt
 import pytest
 
 import iris
@@ -35,6 +36,20 @@ def add_gallery_to_path():
     sys.path += GALLERY_DIRECTORIES
     yield
     sys.path = orig_sys_path
+
+
+@pytest.fixture
+def image_setup_teardown():
+    """
+    Setup and teardown fixture.
+
+    Ensures all figures are closed before and after test to prevent one test
+    polluting another if it fails badly.
+
+    """
+    plt.close("all")
+    yield
+    plt.close("all")
 
 
 @pytest.fixture
