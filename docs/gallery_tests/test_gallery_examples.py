@@ -8,10 +8,12 @@ import importlib
 
 import pytest
 
+from .gallerytest_util import gallery_examples, show_replaced_by_check_graphic
+
 
 @pytest.mark.filterwarnings("error::iris.IrisDeprecation")
-def test_plot_example(
-    add_gallery_to_path, iris_future_defaults, show_replaced_by_check_graphic
-):
-    module = importlib.import_module(show_replaced_by_check_graphic)
-    module.main()
+@pytest.mark.parametrize("example_code", gallery_examples())
+def test_plot_example(example_code, add_gallery_to_path, iris_future_defaults):
+    module = importlib.import_module(example_code)
+    with show_replaced_by_check_graphic(f"gallery_tests.test_{example_code}"):
+        module.main()
