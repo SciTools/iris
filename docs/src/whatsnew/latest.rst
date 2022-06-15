@@ -210,6 +210,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ made :func:`iris.tests.stock.simple_1d` respect the
    ``with_bounds`` argument. (:pull:`4658`)
 
+#. `@bjlittle`_ migrated to GitHub Actions for Continuous-Integration.
+   (:pull:`4503`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
