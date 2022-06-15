@@ -44,7 +44,7 @@ def image_setup_teardown():
     Setup and teardown fixture.
 
     Ensures all figures are closed before and after test to prevent one test
-    polluting another if it fails badly.
+    polluting another if it fails with a figure unclosed.
 
     """
     plt.close("all")
