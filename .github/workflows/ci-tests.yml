@@ -53,7 +53,7 @@ jobs:
           CACHE_BUILD: 0
         with:
           path: ~/iris-test-data
-          key: dummy-${{ runner.os }}-iris-test-data-${{ env.ENV_NAME }}-v${{ env.IRIS_TEST_DATA_VERSION }}-b${{ env.CACHE_BUILD }}
+          key: ${{ runner.os }}-iris-test-data-${{ env.ENV_NAME }}-v${{ env.IRIS_TEST_DATA_VERSION }}-b${{ env.CACHE_BUILD }}
 
       - name: "data cache populate"
         if: steps.data-cache.outputs.cache-hit != 'true'
@@ -69,7 +69,7 @@ jobs:
           CACHE_BUILD: 0
         with:
           path: ~/conda_pkgs_dir
-          key: dummy-${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+          key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
       - name: "conda install"
         uses: conda-incubator/setup-miniconda@v2
@@ -88,7 +88,7 @@ jobs:
           CACHE_BUILD: 0
         with:
           path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-          key: dummy-${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+          key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
       - name: "conda environment update"
         if: steps.conda-env-cache.outputs.cache-hit != 'true'
@@ -108,7 +108,7 @@ jobs:
           CACHE_BUILD: 0
         with:
           path: ~/.local/share/cartopy
-          key: dummy-${{ runner.os }}-cartopy-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+          key: ${{ runner.os }}-cartopy-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
       - name: "cartopy cache populate"
         if: steps.cartopy-cache.outputs.cache-hit != 'true'
@@ -128,7 +128,7 @@ jobs:
           CACHE_BUILD: 0
         with:
           path: ${{ github.workspace }}/.nox
-          key: dummy-${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
+          key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
 
       - name: "iris configure"
         env:

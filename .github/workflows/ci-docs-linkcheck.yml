@@ -51,7 +51,7 @@ jobs:
           CACHE_BUILD: 0
         with:
           path: ~/conda_pkgs_dir
-          key: dummy-${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+          key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
       - name: "conda install"
         uses: conda-incubator/setup-miniconda@v2
@@ -89,7 +89,7 @@ jobs:
           CACHE_BUILD: 0
         with:
           path: ${{ github.workspace }}/.nox
-          key: dummy-${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
+          key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
 
       - name: "iris configure"
         env:
