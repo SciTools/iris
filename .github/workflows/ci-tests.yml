@@ -16,7 +16,7 @@ on:
 
 jobs:
   tests:
-    name: ${{ matrix.os }} ${{ matrix.python-version }}
+    name: "tests ${{ matrix.os }} ${{ matrix.python-version }}"
 
     runs-on: ${{ matrix.os }}
 
@@ -25,100 +25,92 @@ jobs:
         shell: bash -l {0}
 
     strategy:
-      fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.8"]
-        include:
-          - os: ubuntu-latest
-            lock-file: requirements/ci/nox.lock/py38-linux-64.lock
 
     env:
       IRIS_TEST_DATA_VERSION: "2.9"
-      ENV_NAME: "iris-ci"
-      # https://github.com/numpy/numpy/pull/19478
-      NPY_DISABLE_CPU_FEATURES: "AVX512F,AVX512CD,AVX512VL,AVX512BW,AVX512DQ,AVX512_SKX"
+      ENV_NAME: "ci-tests"
 
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v2
+      - name: "checkout"
+        uses: actions/checkout@v3
 
-      - name: "Environment configure"
+      - name: "environment configure"
         env:
           # Maximum cache period (in weeks) before forcing a cache refresh.
           CACHE_WEEKS: 2
         run: |
           echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+          echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
 
-      - name: "Data cache"
-        uses: actions/cache@v2
+      - name: "data cache"
+        uses: actions/cache@v3
         id: data-cache
         env:
           # Increment the build number to force a cache refresh.
           CACHE_BUILD: 0
         with:
           path: ~/iris-test-data
-          key: ${{ runner.os }}-iris-test-data-v${{ env.IRIS_TEST_DATA_VERSION }}-b${{ env.CACHE_BUILD }}
+          key: dummy-${{ runner.os }}-iris-test-data-${{ env.ENV_NAME }}-v${{ env.IRIS_TEST_DATA_VERSION }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Data cache populate"
+      - name: "data cache populate"
         if: steps.data-cache.outputs.cache-hit != 'true'
         run: |
           wget --quiet https://github.com/SciTools/iris-test-data/archive/v${{ env.IRIS_TEST_DATA_VERSION }}.zip -O iris-test-data.zip
           unzip -q iris-test-data.zip
           mv iris-test-data-${{ env.IRIS_TEST_DATA_VERSION }} ${HOME}/iris-test-data
 
-      - name: "Conda package cache"
-        uses: actions/cache@v2
+      - name: "conda package cache"
+        uses: actions/cache@v3
         env:
           # Increment the build number to force a cache refresh.
           CACHE_BUILD: 0
-          LOCK_FILE: ${{ matrix.lock-file }}
         with:
           path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-conda-pkgs-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
+          key: dummy-${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Conda install"
+      - name: "conda install"
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniforge-variant: Mambaforge
           miniforge-version: latest
-          use-mamba: true
+          channels: conda-forge,defaults
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
           use-only-tar-bz2: true
 
-      - name: "Conda environment cache"
-        uses: actions/cache@v2
+      - name: "conda environment cache"
+        uses: actions/cache@v3
         id: conda-env-cache
         env:
           # Increment the build number to force a cache refresh.
           CACHE_BUILD: 0
-          LOCK_FILE: ${{ matrix.lock-file }}
         with:
           path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-          key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
+          key: dummy-${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Conda environment update"
+      - name: "conda environment update"
         if: steps.conda-env-cache.outputs.cache-hit != 'true'
         run: |
-          mamba install --name ${{ env.ENV_NAME }} --file ${{ matrix.lock-file }}
+          conda install --quiet --name ${{ env.ENV_NAME }} cartopy nox pip
 
-      - name: "Conda info"
+      - name: "conda info"
         run: |
           conda info
           conda list
 
-      - name: "Cartopy cache"
-        uses: actions/cache@v2
+      - name: "cartopy cache"
+        uses: actions/cache@v3
         id: cartopy-cache
         env:
           # Increment the build number to force a cache refresh.
           CACHE_BUILD: 0
         with:
           path: ~/.local/share/cartopy
-          key: ${{ runner.os }}-cartopy-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+          key: dummy-${{ runner.os }}-cartopy-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Cartopy cache populate"
+      - name: "cartopy cache populate"
         if: steps.cartopy-cache.outputs.cache-hit != 'true'
         env:
           CARTOPY_SHARE_DIR: ~/.local/share/cartopy
@@ -129,23 +121,28 @@ jobs:
           # Requires a pre-installed version of cartopy within the environment.
           python cartopy_feature_download.py physical --output ${CARTOPY_SHARE_DIR} --no-warn
 
-      - name: "Iris install"
-        run: |
-          python -m pip install --no-deps -e .
+      - name: "nox cache"
+        uses: actions/cache@v3
+        env:
+          # Increment the build number to force a cache refresh.
+          CACHE_BUILD: 0
+        with:
+          path: ${{ github.workspace }}/.nox
+          key: dummy-${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
 
-      - name: "Iris configure"
+      - name: "iris configure"
         env:
           SITE_CFG: lib/iris/etc/site.cfg
         run: |
+          mkdir -p $(dirname ${SITE_CFG})
+          echo ${SITE_CFG}
           echo "[Resources]" >> ${SITE_CFG}
           echo "test_data_dir = ${HOME}/iris-test-data/test_data" >> ${SITE_CFG}
           echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
           cat ${SITE_CFG}
 
-      - name: "Iris import"
+      - name: "iris tests"
+        env:
+          PY_VER: ${{ matrix.python-version }}
         run: |
-          python -c "import iris; print(f'Iris v{iris.__version__}')"
-
-      - name: "Iris test"
-        run: |
-          python -m iris.tests.runner --default-tests --system-tests
+          nox --session tests -- --verbose

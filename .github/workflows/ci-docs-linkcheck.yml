@@ -16,7 +16,7 @@ on:
 
 jobs:
   tests:
-    name: ${{ matrix.os }} ${{ matrix.python-version }}
+    name: "linkcheck ${{ matrix.os }} ${{ matrix.python-version }}"
 
     runs-on: ${{ matrix.os }}
 
@@ -25,72 +25,84 @@ jobs:
         shell: bash -l {0}
 
     strategy:
-      fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.8"]
-        include:
-          - os: ubuntu-latest
-            lock-file: requirements/ci/nox.lock/py38-linux-64.lock
 
     env:
-      ENV_NAME: "iris-ci"
+      ENV_NAME: "ci-docs-linkcheck"
 
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v2
+      - name: "checkout"
+        uses: actions/checkout@v3
 
-      - name: "Conda package cache"
-        uses: actions/cache@v2
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+          echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+
+      - name: "conda package cache"
+        uses: actions/cache@v3
         env:
           # Increment the build number to force a cache refresh.
           CACHE_BUILD: 0
-          LOCK_FILE: ${{ matrix.lock-file }}
         with:
           path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-conda-pkgs-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
+          key: dummy-${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Conda install"
+      - name: "conda install"
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniforge-variant: Mambaforge
           miniforge-version: latest
-          use-mamba: true
+          channels: conda-forge,defaults
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
           use-only-tar-bz2: true
 
-      - name: "Conda environment cache"
-        uses: actions/cache@v2
+      - name: "conda environment cache"
+        uses: actions/cache@v3
         id: conda-env-cache
         env:
           # Increment the build number to force a cache refresh.
           CACHE_BUILD: 0
-          LOCK_FILE: ${{ matrix.lock-file }}
         with:
           path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-          key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
+          key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
 
-      - name: "Conda environment update"
+      - name: "conda environment update"
         if: steps.conda-env-cache.outputs.cache-hit != 'true'
         run: |
-          mamba install --name ${{ env.ENV_NAME }} --file ${{ matrix.lock-file }}
+          conda install --quiet --name ${{ env.ENV_NAME }} nox pip
 
-      - name: "Conda info"
+      - name: "conda info"
         run: |
           conda info
           conda list
 
-      - name: "Iris install"
-        run: |
-          python -m pip install --no-deps -e .
+      - name: "nox cache"
+        uses: actions/cache@v3
+        env:
+          # Increment the build number to force a cache refresh.
+          CACHE_BUILD: 0
+        with:
+          path: ${{ github.workspace }}/.nox
+          key: dummy-${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
 
-      - name: "Iris import"
+      - name: "iris configure"
+        env:
+          MPL_RC: ${HOME}/.config/matplotlib/matplotlibrc
         run: |
-          python -c "import iris; print(f'Iris v{iris.__version__}')"
+          mkdir -p $(dirname ${MPL_RC})
+          echo ${MPL_RC}
+          echo "backend : agg" >> ${MPL_RC}
+          echo "image.cmap : viridis" >> ${MPL_RC}
+          cat ${MPL_RC}
 
-      - name: "Iris linkcheck"
+      - name: "iris linkcheck"
+        env:
+          PY_VER: ${{ matrix.python-version }}
         run: |
-          cd docs
-          make clean
-          make linkcheck 
+          nox --session linkcheck -- --verbose
