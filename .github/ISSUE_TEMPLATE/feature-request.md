@@ -2,7 +2,6 @@
 name: "✨ Feature Request"
 about: Submit a request for a new feature in Iris
 title: ''
-labels: 'New: Feature'
 assignees: ''
 
 ---
