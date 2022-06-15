@@ -28,7 +28,7 @@ def add_gallery_to_path():
     """
     Creates a fixture which can be used to add the iris gallery to the
     PYTHONPATH. The gallery entries are only importable throughout the lifetime
-    of this context manager.
+    of the test.
 
     """
     orig_sys_path = sys.path
