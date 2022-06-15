@@ -15,11 +15,10 @@ import pytest
 
 import iris
 
-from .gallerytest_util import gallery_path
+from .gallerytest_util import GALLERY_DIR
 
-GALLERY_DIRECTORY = gallery_path()
 GALLERY_DIRECTORIES = [
-    str(path) for path in GALLERY_DIRECTORY.iterdir() if path.is_dir()
+    str(path) for path in GALLERY_DIR.iterdir() if path.is_dir()
 ]
 
 

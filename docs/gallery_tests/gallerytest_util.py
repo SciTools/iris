@@ -5,7 +5,7 @@
 # licensing details.
 
 """
-Provides context manager and utility functions which are fundamental to the ability
+Provides context manager and generator which are fundamental to the ability
 to run the gallery tests.
 
 """
@@ -19,6 +19,15 @@ import matplotlib.pyplot as plt
 import iris.plot as iplt
 import iris.quickplot as qplt
 from iris.tests import check_graphic
+
+CURRENT_DIR = pathlib.Path(__file__).resolve()
+GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
+
+
+def gallery_examples():
+    """Generator to yield all current gallery examples."""
+    for example_file in GALLERY_DIR.glob("*/plot*.py"):
+        yield example_file.stem
 
 
 @contextlib.contextmanager
@@ -41,15 +50,3 @@ def show_replaced_by_check_graphic(test_id):
     plt.show = iplt.show = qplt.show = replacement_show
     yield
     plt.show = iplt.show = qplt.show = orig_show
-
-
-def gallery_path():
-    """Return path to gallery code."""
-    current_dir = pathlib.Path(__file__).resolve()
-    return current_dir.parents[1] / "gallery_code"
-
-
-def gallery_examples():
-    """Generator to yield all current gallery examples."""
-    for example_file in gallery_path().glob("*/plot*.py"):
-        yield example_file.stem
