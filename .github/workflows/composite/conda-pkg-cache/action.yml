@@ -1,0 +1,26 @@
+name: "conda-pkg-cache"
+description: "cache the conda environment packages"
+branding:
+  icon: "file-text"
+  color: "purple"
+
+#
+# Assumes the environment contains the following variables:
+#   - ENV_NAME
+#
+inputs:
+  cache_build:
+    description: "conda environment cache build number"
+    required: false
+    default: "0"
+  cache_period:
+    description: "conda environment cache timestamp"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}

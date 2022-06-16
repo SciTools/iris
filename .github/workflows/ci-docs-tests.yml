@@ -52,12 +52,10 @@ jobs:
           version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
-        uses: actions/cache@v3
-        env:
-          CACHE_BUILD: 0
+        uses: ./.github/workflows/composite/conda-pkg-cache
         with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-conda-pkgs-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
 
       - name: "conda install"
         uses: conda-incubator/setup-miniconda@v2
