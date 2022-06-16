@@ -89,6 +89,7 @@ jobs:
           cache_build: 0
           lock_file: ${{ env.LOCK_FILE }}
 
+      # TODO: drop use of site.cfg and explicit use of mplrc
       - name: "iris configure"
         env:
           SITE_CFG: lib/iris/etc/site.cfg
