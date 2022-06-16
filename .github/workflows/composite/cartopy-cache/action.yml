@@ -1,10 +1,6 @@
 name: "cartopy-cache"
 description: "create and cache cartopy assets"
 
-#
-# Assumes the environment contains the following variables:
-#   - ENV_NAME
-#
 inputs:
   cache_build:
     description: "conda environment cache build number"
@@ -12,6 +8,9 @@ inputs:
     default: "0"
   cache_period:
     description: "conda environment cache timestamp"
+    required: true
+  env_name:
+    description: "environment name"
     required: true
 
 runs:
@@ -21,7 +20,7 @@ runs:
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy
-        key: ${{ runner.os }}-cartopy-${{ env.ENV_NAME }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
+        key: ${{ runner.os }}-cartopy-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
 
     - if: steps.cartopy-cache.outputs.cache-hit != 'true'
       env:

@@ -52,6 +52,7 @@ jobs:
         uses: ./.github/workflows/composite/iris-data-cache
         with:
           cache_build: 0
+          env_name: ${{ env.ENV_NAME }}
           version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
@@ -59,6 +60,7 @@ jobs:
         with:
           cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
 
       - name: "conda install"
         uses: conda-incubator/setup-miniconda@v2
@@ -74,6 +76,7 @@ jobs:
         with:
           cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
           install_packages: "cartopy nox pip"
 
       - name: "conda info"
@@ -86,11 +89,13 @@ jobs:
         with:
           cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
 
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
         with:
           cache_build: 0
+          env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
 
       # TODO: drop use of site.cfg and explicit use of mplrc

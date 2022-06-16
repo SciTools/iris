@@ -3,7 +3,6 @@ description: "create and cache the iris test data"
 
 #
 # Assumes the environment contains the following variables:
-#   - ENV_NAME
 #   - HOME
 #
 inputs:
@@ -11,6 +10,9 @@ inputs:
     description: "data cache build number"
     required: false
     default: "0"
+  env_name:
+    description: "environment name"
+    required: true
   version:
     description: "iris test data version"
     required: true
@@ -22,7 +24,7 @@ runs:
       id: data-cache
       with:
         path: ~/iris-test-data
-        key: ${{ runner.os }}-iris-test-data-${{ env.ENV_NAME }}-v${{ inputs.version }}-b${{ inputs.cache_build }}
+        key: ${{ runner.os }}-iris-test-data-${{ inputs.env_name }}-v${{ inputs.version }}-b${{ inputs.cache_build }}
 
     - if: steps.data-cache.outputs.cache-hit != 'true'
       shell: bash

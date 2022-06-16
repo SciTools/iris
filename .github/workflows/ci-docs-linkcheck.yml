@@ -52,6 +52,7 @@ jobs:
         with:
           cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
 
       - name: "conda install"
         uses: conda-incubator/setup-miniconda@v2
@@ -67,6 +68,7 @@ jobs:
         with:
           cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
           install_packages: "nox pip"
 
       - name: "conda info"
@@ -78,6 +80,7 @@ jobs:
         uses: ./.github/workflows/composite/nox-cache
         with:
           cache_build: 0
+          env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
 
       - name: "iris linkcheck"
