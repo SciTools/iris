@@ -8,10 +8,14 @@ name: ci-tests
 on:
   push:
     branches:
-      - "*"
+      - "main"
+      - "v*x"
+    tags:
+      - "v*"
   pull_request:
     branches:
-      - "*" 
+      - "*"
+  workflow_dispatch:
 
 jobs:
   tests:
@@ -24,6 +28,7 @@ jobs:
         shell: bash -l {0}
 
     strategy:
+      fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.8"]

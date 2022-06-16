@@ -4,7 +4,6 @@ description: "cache the nox test environments"
 #
 # Assumes the environment contains the following variables:
 #   - ENV_NAME
-#   - LOCK_FILE
 #
 inputs:
   cache_build:
