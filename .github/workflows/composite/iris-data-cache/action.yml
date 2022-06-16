@@ -1,10 +1,6 @@
 name: "iris-data-cache"
 description: "create and cache the iris test data"
 
-#
-# Assumes the environment contains the following variables:
-#   - HOME
-#
 inputs:
   cache_build:
     description: "data cache build number"
@@ -31,4 +27,4 @@ runs:
       run: |
         wget --quiet https://github.com/SciTools/iris-test-data/archive/v${{ inputs.version }}.zip -O iris-test-data.zip
         unzip -q iris-test-data.zip
-        mv iris-test-data-${{ inputs.version }} ${HOME}/iris-test-data
+        mv iris-test-data-${{ inputs.version }} ~/iris-test-data
