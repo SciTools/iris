@@ -1,0 +1,21 @@
+name: "nox cache"
+description: "cache the nox test environments"
+
+#
+# Assumes the environment contains the following variables:
+#   - ENV_NAME
+#   - LOCK_FILE
+#
+inputs:
+  cache_build:
+    description: "nox cache version build number"
+    required: false
+    default: "0"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/.nox
+        key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles(env.LOCK_FILE) }}

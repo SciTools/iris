@@ -83,13 +83,10 @@ jobs:
           conda list
 
       - name: "nox cache"
-        uses: actions/cache@v3
-        env:
-          # Increment the build number to force a cache refresh.
-          CACHE_BUILD: 0
+        uses: ./.github/workflows/composite/nox-cache
         with:
-          path: ${{ github.workspace }}/.nox
-          key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
+          # Increment the build number to force a cache refresh.
+          cache_build: 0
 
       - name: "iris linkcheck"
         env:
