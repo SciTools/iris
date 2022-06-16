@@ -11,11 +11,16 @@ inputs:
     description: "nox cache build number"
     required: false
     default: "0"
+  lock_file:
+    description: "conda-lock environment requirements filename"
+    required: true
 
 runs:
   using: "composite"
   steps:
     - uses: actions/cache@v3
+      env:
+        LOCK_FILE: ${{ inputs.lock_file }}
       with:
         path: ${{ github.workspace }}/.nox
         key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles(env.LOCK_FILE) }}

@@ -8,8 +8,7 @@ name: ci-docs-tests
 on:
   push:
     branches:
-      - "*" 
-
+      - "*"
   pull_request:
     branches:
       - "*" 
@@ -88,6 +87,7 @@ jobs:
         uses: ./.github/workflows/composite/nox-cache
         with:
           cache_build: 0
+          lock_file: ${{ env.LOCK_FILE }}
 
       - name: "iris configure"
         env:
