@@ -46,21 +46,11 @@ jobs:
           echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
 
       - name: "data cache"
-        uses: actions/cache@v3
-        id: data-cache
-        env:
-          # Increment the build number to force a cache refresh.
-          CACHE_BUILD: 0
+        uses: ./.github/workflows/composite/iris-data-cache
         with:
-          path: ~/iris-test-data
-          key: ${{ runner.os }}-iris-test-data-${{ env.ENV_NAME }}-v${{ env.IRIS_TEST_DATA_VERSION }}-b${{ env.CACHE_BUILD }}
-
-      - name: "data cache populate"
-        if: steps.data-cache.outputs.cache-hit != 'true'
-        run: |
-          wget --quiet https://github.com/SciTools/iris-test-data/archive/v${{ env.IRIS_TEST_DATA_VERSION }}.zip -O iris-test-data.zip
-          unzip -q iris-test-data.zip
-          mv iris-test-data-${{ env.IRIS_TEST_DATA_VERSION }} ${HOME}/iris-test-data
+          # Increment the build number to force a cache refresh.
+          cache_build: 0
+          version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
         uses: actions/cache@v3

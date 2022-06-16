@@ -1,0 +1,32 @@
+name: "iris-data-cache"
+description: "cache the iris test data"
+
+#
+# Assumes the environment contains the following variables:
+#   - ENV_NAME
+#   - HOME
+#
+inputs:
+  cache_build:
+    description: "data cache version build number"
+    required: false
+    default: "0"
+  version:
+    description: "iris test data version"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      id: data-cache
+      with:
+        path: ~/iris-test-data
+        key: ${{ runner.os }}-iris-test-data-${{ env.ENV_NAME }}-v${{ inputs.version }}-b${{ inputs.cache_build }}
+
+    - if: steps.data-cache.outputs.cache-hit != 'true'
+      run: |
+        wget --quiet https://github.com/SciTools/iris-test-data/archive/v${{ inputs.version }}.zip -O iris-test-data.zip
+        unzip -q iris-test-data.zip
+        mv iris-test-data-${{ inputs.version }} ${HOME}/iris-test-data
+      shell: bash
