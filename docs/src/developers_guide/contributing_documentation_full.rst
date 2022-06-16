@@ -72,10 +72,10 @@ This is useful for a final test before committing your changes.
 Testing
 ~~~~~~~
 
-There are a ways to test various aspects of the documentation.
+There are various ways to test aspects of the documentation.
 
 Each :ref:`contributing.documentation.gallery` entry has a corresponding test.
-To run the tests::
+To run all the gallery tests::
 
     pytest -v docs/gallery_tests/test_gallery_examples.py
 
