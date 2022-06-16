@@ -79,24 +79,10 @@ jobs:
           conda list
 
       - name: "cartopy cache"
-        uses: actions/cache@v3
-        id: cartopy-cache
-        env:
-          CACHE_BUILD: 0
+        uses: ./.github/workflows/composite/cartopy-cache
         with:
-          path: ~/.local/share/cartopy
-          key: ${{ runner.os }}-cartopy-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
-
-      - name: "cartopy cache populate"
-        if: steps.cartopy-cache.outputs.cache-hit != 'true'
-        env:
-          CARTOPY_SHARE_DIR: ~/.local/share/cartopy
-          CARTOPY_FEATURE: https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
-        run: |
-          wget --quiet ${CARTOPY_FEATURE}
-          mkdir -p ${CARTOPY_SHARE_DIR}
-          # Requires a pre-installed version of cartopy within the environment.
-          python cartopy_feature_download.py physical --output ${CARTOPY_SHARE_DIR} --no-warn
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
 
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
