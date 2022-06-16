@@ -825,151 +825,151 @@ class RectilinearRegridder:
 
         return data
 
-    # @staticmethod
-    # def _create_cube(
-    #     data,
-    #     src,
-    #     x_dim,
-    #     y_dim,
-    #     src_x_coord,
-    #     src_y_coord,
-    #     grid_x_coord,
-    #     grid_y_coord,
-    #     sample_grid_x,
-    #     sample_grid_y,
-    #     regrid_callback,
-    # ):
-    #     """
-    #     Return a new Cube for the result of regridding the source Cube onto
-    #     the new grid.
-    #
-    #     All the metadata and coordinates of the result Cube are copied from
-    #     the source Cube, with two exceptions:
-    #         - Grid dimension coordinates are copied from the grid Cube.
-    #         - Auxiliary coordinates which span the grid dimensions are
-    #           ignored, except where they provide a reference surface for an
-    #           :class:`iris.aux_factory.AuxCoordFactory`.
-    #
-    #     Args:
-    #
-    #     * data:
-    #         The regridded data as an N-dimensional NumPy array.
-    #     * src:
-    #         The source Cube.
-    #     * x_dim:
-    #         The X dimension within the source Cube.
-    #     * y_dim:
-    #         The Y dimension within the source Cube.
-    #     * src_x_coord:
-    #         The X :class:`iris.coords.DimCoord`.
-    #     * src_y_coord:
-    #         The Y :class:`iris.coords.DimCoord`.
-    #     * grid_x_coord:
-    #         The :class:`iris.coords.DimCoord` for the new grid's X
-    #         coordinate.
-    #     * grid_y_coord:
-    #         The :class:`iris.coords.DimCoord` for the new grid's Y
-    #         coordinate.
-    #     * sample_grid_x:
-    #         A 2-dimensional array of sample X values.
-    #     * sample_grid_y:
-    #         A 2-dimensional array of sample Y values.
-    #     * regrid_callback:
-    #         The routine that will be used to calculate the interpolated
-    #         values of any reference surfaces.
-    #
-    #     Returns:
-    #         The new, regridded Cube.
-    #
-    #     """
-    #     from iris.cube import Cube
-    #
-    #     #
-    #     # XXX: At the moment requires to be a static method as used by
-    #     # experimental regrid_area_weighted_rectilinear_src_and_grid
-    #     #
-    #     # Create a result cube with the appropriate metadata
-    #     result = Cube(data)
-    #     result.metadata = copy.deepcopy(src.metadata)
-    #
-    #     # Copy across all the coordinates which don't span the grid.
-    #     # Record a mapping from old coordinate IDs to new coordinates,
-    #     # for subsequent use in creating updated aux_factories.
-    #     coord_mapping = {}
-    #
-    #     def copy_coords(src_coords, add_method):
-    #         for coord in src_coords:
-    #             dims = src.coord_dims(coord)
-    #             if coord == src_x_coord:
-    #                 coord = grid_x_coord
-    #             elif coord == src_y_coord:
-    #                 coord = grid_y_coord
-    #             elif x_dim in dims or y_dim in dims:
-    #                 continue
-    #             result_coord = coord.copy()
-    #             add_method(result_coord, dims)
-    #             coord_mapping[id(coord)] = result_coord
-    #
-    #     copy_coords(src.dim_coords, result.add_dim_coord)
-    #     copy_coords(src.aux_coords, result.add_aux_coord)
-    #
-    #     def regrid_reference_surface(
-    #         src_surface_coord,
-    #         surface_dims,
-    #         x_dim,
-    #         y_dim,
-    #         src_x_coord,
-    #         src_y_coord,
-    #         sample_grid_x,
-    #         sample_grid_y,
-    #         regrid_callback,
-    #     ):
-    #         # Determine which of the reference surface's dimensions span the X
-    #         # and Y dimensions of the source cube.
-    #         surface_x_dim = surface_dims.index(x_dim)
-    #         surface_y_dim = surface_dims.index(y_dim)
-    #         surface = regrid_callback(
-    #             src_surface_coord.points,
-    #             surface_x_dim,
-    #             surface_y_dim,
-    #             src_x_coord,
-    #             src_y_coord,
-    #             sample_grid_x,
-    #             sample_grid_y,
-    #         )
-    #         surface_coord = src_surface_coord.copy(surface)
-    #         return surface_coord
-    #
-    #     # Copy across any AuxFactory instances, and regrid their reference
-    #     # surfaces where required.
-    #     for factory in src.aux_factories:
-    #         for coord in factory.dependencies.values():
-    #             if coord is None:
-    #                 continue
-    #             dims = src.coord_dims(coord)
-    #             if x_dim in dims and y_dim in dims:
-    #                 result_coord = regrid_reference_surface(
-    #                     coord,
-    #                     dims,
-    #                     x_dim,
-    #                     y_dim,
-    #                     src_x_coord,
-    #                     src_y_coord,
-    #                     sample_grid_x,
-    #                     sample_grid_y,
-    #                     regrid_callback,
-    #                 )
-    #                 result.add_aux_coord(result_coord, dims)
-    #                 coord_mapping[id(coord)] = result_coord
-    #         try:
-    #             result.add_aux_factory(factory.updated(coord_mapping))
-    #         except KeyError:
-    #             msg = (
-    #                 "Cannot update aux_factory {!r} because of dropped"
-    #                 " coordinates.".format(factory.name())
-    #             )
-    #             warnings.warn(msg)
-    #     return result
+    @staticmethod
+    def _create_cube(
+        data,
+        src,
+        x_dim,
+        y_dim,
+        src_x_coord,
+        src_y_coord,
+        grid_x_coord,
+        grid_y_coord,
+        sample_grid_x,
+        sample_grid_y,
+        regrid_callback,
+    ):
+        """
+        Return a new Cube for the result of regridding the source Cube onto
+        the new grid.
+
+        All the metadata and coordinates of the result Cube are copied from
+        the source Cube, with two exceptions:
+            - Grid dimension coordinates are copied from the grid Cube.
+            - Auxiliary coordinates which span the grid dimensions are
+              ignored, except where they provide a reference surface for an
+              :class:`iris.aux_factory.AuxCoordFactory`.
+
+        Args:
+
+        * data:
+            The regridded data as an N-dimensional NumPy array.
+        * src:
+            The source Cube.
+        * x_dim:
+            The X dimension within the source Cube.
+        * y_dim:
+            The Y dimension within the source Cube.
+        * src_x_coord:
+            The X :class:`iris.coords.DimCoord`.
+        * src_y_coord:
+            The Y :class:`iris.coords.DimCoord`.
+        * grid_x_coord:
+            The :class:`iris.coords.DimCoord` for the new grid's X
+            coordinate.
+        * grid_y_coord:
+            The :class:`iris.coords.DimCoord` for the new grid's Y
+            coordinate.
+        * sample_grid_x:
+            A 2-dimensional array of sample X values.
+        * sample_grid_y:
+            A 2-dimensional array of sample Y values.
+        * regrid_callback:
+            The routine that will be used to calculate the interpolated
+            values of any reference surfaces.
+
+        Returns:
+            The new, regridded Cube.
+
+        """
+        from iris.cube import Cube
+
+        #
+        # XXX: At the moment requires to be a static method as used by
+        # experimental regrid_area_weighted_rectilinear_src_and_grid
+        #
+        # Create a result cube with the appropriate metadata
+        result = Cube(data)
+        result.metadata = copy.deepcopy(src.metadata)
+
+        # Copy across all the coordinates which don't span the grid.
+        # Record a mapping from old coordinate IDs to new coordinates,
+        # for subsequent use in creating updated aux_factories.
+        coord_mapping = {}
+
+        def copy_coords(src_coords, add_method):
+            for coord in src_coords:
+                dims = src.coord_dims(coord)
+                if coord == src_x_coord:
+                    coord = grid_x_coord
+                elif coord == src_y_coord:
+                    coord = grid_y_coord
+                elif x_dim in dims or y_dim in dims:
+                    continue
+                result_coord = coord.copy()
+                add_method(result_coord, dims)
+                coord_mapping[id(coord)] = result_coord
+
+        copy_coords(src.dim_coords, result.add_dim_coord)
+        copy_coords(src.aux_coords, result.add_aux_coord)
+
+        def regrid_reference_surface(
+            src_surface_coord,
+            surface_dims,
+            x_dim,
+            y_dim,
+            src_x_coord,
+            src_y_coord,
+            sample_grid_x,
+            sample_grid_y,
+            regrid_callback,
+        ):
+            # Determine which of the reference surface's dimensions span the X
+            # and Y dimensions of the source cube.
+            surface_x_dim = surface_dims.index(x_dim)
+            surface_y_dim = surface_dims.index(y_dim)
+            surface = regrid_callback(
+                src_surface_coord.points,
+                surface_x_dim,
+                surface_y_dim,
+                src_x_coord,
+                src_y_coord,
+                sample_grid_x,
+                sample_grid_y,
+            )
+            surface_coord = src_surface_coord.copy(surface)
+            return surface_coord
+
+        # Copy across any AuxFactory instances, and regrid their reference
+        # surfaces where required.
+        for factory in src.aux_factories:
+            for coord in factory.dependencies.values():
+                if coord is None:
+                    continue
+                dims = src.coord_dims(coord)
+                if x_dim in dims and y_dim in dims:
+                    result_coord = regrid_reference_surface(
+                        coord,
+                        dims,
+                        x_dim,
+                        y_dim,
+                        src_x_coord,
+                        src_y_coord,
+                        sample_grid_x,
+                        sample_grid_y,
+                        regrid_callback,
+                    )
+                    result.add_aux_coord(result_coord, dims)
+                    coord_mapping[id(coord)] = result_coord
+            try:
+                result.add_aux_factory(factory.updated(coord_mapping))
+            except KeyError:
+                msg = (
+                    "Cannot update aux_factory {!r} because of dropped"
+                    " coordinates.".format(factory.name())
+                )
+                warnings.warn(msg)
+        return result
 
     def _check_units(self, coord):
         from iris.coord_systems import GeogCS, RotatedGeogCS
