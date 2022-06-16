@@ -91,16 +91,6 @@ jobs:
           path: ${{ github.workspace }}/.nox
           key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ env.CACHE_BUILD }}-${{ hashFiles(env.LOCK_FILE) }}
 
-      - name: "iris configure"
-        env:
-          MPL_RC: ${HOME}/.config/matplotlib/matplotlibrc
-        run: |
-          mkdir -p $(dirname ${MPL_RC})
-          echo ${MPL_RC}
-          echo "backend : agg" >> ${MPL_RC}
-          echo "image.cmap : viridis" >> ${MPL_RC}
-          cat ${MPL_RC}
-
       - name: "iris linkcheck"
         env:
           PY_VER: ${{ matrix.python-version }}
