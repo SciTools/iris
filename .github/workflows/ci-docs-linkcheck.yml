@@ -47,7 +47,6 @@ jobs:
       - name: "conda package cache"
         uses: actions/cache@v3
         env:
-          # Increment the build number to force a cache refresh.
           CACHE_BUILD: 0
         with:
           path: ~/conda_pkgs_dir
@@ -63,19 +62,11 @@ jobs:
           use-only-tar-bz2: true
 
       - name: "conda environment cache"
-        uses: actions/cache@v3
-        id: conda-env-cache
-        env:
-          # Increment the build number to force a cache refresh.
-          CACHE_BUILD: 0
+        uses: ./.github/workflows/composite/conda-env-cache
         with:
-          path: ${{ env.CONDA }}/envs/${{ env.ENV_NAME }}
-          key: ${{ runner.os }}-conda-env-${{ env.ENV_NAME }}-p${{ env.CACHE_PERIOD }}-b${{ env.CACHE_BUILD }}
-
-      - name: "conda environment update"
-        if: steps.conda-env-cache.outputs.cache-hit != 'true'
-        run: |
-          conda install --quiet --name ${{ env.ENV_NAME }} nox pip
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
+          install_packages: "nox pip"
 
       - name: "conda info"
         run: |
@@ -85,7 +76,6 @@ jobs:
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
         with:
-          # Increment the build number to force a cache refresh.
           cache_build: 0
 
       - name: "iris linkcheck"

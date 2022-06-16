@@ -8,7 +8,7 @@ description: "cache the nox test environments"
 #
 inputs:
   cache_build:
-    description: "nox cache version build number"
+    description: "nox cache build number"
     required: false
     default: "0"
 
