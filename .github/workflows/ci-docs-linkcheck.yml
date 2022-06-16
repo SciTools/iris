@@ -17,6 +17,10 @@ on:
       - "*"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     name: "linkcheck ${{ matrix.os }} ${{ matrix.python-version }}"
