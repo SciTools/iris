@@ -98,8 +98,9 @@ class Test___call__(tests.IrisTest):
         patch_setup.assert_called_once_with(
             src_grid, self.weights, target_grid
         )
+        dims = (0, 1)
         patch_operate.assert_called_once_with(
-            src_grid, mock.sentinel.regrid_info
+            src_grid, dims, mock.sentinel.regrid_info
         )
         # The result is a re-merged version of the internal result, so it is
         # therefore '==' but not the same object.
@@ -136,8 +137,9 @@ class Test___call__(tests.IrisTest):
                 self.func_operate, return_value=self.dummy_slice_result
             ) as patch_operate:
                 _ = regridder(different_src_cube)
+        dims = (0, 1)
         patch_operate.assert_called_once_with(
-            different_src_cube, mock.sentinel.regrid_info
+            different_src_cube, dims, mock.sentinel.regrid_info
         )
 
     def test_caching(self):
@@ -160,11 +162,12 @@ class Test___call__(tests.IrisTest):
             src_grid, self.weights, target_grid
         )
         self.assertEqual(len(patch_operate.call_args_list), 2)
+        dims = (0, 1)
         self.assertEqual(
             patch_operate.call_args_list,
             [
-                mock.call(src_grid, mock.sentinel.regrid_info),
-                mock.call(different_src_cube, mock.sentinel.regrid_info),
+                mock.call(src_grid, dims, mock.sentinel.regrid_info),
+                mock.call(different_src_cube, dims, mock.sentinel.regrid_info),
             ],
         )
 
