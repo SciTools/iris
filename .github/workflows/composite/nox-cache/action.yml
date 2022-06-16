@@ -18,8 +18,6 @@ runs:
   using: "composite"
   steps:
     - uses: actions/cache@v3
-      env:
-        LOCK_FILE: ${{ inputs.lock_file }}
       with:
         path: ${{ github.workspace }}/.nox
-        key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles(env.LOCK_FILE) }}
+        key: ${{ runner.os }}-nox-${{ env.ENV_NAME }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles( inputs.lock_file ) }}
