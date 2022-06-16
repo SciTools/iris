@@ -1152,8 +1152,8 @@ def _create_cube(
     cube
         A new iris.cube.Cube instance.
     """
-    from iris.cube import Cube
     from iris.coords import DimCoord
+    from iris.cube import Cube
 
     result = Cube(data)
 
