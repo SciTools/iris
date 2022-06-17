@@ -6,6 +6,7 @@
 
 """Pytest fixtures for the gallery tests."""
 
+import pathlib
 import sys
 
 import matplotlib.pyplot as plt
@@ -13,8 +14,8 @@ import pytest
 
 import iris
 
-from .gallerytest_util import GALLERY_DIR
-
+CURRENT_DIR = pathlib.Path(__file__).resolve()
+GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
 GALLERY_DIRECTORIES = [
     str(path) for path in GALLERY_DIR.iterdir() if path.is_dir()
 ]

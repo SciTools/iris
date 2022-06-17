@@ -11,7 +11,13 @@ import pytest
 
 from iris.tests import check_graphic
 
-from .gallerytest_util import gallery_examples
+from .conftest import GALLERY_DIR
+
+
+def gallery_examples():
+    """Generator to yield all current gallery examples."""
+    for example_file in GALLERY_DIR.glob("*/plot*.py"):
+        yield example_file.stem
 
 
 @pytest.mark.filterwarnings("error::iris.IrisDeprecation")
