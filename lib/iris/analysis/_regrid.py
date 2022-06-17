@@ -357,7 +357,7 @@ def _curvilinear_to_rectilinear_regrid(
 
 
 def _regrid_weighted_curvilinear_to_rectilinear__perform(
-    src_cube, dims, regrid_info
+    src_cube, regrid_info
 ):
     """
     Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
@@ -365,6 +365,9 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     Perform the prepared regrid calculation on a single 2d cube.
 
     """
+    dims = src_cube.coord_dims(
+        CurvilinearRegridder._get_horizontal_coord(src_cube, "x")
+    )
     result_data = _curvilinear_to_rectilinear_regrid(
         src_cube.data, dims, regrid_info
     )
@@ -487,7 +490,6 @@ class CurvilinearRegridder:
                 "The given cube is not defined on the same "
                 "source grid as this regridder."
             )
-        dims = src.coord_dims(sx)
         slice_cube = next(src.slices(sx))
         if self._regrid_info is None:
             # Calculate the basic regrid info just once.
@@ -497,7 +499,7 @@ class CurvilinearRegridder:
                 )
             )
         result = _regrid_weighted_curvilinear_to_rectilinear__perform(
-            src, dims, self._regrid_info
+            src, self._regrid_info
         )
 
         return result
