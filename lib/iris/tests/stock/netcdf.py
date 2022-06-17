@@ -24,39 +24,43 @@ def ncgen_from_cdl(
     cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str
 ):
     """
-    Generate a test netcdf file from a cdl string.
+    Generate a test netcdf file from cdl.
+
+    Source is CDL in either a string or a file.
+    If given a string, will either save a CDL file, or pass text directly.
+    A netcdf output file is always created, at the given path.
 
     Parameters
     ----------
     cdl_str : str or None
         String containing a CDL description of a netcdf file.
         If None, 'cdl_path' must be an existing file.
-    cdl_path : str
+    cdl_path : str or None
         Path of temporary text file where cdl_str is written.
-        If None, 'cdl_str' must be present, and is piped direct to ncgen.
+        If None, 'cdl_str' must be given, and is piped direct to ncgen.
     nc_path : str
         Path of temporary netcdf file where converted result is put.
+
+    Notes
+    -----
+    For legacy reasons, the path args are 'str's not 'Path's.
 
     """
     if cdl_str and cdl_path:
         with open(cdl_path, "w") as f_out:
             f_out.write(cdl_str)
-    # Use ncgen to convert this into an actual (temporary) netCDF file.
     if cdl_path:
         # Create netcdf from stored CDL file.
-        command_args = [NCGEN_PATHSTR, cdl_path, "-k4", "-o", nc_path]
-        subprocess.check_call(command_args)
+        call_args = [NCGEN_PATHSTR, cdl_path, "-k4", "-o", nc_path]
+        call_kwargs = {}
     else:
+        # No CDL file : pipe 'cdl_str' directly into the ncgen program.
         if not cdl_str:
             raise ValueError("Must provide either 'cdl_str' or 'cdl_path'.")
-        # No CDL file : pipe 'cdl_str' directly into the ncgen program.
-        command_args = [NCGEN_PATHSTR, "-k4", "-o", nc_path]
-        subprocess.run(
-            command_args,
-            input=cdl_str,
-            encoding="ascii",
-            check=True,
-        )
+        call_args = [NCGEN_PATHSTR, "-k4", "-o", nc_path]
+        call_kwargs = dict(input=cdl_str, encoding="ascii")
+
+    subprocess.check_call(call_args, **call_kwargs)
 
 
 def _file_from_cdl_template(

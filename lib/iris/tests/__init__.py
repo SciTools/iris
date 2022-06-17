@@ -1353,7 +1353,7 @@ def no_warnings(func):
 
 def env_bin_path(exe_name: AnyStr = None):
     """
-    Return a Path object for (an executable in) the envvironment bin directory.
+    Return a Path object for (an executable in) the environment bin directory.
 
     Parameters
     ----------
@@ -1363,17 +1363,16 @@ def env_bin_path(exe_name: AnyStr = None):
     Returns
     -------
     exe_path : Path
-        A path to the bin directory, or an executable within it (must exist).
+        A path to the bin directory, or an executable file within it.
 
     Notes
     -----
     For use in tests which spawn commands which should call executables within
-    the Python environment, since many IDEs (Eclipse, PyCharm) don't put this
-    location on the PATH by default.
+    the Python environment, since many IDEs (Eclipse, PyCharm) don't
+    automatically include this location in $PATH (as opposed to $PYTHONPATH).
     """
     exe_path = Path(os.__file__)
     exe_path = (exe_path / "../../../bin").resolve()
-    assert exe_path.exists()
     if exe_name is not None:
         exe_path = exe_path / exe_name
     return exe_path
