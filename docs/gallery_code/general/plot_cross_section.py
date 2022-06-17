@@ -29,9 +29,6 @@ def main():
     qplt.contourf(
         cross_section, coords=["grid_longitude", "altitude"], cmap="RdBu_r"
     )
-
-    assert False
-
     iplt.show()
 
     # Now do the equivalent plot, only against model level
