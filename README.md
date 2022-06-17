@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://scitools-iris.readthedocs.io/en/latest/">
-   <img src="https://scitools-iris.readthedocs.io/en/latest/_static/iris-logo-title.png" alt="Iris" width="300"></a><br>
+   <img src="https://scitools-iris.readthedocs.io/en/latest/_static/iris-logo-title.svg" alt="Iris" width="300"></a><br>
 </h1>
 
 

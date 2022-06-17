@@ -266,8 +266,8 @@ doctest_global_setup = "import iris"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "_static/iris-logo-title.png"
-html_favicon = "_static/favicon.ico"
+html_logo = "_static/iris-logo-title.svg"
+html_favicon = "_static/iris-logo.svg"
 html_theme = "pydata_sphinx_theme"
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html#configure-the-search-bar-position
