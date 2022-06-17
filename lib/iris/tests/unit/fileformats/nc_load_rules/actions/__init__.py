@@ -15,7 +15,7 @@ import warnings
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
-from iris.fileformats.netcdf import _load_cube
+from iris.fileformats.netcdf.loader import _load_cube
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 """
@@ -83,11 +83,11 @@ class Mixin__nc_load_actions:
         # Grab a data variable : FOR NOW always grab the 'phenom' variable.
         cf_var = cf.cf_group.data_variables["phenom"]
 
-        engine = iris.fileformats.netcdf._actions_engine()
+        engine = iris.fileformats.netcdf.loader._actions_engine()
 
         # If debug enabled, switch on the activation summary debug output.
         # Use 'patch' so it is restored after the test.
-        self.patch("iris.fileformats.netcdf.DEBUG", self.debug)
+        self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug)
 
         with warnings.catch_warnings():
             warnings.filterwarnings(
