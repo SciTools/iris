@@ -1,0 +1,22 @@
+name: "nox cache"
+description: "cache the nox test environments"
+
+inputs:
+  cache_build:
+    description: "nox cache build number"
+    required: false
+    default: "0"
+  env_name:
+    description: "environment name"
+    required: true
+  lock_file:
+    description: "conda-lock environment requirements filename"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/.nox
+        key: ${{ runner.os }}-nox-${{ inputs.env_name }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles(inputs.lock_file) }}

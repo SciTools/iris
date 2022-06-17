@@ -1,0 +1,122 @@
+# reference:
+#   - https://github.com/actions/cache
+#   - https://github.com/actions/checkout
+#   - https://github.com/marketplace/actions/setup-miniconda
+
+name: ci-tests 
+
+on:
+  push:
+    branches:
+      - "main"
+      - "v*x"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: "tests ${{ matrix.os }} ${{ matrix.python-version }}"
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.8"]
+
+    env:
+      IRIS_TEST_DATA_VERSION: "2.9"
+      ENV_NAME: "ci-tests"
+
+    steps:
+      - name: "checkout"
+        uses: actions/checkout@v3
+
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+          echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+
+      - name: "data cache"
+        uses: ./.github/workflows/composite/iris-data-cache
+        with:
+          cache_build: 0
+          env_name: ${{ env.ENV_NAME }}
+          version: ${{ env.IRIS_TEST_DATA_VERSION }}
+
+      - name: "conda package cache"
+        uses: ./.github/workflows/composite/conda-pkg-cache
+        with:
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
+
+      - name: "conda install"
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-version: latest
+          channels: conda-forge,defaults
+          activate-environment: ${{ env.ENV_NAME }}
+          auto-update-conda: false
+          use-only-tar-bz2: true
+
+      - name: "conda environment cache"
+        uses: ./.github/workflows/composite/conda-env-cache
+        with:
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
+          install_packages: "cartopy nox pip"
+
+      - name: "conda info"
+        run: |
+          conda info
+          conda list
+
+      - name: "cartopy cache"
+        uses: ./.github/workflows/composite/cartopy-cache
+        with:
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
+
+      - name: "nox cache"
+        uses: ./.github/workflows/composite/nox-cache
+        with:
+          cache_build: 0
+          env_name: ${{ env.ENV_NAME }}
+          lock_file: ${{ env.LOCK_FILE }}
+
+      # TODO: drop use of site.cfg and explicit use of mplrc
+      - name: "iris configure"
+        env:
+          SITE_CFG: lib/iris/etc/site.cfg
+        run: |
+          mkdir -p $(dirname ${SITE_CFG})
+          echo ${SITE_CFG}
+          echo "[Resources]" >> ${SITE_CFG}
+          echo "test_data_dir = ${HOME}/iris-test-data/test_data" >> ${SITE_CFG}
+          echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
+          cat ${SITE_CFG}
+
+      - name: "iris tests"
+        env:
+          PY_VER: ${{ matrix.python-version }}
+        run: |
+          nox --session tests -- --verbose

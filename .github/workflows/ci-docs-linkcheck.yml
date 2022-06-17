@@ -1,0 +1,94 @@
+# reference:
+#   - https://github.com/actions/cache
+#   - https://github.com/actions/checkout
+#   - https://github.com/marketplace/actions/setup-miniconda
+
+name: ci-docs-linkcheck
+
+on:
+  push:
+    branches:
+      - "main"
+      - "v*x"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: "linkcheck ${{ matrix.os }} ${{ matrix.python-version }}"
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.8"]
+
+    env:
+      ENV_NAME: "ci-docs-linkcheck"
+
+    steps:
+      - name: "checkout"
+        uses: actions/checkout@v3
+
+      - name: "environment configure"
+        env:
+          # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+        run: |
+          echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+          echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+
+      - name: "conda package cache"
+        uses: ./.github/workflows/composite/conda-pkg-cache
+        with:
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
+
+      - name: "conda install"
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-version: latest
+          channels: conda-forge,defaults
+          activate-environment: ${{ env.ENV_NAME }}
+          auto-update-conda: false
+          use-only-tar-bz2: true
+
+      - name: "conda environment cache"
+        uses: ./.github/workflows/composite/conda-env-cache
+        with:
+          cache_build: 0
+          cache_period: ${{ env.CACHE_PERIOD }}
+          env_name: ${{ env.ENV_NAME }}
+          install_packages: "nox pip"
+
+      - name: "conda info"
+        run: |
+          conda info
+          conda list
+
+      - name: "nox cache"
+        uses: ./.github/workflows/composite/nox-cache
+        with:
+          cache_build: 0
+          env_name: ${{ env.ENV_NAME }}
+          lock_file: ${{ env.LOCK_FILE }}
+
+      - name: "iris linkcheck"
+        env:
+          PY_VER: ${{ matrix.python-version }}
+        run: |
+          nox --session linkcheck -- --verbose

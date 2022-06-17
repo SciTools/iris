@@ -93,7 +93,11 @@ jobs:
           body: |
             Lockfiles updated to the latest resolvable environment.
 
-            If the CI test suite fails, create a new branch based of this pull request and add the required fixes to that branch.
+            ### If the CI tasks fail, create a new branch based on this PR and add the required fixes to that branch.
+
+            ### If the PR CI tasks have not run, please close and re-open this PR to trigger them.
+
+            Reference: create-pull-request GHA [triggering further workflow runs](https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs)
           labels: |
             New: Pull Request
             Bot

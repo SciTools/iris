@@ -1,0 +1,34 @@
+name: "cartopy-cache"
+description: "create and cache cartopy assets"
+
+inputs:
+  cache_build:
+    description: "conda environment cache build number"
+    required: false
+    default: "0"
+  cache_period:
+    description: "conda environment cache timestamp"
+    required: true
+  env_name:
+    description: "environment name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      id: cartopy-cache
+      with:
+        path: ~/.local/share/cartopy
+        key: ${{ runner.os }}-cartopy-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
+
+    - if: steps.cartopy-cache.outputs.cache-hit != 'true'
+      env:
+        CARTOPY_SHARE_DIR: ~/.local/share/cartopy
+        CARTOPY_FEATURE: https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
+      shell: bash
+      run: |
+        wget --quiet ${CARTOPY_FEATURE}
+        mkdir -p ${CARTOPY_SHARE_DIR}
+        # Requires a pre-installed version of cartopy within the environment.
+        python cartopy_feature_download.py physical --output ${CARTOPY_SHARE_DIR} --no-warn
