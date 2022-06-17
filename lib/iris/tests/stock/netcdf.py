@@ -60,7 +60,7 @@ def ncgen_from_cdl(
         call_args = [NCGEN_PATHSTR, "-k4", "-o", nc_path]
         call_kwargs = dict(input=cdl_str, encoding="ascii")
 
-    subprocess.check_call(call_args, **call_kwargs)
+    subprocess.run(call_args, check=True, **call_kwargs)
 
 
 def _file_from_cdl_template(
