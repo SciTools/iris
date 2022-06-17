@@ -145,7 +145,7 @@ This document explains the changes made to Iris for this release
    aggregation method to be used on masked data when the missing data tolerance
    is set to 0. (:issue:`4735`, :pull:`4755`)
 
-#. `@wjbenfold`_ improved the speed of linear interpolation using 
+#. `@wjbenfold`_ improved the speed of linear interpolation using
    :meth:`iris.analysis.trajectory.interpolate` (:pull:`4366`)
 
 
@@ -193,6 +193,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ added developer documentation to highlight some of the
    utilities offered by :class:`iris.IrisTest` and how to update CML and other
    output files. (:issue:`4544`, :pull:`4600`)
+
+#. `@trexfeathers`_ and `@abooton`_ modernised the Iris logo to be SVG format.
+   (:pull:`3935`)
 
 
 💼 Internal
