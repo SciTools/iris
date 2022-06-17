@@ -35,9 +35,7 @@ CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
 # https://github.com/numpy/numpy/pull/19478
 # https://github.com/matplotlib/matplotlib/pull/22099
 #: Common session environment variables.
-ENV = dict(
-    NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512VL,AVX512BW,AVX512DQ,AVX512_SKX"
-)
+ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
 
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
