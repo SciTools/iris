@@ -6,34 +6,11 @@
 
 """Pytest fixtures for the gallery tests."""
 
-import pathlib
-import sys
 
 import matplotlib.pyplot as plt
 import pytest
 
 import iris
-
-CURRENT_DIR = pathlib.Path(__file__).resolve()
-GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
-GALLERY_DIRECTORIES = [
-    str(path) for path in GALLERY_DIR.iterdir() if path.is_dir()
-]
-
-
-@pytest.fixture
-def add_gallery_to_path():
-    """
-    Creates a fixture which can be used to add the iris gallery to the
-    PYTHONPATH. The gallery entries are only importable throughout the lifetime
-    of the test.
-
-    """
-    orig_sys_path = sys.path
-    sys.path = sys.path[:]
-    sys.path += GALLERY_DIRECTORIES
-    yield
-    sys.path = orig_sys_path
 
 
 @pytest.fixture
