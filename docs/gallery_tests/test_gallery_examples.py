@@ -6,9 +6,12 @@
 
 import importlib
 
+import matplotlib.pyplot as plt
 import pytest
 
-from .gallerytest_util import gallery_examples, show_replaced_by_check_graphic
+from iris.tests import check_graphic
+
+from .gallerytest_util import gallery_examples
 
 
 @pytest.mark.filterwarnings("error::iris.IrisDeprecation")
@@ -18,7 +21,17 @@ def test_plot_example(
     add_gallery_to_path,
     image_setup_teardown,
     iris_future_defaults,
+    monkeypatch,
 ):
+    def no_show():
+        pass
+
+    monkeypatch.setattr(plt, "show", no_show)
+
     module = importlib.import_module(example_code)
-    with show_replaced_by_check_graphic(f"gallery_tests.test_{example_code}"):
-        module.main()
+
+    module.main()
+    for fig_num in plt.get_fignums():
+        plt.figure(fig_num)
+        image_id = f"gallery_tests.test_{example_code}.{fig_num - 1}"
+        check_graphic(image_id)
