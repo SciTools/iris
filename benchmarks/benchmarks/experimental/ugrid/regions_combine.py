@@ -31,7 +31,7 @@ from ...generate_data.ugrid import make_cube_like_2d_cubesphere
 class MixinCombineRegions:
     # Characterise time taken + memory-allocated, for various stages of combine
     # operations on cubesphere-like test data.
-    params = [4, 500]
+    params = [4, 2000]
     param_names = ["cubesphere-N"]
     # For use on 'track_addedmem_..' type benchmarks - result is too noisy.
     no_small_params = params[1:]
