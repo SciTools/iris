@@ -220,7 +220,22 @@ def doctest(session: nox.sessions.Session):
         "doctest",
         external=True,
     )
-    session.cd("..")
+
+
+@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
+def gallery(session: nox.sessions.Session):
+    """
+    Perform iris gallery doc-tests.
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+
+    """
+    prepare_venv(session)
+    session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.run(
         "python",
         "-m",

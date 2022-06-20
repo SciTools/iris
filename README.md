@@ -16,9 +16,6 @@
 <a href="https://github.com/SciTools/iris/actions/workflows/ci-docs-tests.yml">
 <img src="https://github.com/SciTools/iris/actions/workflows/ci-docs-tests.yml/badge.svg?branch=main"
      alt="ci-docs-tests"></a>
-<a href="https://github.com/SciTools/iris/actions/workflows/ci-docs-linkcheck.yml">
-<img src="https://github.com/SciTools/iris/actions/workflows/ci-docs-linkcheck.yml/badge.svg?branch=main"
-     alt="ci-docs-linkcheck"></a>
 <a href="https://scitools-iris.readthedocs.io/en/latest/?badge=latest">
 <img src="https://readthedocs.org/projects/scitools-iris/badge/?version=latest"
      alt="Documentation Status"></a>
