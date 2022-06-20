@@ -8,11 +8,59 @@
 from pathlib import Path
 from string import Template
 import subprocess
+from typing import Optional
 
 import dask
 from dask import array as da
 import netCDF4
 import numpy as np
+
+from iris.tests import env_bin_path
+
+NCGEN_PATHSTR = str(env_bin_path("ncgen"))
+
+
+def ncgen_from_cdl(
+    cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str
+):
+    """
+    Generate a test netcdf file from cdl.
+
+    Source is CDL in either a string or a file.
+    If given a string, will either save a CDL file, or pass text directly.
+    A netcdf output file is always created, at the given path.
+
+    Parameters
+    ----------
+    cdl_str : str or None
+        String containing a CDL description of a netcdf file.
+        If None, 'cdl_path' must be an existing file.
+    cdl_path : str or None
+        Path of temporary text file where cdl_str is written.
+        If None, 'cdl_str' must be given, and is piped direct to ncgen.
+    nc_path : str
+        Path of temporary netcdf file where converted result is put.
+
+    Notes
+    -----
+    For legacy reasons, the path args are 'str's not 'Path's.
+
+    """
+    if cdl_str and cdl_path:
+        with open(cdl_path, "w") as f_out:
+            f_out.write(cdl_str)
+    if cdl_path:
+        # Create netcdf from stored CDL file.
+        call_args = [NCGEN_PATHSTR, cdl_path, "-k4", "-o", nc_path]
+        call_kwargs = {}
+    else:
+        # No CDL file : pipe 'cdl_str' directly into the ncgen program.
+        if not cdl_str:
+            raise ValueError("Must provide either 'cdl_str' or 'cdl_path'.")
+        call_args = [NCGEN_PATHSTR, "-k4", "-o", nc_path]
+        call_kwargs = dict(input=cdl_str, encoding="ascii")
+
+    subprocess.run(call_args, check=True, **call_kwargs)
 
 
 def _file_from_cdl_template(
@@ -39,12 +87,7 @@ def _file_from_cdl_template(
 
     # Spawn an "ncgen" command to create an actual NetCDF file from the
     # CDL string.
-    subprocess.run(
-        ["ncgen", "-o" + str(nc_write_path)],
-        input=cdl,
-        encoding="ascii",
-        check=True,
-    )
+    ncgen_from_cdl(cdl_str=cdl, cdl_path=None, nc_path=nc_write_path)
 
     return nc_write_path
 

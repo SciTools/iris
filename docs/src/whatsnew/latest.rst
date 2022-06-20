@@ -216,6 +216,12 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ migrated to GitHub Actions for Continuous-Integration.
    (:pull:`4503`)
 
+#. `@pp-mo`_ made tests run certain linux executables from the Python env,
+   specifically ncdump and ncgen.  These could otherwise fail when run in IDEs
+   such as PyCharm and Eclipse, which don't automatically include the Python env
+   bin in the system PATH.
+   (:pull:`4794`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

@@ -14,7 +14,6 @@ from itertools import repeat
 import os.path
 from os.path import join as path_join
 import shutil
-from subprocess import check_call
 import tempfile
 from unittest import mock
 import warnings
@@ -33,6 +32,7 @@ from iris.fileformats.netcdf import (
     UnknownCellMethodWarning,
 )
 import iris.tests.stock as stock
+from iris.tests.stock.netcdf import ncgen_from_cdl
 import iris.tests.unit.fileformats.netcdf.test_load_cubes as tlc
 
 
@@ -864,12 +864,12 @@ data:
         cls.temp_dir = tempfile.mkdtemp()
         cls.path_test_cdl = path_join(cls.temp_dir, "geos_problem.cdl")
         cls.path_test_nc = path_join(cls.temp_dir, "geos_problem.nc")
-        # Create a reference file from the CDL text.
-        with open(cls.path_test_cdl, "w") as f_out:
-            f_out.write(cls._geostationary_problem_cdl)
-        # Call 'ncgen' to make an actual netCDF file from the CDL.
-        command = "ncgen -o {} {}".format(cls.path_test_nc, cls.path_test_cdl)
-        check_call(command, shell=True)
+        # Create reference CDL and netcdf files from the CDL text.
+        ncgen_from_cdl(
+            cdl_str=cls._geostationary_problem_cdl,
+            cdl_path=cls.path_test_cdl,
+            nc_path=cls.path_test_nc,
+        )
 
     @classmethod
     def tearDownClass(cls):

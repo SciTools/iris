@@ -34,12 +34,13 @@ import json
 import math
 import os
 import os.path
+from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 import threading
-from typing import Dict, List
+from typing import AnyStr, Dict, List
 import unittest
 from unittest import mock
 import warnings
@@ -373,8 +374,8 @@ class IrisTest_nometa(unittest.TestCase):
             flags = list(map(str, flags))
 
         try:
-            # Python3 only: use subprocess.run()
-            args = ["ncdump"] + flags + [netcdf_filename]
+            exe_path = env_bin_path("ncdump")
+            args = [exe_path] + flags + [netcdf_filename]
             cdl = subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
             print(exc.output)
@@ -1348,3 +1349,30 @@ def no_warnings(func):
         return result
 
     return wrapped
+
+
+def env_bin_path(exe_name: AnyStr = None):
+    """
+    Return a Path object for (an executable in) the environment bin directory.
+
+    Parameters
+    ----------
+    exe_name : str
+        If set, the name of an executable to append to the path.
+
+    Returns
+    -------
+    exe_path : Path
+        A path to the bin directory, or an executable file within it.
+
+    Notes
+    -----
+    For use in tests which spawn commands which should call executables within
+    the Python environment, since many IDEs (Eclipse, PyCharm) don't
+    automatically include this location in $PATH (as opposed to $PYTHONPATH).
+    """
+    exe_path = Path(os.__file__)
+    exe_path = (exe_path / "../../../bin").resolve()
+    if exe_name is not None:
+        exe_path = exe_path / exe_name
+    return exe_path
