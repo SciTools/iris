@@ -192,7 +192,7 @@ class CreateCube(Mixin):
     def time_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
-    @TrackAddedMemoryAllocation.decorator()
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
@@ -206,7 +206,7 @@ class ComputeRealData(Mixin):
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
-    @TrackAddedMemoryAllocation.decorator()
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
@@ -224,7 +224,7 @@ class SaveData(Mixin):
         # Save to disk, which must compute data + stream it to file.
         self.save_recombined_cube()
 
-    @TrackAddedMemoryAllocation.decorator()
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_save(self, n_cubesphere):
         self.save_recombined_cube()
 
@@ -252,6 +252,6 @@ class FileStreamedCalc(Mixin):
         # Save to disk, which must compute data + stream it to file.
         self.save_recombined_cube()
 
-    @TrackAddedMemoryAllocation.decorator()
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_stream_file2file(self, n_cubesphere):
         self.save_recombined_cube()
