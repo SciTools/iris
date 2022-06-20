@@ -69,7 +69,11 @@ class TrackAddedMemoryAllocation:
 
     def addedmem_mb(self):
         """Return measured memory growth, in Mb."""
-        return self.mb_after - self.mb_before
+        result = self.mb_after - self.mb_before
+        # Results <5Mb are too vulnerable to noise being interpreted as a true
+        #  regression.
+        result = max(5.0, result)
+        return result
 
     @staticmethod
     def decorator(changed_params: list = None):
