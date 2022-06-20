@@ -5,48 +5,33 @@
 # licensing details.
 
 import importlib
-import pathlib
 
 import matplotlib.pyplot as plt
 import pytest
 
 from iris.tests import check_graphic
 
+from .conftest import GALLERY_DIR
+
 
 def gallery_examples():
-    """
-    Generator to yield all current gallery examples and their containing
-    directories.
+    """Generator to yield all current gallery examples."""
 
-    """
-    current_dir = pathlib.Path(__file__).resolve()
-    gallery_dir = current_dir.parents[1] / "gallery_code"
-    for example_file in gallery_dir.glob("*/plot*.py"):
-        yield example_file.parent, example_file.stem
+    for example_file in GALLERY_DIR.glob("*/plot*.py"):
+        yield example_file.stem
 
 
 @pytest.mark.filterwarnings("error::iris.IrisDeprecation")
-@pytest.mark.parametrize("example", gallery_examples(), ids=lambda arg: arg[1])
+@pytest.mark.parametrize("example", gallery_examples())
 def test_plot_example(
     example,
     image_setup_teardown,
+    import_patches,
     iris_future_defaults,
-    monkeypatch,
 ):
     """Test that all figures from example code match KGO."""
 
-    example_dir, example_code = example
-
-    # Replace pyplot.show with a function that does nothing, so all figures from the
-    # example are still open after it runs.
-    def no_show():
-        pass
-
-    monkeypatch.setattr(plt, "show", no_show)
-
-    # Add example code to sys.path and import it.
-    monkeypatch.syspath_prepend(example_dir)
-    module = importlib.import_module(example_code)
+    module = importlib.import_module(example)
 
     # Run example.
     module.main()
@@ -54,5 +39,5 @@ def test_plot_example(
     # will find it.
     for fig_num in plt.get_fignums():
         plt.figure(fig_num)
-        image_id = f"gallery_tests.test_{example_code}.{fig_num - 1}"
+        image_id = f"gallery_tests.test_{example}.{fig_num - 1}"
         check_graphic(image_id)

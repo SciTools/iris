@@ -6,11 +6,15 @@
 
 """Pytest fixtures for the gallery tests."""
 
+import pathlib
 
 import matplotlib.pyplot as plt
 import pytest
 
 import iris
+
+CURRENT_DIR = pathlib.Path(__file__).resolve()
+GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
 
 
 @pytest.fixture
@@ -25,6 +29,26 @@ def image_setup_teardown():
     plt.close("all")
     yield
     plt.close("all")
+
+
+@pytest.fixture
+def import_patches(monkeypatch):
+    """
+    Replace plt.show() with a function that does nothing, also add all the
+    gallery examples to sys.path.
+
+    """
+
+    def no_show():
+        pass
+
+    monkeypatch.setattr(plt, "show", no_show)
+
+    for example_dir in GALLERY_DIR.iterdir():
+        if example_dir.is_dir():
+            monkeypatch.syspath_prepend(example_dir)
+
+    yield
 
 
 @pytest.fixture
