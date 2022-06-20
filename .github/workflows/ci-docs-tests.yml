@@ -103,6 +103,7 @@ jobs:
           cache_build: 1
           env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
+          session: ${{ matrix.session }}
 
       # TODO: drop use of site.cfg and explicit use of mplrc
       - name: "iris configure"

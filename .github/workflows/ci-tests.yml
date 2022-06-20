@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "tests ${{ matrix.os }} ${{ matrix.python-version }}"
+    name: "${{ matrix.session}} ${{ matrix.os }} ${{ matrix.python-version }}"
 
     runs-on: ${{ matrix.os }}
 
@@ -36,6 +36,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.8"]
+        session: ["tests"]
 
     env:
       IRIS_TEST_DATA_VERSION: "2.9"
@@ -102,6 +103,7 @@ jobs:
           cache_build: 1
           env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
+          session: ${{ matrix.session }}
 
       # TODO: drop use of site.cfg and explicit use of mplrc
       - name: "iris configure"
@@ -115,8 +117,8 @@ jobs:
           echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
           cat ${SITE_CFG}
 
-      - name: "iris tests"
+      - name: "iris ${{ matrix.session }}"
         env:
           PY_VER: ${{ matrix.python-version }}
         run: |
-          nox --session tests -- --verbose
+          nox --session ${{ matrix.session }} -- --verbose
