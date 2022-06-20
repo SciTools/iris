@@ -122,7 +122,7 @@ jobs:
           echo "image.cmap : viridis" >> ${MPL_RC} 
           cat ${MPL_RC}
 
-      - name: "iris doctests, gallery and linkcheck"
+      - name: "iris ${{ matrix.session }}"
         env:
           PY_VER: ${{ matrix.python-version }}
         run: |
