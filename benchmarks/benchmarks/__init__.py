@@ -60,7 +60,7 @@ class TrackAddedMemoryAllocation:
                         Mb. Results fluctuate from run to run (usually within
                         1Mb) so if a result is sufficiently small this noise
                         will produce a before-after ratio over AVD's
-                        detection threshold and be treated as 'signal.
+                        detection threshold and be treated as 'signal'.
                         Results smaller than this value will therefore be
                         returned as equal to this value, ensuring fractionally
                         small noise / no noise at all.
