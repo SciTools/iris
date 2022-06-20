@@ -53,7 +53,21 @@ class TrackAddedMemoryAllocation:
             other_call()
         result = mb.addedmem_mb()
 
+    Attributes
+    ----------
+    RESULT_MINIMUM_MB : float
+                        The smallest result that should ever be returned, in
+                        Mb. Results fluctuate from run to run (usually within
+                        1Mb) so if a result is sufficiently small this noise
+                        will produce a before-after ratio over AVD's
+                        detection threshold and be treated as 'signal.
+                        Results smaller than this value will therefore be
+                        returned as equal to this value, ensuring fractionally
+                        small noise / no noise at all.
+
     """
+
+    RESULT_MINIMUM_MB = 5.0
 
     @staticmethod
     def process_resident_memory_mb():
@@ -69,9 +83,8 @@ class TrackAddedMemoryAllocation:
     def addedmem_mb(self):
         """Return measured memory growth, in Mb."""
         result = self.mb_after - self.mb_before
-        # Results <5Mb are too vulnerable to noise being interpreted as a true
-        #  regression.
-        result = max(5.0, result)
+        # Small results are too vulnerable to noise being interpreted as signal.
+        result = max(self.RESULT_MINIMUM_MB, result)
         return result
 
     @staticmethod
