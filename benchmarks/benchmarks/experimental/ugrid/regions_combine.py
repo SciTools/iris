@@ -33,8 +33,6 @@ class MixinCombineRegions:
     # operations on cubesphere-like test data.
     params = [4, 500]
     param_names = ["cubesphere-N"]
-    # For use on 'track_addedmem_..' type benchmarks - result is too noisy.
-    no_small_params = params[1:]
 
     def _parametrised_cache_filename(self, n_cubesphere, content_name):
         return f"cube_C{n_cubesphere}_{content_name}.nc"
@@ -190,7 +188,7 @@ class CombineRegionsCreateCube(MixinCombineRegions):
     def time_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
-    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
@@ -203,7 +201,7 @@ class CombineRegionsComputeRealData(MixinCombineRegions):
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
-    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
@@ -220,7 +218,7 @@ class CombineRegionsSaveData(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
-    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_save(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
 
@@ -248,6 +246,6 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
-    @TrackAddedMemoryAllocation.decorator(MixinCombineRegions.no_small_params)
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_stream_file2file(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")

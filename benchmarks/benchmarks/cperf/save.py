@@ -42,6 +42,6 @@ class NetcdfSave:
     def time_save_data_netcdf(self, data_type):
         self._save_data(self.cube)
 
-    @TrackAddedMemoryAllocation.decorator()
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_save_data_netcdf(self, data_type):
         self._save_data(self.cube)

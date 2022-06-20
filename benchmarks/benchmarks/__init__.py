@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Common code for benchmarks."""
-from functools import wraps
 from os import environ
 import resource
 
@@ -76,45 +75,26 @@ class TrackAddedMemoryAllocation:
         return result
 
     @staticmethod
-    def decorator(changed_params: list = None):
+    def decorator(decorated_func):
         """
         Decorates this benchmark to track growth in resident memory during execution.
 
         Intended for use on ASV ``track_`` benchmarks. Applies the
         :class:`TrackAddedMemoryAllocation` context manager to the benchmark
-        code, sets the benchmark ``unit`` attribute to ``Mb``. Optionally
-        replaces the benchmark ``params`` attribute with ``changed_params`` -
-        useful to avoid testing very small memory volumes, where the results
-        are vulnerable to noise.
-
-        Parameters
-        ----------
-        changed_params : list
-            Replace the benchmark's ``params`` attribute with this list.
+        code, sets the benchmark ``unit`` attribute to ``Mb``.
 
         """
-        if changed_params:
-            # Must make a copy for re-use safety!
-            _changed_params = list(changed_params)
-        else:
-            _changed_params = None
 
-        def _inner_decorator(decorated_func):
-            @wraps(decorated_func)
-            def _inner_func(*args, **kwargs):
-                assert decorated_func.__name__[:6] == "track_"
-                # Run the decorated benchmark within the added memory context manager.
-                with TrackAddedMemoryAllocation() as mb:
-                    decorated_func(*args, **kwargs)
-                return mb.addedmem_mb()
+        def _wrapper(*args, **kwargs):
+            assert decorated_func.__name__[:6] == "track_"
+            # Run the decorated benchmark within the added memory context
+            # manager.
+            with TrackAddedMemoryAllocation() as mb:
+                decorated_func(*args, **kwargs)
+            return mb.addedmem_mb()
 
-            if _changed_params:
-                # Replace the params if replacement provided.
-                _inner_func.params = _changed_params
-            _inner_func.unit = "Mb"
-            return _inner_func
-
-        return _inner_decorator
+        decorated_func.unit = "Mb"
+        return _wrapper
 
 
 def on_demand_benchmark(benchmark_object):
