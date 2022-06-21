@@ -32,9 +32,11 @@ import re
 import shutil
 import subprocess
 import sys
+
 <<<<<<< HEAD
 import threading
 from typing import AnyStr, Dict, List
+
 =======
 >>>>>>> Use images from test data
 import unittest
