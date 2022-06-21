@@ -58,7 +58,7 @@ _HASH_SIZE = 16
 _HAMMING_DISTANCE = 2
 # Prefix for image test results (that aren't yet verified as good to add to
 # reference images)
-_RESULT_PREFIX = "result-"
+RESULT_PREFIX = "result-"
 # Name of the imagerepo json and associated file lock
 IMAGE_REPO_DIR = Path(__file__).parents[1] / "results"
 IMAGE_REPO_PATH = IMAGE_REPO_DIR / "imagerepo.json"
@@ -68,6 +68,7 @@ IMAGE_REPO_LOCK_PATH = IMAGE_REPO_DIR / "imagerepo.lock"
 __all__ = [
     "GraphicsTestMixin",
     "MPL_AVAILABLE",
+    "RESULT_PREFIX",
     "check_graphic",
     "fully_qualify",
     "generate_repo_from_baselines",
@@ -170,7 +171,7 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
     test_output_dir.mkdir(exist_ok=True)
 
     # The path where the image matching this test should be saved if necessary
-    result_path = test_output_dir / f"{_RESULT_PREFIX}{test_id}.png"
+    result_path = test_output_dir / f"{RESULT_PREFIX}{test_id}.png"
 
     results_dir = Path(results_dir)
     repo = read_repo_json()
