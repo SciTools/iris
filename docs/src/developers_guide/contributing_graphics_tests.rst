@@ -21,10 +21,8 @@ you should follow:
 #. Create a new, empty directory to store temporary image results, at the path
    ``lib/iris/tests/result_image_comparison`` in your Iris repository checkout.
 
-#. Run the relevant (failing) tests directly as python scripts, or by using a
-   command such as::
-
-     python -m unittest discover paths/to/test/files
+#. Run the relevant (failing) tests directly as python scripts, or using
+   ``pytest``.
 
 The results of the failing image tests will now be available in
 ``lib/iris/tests/result_image_comparison``.
@@ -53,11 +51,10 @@ Reviewing Failing Tests
      set of 'valid result hashes' in the image result database file,
      ``tests/results/imagerepo.json``
 
-   * the relevant output file in ``tests/result_image_comparison`` is
-     renamed according to the image hash value, as ``<hash>.png``.
-     A copy of this new PNG file must then be added into the reference image
-     repository at https://github.com/SciTools/test-iris-imagehash
-     (See below).
+   * the relevant output file in ``tests/result_image_comparison`` is renamed
+     according to the test name. A copy of this new PNG file must then be added
+     into the ``iris-test-data`` repository, at
+     https://github.com/SciTools/iris-test-data (See below).
 
    If a change is **skipped**:
 
@@ -96,7 +93,11 @@ unregistered test result...``. In this case,
 
    * fully qualifying the test name if it isn't already (i.e. it should start
      ``iris.tests...``or ``gallery_tests...``)
-   
+
+#. run the tests in the mode that lets them create missing data (see
+   :ref:`create-missing`). This will update ``imagerepo.json`` with the new
+   test name and image hash.
+
 #. and then add them to the Iris test data as covered in
    :ref:`add-graphics-test-changes`.
 
