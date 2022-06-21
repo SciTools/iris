@@ -32,13 +32,7 @@ import re
 import shutil
 import subprocess
 import sys
-
-<<<<<<< HEAD
-import threading
-from typing import AnyStr, Dict, List
-
-=======
->>>>>>> Use images from test data
+from typing import AnyStr
 import unittest
 from unittest import mock
 import warnings
