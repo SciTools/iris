@@ -97,7 +97,7 @@ v3.0.2 (27 May 2021)
       from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
       [``pre-v3.1.0``]
 
-   #. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
+   #. `@bjlittle`_ added conditional task execution to ``.cirrus.yml`` to allow
       developers to easily disable `cirrus-ci`_ tasks. (:pull:`4019`) [``pre-v3.1.0``]
 
    #. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`,

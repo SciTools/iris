@@ -3,7 +3,6 @@
 
 .. _black: https://black.readthedocs.io/en/stable/
 .. _cartopy: https://github.com/SciTools/cartopy
-.. _.cirrus.yml: https://github.com/SciTools/iris/blob/main/.cirrus.yml
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
