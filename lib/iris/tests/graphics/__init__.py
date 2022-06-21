@@ -65,7 +65,18 @@ IMAGE_REPO_PATH = IMAGE_REPO_DIR / "imagerepo.json"
 IMAGE_REPO_LOCK_PATH = IMAGE_REPO_DIR / "imagerepo.lock"
 
 
-__all__ = []
+__all__ = [
+    "GraphicsTestMixin",
+    "MPL_AVAILABLE",
+    "check_graphic",
+    "fully_qualify",
+    "generate_repo_from_baselines",
+    "get_phash",
+    "read_repo_json",
+    "repos_equal",
+    "skip_plot",
+    "write_repo_json",
+]
 
 
 def _output_dir():
