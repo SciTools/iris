@@ -102,6 +102,20 @@ unregistered test result...``. In this case,
    :ref:`add-graphics-test-changes`.
 
 
+.. _refresh_imagerepo:
+
+Refreshing the Stored Hashes
+----------------------------
+
+From time to time, a new version of the image hashing library will cause all
+image hashes to change. The image hashes stored in
+``tests/results/imagerepo.json`` can be refreshed using the baseline images
+stored in the ``iris-test-data`` repository (at
+https://github.com/SciTools/iris-test-data) using the script
+``tests/graphics/recreate_imagerepo.py``. Use the ``--help`` argument for the
+command line arguments.
+
+
 .. _add_graphics_test_changes:
 
 Add Your Changes to Iris
