@@ -21,7 +21,7 @@ import os
 from pathlib import Path
 import sys
 import threading
-from typing import Dict, Union
+from typing import Callable, Dict, Union
 import unittest
 
 import filelock
@@ -79,7 +79,7 @@ __all__ = [
 ]
 
 
-def _output_dir():
+def _output_dir() -> Path:
     test_output_dir = Path(__file__).parents[1] / Path(
         "result_image_comparison"
     )
@@ -117,7 +117,7 @@ def write_repo_json(data: Dict[str, str]) -> None:
         )
 
 
-def repos_equal(repo1, repo2):
+def repos_equal(repo1: Dict[str, str], repo2: Dict[str, str]) -> bool:
     if sorted(repo1.keys()) != sorted(repo2.keys()):
         return False
     for key, val in repo1.items():
@@ -126,14 +126,14 @@ def repos_equal(repo1, repo2):
     return True
 
 
-def get_phash(input):
+def get_phash(input: Path) -> str:
     from PIL import Image
     import imagehash
 
     return imagehash.phash(Image.open(input), hash_size=_HASH_SIZE)
 
 
-def generate_repo_from_baselines(baseline_image_dir: Path):
+def generate_repo_from_baselines(baseline_image_dir: Path) -> Dict[str, str]:
     repo = {}
     for path in baseline_image_dir.iterdir():
         phash = get_phash(path)
@@ -141,7 +141,7 @@ def generate_repo_from_baselines(baseline_image_dir: Path):
     return repo
 
 
-def fully_qualify(test_id, repo):
+def fully_qualify(test_id: str, repo: str) -> Dict[str, str]:
     # If the test_id isn't in the repo as it stands, look for it
     if test_id not in repo:
         test_id_candidates = [x for x in repo.keys() if x.endswith(test_id)]
@@ -150,7 +150,7 @@ def fully_qualify(test_id, repo):
     return test_id
 
 
-def check_graphic(test_id: str, results_dir: Union[str, Path]):
+def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
     """
     Check the hash of the current matplotlib figure matches the expected
     image hash for the current graphic test.
@@ -250,11 +250,7 @@ _lock = threading.Lock()
 
 
 class GraphicsTestMixin:
-
-    # nose directive: dispatch tests concurrently.
-    _multiprocess_can_split_ = True
-
-    def setUp(self):
+    def setUp(self) -> None:
         # Acquire threading non re-entrant blocking lock to ensure
         # thread-safe plotting.
         _lock.acquire()
@@ -263,7 +259,7 @@ class GraphicsTestMixin:
         if MPL_AVAILABLE:
             plt.close("all")
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         # If a plotting test bombs out it can leave the current figure
         # in an odd state, so we make sure it's been disposed of.
         if MPL_AVAILABLE:
@@ -272,7 +268,7 @@ class GraphicsTestMixin:
         _lock.release()
 
 
-def skip_plot(fn):
+def skip_plot(fn: Callable) -> Callable:
     """
     Decorator to choose whether to run tests, based on the availability of the
     matplotlib library.
