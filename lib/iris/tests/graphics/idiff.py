@@ -119,7 +119,7 @@ def step_over_diffs(result_dir, display=True):
     processed = False
 
     if display:
-        msg = "\nComparing the expected image with " "the test result image."
+        msg = "\nComparing the expected image with the test result image."
         print(msg)
 
     # Remove old image diff results.
