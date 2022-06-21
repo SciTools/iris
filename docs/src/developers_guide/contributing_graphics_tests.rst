@@ -34,7 +34,7 @@ perceived as it may be a simple pixel shift.
 Testing Strategy
 ================
 
-The `Iris Cirrus-CI matrix`_ defines multiple test runs that use
+Our `Iris GitHub Actions`_ define multiple test runs that use
 different versions of Python to ensure Iris is working as expected.
 
 To make this manageable, the ``iris.tests.IrisTest_nometa.check_graphic`` test
@@ -157,12 +157,9 @@ To add your changes to Iris, you need to make two pull requests (PR).
 
 .. important::
 
-  The Iris pull-request will not test successfully in Cirrus-CI until the
-  ``test-iris-imagehash`` pull request has been merged.  This is because there
-  is an Iris_ test which ensures the existence of the reference images (uris)
+  The `Iris GitHub Actions`_ of a pull request will not pass successfully until the
+  associated ``test-iris-imagehash`` pull request has been merged.  This is because there
+  is an Iris_ test which ensures the existence of the reference images (URIs)
   for all the targets in the image results database.  It will also fail
   if you forgot to run ``recreate_v4_files_listing.py`` to update the
   image-listing file in ``test-iris-imagehash``.
-
-
-.. _Iris Cirrus-CI matrix: https://github.com/scitools/iris/blob/main/.cirrus.yml

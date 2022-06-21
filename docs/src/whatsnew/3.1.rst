@@ -228,8 +228,7 @@ This document explains the changes made to Iris for this release
    (:pull:`3997`)
 
 #. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
-   developers to easily disable `cirrus-ci`_ tasks. See
-   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+   developers to easily disable `cirrus-ci`_ tasks. (:pull:`4019`)
 
 #. `@bjlittle`_ and `@jamesp`_ addressed a regression in behaviour when using
    `conda`_ 4.10.0 within `cirrus-ci`_. (:pull:`4084`)
@@ -292,8 +291,7 @@ This document explains the changes made to Iris for this release
    from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
 
 #. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
-   developers to easily disable `cirrus-ci`_ tasks. See
-   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+   developers to easily disable `cirrus-ci`_ tasks. (:pull:`4019`)
 
 
 

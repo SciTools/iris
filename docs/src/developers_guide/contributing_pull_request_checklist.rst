@@ -31,7 +31,7 @@ is merged.  Before submitting a pull request please consider this list.
 
 #. **Check all new dependencies added to the** `requirements/ci/`_ **yaml
    files.**  If dependencies have been added then new nox testing lockfiles
-   should be generated too, see :ref:`cirrus_test_env`.
+   should be generated too, see :ref:`gha_test_env`.
 
 #. **Check the source documentation been updated to explain all new or changed
    features**.  Note, we now use numpydoc strings.  Any touched code should
@@ -42,8 +42,6 @@ is merged.  Before submitting a pull request please consider this list.
 
 #. **Check the documentation builds without warnings or errors**.  See
    :ref:`contributing.documentation.building`
-
-#. **Check for any new dependencies in the** `.cirrus.yml`_ **config file.**
 
 #. **Check for any new dependencies in the** `readthedocs.yml`_ **file**.  This
    file is used to build the documentation that is served from

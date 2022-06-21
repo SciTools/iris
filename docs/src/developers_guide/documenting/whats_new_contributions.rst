@@ -1,3 +1,5 @@
+.. include:: ../../common_links.inc
+
 .. _whats_new_contributions:
 
 =================================
@@ -38,7 +40,7 @@ situation is thought likely (large PR, high repo activity etc.):
 * PR author: create the "What's New" pull request
 
 * PR reviewer: once the "What's New" PR is created, **merge the main PR**.
-  (this will fix any `cirrus-ci`_ linkcheck errors where the links in the
+  (this will fix any `Iris GitHub Actions`_ linkcheck errors where the links in the
   "What's New" PR reference new features introduced in the main PR)
 
 * PR reviewer: review the "What's New" PR, merge once acceptable
@@ -97,12 +99,10 @@ links to code. For more inspiration on possible content and references, please
 examine past what's :ref:`iris_whatsnew` entries.
 
 .. note:: The reStructuredText syntax will be checked as part of building
-          the documentation.  Any warnings should be corrected.
-          `cirrus-ci`_ will automatically build the documentation when
+          the documentation.  Any warnings should be corrected. The
+          `Iris GitHub Actions`_ will automatically build the documentation when
           creating a pull request, however you can also manually
           :ref:`build <contributing.documentation.building>` the documentation.
-
-.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 
 
 Contribution Categories

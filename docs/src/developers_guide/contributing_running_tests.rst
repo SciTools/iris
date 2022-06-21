@@ -106,7 +106,7 @@ due to an experimental dependency not being present.
 Using Nox for Testing Iris
 ==========================
 
-Iris has adopted the use of the `nox`_ tool for automated testing on `cirrus-ci`_
+The `nox`_ tool has for adopted for automated testing on `Iris GitHub Actions`_
 and also locally on the command-line for developers.
 
 `nox`_ is similar to `tox`_, but instead leverages the expressiveness and power of a Python
@@ -124,15 +124,12 @@ automates the process of:
 * building the documentation and executing the doc-tests
 * building the documentation gallery
 * running the documentation URL link check
-* linting the code-base
-* ensuring the code-base style conforms to the `black`_ standard
-
 
 You can perform all of these tasks manually yourself, however the onus is on you to first ensure
 that all of the required package dependencies are installed and available in the testing environment.
 
 `Nox`_ has been configured to automatically do this for you, and provides a means to easily replicate
-the remote testing behaviour of `cirrus-ci`_ locally for the developer.
+the remote testing behaviour of `Iris GitHub Actions`_ locally for the developer.
 
 
 Installing Nox
