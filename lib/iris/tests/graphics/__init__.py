@@ -52,6 +52,10 @@ if MPL_AVAILABLE and "-d" in sys.argv:
     plt.switch_backend("tkagg")
     _DISPLAY_FIGURES = True
 
+# Threading non re-entrant blocking lock to ensure thread-safe plotting in the
+# GraphicsTestMixin.
+_lock = threading.Lock()
+
 #: Default perceptual hash size.
 _HASH_SIZE = 16
 #: Default maximum perceptual hash hamming distance.
@@ -244,10 +248,6 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
 
     finally:
         plt.close()
-
-
-# Threading non re-entrant blocking lock to ensure thread-safe plotting.
-_lock = threading.Lock()
 
 
 class GraphicsTestMixin:
