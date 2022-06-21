@@ -32,7 +32,7 @@ import iris.tests  # noqa
 import iris.tests.graphics as graphics  # noqa
 
 # Allows restoration of test id from result image name
-_RESULT_NAME_PATTERN = re.compile(graphics._RESULT_PREFIX + r"(.*).png")
+_RESULT_NAME_PATTERN = re.compile(graphics.RESULT_PREFIX + r"(.*).png")
 
 
 def extract_test_key(result_image_name):
@@ -143,7 +143,7 @@ def step_over_diffs(result_dir, display=True):
 
     # Filter out all non-test result image files.
     results = []
-    for fname in sorted(result_dir.glob(f"{graphics._RESULT_PREFIX}*.png")):
+    for fname in sorted(result_dir.glob(f"{graphics.RESULT_PREFIX}*.png")):
         # We only care about PNG images.
         try:
             im = Image.open(fname)
