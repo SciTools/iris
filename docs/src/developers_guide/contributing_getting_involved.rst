@@ -50,7 +50,6 @@ If you are new to using GitHub we recommend reading the
    contributing_documentation
    contributing_codebase_index
    contributing_changes
-   github_app
    release
 
 

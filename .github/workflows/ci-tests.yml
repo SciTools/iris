@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "${{ matrix.session}} ${{ matrix.os }} ${{ matrix.python-version }}"
+    name: "${{ matrix.session }} ${{ matrix.os }} py${{ matrix.python-version }}"
 
     runs-on: ${{ matrix.os }}
 
