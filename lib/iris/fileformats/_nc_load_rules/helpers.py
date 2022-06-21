@@ -417,6 +417,10 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     longitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
     )
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
+
     false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
     false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
 
@@ -426,6 +430,7 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
         false_easting,
         false_northing,
         true_scale_lat=None,
+        scale_factor_at_projection_origin=scale_factor_at_projection_origin,
         ellipsoid=ellipsoid,
     )
 
