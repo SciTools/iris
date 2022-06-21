@@ -122,5 +122,6 @@ To add your changes to Iris, you need to make two pull requests (PR).
    the matching one in ``iris-test-data``.
 
    * This PR should include updating the version of the test data in
-     ``.github/workflows/ci-docs-tests.yml`` to the new version created by the merging of your
-     ``iris-test-data`` PR.
+     ``.github/workflows/ci-tests.yml`` and
+     ``.github/workflows/ci-docs-tests.yml`` to the new version created by the
+     merging of your ``iris-test-data`` PR.
