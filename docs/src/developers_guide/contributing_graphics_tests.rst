@@ -102,7 +102,7 @@ unregistered test result...``. In this case,
    :ref:`add-graphics-test-changes`.
 
 
-.. _refresh_imagerepo:
+.. _refresh-imagerepo:
 
 Refreshing the Stored Hashes
 ----------------------------
@@ -116,7 +116,7 @@ https://github.com/SciTools/iris-test-data) using the script
 command line arguments.
 
 
-.. _add_graphics_test_changes:
+.. _add-graphics-test-changes:
 
 Add Your Changes to Iris
 ------------------------
