@@ -239,6 +239,9 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         self.agg_method(data, axis=0, percent=42, fast_percentile_method=True)
         mocked_percentile.assert_called_once()
 
+        # Check that we left "method" keyword to numpy's default.
+        self.assertNotIn("method", mocked_percentile.call_args.kwargs)
+
     @mock.patch("numpy.percentile")
     def test_chosen_kwarg_passed(self, mocked_percentile):
         data = np.arange(5)
@@ -353,8 +356,11 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         as_concrete_data(result)
         mocked_percentile.assert_called()
 
+        # Check we have left "method" keyword to numpy's default.
+        self.assertNotIn("method", mocked_percentile.call_args.kwargs)
+
     @mock.patch("numpy.percentile")
-    def test_chosen_kwarg_passed(self, mocked_percentile):
+    def test_chosen_method_kwarg_passed(self, mocked_percentile):
         data = da.arange(5)
         percent = [42, 75]
         axis = 0
