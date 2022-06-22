@@ -34,6 +34,7 @@ dependencies:
 # Test dependencies.
   - filelock
   - imagehash >=4.0
+  - pillow <7
   - pre-commit
   - psutil
   - pytest
