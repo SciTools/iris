@@ -1309,10 +1309,13 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
                 "ignore",
                 "Warning: 'partition' will ignore the 'mask' of the MaskedArray.",
             )
-            result = np.percentile(data, percent, axis=-1)
+            result = np.percentile(data, percent, axis=-1, **kwargs)
+
         result = result.T
     else:
         quantiles = percent / 100.0
+        for key in ["alphap", "betap"]:
+            kwargs.setdefault(key, 1)
         result = scipy.stats.mstats.mquantiles(
             data, quantiles, axis=-1, **kwargs
         )
@@ -1344,9 +1347,9 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
         alternative to the scipy.mstats.mquantiles method. Does not handle
         masked arrays.
 
-    **kwargs
+    **kwargs : dict, optional
         passed to scipy.stats.mstats.mquantiles if fast_percentile_method is
-        False
+        False.  Otherwise passed to numpy.percentile.
 
     """
     if not isinstance(percent, Iterable):
@@ -1967,7 +1970,7 @@ This aggregator handles masked data.
 """
 
 
-PERCENTILE = PercentileAggregator(alphap=1, betap=1)
+PERCENTILE = PercentileAggregator()
 """
 A :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
@@ -1976,23 +1979,25 @@ fast_percentile_method is True).
 
 **Required** kwargs associated with the use of this aggregator:
 
-* percent (float or sequence of floats):
+percent : float or sequence of floats
     Percentile rank/s at which to extract value/s.
 
 Additional kwargs associated with the use of this aggregator:
 
-* alphap (float):
+alphap : float
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
     Defaults to 1.
-* betap (float):
+betap : float
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
     Defaults to 1.
-* fast_percentile_method (boolean):
+fast_percentile_method : bool
     When set to True, uses :func:`numpy.percentile` method as a faster
-    alternative to the :func:`scipy.stats.mstats.mquantiles` method.  alphap and
-    betap are ignored. An exception is raised if the data are masked and the
-    missing data tolerance is not 0.
-    Defaults to False.
+    alternative to the :func:`scipy.stats.mstats.mquantiles` method.  An
+    exception is raised if the data are masked and the missing data tolerance
+    is not 0.  Defaults to False.
+
+kwargs : dict, optional
+    Passed to :func:`scipy.stats.mstats.mquantiles` or :func:`numpy.percentile`.
 
 **For example**:
 

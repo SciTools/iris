@@ -196,6 +196,13 @@ class Test_aggregate(tests.IrisTest, AggregateMixin, ScipyAggregateMixin):
         with self.assertRaisesRegex(ValueError, emsg):
             PERCENTILE.aggregate("dummy", axis=0)
 
+    def test_wrong_kwarg(self):
+        # Test we get an error out of scipy if we pass the numpy keyword.
+        data = range(5)
+        emsg = "unexpected keyword argument"
+        with self.assertRaisesRegex(TypeError, emsg):
+            PERCENTILE.aggregate(data, percent=50, axis=0, method="nearest")
+
 
 class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
     """Tests for fast percentile method on real data."""
@@ -238,6 +245,26 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         data = np.arange(5)
         self.agg_method(data, axis=0, percent=42, fast_percentile_method=True)
         mocked_percentile.assert_called_once()
+
+        # Check that we left "method" keyword to numpy's default.
+        self.assertNotIn("method", mocked_percentile.call_args.kwargs)
+
+    @mock.patch("numpy.percentile")
+    def test_chosen_kwarg_passed(self, mocked_percentile):
+        data = np.arange(5)
+        percent = [42, 75]
+        axis = 0
+
+        self.agg_method(
+            data,
+            axis=axis,
+            percent=percent,
+            fast_percentile_method=True,
+            method="nearest",
+        )
+        self.assertEqual(
+            mocked_percentile.call_args.kwargs["method"], "nearest"
+        )
 
 
 class MultiAxisMixin:
@@ -335,6 +362,29 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         self.assertTrue(is_lazy_data(result))
         as_concrete_data(result)
         mocked_percentile.assert_called()
+
+        # Check we have left "method" keyword to numpy's default.
+        self.assertNotIn("method", mocked_percentile.call_args.kwargs)
+
+    @mock.patch("numpy.percentile")
+    def test_chosen_method_kwarg_passed(self, mocked_percentile):
+        data = da.arange(5)
+        percent = [42, 75]
+        axis = 0
+
+        result = self.agg_method(
+            data,
+            axis=axis,
+            percent=percent,
+            fast_percentile_method=True,
+            method="nearest",
+        )
+
+        self.assertTrue(is_lazy_data(result))
+        as_concrete_data(result)
+        self.assertEqual(
+            mocked_percentile.call_args.kwargs["method"], "nearest"
+        )
 
 
 class Test_lazy_aggregate(
