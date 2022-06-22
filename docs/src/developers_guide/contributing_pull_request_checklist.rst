@@ -54,8 +54,6 @@ is merged.  Before submitting a pull request please consider this list.
      the tests.
    * `iris-sample-data`_ is a github project containing all the data to support
      the gallery and examples.
-   * `test-iris-imagehash`_ is a github project containing reference plot
-     images to support Iris :ref:`testing.graphics`.
 
    If new files are required by tests or code examples, they must be added to
    the appropriate supporting project via a suitable pull-request.  This pull
