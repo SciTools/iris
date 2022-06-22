@@ -196,6 +196,13 @@ class Test_aggregate(tests.IrisTest, AggregateMixin, ScipyAggregateMixin):
         with self.assertRaisesRegex(ValueError, emsg):
             PERCENTILE.aggregate("dummy", axis=0)
 
+    def test_wrong_kwarg(self):
+        # Test we get an error out of scipy if we pass the numpy keyword.
+        data = range(5)
+        emsg = "unexpected keyword argument"
+        with self.assertRaisesRegex(TypeError, emsg):
+            PERCENTILE.aggregate(data, percent=50, axis=0, method="nearest")
+
 
 class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
     """Tests for fast percentile method on real data."""
