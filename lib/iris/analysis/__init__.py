@@ -1996,7 +1996,7 @@ fast_percentile_method : bool
     exception is raised if the data are masked and the missing data tolerance
     is not 0.  Defaults to False.
 
-**kwargs : dict, optional
+kwargs : dict, optional
     Passed to :func:`scipy.stats.mstats.mquantiles` or :func:`numpy.percentile`.
 
 **For example**:
