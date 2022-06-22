@@ -11,7 +11,7 @@
     "gallery_tests.test_plot_cross_section.TestCrossSection.test_plot_cross_section.1": "ea9521fb956a394068931e9be07e4aa5856cc47e4a91957a1ba55bb5b17a3b81",
     "gallery_tests.test_plot_custom_aggregation.TestCustomAggregation.test_plot_custom_aggregation.0": "ee816f81917e907eb03ec73f856f7ac198d070186e90811f1be33ee1a57a6e18",
     "gallery_tests.test_plot_custom_file_loading.TestCustomFileLoading.test_plot_custom_file_loading.0": "faa1cb47845e34bc912797436cccc8343f11359b73523746c48c72d9d9b34da5",
-    "gallery_tests.test_plot_deriving_phenomena.TestDerivingPhenomena.test_plot_deriving_phenomena.0": "ec97681793689768943c96e890666bc586e1c33f2c99c33e6f956c93d23e2c98",
+    "gallery_tests.test_plot_deriving_phenomena.TestDerivingPhenomena.test_plot_deriving_phenomena.0": "ec97681793689768943c97e8926669d186e8c33f6c99c32e6b936c83d33e2c98",
     "gallery_tests.test_plot_global_map.TestGlobalMap.test_plot_global_map.0": "fa997b958466846ed13e87467a997a898d66d17e2cc9906684696f99d3162f81",
     "gallery_tests.test_plot_hovmoller.TestGlobalMap.test_plot_hovmoller.0": "eeb46cb4934b934bc07e974bc14b38949943c0fe3e94c17f6ea46cb4c07b3f00",
     "gallery_tests.test_plot_inset.TestInsetPlot.test_plot_inset.0": "ebff6992b50096ad9267dac4d64094b294924cdbc95d4b699d29952dcda46e94",
