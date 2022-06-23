@@ -103,7 +103,7 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
     ds = netCDF4.Dataset(nc_path, "r+")
 
     unlimited_dim_names = [
-        dim for dim in ds.dimensions if ds.dimensions[dim].size == 0
+        dim for dim in ds.dimensions if ds.dimensions[dim].isunlimited()
     ]
     # Data addition dependent on this assumption:
     assert len(unlimited_dim_names) < 2
