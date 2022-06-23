@@ -903,5 +903,25 @@ class TestConstrainedLoad(tests.IrisTest):
         self.assertEqual(len(cubes), 3)
 
 
+@tests.skip_data
+class TestDatasetLoad(tests.IrisTest):
+    def test_basic(self):
+        # test loading from an open Dataset, in place of a filepath spec.
+        filepath = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        phenom_id = "Carbon Dioxide"
+        expected = iris.load_cube(filepath, phenom_id)
+        ds = None
+        try:
+            ds = nc.Dataset(filepath)
+            result = iris.load_cube(ds, phenom_id)
+        finally:
+            if ds is not None:
+                ds.close()
+
+        self.assertEqual(expected, result)
+
+
 if __name__ == "__main__":
     tests.main()

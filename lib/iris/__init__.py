@@ -89,11 +89,11 @@ All the load functions share very similar arguments:
 
 """
 
+from collections import Iterable
 import contextlib
 import glob
 import itertools
 import os.path
-import pathlib
 import threading
 
 import iris._constraints
@@ -247,7 +247,8 @@ else:
 
 def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, (str, pathlib.PurePath)):
+    if isinstance(uris, str) or not isinstance(uris, Iterable):
+        # Make a string, or other single item, into an iterable.
         uris = [uris]
 
     # Group collections of uris by their iris handler
@@ -263,6 +264,10 @@ def _generate_cubes(uris, callback, constraints):
         elif scheme in ["http", "https"]:
             urls = [":".join(x) for x in groups]
             for cube in iris.io.load_http(urls, callback):
+                yield cube
+        elif scheme == "data":
+            data_objects = [x[1] for x in groups]
+            for cube in iris.io.load_data_objects(data_objects, callback):
                 yield cube
         else:
             raise ValueError("Iris cannot handle the URI scheme: %s" % scheme)

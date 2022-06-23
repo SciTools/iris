@@ -1044,13 +1044,21 @@ class CFReader:
     CFGroup = CFGroup
 
     def __init__(self, filename, warn=False, monotonic=False):
-        self._dataset = None
-        self._filename = os.path.expanduser(filename)
+        # Ensure safe operation for destructor, should init fail.
+        self._own_file = False
+        if isinstance(filename, str):
+            # Create from filepath : open it + own it (=close when we die).
+            self._filename = os.path.expanduser(filename)
+            self._dataset = netCDF4.Dataset(self._filename, mode="r")
+            self._own_file = True
+        else:
+            # We have been passed an open dataset.
+            # We use it but don't own it (don't close it).
+            self._dataset = filename
+            self._filename = self._dataset.filepath()
 
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
-
-        self._dataset = netCDF4.Dataset(self._filename, mode="r")
 
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in [
@@ -1296,7 +1304,7 @@ class CFReader:
 
     def __del__(self):
         # Explicitly close dataset to prevent file remaining open.
-        if self._dataset is not None:
+        if self._own_file and self._dataset is not None:
             self._dataset.close()
 
 

@@ -896,14 +896,14 @@ def _translate_constraints_to_var_callback(constraints):
     return result
 
 
-def load_cubes(filenames, callback=None, constraints=None):
+def load_cubes(load_files, callback=None, constraints=None):
     """
-    Loads cubes from a list of NetCDF filenames/OPeNDAP URLs.
+    Loads cubes from a list of NetCDF filenames / OPeNDAP URLs / nc.Datasets.
 
     Args:
 
-    * filenames (string/list):
-        One or more NetCDF filenames/OPeNDAP URLs to load from.
+    * load_files (string/netCDF4.Dataset/list):
+        One or more NetCDF filenames / OPeNDAP URLs / nc.Datasets to load from.
 
     Kwargs:
 
@@ -931,17 +931,19 @@ def load_cubes(filenames, callback=None, constraints=None):
     # Create an actions engine.
     engine = _actions_engine()
 
-    if isinstance(filenames, str):
-        filenames = [filenames]
+    if isinstance(load_files, str):
+        load_files = [load_files]
 
-    for filename in filenames:
+    for load_source in load_files:
         # Ingest the netCDF file.
         meshes = {}
         if PARSE_UGRID_ON_LOAD:
-            cf = CFUGridReader(filename)
+            cf = CFUGridReader(load_source)
             meshes = _meshes_from_cf(cf)
         else:
-            cf = iris.fileformats.cf.CFReader(filename)
+            cf = iris.fileformats.cf.CFReader(load_source)
+
+        filename = cf.filename
 
         # Process each CF data variable.
         data_variables = list(cf.cf_group.data_variables.values()) + list(
