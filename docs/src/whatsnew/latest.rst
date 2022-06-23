@@ -68,6 +68,10 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coord_systems.PolarStereographic` CRS. (:issue:`4770`,
    :pull:`4773`)
 
+#. `@rcomer`_ and `@wjbenfold`_ (reviewer) enabled passing of the
+   :func:`numpy.percentile` keywords through the :obj:`~iris.analysis.PERCENTILE`
+   aggregator. (:pull:`4791`)
+
 
 🐛 Bugs Fixed
 =============
