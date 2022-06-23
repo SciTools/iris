@@ -94,6 +94,8 @@ def decode_uri(uri, default="file"):
     In addition to well-formed URIs, it also supports bare file paths as strings
     or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
     accepted.
+    It also supports 'bare objects', i.e. anything which is not a string.
+    These are identified with a scheme of 'data', and returned unchanged.
 
     .. testsetup::
 
@@ -119,20 +121,31 @@ def decode_uri(uri, default="file"):
         >>> print(decode_uri('dataZoo/...'))
         ('file', 'dataZoo/...')
 
+        >>> print(decode_uri({}))
+        ('data', {})
+
     """
     if isinstance(uri, pathlib.PurePath):
         uri = str(uri)
-    # make sure scheme has at least 2 letters to avoid windows drives
-    # put - last in the brackets so it refers to the character, not a range
-    # reference on valid schemes: http://tools.ietf.org/html/std66#section-3.1
-    match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]+):(.+)", uri)
-    if match:
-        scheme = match.group(1)
-        part = match.group(2)
+
+    if isinstance(uri, str):
+        # make sure scheme has at least 2 letters to avoid windows drives
+        # put - last in the brackets so it refers to the character, not a range
+        # reference on valid schemes: http://tools.ietf.org/html/std66#section-3.1
+        match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]+):(.+)", uri)
+        if match:
+            scheme = match.group(1)
+            part = match.group(2)
+        else:
+            # Catch bare UNIX and Windows paths
+            scheme = default
+            part = uri
     else:
-        # Catch bare UNIX and Windows paths
-        scheme = default
+        # We can pass things other than strings, like open files.
+        # These are simply identified as 'data objects'.
+        scheme = "data"
         part = uri
+
     return scheme, part
 
 
@@ -253,6 +266,25 @@ def load_http(urls, callback):
         fnames = handler_map[handling_format_spec]
         for cube in handling_format_spec.handler(fnames, callback):
             yield cube
+
+
+def load_data_objects(urls, callback):
+    """
+    Takes a list of data-source objects and a callback function, and returns a
+    generator of Cubes.
+    The 'objects' take the place of 'uris' in the load calls.
+    The appropriate types of the data-source objects are expected to be
+    recognised by the handlers :  This is done in the usual way by passing the
+    context to the format picker to get a handler for each.
+
+    .. note::
+
+        Typically, this function should not be called directly; instead, the
+        intended interface for loading is :func:`iris.load`.
+
+    """
+    # NOTE: this operation is currently *identical* to the http one.
+    yield from load_http(urls, callback)
 
 
 def _dot_save(cube, target):

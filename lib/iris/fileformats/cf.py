@@ -1043,16 +1043,24 @@ class CFReader:
     # TODO: remove once iris.experimental.ugrid.CFUGridReader is folded in.
     CFGroup = CFGroup
 
-    def __init__(self, filename, warn=False, monotonic=False):
-        self._dataset = None
-        self._filename = os.path.expanduser(filename)
+    def __init__(self, file_source, warn=False, monotonic=False):
+        # Ensure safe operation for destructor, should init fail.
+        self._own_file = False
+        if isinstance(file_source, str):
+            # Create from filepath : open it + own it (=close when we die).
+            self._filename = os.path.expanduser(file_source)
+            self._dataset = _thread_safe_nc.DatasetWrapper(
+                self._filename, mode="r"
+            )
+            self._own_file = True
+        else:
+            # We have been passed an open dataset.
+            # We use it but don't own it (don't close it).
+            self._dataset = file_source
+            self._filename = self._dataset.filepath()
 
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
-
-        self._dataset = _thread_safe_nc.DatasetWrapper(
-            self._filename, mode="r"
-        )
 
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in [
@@ -1311,7 +1319,7 @@ class CFReader:
 
     def _close(self):
         # Explicitly close dataset to prevent file remaining open.
-        if self._dataset is not None:
+        if self._own_file and self._dataset is not None:
             self._dataset.close()
             self._dataset = None
 
