@@ -162,7 +162,6 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
-    "image_test_output",
 ]
 
 if skip_api == "1":

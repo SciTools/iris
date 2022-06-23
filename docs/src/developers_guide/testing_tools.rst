@@ -28,6 +28,8 @@ assertions, such as :meth:`~iris.tests.IrisTest_nometa.assertStringEqual`,
 :meth:`~iris.tests.IrisTest_nometa.assertArrayEqual`,
 :meth:`~iris.tests.IrisTest_nometa.assertArrayAlmostEqual`.
 
+.. _create-missing:
+
 Saving results
 --------------
 
