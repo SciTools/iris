@@ -13,6 +13,7 @@ and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
+from collections.abc import Iterable
 import warnings
 
 import numpy as np
@@ -483,14 +484,15 @@ def _translate_constraints_to_var_callback(constraints):
     return result
 
 
-def load_cubes(filenames, callback=None, constraints=None):
+def load_cubes(file_sources, callback=None, constraints=None):
     """
-    Loads cubes from a list of NetCDF filenames/OPeNDAP URLs.
+    Loads cubes from a list of NetCDF file_sources/OPeNDAP URLs.
 
     Args:
 
-    * filenames (string/list):
-        One or more NetCDF filenames/OPeNDAP URLs to load from.
+    * file_sources (string/list):
+        One or more NetCDF file_sources/OPeNDAP URLs to load from.
+        OR open datasets.
 
     Kwargs:
 
@@ -518,18 +520,18 @@ def load_cubes(filenames, callback=None, constraints=None):
     # Create an actions engine.
     engine = _actions_engine()
 
-    if isinstance(filenames, str):
-        filenames = [filenames]
+    if isinstance(file_sources, str) or not isinstance(file_sources, Iterable):
+        file_sources = [file_sources]
 
-    for filename in filenames:
-        # Ingest the netCDF file.
+    for file_source in file_sources:
+        # Ingest the file.  At present may be a filepath or an open netCDF4.Dataset.
         meshes = {}
         if PARSE_UGRID_ON_LOAD:
             cf_reader_class = CFUGridReader
         else:
             cf_reader_class = iris.fileformats.cf.CFReader
 
-        with cf_reader_class(filename) as cf:
+        with cf_reader_class(file_source) as cf:
             if PARSE_UGRID_ON_LOAD:
                 meshes = _meshes_from_cf(cf)
 
@@ -563,7 +565,7 @@ def load_cubes(filenames, callback=None, constraints=None):
                 if mesh is not None:
                     mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
 
-                cube = _load_cube(engine, cf, cf_var, filename)
+                cube = _load_cube(engine, cf, cf_var, cf.filename)
 
                 # Attach the mesh (if present) to the cube.
                 for mesh_coord in mesh_coords:
@@ -577,7 +579,7 @@ def load_cubes(filenames, callback=None, constraints=None):
                     warnings.warn("{}".format(e))
 
                 # Perform any user registered callback function.
-                cube = run_callback(callback, cube, cf_var, filename)
+                cube = run_callback(callback, cube, cf_var, file_source)
 
                 # Callback mechanism may return None, which must not be yielded
                 if cube is None:

@@ -26,6 +26,7 @@ from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
 import iris.exceptions
 from iris.fileformats.netcdf import Saver, UnknownCellMethodWarning
+import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -359,6 +360,75 @@ data:
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
+
+
+@tests.skip_data
+class TestDatasetLoad(tests.IrisTest):
+    def test_basic_load(self):
+        # test loading from an open Dataset, in place of a filepath spec.
+        filepath = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        phenom_id = "Carbon Dioxide"
+        expected = iris.load_cube(filepath, phenom_id)
+        ds = None
+        try:
+            ds = threadsafe_nc.DatasetWrapper(filepath)
+            result = iris.load_cube(ds, phenom_id)
+        finally:
+            if ds is not None:
+                ds.close()
+
+        self.assertEqual(expected, result)
+
+
+@tests.skip_data
+class TestDatasetSave(tests.IrisTest):
+    @classmethod
+    def setUpClass(cls):
+        # Create a temp directory for transient test files.
+        cls.temp_dir = tempfile.mkdtemp()
+
+    @classmethod
+    def tearDownClass(cls):
+        # Destroy the temp directory.
+        shutil.rmtree(cls.temp_dir)
+
+    def test_basic_save(self):
+        # test saving to a Dataset, in place of a filepath spec.
+
+        # load some test data (--> 2 cubes)
+        filepath = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        testdata = iris.load(filepath)
+
+        # Give the cubes a definite order, since this is not stable !
+        testdata = sorted(testdata, key=lambda cube: cube.name())
+
+        # Save to netcdf file in the usual way.
+        filepath_direct = f"{self.temp_dir}/tmp_direct.nc"
+        iris.save(testdata, filepath_direct)
+        # Check against test-specific CDL result file.
+        self.assertCDL(filepath_direct)
+
+        # Save indirectly via netcdf dataset.
+        filepath_indirect = f"{self.temp_dir}/tmp_indirect.nc"
+        nc_dataset = threadsafe_nc.DatasetWrapper(filepath_indirect, "w")
+        iris.save(testdata, nc_dataset, saver="nc")
+        # Do some very basic sanity checks on the Dataset object.
+        self.assertEqual(
+            ["time", "levelist", "latitude", "longitude"],
+            list(nc_dataset.dimensions),
+        )
+        self.assertEqual(
+            ["co2", "time", "levelist", "latitude", "longitude", "lnsp"],
+            list(nc_dataset.variables),
+        )
+        # Save to file.
+        nc_dataset.close()
+        # Check the saved file against the same CDL as the 'normal' save.
+        self.assertCDL(filepath_indirect)
 
 
 if __name__ == "__main__":

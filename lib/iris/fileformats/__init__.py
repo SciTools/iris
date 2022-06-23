@@ -9,6 +9,7 @@ A package for converting cubes to and from specific file formats.
 """
 
 from iris.io.format_picker import (
+    DataSourceObjectProtocol,
     FileExtension,
     FormatAgent,
     FormatSpecification,
@@ -125,16 +126,32 @@ FORMAT_AGENT.add_spec(
 )
 
 
-_nc_dap = FormatSpecification(
-    "NetCDF OPeNDAP",
-    UriProtocol(),
-    lambda protocol: protocol in ["http", "https"],
-    netcdf.load_cubes,
-    priority=6,
-    constraint_aware_handler=True,
+FORMAT_AGENT.add_spec(
+    FormatSpecification(
+        "NetCDF OPeNDAP",
+        UriProtocol(),
+        lambda protocol: protocol in ["http", "https"],
+        netcdf.load_cubes,
+        priority=6,
+        constraint_aware_handler=True,
+    )
 )
-FORMAT_AGENT.add_spec(_nc_dap)
-del _nc_dap
+
+# NetCDF file presented as an open, readable netCDF4 dataset (or mimic).
+FORMAT_AGENT.add_spec(
+    FormatSpecification(
+        "NetCDF dataset",
+        DataSourceObjectProtocol(),
+        lambda object: all(
+            hasattr(object, x)
+            for x in ("variables", "dimensions", "groups", "ncattrs")
+        ),
+        netcdf.load_cubes,  # using the same call : it must distinguish.
+        priority=4,
+        constraint_aware_handler=True,
+    )
+)
+
 
 #
 # UM Fieldsfiles.

@@ -374,6 +374,7 @@ class Saver:
         ----------
         filename : string
             Name of the netCDF file to save the cube.
+            OR a writeable object supporting the netCF4.Dataset api.
 
         netcdf_format : string
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
@@ -427,43 +428,59 @@ class Saver:
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: Target filepath
-        self.filepath = os.path.abspath(filename)
-        #: A list of delayed writes for lazy saving
-        self._delayed_writes = (
-            []
-        )  # a list of triples (source, target, fill-info)
+        self.filepath = (
+            None  # this line just for the API page -- value is set later
+        )
         #: Whether to complete delayed saves on exit (and raise associated warnings).
         self.compute = compute
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
         #: A per-file write lock to prevent dask attempting overlapping writes.
+        self.file_write_lock = (
+            None  # this line just for the API page -- value is set later
+        )
+
+        # A list of delayed writes for lazy saving
+        # a list of triples (source, target, fill-info).
+        self._delayed_writes = []
+
+        # Detect if we were passed a pre-opened dataset (or something like one)
+        self._to_open_dataset = hasattr(filename, "createVariable")
+        if self._to_open_dataset:
+            # Given a dataset : derive instance filepath from the dataset
+            self._dataset = filename
+            self.filepath = self._dataset.filepath()
+        else:
+            # Given a filepath string/path : create a dataset from that
+            try:
+                self.filepath = os.path.abspath(filename)
+                self._dataset = _thread_safe_nc.DatasetWrapper(
+                    self.filepath, mode="w", format=netcdf_format
+                )
+            except RuntimeError:
+                dir_name = os.path.dirname(self.filepath)
+                if not os.path.isdir(dir_name):
+                    msg = "No such file or directory: {}".format(dir_name)
+                    raise IOError(msg)
+                if not os.access(dir_name, os.R_OK | os.W_OK):
+                    msg = "Permission denied: {}".format(self.filepath)
+                    raise IOError(msg)
+                else:
+                    raise
+
         self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
-        #: NetCDF dataset
-        self._dataset = None
-        try:
-            self._dataset = _thread_safe_nc.DatasetWrapper(
-                self.filepath, mode="w", format=netcdf_format
-            )
-        except RuntimeError:
-            dir_name = os.path.dirname(self.filepath)
-            if not os.path.isdir(dir_name):
-                msg = "No such file or directory: {}".format(dir_name)
-                raise IOError(msg)
-            if not os.access(dir_name, os.R_OK | os.W_OK):
-                msg = "Permission denied: {}".format(self.filepath)
-                raise IOError(msg)
-            else:
-                raise
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
-
         self._dataset.sync()
-        self._dataset.close()
-        if self.compute:
-            self.complete()
+        if not self._to_open_dataset:
+            # Only close if the Saver created it.
+            self._dataset.close()
+            # Complete after closing, if required
+            if self.compute:
+                self.complete()
 
     def write(
         self,
