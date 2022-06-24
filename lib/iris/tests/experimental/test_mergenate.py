@@ -59,13 +59,14 @@ class TestBasics(tests.IrisTest):
 
     # More than 2 pieces
     def test_three_pieces(self):
-        expected = stock.simple_3d()
+        # Invert to make latitude axis ascending, as ascending is default
+        expected = stock.simple_3d()[:, ::-1]
 
         cube_0 = expected[:, 0]
         cube_1 = expected[:, 1]
         cube_2 = expected[:, 2:]
         cubelist = CubeList([cube_0, cube_1, cube_2])
-        result = mergenate(cubelist, "wibble")
+        result = mergenate(cubelist, "latitude")
 
         self.assertEqual(expected, result)
 
@@ -198,6 +199,10 @@ class TestAuxCoords(tests.IrisTest):
         cube_1 = expected[1:]
         cubelist = CubeList([cube_0, cube_1])
         result = mergenate(cubelist, coord_name, extend_coords=True)
+
+        print(expected)
+        for coord in result.coords():
+            print(coord)
 
         self.assertEqual(expected, result)
 
@@ -602,30 +607,16 @@ class TestErrors(tests.IrisTest):
         with self.assertRaisesRegex(MergeError, msg):
             mergenate(CubeList([cube_0, cube_1]), coords="wibble")
 
-    def test_aux_factories_differ(self):
-        test_cube = stock.simple_4d_with_hybrid_height()
-
-        cube_0 = test_cube[0]
-        cube_1 = test_cube[1:]
-
-        cube_0.aux_factory("altitude").rename("bar")
-
-        msg = "Inconsistent AuxCoordFactories across cubes"
-        with self.assertRaisesRegex(MergeError, msg):
-            mergenate(CubeList([cube_0, cube_1]), coords="time")
+        # Mixture of ascending and descending coordinate points
+        # Coordinate points overlap so correct merge order is ambiguous
+        # Coord lies on different axes on different cubes
+        # Can only merge on 1D or 0D coordinates
+        # The shapes of cubes to be concatenated can only differ on the affected dimensions
 
         # TODO: Test for the following errors:
-        # msg = "Failed to concatenate cube datas"
-
-        #         (f"Aux coord of no known type: {new_coord}",)
-
-        #         ("Mixture of ascending and descending coordinate points",)
-
-        #             "Coordinate points overlap so correct merge order is ambiguous",
-        #     ("Coord lies on different axes on different cubes")
-        #     ("Can only merge on 1D or 0D coordinates")
-        #             msg = "Can't merge on a 2D coordinate"
-        #     msg = "The shapes of cubes to be concatenated can only differ on the affected dimensions"
+        # Inconsistent aux factories (I can't work out how to make these)
+        # Cube datas that can't be concatenated (but pass shape test)
+        # Unknown type of non-dimensional coordinate
 
 
 if __name__ == "__main__":

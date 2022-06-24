@@ -28,8 +28,11 @@ dim_func = {
 }
 
 
-def _get_all_vars(cube, give_types=False):
+def _get_all_underived_vars(cube, give_types=False):
     coords = cube.coords()
+    # Filter derived coordinates because they'll get recreated
+    coords = [coord for coord in coords if coord not in cube.derived_coords]
+
     anc_vars = cube.ancillary_variables()
     cm_vars = cube.cell_measures()
     af_vars = list(cube.aux_factories)
@@ -52,7 +55,7 @@ def _make_coord_table(cubes):
 
     # Build our prototypes from the first cube
 
-    cube_0_vars, var_types = _get_all_vars(cubes[0], give_types=True)
+    cube_0_vars, var_types = _get_all_underived_vars(cubes[0], give_types=True)
 
     coord_table = [cube_0_vars]
 
@@ -62,7 +65,7 @@ def _make_coord_table(cubes):
     for cube_ind, cube in enumerate(cubes[1:]):
         coord_table.append([None] * coord_count)
 
-        for cube_coord in _get_all_vars(cube):
+        for cube_coord in _get_all_underived_vars(cube):
             for ii, prototype_coord in enumerate(coord_table[0]):
                 if type(cube_coord) == type(
                     prototype_coord
@@ -238,8 +241,34 @@ def _build_new_var_pieces(coords, new_dims, cube_depths, extend_coords):
     return new_points, new_dims
 
 
+def aux_factories_equal(aux_a, aux_b):
+    if type(aux_a) != type(aux_b):
+        return False
+    if aux_a.metadata != aux_b.metadata:
+        return False
+    print(aux_a.metadata)
+    print()
+    print(aux_b.metadata)
+    dependencies_a = {
+        key: coord.metadata for key, coord in aux_a.dependencies.items()
+    }
+    dependencies_b = {
+        key: coord.metadata for key, coord in aux_b.dependencies.items()
+    }
+    if len(dependencies_a) != len(dependencies_b):
+        return False
+    try:
+        for key, metadata_a in dependencies_a.items():
+            if metadata_a != dependencies_b[key]:
+                return False
+    except (TypeError, KeyError):
+        return False
+    return True
+
+
 def _mergenate(cubes, extend_coords: bool, merge_coord=None):
     """Actually mergenate (on axis 0)"""
+
     try:
         new_data = da.concatenate([cube.core_data() for cube in cubes], axis=0)
     except ValueError:
@@ -256,7 +285,15 @@ def _mergenate(cubes, extend_coords: bool, merge_coord=None):
     for coord_col, coord_type in zip(coord_table.T, coord_types):
 
         if coord_type == AUX_FACT_TYPE:
-            if not np.all(coord_col[1:] == coord_col[:-1]):
+            all_equal = True
+            for ii in range(len(coord_col) - 1):
+                aux_a = coord_col[ii]
+                aux_b = coord_col[ii + 1]
+                if not aux_factories_equal(aux_a, aux_b):
+                    all_equal = False
+                    break
+
+            if not all_equal:
                 raise iris.exceptions.MergeError(
                     ("Inconsistent AuxCoordFactories across cubes",)
                 )
