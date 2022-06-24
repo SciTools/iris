@@ -571,9 +571,9 @@ def mergenate(cubelist, coords=None, extend_coords=False):
     These are written in doctest format, and should illustrate how to use the
     function.
 
+    >>> from iris.tests import stock
     >>> from iris.cube import CubeList
     >>> from iris.experimental.mergenate import mergenate
-    >>> from iris.tests import stock
 
     >>> expected = stock.simple_3d()
 
