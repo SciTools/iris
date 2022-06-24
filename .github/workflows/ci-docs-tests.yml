@@ -37,7 +37,7 @@ jobs:
         python-version: ["3.8"]
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.12"
+      IRIS_TEST_DATA_VERSION: "2.14"
       ENV_NAME: "ci-docs-tests"
 
     steps:
