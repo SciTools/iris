@@ -44,7 +44,7 @@ def update_json(baseline_image_dir: Path, dry_run: bool = False):
                 difference = hex_to_hash(str(old_val)) - hex_to_hash(
                     str(new_val)
                 )
-                if difference > graphics._HAMMING_DISTANCE:
+                if difference > 0:
                     print(key)
                     print(f"\t{old_val} -> {new_val} ({difference})")
                     repo[key] = suggested_repo[key]
