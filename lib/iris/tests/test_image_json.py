@@ -30,17 +30,17 @@ class TestImageFile(tests.IrisTest):
         missing_from_json = test_data_name_set - repo_name_set
         if missing_from_json:
             amsg = (
-                "Missing images: Image names are referenced in "
-                "imagerepo.json, that are not present in the iris-test-data "
-                "repo"
+                "Missing images: Images are present in the iris-test-data "
+                "repo, that are not referenced in imagerepo.json"
             )
             # Always fails when we get here: report the problem.
             self.assertEqual(missing_from_json, set(), msg=amsg)
         missing_from_test_data = repo_name_set - test_data_name_set
         if missing_from_test_data:
             amsg = (
-                "Missing images: Images are present in the iris-test-data "
-                "repo, that are not referenced in imagerepo.json"
+                "Missing images: Image names are referenced in "
+                "imagerepo.json, that are not present in the iris-test-data "
+                "repo"
             )
             # Always fails when we get here: report the problem.
             self.assertEqual(missing_from_test_data, set(), msg=amsg)
