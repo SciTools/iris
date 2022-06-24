@@ -464,14 +464,14 @@ def _calculate_reorders(cubes, coord):
         (coord_dim_tuple,) = coord_dims
     except ValueError:
         raise iris.exceptions.MergeError(
-            ("Coord lies on different axes on different cubes")
+            ("Coord lies on different axes on different cubes",)
         )
 
     try:
         (coord_dim,) = coord_dim_tuple
     except ValueError:
         raise iris.exceptions.MergeError(
-            ("Can only merge on 1D or 0D coordinates")
+            ("Can only merge on 1D or 0D coordinates",)
         )
 
     forward_order = [*range(max_ndim)]

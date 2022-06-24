@@ -607,16 +607,63 @@ class TestErrors(tests.IrisTest):
         with self.assertRaisesRegex(MergeError, msg):
             mergenate(CubeList([cube_0, cube_1]), coords="wibble")
 
-        # Mixture of ascending and descending coordinate points
-        # Coordinate points overlap so correct merge order is ambiguous
-        # Coord lies on different axes on different cubes
-        # Can only merge on 1D or 0D coordinates
-        # The shapes of cubes to be concatenated can only differ on the affected dimensions
+    def test_ascending_descending(self):
+        test_cube = stock.simple_3d()
+
+        cube_0 = test_cube[:, :, 0:2]
+        cube_1 = test_cube[:, :, 2:4]
+        cube_1 = cube_1[:, :, ::-1]
+
+        msg = "Mixture of ascending and descending coordinate points"
+        with self.assertRaisesRegex(MergeError, msg):
+            mergenate(CubeList([cube_0, cube_1]), "longitude")
+
+    def test_ambiguous_order(self):
+        test_cube = stock.simple_3d()
+
+        cube_0 = test_cube[:, :, 0:2]
+        cube_1 = test_cube[:, :, 1:4]
+
+        msg = "Coordinate points overlap so correct merge order is ambiguous"
+        with self.assertRaisesRegex(MergeError, msg):
+            mergenate(CubeList([cube_0, cube_1]), "longitude")
+
+        cube_2 = test_cube[:, :, ::2]
+        cube_3 = test_cube[:, :, 1::2]
+
+        msg = "Coordinate points overlap so correct merge order is ambiguous"
+        with self.assertRaisesRegex(MergeError, msg):
+            mergenate(CubeList([cube_2, cube_3]), "longitude")
+
+    def test_different_axes(self):
+        test_cube = stock.simple_3d()
+
+        cube_0 = test_cube[0:1]
+        cube_1 = test_cube[1:]
+        cube_1.transpose((1, 0, 2))
+
+        msg = "Coord lies on different axes on different cubes"
+        with self.assertRaisesRegex(MergeError, msg):
+            mergenate(CubeList([cube_0, cube_1]), "wibble")
+
+    def test_inconsistent_shapes(self):
+        test_cube = stock.simple_3d()
+
+        cube_0 = test_cube[0:1]
+        cube_1 = test_cube[1:, 1:]
+
+        msg = (
+            "The shapes of cubes to be concatenated can only differ on the "
+            "affected dimensions"
+        )
+        with self.assertRaisesRegex(MergeError, msg):
+            mergenate(CubeList([cube_0, cube_1]), "wibble")
 
         # TODO: Test for the following errors:
         # Inconsistent aux factories (I can't work out how to make these)
         # Cube datas that can't be concatenated (but pass shape test)
         # Unknown type of non-dimensional coordinate
+        # Can only merge on 1D or 0D coordinates
 
 
 if __name__ == "__main__":
