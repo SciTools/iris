@@ -528,7 +528,63 @@ def _validate_shapes(cubelist, coord):
 
 
 def mergenate(cubelist, coords=None, extend_coords=False):
-    # Order is only guaranteed if coords are monotonic and all ascending or all descending
+    """
+    Mergenate a cubelist into a single cube
+
+    Combine the cubes in `cubelist` into a single cube if possible, along the
+    merge axis(es) specified by coords.
+
+    Parameters
+    ----------
+    cubelist : iris.cube.Cubelist or list of cubes
+        The cubes to be mergenated
+    coords : coord or list of coords or None, optional
+        Coords can be anything accepted by iris.cube.Cube.coord as
+        name_or_coord. Identifiers of the DimCoord or DimCoords to merge on.
+        These coordinates must be dimension coordinates or scalar coordinates of
+        all of the cubes.
+
+        * If one coord is provided, mergenation is applied along the axis of the
+          cubes that it lies on, or if it is scalar in every cube then along a
+          new leading axis.
+        * If multiple coords are provided, mergenation is applied along the axis
+          described by each in turn.
+        * If None, mergenation is applied along a new, anonymous, leading axis.
+    extend_coords : {False, True}, optional
+        Whether coordinates that are inconsistent between cubes be extended
+        along the merge dimension
+
+    Returns
+    -------
+    iris.cube.Cube
+        The cube formed by mergenating the cubes in `cubelist` into a single
+        cube.
+
+    Raises
+    ------
+    MergeError
+        If cubes are incompatible, and as such cannot be merged into a single
+        cube, an informative exception is raised.
+
+    Examples
+    --------
+    These are written in doctest format, and should illustrate how to use the
+    function.
+
+    >>> from iris.cube import CubeList
+    >>> from iris.experimental.mergenate import mergenate
+    >>> from iris.tests import stock
+
+    >>> expected = stock.simple_3d()
+
+    >>> cube_0 = expected[0]
+    >>> cube_1 = expected[1:]
+    >>> cubelist = CubeList([cube_0, cube_1])
+    >>> result = mergenate(cubelist, "wibble")
+
+    >>> result == expected
+    True
+    """
 
     if coords is None:
         _validate_shapes(cubelist, None)
