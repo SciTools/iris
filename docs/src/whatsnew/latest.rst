@@ -122,7 +122,7 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ and  `@pp-mo`_  ensured that all methods to create or modify a
    :class:`iris.cube.CubeList` check that it only contains cubes.  According to
    code comments, this was supposedly already the case, but there were several bugs
-   and loopholes. (:pull:`4767`)
+   and loopholes. (:issue:`1897`, :pull:`4767`)
 
 
 💣 Incompatible Changes
