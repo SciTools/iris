@@ -20,6 +20,7 @@ dependencies:
   - python-xxhash
   - pyproj
   - scipy
+  - xarray
 
 # Optional dependencies.
   - esmpy >=7.0
