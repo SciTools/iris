@@ -36,7 +36,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.8"]
-        session: ["tests"]
+        session: ["tests", "doctest", "gallery", "linkcheck"]
 
     env:
       IRIS_TEST_DATA_VERSION: "2.14"
@@ -108,6 +108,7 @@ jobs:
       - name: "iris configure"
         env:
           SITE_CFG: lib/iris/etc/site.cfg
+          MPL_RC: ${HOME}/.config/matplotlib/matplotlibrc
         run: |
           mkdir -p $(dirname ${SITE_CFG})
           echo ${SITE_CFG}
@@ -115,6 +116,11 @@ jobs:
           echo "test_data_dir = ${HOME}/iris-test-data/test_data" >> ${SITE_CFG}
           echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
           cat ${SITE_CFG}
+          mkdir -p $(dirname ${MPL_RC})
+          echo ${MPL_RC}
+          echo "backend : agg" >> ${MPL_RC}
+          echo "image.cmap : viridis" >> ${MPL_RC}
+          cat ${MPL_RC}
 
       - name: "iris ${{ matrix.session }}"
         env:
