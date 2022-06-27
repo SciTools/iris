@@ -12,29 +12,44 @@ Updates imagerepo.json based on the baseline images
 import argparse
 from pathlib import Path
 
+from imagehash import hex_to_hash
+
 import iris.tests
 import iris.tests.graphics as graphics
 
 
 def update_json(baseline_image_dir: Path, dry_run: bool = False):
-    old_repo = graphics.read_repo_json()
-    new_repo = graphics.generate_repo_from_baselines(baseline_image_dir)
+    repo = graphics.read_repo_json()
+    suggested_repo = graphics.generate_repo_from_baselines(baseline_image_dir)
 
-    if graphics.repos_equal(old_repo, new_repo):
+    if graphics.repos_equal(repo, suggested_repo):
         msg = (
             f"No change in contents of {graphics.IMAGE_REPO_PATH} based on "
             f"{baseline_image_dir}"
         )
         print(msg)
     else:
-        for key in set(old_repo.keys()) | set(new_repo.keys()):
-            old_val = old_repo.get(key, None)
-            new_val = new_repo.get(key, None)
-            if str(old_val) != str(new_val):
+        for key in set(repo.keys()) | set(suggested_repo.keys()):
+            old_val = repo.get(key, None)
+            new_val = suggested_repo.get(key, None)
+            if old_val is None:
+                repo[key] = suggested_repo[key]
                 print(key)
                 print(f"\t{old_val} -> {new_val}")
+            elif new_val is None:
+                del repo[key]
+                print(key)
+                print(f"\t{old_val} -> {new_val}")
+            else:
+                difference = hex_to_hash(str(old_val)) - hex_to_hash(
+                    str(new_val)
+                )
+                if difference > 0:
+                    print(key)
+                    print(f"\t{old_val} -> {new_val} ({difference})")
+                    repo[key] = suggested_repo[key]
         if not dry_run:
-            graphics.write_repo_json(new_repo)
+            graphics.write_repo_json(repo)
 
 
 if __name__ == "__main__":

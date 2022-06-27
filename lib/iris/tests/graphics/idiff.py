@@ -128,18 +128,6 @@ def step_over_diffs(result_dir, display=True):
 
     reference_image_dir = Path(iris.tests.get_data_path("images"))
     repo = graphics.read_repo_json()
-    repo_from_baseline_images = graphics.generate_repo_from_baselines(
-        reference_image_dir
-    )
-
-    if not graphics.repos_equal(repo, repo_from_baseline_images):
-        msg = (
-            f"The hashes from {reference_image_dir} and the contents of "
-            f"{graphics.IMAGE_REPO_PATH} are inconsistent. \nConsider "
-            f"recreating {graphics.IMAGE_REPO_PATH.name} using "
-            f"{Path(graphics.__file__).parent}/recreate_imagerepo.py"
-        )
-        raise AssertionError(msg)
 
     # Filter out all non-test result image files.
     results = []
@@ -215,5 +203,6 @@ if __name__ == "__main__":
     if not result_dir.is_dir():
         emsg = f"Invalid results directory: {result_dir}"
         raise ValueError(emsg)
+
     for args in step_over_diffs(result_dir):
         diff_viewer(*args)

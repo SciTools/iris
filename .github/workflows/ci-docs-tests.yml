@@ -39,7 +39,7 @@ jobs:
         session: ["doctest", "gallery", "linkcheck"]
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.12"
+      IRIS_TEST_DATA_VERSION: "2.13"
       ENV_NAME: "ci-docs-tests"
 
     steps:

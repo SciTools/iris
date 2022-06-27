@@ -167,6 +167,8 @@ This document explains the changes made to Iris for this release
    we no longer use the deprecated :class:`nc_time_axis.CalendarDateTime`
    when plotting against time coordinates. (:pull:`4584`)
 
+#. `@wjbenfold`_ and `@bjlittle`_ (reviewer) unpinned ``pillow``. (:pull:`4826`)
+
 
 📚 Documentation
 ================
