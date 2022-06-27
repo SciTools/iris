@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "tests ${{ matrix.os }} ${{ matrix.python-version }}"
+    name: "${{ matrix.session }} ${{ matrix.os }} py${{ matrix.python-version }}"
 
     runs-on: ${{ matrix.os }}
 
@@ -36,6 +36,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.8"]
+        session: ["tests"]
 
     env:
       IRIS_TEST_DATA_VERSION: "2.14"
@@ -115,8 +116,8 @@ jobs:
           echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
           cat ${SITE_CFG}
 
-      - name: "iris tests"
+      - name: "iris ${{ matrix.session }}"
         env:
           PY_VER: ${{ matrix.python-version }}
         run: |
-          nox --session tests -- --verbose
+          nox --session ${{ matrix.session }} -- --verbose

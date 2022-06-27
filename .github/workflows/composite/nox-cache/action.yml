@@ -19,4 +19,4 @@ runs:
     - uses: actions/cache@v3
       with:
         path: ${{ github.workspace }}/.nox
-        key: ${{ runner.os }}-nox-${{ inputs.env_name }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles(inputs.lock_file) }}
+        key: ${{ runner.os }}-nox-${{ inputs.env_name }}-s${{ matrix.session }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles(inputs.lock_file) }}

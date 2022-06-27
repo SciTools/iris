@@ -123,10 +123,10 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ and `@rcomer`_ (reviewer) corrected the axis on which masking
    is applied when an aggregator adds a trailing dimension. (:pull:`4755`)
 
-*  `@rcomer`_ and  `@pp-mo`_  ensured that all methods to create or modify a
+#. `@rcomer`_ and  `@pp-mo`_  ensured that all methods to create or modify a
    :class:`iris.cube.CubeList` check that it only contains cubes.  According to
    code comments, this was supposedly already the case, but there were several bugs
-   and loopholes.
+   and loopholes. (:issue:`1897`, :pull:`4767`)
 
 
 💣 Incompatible Changes
@@ -231,6 +231,11 @@ This document explains the changes made to Iris for this release
    such as PyCharm and Eclipse, which don't automatically include the Python env
    bin in the system PATH.
    (:pull:`4794`)
+
+#. `@trexfeathers`_ and `@pp-mo`_ fixed the CDL headers for
+   :mod:`iris.tests.stock.netcdf` to allow generation of NetCDF-4 files with an
+   unlimited time dimension.
+   (:pull:`4827`)
 
 
 .. comment
