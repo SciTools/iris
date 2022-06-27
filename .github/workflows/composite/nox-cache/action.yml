@@ -12,9 +12,6 @@ inputs:
   lock_file:
     description: "conda-lock environment requirements filename"
     required: true
-  session:
-    description: "nox session name"
-    required: true
 
 runs:
   using: "composite"
