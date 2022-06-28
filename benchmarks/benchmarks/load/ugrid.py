@@ -10,8 +10,7 @@ Where possible benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
              NOT scale with data size.
   * large: large enough to exclusively detect regressions in parts of the
-           run-time that scale with data size. Aim for benchmark time ~20x
-           that of the minimal benchmark.
+           run-time that scale with data size.
 
 """
 
@@ -39,7 +38,7 @@ def load_mesh(*args, **kwargs):
 
 
 class BasicLoading:
-    params = [1, int(4.1e6)]
+    params = [1, int(2e5)]
     param_names = ["number of faces"]
 
     def setup_common(self, **kwargs):
@@ -75,7 +74,7 @@ class DataRealisation:
     warmup_time = 0.0
     timeout = 300.0
 
-    params = [1, int(4e6)]
+    params = [1, int(2e5)]
     param_names = ["number of faces"]
 
     def setup_common(self, **kwargs):
@@ -102,7 +101,7 @@ class DataRealisationTime(DataRealisation):
 
 
 class Callback:
-    params = [1, int(4.5e6)]
+    params = [1, int(2e5)]
     param_names = ["number of faces"]
 
     def setup_common(self, **kwargs):
