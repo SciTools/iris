@@ -57,6 +57,9 @@ class BasicLoading:
 class BasicLoadingTime(BasicLoading):
     """Same as BasicLoading, but scaling over a time series - an unlimited dimension."""
 
+    # NOTE iris#4834 - careful how big the time dimension is (time dimension
+    #  is UNLIMITED).
+
     param_names = ["number of time steps"]
 
     def setup(self, *args):
