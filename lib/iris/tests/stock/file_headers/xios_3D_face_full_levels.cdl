@@ -58,8 +58,4 @@ variables:
 		:name = "${DATASET_NAME}" ;
 //		original name = "lfric_ngvat_3D_1t_full_level_face_grid_main_u3"
 		:Conventions = "UGRID" ;
-
-// data
-data:
-  time_instant = 0 ;
 }

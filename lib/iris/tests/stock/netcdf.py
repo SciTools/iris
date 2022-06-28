@@ -51,13 +51,13 @@ def ncgen_from_cdl(
             f_out.write(cdl_str)
     if cdl_path:
         # Create netcdf from stored CDL file.
-        call_args = [NCGEN_PATHSTR, cdl_path, "-k4", "-o", nc_path]
+        call_args = [NCGEN_PATHSTR, cdl_path, "-k3", "-o", nc_path]
         call_kwargs = {}
     else:
         # No CDL file : pipe 'cdl_str' directly into the ncgen program.
         if not cdl_str:
             raise ValueError("Must provide either 'cdl_str' or 'cdl_path'.")
-        call_args = [NCGEN_PATHSTR, "-k4", "-o", nc_path]
+        call_args = [NCGEN_PATHSTR, "-k3", "-o", nc_path]
         call_kwargs = dict(input=cdl_str, encoding="ascii")
 
     subprocess.run(call_args, check=True, **call_kwargs)

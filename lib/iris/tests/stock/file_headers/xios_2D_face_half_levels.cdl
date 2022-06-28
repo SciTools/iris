@@ -55,8 +55,4 @@ variables:
 		:name = "${DATASET_NAME}" ;
 //		original name = "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain"
 		:Conventions = "UGRID" ;
-
-// data
-data:
-  time_instant = 0 ;
 }

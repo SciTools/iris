@@ -10,8 +10,7 @@ Where possible benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
              NOT scale with data size.
   * large: large enough to exclusively detect regressions in parts of the
-           run-time that scale with data size. Aim for benchmark time ~20x
-           that of the minimal benchmark.
+           run-time that scale with data size.
 
 """
 from iris import save
