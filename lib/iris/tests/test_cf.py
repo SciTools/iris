@@ -295,7 +295,7 @@ class TestCFReader(tests.IrisTest):
                         except OSError:
                             pass
                     buf.seek(0)
-                    self.assertStringEqual("", buf.read())
+                    self.assertMultiLineEqual("", buf.read())
 
 
 @tests.skip_data

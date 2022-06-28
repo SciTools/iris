@@ -407,7 +407,9 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # Notes:
         #     * behaviours all the same as 'test_bad_gridmapping_nameproperty'
         warning = "Missing.*grid mapping variable 'grid'"
-        result = self.run_testcase(warning=warning, gridmapvar_name="grid_2")
+        result = self.run_testcase(
+            warning_regex=warning, gridmapvar_name="grid_2"
+        )
         self.check_result(result, cube_no_cs=True)
 
     def test_latlon_bad_latlon_unit(self):
@@ -633,7 +635,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * coords built : lat + lon, with no coord-system (see above)
         warning = "Missing.*grid mapping variable 'grid'"
         result = self.run_testcase(
-            warning=warning,
+            warning_regex=warning,
             gridmapvar_name="moved",
             xco_name="longitude",
             xco_units="degrees_east",
@@ -690,7 +692,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * coords built : rotated lat + lon, with no coord-system (see above)
         warning = "Missing.*grid mapping variable 'grid'"
         result = self.run_testcase(
-            warning=warning,
+            warning_regex=warning,
             gridmapvar_name="moved",
             xco_name="grid_longitude",
             xco_units="degrees",
@@ -752,7 +754,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * effectively, just like previous 2 cases
         warning = "Missing.*grid mapping variable 'grid'"
         result = self.run_testcase(
-            warning=warning,
+            warning_regex=warning,
             gridmapvar_name="moved",
             xco_name="projection_x",
             xco_units="m",
@@ -872,7 +874,9 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
         #     * in terms of rule triggering, this is not distinct from the
         #       "normal" case : but latitude is now created as an aux-coord.
         warning = "must be.* monotonic"
-        result = self.run_testcase(warning=warning, yco_values=[0.0, 0.0])
+        result = self.run_testcase(
+            warning_regex=warning, yco_values=[0.0, 0.0]
+        )
         self.check_result(result, yco_is_aux=True)
 
 

@@ -237,6 +237,8 @@ This document explains the changes made to Iris for this release
    unlimited time dimension.
    (:pull:`4827`)
 
+#. `@rcomer`_ removed some now redundant testing methods. (:pull:`4838`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

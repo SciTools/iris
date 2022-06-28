@@ -549,8 +549,9 @@ class Test_write_fill_value(tests.IrisTest):
         # Test that a warning is raised if the data contains the fill value.
         cube = self._make_cube(">f4")
         fill_value = 1
-        with self.assertWarnsRegexp(
-            "contains unmasked data points equal to the fill-value"
+        with self.assertWarnsRegex(
+            UserWarning,
+            "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
@@ -560,8 +561,9 @@ class Test_write_fill_value(tests.IrisTest):
         # when it is of a byte type.
         cube = self._make_cube(">i1")
         fill_value = 1
-        with self.assertWarnsRegexp(
-            "contains unmasked data points equal to the fill-value"
+        with self.assertWarnsRegex(
+            UserWarning,
+            "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
@@ -571,8 +573,9 @@ class Test_write_fill_value(tests.IrisTest):
         # value if no fill_value argument is supplied.
         cube = self._make_cube(">f4")
         cube.data[0, 0] = nc.default_fillvals["f4"]
-        with self.assertWarnsRegexp(
-            "contains unmasked data points equal to the fill-value"
+        with self.assertWarnsRegex(
+            UserWarning,
+            "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube):
                 pass
