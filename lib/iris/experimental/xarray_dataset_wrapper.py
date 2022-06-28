@@ -23,7 +23,7 @@ import xarray
 import xarray as xr
 
 
-class XrMimic:
+class _XrMimic:
     """
     An netcdf object "mimic" wrapped around an xarray object, which will be
     either a dim, var or dataset.
@@ -65,7 +65,7 @@ class XrMimic:
         return not self == other
 
 
-class DimensionMimic(XrMimic):
+class DimensionMimic(_XrMimic):
     """
     A Dimension object mimic wrapper.
 
@@ -97,7 +97,7 @@ class DimensionMimic(XrMimic):
         return self._unlimited
 
 
-class Nc4AttrsMimic(XrMimic):
+class _Nc4AttrsMimic(_XrMimic):
     """
     A class mixin for a Mimic with attribute access.
 
@@ -131,7 +131,7 @@ class Nc4AttrsMimic(XrMimic):
     #     self.setncattr(attr_name, value)
 
 
-class VariableMimic(Nc4AttrsMimic):
+class VariableMimic(_Nc4AttrsMimic):
     """
     A Variable object mimic wrapper.
 
@@ -181,13 +181,37 @@ class VariableMimic(Nc4AttrsMimic):
         self._xr[keys] = data
 
 
-class DatasetMimic(Nc4AttrsMimic):
+class DatasetMimic(_Nc4AttrsMimic):
     """
     An object mimicking an netCDF4.Dataset, wrapping an xarray.Dataset.
 
     """
 
-    def __init__(self, xrds: Optional[xarray.Dataset] = None):
+    def __init__(self, xrds=None):
+        """
+        Create a Dataset mimic, which provides a bridge between the
+        :class:`netcdf.Dataset` access API and data in the form of an
+        :class:`xarray.Dataset`.
+
+        Parameters
+        ----------
+        xrds : :class:`xr.Dataset`, optional
+            If provided, create a DatasetMimic representing the xarray data.
+            If None, initialise empty.
+            In either case, the result can be read or written like a
+            :class:`netcdf.Dataset`.  Or, an xarray equivalent can be
+            regenerated with the :meth:`to_xarray_dataset` method.
+
+        Notes
+        -----
+        Only a limited subset of the :mod:`netCDF4` APIs are currently
+        supported : just enough to allow Iris to read and write xarray datasets
+        in place of netcdf files.
+
+        In addition to the netCDF4 read API, you can at any time obtain a
+        version of the contents in the form of a :class:`xarray.Dataset`, from
+        the :meth:`DatasetMimic.to_xarray_dataset` method.
+        """
         if xrds is None:
             # Initialise empty dataset if not passed in.
             xrds = xr.Dataset()
@@ -354,21 +378,16 @@ class DatasetMimic(Nc4AttrsMimic):
 def fake_nc4python_dataset(xr_group: Optional[xr.Dataset] = None):
     """
     Make a wrapper around an xarray Dataset which emulates a
-    :class:`netCDF4.Dataset'.
+    :class:`netCDF4.Dataset`.
 
     The resulting :class:`DatasetMimic` supports essential properties of a
-    read-mode :class:`netCDF4.Dataset', enabling an arbitrary netcdf data
+    read-mode :class:`netCDF4.Dataset`, enabling an arbitrary netcdf data
     structure in memory to be "read" as if it were a file
     (i.e. without writing it to disk).
     It likewise supports write operations, which translates netCDF4 writes
     into xarray operations on the internal dataset.
-
-    Only a limited netCDF4 API is currently supported : enough to allow Iris to
-    read and write xarray datasets in place of netcdf files.
-
-    In addition to the netCDF4 read API, a version of the contents as a viable
-    xarray.Dataset can be obtained at any point, by calling
-    :meth:`DatasetMimic.to_xarray_dataset`.
+    It can also reproduce its content as a :class:`xarray.Dataset` from its
+    :meth:`DatasetMimic.to_xarray_dataset` method.
 
     Parameters
     ----------
@@ -378,7 +397,7 @@ def fake_nc4python_dataset(xr_group: Optional[xr.Dataset] = None):
 
     Returns
     -------
-        dataset : DatasetMimic
+    dataset : DatasetMimic
 
     """
     return DatasetMimic(xr_group)
