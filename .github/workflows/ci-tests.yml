@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   tests:
-    name: "${{ matrix.session }} ${{ matrix.os }} py${{ matrix.python-version }}"
+    name: "${{ matrix.session }} py${{ matrix.python-version }} ${{ matrix.os }}"
 
     runs-on: ${{ matrix.os }}
 
@@ -35,8 +35,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.8"]
-        session: ["tests"]
+        python-version: ["3.9"]
+        session: ["tests", "doctest", "gallery", "linkcheck"]
+        include:
+          - os: "ubuntu-latest"
+            python-version: "3.8"
+            session: "tests"
 
     env:
       IRIS_TEST_DATA_VERSION: "2.14"
@@ -57,14 +61,14 @@ jobs:
       - name: "data cache"
         uses: ./.github/workflows/composite/iris-data-cache
         with:
-          cache_build: 1
+          cache_build: 0
           env_name: ${{ env.ENV_NAME }}
           version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
         uses: ./.github/workflows/composite/conda-pkg-cache
         with:
-          cache_build: 1
+          cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
@@ -80,7 +84,7 @@ jobs:
       - name: "conda environment cache"
         uses: ./.github/workflows/composite/conda-env-cache
         with:
-          cache_build: 1
+          cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
           install_packages: "cartopy nox pip"
@@ -93,14 +97,14 @@ jobs:
       - name: "cartopy cache"
         uses: ./.github/workflows/composite/cartopy-cache
         with:
-          cache_build: 1
+          cache_build: 0
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
         with:
-          cache_build: 1
+          cache_build: 0
           env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
 
@@ -108,6 +112,7 @@ jobs:
       - name: "iris configure"
         env:
           SITE_CFG: lib/iris/etc/site.cfg
+          MPL_RC: ${HOME}/.config/matplotlib/matplotlibrc
         run: |
           mkdir -p $(dirname ${SITE_CFG})
           echo ${SITE_CFG}
@@ -115,6 +120,11 @@ jobs:
           echo "test_data_dir = ${HOME}/iris-test-data/test_data" >> ${SITE_CFG}
           echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
           cat ${SITE_CFG}
+          mkdir -p $(dirname ${MPL_RC})
+          echo ${MPL_RC}
+          echo "backend : agg" >> ${MPL_RC}
+          echo "image.cmap : viridis" >> ${MPL_RC}
+          cat ${MPL_RC}
 
       - name: "iris ${{ matrix.session }}"
         env:
