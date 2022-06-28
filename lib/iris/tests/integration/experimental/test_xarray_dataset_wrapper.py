@@ -1,3 +1,14 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+"""
+Tests for :mod:`iris.experimental.xarray_dataset_wrapper`.
+
+Just very basic integration tests, for now.
+
+"""
 from pathlib import Path
 import subprocess
 
