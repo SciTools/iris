@@ -94,7 +94,7 @@ class TestExpandFilespecs(tests.IrisTest):
             .format(self.tmpdir)
         )
 
-        self.assertStringEqual(str(err.exception), expected)
+        self.assertMultiLineEqual(str(err.exception), expected)
 
 
 if __name__ == "__main__":

@@ -92,7 +92,7 @@ class Test_save(tests.IrisTest):
         data_64 = np.linspace(0, 1, num=10, endpoint=False).reshape(2, 5)
         checksum_32 = field_checksum(data_64.astype(">f4"))
         msg = "Downcasting array precision from float64 to float32 for save."
-        with self.assertWarnsRegexp(msg):
+        with self.assertWarnsRegex(UserWarning, msg):
             checksum_64 = field_checksum(data_64.astype(">f8"))
         self.assertEqual(checksum_32, checksum_64)
 
@@ -105,7 +105,7 @@ class Test_save(tests.IrisTest):
             [1.0, field.bmdi, 3.0], dtype=np.float32
         )
         msg = "PPField data contains unmasked points"
-        with self.assertWarnsRegexp(msg):
+        with self.assertWarnsRegex(UserWarning, msg):
             with self.temp_filename(".pp") as temp_filename:
                 with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)
@@ -117,7 +117,7 @@ class Test_save(tests.IrisTest):
         # Make float32 data, as float64 default produces an extra warning.
         field.data = np.array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
-        with self.assertWarnsRegexp(msg):
+        with self.assertWarnsRegex(UserWarning, msg):
             with self.temp_filename(".pp") as temp_filename:
                 with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)

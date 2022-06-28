@@ -117,7 +117,7 @@ class Mixin__nc_load_actions:
         # Always returns a single cube.
         return cube
 
-    def run_testcase(self, warning=None, **testcase_kwargs):
+    def run_testcase(self, warning_regex=None, **testcase_kwargs):
         """
         Run a testcase with chosen options, returning a test cube.
 
@@ -133,10 +133,10 @@ class Mixin__nc_load_actions:
             print(cdl_string)
             print("------\n")
 
-        if warning is None:
+        if warning_regex is None:
             context = self.assertNoWarningsRegexp()
         else:
-            context = self.assertWarnsRegexp(warning)
+            context = self.assertWarnsRegex(UserWarning, warning_regex)
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
 

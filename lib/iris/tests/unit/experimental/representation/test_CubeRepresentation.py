@@ -28,7 +28,7 @@ class Test__instantiation(tests.IrisTest):
 
     def test_cube_attributes(self):
         self.assertEqual(id(self.cube), self.representer.cube_id)
-        self.assertStringEqual(str(self.cube), self.representer.cube_str)
+        self.assertMultiLineEqual(str(self.cube), self.representer.cube_str)
 
     def test__heading_contents(self):
         content = set(self.representer.sections_data.values())

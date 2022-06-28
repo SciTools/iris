@@ -37,3 +37,7 @@ extend_skip = [
 ]
 skip_gitignore = "True"
 verbose = "False"
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = "lib/iris"

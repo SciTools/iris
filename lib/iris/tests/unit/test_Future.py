@@ -12,6 +12,7 @@ import iris.tests as tests  # isort:skip
 import warnings
 
 from iris import Future
+import iris._deprecation
 
 
 def patched_future(value=False, deprecated=False, error=False):
@@ -45,7 +46,7 @@ class Test___setattr__(tests.IrisTest):
     def test_deprecated_warning(self):
         future = patched_future(deprecated=True, error=False)
         msg = "'Future' property 'example_future_flag' is deprecated"
-        with self.assertWarnsRegexp(msg):
+        with self.assertWarnsRegex(iris._deprecation.IrisDeprecation, msg):
             future.example_future_flag = False
 
     def test_deprecated_error(self):

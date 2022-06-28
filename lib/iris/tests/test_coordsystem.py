@@ -548,18 +548,18 @@ class Test_Datums(tests.IrisTest):
     def test_default_none(self):
         cs = GeogCS(6543210, 6500000)  # Arbitrary radii
         cartopy_crs = cs.as_cartopy_crs()
-        self.assertStringEqual(cartopy_crs.datum.name, "unknown")
+        self.assertMultiLineEqual(cartopy_crs.datum.name, "unknown")
 
     def test_set_persist(self):
         cs = GeogCS.from_datum(datum="WGS84")
         cartopy_crs = cs.as_cartopy_crs()
-        self.assertStringEqual(
+        self.assertMultiLineEqual(
             cartopy_crs.datum.name, "World Geodetic System 1984"
         )
 
         cs = GeogCS.from_datum(datum="OSGB36")
         cartopy_crs = cs.as_cartopy_crs()
-        self.assertStringEqual(cartopy_crs.datum.name, "OSGB 1936")
+        self.assertMultiLineEqual(cartopy_crs.datum.name, "OSGB 1936")
 
 
 if __name__ == "__main__":

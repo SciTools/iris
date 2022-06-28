@@ -235,6 +235,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@pp-mo`_ improved generation of stock NetCDF files.
    (:pull:`4827`, :pull:`4836`)
 
+#. `@rcomer`_ removed some now redundant testing methods. (:pull:`4838`)
+
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:

@@ -57,9 +57,9 @@ if MPL_AVAILABLE and "-d" in sys.argv:
 _lock = threading.Lock()
 
 #: Default perceptual hash size.
-_HASH_SIZE = 16
+HASH_SIZE = 16
 #: Default maximum perceptual hash hamming distance.
-_HAMMING_DISTANCE = 2
+HAMMING_DISTANCE = 2
 # Prefix for image test results (that aren't yet verified as good to add to
 # reference images)
 RESULT_PREFIX = "result-"
@@ -135,7 +135,7 @@ def get_phash(input: Path) -> str:
     from PIL import Image
     import imagehash
 
-    return imagehash.phash(Image.open(input), hash_size=_HASH_SIZE)
+    return imagehash.phash(Image.open(input), hash_size=HASH_SIZE)
 
 
 def generate_repo_from_baselines(baseline_image_dir: Path) -> Dict[str, str]:
@@ -220,7 +220,7 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
             # Calculate hamming distance vector for the result hash.
             distance = expected - phash
 
-            if distance > _HAMMING_DISTANCE:
+            if distance > HAMMING_DISTANCE:
                 if dev_mode:
                     _create_missing(phash)
                 else:

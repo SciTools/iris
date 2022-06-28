@@ -29,9 +29,9 @@ def update_json(baseline_image_dir: Path, dry_run: bool = False):
         )
         print(msg)
     else:
-        for key in set(repo.keys()) | set(suggested_repo.keys()):
-            old_val = repo.get(key, None)
-            new_val = suggested_repo.get(key, None)
+        for key in sorted(set(repo.keys()) | set(suggested_repo.keys())):
+            old_val = repo.get(key)
+            new_val = suggested_repo.get(key)
             if old_val is None:
                 repo[key] = suggested_repo[key]
                 print(key)

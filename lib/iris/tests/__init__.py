@@ -223,25 +223,6 @@ class IrisTest_nometa(unittest.TestCase):
             relative_path = os.path.join(*relative_path)
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
-    def assertStringEqual(
-        self, reference_str, test_str, type_comparison_name="strings"
-    ):
-        if reference_str != test_str:
-            diff = "\n".join(
-                difflib.unified_diff(
-                    reference_str.splitlines(),
-                    test_str.splitlines(),
-                    "Reference",
-                    "Test result",
-                    "",
-                    "",
-                    0,
-                )
-            )
-            self.fail(
-                "{} do not match:\n{}".format(type_comparison_name, diff)
-            )
-
     def result_path(self, basename=None, ext=""):
         """
         Return the full path to a test result, generated from the \
@@ -559,16 +540,6 @@ class IrisTest_nometa(unittest.TestCase):
         messages = [str(warning.message) for warning in w]
         expr = re.compile(expected_regexp)
         matches.extend(message for message in messages if expr.search(message))
-
-    @contextlib.contextmanager
-    def assertWarnsRegexp(self, expected_regexp=""):
-        # Check that a warning is raised matching a given expression.
-        with self._recordWarningMatches(expected_regexp) as matches:
-            yield
-
-        msg = "Warning matching '{}' not raised."
-        msg = msg.format(expected_regexp)
-        self.assertTrue(matches, msg)
 
     @contextlib.contextmanager
     def assertLogs(self, logger=None, level=None, msg_regex=None):
