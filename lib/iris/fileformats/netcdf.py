@@ -1063,6 +1063,7 @@ class Saver:
 
         * filename (string):
             Name of the netCDF file to save the cube.
+            OR a writeable object supporting the netCF4.Dataset api.
 
         * netcdf_format (string):
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
@@ -1105,20 +1106,23 @@ class Saver:
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: NetCDF dataset
-        try:
-            self._dataset = netCDF4.Dataset(
-                filename, mode="w", format=netcdf_format
-            )
-        except RuntimeError:
-            dir_name = os.path.dirname(filename)
-            if not os.path.isdir(dir_name):
-                msg = "No such file or directory: {}".format(dir_name)
-                raise IOError(msg)
-            if not os.access(dir_name, os.R_OK | os.W_OK):
-                msg = "Permission denied: {}".format(filename)
-                raise IOError(msg)
-            else:
-                raise
+        if hasattr(filename, "createVariable"):
+            self._dataset = filename
+        else:
+            try:
+                self._dataset = netCDF4.Dataset(
+                    filename, mode="w", format=netcdf_format
+                )
+            except RuntimeError:
+                dir_name = os.path.dirname(filename)
+                if not os.path.isdir(dir_name):
+                    msg = "No such file or directory: {}".format(dir_name)
+                    raise IOError(msg)
+                if not os.access(dir_name, os.R_OK | os.W_OK):
+                    msg = "Permission denied: {}".format(filename)
+                    raise IOError(msg)
+                else:
+                    raise
 
     def __enter__(self):
         return self
@@ -3108,6 +3112,7 @@ def save(
 
     * filename (string):
         Name of the netCDF file to save the cube(s).
+        OR a writeable object supporting the netCF4.Dataset api.
 
     Kwargs:
 
