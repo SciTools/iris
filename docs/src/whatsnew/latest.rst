@@ -232,11 +232,8 @@ This document explains the changes made to Iris for this release
    bin in the system PATH.
    (:pull:`4794`)
 
-#. `@trexfeathers`_ and `@pp-mo`_ fixed the CDL headers for
-   :mod:`iris.tests.stock.netcdf` to allow generation of NetCDF-4 files with an
-   unlimited time dimension.
-   (:pull:`4827`)
-
+#. `@trexfeathers`_ and `@pp-mo`_ improved generation of stock NetCDF files.
+   (:pull:`4827`, :pull:`4836`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
