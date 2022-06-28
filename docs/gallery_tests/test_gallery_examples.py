@@ -9,7 +9,8 @@ import importlib
 import matplotlib.pyplot as plt
 import pytest
 
-from iris.tests import check_graphic
+from iris.tests import _RESULT_PATH
+from iris.tests.graphics import check_graphic
 
 from .conftest import GALLERY_DIR
 
@@ -40,4 +41,4 @@ def test_plot_example(
     for fig_num in plt.get_fignums():
         plt.figure(fig_num)
         image_id = f"gallery_tests.test_{example}.{fig_num - 1}"
-        check_graphic(image_id)
+        check_graphic(image_id, _RESULT_PATH)
