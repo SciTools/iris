@@ -51,7 +51,7 @@ class Test(tests.IrisTest):
         self.assertEqual(self.names(Metadata.__mro__), expected)
         emsg = (
             "Can't instantiate abstract class .* with abstract "
-            "methods _members"
+            "method.* _members"
         )
         with self.assertRaisesRegex(TypeError, emsg):
             _ = Metadata()
