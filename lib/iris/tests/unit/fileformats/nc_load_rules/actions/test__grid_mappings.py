@@ -506,30 +506,6 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         )
         self.check_result(result, cube_cstype=ics.Mercator)
 
-    def test_mapping_mercator__fail_unsupported(self):
-        # Provide a mercator grid-mapping with a non-unity scale factor, which
-        # we cannot handle.
-        # Result : fails to convert into a coord-system, and emits a warning.
-        #
-        # Rules Triggered:
-        #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_(mercator) --(FAILED check has_supported_mercator_parameters)
-        #     003 : fc_provides_coordinate_(projection_y)
-        #     004 : fc_provides_coordinate_(projection_x)
-        #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
-        #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
-        # Notes:
-        #     * grid-mapping identified : NONE
-        #     * dim-coords identified : proj-x and -y
-        #     * coords built : NONE  (no dim or aux coords: cube has no coords)
-        warning = "not yet supported for Mercator"
-        result = self.run_testcase(
-            warning_regex=warning,
-            mapping_type_name=hh.CF_GRID_MAPPING_MERCATOR,
-            mapping_scalefactor=2.0,
-        )
-        self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
-
     def test_mapping_stereographic(self):
         result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_STEREO)
         self.check_result(result, cube_cstype=ics.Stereographic)

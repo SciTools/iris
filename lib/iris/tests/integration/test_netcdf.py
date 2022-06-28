@@ -599,15 +599,15 @@ data:
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertStringEqual(expected, actual)
+        self.assertMultiLineEqual(expected, actual)
 
     def test_no_load_datum_wkt(self):
         nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
-        with self.assertWarnsRegexp("iris.FUTURE.datum_support"):
+        with self.assertWarnsRegex(FutureWarning, "iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertStringEqual(actual, "unknown")
+        self.assertMultiLineEqual(actual, "unknown")
 
     def test_load_datum_cf_var(self):
         expected = "OSGB 1936"
@@ -616,15 +616,15 @@ data:
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertStringEqual(expected, actual)
+        self.assertMultiLineEqual(expected, actual)
 
     def test_no_load_datum_cf_var(self):
         nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
-        with self.assertWarnsRegexp("iris.FUTURE.datum_support"):
+        with self.assertWarnsRegex(FutureWarning, "iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertStringEqual(actual, "unknown")
+        self.assertMultiLineEqual(actual, "unknown")
 
     def test_save_datum(self):
         expected = "OSGB 1936"
@@ -663,7 +663,7 @@ data:
 
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertStringEqual(expected, actual)
+        self.assertMultiLineEqual(expected, actual)
 
 
 def _get_scale_factor_add_offset(cube, datatype):
