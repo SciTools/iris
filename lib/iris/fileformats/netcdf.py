@@ -13,6 +13,7 @@ Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 """
 
 import collections
+from collections import Iterable
 import collections.abc
 from itertools import repeat, zip_longest
 import os
@@ -931,7 +932,7 @@ def load_cubes(load_files, callback=None, constraints=None):
     # Create an actions engine.
     engine = _actions_engine()
 
-    if isinstance(load_files, str):
+    if isinstance(load_files, str) or not isinstance(load_files, Iterable):
         load_files = [load_files]
 
     for load_source in load_files:

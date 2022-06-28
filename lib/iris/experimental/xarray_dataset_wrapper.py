@@ -337,8 +337,19 @@ class DatasetMimic(_Nc4AttrsMimic):
         # non-default operation.  Unfortunately, that involves some
         # detailed knowledge of the netCDF4.createVariable interface.
         for kwarg, val in kwargs.items():
-            assert kwarg in self._netcdf_saver_defaults
-            assert val == self._netcdf_saver_defaults[kwarg]
+            if kwarg not in self._netcdf_saver_defaults:
+                msg = (
+                    "Unrecognised netcdf saver control keyword : "
+                    "{kwarg} = {val}."
+                )
+                raise ValueError(msg)
+            if val != self._netcdf_saver_defaults[kwarg]:
+                msg = (
+                    "Non-default Netcdf saver control setting : "
+                    "{kwarg} = {val}.  These controls are not supported by "
+                    "the DatasetMimic."
+                )
+                raise ValueError(msg)
 
         datatype = np.dtype(datatype)
         shape = tuple(self._xr.dims[dimname] for dimname in dimensions)
@@ -356,6 +367,7 @@ class DatasetMimic(_Nc4AttrsMimic):
         data = np.full(shape, fill_value=use_fill, dtype=datatype)
 
         xr_var = xr.Variable(dims=dimensions, data=data, attrs=attrs)
+        original_varname = varname
         if varname in self._xr.dims:
             # We need to avoid creating vars as coords, for which we currently
             # use a nasty trick :  Insert with a modified name, and rename back
@@ -370,7 +382,7 @@ class DatasetMimic(_Nc4AttrsMimic):
         self._xr[varname] = xr_var
         xr_var = self._xr.variables[varname]
         # Create a mimic for interfacing to the xarray.Variable.
-        var_mimic = VariableMimic(xr_var)
+        var_mimic = VariableMimic(xr_var, name=original_varname)
         self.variables[varname] = var_mimic
         return var_mimic
 
@@ -385,7 +397,7 @@ def fake_nc4python_dataset(xr_group: Optional[xr.Dataset] = None):
     structure in memory to be "read" as if it were a file
     (i.e. without writing it to disk).
     It likewise supports write operations, which translates netCDF4 writes
-    into xarray operations on the internal dataset.
+    into operations on the internal xarray dataset.
     It can also reproduce its content as a :class:`xarray.Dataset` from its
     :meth:`DatasetMimic.to_xarray_dataset` method.
 
