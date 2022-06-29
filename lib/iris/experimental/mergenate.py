@@ -571,16 +571,17 @@ def mergenate(cubelist, coords=None, extend_coords=False):
     These are written in doctest format, and should illustrate how to use the
     function.
 
-    >>> from iris.tests import stock
+    >>> import iris
     >>> from iris.cube import CubeList
     >>> from iris.experimental.mergenate import mergenate
 
-    >>> expected = stock.simple_3d()
+    >>> filepath = iris.sample_data_path("A1B_north_america.nc")
+    >>> expected = iris.load_cube(filepath)
 
     >>> cube_0 = expected[0]
     >>> cube_1 = expected[1:]
     >>> cubelist = CubeList([cube_0, cube_1])
-    >>> result = mergenate(cubelist, "wibble")
+    >>> result = mergenate(cubelist, "time")
 
     >>> result == expected
     True
