@@ -581,7 +581,7 @@ def mergenate(cubelist, coords=None, extend_coords=False):
     >>> cube_0 = expected[0]
     >>> cube_1 = expected[1:]
     >>> cubelist = CubeList([cube_0, cube_1])
-    >>> result = mergenate(cubelist, "time")
+    >>> result = mergenate(cubelist, "time", extend_coords=True)
 
     >>> result == expected
     True
