@@ -1874,6 +1874,7 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
         cube.units,
         in_place=in_place,
         dim=dim,
+        sanitise_metadata=False,
     )
 
     if not in_place:

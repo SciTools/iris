@@ -110,8 +110,7 @@ def test_real_masked_array_in_place(mask):
     arr = masked_arr_1d.copy()
     result = _mask_array(arr, mask, in_place=True)
     assert_masked_array_equal(arr, expected2)
-    # Resolve uses returned value regardless of whether we're working
-    # in_place.
+    # Resolve uses returned value regardless of whether we're working in_place.
     assert_masked_array_equal(result, expected2)
 
 
@@ -124,8 +123,7 @@ def test_lazy_array_in_place():
     arr = da.from_array(np.arange(4))
     mask = np.array([0, 1, 0, 1])
     expected_computed = ma.array(range(4), mask=[0, 1, 0, 1])
-    # in_place is ignored for lazy array as this is handled by
-    # _math_op_common.
+    # in_place is ignored for lazy array as this is handled by _math_op_common.
     result = _mask_array(arr, mask, in_place=True)
     assert iris._lazy_data.is_lazy_data(result)
     assert_masked_array_equal(result.compute(), expected_computed)

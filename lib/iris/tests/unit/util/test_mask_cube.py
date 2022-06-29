@@ -46,6 +46,7 @@ class TestArrayMask(tests.IrisTest):
         cube.data = cube.data.data
         returned = mask_cube(cube, discontiguity_array, in_place=True)
         np.testing.assert_array_equal(expected.data.mask, cube.data.mask)
+        self.assertEqual(expected.metadata, cube.metadata)
         self.assertIs(returned, None)
 
     def test_mask_cube_2d_not_in_place(self):
@@ -60,13 +61,16 @@ class TestArrayMask(tests.IrisTest):
         cube.data = cube.data.data
         returned = mask_cube(cube, discontiguity_array, in_place=False)
         np.testing.assert_array_equal(expected.data.mask, returned.data.mask)
+        self.assertEqual(expected.metadata, returned.metadata)
         self.assertFalse(ma.is_masked(cube.data))
 
     def test_mask_cube_lazy_in_place(self):
         cube = simple_2d()
         cube.data = cube.lazy_data()
+        original_metadata = cube.metadata
         mask = [0, 1, 1, 0]
         returned = mask_cube(cube, mask, in_place=True)
+        self.assertEqual(cube.metadata, original_metadata)
         self.assertTrue(cube.has_lazy_data())
         for subcube in cube.slices("foo"):
             # Mask should have been broadcast across "bar" dimension.
@@ -83,6 +87,7 @@ class TestCoordMask(tests.IrisTest):
         self.cube.add_aux_coord(mask_coord, 0)
 
         returned = mask_cube(self.cube, mask_coord, in_place=False)
+        self.assertEqual(self.cube.metadata, returned.metadata)
         for subcube in returned.slices("bar"):
             # Mask should have been broadcast across "foo" dimension.
             np.testing.assert_array_equal(subcube.data.mask, mask_coord.points)
@@ -92,6 +97,7 @@ class TestCoordMask(tests.IrisTest):
             [0, 0, 1, 1], long_name="mask", units=1
         )
         returned = mask_cube(self.cube, mask_coord, in_place=False, dim=1)
+        self.assertEqual(self.cube.metadata, returned.metadata)
         for subcube in returned.slices("foo"):
             # Mask should have been broadcast across "bar" dimension.
             np.testing.assert_array_equal(subcube.data.mask, mask_coord.points)
@@ -106,6 +112,7 @@ class TestCubeMask(tests.IrisTest):
         mask.add_dim_coord(self.cube.coord("bar"), 0)
 
         returned = mask_cube(self.cube, mask, in_place=False)
+        self.assertEqual(self.cube.metadata, returned.metadata)
         for subcube in returned.slices("bar"):
             # Mask should have been broadcast across 'foo' dimension.
             np.testing.assert_array_equal(subcube.data.mask, mask.data)
@@ -113,8 +120,10 @@ class TestCubeMask(tests.IrisTest):
     def test_mask_cube_2d_first_dim_in_place(self):
         mask = iris.cube.Cube([0, 1, 0], long_name="mask", units=1)
         mask.add_dim_coord(self.cube.coord("bar"), 0)
+        original_metadata = self.cube.metadata
 
         returned = mask_cube(self.cube, mask, in_place=True)
+        self.assertEqual(original_metadata, self.cube.metadata)
         for subcube in self.cube.slices("bar"):
             # Mask should have been broadcast across 'foo' dimension.
             np.testing.assert_array_equal(subcube.data.mask, mask.data)
@@ -134,6 +143,7 @@ class TestCubeMask(tests.IrisTest):
         cube = iris.util.new_axis(self.cube, "baz")
 
         returned = mask_cube(cube, mask, in_place=False)
+        self.assertEqual(cube.metadata, returned.metadata)
 
         for subcube in returned.slices_over("baz"):
             # Underlying data should have been broadcast across 'baz' dimension.
@@ -145,8 +155,10 @@ class TestCubeMask(tests.IrisTest):
 
     def test_mask_cube_1d_lazy_mask_in_place(self):
         cube = simple_1d()
+        original_metadata = cube.metadata
         mask = cube.copy(da.from_array([0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1]))
         returned = mask_cube(cube, mask, in_place=True)
+        self.assertEqual(cube.metadata, original_metadata)
         self.assertIs(returned, None)
         np.testing.assert_array_equal(cube.data.mask, mask.data)
 
