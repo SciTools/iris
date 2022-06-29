@@ -1155,6 +1155,14 @@ def new_axis(src_cube, scalar_coord=None):
         coord_dims = np.array(src_cube.coord_dims(coord)) + 1
         new_cube.add_dim_coord(coord.copy(), coord_dims)
 
+    for coord in src_cube.cell_measures():
+        coord_dims = np.array(src_cube.cell_measure_dims(coord)) + 1
+        new_cube.add_cell_measure(coord.copy(), coord_dims)
+
+    for coord in src_cube.ancillary_variables():
+        coord_dims = np.array(src_cube.ancillary_variable_dims(coord)) + 1
+        new_cube.add_ancillary_variable(coord.copy(), coord_dims)
+
     nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
     coord_mapping = {
         id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords
