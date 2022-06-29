@@ -97,18 +97,17 @@ import pathlib
 import threading
 
 import iris._constraints
-from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
 import iris.io
+
+from ._deprecation import IrisDeprecation, warn_deprecated
+from ._version import version as __version__  # noqa: F401
 
 try:
     import iris_sample_data
 except ImportError:
     iris_sample_data = None
 
-
-# Iris revision.
-__version__ = "3.3.dev0"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
