@@ -97,7 +97,7 @@ https://conda.anaconda.org/conda-forge/linux-64/libpng-1.6.37-h21135ba_2.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/libssh2-1.10.0-ha56f1ee_2.tar.bz2#6ab4eaa11ff01801cffca0a27489dc04
 https://conda.anaconda.org/conda-forge/linux-64/libtiff-4.4.0-hc85c160_1.tar.bz2#151f9fae3ab50f039c8735e47770aa2d
 https://conda.anaconda.org/conda-forge/linux-64/libxml2-2.9.14-h22db469_0.tar.bz2#7d623237b73d93dd856b5dd0f5fedd6b
-https://conda.anaconda.org/conda-forge/linux-64/libzip-1.8.0-h4de3113_1.tar.bz2#175a746a43d42c053b91aa765fbc197d
+https://conda.anaconda.org/conda-forge/linux-64/libzip-1.9.2-hc869a4a_0.tar.bz2#2d9e11c1183391882e95fec81d0d71c8
 https://conda.anaconda.org/conda-forge/linux-64/mysql-libs-8.0.29-h28c427c_1.tar.bz2#36dbdbf505b131c7e79a3857f3537185
 https://conda.anaconda.org/conda-forge/linux-64/sqlite-3.39.0-h4ff8645_0.tar.bz2#ead30581ba8cfd52d69632868b844d4a
 https://conda.anaconda.org/conda-forge/linux-64/xcb-util-0.4.0-h166bdaf_0.tar.bz2#384e7fcb3cd162ba3e4aed4b687df566
@@ -206,7 +206,7 @@ https://conda.anaconda.org/conda-forge/linux-64/cryptography-37.0.2-py38h2b5fc30
 https://conda.anaconda.org/conda-forge/noarch/dask-core-2022.6.1-pyhd8ed1ab_0.tar.bz2#69655c7e78034d4293130f5a5ecf7421
 https://conda.anaconda.org/conda-forge/linux-64/fonttools-4.33.3-py38h0a891b7_0.tar.bz2#fd11badf5b3f7d738cc983cb2c75946e
 https://conda.anaconda.org/conda-forge/linux-64/gst-plugins-base-1.20.3-hf6a322e_0.tar.bz2#6ea2ce6265c3207876ef2369b7479f08
-https://conda.anaconda.org/conda-forge/linux-64/harfbuzz-4.3.0-hf9f4e7c_0.tar.bz2#2a9c6660562d7e3fdeda0f0159e1046d
+https://conda.anaconda.org/conda-forge/linux-64/harfbuzz-4.4.0-hf9f4e7c_0.tar.bz2#dbb42a46de29a600e71952dfdabfba7e
 https://conda.anaconda.org/conda-forge/noarch/jinja2-3.1.2-pyhd8ed1ab_1.tar.bz2#c8490ed5c70966d232fdd389d0dbed37
 https://conda.anaconda.org/conda-forge/linux-64/mo_pack-0.2.0-py38h71d37f0_1007.tar.bz2#c8d3d8f137f8af7b1daca318131223b1
 https://conda.anaconda.org/conda-forge/linux-64/netcdf-fortran-4.5.4-mpi_mpich_h1364a43_0.tar.bz2#b6ba4f487ef9fd5d353ff277df06d133
