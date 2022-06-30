@@ -11,6 +11,7 @@ import numpy.ma as ma
 import pytest
 
 import iris._lazy_data
+from iris.tests import assert_masked_array_equal
 from iris.util import _mask_array
 
 # Set up some arrays to use through the tests.
@@ -27,16 +28,6 @@ masked_mask_1d = ma.array([0, 1, 1, 1], mask=[0, 0, 1, 0])
 expected1 = ma.array(array_1d, mask=mask_1d)
 expected2 = ma.array(array_1d, mask=[1, 1, 0, 1])
 array_choices = [(array_1d, expected1), (masked_arr_1d, expected2)]
-
-
-def assert_masked_array_equal(array1, array2):
-    """
-    Given two numpy masked arrays, check that their masks are the same and that
-    any unmasked values are equal.
-
-    """
-    np.testing.assert_array_equal(array1.mask, array2.mask)
-    np.testing.assert_array_equal(array1.compressed(), array2.compressed())
 
 
 @pytest.mark.parametrize(
