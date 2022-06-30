@@ -1345,7 +1345,24 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return Cell(point, bound)
 
     def __hash__(self):
-        return super().__hash__()
+        # Required for >py39 and >np1.22.x due to changes in Cell behaviour for
+        # point=np.nan, as calling super().__hash__() returns a different
+        # hash and thus does not trigger the following call to Cell.__eq__
+        # to determine equality.
+        # Note that, no explicit Cell bound nan check is performed here.
+        # That is delegated to Cell.__eq__ instead. It's imperative we keep
+        # Cell.__hash__ light-weight to minimise performance degradation.
+        # Reference:
+        #   - https://bugs.python.org/issue43475
+        #   - https://github.com/numpy/numpy/issues/18833
+        #   - https://github.com/numpy/numpy/pull/18908
+        #   - https://github.com/numpy/numpy/issues/21210
+
+        try:
+            point = "nan" if np.isnan(self.point) else self.point
+        except TypeError:
+            point = self.point
+        return hash((point,))
 
     def __eq__(self, other):
         """

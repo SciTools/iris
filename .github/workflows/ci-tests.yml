@@ -35,9 +35,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9"]
+        python-version: ["3.10"]
         session: ["tests", "doctest", "gallery", "linkcheck"]
         include:
+          - os: "ubuntu-latest"
+            python-version: "3.9"
+            session: "tests"
           - os: "ubuntu-latest"
             python-version: "3.8"
             session: "tests"
