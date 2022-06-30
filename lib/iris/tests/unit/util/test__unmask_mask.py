@@ -5,26 +5,23 @@
 # licensing details.
 """Test function :func:`iris.util._unmask_mask"""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris._lazy_data
 from iris.util import _unmask_mask
 
 
-class TestReal(tests.IrisTest):
+class TestReal:
     """Tests with numpy."""
 
-    def setUp(self):
+    def setup_method(self):
         self.al = np
 
     def check_result(self, result, expected):
-        self.assertFalse(ma.is_masked(result))
+        assert not ma.is_masked(result)
         np.testing.assert_array_equal(result, expected)
 
     def test_plain_array(self):
@@ -41,11 +38,11 @@ class TestReal(tests.IrisTest):
 class TestLazy(TestReal):
     """Tests with dask."""
 
-    def setUp(self):
+    def setup_method(self):
         self.al = da
 
     def check_result(self, result, expected):
-        self.assertTrue(iris._lazy_data.is_lazy_data(result))
+        assert iris._lazy_data.is_lazy_data(result)
         computed = result.compute()
         super().check_result(computed, expected)
 
@@ -61,4 +58,4 @@ class TestLazy(TestReal):
 
 
 if __name__ == "__main__":
-    tests.main()
+    pytest.main([__file__])
