@@ -1345,7 +1345,15 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return Cell(point, bound)
 
     def __hash__(self):
-        return super().__hash__()
+        # Required in py310 due to change in behaviour for point=np.nan,
+        # as calling super().__hash__() returns a different hash and thus
+        # does not trigger the following call to __eq__ to determine equality.
+        # This is to align with pre-py310 behaviour.
+        try:
+            point = "nan" if np.isnan(self.point) else self.point
+        except TypeError:
+            point = self.point
+        return hash((point,))
 
     def __eq__(self, other):
         """
