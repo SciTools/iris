@@ -8,6 +8,15 @@ Token GitHub App
    This section of the documentation is applicable only to GitHub `SciTools`_
    Organisation **owners** and **administrators**.
 
+.. note::
+
+   The ``iris-actions`` GitHub App has been rebranded with the more generic
+   name ``scitools-ci``, as the app can be used for any `SciTools`_ repository,
+   not just ``iris`` specifically.
+
+   All of the following instructions are still applicable.
+
+
 This section describes how to create, configure, install and use our `SciTools`_
 GitHub App for generating tokens for use with *GitHub Actions* (GHA).
 
