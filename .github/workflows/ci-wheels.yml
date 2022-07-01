@@ -6,7 +6,7 @@
 #   - https://github.com/pypa/gh-action-pypi-publish
 #   - https://test.pypi.org/help/#apitoken
 
-name: ci-build
+name: ci-wheels
 
 on:
   pull_request:
@@ -21,14 +21,14 @@ concurrency:
 
 jobs:
   build:
-    name: "Build sdist and wheel"
+    name: "build sdist & wheel"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: "Building"
+    - name: "building"
       shell: bash
       run: |
         pipx run build --sdist --wheel
@@ -40,7 +40,7 @@ jobs:
 
   show-artifacts:
     needs: [build]
-    name: "Show artifacts"
+    name: "show artifacts"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v3
@@ -54,7 +54,7 @@ jobs:
 
   publish-artifacts-test-pypi:
     needs: [build]
-    name: "Publish to Test PyPI"
+    name: "publish to test.pypi"
     runs-on: ubuntu-latest
     # upload to Test PyPI for every commit on main branch
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
@@ -74,7 +74,7 @@ jobs:
 
   publish-artifacts-pypi:
     needs: [build]
-    name: "Publish to PyPI"
+    name: "publish to pypi"
     runs-on: ubuntu-latest
     # upload to PyPI for every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')

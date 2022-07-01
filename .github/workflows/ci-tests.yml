@@ -3,7 +3,7 @@
 #   - https://github.com/actions/checkout
 #   - https://github.com/marketplace/actions/setup-miniconda
 
-name: ci-tests 
+name: ci-tests
 
 on:
   push:
