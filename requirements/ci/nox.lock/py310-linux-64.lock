@@ -169,6 +169,7 @@ https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-serializinghtml-1.1.
 https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhd8ed1ab_0.tar.bz2#f832c45a477c78bebd107098db465095
 https://conda.anaconda.org/conda-forge/noarch/tomli-2.0.1-pyhd8ed1ab_0.tar.bz2#5844808ffab9ebdb694585b50ba02a96
 https://conda.anaconda.org/conda-forge/noarch/toolz-0.11.2-pyhd8ed1ab_0.tar.bz2#f348d1590550371edfac5ed3c1d44f7e
+https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.2.0-pyha770c72_1.tar.bz2#f0f7e024f94e23d3bfee0ab777bf335a
 https://conda.anaconda.org/conda-forge/noarch/wheel-0.37.1-pyhd8ed1ab_0.tar.bz2#1ca02aaf78d9c70d9a81a3bed5752022
 https://conda.anaconda.org/conda-forge/noarch/zipp-3.8.0-pyhd8ed1ab_0.tar.bz2#050b94cf4a8c760656e51d2d44e4632c
 https://conda.anaconda.org/conda-forge/linux-64/antlr-python-runtime-4.7.2-py310hff52083_1003.tar.bz2#8324f8fff866055d4b32eb25e091fe31
@@ -199,6 +200,7 @@ https://conda.anaconda.org/conda-forge/linux-64/python-xxhash-3.0.0-py310h5764c6
 https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0-py310h5764c6d_4.tar.bz2#505dcf6be997e732d7a33831950dc3cf
 https://conda.anaconda.org/conda-forge/linux-64/setuptools-62.6.0-py310hff52083_0.tar.bz2#7fc5b1d6db9f6a9307330303a3edb04d
 https://conda.anaconda.org/conda-forge/linux-64/tornado-6.1-py310h5764c6d_3.tar.bz2#8a5770e6392d29d99c9bc9c3635bba60
+https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.2.0-hd8ed1ab_1.tar.bz2#6d9d7480c5780514779967be2ee8b963
 https://conda.anaconda.org/conda-forge/linux-64/unicodedata2-14.0.0-py310h5764c6d_1.tar.bz2#791689ce9e578e2e83b635974af61743
 https://conda.anaconda.org/conda-forge/linux-64/virtualenv-20.15.1-py310hff52083_0.tar.bz2#7f6c48710ee99edfa3dfa0b54fa6f020
 https://conda.anaconda.org/conda-forge/linux-64/brotlipy-0.7.0-py310h5764c6d_1004.tar.bz2#6499bb11b7feffb63b26847fc9181319
@@ -220,6 +222,7 @@ https://conda.anaconda.org/conda-forge/linux-64/pytest-7.1.2-py310hff52083_0.tar
 https://conda.anaconda.org/conda-forge/linux-64/python-stratify-0.2.post0-py310hde88566_2.tar.bz2#a282f30e2e1efa1f210817597e144762
 https://conda.anaconda.org/conda-forge/linux-64/pywavelets-1.3.0-py310hde88566_1.tar.bz2#cbfce984f85c64401e3d4fedf4bc4247
 https://conda.anaconda.org/conda-forge/linux-64/scipy-1.8.1-py310h7612f91_0.tar.bz2#14a7ea0620e4c0801bee756171f4dc03
+https://conda.anaconda.org/conda-forge/noarch/setuptools-scm-7.0.4-pyhd8ed1ab_0.tar.bz2#dff6862ca0b54bbeab8ddf657d032920
 https://conda.anaconda.org/conda-forge/linux-64/shapely-1.8.2-py310h7b2ee30_2.tar.bz2#a95baebc52f890fa8bf71f2d3f536ae1
 https://conda.anaconda.org/conda-forge/linux-64/sip-6.5.1-py310h122e73d_2.tar.bz2#f485cb3efb4c179928a96fb2e02e6f7e
 https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-napoleon-0.7-py_0.tar.bz2#0bc25ff6f2e34af63ded59692df5f749
@@ -235,6 +238,7 @@ https://conda.anaconda.org/conda-forge/noarch/pyopenssl-22.0.0-pyhd8ed1ab_0.tar.
 https://conda.anaconda.org/conda-forge/linux-64/pyqt5-sip-12.9.0-py310hd8f1fbe_1.tar.bz2#21ae1ac216cfc85e24dc7c09570ddf31
 https://conda.anaconda.org/conda-forge/noarch/pytest-forked-1.4.0-pyhd8ed1ab_0.tar.bz2#95286e05a617de9ebfe3246cecbfb72f
 https://conda.anaconda.org/conda-forge/linux-64/qt-main-5.15.4-ha5833f6_2.tar.bz2#dd3aa6715b9e9efaf842febf18ce4261
+https://conda.anaconda.org/conda-forge/noarch/setuptools_scm-7.0.4-hd8ed1ab_0.tar.bz2#b068a47ce183af12a53c6b0d84f96085
 https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.20.3-py310hb408dcc_0.tar.bz2#32c47109680148344fd76448d808ac75
 https://conda.anaconda.org/conda-forge/linux-64/esmpy-8.2.0-mpi_mpich_py310hd9c82d4_101.tar.bz2#0333d51ee594be40f50b157ac6f27b5a
 https://conda.anaconda.org/conda-forge/linux-64/gtk2-2.24.33-h90689f9_2.tar.bz2#957a0255ab58aaf394a91725d73ab422
@@ -243,6 +247,7 @@ https://conda.anaconda.org/conda-forge/noarch/nc-time-axis-1.4.1-pyhd8ed1ab_0.ta
 https://conda.anaconda.org/conda-forge/linux-64/pre-commit-2.19.0-py310hff52083_0.tar.bz2#bcf63938923fd8c16c684a4e7157b062
 https://conda.anaconda.org/conda-forge/linux-64/pyqt-5.15.4-py310h29803b5_1.tar.bz2#d34f0b4c9ad5705d0ffe501d5d8aa26f
 https://conda.anaconda.org/conda-forge/noarch/pytest-xdist-2.5.0-pyhd8ed1ab_0.tar.bz2#1fdd1f3baccf0deb647385c677a1a48e
+https://conda.anaconda.org/conda-forge/noarch/setuptools_scm_git_archive-1.1-py_0.tar.bz2#014b38e90bea056258c2495dabbf6d56
 https://conda.anaconda.org/conda-forge/noarch/urllib3-1.26.9-pyhd8ed1ab_0.tar.bz2#0ea179ee251aa7100807c35bc0252693
 https://conda.anaconda.org/conda-forge/linux-64/graphviz-4.0.0-h5abf519_0.tar.bz2#970a4e3632a3c2f27f1860600f2f5fb5
 https://conda.anaconda.org/conda-forge/linux-64/matplotlib-3.5.2-py310hff52083_0.tar.bz2#0b90a9f77544f943264d47677d63ac9e
