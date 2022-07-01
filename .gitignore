@@ -58,6 +58,9 @@ lib/iris/tests/results/imagerepo.lock
 /.idea
 *.cover
 
+# vscode files
+.vscode
+
 # Auto generated documentation files
 docs/src/_build/*
 docs/src/generated
