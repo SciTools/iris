@@ -33,7 +33,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
     """
     Add a Coord to a Cube from a Pandas index or columns array.
 
-    If no calendar is specified for a time series, Gregorian is assumed.
+    If no calendar is specified for a time series, Standard is assumed.
 
     """
     units = Unit("unknown")
