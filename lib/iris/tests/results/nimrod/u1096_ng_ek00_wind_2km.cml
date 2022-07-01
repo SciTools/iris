@@ -18,7 +18,7 @@
         <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord id="a2cbc1ea" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
@@ -41,7 +41,7 @@
         <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -64,7 +64,7 @@
         <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord id="a2cbc1ea" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
@@ -87,7 +87,7 @@
         <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -110,7 +110,7 @@
         <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord id="a2cbc1ea" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
@@ -133,7 +133,7 @@
         <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -156,7 +156,7 @@
         <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord id="a2cbc1ea" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
@@ -179,7 +179,7 @@
         <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -202,7 +202,7 @@
         <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord id="a2cbc1ea" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
@@ -225,7 +225,7 @@
         <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -249,7 +249,7 @@
         <dimCoord bounds="[[3600, 7200]]" id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord id="a2cbc1ea" points="[10.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
@@ -272,7 +272,7 @@
         <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580184000, 1580187600]]" id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord bounds="[[1580184000, 1580187600]]" id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -172,7 +172,7 @@ objects for ease of calendar-based testing.
     >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
     >>> print('All times :\n' + str(cube_all.coord('time')))
     All times :
-    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
         points: [2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00]
         shape: (3,)
         dtype: float64
@@ -182,7 +182,7 @@ objects for ease of calendar-based testing.
     >>> cube_11 = cube_all.extract(hour_11)
     >>> print('Selected times :\n' + str(cube_11.coord('time')))
     Selected times :
-    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
         points: [2009-11-19 11:00:00]
         shape: (1,)
         dtype: float64
@@ -210,7 +210,7 @@ The previous constraint example can now be written as:
     >>> print(iris.load_cube(
     ...     iris.sample_data_path('uk_hires.pp'),
     ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
-    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+    DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
         points: [2009-11-19 11:00:00]
         shape: (1,)
         dtype: float64
@@ -234,7 +234,7 @@ day of every week for many years:
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
 
     >>> print(long_ts.coord('time'))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+    DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-04-09 00:00:00, 2007-04-16 00:00:00, ...,
             2010-02-08 00:00:00, 2010-02-15 00:00:00]
@@ -255,7 +255,7 @@ we constrain that coord using :class:`iris.cube.Cube.extract`
     ...     time=lambda cell: d1 <= cell.point < d2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
     >>> print(within_st_swithuns_07.coord('time'))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+    DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
             2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
@@ -275,7 +275,7 @@ objects.
     ...     time=lambda cell: pdt1 <= cell.point < pdt2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
     >>> print(within_st_swithuns_07.coord('time'))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+    DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
             2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
@@ -296,7 +296,7 @@ PartialDateTime this becomes simple:
     ...
     >>> # Note: using summary(max_values) to show more of the points
     >>> print(within_st_swithuns.coord('time').summary(max_values=100))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
+    DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
             2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,

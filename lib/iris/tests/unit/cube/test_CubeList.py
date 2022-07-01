@@ -48,7 +48,7 @@ class Test_append(tests.IrisTest):
 class Test_concatenate_cube(tests.IrisTest):
     def setUp(self):
         self.units = Unit(
-            "days since 1970-01-01 00:00:00", calendar="gregorian"
+            "days since 1970-01-01 00:00:00", calendar="standard"
         )
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
         self.cube1.add_dim_coord(
@@ -64,7 +64,7 @@ class Test_concatenate_cube(tests.IrisTest):
         self.assertIsInstance(result, Cube)
 
     def test_fail(self):
-        units = Unit("days since 1970-01-02 00:00:00", calendar="gregorian")
+        units = Unit("days since 1970-01-02 00:00:00", calendar="standard")
         cube2 = Cube([1, 2, 3], "air_temperature", units="K")
         cube2.add_dim_coord(DimCoord([0, 1, 2], "time", units=units), 0)
         with self.assertRaises(iris.exceptions.ConcatenateError):

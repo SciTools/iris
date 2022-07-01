@@ -143,7 +143,7 @@ class Test_calendar(tests.IrisTest):
     def test_greg(self):
         field = DummyPPField()
         field.lbtim = SplittableInt(1, {"ia": 2, "ib": 1, "ic": 0})
-        self.assertEqual(field.calendar, "gregorian")
+        self.assertEqual(field.calendar, "standard")
 
     def test_360(self):
         field = DummyPPField()

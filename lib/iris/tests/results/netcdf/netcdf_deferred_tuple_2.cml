@@ -14,7 +14,7 @@
         <dimCoord circular="True" id="c15a8e5b" long_name="longitude" points="[0.0, 1.125, 2.25, ..., 356.625, 357.75, 358.875]" shape="(320,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="90e644bf" long_name="time" points="[929214, 929238]" shape="(2,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='gregorian')" value_type="int32" var_name="time"/>
+        <auxCoord id="90e644bf" long_name="time" points="[929214, 929238]" shape="(2,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='standard')" value_type="int32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -548,7 +548,7 @@ def _epoch_date_hours_internals(epoch_hours_unit, datetime):
         if m == 0:
             # Add a 'January', by changing month=0 to 1.
             m = 1
-            if calendar == cf_units.CALENDAR_GREGORIAN:
+            if calendar == cf_units.CALENDAR_STANDARD:
                 days_offset += 31
             elif calendar == cf_units.CALENDAR_360_DAY:
                 days_offset += 30
@@ -561,7 +561,7 @@ def _epoch_date_hours_internals(epoch_hours_unit, datetime):
         if y == 0:
             # Add a 'Year 0', by changing year=0 to 1.
             y = 1
-            if calendar == cf_units.CALENDAR_GREGORIAN:
+            if calendar == cf_units.CALENDAR_STANDARD:
                 days_in_year_0 = 366
             elif calendar == cf_units.CALENDAR_360_DAY:
                 days_in_year_0 = 360

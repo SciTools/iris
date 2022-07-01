@@ -21,7 +21,7 @@ variables:
 		time:axis = "T" ;
 		time:units = "hours since 1970-01-01 00:00:00" ;
 		time:standard_name = "time" ;
-		time:calendar = "gregorian" ;
+		time:calendar = "standard" ;
 	int model_level_number(model_level_number) ;
 		model_level_number:axis = "Z" ;
 		model_level_number:units = "1" ;

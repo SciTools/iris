@@ -30,7 +30,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[724731, 724745]]" id="8df9aa1c" points="[724731]" shape="(1,)" standard_name="time" units="Unit('days since 0001-01-01', calendar='gregorian')" value_type="int64"/>
+        <dimCoord bounds="[[724731, 724745]]" id="8df9aa1c" points="[724731]" shape="(1,)" standard_name="time" units="Unit('days since 0001-01-01', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -33,7 +33,7 @@ class Test_concatenate__epoch(tests.IrisTest):
                 standard_name="air_temperature",
                 units="K",
             )
-            unit = cf_units.Unit(reftime, calendar="gregorian")
+            unit = cf_units.Unit(reftime, calendar="standard")
             coord = iris.coords.DimCoord(
                 points=np.array(coord_points, dtype=np.float32),
                 standard_name="time",
@@ -68,7 +68,7 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         )
         height = iris.coords.AuxCoord([1.5], standard_name="height", units="m")
         t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="gregorian"
+            "hours since 1970-01-01 00:00:00", calendar="standard"
         )
         time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
 
@@ -113,7 +113,7 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
             [1.5], standard_name="height", units="m"
         )
         t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="gregorian"
+            "hours since 1970-01-01 00:00:00", calendar="standard"
         )
         time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
 
@@ -156,7 +156,7 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
             [1.5], standard_name="height", units="m"
         )
         t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="gregorian"
+            "hours since 1970-01-01 00:00:00", calendar="standard"
         )
         time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
 
@@ -196,7 +196,7 @@ class Test_anonymous_dims(tests.IrisTest):
 
         # Time coord
         t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="gregorian"
+            "hours since 1970-01-01 00:00:00", calendar="standard"
         )
         t_coord = iris.coords.DimCoord(
             [0, 6], standard_name="time", units=t_unit

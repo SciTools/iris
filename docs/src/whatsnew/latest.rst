@@ -132,7 +132,13 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@rcomer`_ and `@bjlittle`_ (reviewer) updated Iris's calendar handling to be
+   consistent with ``cf-units`` version 3.1.  In line with the `Calendar`_
+   section in version 1.9 of the CF Conventions, we now use "standard" rather
+   than the deprecated "gregorian" label for the default calendar.  Units may
+   still be instantiated with ``calendar="gregorian"`` but their calendar
+   attribute will be silently changed to "standard".  This may cause failures in
+   code that explicitly checks the calendar attribute. (:pull:`4847`)
 
 
 🚀 Performance Enhancements
@@ -172,6 +178,10 @@ This document explains the changes made to Iris for this release
    when plotting against time coordinates. (:pull:`4584`)
 
 #. `@wjbenfold`_ and `@bjlittle`_ (reviewer) unpinned ``pillow``. (:pull:`4826`)
+
+#. `@rcomer`_ introduced the ``cf-units >=3.1`` minimum pin, reflecting the
+   alignment of calendar behaviour in the two packages (see Incompatible Changes).
+   (:pull:`4847`)
 
 
 📚 Documentation
@@ -248,5 +258,6 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 
+.. _Calendar: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#calendar
 .. _Cell Boundaries: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#cell-boundaries
 .. _PyData Sphinx Theme: https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html

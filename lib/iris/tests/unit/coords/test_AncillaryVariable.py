@@ -458,7 +458,7 @@ class Test__str__(tests.IrisTest):
             [
                 (
                     "AncillaryVariable :  time of previous valid detection / "
-                    "(hours since 1970-01-01 01:00, gregorian calendar)"
+                    "(hours since 1970-01-01 01:00, standard calendar)"
                 ),
                 (
                     "    data: [1970-01-01 03:00:00, 1970-01-01 06:00:00, "

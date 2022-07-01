@@ -11,7 +11,7 @@
         <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="77a50eb5" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
@@ -130,7 +130,7 @@
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -151,7 +151,7 @@
         <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="77a50eb5" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
@@ -270,7 +270,7 @@
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -291,7 +291,7 @@
         <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="77a50eb5" points="[-90.0, -88.75, -87.5, ..., 87.5, 88.75, 90.0]" shape="(145,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
@@ -411,7 +411,7 @@
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -432,7 +432,7 @@
         <dimCoord bounds="[[25536.0, 26280.0]]" id="1d45e087" points="[25908.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[306816.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="77a50eb5" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
@@ -552,7 +552,7 @@
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0]" shape="(38,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
+        <dimCoord bounds="[[332352.0, 333096.0]]" id="cb784457" points="[332724.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

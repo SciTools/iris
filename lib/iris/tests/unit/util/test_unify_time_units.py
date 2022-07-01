@@ -20,7 +20,7 @@ from iris.util import unify_time_units
 
 
 class Test(tests.IrisTest):
-    def simple_1d_time_cubes(self, calendar="gregorian"):
+    def simple_1d_time_cubes(self, calendar="standard"):
         coord_points = [1, 2, 3, 4, 5]
         data_points = [273, 275, 278, 277, 274]
         reftimes = [
@@ -92,7 +92,7 @@ class Test(tests.IrisTest):
     def test_multiple_time_coords_in_cube(self):
         cube0, cube1 = self.simple_1d_time_cubes()
         units = cf_units.Unit(
-            "days since 1980-05-02 00:00:00", calendar="gregorian"
+            "days since 1980-05-02 00:00:00", calendar="standard"
         )
         aux_coord = iris.coords.AuxCoord(
             72, standard_name="forecast_reference_time", units=units

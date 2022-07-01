@@ -683,7 +683,7 @@ class TestAsCubes(tests.IrisTest):
 class TestSaveLBPROC(tests.IrisTest):
     def create_cube(self, longitude_coord="longitude"):
         cube = Cube(np.zeros((2, 3, 4)))
-        tunit = Unit("days since epoch", calendar="gregorian")
+        tunit = Unit("days since epoch", calendar="standard")
         tcoord = DimCoord(np.arange(2), standard_name="time", units=tunit)
         xcoord = DimCoord(
             np.arange(3), standard_name=longitude_coord, units="degrees"

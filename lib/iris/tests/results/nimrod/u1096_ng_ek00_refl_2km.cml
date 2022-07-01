@@ -26,7 +26,7 @@
         <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">
         <dimCoord id="784eb7ff" points="[102000.0, 104000.0, 106000.0]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
@@ -42,7 +42,7 @@
         <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>

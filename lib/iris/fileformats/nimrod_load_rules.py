@@ -24,7 +24,7 @@ __all__ = ["run"]
 NIMROD_DEFAULT = -32767.0
 
 TIME_UNIT = cf_units.Unit(
-    "seconds since 1970-01-01 00:00:00", calendar=cf_units.CALENDAR_GREGORIAN
+    "seconds since 1970-01-01 00:00:00", calendar=cf_units.CALENDAR_STANDARD
 )
 
 

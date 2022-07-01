@@ -57,7 +57,7 @@ The cube returned from the load function is then used to produce a plot.
 
 import datetime
 
-from cf_units import CALENDAR_GREGORIAN, Unit
+from cf_units import CALENDAR_STANDARD, Unit
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -225,7 +225,7 @@ def NAME_to_cube(filenames, callback):
 
             # define the time unit and use it to serialise the datetime for the
             # time coordinate
-            time_unit = Unit("hours since epoch", calendar=CALENDAR_GREGORIAN)
+            time_unit = Unit("hours since epoch", calendar=CALENDAR_STANDARD)
             time_coord = icoords.AuxCoord(
                 time_unit.date2num(field_headings["time"]),
                 standard_name="time",
