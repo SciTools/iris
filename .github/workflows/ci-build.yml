@@ -1,0 +1,91 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/actions/download-artifact
+#   - https://github.com/actions/upload-artifact
+#   - https://github.com/pypa/build
+#   - https://github.com/pypa/gh-action-pypi-publish
+#   - https://test.pypi.org/help/#apitoken
+
+name: ci-build
+
+on:
+  pull_request:
+
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: "Build sdist and wheel"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: "Building"
+      shell: bash
+      run: |
+        pipx run build --sdist --wheel
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist/*
+
+  show-artifacts:
+    needs: [build]
+    name: "Show artifacts"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist
+
+    - shell: bash
+      run: |
+        ls -l ${{ github.workspace }}/dist
+
+  publish-artifacts-test-pypi:
+    needs: [build]
+    name: "Publish to Test PyPI"
+    runs-on: ubuntu-latest
+    # upload to Test PyPI for every commit on main branch
+    if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist
+
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+        skip_existing: true
+        print_hash: true
+
+  publish-artifacts-pypi:
+    needs: [build]
+    name: "Publish to PyPI"
+    runs-on: ubuntu-latest
+    # upload to PyPI for every tag starting with 'v'
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist
+
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        print_hash: true
