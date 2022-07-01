@@ -85,21 +85,10 @@ copyright = f"{copyright_years}, Iris Contributors"
 author = "Iris Developers"
 
 # The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
+# |version|, also used in various other places throughout the built documents.
 
-# The short X.Y version.
-if iris.__version__ == "dev":
-    version = "dev"
-else:
-    # major.minor.patch-dev -> major.minor.patch
-    version = ".".join(iris.__version__.split("-")[0].split(".")[:3])
-
-# The full version, including alpha/beta/rc tags.
-release = iris.__version__
-
+version = iris.__version__
 autolog("Iris Version = {}".format(version))
-autolog("Iris Release = {}".format(release))
 
 # -- General configuration ---------------------------------------------------
 
