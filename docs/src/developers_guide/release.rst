@@ -123,6 +123,14 @@ conda package on the `conda-forge Anaconda channel`_.
 Update PyPI
 -----------
 
+.. note::
+
+  As part of our Continuous-Integration (CI), the building and publishing of
+  PyPI artifacts is now automated by a dedicated GitHub Action.
+  
+  The following instructions **no longer** require to be performed manually,
+  but remain part of the documentation for reference purposed only.
+
 Update the `scitools-iris`_ project on PyPI with the latest Iris release.
 
 To do this perform the following steps.
