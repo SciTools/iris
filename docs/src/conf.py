@@ -20,14 +20,13 @@
 # ----------------------------------------------------------------------------
 
 import datetime
+from importlib.metadata import version as get_version
 import ntpath
 import os
 from pathlib import Path
 import re
 import sys
 import warnings
-
-import iris
 
 
 # function to write  useful output to stdout, prefixing the source.
@@ -87,8 +86,8 @@ author = "Iris Developers"
 # The version info for the project you're documenting, acts as replacement for
 # |version|, also used in various other places throughout the built documents.
 
-version = iris.__version__
-autolog("Iris Version = {}".format(version))
+version = get_version("scitools-iris")
+autolog(f"Iris Version = {version}")
 
 # -- General configuration ---------------------------------------------------
 
