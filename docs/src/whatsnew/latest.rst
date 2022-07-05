@@ -233,8 +233,8 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ made :func:`iris.tests.stock.simple_1d` respect the
    ``with_bounds`` argument. (:pull:`4658`)
 
-#. `@bjlittle`_ migrated to GitHub Actions for Continuous-Integration.
-   (:pull:`4503`)
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) migrated to GitHub Actions
+   for Continuous-Integration. (:pull:`4503`)
 
 #. `@pp-mo`_ made tests run certain linux executables from the Python env,
    specifically ncdump and ncgen.  These could otherwise fail when run in IDEs
@@ -247,8 +247,9 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ removed some now redundant testing methods. (:pull:`4838`)
 
-#. `@bjlittle`_ extended the GitHub Continuous-Integration to cover testing
-   on ``py38``, ``py39``, and ``py310``. (:pull:`4840` and :pull:`4852`)
+#. `@bjlittle`_ and `@jamesp`_ (reviewer) and `@lbdreyer`_ (reviewer) extended
+   the GitHub Continuous-Integration to cover testing on ``py38``, ``py39``,
+   and ``py310``. (:pull:`4840` and :pull:`4852`)
 
 
 .. comment
