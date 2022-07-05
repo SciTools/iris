@@ -21,3 +21,4 @@ include etc/cf-standard-name-table.xml
 global-exclude *.pyc
 global-exclude __pycache__
 global-exclude iris_image_test_output
+exclude lib/iris/_version.py
