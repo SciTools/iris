@@ -247,6 +247,9 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ removed some now redundant testing methods. (:pull:`4838`)
 
+#. `@bjlittle`_ extended the GitHub Continuous-Integration to cover testing
+   on ``py38``, ``py39``, and ``py310``. (:pull:`4840` and :pull:`4852`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
