@@ -251,6 +251,9 @@ This document explains the changes made to Iris for this release
    the GitHub Continuous-Integration to cover testing on ``py38``, ``py39``,
    and ``py310``. (:pull:`4840` and :pull:`4852`)
 
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) adopted `setuptools-scm`_ for
+   automated ``iris`` package versioning. (:pull:`4841`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -265,3 +268,4 @@ This document explains the changes made to Iris for this release
 .. _Calendar: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#calendar
 .. _Cell Boundaries: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#cell-boundaries
 .. _PyData Sphinx Theme: https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html
+.. _setuptools-scm: https://github.com/pypa/setuptools_scm

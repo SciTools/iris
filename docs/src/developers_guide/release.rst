@@ -100,12 +100,14 @@ Steps to achieve this can be found in the :ref:`iris_development_releases_steps`
 The Release
 -----------
 
-The final steps of the release are to change the version string ``__version__``
-in the source of :literal:`iris.__init__.py` and ensure the release date and details
+The final steps of the release are to ensure that the release date and details
 are correct in the relevant ``whatsnew`` page within the documentation.
 
-Once all checks are complete, the release is cut by the creation of a new tag
-in the ``SciTools/iris`` repository.
+There is no need to update the ``iris.__version__``, as this is managed
+automatically by `setuptools-scm`_.
+
+Once all checks are complete, the release is published on GitHub by
+creating a new tag in the ``SciTools/iris`` repository.
 
 
 Update conda-forge
@@ -179,14 +181,14 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
 Merge Back
 ----------
 
-After the release is cut, the changes from the release branch should be merged
+After the release is published, the changes from the release branch should be merged
 back onto the ``SciTools/iris`` ``main`` branch.
 
 To achieve this, first cut a local branch from the latest ``main`` branch,
 and `git merge` the :literal:`.x` release branch into it. Ensure that the
-``iris.__version__``, ``docs/src/whatsnew/index.rst``,
-and ``docs/src/whatsnew/latest.rst`` are correct, before committing these changes
-and then proposing a pull-request on the ``main`` branch of ``SciTools/iris``.
+``docs/src/whatsnew/index.rst`` and ``docs/src/whatsnew/latest.rst`` are
+correct, before committing these changes and then proposing a pull-request
+on the ``main`` branch of ``SciTools/iris``.
 
 
 Point Releases
@@ -275,3 +277,4 @@ Post Release Steps
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project
 .. _latest CF standard names: http://cfconventions.org/standard-names.html
+.. _setuptools-scm: https://github.com/pypa/setuptools_scm

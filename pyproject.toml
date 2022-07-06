@@ -1,12 +1,16 @@
 [build-system]
 # Defined by PEP 518
 requires = [
-  "setuptools>=40.8.0",
+  "setuptools>=45",
+  "setuptools_scm[toml]>=7.0",
   "wheel",
 ]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools_scm]
+write_to = "lib/iris/_version.py"
+local_scheme = "dirty-tag"
 
 [tool.black]
 line-length = 79
