@@ -51,22 +51,24 @@ def _get_all_underived_vars(cube, give_types=False):
         return vars, types
 
 
-def _make_coord_table(cubes):
+def _make_coord_table(cubes, proto_ind):
 
     # Build our prototypes from the first cube
 
-    cube_0_vars, var_types = _get_all_underived_vars(cubes[0], give_types=True)
+    proto_vars, var_types = _get_all_underived_vars(
+        cubes[proto_ind], give_types=True
+    )
 
-    coord_table = [cube_0_vars]
+    coord_table = []
 
-    coord_count = len(coord_table[0])
+    coord_count = len(proto_vars)
 
     # Stick everything else in
-    for cube_ind, cube in enumerate(cubes[1:]):
+    for cube_ind, cube in enumerate(cubes):
         coord_table.append([None] * coord_count)
 
         for cube_coord in _get_all_underived_vars(cube):
-            for ii, prototype_coord in enumerate(coord_table[0]):
+            for ii, prototype_coord in enumerate(proto_vars):
                 if type(cube_coord) == type(
                     prototype_coord
                 ) and cube_coord.metadata.equal(prototype_coord.metadata):
@@ -76,7 +78,7 @@ def _make_coord_table(cubes):
                 # Error if we haven't used any of our coords in this cube
                 raise iris.exceptions.MergeError(
                     (
-                        f"{cube_coord.name()} in cube {cube_ind+1} doesn't match any coord in cube 0",
+                        f"{cube_coord.name()} in cube {cube_ind} doesn't match any coord in cube {proto_ind}",
                     )
                 )
 
@@ -85,7 +87,7 @@ def _make_coord_table(cubes):
         ]
         if missing_coord_inds:
             error_messages = [
-                f"{coord_table[0][ind].name()} in cube 0 doesn't match any coord in cube {cube_ind+1}"
+                f"{proto_vars[ind].name()} in cube {proto_ind} doesn't match any coord in cube {cube_ind}"
                 for ind in missing_coord_inds
             ]
             raise iris.exceptions.MergeError(error_messages)
@@ -93,10 +95,10 @@ def _make_coord_table(cubes):
     return np.array(coord_table), var_types
 
 
-def _merge_metadata(objs, err_name="objects"):
+def _merge_metadata(objs, proto_ind, err_name="objects"):
     # TODO: Check with Bill that I'm doing this right
 
-    new_metadata = objs[0].metadata
+    new_metadata = objs[proto_ind].metadata
     for obj in objs:
         if not new_metadata.equal(obj.metadata):
             raise iris.exceptions.MergeError(
@@ -109,8 +111,10 @@ def _merge_metadata(objs, err_name="objects"):
     return new_metadata
 
 
-def _build_new_coord_pieces(coords, new_dims, cube_depths, extend_coords):
-    prototype_coord = coords[0]
+def _build_new_coord_pieces(
+    coords, new_dims, cube_depths, extend_coords, proto_ind
+):
+    prototype_coord = coords[proto_ind]
 
     if np.all(coords[1:] == coords[:-1]):
         # All coordinates are identical
@@ -120,7 +124,7 @@ def _build_new_coord_pieces(coords, new_dims, cube_depths, extend_coords):
     elif 0 in new_dims:
         # Coordinate already spans merge dimension
         new_points = []
-        has_bounds = coords[0].has_bounds()
+        has_bounds = prototype_coord.has_bounds()
         if has_bounds:
             new_bounds = []
         else:
@@ -142,7 +146,7 @@ def _build_new_coord_pieces(coords, new_dims, cube_depths, extend_coords):
         raise iris.exceptions.MergeError(
             (
                 "Different points or bounds in "
-                f"{coords[0].name()} coords, "
+                f"{prototype_coord.name()} coords, "
                 "but not allowed to extend coords. Consider trying "
                 "again with extend_coords=True",
             )
@@ -152,7 +156,7 @@ def _build_new_coord_pieces(coords, new_dims, cube_depths, extend_coords):
         # We need to broadcast the coordinates to span the merge dimension
         new_dims = (0,) + new_dims
         new_points = []
-        has_bounds = coords[0].has_bounds()
+        has_bounds = prototype_coord.has_bounds()
         if has_bounds:
             new_bounds = []
         else:
@@ -189,8 +193,10 @@ def _build_new_coord_pieces(coords, new_dims, cube_depths, extend_coords):
     return new_points, new_bounds, new_dims
 
 
-def _build_new_var_pieces(coords, new_dims, cube_depths, extend_coords):
-    prototype_coord = coords[0]
+def _build_new_var_pieces(
+    coords, new_dims, cube_depths, extend_coords, proto_ind
+):
+    prototype_coord = coords[proto_ind]
 
     if np.all(coords[1:] == coords[:-1]):
         # All coordinates are identical
@@ -211,7 +217,7 @@ def _build_new_var_pieces(coords, new_dims, cube_depths, extend_coords):
         raise iris.exceptions.MergeError(
             (
                 "Different points or bounds in "
-                f"{coords[0].name()} coords, "
+                f"{prototype_coord.name()} coords, "
                 "but not allowed to extend coords. Consider trying "
                 "again with extend_coords=True",
             )
@@ -275,9 +281,22 @@ def _mergenate(cubes, extend_coords: bool, merge_coord=None):
         msg = "Failed to concatenate cube datas"
         raise iris.exceptions.MergeError((msg,))
 
-    coord_table, coord_types = _make_coord_table(cubes)
-    cube_metadata = _merge_metadata(cubes, err_name="cubes")
     cube_depths = [cube.shape[0] for cube in cubes]
+    # Based on cube depths, we can establish a good choice of example cube index
+    # (one which already has the merge dimension). If no cube has that
+    # dimension, we'll use 0 as that index, and we'll turn on extend_coords as
+    # it always makes sense if all cubes are flat in the merge dimension
+    proto_ind = None
+    for ii, cube_depth in enumerate(cube_depths):
+        if cube_depth != 1:
+            proto_ind = ii
+            break
+    if proto_ind is None:
+        proto_ind = 0
+        extend_coords = True
+
+    coord_table, coord_types = _make_coord_table(cubes, proto_ind)
+    cube_metadata = _merge_metadata(cubes, proto_ind, err_name="cubes")
 
     # Make the new coords
     new_coords_and_dims = []
@@ -297,45 +316,47 @@ def _mergenate(cubes, extend_coords: bool, merge_coord=None):
                 raise iris.exceptions.MergeError(
                     ("Inconsistent AuxCoordFactories across cubes",)
                 )
-            current_aux_factories.append(coord_col[0])
+            current_aux_factories.append(coord_col[proto_ind])
             continue
 
-        new_dims = dim_func[coord_type](cubes[0], coord_col[0])
+        new_dims = dim_func[coord_type](cubes[proto_ind], coord_col[proto_ind])
         if coord_type == COORD_TYPE:
             new_points, new_bounds, new_dims = _build_new_coord_pieces(
-                coord_col, new_dims, cube_depths, extend_coords
+                coord_col, new_dims, cube_depths, extend_coords, proto_ind
             )
         else:
             new_points, new_dims = _build_new_var_pieces(
-                coord_col, new_dims, cube_depths, extend_coords
+                coord_col, new_dims, cube_depths, extend_coords, proto_ind
             )
             new_bounds = None
 
         new_coord = None
-        if isinstance(coord_col[0], iris.coords.DimCoord):
+        if isinstance(coord_col[proto_ind], iris.coords.DimCoord):
             try:
                 new_coord = iris.coords.DimCoord(new_points, bounds=new_bounds)
             except ValueError:
                 new_coord = iris.coords.AuxCoord(new_points, bounds=new_bounds)
         if new_coord is None:
             if coord_type == COORD_TYPE:
-                new_coord = coord_col[0].copy(
+                new_coord = coord_col[proto_ind].copy(
                     points=new_points, bounds=new_bounds
                 )
             else:
-                new_coord = coord_col[0].copy(values=new_points)
+                new_coord = coord_col[proto_ind].copy(values=new_points)
 
-        new_coord.metadata = _merge_metadata(coord_col, err_name="coords")
+        new_coord.metadata = _merge_metadata(
+            coord_col, proto_ind, err_name="coords"
+        )
 
         new_coords_and_dims.append((new_coord, new_dims))
 
     # Type isn't a sufficient indicator of which coords were originally the
     # cube's dim coords, so check explicitly
-    original_dim_coords = cubes[0].coords(dim_coords=True)
+    original_dim_coords = cubes[proto_ind].coords(dim_coords=True)
     if merge_coord is not None:
-        original_dim_coords.append(cubes[0].coord(merge_coord))
+        original_dim_coords.append(cubes[proto_ind].coord(merge_coord))
     dim_coord_indices = []
-    for ii, coord in enumerate(coord_table[0]):
+    for ii, coord in enumerate(coord_table[proto_ind]):
         if coord in original_dim_coords:
             dim_coord_indices.append(ii)
 
@@ -387,11 +408,13 @@ def _mergenate(cubes, extend_coords: bool, merge_coord=None):
     )
 
     # Deal with aux factories now everything else is set up
-    nonderived_coords = cubes[0].dim_coords + cubes[0].aux_coords
+    nonderived_coords = (
+        cubes[proto_ind].dim_coords + cubes[proto_ind].aux_coords
+    )
     coord_mapping = {
         id(old_co): merged_cube.coord(old_co) for old_co in nonderived_coords
     }
-    for factory in cubes[0].aux_factories:
+    for factory in cubes[proto_ind].aux_factories:
         new_factory = factory.updated(coord_mapping)
         merged_cube.add_aux_factory(new_factory)
 
@@ -581,7 +604,7 @@ def mergenate(cubelist, coords=None, extend_coords=False):
     >>> cube_0 = expected[0]
     >>> cube_1 = expected[1:]
     >>> cubelist = CubeList([cube_0, cube_1])
-    >>> result = mergenate(cubelist, "time", extend_coords=True)
+    >>> result = mergenate(cubelist, "time")
 
     >>> result == expected
     True
