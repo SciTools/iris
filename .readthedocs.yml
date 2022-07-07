@@ -4,6 +4,10 @@ build:
   os: ubuntu-20.04
   tools:
     python: mambaforge-4.10
+  jobs:
+    post_checkout:
+      - git fetch --unshallow
+      - git fetch --all
 
 conda:
   environment: requirements/ci/readthedocs.yml

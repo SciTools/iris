@@ -87,6 +87,8 @@ author = "Iris Developers"
 # |version|, also used in various other places throughout the built documents.
 
 version = get_version("scitools-iris")
+if version.endswith("+dirty"):
+    version = version[: -len("+dirty")]
 autolog(f"Iris Version = {version}")
 
 # -- General configuration ---------------------------------------------------
