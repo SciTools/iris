@@ -584,10 +584,10 @@ class TestErrors(tests.IrisTest):
     def test_cant_extend_aux_coord(self):
         test_cube = stock.simple_3d()
 
-        cube_0 = test_cube[0]
-        cube_1 = test_cube[1:]
+        cube_0 = test_cube[:, 0]
+        cube_1 = test_cube[:, 1:]
 
-        coord_data = np.arange(test_cube.shape[1])
+        coord_data = np.arange(test_cube.shape[0])
         coord_0 = AuxCoord(
             coord_data,
             long_name="foo",
@@ -598,14 +598,14 @@ class TestErrors(tests.IrisTest):
         )
 
         cube_0.add_aux_coord(coord_0, (0,))
-        cube_1.add_aux_coord(coord_1, (1,))
+        cube_1.add_aux_coord(coord_1, (0,))
 
         msg = (
             "Different points or bounds in foo coords, but not allowed to "
             "extend coords. Consider trying again with extend_coords=True"
         )
         with self.assertRaisesRegex(MergeError, msg):
-            mergenate(CubeList([cube_0, cube_1]), coords="wibble")
+            mergenate(CubeList([cube_0, cube_1]), coords="latitude")
 
     def test_ascending_descending(self):
         test_cube = stock.simple_3d()
