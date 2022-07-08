@@ -11,7 +11,7 @@ dependencies:
 
 # Core dependencies.
   - cartopy >=0.20
-  - cf-units ==3.0.1.post0
+  - cf-units ==3.0.1
   - cftime ==1.5.1.1
   - dask-core >=2
   - matplotlib
