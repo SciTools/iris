@@ -126,7 +126,7 @@ v3.2.1 (11 Mar 2022)
    of Iris (:issue:`4523`).
 
 #. `@pp-mo`_ removed broken tooling for deriving Iris metadata translations
-   from `Metarelate`_.  From now we intend to manage phenonemon translation
+   from ``Metarelate``.  From now we intend to manage phenonemon translation
    in Iris itself.  (:pull:`4484`)
 
 #. `@pp-mo`_ improved printout of various cube data component objects :
@@ -402,7 +402,6 @@ v3.2.1 (11 Mar 2022)
     Whatsnew resources in alphabetical order:
 
 .. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
-.. _Metarelate: http://www.metarelate.net/
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _iris-emsf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
 .. _faster documentation building: https://docs.readthedocs.io/en/stable/guides/conda.html#making-builds-faster-with-mamba
