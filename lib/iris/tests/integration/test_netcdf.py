@@ -416,7 +416,7 @@ class TestSelfReferencingVarLoad(tests.IrisTest):
         levels.units = "centimeters"
         levels.positive = "down"
         levels.axis = "Z"
-        levels[:] = np.linspace(0, 10 ** 5, 3)
+        levels[:] = np.linspace(0, 10**5, 3)
 
         volcello.id = "volcello"
         volcello.out_name = "volcello"
@@ -507,9 +507,9 @@ def _get_scale_factor_add_offset(cube, datatype):
     else:
         masked = False
     if masked:
-        scale_factor = (cmax - cmin) / (2 ** n - 2)
+        scale_factor = (cmax - cmin) / (2**n - 2)
     else:
-        scale_factor = (cmax - cmin) / (2 ** n - 1)
+        scale_factor = (cmax - cmin) / (2**n - 1)
     if dt.kind == "u":
         add_offset = cmin
     elif dt.kind == "i":

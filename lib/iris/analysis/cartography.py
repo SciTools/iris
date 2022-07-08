@@ -335,7 +335,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
         raise ValueError("Bounds must be [n,2] array")
 
     # fill in a new array of areas
-    radius_sqr = radius_of_earth ** 2
+    radius_sqr = radius_of_earth**2
     radian_lat_64 = radian_lat_bounds.astype(np.float64)
     radian_lon_64 = radian_lon_bounds.astype(np.float64)
 
@@ -1010,8 +1010,8 @@ def _transform_distance_vectors_tolerance_mask(
     # Squared magnitudes should be equal to one within acceptable tolerance.
     # A value of atol=2e-3 is used, which corresponds to a change in magnitude
     # of approximately 0.1%.
-    sqmag_1_0 = u_one_t ** 2 + v_zero_t ** 2
-    sqmag_0_1 = u_zero_t ** 2 + v_one_t ** 2
+    sqmag_1_0 = u_one_t**2 + v_zero_t**2
+    sqmag_0_1 = u_zero_t**2 + v_one_t**2
     mask = np.logical_not(
         np.logical_and(
             np.isclose(sqmag_1_0, ones, atol=2e-3),
