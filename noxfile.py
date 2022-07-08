@@ -31,9 +31,7 @@ CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
 # https://github.com/numpy/numpy/pull/19478
 # https://github.com/matplotlib/matplotlib/pull/22099
 #: Common session environment variables.
-ENV = dict(
-    NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512VL,AVX512BW,AVX512DQ,AVX512_SKX"
-)
+ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
 
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
@@ -167,41 +165,6 @@ def prepare_venv(session: nox.sessions.Session) -> None:
             f"--prefix={venv_dir}",
             "--explicit",
         )
-
-
-@nox.session
-def precommit(session: nox.sessions.Session):
-    """
-    Perform pre-commit hooks of iris codebase.
-
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
-
-    """
-    import yaml
-
-    # Pip install the session requirements.
-    session.install("pre-commit")
-
-    # Load the pre-commit configuration YAML file.
-    with open(".pre-commit-config.yaml", "r") as fi:
-        config = yaml.load(fi, Loader=yaml.FullLoader)
-
-    # List of pre-commit hook ids that we don't want to run.
-    excluded = ["no-commit-to-branch"]
-
-    # Enumerate the ids of pre-commit hooks we do want to run.
-    ids = [
-        hook["id"]
-        for entry in config["repos"]
-        for hook in entry["hooks"]
-        if hook["id"] not in excluded
-    ]
-
-    # Execute the pre-commit hooks.
-    [session.run("pre-commit", "run", "--all-files", id) for id in ids]
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
