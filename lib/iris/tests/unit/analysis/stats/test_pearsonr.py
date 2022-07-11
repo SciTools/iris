@@ -12,12 +12,13 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris._lazy_data
 import iris.analysis.stats as stats
 from iris.exceptions import CoordinateNotFoundError
 
 
 @tests.skip_data
-class Test(tests.IrisTest):
+class TestLazy(tests.IrisTest):
     def setUp(self):
         # 3D cubes:
         cube_temp = iris.load_cube(
@@ -126,10 +127,7 @@ class Test(tests.IrisTest):
 
     def test_mdtol(self):
         cube_small = self.cube_a[:, 0, 0]
-        cube_small_masked = cube_small.copy()
-        cube_small_masked.data = ma.array(
-            cube_small.data, mask=np.array([0, 0, 0, 1, 1, 1], dtype=bool)
-        )
+        cube_small_masked = iris.util.mask_cube(cube_small, [0, 0, 0, 1, 1, 1])
         r1 = stats.pearsonr(cube_small, cube_small_masked)
         r2 = stats.pearsonr(cube_small, cube_small_masked, mdtol=0.49)
         self.assertArrayAlmostEqual(r1.data, np.array([0.74586593]))
@@ -137,25 +135,21 @@ class Test(tests.IrisTest):
 
     def test_common_mask_simple(self):
         cube_small = self.cube_a[:, 0, 0]
-        cube_small_masked = cube_small.copy()
-        cube_small_masked.data = ma.array(
-            cube_small.data, mask=np.array([0, 0, 0, 1, 1, 1], dtype=bool)
-        )
+        cube_small_masked = iris.util.mask_cube(cube_small, [0, 0, 0, 1, 1, 1])
         r = stats.pearsonr(cube_small, cube_small_masked, common_mask=True)
         self.assertArrayAlmostEqual(r.data, np.array([1.0]))
 
     def test_common_mask_broadcast(self):
-        cube_small = self.cube_a[:, 0, 0]
-        cube_small_2d = self.cube_a[:, 0:2, 0]
-        cube_small.data = ma.array(
-            cube_small.data, mask=np.array([0, 0, 0, 0, 0, 1], dtype=bool)
-        )
-        cube_small_2d.data = ma.array(
-            np.tile(cube_small.data[:, np.newaxis], 2),
-            mask=np.zeros((6, 2), dtype=bool),
-        )
+        cube_small = iris.util.mask_cube(self.cube_a[:, 0, 0], [0, 0, 0, 0, 0, 1])
+        mask_2d = np.zeros((6, 2), dtype=bool)
         # 2d mask varies on unshared coord:
-        cube_small_2d.data.mask[0, 1] = 1
+        mask_2d[0, 1] = 1
+
+        cube_small_2d = self.cube_a[:, 0:2, 0]
+        cube_small_2d.data = iris.util._mask_array(
+            cube_small.core_data().reshape(6, 1), mask_2d
+        )
+
         r = stats.pearsonr(
             cube_small,
             cube_small_2d,
@@ -167,6 +161,13 @@ class Test(tests.IrisTest):
         cube_small_2d.data.mask[0, 0] = 1
         r = stats.pearsonr(cube_small, cube_small_2d, common_mask=True)
         self.assertArrayAlmostEqual(r.data, np.array([1.0, 1.0]))
+
+
+class TestReal(TestLazy):
+    def setUp(self):
+        super().setUp()
+        for cube in [self.cube_a, self.cube_b]:
+            cube.data
 
 
 if __name__ == "__main__":

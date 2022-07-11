@@ -4,11 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Statistical operations between cubes."""
 
+import dask.array as da
 import numpy as np
-import numpy.ma as ma
 
 import iris
-from iris.util import broadcast_to_shape
+from iris.common import Resolve
+from iris.util import _mask_array
 
 
 def pearsonr(
@@ -63,13 +64,13 @@ def pearsonr(
 
     Notes
     -----
+    If either of the input cubes has lazy data, the result will have lazy data.
+
     Reference:
         https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
-    This operation is non-lazy.
-
     """
-    # Assign larger cube to cube_1
+    # Assign larger cube to cube_1 for simplicity.
     if cube_b.ndim > cube_a.ndim:
         cube_1 = cube_b
         cube_2 = cube_a
@@ -79,90 +80,91 @@ def pearsonr(
 
     smaller_shape = cube_2.shape
 
-    dim_coords_1 = [coord.name() for coord in cube_1.dim_coords]
-    dim_coords_2 = [coord.name() for coord in cube_2.dim_coords]
-    common_dim_coords = list(set(dim_coords_1) & set(dim_coords_2))
+    # Get the broadcast, auto-transposed safe versions of the cube operands.
+    resolver = Resolve(cube_1, cube_2)
+    cube_1 = resolver.lhs_cube_resolved
+    cube_2 = resolver.rhs_cube_resolved
+
+    if cube_1.has_lazy_data() or cube_2.has_lazy_data():
+        al = da
+        array_1 = cube_1.lazy_data()
+        array_2 = cube_2.lazy_data()
+    else:
+        al = np
+        array_1 = cube_1.data
+        array_2 = cube_2.data
+
     # If no coords passed then set to all common dimcoords of cubes.
     if corr_coords is None:
-        corr_coords = common_dim_coords
+        dim_coords_1 = {coord.name() for coord in cube_1.dim_coords}
+        dim_coords_2 = {coord.name() for coord in cube_2.dim_coords}
+        corr_coords = list(dim_coords_1.intersection(dim_coords_2))
 
-    def _ones_like(cube):
-        # Return a copy of cube with the same mask, but all data values set to 1.
-        # The operation is non-lazy.
-        # For safety we also discard any cell-measures and ancillary-variables, to
-        # avoid cube arithmetic possibly objecting to them, or inadvertently retaining
-        # them in the result where they might be inappropriate.
-        ones_cube = cube.copy()
-        ones_cube.data = np.ones_like(cube.data)
-        ones_cube.rename("unknown")
-        ones_cube.units = 1
-        for cm in ones_cube.cell_measures():
-            ones_cube.remove_cell_measure(cm)
-        for av in ones_cube.ancillary_variables():
-            ones_cube.remove_ancillary_variable(av)
-        return ones_cube
+    # Interpret coords as array dimensions.
+    corr_dims = set()
+    for coord in corr_coords:
+        corr_dims.update(cube_1.coord_dims(coord))
+
+    corr_dims = tuple(corr_dims)
 
     # Match up data masks if required.
     if common_mask:
-        # Create a cube of 1's with a common mask.
-        if ma.is_masked(cube_2.data):
-            mask_cube = _ones_like(cube_2)
-        else:
-            mask_cube = 1.0
-        if ma.is_masked(cube_1.data):
-            # Take a slice to avoid unnecessary broadcasting of cube_2.
-            slice_coords = [
-                dim_coords_1[i]
-                for i in range(cube_1.ndim)
-                if dim_coords_1[i] not in common_dim_coords
-                and np.array_equal(
-                    cube_1.data.mask.any(axis=i), cube_1.data.mask.all(axis=i)
-                )
-            ]
-            cube_1_slice = next(cube_1.slices_over(slice_coords))
-            mask_cube = _ones_like(cube_1_slice) * mask_cube
-        # Apply common mask to data.
-        if isinstance(mask_cube, iris.cube.Cube):
-            cube_1 = cube_1 * mask_cube
-            cube_2 = mask_cube * cube_2
-            dim_coords_2 = [coord.name() for coord in cube_2.dim_coords]
+        mask_1 = al.ma.getmaskarray(array_1)
+        if al is np:
+            # Reduce all invariant dimensions of mask_1 to length 1.  This avoids
+            # unnecessary broadcasting of array_2.
+            index = tuple(
+                slice(0, 1)
+                if np.array_equal(mask_1.any(axis=dim), mask_1.all(axis=dim))
+                else slice(None)
+                for dim in range(mask_1.ndim)
+            )
+            mask_1 = mask_1[index]
 
-    # Broadcast weights to shape of cubes if necessary.
-    if weights is None or cube_1.shape == smaller_shape:
-        weights_1 = weights
-        weights_2 = weights
+        array_2 = _mask_array(array_2, mask_1)
+        array_1 = _mask_array(array_1, al.ma.getmaskarray(array_2))
+
+    # Broadcast weights to shape of arrays if necessary.
+    if weights is None:
+        weights_1 = weights_2 = None
     else:
         if weights.shape != smaller_shape:
-            raise ValueError(
-                "weights array should have dimensions {}".format(smaller_shape)
-            )
+            msg = f"weights array should have dimensions {smaller_shape}"
+            raise ValueError(msg)
 
-        dims_1_common = [
-            i for i in range(cube_1.ndim) if dim_coords_1[i] in common_dim_coords
-        ]
-        weights_1 = broadcast_to_shape(weights, cube_1.shape, dims_1_common)
-        if cube_2.shape != smaller_shape:
-            dims_2_common = [
-                i for i in range(cube_2.ndim) if dim_coords_2[i] in common_dim_coords
-            ]
-            weights_2 = broadcast_to_shape(weights, cube_2.shape, dims_2_common)
-        else:
-            weights_2 = weights
+        if resolver.reorder_src_dims is not None:
+            # Apply same transposition as was done to cube_2 within Resolve.
+            weights = weights.transpose(resolver.reorder_src_dims)
+
+        # Reshape to add in any length-1 dimensions needed for broadcasting.
+        weights = weights.reshape(cube_2.shape)
+
+        weights_2 = np.broadcast_to(weights, array_2.shape)
+        weights_1 = np.broadcast_to(weights, array_1.shape)
 
     # Calculate correlations.
-    s1 = cube_1 - cube_1.collapsed(corr_coords, iris.analysis.MEAN, weights=weights_1)
-    s2 = cube_2 - cube_2.collapsed(corr_coords, iris.analysis.MEAN, weights=weights_2)
+    s1 = array_1 - al.ma.average(
+        array_1, axis=corr_dims, weights=weights_1, keepdims=True
+    )
+    s2 = array_2 - al.ma.average(
+        array_2, axis=corr_dims, weights=weights_2, keepdims=True
+    )
 
-    covar = (s1 * s2).collapsed(
+    s_prod = resolver.cube(s1 * s2)
+
+    # Use cube collapsed method as it takes care of coordinate collapsing and missing
+    # data tolerance.
+    covar = s_prod.collapsed(
         corr_coords, iris.analysis.SUM, weights=weights_1, mdtol=mdtol
     )
-    var_1 = (s1**2).collapsed(corr_coords, iris.analysis.SUM, weights=weights_1)
-    var_2 = (s2**2).collapsed(corr_coords, iris.analysis.SUM, weights=weights_2)
 
-    denom = iris.analysis.maths.apply_ufunc(
-        np.sqrt, var_1 * var_2, new_unit=covar.units
-    )
+    var_1 = iris.analysis._sum(s1**2, axis=corr_dims, weights=weights_1)
+    var_2 = iris.analysis._sum(s2**2, axis=corr_dims, weights=weights_2)
+
+    denom = np.sqrt(var_1 * var_2)
+
     corr_cube = covar / denom
     corr_cube.rename("Pearson's r")
+    corr_cube.units = 1
 
     return corr_cube
