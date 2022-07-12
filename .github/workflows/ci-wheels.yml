@@ -35,6 +35,8 @@ jobs:
     - name: "building"
       shell: bash
       run: |
+        # require build with explicit --sdist and --wheel in order to
+        # get correct version associated with sdist and bdist artifacts
         pipx run build --sdist --wheel
 
     - uses: actions/upload-artifact@v3
