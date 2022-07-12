@@ -4,7 +4,7 @@ prune .github
 exclude .gitignore
 
 # Files required for conda package management
-recursive-include requirements *.yml *.lock
+recursive-include requirements *
 
 # Files required to build docs
 recursive-include docs *
@@ -18,4 +18,3 @@ include etc/cf-standard-name-table.xml
 
 global-exclude *.py[cod]
 global-exclude __pycache__
-exclude lib/iris/_version.py
