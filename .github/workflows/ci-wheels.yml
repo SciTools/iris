@@ -14,7 +14,7 @@ on:
   push:
     tags:
       - "v*"
-   branches-ignore:
+    branches-ignore:
       - "auto-update-lockfiles"
       - "pre-commit-ci-update-config"
       - "dependabot/*"
@@ -44,8 +44,77 @@ jobs:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist/*
 
+  test-wheel:
+    needs: build
+    name: "test wheel (py${{ matrix.python-version }})"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+        session: ["wheel"]
+    env:
+      ENV_NAME: "ci-wheels"
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: pypi-artifacts
+        path: ${{ github.workspace }}/dist
+
+    - name: "environment configure"
+      env:
+        # Maximum cache period (in weeks) before forcing a cache refresh.
+          CACHE_WEEKS: 2
+      run: |
+        echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
+        echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+
+    - name: "conda package cache"
+      uses: ./.github/workflows/composite/conda-pkg-cache
+      with:
+        cache_build: 0
+        cache_period: ${{ env.CACHE_PERIOD }}
+        env_name: ${{ env.ENV_NAME }}
+
+    - name: "conda install"
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniforge-version: latest
+        channels: conda-forge,defaults
+        activate-environment: ${{ env.ENV_NAME }}
+        auto-update-conda: false
+        use-only-tar-bz2: true
+
+    - name: "conda environment cache"
+      uses: ./.github/workflows/composite/conda-env-cache
+      with:
+        cache_build: 0
+        cache_period: ${{ env.CACHE_PERIOD }}
+        env_name: ${{ env.ENV_NAME }}
+        install_packages: "nox pip"
+
+    - name: "nox cache"
+      uses: ./.github/workflows/composite/nox-cache
+      with:
+        cache_build: 0
+        env_name: ${{ env.ENV_NAME }}
+        lock_file: ${{ env.LOCK_FILE }}
+
+    - name: "nox install and test wheel"
+      env:
+        PY_VER: ${{ matrix.python-version }}
+      run: |
+        nox --session ${{ matrix.session }} -- --verbose
+
   show-artifacts:
-    needs: [build]
+    needs: build
     name: "show artifacts"
     runs-on: ubuntu-latest
     steps:
@@ -59,7 +128,7 @@ jobs:
         ls -l ${{ github.workspace }}/dist
 
   publish-artifacts-test-pypi:
-    needs: [build]
+    needs: test-wheel
     name: "publish to test.pypi"
     runs-on: ubuntu-latest
     # upload to Test PyPI for every commit on main branch
@@ -79,7 +148,7 @@ jobs:
         print_hash: true
 
   publish-artifacts-pypi:
-    needs: [build]
+    needs: test-wheel
     name: "publish to pypi"
     runs-on: ubuntu-latest
     # upload to PyPI for every tag starting with 'v'
