@@ -43,5 +43,5 @@ skip_gitignore = "True"
 verbose = "False"
 
 [tool.pytest.ini_options]
-addopts = "-ra -q"
+addopts = "-ra"
 testpaths = "lib/iris"

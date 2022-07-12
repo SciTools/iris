@@ -130,7 +130,6 @@ class TestRunner:
 
         args = [
             None,
-            "-v",
             f"-n={self.num_processors}",
         ]
 
