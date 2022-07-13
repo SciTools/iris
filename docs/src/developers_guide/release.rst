@@ -129,7 +129,7 @@ Update PyPI
   PyPI artifacts is now automated by a dedicated GitHub Action.
   
   The following instructions **no longer** require to be performed manually,
-  but remain part of the documentation for reference purposed only.
+  but remain part of the documentation for reference purposes only.
 
 Update the `scitools-iris`_ project on PyPI with the latest Iris release.
 
