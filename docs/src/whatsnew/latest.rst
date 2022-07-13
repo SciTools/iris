@@ -254,6 +254,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) adopted `setuptools-scm`_ for
    automated ``iris`` package versioning. (:pull:`4841`)
 
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) added building, testing and
+   publishing of ``iris`` PyPI ``sdist`` and binary ``wheels`` as part of
+   our GitHub Continuous-Integration. (:pull`4849`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
