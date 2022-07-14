@@ -15,6 +15,7 @@ import operator
 import dask.array as da
 import numpy as np
 from numpy import ma
+import pytest
 
 from iris.analysis import MEAN
 from iris.analysis.maths import add
@@ -239,6 +240,10 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
         self.assertMaskedArrayEqual(com, res.data, strict=True)
         self.assertIsNot(res, orig_cube)
 
+    @pytest.mark.xfail(
+        condition=np.__version__ < "1.24",
+        reason="numpy#21977 implemented NEP13 for masked arrays for v1.24",
+    )
     def test_partial_mask_second_lazy_not_in_place(self):
         # Only second cube has lazy data.
         com, res, orig_cube = self._test_partial_mask(False, second_lazy=True)
