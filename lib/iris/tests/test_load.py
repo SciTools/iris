@@ -183,6 +183,7 @@ class TestOPeNDAP(tests.IrisTest):
         finally:
             iris.io.load_http = orig
 
+    @tests.skip_data
     def test_netCDF_Dataset_call(self):
         # Check that load_http calls netCDF4.Dataset and supplies the expected URL.
 
