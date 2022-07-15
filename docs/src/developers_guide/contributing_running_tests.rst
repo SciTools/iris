@@ -5,9 +5,17 @@
 Running the Tests
 *****************
 
-You can run the tests in an environment you created yourself, or you can use ``nox``
-to test in an automatically generated environment, consistent with our GitHub
-continuous integration.  For the latter, see :ref:`using nox`.
+There are two options for running the tests:
+
+* Use an environment you created yourself.  This requires more manual steps to
+  set up, but gives you more flexibility.  For example, you can run a subset of
+  the tests or use ``python`` interactively to investigate any issues.  See
+  :ref:`using manual env`.
+
+* Use ``nox``.  This will automatically generate an environment and run test
+  sessions consistent with our GitHub continuous integration.  See :ref:`using nox`.
+
+.. _using manual env:
 
 Using a Manually Created Environment for Testing Iris
 =====================================================
