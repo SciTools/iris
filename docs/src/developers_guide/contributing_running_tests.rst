@@ -10,15 +10,15 @@ There are two options for running the tests:
 * Use an environment you created yourself.  This requires more manual steps to
   set up, but gives you more flexibility.  For example, you can run a subset of
   the tests or use ``python`` interactively to investigate any issues.  See
-  :ref:`using manual env`.
+  :ref:`test manual env`.
 
 * Use ``nox``.  This will automatically generate an environment and run test
   sessions consistent with our GitHub continuous integration.  See :ref:`using nox`.
 
-.. _using manual env:
+.. _test manual env:
 
-Using a Manually Created Environment for Testing Iris
-=====================================================
+Testing Iris in a Manually Created Environment
+==============================================
 
 To create a suitable environment for running the tests, see :ref:`installing_from_source`.
 
@@ -46,7 +46,7 @@ All the Iris tests may be run from the root ``iris`` project directory using
 
    pytest -n 2
 
-will run the tests on two processors.  For more options, use the command
+will run the tests across two processes.  For more options, use the command
 ``pytest -h``.  Below is a trimmed example of the output::
 
    ============================= test session starts ==============================
