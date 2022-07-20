@@ -25,7 +25,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Welcome to `@TTV-Intrepid`_ who made their first contribution to Iris.
+   The first of many we hope!
 
 
 ✨ Features
@@ -217,6 +218,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@abooton`_ modernised the Iris logo to be SVG format.
    (:pull:`3935`)
 
+#. `@TTV-Intrepid`_ and `@trexfeathers`_ added a gallery example for zonal
+   means plotted parallel to a cartographic plot. (:pull:`4871`)
+
 
 💼 Internal
 ===========
@@ -269,3 +273,4 @@ This document explains the changes made to Iris for this release
 .. _Cell Boundaries: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#cell-boundaries
 .. _PyData Sphinx Theme: https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
+.. _@TTV-Intrepid: https://github.com/TTV-Intrepid
