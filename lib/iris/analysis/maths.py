@@ -845,6 +845,13 @@ def _binary_op_common(
         elif ma.is_masked(rhs) and not isinstance(cube.data, ma.MaskedArray):
             cube.data = ma.array(cube.data)
 
+    elif isinstance(
+        cube.core_data(), ma.MaskedArray
+    ) and iris._lazy_data.is_lazy_data(rhs):
+        # Temporary workaround for #2987.  numpy#16022 may provide a permanent
+        # fix.
+        cube = cube.copy(cube.lazy_data())
+
     result = _math_op_common(
         cube,
         unary_func,
