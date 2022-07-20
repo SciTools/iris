@@ -7,8 +7,8 @@ This example demonstrates aligning a linear plot and a cartographic plot using M
 """
 
 import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 import matplotlib.cm as mpl_cm
+import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 
@@ -33,18 +33,20 @@ def main():
     ax1.gridlines()
     ax1.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.PlateCarree())
     ax1.set_yticks(yticks, crs=ccrs.PlateCarree())
-    ax1.set_title('Air Temperature')
-    ax1.set_ylabel('latitude')
-    ax1.set_xlabel('longitude')
+    ax1.set_title("Air Temperature")
+    ax1.set_ylabel("latitude")
+    ax1.set_xlabel("longitude")
     ax1.set_ylim(*ylim)
     divider = make_axes_locatable(ax1)
 
     # Gives the air temperature bar size, colour and a title.
-    ax2 = divider.new_vertical(size="5%", pad=0.5, axes_class=plt.Axes, pack_start=True)
+    ax2 = divider.new_vertical(
+        size="5%", pad=0.5, axes_class=plt.Axes, pack_start=True
+    )
     fig.add_axes(ax2)
     plt.sca(ax2)
-    cbar = plt.colorbar(im, cax=ax2, orientation='horizontal')
-    cbar.ax.set_xlabel('Air Temperature [k]')
+    cbar = plt.colorbar(im, cax=ax2, orientation="horizontal")
+    cbar.ax.set_xlabel("Air Temperature [k]")
 
     # Round each tick for the third ax to the nearest 20 (ready for use).
     data_max = collapsed_temp.data.max()
@@ -57,11 +59,11 @@ def main():
     fig.add_axes(ax3)
     plt.sca(ax3)
     iplt.plot(collapsed_temp, collapsed_temp.coord("latitude"))
-    ax3.axvline(0, color='k', linewidth=0.5)
+    ax3.axvline(0, color="k", linewidth=0.5)
     ax3.set_ylim(*ylim)
-    ax3.set_title('Zonal mean')
-    ax3.set_ylabel('latitude')
-    ax3.set_xlabel('Air Temperature [k]')
+    ax3.set_title("Zonal mean")
+    ax3.set_ylabel("latitude")
+    ax3.set_xlabel("Air Temperature [k]")
     ax3.yaxis.set_label_position("right")
     ax3.yaxis.tick_right()
     ax3.set_yticks(yticks)
