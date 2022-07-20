@@ -7,7 +7,6 @@ This example demonstrates aligning a linear plot and a cartographic plot using M
 """
 
 import cartopy.crs as ccrs
-import matplotlib.cm as mpl_cm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
@@ -20,7 +19,7 @@ import iris.plot as iplt
 def main():
     fname = iris.sample_data_path("air_temp.pp")
     temperature = iris.load_cube(fname)
-    collapsed_temp = temperature.collapsed("longitude", iris.analysis.MEAN)
+    collapsed_temp = temperature.collapsed("longitude", MEAN)
 
     # Set y axes with -90 and 90 limits and spacing of 15 per tick.
     yticks = np.arange(-90, 105, 15)
