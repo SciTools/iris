@@ -1136,8 +1136,8 @@ def _promote_cm(cube, cm):
     new_cm = new_cube.cell_measure(cm)
     cm_dims = new_cube.cell_measure_dims(new_cm)
     if cm_dims == ():
-        new_cube.remove_coord(new_cm)
-        new_cube.add_aux_coord(new_cm, 0)
+        new_cube.remove_cell_measure(new_cm)
+        new_cube.add_cell_measure(new_cm, 0)
     else:
         new_dims = (0,) + cm_dims
 
@@ -1162,8 +1162,8 @@ def _promote_av(cube, av):
     new_av = new_cube.ancillary_variable(av)
     av_dims = new_cube.ancillary_variable_dims(new_av)
     if av_dims == ():
-        new_cube.remove_coord(new_av)
-        new_cube.add_aux_coord(new_av, 0)
+        new_cube.remove_ancillary_variable(new_av)
+        new_cube.add_ancillary_variable(new_av, 0)
     else:
         new_dims = (0,) + av_dims
 
@@ -1261,14 +1261,6 @@ def new_axis(
         coord_dims = np.array(src_cube.coord_dims(coord)) + 1
         new_cube.add_dim_coord(coord.copy(), coord_dims)
 
-    nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
-    coord_mapping = {
-        id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords
-    }
-    for factory in src_cube.aux_factories:
-        new_factory = factory.updated(coord_mapping)
-        new_cube.add_aux_factory(new_factory)
-
     for cm in src_cube.cell_measures():
         cm_dims = np.array(src_cube.cell_measure_dims(cm)) + 1
         new_cube.add_cell_measure(cm.copy(), cm_dims)
@@ -1285,6 +1277,14 @@ def new_axis(
 
     for av in promoted_av:
         new_cube = _promote_av(new_cube, av)
+
+    nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
+    coord_mapping = {
+        id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords
+    }
+    for factory in src_cube.aux_factories:
+        new_factory = factory.updated(coord_mapping)
+        new_cube.add_aux_factory(new_factory)
 
     return new_cube
 

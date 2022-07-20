@@ -28,13 +28,34 @@ class Test(tests.IrisTest):
 
         time = iris.coords.DimCoord([1], standard_name="time")
         wibble = iris.coords.AuxCoord([1], long_name="wibble")
+        ancil_scalar = iris.coords.AncillaryVariable(
+            [1], long_name="ancil_scalar"
+        )
+        cm_scalar = iris.coords.CellMeasure([1], long_name="cm_scalar")
+        ancil_long = iris.coords.AncillaryVariable(
+            [1, 2], long_name="ancil_long"
+        )
+        cm_long = iris.coords.CellMeasure([1, 2], long_name="cm_long")
 
         self.cube.add_dim_coord(lat, 0)
         self.cube.add_dim_coord(lon, 1)
         self.cube.add_aux_coord(time, None)
         self.cube.add_aux_coord(wibble, None)
+        self.cube.add_ancillary_variable(ancil_scalar, None)
+        self.cube.add_cell_measure(cm_scalar, None)
+        self.cube.add_ancillary_variable(ancil_long, 0)
+        self.cube.add_cell_measure(cm_long, 0)
 
-        self.coords = {"lat": lat, "lon": lon, "time": time, "wibble": wibble}
+        self.coords = {
+            "lat": lat,
+            "lon": lon,
+            "time": time,
+            "wibble": wibble,
+            "ancil_scalar": ancil_scalar,
+            "cm_scalar": cm_scalar,
+            "ancil_long": ancil_long,
+            "cm_long": cm_long,
+        }
 
     def _assert_cube_notis(self, cube_a, cube_b):
         for coord_a, coord_b in zip(cube_a.coords(), cube_b.coords()):
@@ -65,7 +86,7 @@ class Test(tests.IrisTest):
         com = iris.cube.Cube(self.data[None])
         com.add_dim_coord(self.coords["lat"].copy(), 1)
         com.add_dim_coord(self.coords["lon"].copy(), 2)
-        com.add_aux_coord(self.coords["time"].copy(), 0)
+        com.add_dim_coord(self.coords["time"].copy(), 0)
         com.add_aux_coord(self.coords["wibble"].copy(), None)
 
         self.assertEqual(res, com)
@@ -82,6 +103,12 @@ class Test(tests.IrisTest):
 
         self.assertEqual(res, com)
         self._assert_cube_notis(res, self.cube)
+
+    # def test_ancil(self):
+    #
+
+    # def test_cell_measure(self):
+    #
 
     def test_maint_factory(self):
         # Ensure that aux factory persists.
@@ -171,19 +198,6 @@ class Test(tests.IrisTest):
         data_shape = test_cube.data.shape
         mask_shape = test_cube.data.mask.shape
         self.assertEqual(data_shape, mask_shape)
-
-
-class Test_aux_promotions(tests.IrisTest):
-    def SetUp(self):
-        self.data = np.array([[1, 2], [1, 2]])
-        self.cube = iris.cube.Cube(self.data)
-        lat = iris.coords.DimCoord([1, 2], standard_name="latitude")
-        lon = iris.coords.DimCoord([1, 2], standard_name="longitude")
-
-        time = iris.coords.DimCoord([1], standard_name="time")
-        wibble = iris.coords.AuxCoord([1], long_name="wibble")
-
-        foo = iris.coords.AuxCoord([1,2], long_name="foo")
 
 
 if __name__ == "__main__":
