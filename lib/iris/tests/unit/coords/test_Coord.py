@@ -332,7 +332,9 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         )
         for units in ["unknown", "no_unit", 1, "K"]:
             coord.units = units
-            collapsed_coord = coord.collapsed()
+            with mock.patch("warnings.warn") as warn:
+                collapsed_coord = coord.collapsed()
+            warn.assert_not_called()
             self.assertArrayEqual(
                 collapsed_coord.points, np.mean(coord.points)
             )
@@ -473,6 +475,58 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
         self.assertArrayEqual(collapsed_coord.points, da.array([55]))
         self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
+
+    def test_numeric_nd_multidim_bounds_warning(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
+
+        with mock.patch("warnings.warn") as warn:
+            collapsed_coord = coord.collapsed()
+
+        msg = (
+            "Collapsing a multi-dimensional coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        self.assertEqual([mock.call(msg)], warn.call_args_list)
+
+    def test_lazy_nd_multidim_bounds_warning(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
+
+        with mock.patch("warnings.warn") as warn:
+            collapsed_coord = coord.collapsed()
+
+        msg = (
+            "Collapsing a multi-dimensional coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        self.assertEqual([mock.call(msg)], warn.call_args_list)
+
+    def test_numeric_nd_noncontiguous_bounds_warning(self):
+        self.setupTestArrays((3))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
+
+        with mock.patch("warnings.warn") as warn:
+            collapsed_coord = coord.collapsed()
+
+        msg = (
+            "Collapsing a non-contiguous coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        self.assertEqual([mock.call(msg)], warn.call_args_list)
+
+    def test_lazy_nd_noncontiguous_bounds_warning(self):
+        self.setupTestArrays((3))
+        coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
+
+        with mock.patch("warnings.warn") as warn:
+            collapsed_coord = coord.collapsed()
+
+        msg = (
+            "Collapsing a non-contiguous coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        self.assertEqual([mock.call(msg)], warn.call_args_list)
 
     def test_numeric_3_bounds(self):
 
