@@ -56,7 +56,7 @@ def main():
     ax3 = divider.new_horizontal(size="30%", pad=0.4, axes_class=plt.Axes)
     fig.add_axes(ax3)
     plt.sca(ax3)
-    iplt.plot(collapsed_temp)
+    iplt.plot(collapsed_temp, collapsed_temp.coord(latitude))
     ax3.axvline(0, color='k', linewidth=0.5)
     ax3.set_ylim(*ylim)
     ax3.set_title('Zonal mean')
@@ -66,7 +66,7 @@ def main():
     ax3.yaxis.tick_right()
     ax3.set_yticks(yticks)
     ax3.set_xlim(x_min, x_max)
-    
+
     plt.show()
 
 
