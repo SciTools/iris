@@ -18,6 +18,10 @@ import iris.plot as iplt
 
 
 def main():
+    fname = iris.sample_data_path("air_temp.pp")
+    temperature = iris.load_cube(fname)
+    collapsed_temp = temperature.collapsed("longitude", iris.analysis.MEAN)
+
     # Set y axes with -90 and 90 limits and spacing of 15 per tick.
     yticks = np.arange(-90, 105, 15)
     ylim = [-90, 90]
@@ -62,6 +66,8 @@ def main():
     ax3.yaxis.tick_right()
     ax3.set_yticks(yticks)
     ax3.set_xlim(x_min, x_max)
+    
+    plt.show()
 
 
 if __name__ == "__main__":
