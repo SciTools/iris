@@ -481,7 +481,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
 
         with mock.patch("warnings.warn") as warn:
-            collapsed_coord = coord.collapsed()
+            coord.collapsed()
 
         msg = (
             "Collapsing a multi-dimensional coordinate. "
@@ -494,7 +494,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
 
         with mock.patch("warnings.warn") as warn:
-            collapsed_coord = coord.collapsed()
+            coord.collapsed()
 
         msg = (
             "Collapsing a multi-dimensional coordinate. "
@@ -507,7 +507,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
 
         with mock.patch("warnings.warn") as warn:
-            collapsed_coord = coord.collapsed()
+            coord.collapsed()
 
         msg = (
             "Collapsing a non-contiguous coordinate. "
@@ -520,7 +520,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
 
         with mock.patch("warnings.warn") as warn:
-            collapsed_coord = coord.collapsed()
+            coord.collapsed()
 
         msg = (
             "Collapsing a non-contiguous coordinate. "
