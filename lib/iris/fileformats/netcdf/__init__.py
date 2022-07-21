@@ -11,7 +11,12 @@ See also: `netCDF4 python <https://github.com/Unidata/netcdf4-python>`_
 Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 """
-from .loader import DEBUG, NetCDFDataProxy, load_cubes, logger
+import iris.config
+
+# Note: *must* be done before importing from submodules, as they also use this !
+logger = iris.config.get_logger(__name__)
+
+from .loader import DEBUG, NetCDFDataProxy, load_cubes
 from .saver import (
     CF_CONVENTIONS_VERSION,
     MESH_ELEMENTS,

@@ -40,11 +40,8 @@ import iris.util
 # Show actions activation statistics.
 DEBUG = False
 
-# Configure the logger : shared logger for all in 'iris.fileformats.netcdf'.
-from .. import __name__ as _parent_module_name
-
-logger = iris.config.get_logger(_parent_module_name)
-del _parent_module_name
+# Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
+from . import logger
 
 
 def _actions_engine():

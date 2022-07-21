@@ -8,6 +8,8 @@
 Extensions to Iris' NetCDF loading to allow the construction of
 :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es from UGRID data in the file.
 
+Eventual destination: :mod:`iris.fileformats.netcdf`.
+
 """
 from contextlib import contextmanager
 from itertools import groupby

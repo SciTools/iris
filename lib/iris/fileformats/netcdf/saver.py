@@ -46,12 +46,12 @@ import iris.fileformats.cf
 import iris.io
 import iris.util
 
-# Configure the logger : shared logger for all in 'iris.fileformats.netcdf'.
-from .. import __name__ as _parent_module_name
+# Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
+from . import logger
 
-logger = iris.config.get_logger(_parent_module_name)
-del _parent_module_name
-
+# Avoid warning about unused import.
+# We could use an __all__, but we don't want to maintain one here
+logger
 
 # Standard CML spatio-temporal axis names.
 SPATIO_TEMPORAL_AXES = ["t", "z", "y", "x"]
