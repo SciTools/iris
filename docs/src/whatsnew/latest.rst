@@ -140,6 +140,10 @@ This document explains the changes made to Iris for this release
    attribute will be silently changed to "standard".  This may cause failures in
    code that explicitly checks the calendar attribute. (:pull:`4847`)
 
+#. `@bjlittle`_ accounted for the recent changes in ``python`` >=3.10.0 when
+   hashing a ``nan``. Specifically, a ``nan`` scalar coordinate will be
+   promoted to a vector ``nan`` coordinate during cube merge.
+
 
 🚀 Performance Enhancements
 ===========================
