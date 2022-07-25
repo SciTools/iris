@@ -249,7 +249,7 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ and `@jamesp`_ (reviewer) and `@lbdreyer`_ (reviewer) extended
    the GitHub Continuous-Integration to cover testing on ``py38``, ``py39``,
-   and ``py310``. (:pull:`4840` and :pull:`4852`)
+   and ``py310``. (:pull:`4840`)
 
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) adopted `setuptools-scm`_ for
    automated ``iris`` package versioning. (:pull:`4841`)

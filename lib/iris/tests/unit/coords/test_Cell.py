@@ -155,24 +155,6 @@ class Test___eq__(tests.IrisTest):
         self.assertEqual(cell1, cell2)
 
 
-class Test___hash__(tests.IrisTest):
-    def test_nan__hash(self):
-        cell = Cell(np.nan, None)
-        self.assertEqual(cell._hash, 0)
-
-    def test_nan___hash__(self):
-        cell = Cell(np.nan, None)
-        self.assertEqual(cell.__hash__(), 0)
-
-    def test_non_nan__hash(self):
-        cell = Cell(1, None)
-        self.assertNotEqual(cell._hash, 0)
-
-    def test_non_nan___hash__(self):
-        cell = Cell("two", ("one", "three"))
-        self.assertNotEqual(cell.__hash__(), 0)
-
-
 class Test_contains_point(tests.IrisTest):
     def test_datetimelike_bounded_cell(self):
         point = object()

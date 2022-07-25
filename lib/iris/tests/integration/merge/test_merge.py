@@ -37,6 +37,10 @@ class TestContiguous(tests.IrisTest):
 
 class TestNaNs(tests.IrisTest):
     def test_merge_nan_coords(self):
+        from sys import version_info
+
+        from pkg_resources import parse_version
+
         # Test that nan valued coordinates merge together.
         cube1 = Cube(np.ones([3, 4]), "air_temperature", units="K")
         coord1 = DimCoord([1, 2, 3], long_name="x")
@@ -50,9 +54,18 @@ class TestNaNs(tests.IrisTest):
         cubes = CubeList(cube1.slices_over("x"))
         cube2 = cubes.merge_cube()
 
+        # Account for change in behaviour for py310+ when hashing NaN
+        # Reference https://github.com/SciTools/iris/pull/4874
+        version = (
+            f"{version_info.major}.{version_info.minor}.{version_info.micro}"
+        )
+        if parse_version(version) >= parse_version("3.10.0"):
+            expected = np.array([np.nan] * cube1.shape[0])
+        else:
+            expected = nan_coord1.points
+
         self.assertArrayEqual(
-            np.isnan(nan_coord1.points),
-            np.isnan(cube2.coord("nan1").points),
+            np.isnan(expected), np.isnan(cube2.coord("nan1").points)
         )
         self.assertArrayEqual(
             np.isnan(nan_coord2.points),
