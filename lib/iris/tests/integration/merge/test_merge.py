@@ -54,14 +54,16 @@ class TestNaNs(tests.IrisTest):
         cubes = CubeList(cube1.slices_over("x"))
         cube2 = cubes.merge_cube()
 
-        # Account for change in behaviour for py310+ when hashing NaN
+        # Account for change in behaviour for py310+ when hashing a NaN
         # Reference https://github.com/SciTools/iris/pull/4874
         version = (
             f"{version_info.major}.{version_info.minor}.{version_info.micro}"
         )
         if parse_version(version) >= parse_version("3.10.0"):
+            # vector coordinate
             expected = np.array([np.nan] * cube1.shape[0])
         else:
+            # scalar coordinate
             expected = nan_coord1.points
 
         self.assertArrayEqual(
