@@ -588,31 +588,18 @@ class IrisTest_nometa(unittest.TestCase):
         self.assertFalse(matches, msg)
 
     def _assertMaskedArray(self, assertion, a, b, strict, **kwargs):
-        # Define helper function to extract unmasked values as a 1d
-        # array.
-        def unmasked_data_as_1d_array(array):
-            array = ma.asarray(array)
-            if array.ndim == 0:
-                if array.mask:
-                    data = np.array([])
-                else:
-                    data = np.array([array.data])
-            else:
-                data = array.data[~ma.getmaskarray(array)]
-            return data
-
-        # Compare masks. This will also check that the array shapes
-        # match, which is not tested when comparing unmasked values if
-        # strict is False.
+        # Compare masks.
         a_mask, b_mask = ma.getmaskarray(a), ma.getmaskarray(b)
         np.testing.assert_array_equal(a_mask, b_mask)
 
         if strict:
+            # Compare all data values.
             assertion(a.data, b.data, **kwargs)
         else:
+            # Compare only unmasked data values.
             assertion(
-                unmasked_data_as_1d_array(a),
-                unmasked_data_as_1d_array(b),
+                ma.compressed(a),
+                ma.compressed(b),
                 **kwargs,
             )
 
