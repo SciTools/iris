@@ -245,7 +245,8 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@pp-mo`_ improved generation of stock NetCDF files.
    (:pull:`4827`, :pull:`4836`)
 
-#. `@rcomer`_ removed some now redundant testing methods. (:pull:`4838`)
+#. `@rcomer`_ removed some now redundant testing functions. (:pull:`4838`,
+   :pull:`4878`)
 
 #. `@bjlittle`_ and `@jamesp`_ (reviewer) and `@lbdreyer`_ (reviewer) extended
    the GitHub Continuous-Integration to cover testing on ``py38``, ``py39``,
