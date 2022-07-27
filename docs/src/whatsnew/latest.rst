@@ -282,6 +282,10 @@ This document explains the changes made to Iris for this release
    publishing of ``iris`` PyPI ``sdist`` and binary ``wheels`` as part of
    our GitHub Continuous-Integration. (:pull:`4849`)
 
+#. `@rcomer`_ and `@wjbenfold`_ (reviewer) used ``pytest`` parametrization to
+   streamline the gallery test code. (:pull:`4792`)
+
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
