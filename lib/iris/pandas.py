@@ -221,7 +221,7 @@ def as_data_frame(cube, copy=True, dropna=True):
 
     # Extract dim coord information
     coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
-    coord_names = list(map(lambda x: x.standard_name, cube.dim_coords))
+    coord_names = list(map(lambda x: x.name(), cube.dim_coords))
     expand_coords = np.meshgrid(*coords)
     flat_coords = list(map(lambda x: x.ravel(), expand_coords))
     flat_data = dict(zip(coord_names, flat_coords))
@@ -230,12 +230,12 @@ def as_data_frame(cube, copy=True, dropna=True):
 
     flat_data[cube.name()] = data.ravel()  # Add cube data to flat data dict
     data_frame = pandas.DataFrame(
-        data
+        flat_data
     )  # Use dict method of creating dataframe
 
     if not copy:
         _assert_shared(data, data_frame)
     if dropna:
-        dataframe.dropna(inplace=True)
+        data_frame.dropna(inplace=True)
 
     return data_frame
