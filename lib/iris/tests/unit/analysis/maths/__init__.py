@@ -208,16 +208,16 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
         dat_b = ma.array([2.0, 2.0, 2.0, 2.0], mask=[1, 1, 0, 0])
 
         if second_lazy:
-            cube_a = Cube(da.from_array(dat_a))
+            cube_b = Cube(da.from_array(dat_b))
         else:
-            cube_a = Cube(dat_a)
+            cube_b = Cube(dat_b)
 
-        cube_b = Cube(dat_b)
+        cube_a = Cube(dat_a)
 
-        com = self.data_op(dat_b, dat_a)
-        res = self.cube_func(cube_b, cube_a, in_place=in_place)
+        com = self.data_op(dat_a, dat_b)
+        res = self.cube_func(cube_a, cube_b, in_place=in_place)
 
-        return com, res, cube_b
+        return com, res, cube_a
 
     def test_partial_mask_in_place(self):
         # Cube in_place arithmetic operation.
