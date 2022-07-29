@@ -145,8 +145,8 @@ This document explains the changes made to Iris for this release
    code that explicitly checks the calendar attribute. (:pull:`4847`)
 
 
-🚀 Performance Enhancements
-===========================
+🚀 Performance
+==============
 
 #. `@wjbenfold`_ added caching to the calculation of the points array in a
    :class:`~iris.coords.DimCoord` created using
@@ -166,6 +166,10 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ improved the speed of linear interpolation using
    :meth:`iris.analysis.trajectory.interpolate` (:pull:`4366`)
 
+#. NumPy ``v1.23`` behaviour changes mean that
+   :func:`iris.experimental.ugrid.utils.recombine_submeshes` now uses ~3x as
+   much memory; testing shows a ~16-million point mesh will now use ~600MB.
+   Investigated by `@pp-mo` and `@trexfeathers`. (:issue:`4845`)
 
 
 🔥 Deprecations
