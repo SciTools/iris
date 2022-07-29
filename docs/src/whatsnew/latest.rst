@@ -168,8 +168,8 @@ This document explains the changes made to Iris for this release
 
 #. NumPy ``v1.23`` behaviour changes mean that
    :func:`iris.experimental.ugrid.utils.recombine_submeshes` now uses ~3x as
-   much memory - up to 700MB for the largest expected data chunks. Investigated
-   by `@pp-mo` and `@trexfeathers`. (:issue:`4845`)
+   much memory; testing shows a ~16-million point mesh will now use ~600MB.
+   Investigated by `@pp-mo` and `@trexfeathers`. (:issue:`4845`)
 
 
 🔥 Deprecations
