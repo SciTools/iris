@@ -220,10 +220,10 @@ def as_data_frame(cube, copy=True, dropna=True):
         data = data.copy()
 
     # Extract dim coord information
-    coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
+    coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))  # Reuturns Y,X order!
     coord_names = list(map(lambda x: x.name(), cube.dim_coords))
     expand_coords = np.meshgrid(*coords)
-    flat_coords = list(map(lambda x: x.ravel(), expand_coords))
+    flat_coords = list(map(lambda x: x.ravel(order='F'), expand_coords))  # So ravel array in column-major order
     flat_data = dict(zip(coord_names, flat_coords))
 
     # TODO: Deal with aux coord information
