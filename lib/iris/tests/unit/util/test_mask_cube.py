@@ -160,6 +160,7 @@ class TestCubeMask(tests.IrisTest):
         returned = mask_cube(cube, mask, in_place=True)
         self.assertEqual(cube.metadata, original_metadata)
         self.assertIs(returned, None)
+        self.assertTrue(cube.has_lazy_data())
         np.testing.assert_array_equal(cube.data.mask, mask.data)
 
 

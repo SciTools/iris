@@ -1756,25 +1756,6 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     return bad_points_boolean
 
 
-def _unmask_mask(al, points_to_mask):
-    """
-    Returns a plain boolean array based on points_to_mask.  If points_to_mask
-    is a masked array, its masked elements will become False.
-
-    Args:
-
-    al (package):
-        either dask.array or numpy.
-
-    points_to_mask (array):
-        Array to be used as a mask in _mask_array.
-
-    """
-    points_to_mask = points_to_mask.astype(bool)
-
-    return al.ma.filled(points_to_mask, False)
-
-
 def _mask_array(array, points_to_mask, in_place=False):
     """
     Apply masking to array where points_to_mask is True/non-zero.  Designed to
@@ -1804,8 +1785,10 @@ def _mask_array(array, points_to_mask, in_place=False):
     else:
         al = np
 
-    # Strip any mask off points_to_mask and set those points to False.
-    points_to_mask = _unmask_mask(al, points_to_mask)
+    points_to_mask = points_to_mask.astype(bool)
+
+    # Treat any masked points on our mask as False.
+    points_to_mask = al.ma.filled(points_to_mask, False)
 
     # Get broadcasted views of the arrays.  Note that broadcast_arrays does not
     # preserve masks, so we need to explicitly handle any exising mask on array.
