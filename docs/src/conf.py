@@ -89,7 +89,9 @@ author = "Iris Developers"
 version = get_version("scitools-iris")
 if version.endswith("+dirty"):
     version = version[: -len("+dirty")]
+release = version
 autolog(f"Iris Version = {version}")
+autolog(f"Iris Release = {release}")
 
 # -- General configuration ---------------------------------------------------
 

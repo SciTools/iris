@@ -271,6 +271,36 @@ def linkcheck(session: nox.sessions.Session):
     )
 
 
+@nox.session(python=PY_VER, venv_backend="conda")
+def wheel(session: nox.sessions.Session):
+    """
+    Perform iris local wheel install and import test.
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+
+    """
+    prepare_venv(session)
+    session.cd("dist")
+    fname = list(Path(".").glob("scitools_iris-*.whl"))
+    if len(fname) == 0:
+        raise ValueError("Cannot find wheel to install.")
+    if len(fname) > 1:
+        emsg = (
+            f"Expected to find 1 wheel to install, found {len(fname)} instead."
+        )
+        raise ValueError(emsg)
+    session.install(fname[0].name)
+    session.run(
+        "python",
+        "-c",
+        "import iris; print(f'{iris.__version__=}')",
+        external=True,
+    )
+
+
 @nox.session
 @nox.parametrize(
     "run_type",
