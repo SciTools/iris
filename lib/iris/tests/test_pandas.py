@@ -182,6 +182,18 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.index, expected_index)
         self.assertArrayEqual(data_frame.columns, expected_columns)
 
+    def test_simple1D(self):
+        cube = Cube(
+            np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), long_name="foo"
+        )
+        dim_coord = DimCoord([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], long_name="bar")
+        cube.add_dim_coord(dimpd._coord, 0)
+        expected_bar = array([10, 11, 12, 13, 14, 10, 11, 12, 13, 14])
+        expected_foo = array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        data_frame = iris.pandas.as_data_frame(cube)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(data_frame.bar, expected_bar)
+
     def test_simple2D(self):
         cube = Cube(
             np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
@@ -198,18 +210,31 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
 
-    def test_masked(self):
+    def test_masked_drop(self):
+        # Test with masked values dropped
         data = np.ma.MaskedArray(
             [[0, 1, 2, 3, 4.4], [5, 6, 7, 8, 9]],
             mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]],
         )
         cube = Cube(data, long_name="foo")
-        expected_index = [0, 1]
-        expected_columns = [0, 1, 2, 3, 4]
-        data_frame = iris.pandas.as_data_frame(cube)
-        self.assertArrayEqual(data_frame, cube.data.astype("f").filled(np.nan))
+        expected_index = array([0, 2, 4, 6, 8])
+        expected_foo = array([0. , 2. , 4.4, 6. , 8. ]
+        data_frame_drop = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.index, expected_index)
-        self.assertArrayEqual(data_frame.columns, expected_columns)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+
+    def test_masked_nodrop(self):
+        # Test with masked values retained
+        data = np.ma.MaskedArray(
+            [[0, 1, 2, 3, 4.4], [5, 6, 7, 8, 9]],
+            mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]],
+        )
+        cube = Cube(data, long_name="foo")
+        expected_index = array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expected_foo = array([0. , np.nan, 2. , np.nan, 4.4, np.nan, 6. , np.nan, 8. , np.nan])
+        data_frame_nodrop = iris.pandas.as_data_frame(cube, dropna=False)
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
 
     def test_time_gregorian(self):
         cube = Cube(
