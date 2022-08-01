@@ -25,8 +25,8 @@ except ImportError:
     from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
-from iris.coords import AuxCoord, DimCoord
-from iris.cube import Cube
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
+from iris.cube import Cube, CubeList
 
 
 def _add_iris_coord(cube, name, points, dim, calendar=None):
@@ -64,7 +64,14 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         cube.add_aux_coord(coord, dim)
 
 
-def as_cube(pandas_array, copy=True, calendars=None):
+def as_cube(
+    pandas_array,
+    copy=True,
+    calendars=None,
+    coord_cols=None,
+    cell_measure_cols=None,
+    ancillary_variable_cols=None,
+):
     """
     Convert a Pandas array into an Iris cube.
 
@@ -89,31 +96,91 @@ def as_cube(pandas_array, copy=True, calendars=None):
 
     """
     calendars = calendars or {}
-    if pandas_array.ndim not in [1, 2]:
-        raise ValueError(
-            "Only 1D or 2D Pandas arrays "
-            "can currently be conveted to Iris cubes."
+    coord_cols = coord_cols or []
+    cell_measure_cols = cell_measure_cols or []
+    ancillary_variable_cols = ancillary_variable_cols or []
+
+    if iris.FUTURE.pandas_ndim:
+        # TODO: allow for Series as well as DataFrame
+        non_data_columns = (
+            coord_cols + cell_measure_cols + ancillary_variable_cols
+        )
+        data_columns = list(
+            filter(lambda c: c not in non_data_columns, pandas_array.columns)
         )
 
-    # Make the copy work consistently across NumPy 1.6 and 1.7.
-    # (When 1.7 takes a copy it preserves the C/Fortran ordering, but
-    # 1.6 doesn't. Since we don't care about preserving the order we can
-    # just force it back to C-order.)
-    order = "C" if copy else "A"
-    data = np.array(pandas_array, copy=copy, order=order)
-    cube = Cube(np.ma.masked_invalid(data, copy=False))
-    _add_iris_coord(
-        cube, "index", pandas_array.index, 0, calendars.get(0, None)
-    )
-    if pandas_array.ndim == 2:
+        # TODO: assess performance scalability - how terrible is it?!
+        scalar_cubes = CubeList()
+        for _, row in pandas_array.iterrows():
+            coord_list = []
+            for column_name in non_data_columns:
+                coord = AuxCoord(row[column_name])
+                # Use rename() to attempt standard_name but fall back on long_name.
+                coord.rename(column_name)
+                coord_list.append((coord, None))
+
+            for data_column in data_columns:
+                phenom_cube = Cube(
+                    data=row[data_column],
+                    aux_coords_and_dims=coord_list,
+                )
+                # Use rename() to attempt standard_name but fall back on long_name.
+                phenom_cube.rename(data_column)
+                scalar_cubes.append(phenom_cube)
+
+        # TODO: merge one phenomenon, then re-use operation for subsequent ones.
+        #  could use a Cube of indices?
+        merged_cubes = scalar_cubes.merge()
+
+        for merged_cube in merged_cubes:
+            for column_name in cell_measure_cols:
+                coord = merged_cube.coord(column_name)
+                cube_dims = coord.cube_dims(merged_cube)
+                new_cm = CellMeasure(
+                    coord.core_points(),
+                    standard_name=coord.standard_name,
+                    long_name=coord.long_name,
+                )
+                merged_cube.remove_coord(coord)
+                merged_cube.add_cell_measure(new_cm, cube_dims)
+            for column_name in ancillary_variable_cols:
+                coord = merged_cube.coord(column_name)
+                cube_dims = coord.cube_dims(merged_cube)
+                new_av = AncillaryVariable(
+                    coord.core_points(),
+                    standard_name=coord.standard_name,
+                    long_name=coord.long_name,
+                )
+                merged_cube.remove_coord(coord)
+                merged_cube.add_ancillary_variable(new_av, cube_dims)
+
+        return merged_cubes
+    else:
+        if pandas_array.ndim not in [1, 2]:
+            raise ValueError(
+                "Only 1D or 2D Pandas arrays "
+                "can currently be conveted to Iris cubes."
+            )
+
+        # Make the copy work consistently across NumPy 1.6 and 1.7.
+        # (When 1.7 takes a copy it preserves the C/Fortran ordering, but
+        # 1.6 doesn't. Since we don't care about preserving the order we can
+        # just force it back to C-order.)
+        order = "C" if copy else "A"
+        data = np.array(pandas_array, copy=copy, order=order)
+        cube = Cube(np.ma.masked_invalid(data, copy=False))
         _add_iris_coord(
-            cube,
-            "columns",
-            pandas_array.columns.values,
-            1,
-            calendars.get(1, None),
+            cube, "index", pandas_array.index, 0, calendars.get(0, None)
         )
-    return cube
+        if pandas_array.ndim == 2:
+            _add_iris_coord(
+                cube,
+                "columns",
+                pandas_array.columns.values,
+                1,
+                calendars.get(1, None),
+            )
+        return cube
 
 
 def _as_pandas_coord(coord):

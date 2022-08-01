@@ -135,7 +135,7 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, datum_support=False):
+    def __init__(self, datum_support=False, pandas_ndim=False):
         """
         A container for run-time options controls.
 
@@ -161,13 +161,14 @@ class Future(threading.local):
         #
         # self.__dict__['example_future_flag'] = example_future_flag
         self.__dict__["datum_support"] = datum_support
+        self.__dict__["pandas_ndim"] = pandas_ndim
 
     def __repr__(self):
 
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future(datum_support={})"
-        return msg.format(self.datum_support)
+        msg = "Future(datum_support={}, pandas_ndim={})"
+        return msg.format(self.datum_support, self.pandas_ndim)
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
