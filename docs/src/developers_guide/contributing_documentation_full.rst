@@ -147,7 +147,7 @@ can exclude the module from the API documentation.  Add the entry to the
 Gallery
 ~~~~~~~
 
-The Iris :ref:`sphx_glr_generated_gallery` uses a sphinx extension named
+The Iris :ref:`gallery_index` uses a sphinx extension named
 `sphinx-gallery <https://sphinx-gallery.github.io/stable/>`_
 that auto generates reStructuredText (rst) files based upon a gallery source
 directory that abides directory and filename convention.

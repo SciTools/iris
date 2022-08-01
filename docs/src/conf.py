@@ -368,6 +368,11 @@ sphinx_gallery_conf = {
     "ignore_pattern": r"__init__\.py",
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
+    # force re-registering of nc-time-axis with matplotlib for each example,
+    # required for sphinx-gallery>=0.11.0
+    "reset_modules": (
+        lambda gallery_conf, fname: sys.modules.pop("nc_time_axis", None),
+    ),
 }
 
 # -----------------------------------------------------------------------------

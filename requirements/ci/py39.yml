@@ -45,6 +45,6 @@ dependencies:
   - sphinx
   - sphinxcontrib-napoleon
   - sphinx-copybutton
-  - sphinx-gallery
+  - sphinx-gallery >=0.11.0
   - sphinx-panels
   - pydata-sphinx-theme = 0.8.1
