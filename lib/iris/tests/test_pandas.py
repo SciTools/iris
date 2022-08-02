@@ -186,10 +186,10 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.bar, expected_bar)
 
     def test_simple1D(self):
-        cube = Cube(
-            np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), long_name="foo"
+        cube = Cube(np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), long_name="foo")
+        dim_coord = DimCoord(
+            [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], long_name="bar"
         )
-        dim_coord = DimCoord([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], long_name="bar")
         cube.add_dim_coord(dim_coord, 0)
         expected_bar = np.array([10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
         expected_foo = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -215,9 +215,14 @@ class TestAsDataFrame(tests.IrisTest):
 
     def test_simple3D(self):
         cube3d = Cube(
-            np.array([[[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], 
-                      [[10, 11, 12, 13, 14], [15, 16, 17, 18, 19]],
-                      [[20, 21, 22, 23, 24], [25, 26, 27, 28, 29]]]), long_name="foo"
+            np.array(
+                [
+                    [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
+                    [[10, 11, 12, 13, 14], [15, 16, 17, 18, 19]],
+                    [[20, 21, 22, 23, 24], [25, 26, 27, 28, 29]],
+                ]
+            ),
+            long_name="foo",
         )
         dim0_coord = DimCoord([1, 2, 3], long_name="milk")
         dim1_coord = DimCoord([10, 11], long_name="bar")
@@ -225,10 +230,142 @@ class TestAsDataFrame(tests.IrisTest):
         cube3d.add_dim_coord(dim0_coord, 0)
         cube3d.add_dim_coord(dim1_coord, 1)
         cube3d.add_dim_coord(dim2_coord, 2)
-        expected_milk = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
-        expected_bar = np.array([10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11])
-        expected_kid = np.array([20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24])
-        expected_foo = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+        expected_milk = np.array(
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+            ]
+        )
+        expected_bar = np.array(
+            [
+                10,
+                10,
+                10,
+                10,
+                10,
+                11,
+                11,
+                11,
+                11,
+                11,
+                10,
+                10,
+                10,
+                10,
+                10,
+                11,
+                11,
+                11,
+                11,
+                11,
+                10,
+                10,
+                10,
+                10,
+                10,
+                11,
+                11,
+                11,
+                11,
+                11,
+            ]
+        )
+        expected_kid = np.array(
+            [
+                20,
+                21,
+                22,
+                23,
+                24,
+                20,
+                21,
+                22,
+                23,
+                24,
+                20,
+                21,
+                22,
+                23,
+                24,
+                20,
+                21,
+                22,
+                23,
+                24,
+                20,
+                21,
+                22,
+                23,
+                24,
+                20,
+                21,
+                22,
+                23,
+                24,
+            ]
+        )
+        expected_foo = np.array(
+            [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+            ]
+        )
         data_frame = iris.pandas.as_data_frame(cube3d)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
@@ -244,7 +381,7 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(data, long_name="foo")
         expected_dim0 = np.array([0, 0, 0, 1, 1])
         expected_dim1 = np.array([0, 2, 4, 1, 3])
-        expected_foo = np.array([0. , 2. , 4.4, 6. , 8. ], dtype=np.float32)
+        expected_foo = np.array([0.0, 2.0, 4.4, 6.0, 8.0], dtype=np.float32)
         data_frame_drop = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame_drop.dim0, expected_dim0)
         self.assertArrayEqual(data_frame_drop.dim1, expected_dim1)
@@ -259,7 +396,10 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(data, long_name="foo")
         expected_dim0 = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
         expected_dim1 = np.array([0, 1, 2, 3, 4, 0, 1, 2, 3, 4])
-        expected_foo = np.array([0. , np.nan, 2. , np.nan, 4.4, np.nan, 6. , np.nan, 8. , np.nan], dtype=np.float32)
+        expected_foo = np.array(
+            [0.0, np.nan, 2.0, np.nan, 4.4, np.nan, 6.0, np.nan, 8.0, np.nan],
+            dtype=np.float32,
+        )
         data_frame_nodrop = iris.pandas.as_data_frame(cube, dropna=False)
         self.assertArrayEqual(data_frame_nodrop.dim0, expected_dim0)
         self.assertArrayEqual(data_frame_nodrop.dim1, expected_dim1)
@@ -275,17 +415,41 @@ class TestAsDataFrame(tests.IrisTest):
         )
         cube.add_dim_coord(time_coord, 1)
         expected_ts = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        expected_time = np.array([cftime.DatetimeGregorian(2000, 1, 1, 0, 0, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2000, 4, 10, 2, 24, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2000, 7, 19, 4, 48, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2000, 10, 27, 7, 12, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2001, 2, 4, 9, 36, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2000, 1, 1, 0, 0, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2000, 4, 10, 2, 24, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2000, 7, 19, 4, 48, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2000, 10, 27, 7, 12, 0, 0, has_year_zero=False),
-                                  cftime.DatetimeGregorian(2001, 2, 4, 9, 36, 0, 0, has_year_zero=False)],
-                                 dtype=object)
+        expected_time = np.array(
+            [
+                cftime.DatetimeGregorian(
+                    2000, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 4, 10, 2, 24, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 7, 19, 4, 48, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 10, 27, 7, 12, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2001, 2, 4, 9, 36, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 4, 10, 2, 24, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 7, 19, 4, 48, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 10, 27, 7, 12, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2001, 2, 4, 9, 36, 0, 0, has_year_zero=False
+                ),
+            ],
+            dtype=object,
+        )
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.ts, expected_ts)
         self.assertArrayEqual(data_frame.time, expected_time)
@@ -301,17 +465,41 @@ class TestAsDataFrame(tests.IrisTest):
             [100.1, 200.2], long_name="time", units=time_unit
         )
         cube.add_dim_coord(time_coord, 0)
-        expected_time = np.array([cftime.Datetime360Day(2000, 4, 11, 2, 24, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 4, 11, 2, 24, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 4, 11, 2, 24, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 4, 11, 2, 24, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 4, 11, 2, 24, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 7, 21, 4, 48, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 7, 21, 4, 48, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 7, 21, 4, 48, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 7, 21, 4, 48, 0, 0, has_year_zero=True),
-                                  cftime.Datetime360Day(2000, 7, 21, 4, 48, 0, 0, has_year_zero=True)],
-                                  dtype=object)
+        expected_time = np.array(
+            [
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+            ],
+            dtype=object,
+        )
         expected_ts = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.ts, expected_ts)
