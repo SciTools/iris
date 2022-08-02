@@ -187,7 +187,7 @@ class TestAsDataFrame(tests.IrisTest):
             np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), long_name="foo"
         )
         dim_coord = DimCoord([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], long_name="bar")
-        cube.add_dim_coord(dimpd._coord, 0)
+        cube.add_dim_coord(dim_coord, 0)
         expected_bar = array([10, 11, 12, 13, 14, 10, 11, 12, 13, 14])
         expected_foo = array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         data_frame = iris.pandas.as_data_frame(cube)
@@ -195,20 +195,42 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.bar, expected_bar)
 
     def test_simple2D(self):
-        cube = Cube(
+        cube2d = Cube(
             np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
         )
-        x_coord = DimCoord([10, 11, 12, 13, 14], long_name="bar")
-        y_coord = DimCoord([15, 16], long_name="milk")
-        cube.add_dim_coord(x_coord, 1)
-        cube.add_dim_coord(y_coord, 0)
+        dim0_coord = DimCoord([15, 16], long_name="milk")
+        dim1_coord = DimCoord([10, 11, 12, 13, 14], long_name="bar")
+        cube2d.add_dim_coord(dim0_coord, 0)
+        cube2d.add_dim_coord(dim1_coord, 1)
         expected_milk = array([15, 15, 15, 15, 15, 16, 16, 16, 16, 16])
         expected_bar = array([10, 11, 12, 13, 14, 10, 11, 12, 13, 14])
         expected_foo = array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        data_frame = iris.pandas.as_data_frame(cube)
+        data_frame = iris.pandas.as_data_frame(cube2d)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
+
+    def test_simple3D(self):
+        cube3d = Cube(
+            np.array([[[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], 
+                      [[10, 11, 12, 13, 14], [15, 16, 17, 18, 19]],
+                      [[20, 21, 22, 23, 24], [25, 26, 27, 28, 29]]]), long_name="foo"
+        )
+        dim0_coord = DimCoord([1, 2, 3], long_name="milk")
+        dim1_coord = DimCoord([10, 11], long_name="bar")
+        dim2_coord = DimCoord([20, 21, 22, 23, 24], long_name="kid")
+        cube3d.add_dim_coord(dim0_coord, 0)
+        cube3d.add_dim_coord(dim1_coord, 1)
+        cube3d.add_dim_coord(dim2_coord, 2)
+        expected_milk = array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+        expected_bar = array([10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11])
+        expected_kid = array([20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24, 20, 21, 22, 23, 24])
+        expected_foo = array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
+        data_frame = iris.pandas.as_data_frame(cube3d)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(data_frame.milk, expected_milk)
+        self.assertArrayEqual(data_frame.bar, expected_bar)
+        self.assertArrayEqual(data_frame.kid, expected_kid)
 
     def test_masked_drop(self):
         # Test with masked values dropped
