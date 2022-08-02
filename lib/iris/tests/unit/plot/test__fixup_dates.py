@@ -19,8 +19,8 @@ from iris.plot import _fixup_dates
 
 
 class Test(tests.IrisTest):
-    def test_gregorian_calendar(self):
-        unit = Unit("hours since 2000-04-13 00:00:00", calendar="gregorian")
+    def test_standard_calendar(self):
+        unit = Unit("hours since 2000-04-13 00:00:00", calendar="standard")
         coord = AuxCoord([1, 3, 6], "time", units=unit)
         result = _fixup_dates(coord, coord.points)
         self.assertIsInstance(result[0], datetime.datetime)
@@ -31,8 +31,8 @@ class Test(tests.IrisTest):
         ]
         self.assertArrayEqual(result, expected)
 
-    def test_gregorian_calendar_sub_second(self):
-        unit = Unit("seconds since 2000-04-13 00:00:00", calendar="gregorian")
+    def test_standard_calendar_sub_second(self):
+        unit = Unit("seconds since 2000-04-13 00:00:00", calendar="standard")
         coord = AuxCoord([1, 1.25, 1.5], "time", units=unit)
         result = _fixup_dates(coord, coord.points)
         self.assertIsInstance(result[0], datetime.datetime)

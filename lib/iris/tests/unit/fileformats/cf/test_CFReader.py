@@ -83,13 +83,13 @@ class Test_translate__formula_terms(tests.IrisTest):
             "delta", "height", np.float64, bounds="delta_bnds"
         )
         self.delta_bnds = netcdf_variable(
-            "delta_bnds", "height bnds", np.float
+            "delta_bnds", "height bnds", np.float64
         )
         self.sigma = netcdf_variable(
             "sigma", "height", np.float64, bounds="sigma_bnds"
         )
         self.sigma_bnds = netcdf_variable(
-            "sigma_bnds", "height bnds", np.float
+            "sigma_bnds", "height bnds", np.float64
         )
         self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"
@@ -185,13 +185,13 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             "delta", "height", np.float64, bounds="delta_bnds"
         )
         self.delta_bnds = netcdf_variable(
-            "delta_bnds", "height bnds", np.float
+            "delta_bnds", "height bnds", np.float64
         )
         self.sigma = netcdf_variable(
             "sigma", "height", np.float64, bounds="sigma_bnds"
         )
         self.sigma_bnds = netcdf_variable(
-            "sigma_bnds", "height bnds", np.float
+            "sigma_bnds", "height bnds", np.float64
         )
         self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"

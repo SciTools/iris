@@ -1,15 +1,13 @@
 # Top-level files
 include CHANGES COPYING COPYING.LESSER
+prune .github
+exclude .gitignore
 
-# Files from setup.py package_data that are not automatically added to source distributions
-recursive-include lib/iris/tests/results *.cml *.cdl *.txt *.xml *.json
-recursive-include lib/iris/etc *
-include lib/iris/tests/stock/file_headers/*
-
+# Files required for conda package management
 recursive-include requirements *
 
-# File required to build docs
-recursive-include docs Makefile *.js *.png *.py *.rst
+# Files required to build docs
+recursive-include docs *
 prune docs/src/_build
 prune docs/src/generated
 prune docs/gallery_tests
@@ -18,6 +16,5 @@ prune docs/gallery_tests
 include tools/generate_std_names.py
 include etc/cf-standard-name-table.xml
 
-global-exclude *.pyc
+global-exclude *.py[cod]
 global-exclude __pycache__
-global-exclude iris_image_test_output

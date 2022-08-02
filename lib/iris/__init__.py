@@ -97,18 +97,17 @@ import pathlib
 import threading
 
 import iris._constraints
-from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
 import iris.io
+
+from ._deprecation import IrisDeprecation, warn_deprecated
+from ._version import version as __version__  # noqa: F401
 
 try:
     import iris_sample_data
 except ImportError:
     iris_sample_data = None
 
-
-# Iris revision.
-__version__ = "3.3.dev0"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
@@ -136,7 +135,7 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self):
+    def __init__(self, datum_support=False):
         """
         A container for run-time options controls.
 
@@ -151,22 +150,24 @@ class Future(threading.local):
         .. note::
 
             iris.FUTURE.example_future_flag does not exist. It is provided
-            as an example because there are currently no flags in
-            iris.Future.
+            as an example.
 
         """
-        # The flag 'example_future_flag' is provided as a future reference
-        # for the structure of this class.
+        # The flag 'example_future_flag' is provided as a reference for the
+        # structure of this class.
+        #
+        # Note that self.__dict__ is used explicitly due to the manner in which
+        # __setattr__ is overridden.
         #
         # self.__dict__['example_future_flag'] = example_future_flag
-        pass
+        self.__dict__["datum_support"] = datum_support
 
     def __repr__(self):
 
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future()"
-        return msg.format()
+        msg = "Future(datum_support={})"
+        return msg.format(self.datum_support)
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
@@ -211,8 +212,7 @@ class Future(threading.local):
         .. note::
 
             iris.FUTURE.example_future_flag does not exist and is
-            provided only as an example since there are currently no
-            flags in Future.
+            provided only as an example.
 
         """
         # Save the current context

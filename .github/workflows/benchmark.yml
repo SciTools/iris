@@ -15,7 +15,7 @@ jobs:
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
-      IRIS_TEST_DATA_VERSION: "2.5"
+      IRIS_TEST_DATA_VERSION: "2.14"
       # Lets us manually bump the cache to rebuild
       ENV_CACHE_BUILD: "0"
       TEST_DATA_CACHE_BUILD: "2"
@@ -93,8 +93,11 @@ jobs:
               fi
               title="Performance Shift(s): \`$commit\`"
               body="
-          Benchmark comparison has identified performance shifts at commit \
-          $commit (#$pr_number). Please review the report below and \
+          Benchmark comparison has identified performance shifts at
+          
+          * commit $commit (#$pr_number).
+          
+          Please review the report below and \
           take corrective/congratulatory action as appropriate \
           :slightly_smiling_face:
 
@@ -115,7 +118,7 @@ jobs:
 
       - name: Archive asv results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: asv-report
           path: |

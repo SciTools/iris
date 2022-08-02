@@ -1,7 +1,7 @@
 .. _installing_iris:
 
-Installing Iris
-===============
+Installing
+==========
 
 Iris is available using conda for the following platforms:
 
@@ -119,9 +119,9 @@ Running the Tests
 To ensure your setup is configured correctly you can run the test suite using
 the command::
 
-    python setup.py test
+    pytest
 
-For more information see :ref:`developer_running_tests`.
+For more information see :ref:`test manual env`.
 
 
 Custom Site Configuration

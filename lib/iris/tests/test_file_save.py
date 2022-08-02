@@ -201,7 +201,7 @@ class TestSaveDot(TestSaveMethods):
             data = infile.read()
 
         # Compare files
-        self.assertEquals(
+        self.assertEqual(
             data,
             sio.getvalue(),
             "Mismatch in data when comparing iris bytesio save "

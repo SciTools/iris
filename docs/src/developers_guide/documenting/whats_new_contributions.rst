@@ -1,24 +1,21 @@
+.. include:: ../../common_links.inc
+
 .. _whats_new_contributions:
 
 =================================
 Contributing a "What's New" Entry
 =================================
 
-Iris uses a file named ``dev.rst`` to keep a draft of upcoming development changes
-that will form the next stable release.  Contributions to the :ref:`iris_whatsnew`
-document are written by the developer most familiar with the change made.
-The contribution should be included as part of the Iris Pull Request that
-introduces the change.
+Iris uses a file named ``latest.rst`` to keep a draft of upcoming development
+changes that will form the next stable release.  Contributions to the
+:ref:`iris_whatsnew` document are written by the developer most familiar
+with the change made.  The contribution should be included as part of
+the Iris Pull Request that introduces the change.
 
-The ``dev.rst`` and the past release notes are kept in the
+The ``latest.rst`` and the past release notes are kept in the
 ``docs/src/whatsnew/`` directory. If you are writing the first contribution after
-an Iris release: **create the new** ``dev.rst`` by copying the content from
-``dev.rst.template`` in the same directory.
-
-.. note::
-
-  Ensure that the symbolic link ``latest.rst`` references the ``dev.rst`` file
-  within the ``docs/src/whatsnew`` directory.
+an Iris release: **create the new** ``latest.rst`` by copying the content from
+``latest.rst.template`` in the same directory.
 
 Since the `Contribution categories`_ include Internal changes, **all** Iris
 Pull Requests should be accompanied by a "What's New" contribution.
@@ -27,7 +24,7 @@ Pull Requests should be accompanied by a "What's New" contribution.
 Git Conflicts
 =============
 
-If changes to ``dev.rst`` are being suggested in several simultaneous
+If changes to ``latest.rst`` are being suggested in several simultaneous
 Iris Pull Requests, Git will likely encounter merge conflicts. If this
 situation is thought likely (large PR, high repo activity etc.):
 
@@ -38,17 +35,17 @@ situation is thought likely (large PR, high repo activity etc.):
   a **new pull request** be created specifically for the "What's New" entry,
   which references the main pull request and titled (e.g. for PR#9999):
 
-    What's New for #9999
+   What's New for #9999
 
 * PR author: create the "What's New" pull request
 
 * PR reviewer: once the "What's New" PR is created, **merge the main PR**.
-  (this will fix any `cirrus-ci`_ linkcheck errors where the links in the
+  (this will fix any `Iris GitHub Actions`_ linkcheck errors where the links in the
   "What's New" PR reference new features introduced in the main PR)
 
 * PR reviewer: review the "What's New" PR, merge once acceptable
 
-These measures should mean the suggested ``dev.rst`` changes are outstanding
+These measures should mean the suggested ``latest.rst`` changes are outstanding
 for the minimum time, minimising conflicts and minimising the need to rebase or
 merge from trunk.
 
@@ -74,6 +71,9 @@ The required content, in order, is as follows:
   user name. Link the name to their GitHub profile. E.g.
   ```@tkknight <https://github.com/tkknight>`_ changed...``
 
+  * Bigger changes take a lot of effort to review, too! Make sure you credit
+    the reviewer(s) where appropriate.
+
 * The new/changed behaviour
 
 * Context to the change. Possible examples include: what this fixes, why
@@ -87,8 +87,9 @@ The required content, in order, is as follows:
 
 For example::
 
-  #. `@tkknight <https://github.com/tkknight>`_ changed changed argument ``x``
-     to be optional in :class:`~iris.module.class` and
+  #. `@tkknight <https://github.com/tkknight>`_ and
+     `@trexfeathers <https://github.com/trexfeathers>`_ (reviewer) changed
+     argument ``x`` to be optional in :class:`~iris.module.class` and
      :meth:`iris.module.method`. This allows greater flexibility as requested in
      :issue:`9999`. (:pull:`1111`, :pull:`9999`)
 
@@ -98,12 +99,10 @@ links to code. For more inspiration on possible content and references, please
 examine past what's :ref:`iris_whatsnew` entries.
 
 .. note:: The reStructuredText syntax will be checked as part of building
-          the documentation.  Any warnings should be corrected.
-          `cirrus-ci`_ will automatically build the documentation when
+          the documentation.  Any warnings should be corrected. The
+          `Iris GitHub Actions`_ will automatically build the documentation when
           creating a pull request, however you can also manually
           :ref:`build <contributing.documentation.building>` the documentation.
-
-.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 
 
 Contribution Categories

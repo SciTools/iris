@@ -350,7 +350,7 @@ information is contained in the :attr:`~iris.coords.Coord.units` property.
     always 1st Jan 1970 (times before this are represented as negative values).
 
 The units.calendar property of time coordinates is set from the lowest decimal
-digit of LBTIM, known as LBTIM.IC.  Note that the non-gregorian calendars (e.g.
+digit of LBTIM, known as LBTIM.IC.  Note that the non-standard calendars (e.g.
 360-day 'model' calendar) are defined in CF, not udunits.
 
 There are a number of different time encoding methods used in UM data, but the

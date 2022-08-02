@@ -17,7 +17,7 @@
         <dimCoord id="90e644bf" long_name="time" points="[929190, 929196, 929202, 929208, 929214, 929220,
 		929226, 929232, 929238, 929244, 929250, 929256,
 		929262, 929268, 929274, 929280, 929286, 929292,
-		929298, 929304]" shape="(20,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='gregorian')" value_type="int32" var_name="time"/>
+		929298, 929304]" shape="(20,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='standard')" value_type="int32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>

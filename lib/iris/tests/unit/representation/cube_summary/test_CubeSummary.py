@@ -72,6 +72,7 @@ class Test_CubeSummary(tests.IrisTest):
             self.assertTrue(vector_section.is_empty())
 
         expected_scalar_sections = [
+            "Mesh:",
             "Scalar coordinates:",
             "Scalar cell measures:",
             "Cell methods:",
@@ -221,7 +222,7 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertTrue(
             all(sect.is_empty() for sect in rep.vector_sections.values())
         )
-        self.assertEqual(len(rep.scalar_sections), 4)
+        self.assertEqual(len(rep.scalar_sections), 5)
         self.assertEqual(
             len(rep.scalar_sections["Scalar coordinates:"].contents), 1
         )

@@ -52,7 +52,7 @@ class TestCategorisations(tests.IrisTest):
         time_coord = iris.coords.DimCoord(
             day_numbers,
             standard_name="time",
-            units=cf_units.Unit("days since epoch", "gregorian"),
+            units=cf_units.Unit("days since epoch", "standard"),
         )
         cube.add_dim_coord(time_coord, 0)
 

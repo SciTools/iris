@@ -36,6 +36,6 @@
         <coord name="level"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float64" shape="(9, 3, 3)" state="loaded"/>
+    <data checksum="0x272f6741" dtype="float64" mask_checksum="0x14a720c5" shape="(9, 3, 3)"/>
   </cube>
 </cubes>

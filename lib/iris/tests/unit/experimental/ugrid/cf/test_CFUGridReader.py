@@ -16,8 +16,6 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy as np
-
 from iris.experimental.ugrid.cf import (
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
@@ -56,17 +54,17 @@ class Test_build_cf_groups(tests.IrisTest):
     @classmethod
     def setUpClass(cls):
         # Replicating syntax from test_CFReader.Test_build_cf_groups__formula_terms.
-        cls.mesh = netcdf_ugrid_variable("mesh", "", np.int)
-        cls.node_x = netcdf_ugrid_variable("node_x", "node", np.float)
-        cls.node_y = netcdf_ugrid_variable("node_y", "node", np.float)
-        cls.face_x = netcdf_ugrid_variable("face_x", "face", np.float)
-        cls.face_y = netcdf_ugrid_variable("face_y", "face", np.float)
+        cls.mesh = netcdf_ugrid_variable("mesh", "", int)
+        cls.node_x = netcdf_ugrid_variable("node_x", "node", float)
+        cls.node_y = netcdf_ugrid_variable("node_y", "node", float)
+        cls.face_x = netcdf_ugrid_variable("face_x", "face", float)
+        cls.face_y = netcdf_ugrid_variable("face_y", "face", float)
         cls.face_nodes = netcdf_ugrid_variable(
-            "face_nodes", "face vertex", np.int
+            "face_nodes", "face vertex", int
         )
-        cls.levels = netcdf_ugrid_variable("levels", "levels", np.int)
+        cls.levels = netcdf_ugrid_variable("levels", "levels", int)
         cls.data = netcdf_ugrid_variable(
-            "data", "levels face", np.float, coordinates="face_x face_y"
+            "data", "levels face", float, coordinates="face_x face_y"
         )
 
         # Add necessary attributes for mesh recognition.

@@ -54,7 +54,7 @@
         <dimCoord bounds="[[2922.5, 2923.5],
 		[2923.5, 2924.5],
 		[2924.5, 2925.5],
-		[2925.5, 2926.5]]" id="2306ff47" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, 2925.5]" shape="(4,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='gregorian')" value_type="float32" var_name="time"/>
+		[2925.5, 2926.5]]" id="2306ff47" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, 2925.5]" shape="(4,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='standard')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

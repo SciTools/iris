@@ -7,17 +7,19 @@ dependencies:
   - python =3.8
 
 # Setup dependencies.
-  - setuptools >=40.8.0
+  - setuptools >=45
+  - setuptools-scm >=7
 
 # Core dependencies.
   - cartopy >=0.20
-  - cf-units >=3
+  - cf-units >=3.1
   - cftime >=1.5
   - dask-core >=2
   - matplotlib
   - netcdf4
   - numpy >=1.19
   - python-xxhash
+  - pyproj
   - scipy
 
 # Optional dependencies.
@@ -33,15 +35,16 @@ dependencies:
 # Test dependencies.
   - filelock
   - imagehash >=4.0
-  - nose
-  - pillow <7
   - pre-commit
+  - psutil
+  - pytest
+  - pytest-xdist
   - requests
 
 # Documentation dependencies.
   - sphinx
   - sphinxcontrib-napoleon
   - sphinx-copybutton
-  - sphinx-gallery
+  - sphinx-gallery >=0.11.0
   - sphinx-panels
-  - sphinx_rtd_theme
+  - pydata-sphinx-theme = 0.8.1

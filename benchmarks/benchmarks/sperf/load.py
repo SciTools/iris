@@ -18,9 +18,6 @@ class Load(FileMixin):
 
 @on_demand_benchmark
 class Realise(FileMixin):
-    # The larger files take a long time to realise.
-    timeout = 600.0
-
     def setup(self, c_size, n_levels, n_times):
         super().setup(c_size, n_levels, n_times)
         self.loaded_cube = self.load_cube()

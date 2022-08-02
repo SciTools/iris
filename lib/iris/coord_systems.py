@@ -9,6 +9,7 @@ Definitions of coordinate systems.
 """
 
 from abc import ABCMeta, abstractmethod
+from functools import cached_property
 import warnings
 
 import cartopy.crs as ccrs
@@ -53,10 +54,28 @@ class CoordSystem(metaclass=ABCMeta):
     grid_mapping_name = None
 
     def __eq__(self, other):
-        return (
-            self.__class__ == other.__class__
-            and self.__dict__ == other.__dict__
-        )
+        """
+        Override equality
+
+        The `_globe` and `_crs` attributes are not compared because they are
+        cached properties and completely derived from other attributes. The
+        nature of caching means that they can appear on one object and not on
+        another despite the objects being identical, and them being completely
+        derived from other attributes means they will only differ if other
+        attributes that are being tested for equality differ.
+        """
+        if self.__class__ != other.__class__:
+            return False
+        self_keys = set(self.__dict__.keys())
+        other_keys = set(other.__dict__.keys())
+        check_keys = (self_keys | other_keys) - {"_globe", "_crs"}
+        for key in check_keys:
+            try:
+                if self.__dict__[key] != other.__dict__[key]:
+                    return False
+            except KeyError:
+                return False
+        return True
 
     def __ne__(self, other):
         # Must supply __ne__, Python does not defer to __eq__ for
@@ -122,11 +141,17 @@ class CoordSystem(metaclass=ABCMeta):
         pass
 
 
+_short_datum_names = {
+    "OSGB 1936": "OSGB36",
+    "OSGB_1936": "OSGB36",
+    "WGS 84": "WGS84",
+}
+
+
 class GeogCS(CoordSystem):
     """
     A geographic (ellipsoidal) coordinate system, defined by the shape of
     the Earth and a prime meridian.
-
     """
 
     grid_mapping_name = "latitude_longitude"
@@ -139,33 +164,34 @@ class GeogCS(CoordSystem):
         longitude_of_prime_meridian=None,
     ):
         """
-        Creates a new GeogCS.
+        Create a new GeogCS.
 
-        Kwargs:
-
+        Parameters
+        ----------
         * semi_major_axis, semi_minor_axis:
-            Axes of ellipsoid, in metres.  At least one must be given
-            (see note below).
-
+            Axes of ellipsoid, in metres.  At least one must be given (see note
+            below).
         * inverse_flattening:
-            Can be omitted if both axes given (see note below).
-            Defaults to 0.0 .
-
+            Can be omitted if both axes given (see note below). Default 0.0
         * longitude_of_prime_meridian:
-            Specifies the prime meridian on the ellipsoid, in degrees.
-            Defaults to 0.0 .
+            Specifies the prime meridian on the ellipsoid, in degrees. Default 0.0
 
+        Notes
+        -----
         If just semi_major_axis is set, with no semi_minor_axis or
         inverse_flattening, then a perfect sphere is created from the given
         radius.
 
-        If just two of semi_major_axis, semi_minor_axis, and
-        inverse_flattening are given the missing element is calculated from the
-        formula:
+        If just two of semi_major_axis, semi_minor_axis, and inverse_flattening
+        are given the missing element is calculated from the formula:
         :math:`flattening = (major - minor) / major`
 
         Currently, Iris will not allow over-specification (all three ellipsoid
         parameters).
+
+        After object creation, altering any of these properties will not update
+        the others. semi_major_axis and semi_minor_axis are used when creating
+        Cartopy objects.
 
         Examples::
 
@@ -233,13 +259,15 @@ class GeogCS(CoordSystem):
             raise ValueError("Insufficient ellipsoid specification")
 
         #: Major radius of the ellipsoid in metres.
-        self.semi_major_axis = float(semi_major_axis)
+        self._semi_major_axis = float(semi_major_axis)
 
         #: Minor radius of the ellipsoid in metres.
-        self.semi_minor_axis = float(semi_minor_axis)
+        self._semi_minor_axis = float(semi_minor_axis)
 
         #: :math:`1/f` where :math:`f = (a-b)/a`.
-        self.inverse_flattening = float(inverse_flattening)
+        self._inverse_flattening = float(inverse_flattening)
+
+        self._datum = None
 
         #: Describes 'zero' on the ellipsoid in degrees.
         self.longitude_of_prime_meridian = _arg_default(
@@ -255,6 +283,14 @@ class GeogCS(CoordSystem):
                 (
                     "longitude_of_prime_meridian",
                     self.longitude_of_prime_meridian,
+                )
+            )
+        # An unknown crs datum will be treated as None
+        if self.datum is not None and self.datum != "unknown":
+            attrs.append(
+                (
+                    "datum",
+                    self.datum,
                 )
             )
         return attrs
@@ -294,7 +330,7 @@ class GeogCS(CoordSystem):
         return CoordSystem.xml_element(self, doc, attrs)
 
     def as_cartopy_crs(self):
-        return ccrs.Geodetic(self.as_cartopy_globe())
+        return self._crs
 
     def as_cartopy_projection(self):
         return ccrs.PlateCarree(
@@ -303,13 +339,160 @@ class GeogCS(CoordSystem):
         )
 
     def as_cartopy_globe(self):
-        # Explicitly set `ellipse` to None as a workaround for
-        # Cartopy setting WGS84 as the default.
-        return ccrs.Globe(
-            semimajor_axis=self.semi_major_axis,
-            semiminor_axis=self.semi_minor_axis,
-            ellipse=None,
+        return self._globe
+
+    @cached_property
+    def _globe(self):
+        """
+        A representation of this CRS as a Cartopy Globe.
+
+        Note
+        ----
+        This property is created when required and then cached for speed. That
+        cached value is cleared when an assignment is made to a property of the
+        class that invalidates the cache.
+        """
+        if self._datum is not None:
+            short_datum = _short_datum_names.get(self._datum, self._datum)
+            # Cartopy doesn't actually enact datums unless they're provided without
+            # ellipsoid axes, so only provide the datum
+            return ccrs.Globe(short_datum, ellipse=None)
+        else:
+            return ccrs.Globe(
+                ellipse=None,
+                semimajor_axis=self._semi_major_axis,
+                semiminor_axis=self._semi_minor_axis,
+            )
+
+    @cached_property
+    def _crs(self):
+        """
+        A representation of this CRS as a Cartopy CRS.
+
+        Note
+        ----
+        This property is created when required and then cached for speed. That
+        cached value is cleared when an assignment is made to a property of the
+        class that invalidates the cache.
+        """
+        return ccrs.Geodetic(self._globe)
+
+    def _wipe_cached_properties(self):
+        """
+        Wipes the cached properties on the object as part of any update to a
+        value that invalidates the cache.
+        """
+        try:
+            delattr(self, "_crs")
+        except AttributeError:
+            pass
+        try:
+            delattr(self, "_globe")
+        except AttributeError:
+            pass
+
+    @property
+    def semi_major_axis(self):
+        if self._semi_major_axis is not None:
+            return self._semi_major_axis
+        else:
+            return self._crs.ellipsoid.semi_major_metre
+
+    @semi_major_axis.setter
+    def semi_major_axis(self, value):
+        """
+        Setting this property to a different value invalidates the current datum
+        (if any) because a datum encodes a specific semi-major axis. This also
+        invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
+        """
+        value = float(value)
+        if not np.isclose(self.semi_major_axis, value):
+            self._datum = None
+            self._wipe_cached_properties()
+        self._semi_major_axis = value
+
+    @property
+    def semi_minor_axis(self):
+        if self._semi_minor_axis is not None:
+            return self._semi_minor_axis
+        else:
+            return self._crs.ellipsoid.semi_minor_metre
+
+    @semi_minor_axis.setter
+    def semi_minor_axis(self, value):
+        """
+        Setting this property to a different value invalidates the current datum
+        (if any) because a datum encodes a specific semi-minor axis. This also
+        invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
+        """
+        value = float(value)
+        if not np.isclose(self.semi_minor_axis, value):
+            self._datum = None
+            self._wipe_cached_properties()
+        self._semi_minor_axis = value
+
+    @property
+    def inverse_flattening(self):
+        if self._inverse_flattening is not None:
+            return self._inverse_flattening
+        else:
+            self._crs.ellipsoid.inverse_flattening
+
+    @inverse_flattening.setter
+    def inverse_flattening(self, value):
+        """
+        Setting this property to a different value does not affect the behaviour
+        of this object any further than the value of this property.
+        """
+        wmsg = (
+            "Setting inverse_flattening does not affect other properties of "
+            "the GeogCS object. To change other properties set them explicitly"
+            " or create a new GeogCS instance."
         )
+        warnings.warn(wmsg, UserWarning)
+        value = float(value)
+        self._inverse_flattening = value
+
+    @property
+    def datum(self):
+        if self._datum is None:
+            return None
+        else:
+            datum = self._datum
+            return datum
+
+    @datum.setter
+    def datum(self, value):
+        """
+        Setting this property to a different value invalidates the current
+        values of the ellipsoid measurements because a datum encodes its own
+        ellipse. This also invalidates the cached `cartopy.Globe` and
+        `cartopy.CRS`.
+        """
+        if self._datum != value:
+            self._semi_major_axis = None
+            self._semi_minor_axis = None
+            self._inverse_flattening = None
+            self._wipe_cached_properties()
+        self._datum = value
+
+    @classmethod
+    def from_datum(cls, datum, longitude_of_prime_meridian=None):
+
+        crs = super().__new__(cls)
+
+        crs._semi_major_axis = None
+        crs._semi_minor_axis = None
+        crs._inverse_flattening = None
+
+        #: Describes 'zero' on the ellipsoid in degrees.
+        crs.longitude_of_prime_meridian = _arg_default(
+            longitude_of_prime_meridian, 0
+        )
+
+        crs._datum = datum
+
+        return crs
 
 
 class RotatedGeogCS(CoordSystem):
@@ -878,31 +1061,38 @@ class Stereographic(CoordSystem):
         false_northing=None,
         true_scale_lat=None,
         ellipsoid=None,
+        scale_factor_at_projection_origin=None,
     ):
         """
         Constructs a Stereographic coord system.
 
-        Args:
+        Parameters
+        ----------
 
-        * central_lat:
+        central_lat : float
             The latitude of the pole.
 
-        * central_lon:
+        central_lon : float
             The central longitude, which aligns with the y axis.
 
-        Kwargs:
+        false_easting : float, optional
+            X offset from planar origin in metres.
 
-        * false_easting:
-            X offset from planar origin in metres. Defaults to 0.0 .
+        false_northing : float, optional
+            Y offset from planar origin in metres.
 
-        * false_northing:
-            Y offset from planar origin in metres. Defaults to 0.0 .
-
-        * true_scale_lat:
+        true_scale_lat : float, optional
             Latitude of true scale.
 
-        * ellipsoid (:class:`GeogCS`):
+        scale_factor_at_projection_origin : float, optional
+            Scale factor at the origin of the projection
+
+        ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
+
+        Notes
+        -----
+        It is only valid to provide one of true_scale_lat and scale_factor_at_projection_origin
 
         """
 
@@ -922,26 +1112,41 @@ class Stereographic(CoordSystem):
         self.true_scale_lat = _arg_default(
             true_scale_lat, None, cast_as=_float_or_None
         )
-        # N.B. the way we use this parameter, we need it to default to None,
+        #: Scale factor at projection origin.
+        self.scale_factor_at_projection_origin = _arg_default(
+            scale_factor_at_projection_origin, None, cast_as=_float_or_None
+        )
+        # N.B. the way we use these parameters, we need them to default to None,
         # and *not* to 0.0 .
+
+        if (
+            self.true_scale_lat is not None
+            and self.scale_factor_at_projection_origin is not None
+        ):
+            raise ValueError(
+                "It does not make sense to provide both "
+                '"scale_factor_at_projection_origin" and "true_scale_latitude". '
+            )
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
-    def __repr__(self):
-        return (
-            "Stereographic(central_lat={!r}, central_lon={!r}, "
-            "false_easting={!r}, false_northing={!r}, "
-            "true_scale_lat={!r}, "
-            "ellipsoid={!r})".format(
-                self.central_lat,
-                self.central_lon,
-                self.false_easting,
-                self.false_northing,
-                self.true_scale_lat,
-                self.ellipsoid,
+    def _repr_attributes(self):
+        if self.scale_factor_at_projection_origin is None:
+            scale_info = "true_scale_lat={!r}, ".format(self.true_scale_lat)
+        else:
+            scale_info = "scale_factor_at_projection_origin={!r}, ".format(
+                self.scale_factor_at_projection_origin
             )
+        return (
+            f"(central_lat={self.central_lat}, central_lon={self.central_lon}, "
+            f"false_easting={self.false_easting}, false_northing={self.false_northing}, "
+            f"{scale_info}"
+            f"ellipsoid={self.ellipsoid})"
         )
+
+    def __repr__(self):
+        return "Stereographic" + self._repr_attributes()
 
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
@@ -952,11 +1157,79 @@ class Stereographic(CoordSystem):
             self.false_easting,
             self.false_northing,
             self.true_scale_lat,
+            self.scale_factor_at_projection_origin,
             globe=globe,
         )
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
+
+
+class PolarStereographic(Stereographic):
+    """
+    A subclass of the stereographic map projection centred on a pole.
+
+    """
+
+    grid_mapping_name = "polar_stereographic"
+
+    def __init__(
+        self,
+        central_lat,
+        central_lon,
+        false_easting=None,
+        false_northing=None,
+        true_scale_lat=None,
+        scale_factor_at_projection_origin=None,
+        ellipsoid=None,
+    ):
+        """
+        Construct a Polar Stereographic coord system.
+
+        Parameters
+        ----------
+
+        central_lat : {90, -90}
+            The latitude of the pole.
+
+        central_lon : float
+            The central longitude, which aligns with the y axis.
+
+        false_easting : float, optional
+            X offset from planar origin in metres.
+
+        false_northing : float, optional
+            Y offset from planar origin in metres.
+
+        true_scale_lat : float, optional
+            Latitude of true scale.
+
+        scale_factor_at_projection_origin : float, optional
+            Scale factor at the origin of the projection
+
+        ellipsoid : :class:`GeogCS`, optional
+            If given, defines the ellipsoid.
+
+        Notes
+        -----
+        It is only valid to provide at most one of `true_scale_lat` and
+        `scale_factor_at_projection_origin`.
+
+
+        """
+
+        super().__init__(
+            central_lat=central_lat,
+            central_lon=central_lon,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            true_scale_lat=true_scale_lat,
+            scale_factor_at_projection_origin=scale_factor_at_projection_origin,
+            ellipsoid=ellipsoid,
+        )
+
+    def __repr__(self):
+        return "PolarStereographic" + self._repr_attributes()
 
 
 class LambertConformal(CoordSystem):
@@ -1083,6 +1356,7 @@ class Mercator(CoordSystem):
         longitude_of_projection_origin=None,
         ellipsoid=None,
         standard_parallel=None,
+        scale_factor_at_projection_origin=None,
         false_easting=None,
         false_northing=None,
     ):
@@ -1100,11 +1374,21 @@ class Mercator(CoordSystem):
         * standard_parallel:
             The latitude where the scale is 1. Defaults to 0.0 .
 
+        * scale_factor_at_projection_origin:
+            Scale factor at natural origin. Defaults to unused.
+
         * false_easting:
             X offset from the planar origin in metres. Defaults to 0.0.
 
         * false_northing:
             Y offset from the planar origin in metres. Defaults to 0.0.
+
+        * datum:
+            If given, specifies the datumof the coordinate system. Only
+            respected if iris.Future.daum_support is set.
+
+        Note: Only one of ``standard_parallel`` and
+        ``scale_factor_at_projection_origin`` should be included.
 
         """
         #: True longitude of planar origin in degrees.
@@ -1115,8 +1399,24 @@ class Mercator(CoordSystem):
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
+        # Initialise to None, then set based on arguments
         #: The latitude where the scale is 1.
-        self.standard_parallel = _arg_default(standard_parallel, 0)
+        self.standard_parallel = None
+        # The scale factor at the origin of the projection
+        self.scale_factor_at_projection_origin = None
+        if scale_factor_at_projection_origin is None:
+            self.standard_parallel = _arg_default(standard_parallel, 0)
+        else:
+            if standard_parallel is None:
+                self.scale_factor_at_projection_origin = _arg_default(
+                    scale_factor_at_projection_origin, 0
+                )
+            else:
+                raise ValueError(
+                    "It does not make sense to provide both "
+                    '"scale_factor_at_projection_origin" and '
+                    '"standard_parallel".'
+                )
 
         #: X offset from the planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
@@ -1130,6 +1430,8 @@ class Mercator(CoordSystem):
             "{self.longitude_of_projection_origin!r}, "
             "ellipsoid={self.ellipsoid!r}, "
             "standard_parallel={self.standard_parallel!r}, "
+            "scale_factor_at_projection_origin="
+            "{self.scale_factor_at_projection_origin!r}, "
             "false_easting={self.false_easting!r}, "
             "false_northing={self.false_northing!r})"
         )
@@ -1142,6 +1444,7 @@ class Mercator(CoordSystem):
             central_longitude=self.longitude_of_projection_origin,
             globe=globe,
             latitude_true_scale=self.standard_parallel,
+            scale_factor=self.scale_factor_at_projection_origin,
             false_easting=self.false_easting,
             false_northing=self.false_northing,
         )

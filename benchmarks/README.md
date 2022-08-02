@@ -30,7 +30,9 @@ used to generate benchmark test objects/files; see
 but will defer to any value already set in the shell.
 * `BENCHMARK_DATA` - optional - path to a directory for benchmark synthetic
 test data, which the benchmark scripts will create if it doesn't already
-exist. Defaults to `<root>/benchmarks/.data/` if not set.
+exist. Defaults to `<root>/benchmarks/.data/` if not set. Note that some of
+the generated files, especially in the 'SPerf' suite, are many GB in size so
+plan accordingly.
 * `ON_DEMAND_BENCHMARKS` - optional - when set (to any value): benchmarks
 decorated with `@on_demand_benchmark` are included in the ASV run. Usually
 coupled with the ASV `--bench` argument to only run the benchmark(s) of

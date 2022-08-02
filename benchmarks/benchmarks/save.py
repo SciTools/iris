@@ -10,8 +10,7 @@ Where possible benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
              NOT scale with data size.
   * large: large enough to exclusively detect regressions in parts of the
-           run-time that scale with data size. Aim for benchmark time ~20x
-           that of the minimal benchmark.
+           run-time that scale with data size.
 
 """
 from iris import save
@@ -24,8 +23,6 @@ from .generate_data.ugrid import make_cube_like_2d_cubesphere
 class NetcdfSave:
     params = [[1, 600], [False, True]]
     param_names = ["cubesphere-N", "is_unstructured"]
-    # For use on 'track_addedmem_..' type benchmarks - result is too noisy.
-    no_small_params = [[600], [True]]
 
     def setup(self, n_cubesphere, is_unstructured):
         self.cube = make_cube_like_2d_cubesphere(
@@ -50,7 +47,7 @@ class NetcdfSave:
         if is_unstructured:
             self._save_mesh(self.cube)
 
-    @TrackAddedMemoryAllocation.decorator(no_small_params)
+    @TrackAddedMemoryAllocation.decorator
     def track_addedmem_netcdf_save(self, n_cubesphere, is_unstructured):
         # Don't need to copy the cube here since track_ benchmarks don't
         #  do repeats between self.setup() calls.

@@ -16,7 +16,6 @@ import os
 import os.path
 import shutil
 import stat
-from subprocess import check_call
 import tempfile
 from unittest import mock
 
@@ -33,6 +32,7 @@ import iris.fileformats.netcdf
 from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.tests.stock as stock
+from iris.tests.stock.netcdf import ncgen_from_cdl
 import iris.util
 
 
@@ -218,15 +218,25 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc.cml"))
 
-    def test_load_merc_false_en_grid(self):
+    def test_load_complex_merc_grid(self):
         # Test loading a single CF-netCDF file with a Mercator grid_mapping that
-        # includes false easting and northing
+        # includes false easting and northing and a standard parallel
         cube = iris.load_cube(
             tests.get_data_path(
                 ("NetCDF", "mercator", "false_east_north_merc.nc")
             )
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc_false.cml"))
+
+    def test_load_merc_grid_non_unit_scale_factor(self):
+        # Test loading a single CF-netCDF file with a Mercator grid_mapping that
+        # includes a non-unit scale factor at projection origin
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "mercator", "non_unit_scale_factor_merc.nc")
+            )
+        )
+        self.assertCML(cube, ("netcdf", "netcdf_merc_scale_factor.cml"))
 
     def test_load_stereographic_grid(self):
         # Test loading a single CF-netCDF file with a stereographic
@@ -237,6 +247,16 @@ class TestNetCDFLoad(tests.IrisTest):
             )
         )
         self.assertCML(cube, ("netcdf", "netcdf_stereo.cml"))
+
+    def test_load_polar_stereographic_grid(self):
+        # Test loading a single CF-netCDF file with a polar stereographic
+        # grid_mapping.
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "polar", "toa_brightness_temperature.nc")
+            )
+        )
+        self.assertCML(cube, ("netcdf", "netcdf_polar.cml"))
 
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.
@@ -343,12 +363,8 @@ class TestNetCDFLoad(tests.IrisTest):
         self.tmpdir = tempfile.mkdtemp()
         cdl_path = os.path.join(self.tmpdir, "tst.cdl")
         nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
+        # Create a temporary netcdf file from the CDL string.
+        ncgen_from_cdl(ref_cdl, cdl_path, nc_path)
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
@@ -392,12 +408,8 @@ class TestNetCDFLoad(tests.IrisTest):
         self.tmpdir = tempfile.mkdtemp()
         cdl_path = os.path.join(self.tmpdir, "tst.cdl")
         nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
+        # Create a temporary netcdf file from the CDL string.
+        ncgen_from_cdl(ref_cdl, cdl_path, nc_path)
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
@@ -437,12 +449,8 @@ class TestNetCDFLoad(tests.IrisTest):
         self.tmpdir = tempfile.mkdtemp()
         cdl_path = os.path.join(self.tmpdir, "tst.cdl")
         nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
+        # Create a temporary netcdf file from the CDL string.
+        ncgen_from_cdl(ref_cdl, cdl_path, nc_path)
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)

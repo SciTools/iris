@@ -28,9 +28,9 @@ from iris.fileformats.pp_load_rules import (
 #
 
 
-class TestEpochHours__gregorian(tests.IrisTest):
+class TestEpochHours__standard(tests.IrisTest):
     def setUp(self):
-        self.calendar = cf_units.CALENDAR_GREGORIAN
+        self.calendar = cf_units.CALENDAR_STANDARD
         self.hrs_unit = Unit("hours since epoch", calendar=self.calendar)
 
     def test_1970_1_1(self):

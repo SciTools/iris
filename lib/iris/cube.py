@@ -152,19 +152,13 @@ class CubeList(list):
 
     """
 
-    def __new__(cls, list_of_cubes=None):
-        """Given a :class:`list` of cubes, return a CubeList instance."""
-        cube_list = list.__new__(cls, list_of_cubes)
-
-        # Check that all items in the incoming list are cubes. Note that this
-        # checking does not guarantee that a CubeList instance *always* has
-        # just cubes in its list as the append & __getitem__ methods have not
-        # been overridden.
-        if not all([isinstance(cube, Cube) for cube in cube_list]):
-            raise ValueError(
-                "All items in list_of_cubes must be Cube " "instances."
-            )
-        return cube_list
+    def __init__(self, *args, **kwargs):
+        """Given an iterable of cubes, return a CubeList instance."""
+        # Do whatever a list does, to initialise ourself "as a list"
+        super().__init__(*args, **kwargs)
+        # Check that all items in the list are cubes.
+        for cube in self:
+            self._assert_is_cube(cube)
 
     def __str__(self):
         """Runs short :meth:`Cube.summary` on every cube."""
@@ -182,13 +176,17 @@ class CubeList(list):
         """Runs repr on every cube."""
         return "[%s]" % ",\n".join([repr(cube) for cube in self])
 
-    def _repr_html_(self):
-        from iris.experimental.representation import CubeListRepresentation
-
-        representer = CubeListRepresentation(self)
-        return representer.repr_html()
+    @staticmethod
+    def _assert_is_cube(obj):
+        if not hasattr(obj, "add_aux_coord"):
+            msg = (
+                r"Object {obj} cannot be put in a cubelist, "
+                "as it is not a Cube."
+            )
+            raise ValueError(msg)
 
     # TODO #370 Which operators need overloads?
+
     def __add__(self, other):
         return CubeList(list.__add__(self, other))
 
@@ -209,6 +207,48 @@ class CubeList(list):
         result = super().__getslice__(start, stop)
         result = CubeList(result)
         return result
+
+    def __iadd__(self, other_cubes):
+        """
+        Add a sequence of cubes to the cubelist in place.
+        """
+        return super(CubeList, self).__iadd__(CubeList(other_cubes))
+
+    def __setitem__(self, key, cube_or_sequence):
+        """Set self[key] to cube or sequence of cubes"""
+        if isinstance(key, int):
+            # should have single cube.
+            self._assert_is_cube(cube_or_sequence)
+        else:
+            # key is a slice (or exception will come from list method).
+            cube_or_sequence = CubeList(cube_or_sequence)
+
+        super(CubeList, self).__setitem__(key, cube_or_sequence)
+
+    def append(self, cube):
+        """
+        Append a cube.
+        """
+        self._assert_is_cube(cube)
+        super(CubeList, self).append(cube)
+
+    def extend(self, other_cubes):
+        """
+        Extend cubelist by appending the cubes contained in other_cubes.
+
+        Args:
+
+        * other_cubes:
+           A cubelist or other sequence of cubes.
+        """
+        super(CubeList, self).extend(CubeList(other_cubes))
+
+    def insert(self, index, cube):
+        """
+        Insert a cube before index.
+        """
+        self._assert_is_cube(cube)
+        super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
@@ -1188,7 +1228,16 @@ class Cube(CFVariableMixin):
                 "Factory must be a subclass of "
                 "iris.aux_factory.AuxCoordFactory."
             )
-        cube_coords = self.coords()
+
+        # Get all 'real' coords (i.e. not derived ones) : use private data
+        # rather than cube.coords(), as that is quite slow.
+        def coordsonly(coords_and_dims):
+            return [coord for coord, dims in coords_and_dims]
+
+        cube_coords = coordsonly(self._dim_coords_and_dims) + coordsonly(
+            self._aux_coords_and_dims
+        )
+
         for dependency in aux_factory.dependencies:
             ref_coord = aux_factory.dependencies[dependency]
             if ref_coord is not None and ref_coord not in cube_coords:
@@ -3713,6 +3762,10 @@ class Cube(CFVariableMixin):
             for coord in coords:
                 dims_to_collapse.update(self.coord_dims(coord))
 
+        if aggregator.name() == "max_run" and len(dims_to_collapse) > 1:
+            msg = "Not possible to calculate runs over more than one dimension"
+            raise ValueError(msg)
+
         if not dims_to_collapse:
             msg = (
                 "Cannot collapse a dimension which does not describe any "
@@ -3818,6 +3871,7 @@ class Cube(CFVariableMixin):
             data_result = aggregator.aggregate(
                 unrolled_data, axis=-1, **kwargs
             )
+
         aggregator.update_metadata(
             collapsed_cube, coords, axis=collapse_axis, **kwargs
         )
@@ -3826,36 +3880,53 @@ class Cube(CFVariableMixin):
         )
         return result
 
-    def aggregated_by(self, coords, aggregator, **kwargs):
+    def aggregated_by(
+        self, coords, aggregator, climatological=False, **kwargs
+    ):
         """
-        Perform aggregation over the cube given one or more "group
-        coordinates".
+        Perform aggregation over the cube given one or more "group coordinates".
 
         A "group coordinate" is a coordinate where repeating values represent a
-        single group, such as a month coordinate on a daily time slice.
-        Repeated values will form a group even if they are not consecutive.
+        single group, such as a month coordinate on a daily time slice. Repeated
+        values will form a group even if they are not consecutive.
 
         The group coordinates must all be over the same cube dimension. Each
         common value group identified over all the group-by coordinates is
         collapsed using the provided aggregator.
 
-        Args:
+        Weighted aggregations (:class:`iris.analysis.WeightedAggregator`) may
+        also be supplied. These include :data:`~iris.analysis.MEAN` and
+        :data:`~iris.analysis.SUM`.
 
-        * coords (list of coord names or :class:`iris.coords.Coord` instances):
+        Weighted aggregations support an optional *weights* keyword argument. If
+        set, this should be supplied as an array of weights whose shape matches
+        the cube or as 1D array whose length matches the dimension over which is
+        aggregated.
+
+        Parameters
+        ----------
+        coords : (list of coord names or :class:`iris.coords.Coord` instances)
             One or more coordinates over which group aggregation is to be
             performed.
-        * aggregator (:class:`iris.analysis.Aggregator`):
+        aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied to each group.
+        climatological : bool
+            Indicates whether the output is expected to be climatological. For
+            any aggregated time coord(s), this causes the climatological flag to
+            be set and the point for each cell to equal its first bound, thereby
+            preserving the time of year.
 
-        Kwargs:
+        Returns
+        -------
+            :class:`iris.cube.Cube`
 
-        * kwargs:
+        Other Parameters
+        ----------------
+        kwargs:
             Aggregator and aggregation function keyword arguments.
 
-        Returns:
-            :class:`iris.cube.Cube`.
-
-        For example:
+        Examples
+        --------
 
             >>> import iris
             >>> import iris.analysis
@@ -3892,14 +3963,6 @@ x            -              -
         groupby_coords = []
         dimension_to_groupby = None
 
-        # We can't handle weights
-        if isinstance(
-            aggregator, iris.analysis.WeightedAggregator
-        ) and aggregator.uses_weighting(**kwargs):
-            raise ValueError(
-                "Invalid Aggregation, aggregated_by() cannot use" " weights."
-            )
-
         coords = self._as_list_of_coords(coords)
         for coord in sorted(coords, key=lambda coord: coord.metadata):
             if coord.ndim > 1:
@@ -3922,6 +3985,31 @@ x            -              -
                 raise iris.exceptions.CoordinateCollapseError(msg)
             groupby_coords.append(coord)
 
+        # Check shape of weights. These must either match the shape of the cube
+        # or be 1D (in this case, their length must be equal to the length of the
+        # dimension we are aggregating over).
+        weights = kwargs.get("weights")
+        return_weights = kwargs.get("returned", False)
+        if weights is not None:
+            if weights.ndim == 1:
+                if len(weights) != self.shape[dimension_to_groupby]:
+                    raise ValueError(
+                        f"1D weights must have the same length as the dimension "
+                        f"that is aggregated, got {len(weights):d}, expected "
+                        f"{self.shape[dimension_to_groupby]:d}"
+                    )
+                weights = iris.util.broadcast_to_shape(
+                    weights,
+                    self.shape,
+                    (dimension_to_groupby,),
+                )
+            if weights.shape != self.shape:
+                raise ValueError(
+                    f"Weights must either be 1D or have the same shape as the "
+                    f"cube, got shape {weights.shape} for weights, "
+                    f"{self.shape} for cube"
+                )
+
         # Determine the other coordinates that share the same group-by
         # coordinate dimension.
         shared_coords = list(
@@ -3941,7 +4029,9 @@ x            -              -
 
         # Create the aggregation group-by instance.
         groupby = iris.analysis._Groupby(
-            groupby_coords, shared_coords_and_dims
+            groupby_coords,
+            shared_coords_and_dims,
+            climatological=climatological,
         )
 
         # Create the resulting aggregate-by cube and remove the original
@@ -3967,16 +4057,41 @@ x            -              -
             back_slice = (slice(None, None),) * (
                 len(data_shape) - dimension_to_groupby - 1
             )
+
+            # Create cube and weights slices
             groupby_subcubes = map(
                 lambda groupby_slice: self[
                     front_slice + (groupby_slice,) + back_slice
                 ].lazy_data(),
                 groupby.group(),
             )
-            agg = partial(
+            if weights is not None:
+                groupby_subweights = map(
+                    lambda groupby_slice: weights[
+                        front_slice + (groupby_slice,) + back_slice
+                    ],
+                    groupby.group(),
+                )
+            else:
+                groupby_subweights = (None for _ in range(len(groupby)))
+
+            agg = iris.analysis.create_weighted_aggregator_fn(
                 aggregator.lazy_aggregate, axis=dimension_to_groupby, **kwargs
             )
-            result = list(map(agg, groupby_subcubes))
+            result = list(map(agg, groupby_subcubes, groupby_subweights))
+
+            # If weights are returned, "result" is a list of tuples (each tuple
+            # contains two elements; the first is the aggregated data, the
+            # second is the aggregated weights). Convert these to two lists
+            # (one for the aggregated data and one for the aggregated weights)
+            # before combining the different slices.
+            if return_weights:
+                result, weights_result = list(zip(*result))
+                aggregateby_weights = da.stack(
+                    weights_result, axis=dimension_to_groupby
+                )
+            else:
+                aggregateby_weights = None
             aggregateby_data = da.stack(result, axis=dimension_to_groupby)
         else:
             cube_slice = [slice(None, None)] * len(data_shape)
@@ -3985,13 +4100,23 @@ x            -              -
                 # sub-cube.
                 cube_slice[dimension_to_groupby] = groupby_slice
                 groupby_sub_cube = self[tuple(cube_slice)]
+
+                # Slice the weights
+                if weights is not None:
+                    groupby_sub_weights = weights[tuple(cube_slice)]
+                    kwargs["weights"] = groupby_sub_weights
+
                 # Perform the aggregation over the group-by sub-cube and
-                # repatriate the aggregated data into the aggregate-by
-                # cube data.
-                cube_slice[dimension_to_groupby] = i
+                # repatriate the aggregated data into the aggregate-by cube
+                # data. If weights are also returned, handle them separately.
                 result = aggregator.aggregate(
                     groupby_sub_cube.data, axis=dimension_to_groupby, **kwargs
                 )
+                if return_weights:
+                    weights_result = result[1]
+                    result = result[0]
+                else:
+                    weights_result = None
 
                 # Determine aggregation result data type for the aggregate-by
                 # cube data on first pass.
@@ -4004,7 +4129,20 @@ x            -              -
                         aggregateby_data = np.zeros(
                             data_shape, dtype=result.dtype
                         )
+                    if weights_result is not None:
+                        aggregateby_weights = np.zeros(
+                            data_shape, dtype=weights_result.dtype
+                        )
+                    else:
+                        aggregateby_weights = None
+                cube_slice[dimension_to_groupby] = i
                 aggregateby_data[tuple(cube_slice)] = result
+                if weights_result is not None:
+                    aggregateby_weights[tuple(cube_slice)] = weights_result
+
+            # Restore original weights.
+            if weights is not None:
+                kwargs["weights"] = weights
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
@@ -4015,22 +4153,36 @@ x            -              -
             dimensions=dimension_to_groupby, dim_coords=True
         ) or [None]
         for coord in groupby.coords:
+            new_coord = coord.copy()
+
+            # The metadata may have changed (e.g. climatology), so check if
+            # there's a better coord to pass to self.coord_dims
+            lookup_coord = coord
+            for (
+                cube_coord,
+                groupby_coord,
+            ) in groupby.coord_replacement_mapping:
+                if coord == groupby_coord:
+                    lookup_coord = cube_coord
+
             if (
                 dim_coord is not None
-                and dim_coord.metadata == coord.metadata
+                and dim_coord.metadata == lookup_coord.metadata
                 and isinstance(coord, iris.coords.DimCoord)
             ):
-                aggregateby_cube.add_dim_coord(
-                    coord.copy(), dimension_to_groupby
-                )
+                aggregateby_cube.add_dim_coord(new_coord, dimension_to_groupby)
             else:
                 aggregateby_cube.add_aux_coord(
-                    coord.copy(), self.coord_dims(coord)
+                    new_coord, self.coord_dims(lookup_coord)
                 )
 
         # Attach the aggregate-by data into the aggregate-by cube.
+        if aggregateby_weights is None:
+            data_result = aggregateby_data
+        else:
+            data_result = (aggregateby_data, aggregateby_weights)
         aggregateby_cube = aggregator.post_process(
-            aggregateby_cube, aggregateby_data, coords, **kwargs
+            aggregateby_cube, data_result, coords, **kwargs
         )
 
         return aggregateby_cube
@@ -4247,6 +4399,8 @@ x            -               -
             interpolate. The values for coordinates that correspond to
             dates or times may optionally be supplied as datetime.datetime or
             cftime.datetime instances.
+            The N pairs supplied will be used to create an N-d grid of points
+            that will then be sampled (rather than just N points).
         * scheme:
             An instance of the type of interpolation to use to interpolate from this
             :class:`~iris.cube.Cube` to the given sample points. The
@@ -4277,7 +4431,7 @@ x            -               -
             air_potential_temperature / (K)     \
 (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(cube.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+            DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
                 points: [2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00]
                 shape: (3,)
                 dtype: float64
@@ -4290,7 +4444,7 @@ x            -               -
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(result.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+            DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
                 points: [2009-11-19 10:30:00]
                 shape: (1,)
                 dtype: float64
@@ -4305,7 +4459,7 @@ x            -               -
             air_potential_temperature / (K)     \
 (model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
             >>> print(result2.coord('time'))
-            DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
+            DimCoord :  time / (hours since 1970-01-01 00:00:00, standard calendar)
                 points: [2009-11-19 10:30:00]
                 shape: (1,)
                 dtype: float64

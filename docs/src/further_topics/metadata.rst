@@ -1,3 +1,4 @@
+.. _further topics:
 .. _metadata:
 
 Metadata
@@ -63,25 +64,26 @@ For example, the collective metadata used to define an
 ``var_name``, ``units``, and ``attributes`` members. Note that, these are the
 actual `data attribute`_ names of the metadata members on the Iris class.
 
+
 .. _metadata members table:
-.. table:: - Iris classes that model `CF Conventions`_ metadata
+.. table:: Iris classes that model `CF Conventions`_ metadata
    :widths: auto
    :align: center
 
-   =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
-   Metadata Members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord` Metadata Members
-   =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
-   ``standard_name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``standard_name``
-   ``long_name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``long_name``
-   ``var_name``        ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``var_name``
-   ``units``           ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``units``
-   ``attributes``      ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``attributes``
-   ``coord_system``                                            ✔                              ✔                                                                                                     ✔                              ``coord_system``
-   ``climatological``                                          ✔                              ✔                                                                                                     ✔                              ``climatological``
-   ``measure``                                                                                                                           ✔                                                                                         ``measure``
-   ``cell_methods``                                                                                                                                                        ✔                                                       ``cell_methods``
-   ``circular``                                                                                                                                                                                     ✔                              ``circular``
-   =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
+   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
+   Metadata Members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord`
+   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
+   ``standard_name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``long_name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``var_name``        ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``units``           ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``attributes``      ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``coord_system``                                            ✔                              ✔                                                                                                      ✔
+   ``climatological``                                          ✔                              ✔                                                                                                      ✔
+   ``measure``                                                                                                                            ✔
+   ``cell_methods``                                                                                                                                                          ✔
+   ``circular``                                                                                                                                                                                       ✔
+   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
 
 .. note::
 

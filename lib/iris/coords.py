@@ -12,6 +12,7 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Container, Iterator
 import copy
+from functools import lru_cache
 from itertools import chain, zip_longest
 import operator
 import warnings
@@ -1265,7 +1266,13 @@ def _get_2d_coord_bound_grid(bounds):
     return result
 
 
-class Cell(namedtuple("Cell", ["point", "bound"])):
+class _Hash:
+    """Mutable hash property"""
+
+    slots = ("_hash",)
+
+
+class Cell(namedtuple("Cell", ["point", "bound"]), _Hash):
     """
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
@@ -1325,6 +1332,18 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
 
         return super().__new__(cls, point, bound)
 
+    def __init__(self, *args, **kwargs):
+        # Pre-compute the hash value of this instance at creation time based
+        # on the Cell.point alone. This results in a significant performance
+        # gain, as Cell.__hash__ is reduced to a minimalist attribute lookup
+        # for each invocation.
+        try:
+            value = 0 if np.isnan(self.point) else hash((self.point,))
+        except TypeError:
+            # Passing a string to np.isnan causes this exception.
+            value = hash((self.point,))
+        self._hash = value
+
     def __mod__(self, mod):
         point = self.point
         bound = self.bound
@@ -1344,7 +1363,20 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return Cell(point, bound)
 
     def __hash__(self):
-        return super().__hash__()
+        # Required for >py39 and >np1.22.x due to changes in Cell behaviour for
+        # Cell.point=np.nan, as calling super().__hash__() returns a different
+        # hash each time and thus does not trigger the following call to
+        # Cell.__eq__ to determine equality.
+        # Note that, no explicit Cell.bound nan check is performed here.
+        # That is delegated to Cell.__eq__ instead. It's imperative we keep
+        # Cell.__hash__ light-weight to minimise performance degradation.
+        # Also see Cell.__init__ for Cell._hash assignment.
+        # Reference:
+        #   - https://bugs.python.org/issue43475
+        #   - https://github.com/numpy/numpy/issues/18833
+        #   - https://github.com/numpy/numpy/pull/18908
+        #   - https://github.com/numpy/numpy/issues/21210
+        return self._hash
 
     def __eq__(self, other):
         """
@@ -1352,15 +1384,30 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         compared.
 
         """
+
+        def nan_equality(x, y):
+            return (
+                isinstance(x, (float, np.number))
+                and np.isnan(x)
+                and isinstance(y, (float, np.number))
+                and np.isnan(y)
+            )
+
         if isinstance(other, (int, float, np.number)) or hasattr(
             other, "timetuple"
         ):
             if self.bound is not None:
                 return self.contains_point(other)
+            elif nan_equality(self.point, other):
+                return True
             else:
                 return self.point == other
         elif isinstance(other, Cell):
-            return (self.point == other.point) and (self.bound == other.bound)
+            if nan_equality(self.point, other.point):
+                return True
+            return (self.point == other.point) and (
+                self.bound == other.bound or self.bound == other.bound[::-1]
+            )
         elif (
             isinstance(other, str)
             and self.bound is None
@@ -2521,6 +2568,10 @@ class Coord(_DimensionalMetadata):
         return unique_value
 
 
+_regular_points = lru_cache(iris.util.regular_points)
+"""Caching version of iris.util.regular_points"""
+
+
 class DimCoord(Coord):
     """
     A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
@@ -2568,12 +2619,9 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = iris.util.points_step(points)
-        if not regular:
-            points = (zeroth + step) + step * np.arange(
-                count, dtype=np.float64
-            )
+        # Use lru_cache because this is done repeatedly with the same arguments
+        # (particularly in field-based file loading).
+        points = _regular_points(zeroth, step, count).copy()
         points.flags.writeable = False
 
         if with_bounds:
@@ -2805,6 +2853,10 @@ class DimCoord(Coord):
             * bounds are not masked, and
             * bounds are monotonic in the first dimension.
 
+        Also reverse the order of the second dimension if necessary to match the
+        first dimension's direction.  I.e. both should increase or both should
+        decrease.
+
         """
         # Ensure the bounds are a compatible shape.
         if self.shape != bounds.shape[:-1] and not (
@@ -2854,6 +2906,16 @@ class DimCoord(Coord):
                         emsg.format(self.name(), self.__class__.__name__)
                     )
 
+                if n_bounds == 2:
+                    # Make ordering of bounds consistent with coord's direction
+                    # if possible.
+                    (direction,) = directions
+                    diffs = bounds[:, 0] - bounds[:, 1]
+                    if np.all(np.sign(diffs) == direction):
+                        bounds = np.flip(bounds, axis=1)
+
+        return bounds
+
     @Coord.bounds.setter
     def bounds(self, bounds):
         if bounds is not None:
@@ -2862,8 +2924,9 @@ class DimCoord(Coord):
             # Make sure we have an array (any type of array).
             bounds = np.asanyarray(bounds)
 
-            # Check validity requirements for dimension-coordinate bounds.
-            self._new_bounds_requirements(bounds)
+            # Check validity requirements for dimension-coordinate bounds and reverse
+            # trailing dimension if necessary.
+            bounds = self._new_bounds_requirements(bounds)
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
 

@@ -110,8 +110,12 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
         hh.build_transverse_mercator_coordinate_system,
     ),
     hh.CF_GRID_MAPPING_STEREO: (
-        hh.has_supported_stereographic_parameters,
+        None,
         hh.build_stereographic_coordinate_system,
+    ),
+    hh.CF_GRID_MAPPING_POLAR: (
+        hh.has_supported_polar_stereographic_parameters,
+        hh.build_polar_stereographic_coordinate_system,
     ),
     hh.CF_GRID_MAPPING_LAMBERT_CONFORMAL: (
         None,

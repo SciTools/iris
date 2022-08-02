@@ -23,19 +23,29 @@ on:
 
 jobs:
 
+  get_python_matrix:
+    # Determines which Python versions should be included in the matrix used in
+    # the gen_lockfiles job.
+    if: "github.repository == 'SciTools/iris'"
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get_py.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: get_py
+        run: echo "::set-output name=matrix::$(ls -1 requirements/ci/py*.yml | xargs -n1 basename | sed 's/....$//' | jq -cnR '[inputs]')"
+
   gen_lockfiles:
     # this is a matrix job: it splits to create new lockfiles for each
     # of the CI test python versions.
-    # this list below should be changed when covering more python versions
-    # TODO: generate this matrix automatically from the list of available py**.yml files
-    #       ref: https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
     if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
-    
+    needs: get_python_matrix
+
     strategy:
       matrix:
-        python: ['38']
-    
+        python: ${{ fromJSON(needs.get_python_matrix.outputs.matrix) }}
+
     steps:
       - uses: actions/checkout@v3
       - name: install conda-lock
@@ -44,36 +54,44 @@ jobs:
           conda install -y -c conda-forge conda-lock
       - name: generate lockfile
         run: |
-          $CONDA/bin/conda-lock lock -k explicit -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
-          mv conda-linux-64.lock py${{matrix.python}}-linux-64.lock
+          $CONDA/bin/conda-lock lock -k explicit -p linux-64 -f requirements/ci/${{matrix.python}}.yml
+          mv conda-linux-64.lock ${{matrix.python}}-linux-64.lock
       - name: output lockfile
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          path: py${{matrix.python}}-linux-64.lock
-    
+          path: ${{matrix.python}}-linux-64.lock
+
   create_pr:
     # once the matrix job has completed all the lock files will have been uploaded as artifacts.
     # Download the artifacts, add them to the repo, and create a PR.
     if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
     needs: gen_lockfiles
-    
+
     steps:
       - uses: actions/checkout@v3
       - name: get artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
-          
+
       - name: Update lock files in repo
         run: |
           cp artifacts/artifact/*.lock requirements/ci/nox.lock
           rm -r artifacts
-        
+
+      - name: "Generate token"
+        uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.AUTH_APP_ID }}
+          private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
+
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@d6d5519d05f5814158ef015b8448f2f74648c421
+        uses: peter-evans/create-pull-request@923ad837f191474af6b1721408744feb989a4c27
         with:
+          token: ${{ steps.generate-token.outputs.token }}
           commit-message: Updated environment lockfiles
           committer: "Lockfile bot <noreply@github.com>"
           author: "Lockfile bot <noreply@github.com>"
@@ -83,7 +101,7 @@ jobs:
           body: |
             Lockfiles updated to the latest resolvable environment.
 
-            If the CI test suite fails, create a new branch based of this pull request and add the required fixes to that branch.
+            ### If the CI tasks fail, create a new branch based on this PR and add the required fixes to that branch.
           labels: |
             New: Pull Request
             Bot

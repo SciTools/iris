@@ -30,7 +30,7 @@ class TestEpoch(tests.IrisTest):
                 standard_name="air_temperature",
                 units="K",
             )
-            unit = cf_units.Unit(reftime, calendar="gregorian")
+            unit = cf_units.Unit(reftime, calendar="standard")
             coord = iris.coords.DimCoord(
                 points=np.array(coord_points, dtype=np.float32),
                 standard_name="time",
@@ -58,7 +58,7 @@ class TestMessages(tests.IrisTest):
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
         # Time coord
         t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="gregorian"
+            "hours since 1970-01-01 00:00:00", calendar="standard"
         )
         t_coord = iris.coords.DimCoord(
             points=np.arange(2, dtype=np.float32),

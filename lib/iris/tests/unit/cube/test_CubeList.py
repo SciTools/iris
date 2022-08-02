@@ -10,6 +10,7 @@
 import iris.tests as tests  # isort:skip
 
 import collections
+import copy
 from unittest import mock
 
 from cf_units import Unit
@@ -23,11 +24,31 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 import iris.tests.stock
 
+NOT_CUBE_MSG = "cannot be put in a cubelist, as it is not a Cube."
+NON_ITERABLE_MSG = "object is not iterable"
+
+
+class Test_append(tests.IrisTest):
+    def setUp(self):
+        self.cubelist = iris.cube.CubeList()
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+
+    def test_pass(self):
+        self.cubelist.append(self.cube1)
+        self.assertEqual(self.cubelist[-1], self.cube1)
+        self.cubelist.append(self.cube2)
+        self.assertEqual(self.cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist.append(None)
+
 
 class Test_concatenate_cube(tests.IrisTest):
     def setUp(self):
         self.units = Unit(
-            "days since 1970-01-01 00:00:00", calendar="gregorian"
+            "days since 1970-01-01 00:00:00", calendar="standard"
         )
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
         self.cube1.add_dim_coord(
@@ -43,7 +64,7 @@ class Test_concatenate_cube(tests.IrisTest):
         self.assertIsInstance(result, Cube)
 
     def test_fail(self):
-        units = Unit("days since 1970-01-02 00:00:00", calendar="gregorian")
+        units = Unit("days since 1970-01-02 00:00:00", calendar="standard")
         cube2 = Cube([1, 2, 3], "air_temperature", units="K")
         cube2.add_dim_coord(DimCoord([0, 1, 2], "time", units=units), 0)
         with self.assertRaises(iris.exceptions.ConcatenateError):
@@ -68,6 +89,29 @@ class Test_concatenate_cube(tests.IrisTest):
         exc_regexp = "can't concatenate an empty CubeList"
         with self.assertRaisesRegex(ValueError, exc_regexp):
             CubeList([]).concatenate_cube()
+
+
+class Test_extend(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cubelist1 = iris.cube.CubeList([self.cube1])
+        self.cubelist2 = iris.cube.CubeList([self.cube2])
+
+    def test_pass(self):
+        cubelist = copy.copy(self.cubelist1)
+        cubelist.extend(self.cubelist2)
+        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        cubelist.extend([self.cube2])
+        self.assertEqual(cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1.extend(self.cube1)
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1.extend(None)
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist1.extend(range(3))
 
 
 class Test_extract_overlapping(tests.IrisTest):
@@ -128,6 +172,44 @@ class Test_extract_overlapping(tests.IrisTest):
         a, b = cubes.extract_overlapping("time")
         self.assertEqual(a.coord("time"), self.cube[::-1].coord("time")[2:4])
         self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
+
+
+class Test_iadd(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cubelist1 = iris.cube.CubeList([self.cube1])
+        self.cubelist2 = iris.cube.CubeList([self.cube2])
+
+    def test_pass(self):
+        cubelist = copy.copy(self.cubelist1)
+        cubelist += self.cubelist2
+        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        cubelist += [self.cube2]
+        self.assertEqual(cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1 += self.cube1
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1 += 1.0
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist1 += range(3)
+
+
+class Test_insert(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cubelist = iris.cube.CubeList([self.cube1] * 3)
+
+    def test_pass(self):
+        self.cubelist.insert(1, self.cube2)
+        self.assertEqual(self.cubelist[1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist.insert(0, None)
 
 
 class Test_merge_cube(tests.IrisTest):
@@ -272,6 +354,34 @@ class Test_merge__time_triple(tests.IrisTest):
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         (cube,) = cubes.merge()
         self.assertCML(cube, checksum=False)
+
+
+class Test_setitem(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cube3 = iris.cube.Cube(1, long_name="boo")
+        self.cubelist = iris.cube.CubeList([self.cube1] * 3)
+
+    def test_pass(self):
+        self.cubelist[1] = self.cube2
+        self.assertEqual(self.cubelist[1], self.cube2)
+        self.cubelist[:2] = (self.cube2, self.cube3)
+        self.assertEqual(
+            self.cubelist,
+            iris.cube.CubeList([self.cube2, self.cube3, self.cube1]),
+        )
+
+    def test_fail(self):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist[0] = None
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist[0:2] = [self.cube3, None]
+
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist[:1] = 2.5
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist[:1] = self.cube1
 
 
 class Test_xml(tests.IrisTest):
@@ -565,7 +675,7 @@ class Test_iteration(tests.IrisTest):
                 self.scalar_cubes.append(Cube(i, long_name=letter))
 
     def test_iterable(self):
-        self.assertTrue(isinstance(self.scalar_cubes, collections.Iterable))
+        self.assertIsInstance(self.scalar_cubes, collections.abc.Iterable)
 
     def test_iteration(self):
         letters = "abcd" * 5

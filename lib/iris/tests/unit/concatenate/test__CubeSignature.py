@@ -24,7 +24,7 @@ class Test__coordinate_dim_metadata_equality(tests.IrisTest):
         data = np.arange(nt, dtype=np.float32)
         cube = Cube(data, standard_name="air_temperature", units="K")
         # Temporal coordinate.
-        t_units = Unit("hours since 1970-01-01 00:00:00", calendar="gregorian")
+        t_units = Unit("hours since 1970-01-01 00:00:00", calendar="standard")
         t_coord = DimCoord(
             points=np.arange(nt), standard_name="time", units=t_units
         )

@@ -39,15 +39,15 @@ This shows that there were 2 cubes as a result of loading the file, they were:
 
 The ``surface_altitude`` cube was 2 dimensional with:
 
-   * the two dimensions have extents of 204 and 187 respectively and are
-     represented by the ``grid_latitude`` and ``grid_longitude`` coordinates.
+* the two dimensions have extents of 204 and 187 respectively and are
+  represented by the ``grid_latitude`` and ``grid_longitude`` coordinates.
 
 The ``air_potential_temperature`` cubes were 4 dimensional with:
 
-   * the same length ``grid_latitude`` and ``grid_longitude`` dimensions as
-     ``surface_altitide``
-   * a ``time`` dimension of length 3
-   * a ``model_level_number`` dimension of length 7
+* the same length ``grid_latitude`` and ``grid_longitude`` dimensions as
+  ``surface_altitide``
+* a ``time`` dimension of length 3
+* a ``model_level_number`` dimension of length 7
 
 .. note::
 
@@ -55,7 +55,7 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
      (even if it only contains one :class:`iris.cube.Cube` - see
      :ref:`strict-loading`). Anything that can be done with a Python
      :class:`list` can be done with an :class:`iris.cube.CubeList`.
-     
+
      The order of this list should not be relied upon. Ways of loading a
      specific cube or cubes are covered in :ref:`constrained-loading` and
      :ref:`strict-loading`.
@@ -206,241 +206,8 @@ a specific ``model_level_number``::
     level_10 = iris.Constraint(model_level_number=10)
     cubes = iris.load(filename, level_10)
 
-Constraints can be combined using ``&`` to represent a more restrictive
-constraint to ``load``::
-
-    filename = iris.sample_data_path('uk_hires.pp')
-    forecast_6 = iris.Constraint(forecast_period=6)
-    level_10 = iris.Constraint(model_level_number=10)
-    cubes = iris.load(filename, forecast_6 & level_10)
-
-.. note::
-
-    Whilst ``&`` is supported, the ``|`` that might reasonably be expected is
-    not. Explanation as to why is in the :class:`iris.Constraint` reference
-    documentation.
-
-    For an example of constraining to multiple ranges of the same coordinate to
-    generate one cube, see the :class:`iris.Constraint` reference documentation.
-
-    To generate multiple cubes, each constrained to a different range of the
-    same coordinate, use :py:func:`iris.load_cubes`.
-
-As well as being able to combine constraints using ``&``,
-the :class:`iris.Constraint` class can accept multiple arguments,
-and a list of values can be given to constrain a coordinate to one of
-a collection of values::
-
-    filename = iris.sample_data_path('uk_hires.pp')
-    level_10_or_16_fp_6 = iris.Constraint(model_level_number=[10, 16], forecast_period=6)
-    cubes = iris.load(filename, level_10_or_16_fp_6)
-
-A common requirement is to limit the value of a coordinate to a specific range,
-this can be achieved by passing the constraint a function::
-
-    def bottom_16_levels(cell):
-       # return True or False as to whether the cell in question should be kept
-       return cell <= 16
-
-    filename = iris.sample_data_path('uk_hires.pp')
-    level_lt_16 = iris.Constraint(model_level_number=bottom_16_levels)
-    cubes = iris.load(filename, level_lt_16)
-
-.. note::
-
-    As with many of the examples later in this documentation, the
-    simple function above can be conveniently written as a lambda function
-    on a single line::
-
-        bottom_16_levels = lambda cell: cell <= 16
-
-
-Note also the :ref:`warning on equality constraints with floating point coordinates <floating-point-warning>`.
-
-
-Cube attributes can also be part of the constraint criteria. Supposing a
-cube attribute of ``STASH`` existed, as is the case when loading ``PP`` files,
-then specific STASH codes can be filtered::
-
-    filename = iris.sample_data_path('uk_hires.pp')
-    level_10_with_stash = iris.AttributeConstraint(STASH='m01s00i004') & iris.Constraint(model_level_number=10)
-    cubes = iris.load(filename, level_10_with_stash)
-
-.. seealso::
-
-    For advanced usage there are further examples in the
-    :class:`iris.Constraint` reference documentation.
-
-
-Constraining a Circular Coordinate Across its Boundary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Occasionally you may need to constrain your cube with a region that crosses the
-boundary of a circular coordinate (this is often the meridian or the dateline /
-antimeridian). An example use-case of this is to extract the entire Pacific Ocean
-from a cube whose longitudes are bounded by the dateline.
-
-This functionality cannot be provided reliably using constraints. Instead you should use the
-functionality provided by :meth:`cube.intersection <iris.cube.Cube.intersection>`
-to extract this region.
-
-
-.. _using-time-constraints:
-
-Constraining on Time
-^^^^^^^^^^^^^^^^^^^^
-Iris follows NetCDF-CF rules in representing time coordinate values as normalised,
-purely numeric, values which are normalised by the calendar specified in the coordinate's
-units (e.g. "days since 1970-01-01").
-However, when constraining by time we usually want to test calendar-related
-aspects such as hours of the day or months of the year, so Iris
-provides special features to facilitate this:
-
-Firstly, when Iris evaluates Constraint expressions, it will convert time-coordinate
-values (points and bounds) from numbers into :class:`~datetime.datetime`-like objects
-for ease of calendar-based testing.
-
-    >>> filename = iris.sample_data_path('uk_hires.pp')
-    >>> cube_all = iris.load_cube(filename, 'air_potential_temperature')
-    >>> print('All times :\n' + str(cube_all.coord('time')))
-    All times :
-    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
-        points: [2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00]
-        shape: (3,)
-        dtype: float64
-        standard_name: 'time'
-    >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
-    >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
-    >>> cube_11 = cube_all.extract(hour_11)
-    >>> print('Selected times :\n' + str(cube_11.coord('time')))
-    Selected times :
-    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
-        points: [2009-11-19 11:00:00]
-        shape: (1,)
-        dtype: float64
-        standard_name: 'time'
-
-Secondly, the :class:`iris.time` module provides flexible time comparison
-facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
-objects such as :class:`datetime.datetime` instances, and this comparison will
-then test only those 'aspects' which the PartialDateTime instance defines:
-
-    >>> import datetime
-    >>> from iris.time import PartialDateTime
-    >>> dt = datetime.datetime(2011, 3, 7)
-    >>> print(dt > PartialDateTime(year=2010, month=6))
-    True
-    >>> print(dt > PartialDateTime(month=6))
-    False
-    >>>
-
-These two facilities can be combined to provide straightforward calendar-based
-time selections when loading or extracting data.
-
-The previous constraint example can now be written as:
-
-    >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
-    >>> print(iris.load_cube(
-    ...     iris.sample_data_path('uk_hires.pp'),
-    ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
-    DimCoord :  time / (hours since 1970-01-01 00:00:00, gregorian calendar)
-        points: [2009-11-19 11:00:00]
-        shape: (1,)
-        dtype: float64
-        standard_name: 'time'
-
-It is common that a cube will need to be constrained between two given dates.
-In the following example we construct a time sequence representing the first
-day of every week for many years:
-
-.. testsetup:: timeseries_range
-
-    import datetime
-    import numpy as np
-    from iris.time import PartialDateTime
-    long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
-    _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
-    long_ts.add_dim_coord(_mondays, 0)
-
-
-.. doctest:: timeseries_range
-    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
-
-    >>> print(long_ts.coord('time'))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
-        points: [
-            2007-04-09 00:00:00, 2007-04-16 00:00:00, ...,
-            2010-02-08 00:00:00, 2010-02-15 00:00:00]
-        shape: (150,)
-        dtype: int64
-        standard_name: 'time'
-
-Given two dates in datetime format, we can select all points between them.
-
-.. doctest:: timeseries_range
-    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
-
-    >>> d1 = datetime.datetime.strptime('20070715T0000Z', '%Y%m%dT%H%MZ')
-    >>> d2 = datetime.datetime.strptime('20070825T0000Z', '%Y%m%dT%H%MZ')
-    >>> st_swithuns_daterange_07 = iris.Constraint(
-    ...     time=lambda cell: d1 <= cell.point < d2)
-    >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
-    >>> print(within_st_swithuns_07.coord('time'))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
-        points: [
-            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
-            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
-        shape: (6,)
-        dtype: int64
-        standard_name: 'time'
-
-Alternatively, we may rewrite this using :class:`iris.time.PartialDateTime`
-objects.
-
-.. doctest:: timeseries_range
-    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
-
-    >>> pdt1 = PartialDateTime(year=2007, month=7, day=15)
-    >>> pdt2 = PartialDateTime(year=2007, month=8, day=25)
-    >>> st_swithuns_daterange_07 = iris.Constraint(
-    ...     time=lambda cell: pdt1 <= cell.point < pdt2)
-    >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
-    >>> print(within_st_swithuns_07.coord('time'))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
-        points: [
-            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
-            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00]
-        shape: (6,)
-        dtype: int64
-        standard_name: 'time'
-
-A more complex example might require selecting points over an annually repeating
-date range. We can select points within a certain part of the year, in this case
-between the 15th of July through to the 25th of August. By making use of
-PartialDateTime this becomes simple:
-
-.. doctest:: timeseries_range
-
-    >>> st_swithuns_daterange = iris.Constraint(
-    ...     time=lambda cell: PartialDateTime(month=7, day=15) <= cell < PartialDateTime(month=8, day=25))
-    >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
-    ...
-    >>> # Note: using summary(max_values) to show more of the points
-    >>> print(within_st_swithuns.coord('time').summary(max_values=100))
-    DimCoord :  time / (days since 2007-04-09, gregorian calendar)
-        points: [
-            2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
-            2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00,
-            2008-07-21 00:00:00, 2008-07-28 00:00:00, 2008-08-04 00:00:00,
-            2008-08-11 00:00:00, 2008-08-18 00:00:00, 2009-07-20 00:00:00,
-            2009-07-27 00:00:00, 2009-08-03 00:00:00, 2009-08-10 00:00:00,
-            2009-08-17 00:00:00, 2009-08-24 00:00:00]
-        shape: (17,)
-        dtype: int64
-        standard_name: 'time'
-
-Notice how the dates printed are between the range specified in the ``st_swithuns_daterange``
-and that they span multiple years.
+Further details on using :class:`iris.Constraint` are
+discussed later in :ref:`cube_extraction`.
 
 .. _strict-loading:
 

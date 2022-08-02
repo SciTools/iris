@@ -311,5 +311,19 @@ def scatter(x, y, *args, **kwargs):
     return result
 
 
+def fill_between(x, y1, y2, *args, **kwargs):
+    """
+    Draws a labelled fill_between plot based on the given cubes or coordinates.
+
+    See :func:`iris.plot.fill_between` for details of valid arguments and
+    keyword arguments.
+
+    """
+    axes = kwargs.get("axes")
+    result = iplt.fill_between(x, y1, y2, *args, **kwargs)
+    _label_1d_plot(x, y1, axes=axes)
+    return result
+
+
 # Provide a convenience show method from pyplot.
 show = plt.show

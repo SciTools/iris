@@ -20,7 +20,7 @@
 		51, 52, 53, 54, 55, 56, 57, 58, 59, 60]" shape="(60,)" units="Unit('unknown')" value_type="int32" var_name="levelist"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="90e644bf" long_name="time" points="[931344]" shape="(1,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='gregorian')" value_type="int32" var_name="time"/>
+        <dimCoord id="90e644bf" long_name="time" points="[931344]" shape="(1,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='standard')" value_type="int32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>

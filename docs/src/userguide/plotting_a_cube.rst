@@ -101,15 +101,15 @@ see :py:func:`matplotlib.pyplot.savefig`).
 
 Some of the formats which are supported by **plt.savefig**:
 
-	======  ======  ======================================================================
-	Format  Type    Description
-	======  ======  ======================================================================
-	EPS     Vector  Encapsulated PostScript
-	PDF     Vector  Portable Document Format
-	PNG     Raster  Portable Network Graphics, a format with a lossless compression method
-	PS      Vector  PostScript, ideal for printer output
-	SVG     Vector  Scalable Vector Graphics, XML based
-	======  ======  ======================================================================
+======  ======  ======================================================================
+Format  Type    Description
+======  ======  ======================================================================
+EPS     Vector  Encapsulated PostScript
+PDF     Vector  Portable Document Format
+PNG     Raster  Portable Network Graphics, a format with a lossless compression method
+PS      Vector  PostScript, ideal for printer output
+SVG     Vector  Scalable Vector Graphics, XML based
+======  ======  ======================================================================
 
 ******************
 Iris Cube Plotting
@@ -125,12 +125,12 @@ wrapper functions.
 
 As a rule of thumb:
 
-   * if you wish to do a visualisation with a cube, use ``iris.plot`` or 
-     ``iris.quickplot``.
-   * if you wish to show, save or manipulate **any** visualisation, 
-     including ones created with Iris, use ``matplotlib.pyplot``.
-   * if you wish to create a non cube visualisation, also use 
-     ``matplotlib.pyplot``.
+* if you wish to do a visualisation with a cube, use ``iris.plot`` or
+  ``iris.quickplot``.
+* if you wish to show, save or manipulate **any** visualisation,
+  including ones created with Iris, use ``matplotlib.pyplot``.
+* if you wish to create a non cube visualisation, also use
+  ``matplotlib.pyplot``.
 
 The ``iris.quickplot`` module is exactly the same as the ``iris.plot`` module, 
 except that ``quickplot`` will add a title, x and y labels and a colorbar 

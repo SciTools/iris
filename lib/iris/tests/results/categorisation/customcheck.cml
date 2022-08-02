@@ -19,7 +19,7 @@
       <coord datadims="[0]">
         <dimCoord id="c2d27f9e" points="[0, 27, 54, 81, 108, 135, 162, 189, 216, 243,
 		270, 297, 324, 351, 378, 405, 432, 459, 486,
-		513, 540, 567, 594]" shape="(23,)" standard_name="time" units="Unit('days since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int32"/>
+		513, 540, 567, 594]" shape="(23,)" standard_name="time" units="Unit('days since 1970-01-01 00:00:00', calendar='standard')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

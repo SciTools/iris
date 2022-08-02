@@ -587,14 +587,14 @@ def _fixup_dates(coord, values):
         # Convert coordinate values into tuples of
         # (year, month, day, hour, min, sec)
         dates = [coord.units.num2date(val).timetuple()[0:6] for val in values]
-        if coord.units.calendar == "gregorian":
+        if coord.units.calendar == "standard":
             r = [datetime.datetime(*date) for date in dates]
         else:
             try:
                 import nc_time_axis  # noqa: F401
             except ImportError:
                 msg = (
-                    "Cannot plot against time in a non-gregorian "
+                    "Cannot plot against time in a non-standard "
                     'calendar, because "nc_time_axis" is not available :  '
                     "Install the package from "
                     "https://github.com/SciTools/nc-time-axis to enable "
@@ -645,7 +645,30 @@ def _u_object_from_v_object(v_object):
 
 
 def _get_plot_objects(args):
-    if len(args) > 1 and isinstance(
+    if len(args) > 2 and isinstance(
+        args[2], (iris.cube.Cube, iris.coords.Coord)
+    ):
+        # three arguments
+        u_object, v_object1, v_object2 = args[:3]
+        u1, v1 = _uv_from_u_object_v_object(u_object, v_object1)
+        _, v2 = _uv_from_u_object_v_object(u_object, v_object2)
+        args = args[3:]
+        if u1.size != v1.size or u1.size != v2.size:
+            msg = "The x and y-axis objects are not all compatible. They should have equal sizes but got ({}: {}), ({}: {}) and ({}: {})"
+            raise ValueError(
+                msg.format(
+                    u_object.name(),
+                    u1.size,
+                    v_object1.name(),
+                    v1.size,
+                    v_object2.name(),
+                    v2.size,
+                )
+            )
+        u = u1
+        v = (v1, v2)
+        v_object = (v_object1, v_object2)
+    elif len(args) > 1 and isinstance(
         args[1], (iris.cube.Cube, iris.coords.Coord)
     ):
         # two arguments
@@ -823,6 +846,52 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     return result
 
 
+def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
+    """
+    This function is equivalend to _draw_two_1d_from_points but expects two
+    y-axis variables rather than one (such as is required for .fill_between). It
+    can't be used where the y-axis variables are string coordinates. The y-axis
+    variable provided first has precedence where the two differ on whether the
+    axis should be inverted or whether a map should be drawn.
+    """
+    # NB. In the interests of clarity we use "u" to refer to the horizontal
+    # axes on the matplotlib plot and "v" for the vertical axes.
+
+    # retrieve the objects that are plotted on the horizontal and vertical
+    # axes (cubes or coordinates) and their respective values, along with the
+    # argument tuple with these objects removed
+    u_object, v_objects, u, vs, args = _get_plot_objects(args)
+
+    v_object1, _ = v_objects
+    v1, v2 = vs
+
+    # if both u_object and v_object are coordinates then check if a map
+    # should be drawn
+    if (
+        isinstance(u_object, iris.coords.Coord)
+        and isinstance(v_object1, iris.coords.Coord)
+        and _can_draw_map([v_object1, u_object])
+    ):
+        # Replace non-cartopy subplot/axes with a cartopy alternative and set
+        # the transform keyword.
+        kwargs = _ensure_cartopy_axes_and_determine_kwargs(
+            u_object, v_object1, kwargs
+        )
+
+    axes = kwargs.pop("axes", None)
+    draw_method = getattr(axes if axes else plt, draw_method_name)
+    if arg_func is not None:
+        args, kwargs = arg_func(u, v1, v2, *args, **kwargs)
+        result = draw_method(*args, **kwargs)
+    else:
+        result = draw_method(u, v1, v2, *args, **kwargs)
+
+    # Invert y-axis if necessary.
+    _invert_yaxis(v_object1, axes)
+
+    return result
+
+
 def _replace_axes_with_cartopy_axes(cartopy_proj):
     """
     Replace non-cartopy subplot/axes with a cartopy alternative
@@ -978,16 +1047,28 @@ def _map_common(
     # is useful in anywhere other than this plotting routine, it may be better
     # placed in the CS.
     if getattr(x_coord, "circular", False):
+        original_length = y.shape[1]
         _, direction = iris.util.monotonic(
             x_coord.points, return_direction=True
         )
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
-        if "_v_data" in kwargs:
-            v_data = kwargs["_v_data"]
-            v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
-            kwargs["_v_data"] = v_data
+
+        # Having extended the data, we also need to extend extra kwargs for
+        # matplotlib (e.g. point colours)
+        for key, val in kwargs.items():
+            try:
+                val_arr = np.array(val)
+            except TypeError:
+                continue
+            if val_arr.ndim >= 2 and val_arr.shape[1] == original_length:
+                # Concatenate the first column to the end of the data then
+                # update kwargs
+                val_arr = ma.concatenate(
+                    [val_arr, val_arr[:, 0:1, ...]], axis=1
+                )
+                kwargs[key] = val_arr
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
@@ -1585,6 +1666,45 @@ def scatter(x, y, *args, **kwargs):
     args = (x, y) + args
     _plot_args = None
     return _draw_1d_from_points("scatter", _plot_args, *args, **kwargs)
+
+
+def fill_between(x, y1, y2, *args, **kwargs):
+    """
+    Plots y1 and y2 against x, and fills the space between them.
+
+    Args:
+
+    * x: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        A cube or a coordinate to plot on the x-axis.
+
+    * y1: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        First cube or a coordinate to plot on the y-axis.
+
+    * y2: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        Second cube or a coordinate to plot on the y-axis.
+
+    Kwargs:
+
+    * axes: :class:`matplotlib.axes.Axes`
+        The axes to use for drawing.  Defaults to the current axes if none
+        provided.
+
+    See :func:`matplotlib.pyplot.fill_between` for details of additional valid
+    keyword arguments.
+
+    """
+    # here we are more specific about argument types than generic 1d plotting
+    if not isinstance(x, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError("x must be a cube or a coordinate.")
+    if not isinstance(y1, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError("y1 must be a cube or a coordinate.")
+    if not isinstance(y1, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError("y2 must be a cube or a coordinate.")
+    args = (x, y1, y2) + args
+    _plot_args = None
+    return _draw_two_1d_from_points(
+        "fill_between", _plot_args, *args, **kwargs
+    )
 
 
 # Provide convenience show method from pyplot

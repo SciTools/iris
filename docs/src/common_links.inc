@@ -3,19 +3,19 @@
 
 .. _black: https://black.readthedocs.io/en/stable/
 .. _cartopy: https://github.com/SciTools/cartopy
-.. _.cirrus.yml: https://github.com/SciTools/iris/blob/main/.cirrus.yml
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 .. _conda: https://docs.conda.io/en/latest/
 .. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
-.. _discussions: https://github.com/SciTools/iris/discussions
 .. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
+.. _GitHub Actions: https://docs.github.com/en/actions
 .. _GitHub Help Documentation: https://docs.github.com/en/github
-.. _Iris GitHub Discussions: https://github.com/SciTools/iris/discussions
+.. _GitHub Discussions: https://github.com/SciTools/iris/discussions
 .. _Iris: https://github.com/SciTools/iris
 .. _Iris GitHub: https://github.com/SciTools/iris
+.. _Iris GitHub Actions: https://github.com/SciTools/iris/actions
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
 .. _iris-test-data: https://github.com/SciTools/iris-test-data
 .. _isort: https://pycqa.github.io/isort/
@@ -64,6 +64,7 @@
 .. _@QuLogic: https://github.com/QuLogic
 .. _@rcomer: https://github.com/rcomer
 .. _@rhattersley: https://github.com/rhattersley
+.. _@schlunma: https://github.com/schlunma
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers

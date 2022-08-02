@@ -11,6 +11,7 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -31,7 +32,7 @@ class AggregateMixin:
         if self.lazy:
             data = as_lazy_data(data)
 
-        expected = np.array(expected)
+        expected = ma.array(expected)
 
         actual = self.agg_method(
             data,
@@ -51,9 +52,9 @@ class AggregateMixin:
             self.assertFalse(is_lazy)
 
         if approx:
-            self.assertArrayAlmostEqual(actual, expected)
+            self.assertMaskedArrayAlmostEqual(actual, expected)
         else:
-            self.assertArrayEqual(actual, expected)
+            self.assertMaskedArrayEqual(actual, expected)
 
     def test_1d_single(self):
         data = np.arange(11)
@@ -88,11 +89,12 @@ class AggregateMixin:
         self.check_percentile_calc(data, axis, percent, expected, approx=True)
 
 
-class MaskedAggregateMixin:
+class ScipyAggregateMixin:
     """
-    Tests for calculations on masked data.  Will only work if using the standard
-    (scipy) method.  Needs to be used with AggregateMixin, as these tests re-use its
-    method.
+    Tests for calculations specific to the default (scipy) function.  Includes
+    tests on masked data and tests to verify that the function is called with
+    the expected keywords.  Needs to be used with AggregateMixin, as some of
+    these tests re-use its method.
 
     """
 
@@ -129,7 +131,7 @@ class MaskedAggregateMixin:
     def test_masked_2d_multi(self):
         shape = (3, 10)
         data = ma.arange(np.prod(shape)).reshape(shape)
-        data[1] = ma.masked
+        data[1, ::2] = ma.masked
         percent = np.array([10, 50, 70, 80])
         axis = 0
         mdtol = 0.1
@@ -138,37 +140,50 @@ class MaskedAggregateMixin:
         # linear interpolation.
         expected = percent / 100 * 20
         # Other columns are first column plus column number.
-        expected = (
+        expected = ma.array(
             np.broadcast_to(expected, (shape[-1], percent.size))
             + np.arange(shape[-1])[:, np.newaxis]
         )
+        expected[::2] = ma.masked
 
         self.check_percentile_calc(
             data, axis, percent, expected, mdtol=mdtol, approx=True
         )
 
-    @mock.patch("scipy.stats.mstats.mquantiles")
+    @mock.patch("scipy.stats.mstats.mquantiles", return_value=[2, 4])
     def test_default_kwargs_passed(self, mocked_mquantiles):
         data = np.arange(5)
-        percent = 50
+        percent = [42, 75]
         axis = 0
+        if self.lazy:
+            data = as_lazy_data(data)
+
         self.agg_method(data, axis=axis, percent=percent)
+
+        # Trigger calculation for lazy case.
+        as_concrete_data(data)
         for key in ["alphap", "betap"]:
             self.assertEqual(mocked_mquantiles.call_args.kwargs[key], 1)
 
     @mock.patch("scipy.stats.mstats.mquantiles")
     def test_chosen_kwargs_passed(self, mocked_mquantiles):
         data = np.arange(5)
-        percent = 50
+        percent = [42, 75]
         axis = 0
+        if self.lazy:
+            data = as_lazy_data(data)
+
         self.agg_method(
             data, axis=axis, percent=percent, alphap=0.6, betap=0.5
         )
+
+        # Trigger calculation for lazy case.
+        as_concrete_data(data)
         for key, val in zip(["alphap", "betap"], [0.6, 0.5]):
             self.assertEqual(mocked_mquantiles.call_args.kwargs[key], val)
 
 
-class Test_aggregate(tests.IrisTest, AggregateMixin, MaskedAggregateMixin):
+class Test_aggregate(tests.IrisTest, AggregateMixin, ScipyAggregateMixin):
     """Tests for standard aggregation method on real data."""
 
     def setUp(self):
@@ -181,6 +196,13 @@ class Test_aggregate(tests.IrisTest, AggregateMixin, MaskedAggregateMixin):
         with self.assertRaisesRegex(ValueError, emsg):
             PERCENTILE.aggregate("dummy", axis=0)
 
+    def test_wrong_kwarg(self):
+        # Test we get an error out of scipy if we pass the numpy keyword.
+        data = range(5)
+        emsg = "unexpected keyword argument"
+        with self.assertRaisesRegex(TypeError, emsg):
+            PERCENTILE.aggregate(data, percent=50, axis=0, method="nearest")
+
 
 class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
     """Tests for fast percentile method on real data."""
@@ -191,14 +213,58 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         self.agg_method = PERCENTILE.aggregate
 
     def test_masked(self):
-        shape = (2, 11)
+        # Using (3,11) because np.percentile returns a masked array anyway with
+        # (2, 11)
+        shape = (3, 11)
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
-        emsg = "Cannot use fast np.percentile method with masked array."
+        emsg = (
+            "Cannot use fast np.percentile method with masked array unless "
+            "mdtol is 0."
+        )
         with self.assertRaisesRegex(TypeError, emsg):
             PERCENTILE.aggregate(
                 data, axis=0, percent=50, fast_percentile_method=True
             )
+
+    def test_masked_mdtol_0(self):
+        # Using (3,11) because np.percentile returns a masked array anyway with
+        # (2, 11)
+        shape = (3, 11)
+        axis = 0
+        percent = 50
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        expected = ma.arange(shape[-1]) + 11
+        expected[::2] = ma.masked
+        self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
+
+    @mock.patch("numpy.percentile")
+    def test_numpy_percentile_called(self, mocked_percentile):
+        # Basic check that numpy.percentile is called.
+        data = np.arange(5)
+        self.agg_method(data, axis=0, percent=42, fast_percentile_method=True)
+        mocked_percentile.assert_called_once()
+
+        # Check that we left "method" keyword to numpy's default.
+        self.assertNotIn("method", mocked_percentile.call_args.kwargs)
+
+    @mock.patch("numpy.percentile")
+    def test_chosen_kwarg_passed(self, mocked_percentile):
+        data = np.arange(5)
+        percent = [42, 75]
+        axis = 0
+
+        self.agg_method(
+            data,
+            axis=axis,
+            percent=percent,
+            fast_percentile_method=True,
+            method="nearest",
+        )
+        self.assertEqual(
+            mocked_percentile.call_args.kwargs["method"], "nearest"
+        )
 
 
 class MultiAxisMixin:
@@ -265,13 +331,64 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         actual = PERCENTILE.lazy_aggregate(
             data, axis=0, percent=50, fast_percentile_method=True
         )
-        emsg = "Cannot use fast np.percentile method with masked array."
+        emsg = (
+            "Cannot use fast np.percentile method with masked array unless "
+            "mdtol is 0."
+        )
         with self.assertRaisesRegex(TypeError, emsg):
             as_concrete_data(actual)
 
+    def test_masked_mdtol_0(self):
+        # Using (3,11) because np.percentile returns a masked array anyway with
+        # (2, 11)
+        shape = (3, 11)
+        axis = 0
+        percent = 50
+        data = ma.arange(np.prod(shape)).reshape(shape)
+        data[0, ::2] = ma.masked
+        data = as_lazy_data(data)
+        expected = ma.arange(shape[-1]) + 11
+        expected[::2] = ma.masked
+        self.check_percentile_calc(data, axis, percent, expected, mdtol=0)
+
+    @mock.patch("numpy.percentile", return_value=np.array([2, 4]))
+    def test_numpy_percentile_called(self, mocked_percentile):
+        # Basic check that numpy.percentile is called.
+        data = da.arange(5)
+        result = self.agg_method(
+            data, axis=0, percent=[42, 75], fast_percentile_method=True
+        )
+
+        self.assertTrue(is_lazy_data(result))
+        as_concrete_data(result)
+        mocked_percentile.assert_called()
+
+        # Check we have left "method" keyword to numpy's default.
+        self.assertNotIn("method", mocked_percentile.call_args.kwargs)
+
+    @mock.patch("numpy.percentile")
+    def test_chosen_method_kwarg_passed(self, mocked_percentile):
+        data = da.arange(5)
+        percent = [42, 75]
+        axis = 0
+
+        result = self.agg_method(
+            data,
+            axis=axis,
+            percent=percent,
+            fast_percentile_method=True,
+            method="nearest",
+        )
+
+        self.assertTrue(is_lazy_data(result))
+        as_concrete_data(result)
+        self.assertEqual(
+            mocked_percentile.call_args.kwargs["method"], "nearest"
+        )
+
 
 class Test_lazy_aggregate(
-    tests.IrisTest, AggregateMixin, MaskedAggregateMixin, MultiAxisMixin
+    tests.IrisTest, AggregateMixin, ScipyAggregateMixin, MultiAxisMixin
 ):
     """Tests for standard aggregation on lazy data."""
 

@@ -13,7 +13,6 @@ import iris.tests as tests  # isort:skip
 
 from pathlib import Path
 from shutil import rmtree
-from subprocess import check_call
 import tempfile
 from uuid import uuid4
 
@@ -22,6 +21,7 @@ from iris.experimental.ugrid.load import (
     load_meshes,
     logger,
 )
+from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
 def setUpModule():
@@ -35,15 +35,11 @@ def tearDownModule():
 
 
 def cdl_to_nc(cdl):
-    cdl_path = TMP_DIR / "tst.cdl"
-    nc_path = TMP_DIR / f"{uuid4()}.nc"
-    # Write CDL string into a temporary CDL file.
-    with open(cdl_path, "w") as f_out:
-        f_out.write(cdl)
+    cdl_path = str(TMP_DIR / "tst.cdl")
+    nc_path = str(TMP_DIR / f"{uuid4()}.nc")
     # Use ncgen to convert this into an actual (temporary) netCDF file.
-    command = "ncgen -o {} {}".format(nc_path, cdl_path)
-    check_call(command, shell=True)
-    return str(nc_path)
+    ncgen_from_cdl(cdl_str=cdl, cdl_path=cdl_path, nc_path=nc_path)
+    return nc_path
 
 
 class TestsBasic(tests.IrisTest):

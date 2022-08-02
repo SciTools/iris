@@ -19,7 +19,9 @@ import warnings
 import cf_units
 import numpy as np
 import numpy.ma as ma
+import pyproj
 
+import iris
 import iris.aux_factory
 from iris.common.mixin import _get_valid_standard_name
 import iris.coord_systems
@@ -131,6 +133,8 @@ CF_ATTR_AXIS = "axis"
 CF_ATTR_BOUNDS = "bounds"
 CF_ATTR_CALENDAR = "calendar"
 CF_ATTR_CLIMATOLOGY = "climatology"
+CF_ATTR_GRID_CRS_WKT = "crs_wkt"
+CF_ATTR_GRID_DATUM = "horizontal_datum_name"
 CF_ATTR_GRID_INVERSE_FLATTENING = "inverse_flattening"
 CF_ATTR_GRID_EARTH_RADIUS = "earth_radius"
 CF_ATTR_GRID_MAPPING_NAME = "grid_mapping_name"
@@ -141,6 +145,7 @@ CF_ATTR_GRID_SEMI_MAJOR_AXIS = "semi_major_axis"
 CF_ATTR_GRID_SEMI_MINOR_AXIS = "semi_minor_axis"
 CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN = "latitude_of_projection_origin"
 CF_ATTR_GRID_LON_OF_PROJ_ORIGIN = "longitude_of_projection_origin"
+CF_ATTR_GRID_STRAIGHT_VERT_LON = "straight_vertical_longitude_from_pole"
 CF_ATTR_GRID_STANDARD_PARALLEL = "standard_parallel"
 CF_ATTR_GRID_FALSE_EASTING = "false_easting"
 CF_ATTR_GRID_FALSE_NORTHING = "false_northing"
@@ -233,7 +238,10 @@ def build_cube_metadata(engine):
 
 ################################################################################
 def _get_ellipsoid(cf_grid_var):
-    """Return the ellipsoid definition."""
+    """
+    Return a :class:`iris.coord_systems.GeogCS` using the relevant properties of
+    `cf_grid_var`. Returns None if no relevant properties are specified.
+    """
     major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
     minor = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MINOR_AXIS, None)
     inverse_flattening = getattr(
@@ -248,21 +256,51 @@ def _get_ellipsoid(cf_grid_var):
     if major is None and minor is None and inverse_flattening is None:
         major = getattr(cf_grid_var, CF_ATTR_GRID_EARTH_RADIUS, None)
 
-    return major, minor, inverse_flattening
+    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    # Check crs_wkt if no datum
+    if datum is None:
+        crs_wkt = getattr(cf_grid_var, CF_ATTR_GRID_CRS_WKT, None)
+        if crs_wkt is not None:
+            proj_crs = pyproj.crs.CRS.from_wkt(crs_wkt)
+            if proj_crs.datum is not None:
+                datum = proj_crs.datum.name
+
+    # An unknown crs datum will be treated as None
+    if datum == "unknown":
+        datum = None
+
+    if not iris.FUTURE.datum_support:
+        wmsg = (
+            "Ignoring a datum in netCDF load for consistency with existing "
+            "behaviour. In a future version of Iris, this datum will be "
+            "applied. To apply the datum when loading, use the "
+            "iris.FUTURE.datum_support flag."
+        )
+        warnings.warn(wmsg, FutureWarning, stacklevel=14)
+        datum = None
+
+    if datum is not None:
+        return iris.coord_systems.GeogCS.from_datum(datum)
+    elif major is None and minor is None and inverse_flattening is None:
+        return None
+    else:
+        return iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
 
 ################################################################################
 def build_coordinate_system(engine, cf_grid_var):
     """Create a coordinate system from the CF-netCDF grid mapping variable."""
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
-
-    return iris.coord_systems.GeogCS(major, minor, inverse_flattening)
+    coord_system = _get_ellipsoid(cf_grid_var)
+    if coord_system is None:
+        raise ValueError("No ellipsoid specified")
+    else:
+        return coord_system
 
 
 ################################################################################
 def build_rotated_coordinate_system(engine, cf_grid_var):
     """Create a rotated coordinate system from the CF-netCDF grid mapping variable."""
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     north_pole_latitude = getattr(
         cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LAT, 90.0
@@ -276,14 +314,6 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
     north_pole_grid_lon = getattr(
         cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0
     )
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     rcs = iris.coord_systems.RotatedGeogCS(
         north_pole_latitude,
@@ -302,7 +332,7 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
@@ -327,14 +357,6 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
             cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
         )
 
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
-
     cs = iris.coord_systems.TransverseMercator(
         latitude_of_projection_origin,
         longitude_of_central_meridian,
@@ -354,7 +376,7 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
@@ -367,14 +389,6 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
     standard_parallel = getattr(
         cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
     )
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     cs = iris.coord_systems.LambertConformal(
         latitude_of_projection_origin,
@@ -395,7 +409,7 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
@@ -403,18 +417,12 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     longitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
     )
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
+
     false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
     false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    # Iris currently only supports Stereographic projections with a scale
-    # factor of 1.0. This is checked elsewhere.
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     cs = iris.coord_systems.Stereographic(
         latitude_of_projection_origin,
@@ -422,6 +430,43 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
         false_easting,
         false_northing,
         true_scale_lat=None,
+        scale_factor_at_projection_origin=scale_factor_at_projection_origin,
+        ellipsoid=ellipsoid,
+    )
+
+    return cs
+
+
+################################################################################
+def build_polar_stereographic_coordinate_system(engine, cf_grid_var):
+    """
+    Create a polar stereographic coordinate system from the CF-netCDF
+    grid mapping variable.
+
+    """
+    ellipsoid = _get_ellipsoid(cf_grid_var)
+
+    latitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    )
+    longitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_STRAIGHT_VERT_LON, None
+    )
+    true_scale_lat = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
+
+    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+
+    cs = iris.coord_systems.PolarStereographic(
+        latitude_of_projection_origin,
+        longitude_of_projection_origin,
+        false_easting,
+        false_northing,
+        true_scale_lat,
+        scale_factor_at_projection_origin,
         ellipsoid=ellipsoid,
     )
 
@@ -435,7 +480,7 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     longitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
@@ -445,21 +490,15 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
     )
     false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
     false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    # Iris currently only supports Mercator projections with specific
-    # scale_factor_at_projection_origin. This is checked elsewhere.
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
 
     cs = iris.coord_systems.Mercator(
         longitude_of_projection_origin,
         ellipsoid=ellipsoid,
         standard_parallel=standard_parallel,
+        scale_factor_at_projection_origin=scale_factor_at_projection_origin,
         false_easting=false_easting,
         false_northing=false_northing,
     )
@@ -474,7 +513,7 @@ def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
@@ -484,14 +523,6 @@ def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
     )
     false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
     false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     cs = iris.coord_systems.LambertAzimuthalEqualArea(
         latitude_of_projection_origin,
@@ -511,7 +542,7 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
@@ -524,14 +555,6 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
     standard_parallels = getattr(
         cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
     )
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     cs = iris.coord_systems.AlbersEqualArea(
         latitude_of_projection_origin,
@@ -552,7 +575,7 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
@@ -565,14 +588,6 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
     )
     false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
     false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     cs = iris.coord_systems.VerticalPerspective(
         latitude_of_projection_origin,
@@ -593,7 +608,7 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
     grid mapping variable.
 
     """
-    major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+    ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
@@ -609,14 +624,6 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
     sweep_angle_axis = getattr(
         cf_grid_var, CF_ATTR_GRID_SWEEP_ANGLE_AXIS, None
     )
-
-    ellipsoid = None
-    if (
-        major is not None
-        or minor is not None
-        or inverse_flattening is not None
-    ):
-        ellipsoid = iris.coord_systems.GeogCS(major, minor, inverse_flattening)
 
     cs = iris.coord_systems.Geostationary(
         latitude_of_projection_origin,
@@ -1251,17 +1258,20 @@ def has_supported_mercator_parameters(engine, cf_name):
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
+    standard_parallel = getattr(
+        cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
+    )
     scale_factor_at_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
     )
 
     if (
         scale_factor_at_projection_origin is not None
-        and scale_factor_at_projection_origin != 1
+        and standard_parallel is not None
     ):
         warnings.warn(
-            "Scale factors other than 1.0 not yet supported for "
-            "Mercator projections"
+            "It does not make sense to provide both "
+            '"scale_factor_at_projection_origin" and "standard_parallel".'
         )
         is_valid = False
 
@@ -1269,24 +1279,45 @@ def has_supported_mercator_parameters(engine, cf_name):
 
 
 ################################################################################
-def has_supported_stereographic_parameters(engine, cf_name):
-    """Determine whether the CF grid mapping variable has a value of 1.0
-    for the scale_factor_at_projection_origin attribute."""
+def has_supported_polar_stereographic_parameters(engine, cf_name):
+    """Determine whether the CF grid mapping variable has the supported
+    values for the parameters of the Polar Stereographic projection."""
 
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
+    latitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    )
+
+    standard_parallel = getattr(
+        cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None
+    )
     scale_factor_at_projection_origin = getattr(
         cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
     )
 
     if (
+        latitude_of_projection_origin != 90
+        and latitude_of_projection_origin != -90
+    ):
+        warnings.warn('"latitude_of_projection_origin" must be +90 or -90.')
+        is_valid = False
+
+    if (
         scale_factor_at_projection_origin is not None
-        and scale_factor_at_projection_origin != 1
+        and standard_parallel is not None
     ):
         warnings.warn(
-            "Scale factors other than 1.0 not yet supported for "
-            "stereographic projections"
+            "It does not make sense to provide both "
+            '"scale_factor_at_projection_origin" and "standard_parallel".'
+        )
+        is_valid = False
+
+    if scale_factor_at_projection_origin is None and standard_parallel is None:
+        warnings.warn(
+            'One of "scale_factor_at_projection_origin" and '
+            '"standard_parallel" is required.'
         )
         is_valid = False
 

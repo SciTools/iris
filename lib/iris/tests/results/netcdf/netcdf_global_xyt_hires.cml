@@ -82,7 +82,7 @@
 		71603.5, 71604.5, 71605.5, 71606.5, 71607.5,
 		71608.5, 71609.5, 71610.5, 71611.5, 71612.5,
 		71613.5, 71614.5, 71615.5, 71616.5, 71617.5,
-		71618.5]" shape="(31,)" standard_name="time" units="Unit('days since 1850-01-01', calendar='gregorian')" value_type="float64" var_name="time"/>
+		71618.5]" shape="(31,)" standard_name="time" units="Unit('days since 1850-01-01', calendar='standard')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

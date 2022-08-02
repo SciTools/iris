@@ -62,7 +62,7 @@
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[113225.0, 113589.0]]" climatological="True" id="b8b34212" long_name="time" points="[113406.0]" shape="(1,)" standard_name="time" units="Unit('days since 1600-1-1 0:0:0', calendar='gregorian')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[113225.0, 113589.0]]" climatological="True" id="b8b34212" long_name="time" points="[113406.0]" shape="(1,)" standard_name="time" units="Unit('days since 1600-1-1 0:0:0', calendar='standard')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://scitools-iris.readthedocs.io/en/latest/">
-   <img src="https://scitools-iris.readthedocs.io/en/latest/_static/iris-logo-title.png" alt="Iris" width="300"></a><br>
+   <img src="https://scitools-iris.readthedocs.io/en/latest/_static/iris-logo-title.svg" alt="Iris" width="300"></a><br>
 </h1>
 
 
@@ -10,15 +10,18 @@
 </h4>
 
 <p align="center">
-<a href="https://cirrus-ci.com/github/SciTools/iris">
-<img src="https://api.cirrus-ci.com/github/SciTools/iris.svg?branch=main"
-     alt="Cirrus-CI"></a>
+<a href="https://github.com/SciTools/iris/actions/workflows/ci-tests.yml">
+<img src="https://github.com/SciTools/iris/actions/workflows/ci-tests.yml/badge.svg?branch=main"
+     alt="ci-tests"></a>
 <a href="https://scitools-iris.readthedocs.io/en/latest/?badge=latest">
 <img src="https://readthedocs.org/projects/scitools-iris/badge/?version=latest"
      alt="Documentation Status"></a>
 <a href="https://results.pre-commit.ci/latest/github/SciTools/iris/main">
 <img src="https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg"
      alt="pre-commit.ci status"></a>
+</p>
+
+<p align="center">
 <a href="https://anaconda.org/conda-forge/iris">
 <img src="https://img.shields.io/conda/v/conda-forge/iris?color=orange&label=conda-forge%7Ciris&logo=conda-forge&logoColor=white"
      alt="conda-forge"></a>

@@ -37,7 +37,7 @@ if pandas is not None:
     import iris.pandas
 
 
-@skip_pandas
+@skip_pandas   
 class TestAsDataFrame(tests.IrisTest):
     """Test conversion of 2D cubes to Pandas using as_data_frame()"""
 
@@ -301,7 +301,7 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame_nodrop.dim1, expected_dim1)
         self.assertArrayEqual(data_frame_nodrop.foo, expected_foo)
 
-    def test_time_gregorian(self):
+    def test_time_standard(self):
         cube = Cube(
             np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="ts"
         )
@@ -434,7 +434,7 @@ class TestSeriesAsCube(tests.IrisTest):
             tests.get_result_path(("pandas", "as_cube", "series_masked.cml")),
         )
 
-    def test_series_datetime_gregorian(self):
+    def test_series_datetime_standard(self):
         series = pandas.Series(
             [0, 1, 2, 3, 4],
             index=[
@@ -448,7 +448,7 @@ class TestSeriesAsCube(tests.IrisTest):
         self.assertCML(
             iris.pandas.as_cube(series),
             tests.get_result_path(
-                ("pandas", "as_cube", "series_datetime_gregorian.cml")
+                ("pandas", "as_cube", "series_datetime_standard.cml")
             ),
         )
 
@@ -557,7 +557,7 @@ class TestDataFrameAsCube(tests.IrisTest):
             ),
         )
 
-    def test_data_frame_datetime_gregorian(self):
+    def test_data_frame_datetime_standard(self):
         data_frame = pandas.DataFrame(
             [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
             index=[
@@ -569,7 +569,7 @@ class TestDataFrameAsCube(tests.IrisTest):
         self.assertCML(
             iris.pandas.as_cube(data_frame),
             tests.get_result_path(
-                ("pandas", "as_cube", "data_frame_datetime_gregorian.cml")
+                ("pandas", "as_cube", "data_frame_datetime_standard.cml")
             ),
         )
 

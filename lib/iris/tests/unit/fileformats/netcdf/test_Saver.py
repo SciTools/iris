@@ -87,11 +87,17 @@ class Test_write(tests.IrisTest):
         cube.add_dim_coord(coord, 1)
         return cube
 
-    def _stereo_cube(self, ellipsoid=None):
+    def _stereo_cube(self, ellipsoid=None, scale_factor=None):
         data = self.array_lib.arange(12).reshape(3, 4)
         cube = Cube(data, "air_pressure_anomaly")
         stereo = Stereographic(
-            -10.0, 20.0, 500000.0, -200000.0, None, ellipsoid
+            -10.0,
+            20.0,
+            500000.0,
+            -200000.0,
+            None,
+            ellipsoid,
+            scale_factor_at_projection_origin=scale_factor,
         )
         coord = DimCoord(
             np.arange(3),
@@ -155,6 +161,14 @@ class Test_write(tests.IrisTest):
     def test_stereographic_no_ellipsoid(self):
         # Create a Cube with a stereographic coordinate system.
         cube = self._stereo_cube()
+        with self.temp_filename(".nc") as nc_path:
+            with Saver(nc_path, "NETCDF4") as saver:
+                saver.write(cube)
+            self.assertCDL(nc_path)
+
+    def test_stereographic_scale_factor(self):
+        # Create a Cube with a stereographic coordinate system.
+        cube = self._stereo_cube(scale_factor=1.3)
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
@@ -535,8 +549,9 @@ class Test_write_fill_value(tests.IrisTest):
         # Test that a warning is raised if the data contains the fill value.
         cube = self._make_cube(">f4")
         fill_value = 1
-        with self.assertWarnsRegexp(
-            "contains unmasked data points equal to the fill-value"
+        with self.assertWarnsRegex(
+            UserWarning,
+            "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
@@ -546,8 +561,9 @@ class Test_write_fill_value(tests.IrisTest):
         # when it is of a byte type.
         cube = self._make_cube(">i1")
         fill_value = 1
-        with self.assertWarnsRegexp(
-            "contains unmasked data points equal to the fill-value"
+        with self.assertWarnsRegex(
+            UserWarning,
+            "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
                 pass
@@ -557,8 +573,9 @@ class Test_write_fill_value(tests.IrisTest):
         # value if no fill_value argument is supplied.
         cube = self._make_cube(">f4")
         cube.data[0, 0] = nc.default_fillvals["f4"]
-        with self.assertWarnsRegexp(
-            "contains unmasked data points equal to the fill-value"
+        with self.assertWarnsRegex(
+            UserWarning,
+            "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube):
                 pass
@@ -769,7 +786,7 @@ class Test__cf_coord_identity(tests.IrisTest):
         self.assertEqual(result, expected_units)
 
     def test_geogcs_latitude(self):
-        crs = iris.coord_systems.GeogCS(60, 0)
+        crs = iris.coord_systems.GeogCS(60, 30)
         self.check_call(
             "latitude",
             coord_system=crs,
@@ -778,7 +795,7 @@ class Test__cf_coord_identity(tests.IrisTest):
         )
 
     def test_geogcs_longitude(self):
-        crs = iris.coord_systems.GeogCS(60, 0)
+        crs = iris.coord_systems.GeogCS(60, 30)
         self.check_call(
             "longitude",
             coord_system=crs,

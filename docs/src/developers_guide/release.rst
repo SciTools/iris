@@ -19,7 +19,8 @@ A Release Manager will be nominated for each release of Iris. This role involves
 
 * deciding which features and bug fixes should be included in the release
 * managing the project board for the release
-* using a `GitHub Releases Discussion Forum`_ for documenting intent and capturing any 
+* using :discussion:`GitHub Discussion releases category <categories/releases>`
+  for documenting intent and capturing any
   discussion about the release
 
 The Release Manager will make the release, ensuring that all the steps outlined
@@ -99,12 +100,14 @@ Steps to achieve this can be found in the :ref:`iris_development_releases_steps`
 The Release
 -----------
 
-The final steps of the release are to change the version string ``__version__``
-in the source of :literal:`iris.__init__.py` and ensure the release date and details
+The final steps of the release are to ensure that the release date and details
 are correct in the relevant ``whatsnew`` page within the documentation.
 
-Once all checks are complete, the release is cut by the creation of a new tag
-in the ``SciTools/iris`` repository.
+There is no need to update the ``iris.__version__``, as this is managed
+automatically by `setuptools-scm`_.
+
+Once all checks are complete, the release is published on GitHub by
+creating a new tag in the ``SciTools/iris`` repository.
 
 
 Update conda-forge
@@ -119,6 +122,14 @@ conda package on the `conda-forge Anaconda channel`_.
 
 Update PyPI
 -----------
+
+.. note::
+
+  As part of our Continuous-Integration (CI), the building and publishing of
+  PyPI artifacts is now automated by a dedicated GitHub Action.
+  
+  The following instructions **no longer** require to be performed manually,
+  but remain part of the documentation for reference purposes only.
 
 Update the `scitools-iris`_ project on PyPI with the latest Iris release.
 
@@ -178,14 +189,14 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
 Merge Back
 ----------
 
-After the release is cut, the changes from the release branch should be merged
+After the release is published, the changes from the release branch should be merged
 back onto the ``SciTools/iris`` ``main`` branch.
 
 To achieve this, first cut a local branch from the latest ``main`` branch,
 and `git merge` the :literal:`.x` release branch into it. Ensure that the
-``iris.__version__``, ``docs/src/whatsnew/index.rst``, ``docs/src/whatsnew/dev.rst``,
-and ``docs/src/whatsnew/latest.rst`` are correct, before committing these changes
-and then proposing a pull-request on the ``main`` branch of ``SciTools/iris``.
+``docs/src/whatsnew/index.rst`` and ``docs/src/whatsnew/latest.rst`` are
+correct, before committing these changes and then proposing a pull-request
+on the ``main`` branch of ``SciTools/iris``.
 
 
 Point Releases
@@ -218,24 +229,24 @@ Release Steps
 #. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
 #. Update the ``whatsnew`` for the release:
 
-    * Use ``git`` to rename ``docs/src/whatsnew/dev.rst`` to the release
-      version file ``v1.9.rst``
-    * Update the symbolic link ``latest.rst`` to reference the latest
-      whatsnew ``v1.9.rst``
-    * Use ``git`` to delete the ``docs/src/whatsnew/dev.rst.template`` file
-    * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
-      Note that, the Iris version and release date are updated automatically
-      when the documentation is built
-    * Review the file for correctness
-    * Work with the development team to populate the ``Release Highlights``
-      dropdown at the top of the file, which provides extra detail on notable
-      changes
-    * Use ``git`` to add and commit all changes, including removal of
-      ``dev.rst.template`` and update to the ``latest.rst`` symbolic link.
+   * Use ``git`` to rename ``docs/src/whatsnew/latest.rst`` to the release
+     version file ``v1.9.rst``
+   * Update ``docs/src/whatsnews/index.rst`` to rename ``latest.rst`` in the
+     include statement and toctree.
+   * Use ``git`` to delete the ``docs/src/whatsnew/latest.rst.template`` file
+   * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
+     Note that, the Iris version and release date are updated automatically
+     when the documentation is built
+   * Review the file for correctness
+   * Work with the development team to populate the ``Release Highlights``
+     dropdown at the top of the file, which provides extra detail on notable
+     changes
+   * Use ``git`` to add and commit all changes, including removal of
+     ``latest.rst.template``.
 
 #. Update the ``whatsnew`` index ``docs/src/whatsnew/index.rst``
 
-   * Remove the reference to ``dev.rst``
+   * Remove the reference to ``latest.rst``
    * Add a reference to ``v1.9.rst`` to the top of the list
 
 #. Check your changes by building the documentation and reviewing
@@ -256,12 +267,14 @@ Post Release Steps
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
    see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
+#. Make a new ``latest.rst`` from ``latest.rst.template`` and update the include
+   statement and the toctree in ``index.rst`` to point at the new
+   ``latest.rst``.
 #. Merge back to ``main``
 
 
 .. _SciTools/iris: https://github.com/SciTools/iris
 .. _tag on the SciTools/Iris: https://github.com/SciTools/iris/releases
-.. _GitHub Releases Discussion Forum: https://github.com/SciTools/iris/discussions/categories/releases
 .. _conda-forge Anaconda channel: https://anaconda.org/conda-forge/iris
 .. _conda-forge iris-feedstock: https://github.com/conda-forge/iris-feedstock
 .. _CFEP-05: https://github.com/conda-forge/cfep/blob/master/cfep-05.md
@@ -272,3 +285,4 @@ Post Release Steps
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project
 .. _latest CF standard names: http://cfconventions.org/standard-names.html
+.. _setuptools-scm: https://github.com/pypa/setuptools_scm

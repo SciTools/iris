@@ -20,14 +20,13 @@
 # ----------------------------------------------------------------------------
 
 import datetime
+from importlib.metadata import version as get_version
 import ntpath
 import os
 from pathlib import Path
 import re
 import sys
 import warnings
-
-import iris
 
 
 # function to write  useful output to stdout, prefixing the source.
@@ -41,19 +40,22 @@ skip_api = os.environ.get("SKIP_API")
 # -- Are we running on the readthedocs server, if so do some setup -----------
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 
+# This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
+rtd_version = os.environ.get("READTHEDOCS_VERSION")
+
+# For local testing purposes we can force being on RTD and the version
+# on_rtd = True           # useful for testing
+# rtd_version = "latest"  # useful for testing
+# rtd_version = "stable"  # useful for testing
+
 if on_rtd:
     autolog("Build running on READTHEDOCS server")
 
     # list all the READTHEDOCS environment variables that may be of use
-    # at some point
     autolog("Listing all environment variables on the READTHEDOCS server...")
 
     for item, value in os.environ.items():
         autolog("[READTHEDOCS] {} = {}".format(item, value))
-
-# This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
-# For local testing purposes this could be explicitly set latest or stable.
-rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
 
@@ -82,20 +84,14 @@ copyright = f"{copyright_years}, Iris Contributors"
 author = "Iris Developers"
 
 # The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
+# |version|, also used in various other places throughout the built documents.
 
-# The short X.Y version.
-if iris.__version__ == "dev":
-    version = "dev"
-else:
-    # major.minor.patch-dev -> major.minor.patch
-    version = ".".join(iris.__version__.split("-")[0].split(".")[:3])
-# The full version, including alpha/beta/rc tags.
-release = iris.__version__
-
-autolog("Iris Version = {}".format(version))
-autolog("Iris Release = {}".format(release))
+version = get_version("scitools-iris")
+if version.endswith("+dirty"):
+    version = version[: -len("+dirty")]
+release = version
+autolog(f"Iris Version = {version}")
+autolog(f"Iris Release = {release}")
 
 # -- General configuration ---------------------------------------------------
 
@@ -158,7 +154,6 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
-    "image_test_output",
 ]
 
 if skip_api == "1":
@@ -171,6 +166,7 @@ else:
 
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
+panels_add_bootstrap_css = False
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -246,6 +242,10 @@ plot_formats = [
 extlinks = {
     "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #"),
     "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #"),
+    "discussion": (
+        "https://github.com/SciTools/iris/discussions/%s",
+        "Discussion #",
+    ),
 }
 
 # -- Doctest ("make doctest")--------------------------------------------------
@@ -257,43 +257,63 @@ doctest_global_setup = "import iris"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "_static/iris-logo-title.png"
-html_favicon = "_static/favicon.ico"
-html_theme = "sphinx_rtd_theme"
+html_logo = "_static/iris-logo-title.svg"
+html_favicon = "_static/iris-logo.svg"
+html_theme = "pydata_sphinx_theme"
 
+# See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html#configure-the-search-bar-position
+html_sidebars = {
+    "**": [
+        "custom_sidebar_logo_version",
+        "search-field",
+        "sidebar-nav-bs",
+        "sidebar-ethical-ads",
+    ]
+}
+
+# See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html
 html_theme_options = {
-    "display_version": True,
-    "style_external_links": True,
-    "logo_only": "True",
+    "footer_items": ["copyright", "sphinx-version", "custom_footer"],
+    "collapse_navigation": True,
+    "navigation_depth": 3,
+    "show_prev_next": True,
+    "navbar_align": "content",
+    "github_url": "https://github.com/SciTools/iris",
+    "twitter_url": "https://twitter.com/scitools_iris",
+    # icons available: https://fontawesome.com/v5.15/icons?d=gallery&m=free
+    "icon_links": [
+        {
+            "name": "GitHub Discussions",
+            "url": "https://github.com/SciTools/iris/discussions",
+            "icon": "far fa-comments",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/scitools-iris/",
+            "icon": "fas fa-box",
+        },
+        {
+            "name": "Conda",
+            "url": "https://anaconda.org/conda-forge/iris",
+            "icon": "fas fa-boxes",
+        },
+    ],
+    "use_edit_page_button": True,
+    "show_toc_level": 1,
 }
 
 html_context = {
+    # pydata_theme
+    "github_repo": "iris",
+    "github_user": "scitools",
+    "github_version": "main",
+    "doc_path": "docs/src",
+    # custom
+    "on_rtd": on_rtd,
     "rtd_version": rtd_version,
     "version": version,
     "copyright_years": copyright_years,
     "python_version": build_python_version,
-    # menu_links and menu_links_name are used in _templates/layout.html
-    # to include some nice icons.  See http://fontawesome.io for a list of
-    # icons (used in the sphinx_rtd_theme)
-    "menu_links_name": "Support",
-    "menu_links": [
-        (
-            '<i class="fa fa-github fa-fw"></i> Source Code',
-            "https://github.com/SciTools/iris",
-        ),
-        (
-            '<i class="fa fa-comments fa-fw"></i> GitHub Discussions',
-            "https://github.com/SciTools/iris/discussions",
-        ),
-        (
-            '<i class="fa fa-question fa-fw"></i> StackOverflow for "How Do I?"',
-            "https://stackoverflow.com/questions/tagged/python-iris",
-        ),
-        (
-            '<i class="fa fa-book fa-fw"></i> Legacy Documentation',
-            "https://scitools.org.uk/iris/docs/v2.4.0/index.html",
-        ),
-    ],
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -318,6 +338,8 @@ linkcheck_ignore = [
     "http://cfconventions.org",
     "http://code.google.com/p/msysgit/downloads/list",
     "http://effbot.org",
+    "https://help.github.com",
+    "https://docs.github.com",
     "https://github.com",
     "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
     "http://schacon.github.com/git",
@@ -346,6 +368,11 @@ sphinx_gallery_conf = {
     "ignore_pattern": r"__init__\.py",
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
+    # force re-registering of nc-time-axis with matplotlib for each example,
+    # required for sphinx-gallery>=0.11.0
+    "reset_modules": (
+        lambda gallery_conf, fname: sys.modules.pop("nc_time_axis", None),
+    ),
 }
 
 # -----------------------------------------------------------------------------

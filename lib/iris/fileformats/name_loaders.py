@@ -456,7 +456,7 @@ def _generate_cubes(
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
         time_unit = cf_units.Unit(
-            "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
+            "hours since epoch", calendar=cf_units.CALENDAR_STANDARD
         )
 
         # Build time, height, latitude and longitude coordinates.
@@ -1212,7 +1212,7 @@ def load_NAMEIII_trajectory(filename):
 
     """
     time_unit = cf_units.Unit(
-        "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
+        "hours since epoch", calendar=cf_units.CALENDAR_STANDARD
     )
 
     with open(filename, "r") as infile:

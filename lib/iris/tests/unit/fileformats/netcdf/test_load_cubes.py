@@ -11,9 +11,12 @@ todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
 
 """
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from pathlib import Path
 from shutil import rmtree
-from subprocess import check_call
 import tempfile
 
 from cf_units import as_unit
@@ -23,10 +26,7 @@ from iris.coords import AncillaryVariable, CellMeasure
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.mesh import MeshCoord
 from iris.fileformats.netcdf import load_cubes, logger
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
 def setUpModule():
@@ -42,12 +42,7 @@ def tearDownModule():
 def cdl_to_nc(cdl):
     cdl_path = TMP_DIR / "tst.cdl"
     nc_path = TMP_DIR / "tst.nc"
-    # Write CDL string into a temporary CDL file.
-    with open(cdl_path, "w") as f_out:
-        f_out.write(cdl)
-    # Use ncgen to convert this into an actual (temporary) netCDF file.
-    command = "ncgen -o {} {}".format(nc_path, cdl_path)
-    check_call(command, shell=True)
+    ncgen_from_cdl(cdl, cdl_path, nc_path)
     return str(nc_path)
 
 

@@ -22,7 +22,7 @@ variables:
 		time:units = "days since 1950-01-01 00:00:00.0" ;
 		time:standard_name = "time" ;
 		time:long_name = "Julian Day" ;
-		time:calendar = "gregorian" ;
+		time:calendar = "standard" ;
 	float time_bnds(time, bnds) ;
 	float rlat(rlat) ;
 		rlat:axis = "Y" ;

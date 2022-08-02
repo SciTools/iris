@@ -19,6 +19,7 @@ import os
 import os.path
 import re
 import string
+from typing import List
 import warnings
 
 import cf_units
@@ -185,13 +186,14 @@ _CM_EXTRA = "extra"
 _CM_INTERVAL = "interval"
 _CM_METHOD = "method"
 _CM_NAME = "name"
+_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s+)+")
 _CM_PARSE = re.compile(
     r"""
                            (?P<name>([\w_]+\s*?:\s+)+)
                            (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
                            (?:
                                \(\s*
-                               (?P<extra>[^\)]+)
+                               (?P<extra>.+)
                                \)\s*
                            )?
                        """,
@@ -201,6 +203,69 @@ _CM_PARSE = re.compile(
 
 class UnknownCellMethodWarning(Warning):
     pass
+
+
+def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
+    """
+    Split a CF cell_methods attribute string into a list of zero or more cell
+    methods, each of which is then parsed with a regex to return a list of match
+    objects.
+
+    Args:
+
+    * nc_cell_methods: The value of the cell methods attribute to be split.
+
+    Returns:
+
+    * nc_cell_methods_matches: A list of the re.Match objects associated with
+      each parsed cell method
+
+    Splitting is done based on words followed by colons outside of any brackets.
+    Validation of anything other than being laid out in the expected format is
+    left to the calling function.
+    """
+
+    # Find name candidates
+    name_start_inds = []
+    for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
+        name_start_inds.append(m.start())
+
+    # Remove those that fall inside brackets
+    bracket_depth = 0
+    for ind, cha in enumerate(nc_cell_methods):
+        if cha == "(":
+            bracket_depth += 1
+        elif cha == ")":
+            bracket_depth -= 1
+            if bracket_depth < 0:
+                msg = (
+                    "Cell methods may be incorrectly parsed due to mismatched "
+                    "brackets"
+                )
+                warnings.warn(msg, UserWarning, stacklevel=2)
+        if bracket_depth > 0 and ind in name_start_inds:
+            name_start_inds.remove(ind)
+
+    # List tuples of indices of starts and ends of the cell methods in the string
+    method_indices = []
+    for ii in range(len(name_start_inds) - 1):
+        method_indices.append((name_start_inds[ii], name_start_inds[ii + 1]))
+    method_indices.append((name_start_inds[-1], len(nc_cell_methods)))
+
+    # Index the string and match against each substring
+    nc_cell_methods_matches = []
+    for start_ind, end_ind in method_indices:
+        nc_cell_method_str = nc_cell_methods[start_ind:end_ind]
+        nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str.strip())
+        if not nc_cell_method_match:
+            msg = (
+                f"Failed to fully parse cell method string: {nc_cell_methods}"
+            )
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            continue
+        nc_cell_methods_matches.append(nc_cell_method_match)
+
+    return nc_cell_methods_matches
 
 
 def parse_cell_methods(nc_cell_methods):
@@ -226,7 +291,7 @@ def parse_cell_methods(nc_cell_methods):
 
     cell_methods = []
     if nc_cell_methods is not None:
-        for m in _CM_PARSE.finditer(nc_cell_methods):
+        for m in _split_cell_methods(nc_cell_methods):
             d = m.groupdict()
             method = d[_CM_METHOD]
             method = method.strip()
@@ -1376,6 +1441,8 @@ class Saver:
                     unlimited_dim_names.append(dim_name)
 
         for dim_name in dimension_names:
+            # NOTE: these dim-names have been chosen by _get_dim_names, and
+            # were already checked+fixed to avoid any name collisions.
             if dim_name not in self._dataset.dimensions:
                 if dim_name in unlimited_dim_names:
                     size = None
@@ -1468,6 +1535,10 @@ class Saver:
                     last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
                     # Create if it does not already exist.
                     if last_dim not in self._dataset.dimensions:
+                        while last_dim in self._dataset.variables:
+                            # Also avoid collision with variable names.
+                            # See '_get_dim_names' for reason.
+                            last_dim = self._increment_name(last_dim)
                         length = conn.shape[1 - conn.location_axis]
                         self._dataset.createDimension(last_dim, length)
 
@@ -1869,8 +1940,19 @@ class Saver:
                         assert dim_name is not None
                         # Ensure it is a valid variable name.
                         dim_name = self.cf_valid_var_name(dim_name)
-                        # Disambiguate if it matches an existing one.
-                        while dim_name in self._existing_dim:
+                        # Disambiguate if it has the same name as an existing
+                        # dimension.
+                        # NOTE: *OR* if it matches the name of an existing file
+                        # variable.  Because there is a bug ...
+                        # See https://github.com/Unidata/netcdf-c/issues/1772
+                        # N.B. the workarounds here *ONLY* function because the
+                        # caller (write) will not create any more variables
+                        # in between choosing dim names (here), and creating
+                        # the new dims (via '_create_cf_dimensions').
+                        while (
+                            dim_name in self._existing_dim
+                            or dim_name in self._dataset.variables
+                        ):
                             dim_name = self._increment_name(dim_name)
 
                         # Record the new dimension.
@@ -1915,9 +1997,15 @@ class Saver:
                             dim_name = self._get_coord_variable_name(
                                 cube, coord
                             )
+                            # Disambiguate if it has the same name as an
+                            # existing dimension.
+                            # OR if it matches an existing file variable name.
+                            # NOTE: check against variable names is needed
+                            # because of a netcdf bug ... see note in the
+                            # mesh dimensions block above.
                             while (
                                 dim_name in self._existing_dim
-                                or dim_name in self._name_coord_map.names
+                                or dim_name in self._dataset.variables
                             ):
                                 dim_name = self._increment_name(dim_name)
 
@@ -1925,16 +2013,18 @@ class Saver:
                         # No CF-netCDF coordinates describe this data dimension.
                         # Make up a new, distinct dimension name
                         dim_name = f"dim{dim}"
-                        if dim_name in self._existing_dim:
-                            # Increment name if conflicted with one already existing.
-                            if self._existing_dim[dim_name] != cube.shape[dim]:
-                                while (
-                                    dim_name in self._existing_dim
-                                    and self._existing_dim[dim_name]
-                                    != cube.shape[dim]
-                                    or dim_name in self._name_coord_map.names
-                                ):
-                                    dim_name = self._increment_name(dim_name)
+                        # Increment name if conflicted with one already existing
+                        # (or planned)
+                        # NOTE: check against variable names is needed because
+                        # of a netcdf bug ... see note in the mesh dimensions
+                        # block above.
+                        while (
+                            dim_name in self._existing_dim
+                            and (
+                                self._existing_dim[dim_name] != cube.shape[dim]
+                            )
+                        ) or dim_name in self._dataset.variables:
+                            dim_name = self._increment_name(dim_name)
 
                 # Record the dimension.
                 record_dimension(
@@ -2065,6 +2155,12 @@ class Saver:
 
             if bounds_dimension_name not in self._dataset.dimensions:
                 # Create the bounds dimension with the appropriate extent.
+                while bounds_dimension_name in self._dataset.variables:
+                    # Also avoid collision with variable names.
+                    # See '_get_dim_names' for reason.
+                    bounds_dimension_name = self._increment_name(
+                        bounds_dimension_name
+                    )
                 self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
             boundsvar_name = "{}_{}".format(cf_name, varname_extra)
@@ -2345,6 +2441,12 @@ class Saver:
 
             # Determine whether to create the string length dimension.
             if string_dimension_name not in self._dataset.dimensions:
+                while string_dimension_name in self._dataset.variables:
+                    # Also avoid collision with variable names.
+                    # See '_get_dim_names' for reason.
+                    string_dimension_name = self._increment_name(
+                        string_dimension_name
+                    )
                 self._dataset.createDimension(
                     string_dimension_name, string_dimension_depth
                 )
@@ -2519,6 +2621,8 @@ class Saver:
                     else:
                         cf_var_grid.semi_major_axis = semi_major
                         cf_var_grid.semi_minor_axis = semi_minor
+                    if ellipsoid.datum is not None:
+                        cf_var_grid.horizontal_datum_name = ellipsoid.datum
 
                 # latlon
                 if isinstance(cs, iris.coord_systems.GeogCS):
@@ -2563,7 +2667,13 @@ class Saver:
                     )
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.scale_factor_at_projection_origin = 1.0
+                    # Only one of these should be set
+                    if cs.standard_parallel is not None:
+                        cf_var_grid.standard_parallel = cs.standard_parallel
+                    elif cs.scale_factor_at_projection_origin is not None:
+                        cf_var_grid.scale_factor_at_projection_origin = (
+                            cs.scale_factor_at_projection_origin
+                        )
 
                 # lcc
                 elif isinstance(cs, iris.coord_systems.LambertConformal):
@@ -2575,27 +2685,46 @@ class Saver:
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
 
-                # stereo
-                elif isinstance(cs, iris.coord_systems.Stereographic):
+                # polar stereo (have to do this before Stereographic because it subclasses it)
+                elif isinstance(cs, iris.coord_systems.PolarStereographic):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.latitude_of_projection_origin = cs.central_lat
+                    cf_var_grid.straight_vertical_longitude_from_pole = (
+                        cs.central_lon
+                    )
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    # Only one of these should be set
                     if cs.true_scale_lat is not None:
-                        warnings.warn(
-                            "Stereographic coordinate systems with "
-                            "true scale latitude specified are not "
-                            "yet handled"
+                        cf_var_grid.true_scale_lat = cs.true_scale_lat
+                    elif cs.scale_factor_at_projection_origin is not None:
+                        cf_var_grid.scale_factor_at_projection_origin = (
+                            cs.scale_factor_at_projection_origin
                         )
                     else:
-                        if cs.ellipsoid:
-                            add_ellipsoid(cs.ellipsoid)
-                        cf_var_grid.longitude_of_projection_origin = (
-                            cs.central_lon
+                        cf_var_grid.scale_factor_at_projection_origin = 1.0
+
+                # stereo
+                elif isinstance(cs, iris.coord_systems.Stereographic):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = cs.central_lon
+                    cf_var_grid.latitude_of_projection_origin = cs.central_lat
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    # Only one of these should be set
+                    if cs.true_scale_lat is not None:
+                        msg = (
+                            "It is not valid CF to save a true_scale_lat for "
+                            "a Stereographic grid mapping."
                         )
-                        cf_var_grid.latitude_of_projection_origin = (
-                            cs.central_lat
+                        raise ValueError(msg)
+                    elif cs.scale_factor_at_projection_origin is not None:
+                        cf_var_grid.scale_factor_at_projection_origin = (
+                            cs.scale_factor_at_projection_origin
                         )
-                        cf_var_grid.false_easting = cs.false_easting
-                        cf_var_grid.false_northing = cs.false_northing
-                        # The Stereographic class has an implicit scale
-                        # factor
+                    else:
                         cf_var_grid.scale_factor_at_projection_origin = 1.0
 
                 # osgb (a specific tmerc)

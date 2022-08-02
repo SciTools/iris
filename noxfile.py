@@ -9,6 +9,7 @@ from datetime import datetime
 import hashlib
 import os
 from pathlib import Path
+import re
 from tempfile import NamedTemporaryFile
 from typing import Literal
 
@@ -34,9 +35,7 @@ CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
 # https://github.com/numpy/numpy/pull/19478
 # https://github.com/matplotlib/matplotlib/pull/22099
 #: Common session environment variables.
-ENV = dict(
-    NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512VL,AVX512BW,AVX512DQ,AVX512_SKX"
-)
+ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
 
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
@@ -172,41 +171,6 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         )
 
 
-@nox.session
-def precommit(session: nox.sessions.Session):
-    """
-    Perform pre-commit hooks of iris codebase.
-
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
-
-    """
-    import yaml
-
-    # Pip install the session requirements.
-    session.install("pre-commit")
-
-    # Load the pre-commit configuration YAML file.
-    with open(".pre-commit-config.yaml", "r") as fi:
-        config = yaml.load(fi, Loader=yaml.FullLoader)
-
-    # List of pre-commit hook ids that we don't want to run.
-    excluded = ["no-commit-to-branch"]
-
-    # Enumerate the ids of pre-commit hooks we do want to run.
-    ids = [
-        hook["id"]
-        for entry in config["repos"]
-        for hook in entry["hooks"]
-        if hook["id"] not in excluded
-    ]
-
-    # Execute the pre-commit hooks.
-    [session.run("pre-commit", "run", "--all-files", id) for id in ids]
-
-
 @nox.session(python=PY_VER, venv_backend="conda")
 def tests(session: nox.sessions.Session):
     """
@@ -256,7 +220,22 @@ def doctest(session: nox.sessions.Session):
         "doctest",
         external=True,
     )
-    session.cd("..")
+
+
+@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
+def gallery(session: nox.sessions.Session):
+    """
+    Perform iris gallery doc-tests.
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+
+    """
+    prepare_venv(session)
+    session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.run(
         "python",
         "-m",
@@ -292,6 +271,36 @@ def linkcheck(session: nox.sessions.Session):
     )
 
 
+@nox.session(python=PY_VER, venv_backend="conda")
+def wheel(session: nox.sessions.Session):
+    """
+    Perform iris local wheel install and import test.
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+
+    """
+    prepare_venv(session)
+    session.cd("dist")
+    fname = list(Path(".").glob("scitools_iris-*.whl"))
+    if len(fname) == 0:
+        raise ValueError("Cannot find wheel to install.")
+    if len(fname) > 1:
+        emsg = (
+            f"Expected to find 1 wheel to install, found {len(fname)} instead."
+        )
+        raise ValueError(emsg)
+    session.install(fname[0].name)
+    session.run(
+        "python",
+        "-c",
+        "import iris; print(f'{iris.__version__=}')",
+        external=True,
+    )
+
+
 @nox.session
 @nox.parametrize(
     "run_type",
@@ -314,7 +323,7 @@ def benchmarks(
     ----------
     session: object
         A `nox.sessions.Session` object.
-    run_type: {"overnight", "branch", "custom"}
+    run_type: {"overnight", "branch", "cperf", "sperf", "custom"}
         * ``overnight``: benchmarks all commits between the input **first
           commit** to ``HEAD``, comparing each to its parent for performance
           shifts. If a commit causes shifts, the output is saved to a file:
@@ -501,6 +510,11 @@ def benchmarks(
         asv_command = (
             asv_harness.format(posargs=commit_range) + f" --bench={run_type}"
         )
+        # C/SPerf benchmarks are much bigger than the CI ones:
+        # Don't fail the whole run if memory blows on 1 benchmark.
+        asv_command = asv_command.replace(" --strict", "")
+        # Only do a single round.
+        asv_command = re.sub(r"rounds=\d", "rounds=1", asv_command)
         session.run(*asv_command.split(" "), *asv_args)
 
         asv_command = f"asv publish {commit_range} --html-dir={publish_subdir}"
@@ -511,7 +525,6 @@ def benchmarks(
         print(
             f'New ASV results for "{run_type}".\n'
             f'See "{publish_subdir}",'
-            f'\n  html in "{location / "html"}".'
             f'\n  or JSON files under "{location / "results"}".'
         )
 
