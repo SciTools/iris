@@ -220,8 +220,21 @@ def as_data_frame(cube, copy=True, dropna=True, asmultiindex=False):
         data = data.copy()
 
     # Extract dim coord information
-    coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
-    coord_names = list(map(lambda x: x.name(), cube.dim_coords))
+    if cube.ndim != len(cube.dim_coords):
+        # Create dummy dim coord information if dim coords not defined
+        coord_names = ['dim'+str(n) for n in range(cube.ndim)]
+        coords = [range(dim)for dim in cube.shape]
+        for c in cube.dim_coords:
+            for i, dummyc in enumerate(coords):
+                if len(dummyc) == len(c.points):
+                    coords[i] = c.points
+                    coord_names[i] = c.name()
+                else:
+                    pass
+    else:
+        coord_names = list(map(lambda x: x.name(), cube.dim_coords))
+        coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
+        
 
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
     data_frame = pandas.DataFrame({cube.name(): data.flatten()}, index=index)
