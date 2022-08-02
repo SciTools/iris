@@ -37,7 +37,7 @@ if pandas is not None:
     import iris.pandas
 
 
-@skip_pandas   
+@skip_pandas
 class TestAsDataFrame(tests.IrisTest):
     """Test conversion of 2D cubes to Pandas using as_data_frame()"""
 
