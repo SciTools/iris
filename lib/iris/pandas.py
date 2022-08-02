@@ -11,6 +11,7 @@ See also: http://pandas.pydata.org/
 """
 
 import datetime
+from itertools import chain, combinations
 
 import cf_units
 from cf_units import Unit
@@ -64,11 +65,39 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         cube.add_aux_coord(coord, dim)
 
 
+def _series_index_mapping(column: pandas.Series):
+    """
+    Determine which index levels of a :class:`pandas.Series` 'map' to its values.
+
+    Achieved by checking if each index value corresponds to a single
+    :class:`~pandas.Series` value.
+    """
+    # list(chain(*[combinations(levels_range, l + 1) for l in levels_range[:-1]]))
+    if column.nunique() == 1:
+        result = ()
+    else:
+        levels_range = range(column.index.nlevels)
+        levels_combinations = chain(
+            *[
+                combinations(levels_range, levels + 1)
+                for levels in levels_range[:-1]
+            ]
+        )
+        for lc in levels_combinations:
+            if column.groupby(level=lc).nunique().max() == 1:
+                # Escape as early as possible - heavy operation.
+                result = lc
+                break
+            result = tuple(levels_range)
+    return result
+
+
 def as_cube(
     pandas_array,
     copy=True,
     calendars=None,
-    coord_cols=None,
+    dim_coord_cols=None,
+    aux_coord_cols=None,
     cell_measure_cols=None,
     ancillary_variable_cols=None,
 ):
@@ -96,65 +125,102 @@ def as_cube(
 
     """
     calendars = calendars or {}
-    coord_cols = coord_cols or []
+    aux_coord_cols = aux_coord_cols or []
     cell_measure_cols = cell_measure_cols or []
     ancillary_variable_cols = ancillary_variable_cols or []
 
     if iris.FUTURE.pandas_ndim:
         # TODO: allow for Series as well as DataFrame
+
+        if dim_coord_cols is not None:
+            try:
+                pandas_array = pandas_array.set_index(dim_coord_cols)
+            except Exception as e:
+                message = "Unable to use dim_coord_cols as DataFrame index."
+                raise ValueError(message) from e
+
+        pandas_index = pandas_array.index
+        if not pandas_index.is_unique:
+            message = (
+                f"DataFrame index ({pandas_index.names}) is not unique per "
+                "row; cannot be used for DimCoords."
+            )
+            raise ValueError(message)
+
+        pandas_array.sort_index(inplace=True)
+
         non_data_columns = (
-            coord_cols + cell_measure_cols + ancillary_variable_cols
+            aux_coord_cols + cell_measure_cols + ancillary_variable_cols
         )
         data_columns = list(
             filter(lambda c: c not in non_data_columns, pandas_array.columns)
         )
 
-        # TODO: assess performance scalability - how terrible is it?!
-        scalar_cubes = CubeList()
-        for _, row in pandas_array.iterrows():
-            coord_list = []
-            for column_name in non_data_columns:
-                coord = AuxCoord(row[column_name])
+        # Work out which dimensions each column can be mapped to.
+        column_dimensions = {
+            c: _series_index_mapping(pandas_array[c]) for c in non_data_columns
+        }
+
+        cube_shape = pandas_index.levshape
+
+        class_arg_mapping = [
+            (AuxCoord, aux_coord_cols, "aux_coords_and_dims"),
+            (CellMeasure, cell_measure_cols, "cell_measures_and_dims"),
+            (
+                AncillaryVariable,
+                ancillary_variable_cols,
+                "ancillary_variables_and_dims",
+            ),
+        ]
+
+        # TODO: check that we are getting views of the data, rather than
+        #  copying lots.
+
+        cube_kwargs = {}
+        for dm_class, columns, kwarg in class_arg_mapping:
+            class_kwarg = []
+            for column_name in columns:
+                dimensions = column_dimensions[column_name]
+                content = pandas_array[column_name].to_numpy()
+
+                # Remove duplicate entries to get down to the correct dimensions
+                #  for this object. _series_index_mapping should have ensured
+                #  that we are indeed removing the duplicates.
+                shaped = content.reshape(cube_shape)
+                indices = [0] * len(cube_shape)
+                for dim in dimensions:
+                    indices[dim] = slice(None)
+                collapsed = shaped[tuple(indices)]
+
+                dm_instance = dm_class(collapsed)
                 # Use rename() to attempt standard_name but fall back on long_name.
-                coord.rename(column_name)
-                coord_list.append((coord, None))
+                dm_instance.rename(column_name)
 
-            for data_column in data_columns:
-                phenom_cube = Cube(
-                    data=row[data_column],
-                    aux_coords_and_dims=coord_list,
-                )
-                # Use rename() to attempt standard_name but fall back on long_name.
-                phenom_cube.rename(data_column)
-                scalar_cubes.append(phenom_cube)
+                class_kwarg.append((dm_instance, dimensions))
 
-        # TODO: merge one phenomenon, then re-use operation for subsequent ones.
-        #  could use a Cube of indices?
-        merged_cubes = scalar_cubes.merge()
+            cube_kwargs[kwarg] = class_kwarg
 
-        for merged_cube in merged_cubes:
-            for column_name in cell_measure_cols:
-                coord = merged_cube.coord(column_name)
-                cube_dims = coord.cube_dims(merged_cube)
-                new_cm = CellMeasure(
-                    coord.core_points(),
-                    standard_name=coord.standard_name,
-                    long_name=coord.long_name,
-                )
-                merged_cube.remove_coord(coord)
-                merged_cube.add_cell_measure(new_cm, cube_dims)
-            for column_name in ancillary_variable_cols:
-                coord = merged_cube.coord(column_name)
-                cube_dims = coord.cube_dims(merged_cube)
-                new_av = AncillaryVariable(
-                    coord.core_points(),
-                    standard_name=coord.standard_name,
-                    long_name=coord.long_name,
-                )
-                merged_cube.remove_coord(coord)
-                merged_cube.add_ancillary_variable(new_av, cube_dims)
+        # TODO: can we generalise the DimCoord section into the
+        #  multi-dimensional section?
+        dim_coord_kwarg = []
+        for ix, dim_name in enumerate(pandas_index.names):
+            dim_coord = DimCoord(pandas_index.levels[ix])
+            # Use rename() to attempt standard_name but fall back on long_name.
+            dim_coord.rename(dim_name)
+            dim_coord_kwarg.append((dim_coord, ix))
+        cube_kwargs["dim_coords_and_dims"] = dim_coord_kwarg
 
-        return merged_cubes
+        cubes = CubeList()
+        for column_name in data_columns:
+            cube_data = (
+                pandas_array[column_name].to_numpy().reshape(cube_shape)
+            )
+            new_cube = Cube(cube_data, **cube_kwargs)
+            # Use rename() to attempt standard_name but fall back on long_name.
+            new_cube.rename(column_name)
+            cubes.append(new_cube)
+
+        return cubes
     else:
         if pandas_array.ndim not in [1, 2]:
             raise ValueError(
