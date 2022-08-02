@@ -182,7 +182,7 @@ def as_series(cube, copy=True):
     return series
 
 
-def as_data_frame(cube, copy=True, dropna=True):
+def as_data_frame(cube, copy=True, dropna=True, asmultiindex=False):
     """
     Convert a 2D cube to a Pandas DataFrame.
 
@@ -220,22 +220,17 @@ def as_data_frame(cube, copy=True, dropna=True):
         data = data.copy()
 
     # Extract dim coord information
-    coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))  # Reuturns Y,X order!
+    coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
     coord_names = list(map(lambda x: x.name(), cube.dim_coords))
-    expand_coords = np.meshgrid(*coords)
-    flat_coords = list(map(lambda x: x.ravel(order='F'), expand_coords))  # So ravel array in column-major order
-    flat_data = dict(zip(coord_names, flat_coords))
 
-    # TODO: Deal with aux coord information
-
-    flat_data[cube.name()] = data.ravel()  # Add cube data to flat data dict
-    data_frame = pandas.DataFrame(
-        flat_data
-    )  # Use dict method of creating dataframe
+    index = pandas.MultiIndex.from_product(coords, names=coord_names)
+    data_frame = pandas.DataFrame({cube.name(): data.flatten()}, index=index)
 
     if not copy:
         _assert_shared(data, data_frame)
     if dropna:
         data_frame.dropna(inplace=True)
+    if not asmultiindex:
+        data_frame.reset_index(inplace=True)
 
     return data_frame
