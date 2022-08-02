@@ -124,26 +124,7 @@ def _as_pandas_coord(coord):
     return index
 
 
-def _assert_shared(np_obj, pandas_obj):
-    """Ensure the pandas object shares memory."""
-    values = pandas_obj.values
-
-    def _get_base(array):
-        # Chase the stack of NumPy `base` references back to the original array
-        while array.base is not None:
-            array = array.base
-        return array
-
-    base = _get_base(values)
-    np_base = _get_base(np_obj)
-    if base is not np_base:
-        msg = "Pandas {} does not share memory".format(
-            type(pandas_obj).__name__
-        )
-        raise AssertionError(msg)
-
-
-def as_data_frame(cube, copy=True, dropna=True, asmultiindex=False):
+def as_data_frame(cube, dropna=True, asmultiindex=False):
     """
     Convert a 2D cube to a Pandas DataFrame.
 
@@ -153,29 +134,16 @@ def as_data_frame(cube, copy=True, dropna=True, asmultiindex=False):
 
     Kwargs:
 
-        * copy - Whether to make a copy of the data.
-                 Defaults to True. Must be True for masked data
-                 and some data types (see notes below).
         * dropna - Remove missing values from returned dataframe.
                     Defaults to True.
 
     .. note::
 
-        This function will copy your data by default.
-        If you have a large array that cannot be copied,
-        make sure it is not masked and use copy=False.
-
-    .. note::
-
-        Pandas will sometimes make a copy of the array,
-        for example when creating from an int32 array.
-        Iris will detect this and raise an exception if copy=False.
+        TBC
 
     """
     data = cube.data
     if ma.isMaskedArray(data):
-        if not copy:
-            raise ValueError("Masked arrays must always be copied.")
         data = data.astype("f").filled(np.nan)
     elif copy:
         data = data.copy()
@@ -199,8 +167,6 @@ def as_data_frame(cube, copy=True, dropna=True, asmultiindex=False):
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
     data_frame = pandas.DataFrame({cube.name(): data.flatten()}, index=index)
 
-    if not copy:
-        _assert_shared(data, data_frame)
     if dropna:
         data_frame.dropna(inplace=True)
     if not asmultiindex:
