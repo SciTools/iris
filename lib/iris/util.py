@@ -1812,34 +1812,38 @@ def _mask_array(array, points_to_mask, in_place=False):
 def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     """
     Masks any cells in the cube's data array which correspond to cells marked
-    `True` (or non zero) in `points_to_mask`.  `points_to_mask` may be specified as a
-    :class:`numpy.ndarray`, :class:`iris.coords.Coord` or :class:`iris.cube.Cube`,
-    following the same broadcasting approach as cube arithmetic (see :ref:`cube maths`).
+    ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be
+    specified as a :class:`numpy.ndarray`, :class:`iris.coords.Coord` or
+    :class:`iris.cube.Cube`, following the same broadcasting approach as cube
+    arithmetic (see :ref:`cube maths`).
 
-    Args:
+    Parameters
+    ----------
 
-    * cube (:class:`iris.cube.Cube`):
+    cube : iris.cube.Cube
         Cube containing data that requires masking.
 
-    * points_to_mask (:class:`numpy.ndarray`, :class:`iris.coords.Coord` or :class:`iris.cube.Cube`):
+    points_to_mask : numpy.ndarray, iris.coords.Coord or iris.cube.Cube
         Specifies booleans (or ones and zeros) indicating which points will be masked.
 
-    Kwargs:
-
-    * in_place (boolean):
+    in_place : bool, default=False
         If `True`, masking is applied to the input cube.  Otherwise a copy is masked
-        and returned.  Defaults to `False`.
+        and returned.
 
-    * dim (int):
+    dim : int, optional
         If `points_to_mask` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
 
-    Returns:
+    Returns
+    -------
 
-    * result (:class:`iris.cube.Cube`):
-        A cube whose data array is masked at points specified by `points_to_mask`.
+    iris.cube.Cube
+        A cube whose data array is masked at points specified by ``points_to_mask``.
 
-    If either `cube` or `points_to_mask` is lazy, the result will be lazy.
+    Notes
+    -----
+
+    If either ``cube`` or ``points_to_mask`` is lazy, the result will be lazy.
 
     """
     if in_place and not cube.has_lazy_data():
