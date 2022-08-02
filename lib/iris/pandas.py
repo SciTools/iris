@@ -143,45 +143,6 @@ def _assert_shared(np_obj, pandas_obj):
         raise AssertionError(msg)
 
 
-def as_series(cube, copy=True):
-    """
-    Convert a 1D cube to a Pandas Series.
-
-    Args:
-
-        * cube - The cube to convert to a Pandas Series.
-
-    Kwargs:
-
-        * copy - Whether to make a copy of the data.
-                 Defaults to True. Must be True for masked data.
-
-    .. note::
-
-        This function will copy your data by default.
-        If you have a large array that cannot be copied,
-        make sure it is not masked and use copy=False.
-
-    """
-    data = cube.data
-    if ma.isMaskedArray(data):
-        if not copy:
-            raise ValueError("Masked arrays must always be copied.")
-        data = data.astype("f").filled(np.nan)
-    elif copy:
-        data = data.copy()
-
-    index = None
-    if cube.dim_coords:
-        index = _as_pandas_coord(cube.dim_coords[0])
-
-    series = pandas.Series(data, index)
-    if not copy:
-        _assert_shared(data, series)
-
-    return series
-
-
 def as_data_frame(cube, copy=True, dropna=True, asmultiindex=False):
     """
     Convert a 2D cube to a Pandas DataFrame.
