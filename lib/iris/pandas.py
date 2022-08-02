@@ -227,7 +227,7 @@ def as_data_frame(cube, copy=True, dropna=True, asmultiindex=False):
         for c in cube.dim_coords:
             for i, dummyc in enumerate(coords):
                 if len(dummyc) == len(c.points):
-                    coords[i] = c.points
+                    coords[i] = _as_pandas_coord(c)
                     coord_names[i] = c.name()
                 else:
                     pass
