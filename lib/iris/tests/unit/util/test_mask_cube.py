@@ -181,6 +181,8 @@ class TestCubeMask(tests.IrisTest, MaskCubeMixin):
         returned = mask_cube(cube, mask, in_place=True)
         self.assertIs(returned, None)
         self.assertTrue(cube.has_lazy_data())
+        # Touch the data so lazyness status doesn't interfere with CML check.
+        cube.data
         self.assertOriginalMetadata(cube, "simple_1d")
         np.testing.assert_array_equal(cube.data.mask, mask.data)
 

@@ -1853,6 +1853,7 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     else:
         mask_array = _mask_array
 
+    input_metadata = cube.metadata
     result = iris.analysis.maths._binary_op_common(
         mask_array,
         "mask",
@@ -1863,6 +1864,10 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
         dim=dim,
         sanitise_metadata=False,
     )
+
+    # Resolve combines the metadata from the two operands, but we want to
+    # preserve the metadata from the (first) input cube.
+    result.metadata = input_metadata
 
     if not in_place:
         return result
