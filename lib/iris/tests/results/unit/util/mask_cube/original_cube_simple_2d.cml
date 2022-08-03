@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int32" long_name="thingness" units="1">
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0, 5],
+		[5, 10],
+		[10, 15]]" id="434cbbd8" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[-15, 0],
+		[0, 15],
+		[15, 30],
+		[30, 45]]" id="b0d35dcf" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="int32" shape="(3, 4)" state="loaded"/>
+  </cube>
+</cubes>
