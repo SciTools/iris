@@ -10,12 +10,12 @@ import iris.tests as tests  # isort:skip
 
 import copy
 import datetime
-import unittest
 
 import cf_units
 import cftime
 import matplotlib.units
 import numpy as np
+import pytest
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
@@ -27,8 +27,9 @@ except ImportError:
     pandas = None
 matplotlib.units.registry = default_units_registry
 
-skip_pandas = unittest.skipIf(
-    pandas is None, 'Test(s) require "pandas", ' "which is not available."
+skip_pandas = pytest.mark.skipif(
+    pandas is None,
+    reason='Test(s) require "pandas", ' "which is not available.",
 )
 
 if pandas is not None:
@@ -80,7 +81,7 @@ class TestAsSeries(tests.IrisTest):
         ]
         series = iris.pandas.as_series(cube)
         self.assertArrayEqual(series, cube.data)
-        self.assertListEqual(list(series.index), expected_index)
+        assert list(series.index) == expected_index
 
     def test_time_360(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="ts")
@@ -107,37 +108,37 @@ class TestAsSeries(tests.IrisTest):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
         series = iris.pandas.as_series(cube)
         series[0] = 99
-        self.assertEqual(cube.data[0], 0)
+        assert cube.data[0] == 0
 
     def test_copy_int32_false(self):
         cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
-        self.assertEqual(cube.data[0], 99)
+        assert cube.data[0] == 99
 
     def test_copy_int64_false(self):
         cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
-        self.assertEqual(cube.data[0], 99)
+        assert cube.data[0] == 99
 
     def test_copy_float_false(self):
         cube = Cube(np.array([0, 1, 2, 3.3, 4]), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
-        self.assertEqual(cube.data[0], 99)
+        assert cube.data[0] == 99
 
     def test_copy_masked_true(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
         series = iris.pandas.as_series(cube)
         series[0] = 99
-        self.assertEqual(cube.data[0], 0)
+        assert cube.data[0] == 0
 
     def test_copy_masked_false(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = iris.pandas.as_series(cube, copy=False)
 
 
@@ -230,8 +231,8 @@ class TestAsDataFrame(tests.IrisTest):
             )
             for day_offset in day_offsets
         ]
-        self.assertTrue(all(data_frame.columns == timestamps))
-        self.assertTrue(all(data_frame.index == [0, 1]))
+        assert all(data_frame.columns == timestamps)
+        assert all(data_frame.index == [0, 1])
 
     def test_time_360(self):
         cube = Cube(
@@ -261,7 +262,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 0)
+        assert cube.data[0, 0] == 0
 
     def test_copy_int32_false(self):
         cube = Cube(
@@ -270,7 +271,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
     def test_copy_int64_false(self):
         cube = Cube(
@@ -279,7 +280,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
     def test_copy_float_false(self):
         cube = Cube(
@@ -287,7 +288,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
     def test_copy_masked_true(self):
         data = np.ma.MaskedArray(
@@ -297,7 +298,7 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(data, long_name="foo")
         data_frame = iris.pandas.as_data_frame(cube)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 0)
+        assert cube.data[0, 0] == 0
 
     def test_copy_masked_false(self):
         data = np.ma.MaskedArray(
@@ -305,7 +306,7 @@ class TestAsDataFrame(tests.IrisTest):
             mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]],
         )
         cube = Cube(data, long_name="foo")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = iris.pandas.as_data_frame(cube, copy=False)
 
     def test_copy_false_with_cube_view(self):
@@ -313,7 +314,7 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(data[:], long_name="foo")
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
 
 @skip_pandas
@@ -390,13 +391,13 @@ class TestSeriesAsCube(tests.IrisTest):
         series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         cube = iris.pandas.as_cube(series)
         cube.data[0] = 99
-        self.assertEqual(series[5], 0)
+        assert series[5] == 0
 
     def test_copy_false(self):
         series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         cube = iris.pandas.as_cube(series, copy=False)
         cube.data[0] = 99
-        self.assertEqual(series[5], 99)
+        assert series[5] == 99
 
 
 @skip_pandas
@@ -491,13 +492,13 @@ class TestDataFrameAsCube(tests.IrisTest):
         data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         cube = iris.pandas.as_cube(data_frame)
         cube.data[0, 0] = 99
-        self.assertEqual(data_frame[0][0], 0)
+        assert data_frame[0][0] == 0
 
     def test_copy_false(self):
         data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         cube = iris.pandas.as_cube(data_frame, copy=False)
         cube.data[0, 0] = 99
-        self.assertEqual(data_frame[0][0], 99)
+        assert data_frame[0][0] == 99
 
 
 if __name__ == "__main__":
