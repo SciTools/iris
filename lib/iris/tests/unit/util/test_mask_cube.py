@@ -9,6 +9,8 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import pathlib
+
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -34,9 +36,11 @@ class MaskCubeMixin:
         which function created the original cube.
 
         """
+        reference_dir = pathlib.Path("unit/util/mask_cube")
+        reference_fname = reference_dir / f"original_cube_{func}.cml"
         self.assertCML(
             cube,
-            reference_filename=f"unit/util/mask_cube/original_cube_{func}.cml",
+            reference_filename=str(reference_fname),
             checksum=False,
         )
 
