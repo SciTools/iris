@@ -68,14 +68,14 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
 
 def _series_index_unique(pandas_series: pandas.Series):
     """
-    Find an index grouping of a :class:`pandas.Series` that has unique Series values per group.
+    Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
 
     Iterates through grouping single index levels, then combinations of 2
-    levels, then 3 etcetera, until unique :class:`~pandas.Series` values per
+    levels, then 3 etcetera, until single :class:`~pandas.Series` values per
     group are found. Returns a ``tuple`` of the index levels that group to
-    produce unique values, as soon as one is found.
+    produce single values, as soon as one is found.
 
-    Returns ``None`` if no index level combination produces unique values.
+    Returns ``None`` if no index level combination produces single values.
 
     """
     unique_number = pandas_series.nunique()
@@ -84,7 +84,7 @@ def _series_index_unique(pandas_series: pandas.Series):
     if unique_number == 1:
         # Scalar - identical for all indices.
         result = ()
-    elif unique_number == np.product(pandas_index.levshape):
+    elif unique_number == pandas_index.nunique():
         # Varies across all indices.
         result = tuple(levels_range)
     else:
@@ -92,7 +92,7 @@ def _series_index_unique(pandas_series: pandas.Series):
         levels_combinations = chain(
             *[
                 combinations(levels_range, levels + 1)
-                for levels in levels_range[:-1]
+                for levels in levels_range
             ]
         )
         for lc in levels_combinations:
@@ -168,7 +168,9 @@ def as_cube(
             filter(lambda c: c not in non_data_columns, pandas_array.columns)
         )
 
-        cube_shape = pandas_index.levshape
+        cube_shape = getattr(
+            pandas_index, "levshape", (pandas_index.nunique(),)
+        )
 
         class_arg_mapping = [
             (AuxCoord, aux_coord_cols, "aux_coords_and_dims"),
@@ -201,7 +203,7 @@ def as_cube(
 
                 content = column.to_numpy()
                 # Remove duplicate entries to get down to the correct dimensions
-                #  for this object. _series_index_mapping should have ensured
+                #  for this object. _series_index_unique should have ensured
                 #  that we are indeed removing the duplicates.
                 shaped = content.reshape(cube_shape)
                 indices = [0] * len(cube_shape)
@@ -221,7 +223,11 @@ def as_cube(
         #  multi-dimensional section?
         dim_coord_kwarg = []
         for ix, dim_name in enumerate(pandas_index.names):
-            dim_coord = DimCoord(pandas_index.levels[ix])
+            if hasattr(pandas_index, "levels"):
+                coord_points = pandas_index.levels[ix]
+            else:
+                coord_points = pandas_index
+            dim_coord = DimCoord(coord_points)
             # Use rename() to attempt standard_name but fall back on long_name.
             dim_coord.rename(dim_name)
             dim_coord_kwarg.append((dim_coord, ix))
