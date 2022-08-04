@@ -12,6 +12,7 @@ See also: http://pandas.pydata.org/
 
 import datetime
 from itertools import chain, combinations
+import warnings
 
 import cf_units
 from cf_units import Unit
@@ -65,18 +66,29 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         cube.add_aux_coord(coord, dim)
 
 
-def _series_index_mapping(column: pandas.Series):
+def _series_index_unique(pandas_series: pandas.Series):
     """
-    Determine which index levels of a :class:`pandas.Series` 'map' to its values.
+    Find an index grouping of a :class:`pandas.Series` that has unique Series values per group.
 
-    Achieved by checking if each index value corresponds to a single
-    :class:`~pandas.Series` value.
+    Iterates through grouping single index levels, then combinations of 2
+    levels, then 3 etcetera, until unique :class:`~pandas.Series` values per
+    group are found. Returns a ``tuple`` of the index levels that group to
+    produce unique values, as soon as one is found.
+
+    Returns ``None`` if no index level combination produces unique values.
+
     """
-    # list(chain(*[combinations(levels_range, l + 1) for l in levels_range[:-1]]))
-    if column.nunique() == 1:
+    unique_number = pandas_series.nunique()
+    pandas_index = pandas_series.index
+    levels_range = range(pandas_index.nlevels)
+    if unique_number == 1:
+        # Scalar - identical for all indices.
         result = ()
+    elif unique_number == np.product(pandas_index.levshape):
+        # Varies across all indices.
+        result = tuple(levels_range)
     else:
-        levels_range = range(column.index.nlevels)
+        result = None
         levels_combinations = chain(
             *[
                 combinations(levels_range, levels + 1)
@@ -84,11 +96,10 @@ def _series_index_mapping(column: pandas.Series):
             ]
         )
         for lc in levels_combinations:
-            if column.groupby(level=lc).nunique().max() == 1:
-                # Escape as early as possible - heavy operation.
+            if pandas_series.groupby(level=lc).nunique().max() == 1:
                 result = lc
+                # Escape as early as possible - heavy operation.
                 break
-            result = tuple(levels_range)
     return result
 
 
@@ -130,7 +141,8 @@ def as_cube(
     ancillary_variable_cols = ancillary_variable_cols or []
 
     if iris.FUTURE.pandas_ndim:
-        # TODO: allow for Series as well as DataFrame
+        # TODO: document this new alternative behaviour.
+        # TODO: check how this copes with Series (rather than DataFrame).
 
         if dim_coord_cols is not None:
             try:
@@ -156,11 +168,6 @@ def as_cube(
             filter(lambda c: c not in non_data_columns, pandas_array.columns)
         )
 
-        # Work out which dimensions each column can be mapped to.
-        column_dimensions = {
-            c: _series_index_mapping(pandas_array[c]) for c in non_data_columns
-        }
-
         cube_shape = pandas_index.levshape
 
         class_arg_mapping = [
@@ -180,9 +187,19 @@ def as_cube(
         for dm_class, columns, kwarg in class_arg_mapping:
             class_kwarg = []
             for column_name in columns:
-                dimensions = column_dimensions[column_name]
-                content = pandas_array[column_name].to_numpy()
+                column = pandas_array[column_name]
 
+                dimensions = _series_index_unique(column)
+                if dimensions is None:
+                    message = (
+                        f"Column '{column_name}' does not vary consistently "
+                        "over any of the provided dimensions, so will not be "
+                        f"used as a cube {dm_class.__name__}."
+                    )
+                    warnings.warn(message, UserWarning, stacklevel=2)
+                    continue
+
+                content = column.to_numpy()
                 # Remove duplicate entries to get down to the correct dimensions
                 #  for this object. _series_index_mapping should have ensured
                 #  that we are indeed removing the duplicates.
