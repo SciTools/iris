@@ -143,10 +143,15 @@ def as_cube(
     if iris.FUTURE.pandas_ndim:
         # TODO: document this new alternative behaviour.
         # TODO: check how this copes with Series (rather than DataFrame).
+        #  Should reject all 'cols' arguments.
 
+        # TODO: insist that dim coords are provided as an existing index
+        #  (include an example of how). This avoids needing to set the index
+        #  within this function - either silently modifying the original df, or
+        #  creating an unnecessary copy.
         if dim_coord_cols is not None:
             try:
-                pandas_array = pandas_array.set_index(dim_coord_cols)
+                pandas_array.set_index(dim_coord_cols, inplace=True)
             except Exception as e:
                 message = "Unable to use dim_coord_cols as DataFrame index."
                 raise ValueError(message) from e
@@ -158,8 +163,6 @@ def as_cube(
                 "row; cannot be used for DimCoords."
             )
             raise ValueError(message)
-
-        pandas_array.sort_index(inplace=True)
 
         non_data_columns = (
             aux_coord_cols + cell_measure_cols + ancillary_variable_cols
@@ -184,6 +187,11 @@ def as_cube(
 
         # TODO: check that we are getting views of the data, rather than
         #  copying lots.
+
+        def format_dim_metadata(instance, name_, dimensions):
+            # Use rename() to attempt standard_name but fall back on long_name.
+            instance.rename(name_)
+            return (instance, dimensions)
 
         cube_kwargs = {}
         for dm_class, columns, kwarg in class_arg_mapping:
@@ -211,26 +219,23 @@ def as_cube(
                     indices[dim] = slice(None)
                 collapsed = shaped[tuple(indices)]
 
-                dm_instance = dm_class(collapsed)
-                # Use rename() to attempt standard_name but fall back on long_name.
-                dm_instance.rename(column_name)
-
-                class_kwarg.append((dm_instance, dimensions))
+                new_dm = format_dim_metadata(
+                    dm_class(collapsed), column_name, dimensions
+                )
+                class_kwarg.append(new_dm)
 
             cube_kwargs[kwarg] = class_kwarg
 
-        # TODO: can we generalise the DimCoord section into the
-        #  multi-dimensional section?
         dim_coord_kwarg = []
         for ix, dim_name in enumerate(pandas_index.names):
             if hasattr(pandas_index, "levels"):
                 coord_points = pandas_index.levels[ix]
             else:
                 coord_points = pandas_index
-            dim_coord = DimCoord(coord_points)
-            # Use rename() to attempt standard_name but fall back on long_name.
-            dim_coord.rename(dim_name)
-            dim_coord_kwarg.append((dim_coord, ix))
+            new_dim_coord = format_dim_metadata(
+                DimCoord(coord_points), dim_name, ix
+            )
+            dim_coord_kwarg.append(new_dim_coord)
         cube_kwargs["dim_coords_and_dims"] = dim_coord_kwarg
 
         cubes = CubeList()
