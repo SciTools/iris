@@ -31,9 +31,9 @@ from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
 
 
-def _add_iris_coord(cube, name, points, dim, calendar=None):
+def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
     """
-    Add a Coord to a Cube from a Pandas index or columns array.
+    Create a Coord or other dimensional metadata from a Pandas index or columns array.
 
     If no calendar is specified for a time series, Standard is assumed.
 
@@ -42,27 +42,51 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
     if calendar is None:
         calendar = cf_units.CALENDAR_STANDARD
 
-    # Convert pandas datetime objects to python datetime obejcts.
-    if isinstance(points, DatetimeIndex):
-        points = np.array([i.to_pydatetime() for i in points])
+    # Getting everything into a single datetime format is hard!
+
+    # Convert out of NumPy's own datetime format.
+    if np.issubdtype(values.dtype, np.datetime64):
+        values = pandas.to_datetime(values)
+
+    # Convert pandas datetime objects to python datetime objects.
+    if isinstance(values, DatetimeIndex):
+        values = np.array([i.to_pydatetime() for i in values])
 
     # Convert datetime objects to Iris' current datetime representation.
-    if points.dtype == object:
+    if values.dtype == object:
         dt_types = (datetime.datetime, cftime.datetime)
-        if all([isinstance(i, dt_types) for i in points]):
+        if all([isinstance(i, dt_types) for i in values]):
             units = Unit("hours since epoch", calendar=calendar)
-            points = units.date2num(points)
+            values = units.date2num(values)
 
-    points = np.array(points)
-    if np.issubdtype(points.dtype, np.number) and iris.util.monotonic(
-        points, strict=True
-    ):
-        coord = DimCoord(points, units=units)
-        coord.rename(name)
+    values = np.array(values)
+
+    if not iris.FUTURE.pandas_ndim:
+        if np.issubdtype(values.dtype, np.number) and iris.util.monotonic(
+            values, strict=True
+        ):
+            dm_class = DimCoord
+        else:
+            dm_class = AuxCoord
+
+    instance = dm_class(values, units=units)
+    # Use rename() to attempt standard_name but fall back on long_name.
+    instance.rename(name)
+
+    return instance
+
+
+def _add_iris_coord(cube, name, points, dim, calendar=None):
+    """
+    Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array.
+    """
+    # Most functionality has been abstracted to _get_dimensional_metadata,
+    #  allowing re-use in the new FUTURE.pandas_ndim behaviour.
+    coord = _get_dimensional_metadata(name, points, calendar)
+
+    if coord.__class__ == DimCoord:
         cube.add_dim_coord(coord, dim)
     else:
-        coord = AuxCoord(points, units=units)
-        coord.rename(name)
         cube.add_aux_coord(coord, dim)
 
 
@@ -143,6 +167,9 @@ def as_cube(
         # TODO: document this new alternative behaviour.
         # TODO: check how this copes with Series (rather than DataFrame).
         #  Should reject all 'cols' arguments.
+        # TODO: include a docstring example of how to mask NaN's - shouldn't
+        #  assume the user wants this by default.
+        #   np.ma.masked_invalid(data, copy=False)
 
         if copy:
             pandas_array = pandas_array.copy()
@@ -180,10 +207,14 @@ def as_cube(
             ),
         ]
 
-        def format_dim_metadata(instance, name_, dimensions):
-            # Use rename() to attempt standard_name but fall back on long_name.
-            instance.rename(name_)
-            return (instance, dimensions)
+        def format_dimensional_metadata(
+            dm_class_, values_, name_, dimensions_
+        ):
+            calendar = calendars.get(name_)
+            instance = _get_dimensional_metadata(
+                name_, values_, calendar, dm_class_
+            )
+            return (instance, dimensions_)
 
         cube_kwargs = {}
         for dm_class, columns, kwarg in class_arg_mapping:
@@ -211,8 +242,8 @@ def as_cube(
                     indices[dim] = slice(None)
                 collapsed = shaped[tuple(indices)]
 
-                new_dm = format_dim_metadata(
-                    dm_class(collapsed), column_name, dimensions
+                new_dm = format_dimensional_metadata(
+                    dm_class, collapsed, column_name, dimensions
                 )
                 class_kwarg.append(new_dm)
 
@@ -224,8 +255,8 @@ def as_cube(
                 coord_points = pandas_index.levels[ix]
             else:
                 coord_points = pandas_index
-            new_dim_coord = format_dim_metadata(
-                DimCoord(coord_points), dim_name, ix
+            new_dim_coord = format_dimensional_metadata(
+                DimCoord, coord_points, dim_name, ix
             )
             dim_coord_kwarg.append(new_dim_coord)
         cube_kwargs["dim_coords_and_dims"] = dim_coord_kwarg
