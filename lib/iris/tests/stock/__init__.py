@@ -20,7 +20,13 @@ import iris.aux_factory
 from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.coords import (
+    AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
+    CellMethod,
+    DimCoord,
+)
 from iris.cube import Cube
 
 from ._stock_2d_latlons import (  # noqa
@@ -317,6 +323,36 @@ def simple_3d_mask():
     cube = simple_3d()
     cube.data = ma.asanyarray(cube.data)
     cube.data = ma.masked_less_equal(cube.data, 8.0)
+    return cube
+
+
+def simple_3d_w_cell_measure_ancil_var():
+    """
+    Returns a three dimensional cube with a CellMeasure and AncillaryVariable.
+
+    >>> print(simple_3d_w_cell_measure_ancil_var())
+    thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
+        Dimension coordinates:
+            wibble                             x            -             -
+            latitude                           -            x             -
+            longitude                          -            -             x
+        Auxiliary coordinates:
+            surface_altitude                   -            x             x
+        Cell measures:
+            cell_measure                       x            -             -
+        Ancillary variables:
+            ancil_var                          x            -             -
+
+    """
+    cube = simple_3d()
+    orog = AuxCoord(
+        np.arange(12).reshape(3, 4), standard_name="surface_altitude"
+    )
+    cube.add_aux_coord(orog, (1, 2))
+    ancil_var = AncillaryVariable([1, 2], long_name="ancil_var")
+    cell_measure = CellMeasure([1, 2], long_name="cell_measure")
+    cube.add_ancillary_variable(ancil_var, 0)
+    cube.add_cell_measure(cell_measure, 0)
     return cube
 
 

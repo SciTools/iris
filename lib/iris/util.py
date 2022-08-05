@@ -1096,100 +1096,7 @@ def format_array(arr):
     return result
 
 
-def _promote_aux(cube, aux):
-    new_cube = cube.copy()
-    new_aux = new_cube.coord(aux)
-    aux_dims = new_cube.coord_dims(new_aux)
-    if aux_dims == ():
-        new_cube.remove_coord(new_aux)
-        new_cube.add_aux_coord(new_aux, 0)
-    else:
-        new_dims = (0,) + aux_dims
-
-        new_cube.remove_coord(new_aux)
-
-        if new_aux.has_lazy_points():
-            new_points = new_aux.lazy_points()[None]
-        elif isinstance(new_aux.points, ma.core.MaskedConstant):
-            new_points = ma.array([np.nan], mask=[True])
-        else:
-            new_points = new_aux.data[None]
-
-        if new_aux.has_bounds():
-            if new_aux.has_lazy_bounds():
-                new_bounds = new_aux.lazy_bounds()[None]
-            else:
-                new_bounds = new_aux.bounds[None]
-        else:
-            new_bounds = None
-
-        kwargs = new_aux.metadata._asdict()
-        kwargs["bounds"] = new_bounds
-        new_aux = iris.coords.AuxCoord(new_points, **kwargs)
-        new_cube.add_aux_coord(new_aux, new_dims)
-
-    return new_cube
-
-
-def _promote_cm(cube, cm):
-    new_cube = cube.copy()
-    new_cm = new_cube.cell_measure(cm)
-    cm_dims = new_cube.cell_measure_dims(new_cm)
-    if cm_dims == ():
-        new_cube.remove_cell_measure(new_cm)
-        new_cube.add_cell_measure(new_cm, 0)
-    else:
-        new_dims = (0,) + cm_dims
-
-        new_cube.remove_cell_measure(new_cm)
-
-        if new_cm.has_lazy_data():
-            new_data = new_cm.lazy_data()[None]
-        elif isinstance(new_cm.data, ma.core.MaskedConstant):
-            new_data = ma.array([np.nan], mask=[True])
-        else:
-            new_data = new_cm.data[None]
-
-        kwargs = new_cm.metadata._asdict()
-        new_cm = iris.coords.CellMeasure(new_data, **kwargs)
-        new_cube.add_cell_measure(new_cm, new_dims)
-
-    return new_cube
-
-
-def _promote_av(cube, av):
-    new_cube = cube.copy()
-    new_av = new_cube.ancillary_variable(av)
-    av_dims = new_cube.ancillary_variable_dims(new_av)
-    if av_dims == ():
-        new_cube.remove_ancillary_variable(new_av)
-        new_cube.add_ancillary_variable(new_av, 0)
-    else:
-        new_dims = (0,) + av_dims
-
-        new_cube.remove_ancillary_variable(new_av)
-
-        if new_av.has_lazy_data():
-            new_data = new_av.lazy_data()[None]
-        elif isinstance(new_av.data, ma.core.MaskedConstant):
-            new_data = ma.array([np.nan], mask=[True])
-        else:
-            new_data = new_av.data[None]
-
-        kwargs = new_av.metadata._asdict()
-        new_av = iris.coords.AncillaryVariable(new_data, **kwargs)
-        new_cube.add_ancillary_variable(new_av, new_dims)
-
-    return new_cube
-
-
-def new_axis(
-    src_cube,
-    scalar_coord=None,
-    promoted_aux=[],
-    promoted_cm=[],
-    promoted_av=[],
-):
+def new_axis(src_cube, scalar_coord=None, broadcast=[]):
     """
     Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
@@ -1204,14 +1111,9 @@ def new_axis(
     * scalar_coord (:class:`iris.coord.Coord` or 'string')
         Scalar coordinate to promote to a dimension coordinate.
 
-    * promoted_aux (list)
-        List of auxiliary coordinates to add the new axis to.
-
-    * promoted_cm (list)
-        List of cell measures to add the new axis to.
-
-    * promoted_av (list)
-        List of ancillary variables to add the new axis to.
+    * broadcast (list)
+        List of auxiliary coordinates, ancillary variables and cell measures
+        that will be broadcasted to map to the new axis to.
 
     Returns:
         A new :class:`iris.cube.Cube` instance with one extra leading dimension
@@ -1226,58 +1128,82 @@ def new_axis(
         >>> ncube = iris.util.new_axis(cube, 'time')
         >>> ncube.shape
         (1, 360, 360)
-
     """
-    from iris.coords import DimCoord
-    from iris.cube import Cube
+
+    def _reshape_data_array(data_manager):
+        # Indexing numpy arrays requires loading deferred data here returning a
+        # copy of the data with a new leading dimension.
+        # If the data of the source cube (or values of the dimensional metadata
+        # object) is a Masked Constant, it is changed here to a Masked Array to
+        # allow the mask to gain an extra dimension with the data.
+        if data_manager.has_lazy_data():
+            new_data = data_manager.lazy_data()[None]
+        else:
+            if isinstance(data_manager.data, ma.core.MaskedConstant):
+                print("ahh")
+                new_data = ma.array([np.nan], mask=[True])
+            else:
+                new_data = data_manager.data[None]
+        return new_data
+
+    def _handle_dimensional_metadata(thing, cube_add_method, broadcast):
+        cube_dims = thing.cube_dims
+        if thing in broadcast:
+            if cube_dims == ():
+                new_thing, new_dims = thing, 0
+            else:
+                new_dims = (0,) + cube_dims
+                new_values = _reshape_data_array(thing._values_manager)
+                kwargs = thing.metadata._asdict()
+                new_thing = thing.__class__(new_values, **kwargs)
+            try:
+                if thing.has_bounds():
+                    new_thing.bounds = _reshape_data_array(thing._bounds_dm)
+            except AttributeError:
+                pass
+        else:
+            new_dims = np.array(cube_dims) + 1
+            new_thing = thing.copy()
+
+        cube_add_method(new_thing, new_dims)
 
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
 
-    # Indexing numpy arrays requires loading deferred data here returning a
-    # copy of the data with a new leading dimension.
-    # If the source cube is a Masked Constant, it is changed here to a Masked
-    # Array to allow the mask to gain an extra dimension with the data.
-    if src_cube.has_lazy_data():
-        new_cube = Cube(src_cube.lazy_data()[None])
-    else:
-        if isinstance(src_cube.data, ma.core.MaskedConstant):
-            new_data = ma.array([np.nan], mask=[True])
-        else:
-            new_data = src_cube.data[None]
-        new_cube = Cube(new_data)
+    broadcast = [src_cube._dimensional_metadata(item) for item in broadcast]
 
+    new_cube = iris.cube.Cube(_reshape_data_array(src_cube._data_manager))
+
+    # Add non-dimensional metadata
     new_cube.metadata = src_cube.metadata
 
-    for coord in src_cube.aux_coords:
-        if scalar_coord and scalar_coord == coord:
-            dim_coord = DimCoord.from_coord(coord)
-            new_cube.add_dim_coord(dim_coord, 0)
-        else:
-            dims = np.array(src_cube.coord_dims(coord)) + 1
-            new_cube.add_aux_coord(coord.copy(), dims)
-
+    # Add dimensional metadata
+    # Handle DimCoords
     for coord in src_cube.dim_coords:
         coord_dims = np.array(src_cube.coord_dims(coord)) + 1
         new_cube.add_dim_coord(coord.copy(), coord_dims)
 
+    # Handle AuxCoords
+    for coord in src_cube.aux_coords:
+        if scalar_coord and scalar_coord == coord:
+            dim_coord = iris.coords.DimCoord.from_coord(coord)
+            new_cube.add_dim_coord(dim_coord, 0)
+        else:
+            _handle_dimensional_metadata(
+                coord, new_cube.add_aux_coord, broadcast
+            )
+
+    # Handle Cell Measures
     for cm in src_cube.cell_measures():
-        cm_dims = np.array(src_cube.cell_measure_dims(cm)) + 1
-        new_cube.add_cell_measure(cm.copy(), cm_dims)
+        _handle_dimensional_metadata(cm, new_cube.add_cell_measure, broadcast)
 
+    # Handle Ancillary Variables
     for av in src_cube.ancillary_variables():
-        av_dims = np.array(src_cube.ancillary_variable_dims(av)) + 1
-        new_cube.add_ancillary_variable(av.copy(), av_dims)
+        _handle_dimensional_metadata(
+            av, new_cube.add_ancillary_variable, broadcast
+        )
 
-    for aux in promoted_aux:
-        new_cube = _promote_aux(new_cube, aux)
-
-    for cm in promoted_cm:
-        new_cube = _promote_cm(new_cube, cm)
-
-    for av in promoted_av:
-        new_cube = _promote_av(new_cube, av)
-
+    # Handle Aux Factories
     nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
     coord_mapping = {
         id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords
@@ -1285,8 +1211,6 @@ def new_axis(
     for factory in src_cube.aux_factories:
         new_factory = factory.updated(coord_mapping)
         new_cube.add_aux_factory(new_factory)
-
-    return new_cube
 
 
 def squeeze(cube):

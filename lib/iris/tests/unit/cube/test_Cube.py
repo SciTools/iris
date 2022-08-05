@@ -2875,5 +2875,61 @@ class Test__eq__meta(tests.IrisTest):
         self.assertTrue(cube1 == cube2)
 
 
+class Test__dimensional_metadata:
+    def setUp(self):
+        self.cube = stock.simple_3d_w_cell_measure_ancil_var()
+
+    def test_not_found(self):
+        emsg = "not found"
+        with self.assertRaisesRegex(KeyError, emsg):
+            self.cube._dimensional_metadata("grid_latitude")
+
+    def test_dim_coord_name_found(self):
+        res = self.cube._dimensional_metadata("latitude")
+        assert res == self.cube.coord("latitude")
+
+    def test_dim_coord_instance_found(self):
+        res = self.cube._dimensional_metadata(self.cube.coord("latitude"))
+        assert res == self.cube.coord("latitude")
+
+    def test_aux_coord_name_found(self):
+        res = self.cube._dimensional_metadata("surface_altitude")
+        assert res == self.cube.coord("surface_altitude")
+
+    def test_aux_coord_instance_found(self):
+        res = self.cube._dimensional_metadata(
+            self.cube.coord("surface_altitude")
+        )
+        assert res == self.cube.coord("surface_altitude")
+
+    def test_cell_measure_name_found(self):
+        res = self.cube._dimensional_metadata("cell_measure")
+        assert res == self.cube.CellMeasure("cell_measure")
+
+    def test_cell_measure_instance_found(self):
+        res = self.cube._dimensional_metadata(
+            self.cube.CellMeasure("cell_measure")
+        )
+        assert res == self.cube.CellMeasure("cell_measure")
+
+    def test_ancillary_var_name_found(self):
+        res = self.cube._dimensional_metadata("ancil_var")
+        assert res == self.cube.AncillaryVariable("ancil_var")
+
+    def test_ancillary_var_instance_found(self):
+        res = self.cube._dimensional_metadata(
+            self.cube.AncillaryVariable("ancil_var")
+        )
+        assert res == self.cube.AncillaryVariable("ancil_var")
+
+    def test_two_with_same_name(self):
+        # If a cube has two _DimensionalMetadata objects with the same name,
+        # Current behaviour results in _dimensional_metadata returning the first
+        # one it finds
+        self.cube.cell_measure("cell_measure").rename("wibble")
+        res = self.cube._dimensional_metadata("wibble")
+        assert res == self.cube.coord("wibble")
+
+
 if __name__ == "__main__":
     tests.main()

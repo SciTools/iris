@@ -1012,6 +1012,31 @@ class Cube(CFVariableMixin):
         """
         return self._metadata_manager._names
 
+    def _dimensional_metadata(self, name_or_dimensional_metadata):
+        """
+        Return a single _DimensionalMetadata instance that matches the given
+        name_or_dimensional_metadata.
+        If one is not found, raise an error
+
+        """
+        found_item = None
+        for cube_method in [
+            self.coord,
+            self.cell_measure,
+            self.ancillary_variables,
+        ]:
+            try:
+                found_item = cube_method(name_or_dimensional_metadata)
+                if found_item:
+                    break
+            except KeyError:
+                pass
+        if not found_item:
+            raise KeyError(
+                f"{name_or_dimensional_metadata} " f"was not found in {self}"
+            )
+        return found_item
+
     def is_compatible(self, other, ignore=None):
         """
         Return whether the cube is compatible with another.
