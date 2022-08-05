@@ -107,7 +107,6 @@ def as_cube(
     pandas_array,
     copy=True,
     calendars=None,
-    dim_coord_cols=None,
     aux_coord_cols=None,
     cell_measure_cols=None,
     ancillary_variable_cols=None,
@@ -145,17 +144,13 @@ def as_cube(
         # TODO: check how this copes with Series (rather than DataFrame).
         #  Should reject all 'cols' arguments.
 
-        # TODO: insist that dim coords are provided as an existing index
-        #  (include an example of how). This avoids needing to set the index
+        if copy:
+            pandas_array = pandas_array.copy()
+
+        # TODO: include a docstring example of how to provide dimension coords
+        #  as the index. This avoids needing to set the index
         #  within this function - either silently modifying the original df, or
         #  creating an unnecessary copy.
-        if dim_coord_cols is not None:
-            try:
-                pandas_array.set_index(dim_coord_cols, inplace=True)
-            except Exception as e:
-                message = "Unable to use dim_coord_cols as DataFrame index."
-                raise ValueError(message) from e
-
         pandas_index = pandas_array.index
         if not pandas_index.is_unique:
             message = (
@@ -184,9 +179,6 @@ def as_cube(
                 "ancillary_variables_and_dims",
             ),
         ]
-
-        # TODO: check that we are getting views of the data, rather than
-        #  copying lots.
 
         def format_dim_metadata(instance, name_, dimensions):
             # Use rename() to attempt standard_name but fall back on long_name.
