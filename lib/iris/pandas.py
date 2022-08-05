@@ -236,10 +236,12 @@ def as_cube(
                 # Remove duplicate entries to get down to the correct dimensions
                 #  for this object. _series_index_unique should have ensured
                 #  that we are indeed removing the duplicates.
-                shaped = content.reshape(cube_shape)
-                indices = [0] * len(cube_shape)
+                inverted_shape = cube_shape[::-1]
+                shaped = content.reshape(inverted_shape)
+                indices = [0] * len(inverted_shape)
                 for dim in dimensions:
-                    indices[dim] = slice(None)
+                    inverted_index = (dim + 1) * -1
+                    indices[inverted_index] = slice(None)
                 collapsed = shaped[tuple(indices)]
 
                 new_dm = format_dimensional_metadata(
