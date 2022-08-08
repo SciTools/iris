@@ -71,7 +71,7 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
     if result is not None:
         draw_edges = mode == iris.coords.POINT_MODE
         bar = plt.colorbar(
-            result, orientation="horizontal", drawedges=draw_edges
+            result, ax=axes, orientation="horizontal", drawedges=draw_edges
         )
         has_known_units = not (
             cube.units.is_unknown() or cube.units.is_no_unit()
