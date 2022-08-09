@@ -124,18 +124,25 @@ def _as_pandas_coord(coord):
     return index
 
 
-def as_data_frame(cube, dropna=True, asmultiindex=False, add_aux_coord=None):
+def as_data_frame(cube, dropna=True, asmultiindex=False, add_aux_coord=None, add_global_attributes=None):
     """
-    Convert a 2D cube to a Pandas DataFrame.
+    Convert a :class:`Cube` to a Pandas `DataFrame`.
 
     Args:
 
-        * cube - The cube to convert to a Pandas DataFrame.
+        * cube:
+            The :class:`Cube` to be converted to a Pandas `DataFrame`.
 
     Kwargs:
 
-        * dropna - Remove missing values from returned dataframe.
-                    Defaults to True.
+        * dropna:
+            If True, removes missing values from returned dataframe.
+        * asmultiindex:
+            If True, returns a `DataFrame` with a `MultiIndex <https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html#pandas.MultiIndex>`_.
+        * add_aux_coord:
+            A list of :class:`Cube` :class:`AuxCoord` names to add to the returned `DataFrame`.
+        * add_global_attributes:
+            A list of :class:`Cube` attributes to add to the returned `DataFrame`.
 
     .. note::
 
