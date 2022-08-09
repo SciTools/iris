@@ -1802,10 +1802,12 @@ def _mask_array(array, points_to_mask, in_place=False):
 
     if in_place:
         array.mask = new_mask
-        return array  # Resolve uses returned value even if working in place.
+        result = array  # Resolve uses returned value even if working in place.
     else:
         # Return a new, independent array.
-        return al.ma.masked_array(array_data.copy(), mask=new_mask)
+        result = al.ma.masked_array(array_data.copy(), mask=new_mask)
+        
+    return result
 
 
 @_lenient_client(services=SERVICES)
