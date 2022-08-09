@@ -124,7 +124,7 @@ def _as_pandas_coord(coord):
     return index
 
 
-def as_data_frame(cube, dropna=True, asmultiindex=False):
+def as_data_frame(cube, dropna=True, asmultiindex=False, add_aux_coord=None):
     """
     Convert a 2D cube to a Pandas DataFrame.
 
@@ -166,6 +166,19 @@ def as_data_frame(cube, dropna=True, asmultiindex=False):
 
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
     data_frame = pandas.DataFrame({cube.name(): data.flatten()}, index=index)
+
+    # Add aux coord information
+    if add_aux_coord:
+        aux_coord_names = list(map(lambda x: x.name(), cube.aux_coords))
+        for acoord in add_aux_coord:
+            assert acoord in aux_coord_names, f'\"{acoord}\" not in cube' # Check aux coord exists
+            aux_coord = cube.coord(acoord)
+            coord_bool = np.array(cube.shape) == aux_coord.shape[0] # Which dim coords match aux coord length
+            aux_coord_index = np.array(coords)[coord_bool][0] # Get corresponding dim coord
+            # Build aux coord dataframe
+            acoord_df = pd.DataFrame({acoord: aux_coord.points}, index = pd.Index(data=aux_coord_index, name=np.array(coord_names)[coord_bool][0]))
+            # Join to main data frame
+            data_frame = data_frame.join(acoord_df, on=np.array(coord_names)[coord_bool][0])
 
     if dropna:
         data_frame.dropna(inplace=True)
