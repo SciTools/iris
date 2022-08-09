@@ -1015,15 +1015,14 @@ class Cube(CFVariableMixin):
     def _dimensional_metadata(self, name_or_dimensional_metadata):
         """
         Return a single _DimensionalMetadata instance that matches the given
-        name_or_dimensional_metadata.
-        If one is not found, raise an error
+        name_or_dimensional_metadata. If one is not found, raise an error.
 
         """
         found_item = None
         for cube_method in [
             self.coord,
             self.cell_measure,
-            self.ancillary_variables,
+            self.ancillary_variable,
         ]:
             try:
                 found_item = cube_method(name_or_dimensional_metadata)

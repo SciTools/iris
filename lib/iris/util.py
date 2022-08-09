@@ -1113,7 +1113,8 @@ def new_axis(src_cube, scalar_coord=None, broadcast=[]):
 
     * broadcast (list)
         List of auxiliary coordinates, ancillary variables and cell measures
-        that will be broadcasted to map to the new axis to.
+        that will be broadcasted so that they map to the new dimension as well
+        as the existing dimensions.
 
     Returns:
         A new :class:`iris.cube.Cube` instance with one extra leading dimension
@@ -1140,70 +1141,70 @@ def new_axis(src_cube, scalar_coord=None, broadcast=[]):
             new_data = data_manager.lazy_data()[None]
         else:
             if isinstance(data_manager.data, ma.core.MaskedConstant):
-                print("ahh")
                 new_data = ma.array([np.nan], mask=[True])
             else:
                 new_data = data_manager.data[None]
         return new_data
 
-    def _handle_dimensional_metadata(thing, cube_add_method, broadcast):
-        cube_dims = thing.cube_dims
-        if thing in broadcast:
+    def _handle_dimensional_metadata(
+        cube, dm_item, cube_add_method, broadcast
+    ):
+        cube_dims = dm_item.cube_dims(cube)
+        if dm_item in broadcast:
             if cube_dims == ():
-                new_thing, new_dims = thing, 0
+                new_dm_item, new_dims = dm_item.copy(), 0
             else:
-                new_dims = (0,) + cube_dims
-                new_values = _reshape_data_array(thing._values_manager)
-                kwargs = thing.metadata._asdict()
-                new_thing = thing.__class__(new_values, **kwargs)
-            try:
-                if thing.has_bounds():
-                    new_thing.bounds = _reshape_data_array(thing._bounds_dm)
-            except AttributeError:
-                pass
+                new_dims = np.concatenate([(0,), np.array(cube_dims) + 1])
+                new_values = _reshape_data_array(dm_item._values_dm)
+                kwargs = dm_item.metadata._asdict()
+                new_dm_item = dm_item.__class__(new_values, **kwargs)
+                try:
+                    if dm_item.has_bounds():
+                        new_dm_item.bounds = _reshape_data_array(
+                            dm_item._bounds_dm
+                        )
+                except AttributeError:
+                    pass
         else:
             new_dims = np.array(cube_dims) + 1
-            new_thing = thing.copy()
+            new_dm_item = dm_item.copy()
 
-        cube_add_method(new_thing, new_dims)
+        cube_add_method(new_dm_item, new_dims)
 
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
+        if not scalar_coord.shape == (1,):
+            emsg = scalar_coord.name() + "is not a scalar coordinate."
+            raise ValueError(emsg)
 
     broadcast = [src_cube._dimensional_metadata(item) for item in broadcast]
 
     new_cube = iris.cube.Cube(_reshape_data_array(src_cube._data_manager))
-
-    # Add non-dimensional metadata
     new_cube.metadata = src_cube.metadata
 
-    # Add dimensional metadata
-    # Handle DimCoords
     for coord in src_cube.dim_coords:
         coord_dims = np.array(src_cube.coord_dims(coord)) + 1
         new_cube.add_dim_coord(coord.copy(), coord_dims)
 
-    # Handle AuxCoords
     for coord in src_cube.aux_coords:
         if scalar_coord and scalar_coord == coord:
             dim_coord = iris.coords.DimCoord.from_coord(coord)
             new_cube.add_dim_coord(dim_coord, 0)
         else:
             _handle_dimensional_metadata(
-                coord, new_cube.add_aux_coord, broadcast
+                src_cube, coord, new_cube.add_aux_coord, broadcast
             )
 
-    # Handle Cell Measures
     for cm in src_cube.cell_measures():
-        _handle_dimensional_metadata(cm, new_cube.add_cell_measure, broadcast)
-
-    # Handle Ancillary Variables
-    for av in src_cube.ancillary_variables():
         _handle_dimensional_metadata(
-            av, new_cube.add_ancillary_variable, broadcast
+            src_cube, cm, new_cube.add_cell_measure, broadcast
         )
 
-    # Handle Aux Factories
+    for av in src_cube.ancillary_variables():
+        _handle_dimensional_metadata(
+            src_cube, av, new_cube.add_ancillary_variable, broadcast
+        )
+
     nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
     coord_mapping = {
         id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords
@@ -1211,6 +1212,8 @@ def new_axis(src_cube, scalar_coord=None, broadcast=[]):
     for factory in src_cube.aux_factories:
         new_factory = factory.updated(coord_mapping)
         new_cube.add_aux_factory(new_factory)
+
+    return new_cube
 
 
 def squeeze(cube):

@@ -326,36 +326,6 @@ def simple_3d_mask():
     return cube
 
 
-def simple_3d_w_cell_measure_ancil_var():
-    """
-    Returns a three dimensional cube with a CellMeasure and AncillaryVariable.
-
-    >>> print(simple_3d_w_cell_measure_ancil_var())
-    thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
-        Dimension coordinates:
-            wibble                             x            -             -
-            latitude                           -            x             -
-            longitude                          -            -             x
-        Auxiliary coordinates:
-            surface_altitude                   -            x             x
-        Cell measures:
-            cell_measure                       x            -             -
-        Ancillary variables:
-            ancil_var                          x            -             -
-
-    """
-    cube = simple_3d()
-    orog = AuxCoord(
-        np.arange(12).reshape(3, 4), standard_name="surface_altitude"
-    )
-    cube.add_aux_coord(orog, (1, 2))
-    ancil_var = AncillaryVariable([1, 2], long_name="ancil_var")
-    cell_measure = CellMeasure([1, 2], long_name="cell_measure")
-    cube.add_ancillary_variable(ancil_var, 0)
-    cube.add_cell_measure(cell_measure, 0)
-    return cube
-
-
 def track_1d(duplicate_x=False):
     """
     Returns a one-dimensional track through two-dimensional space.
@@ -437,6 +407,35 @@ def simple_2d_w_multidim_and_scalars():
     cube.add_aux_coord(yet_an_other)
     cube.add_aux_coord(my_multi_dim_coord, [0, 1])
 
+    return cube
+
+
+def simple_2d_w_cell_measure_ancil_var():
+    """
+    Returns a two dimensional cube with a CellMeasure and AncillaryVariable.
+
+    >>> print(simple_2d_w_cell_measure_ancil_var())
+    thingness / (1)                     (bar: 3; foo: 4)
+        Dimension coordinates:
+            bar                             x       -
+            foo                             -       x
+        Cell measures:
+            cell_area                       x       x
+        Ancillary variables:
+            quality_flag                    x       -
+        Scalar coordinates:
+            wibble                      1
+
+    """
+    cube = simple_2d()
+    cube.add_aux_coord(AuxCoord([1], long_name="wibble"), None)
+    cube.add_ancillary_variable(
+        AncillaryVariable([1, 2, 3], standard_name="quality_flag"), 0
+    )
+    cube.add_cell_measure(
+        CellMeasure(np.arange(12).reshape(3, 4), standard_name="cell_area"),
+        (0, 1),
+    )
     return cube
 
 
