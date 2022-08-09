@@ -15,6 +15,7 @@ from unittest import mock
 from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris._lazy_data import as_lazy_data
 import iris.analysis
@@ -2876,57 +2877,55 @@ class Test__eq__meta(tests.IrisTest):
 
 
 class Test__dimensional_metadata:
-    def setUp(self):
-        self.cube = stock.simple_2d_w_cell_measure_ancil_var()
+    @pytest.fixture
+    def cube(self):
+        return stock.simple_2d_w_cell_measure_ancil_var()
 
-    def test_not_found(self):
-        emsg = "was not found in"
-        with self.assertRaisesRegex(KeyError, emsg):
-            self.cube._dimensional_metadata("grid_latitude")
+    def test_not_found(self, cube):
+        with pytest.raises(KeyError, match="was not found in"):
+            cube._dimensional_metadata("grid_latitude")
 
-    def test_dim_coord_name_found(self):
-        res = self.cube._dimensional_metadata("bar")
-        assert res == self.cube.coord("bar")
+    def test_dim_coord_name_found(self, cube):
+        res = cube._dimensional_metadata("bar")
+        assert res == cube.coord("bar")
 
-    def test_dim_coord_instance_found(self):
-        res = self.cube._dimensional_metadata(self.cube.coord("bar"))
-        assert res == self.cube.coord("bar")
+    def test_dim_coord_instance_found(self, cube):
+        res = cube._dimensional_metadata(cube.coord("bar"))
+        assert res == cube.coord("bar")
 
-    def test_aux_coord_name_found(self):
-        res = self.cube._dimensional_metadata("wibble")
-        assert res == self.cube.coord("wibble")
+    def test_aux_coord_name_found(self, cube):
+        res = cube._dimensional_metadata("wibble")
+        assert res == cube.coord("wibble")
 
-    def test_aux_coord_instance_found(self):
-        res = self.cube._dimensional_metadata(self.cube.coord("wibble"))
-        assert res == self.cube.coord("wibble")
+    def test_aux_coord_instance_found(self, cube):
+        res = cube._dimensional_metadata(cube.coord("wibble"))
+        assert res == cube.coord("wibble")
 
-    def test_cell_measure_name_found(self):
-        res = self.cube._dimensional_metadata("cell_area")
-        assert res == self.cube.CellMeasure("cell_area")
+    def test_cell_measure_name_found(self, cube):
+        res = cube._dimensional_metadata("cell_area")
+        assert res == cube.cell_measure("cell_area")
 
-    def test_cell_measure_instance_found(self):
-        res = self.cube._dimensional_metadata(
-            self.cube.CellMeasure("cell_area")
+    def test_cell_measure_instance_found(self, cube):
+        res = cube._dimensional_metadata(cube.cell_measure("cell_area"))
+        assert res == cube.cell_measure("cell_area")
+
+    def test_ancillary_var_name_found(self, cube):
+        res = cube._dimensional_metadata("quality_flag")
+        assert res == cube.ancillary_variable("quality_flag")
+
+    def test_ancillary_var_instance_found(self, cube):
+        res = cube._dimensional_metadata(
+            cube.ancillary_variable("quality_flag")
         )
-        assert res == self.cube.CellMeasure("cell_area")
+        assert res == cube.ancillary_variable("quality_flag")
 
-    def test_ancillary_var_name_found(self):
-        res = self.cube._dimensional_metadata("quality_flag")
-        assert res == self.cube.AncillaryVariable("quality_flag")
-
-    def test_ancillary_var_instance_found(self):
-        res = self.cube._dimensional_metadata(
-            self.cube.AncillaryVariable("quality_flag")
-        )
-        assert res == self.cube.AncillaryVariable("quality_flag")
-
-    def test_two_with_same_name(self):
+    def test_two_with_same_name(self, cube):
         # If a cube has two _DimensionalMetadata objects with the same name, the
         # current behaviour results in _dimensional_metadata returning the first
         # one it finds
-        self.cube.cell_measure("cell_area").rename("wibble")
-        res = self.cube._dimensional_metadata("wibble")
-        assert res == self.cube.coord("wibble")
+        cube.cell_measure("cell_area").rename("wibble")
+        res = cube._dimensional_metadata("wibble")
+        assert res == cube.coord("wibble")
 
 
 if __name__ == "__main__":
