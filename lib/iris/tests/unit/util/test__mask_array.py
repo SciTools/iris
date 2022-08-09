@@ -51,6 +51,7 @@ def test_1d_not_in_place(array, mask, expected, lazy_array, lazy_mask):
         mask = iris._lazy_data.as_lazy_data(mask)
 
     result = _mask_array(array, mask)
+    assert result is not array
 
     if lazy_array or lazy_mask:
         assert iris._lazy_data.is_lazy_data(result)
@@ -102,7 +103,7 @@ def test_real_masked_array_in_place(mask):
     result = _mask_array(arr, mask, in_place=True)
     assert_masked_array_equal(arr, expected2)
     # Resolve uses returned value regardless of whether we're working in_place.
-    assert_masked_array_equal(result, expected2)
+    assert result is arr
 
 
 def test_lazy_array_in_place():
@@ -118,6 +119,7 @@ def test_lazy_array_in_place():
     result = _mask_array(arr, mask, in_place=True)
     assert iris._lazy_data.is_lazy_data(result)
     assert_masked_array_equal(result.compute(), expected_computed)
+    assert result is not arr
 
 
 # Broadcasting tests.
@@ -134,7 +136,7 @@ def test_trailing_mask(in_place):
     expected = ma.array(array_2by3, mask=[[0, 1, 0], [0, 1, 0]])
     result = _mask_array(array, mask, in_place=in_place)
     assert_masked_array_equal(result, expected)
-    assert result is array if in_place else assert result is not array
+    assert result is array if in_place else result is not array
 
 
 @IN_PLACE_PARAMETRIZE
@@ -144,8 +146,7 @@ def test_leading_mask(in_place):
     expected = ma.array(arr.data, mask=[[1, 1, 1], [0, 0, 1]])
     result = _mask_array(arr, mask, in_place=in_place)
     assert_masked_array_equal(result, expected)
-    if in_place:
-        assert_masked_array_equal(arr, expected)
+    assert result is arr if in_place else result is not arr
 
 
 def test_lazy_trailing_mask():
@@ -155,6 +156,7 @@ def test_lazy_trailing_mask():
     result = _mask_array(arr, mask, in_place=False)
     assert iris._lazy_data.is_lazy_data(result)
     assert_masked_array_equal(result.compute(), expected_computed)
+    assert result is not arr
 
 
 def test_lazy_leading_mask():
@@ -164,6 +166,7 @@ def test_lazy_leading_mask():
     result = _mask_array(arr, mask, in_place=False)
     assert iris._lazy_data.is_lazy_data(result)
     assert_masked_array_equal(result.compute(), expected_computed)
+    assert result is not arr
 
 
 if __name__ == "__main__":

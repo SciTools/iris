@@ -1851,13 +1851,13 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     if in_place and not cube.has_lazy_data():
         # Ensure cube data is masked type so we can work on it in-place.
         cube.data = ma.asanyarray(cube.data)
-        mask_array = functools.partial(_mask_array, in_place=True)
+        mask_function = functools.partial(_mask_array, in_place=True)
     else:
-        mask_array = _mask_array
+        mask_function = _mask_array
 
     input_metadata = cube.metadata
     result = iris.analysis.maths._binary_op_common(
-        mask_array,
+        mask_function,
         "mask",
         cube,
         points_to_mask,

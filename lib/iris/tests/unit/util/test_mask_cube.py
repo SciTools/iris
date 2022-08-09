@@ -84,7 +84,7 @@ class TestArrayMask(tests.IrisTest, MaskCubeMixin):
         self.assertOriginalMetadata(returned, "full2d_global")
         self.assertFalse(ma.is_masked(cube.data))
 
-    def test_mask_cube_lazy_in_place(self):
+    def test_mask_cube_lazy_in_place_broadcast(self):
         cube = simple_2d()
         cube.data = cube.lazy_data()
         mask = [0, 1, 1, 0]
