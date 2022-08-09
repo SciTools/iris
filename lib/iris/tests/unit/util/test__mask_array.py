@@ -134,8 +134,7 @@ def test_trailing_mask(in_place):
     expected = ma.array(array_2by3, mask=[[0, 1, 0], [0, 1, 0]])
     result = _mask_array(array, mask, in_place=in_place)
     assert_masked_array_equal(result, expected)
-    if in_place:
-        assert_masked_array_equal(array, expected)
+    assert result is array if in_place else assert result is not array
 
 
 @IN_PLACE_PARAMETRIZE
