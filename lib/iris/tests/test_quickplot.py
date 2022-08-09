@@ -255,25 +255,30 @@ class TestSubplotColorbar(tests.IrisTest):
         coords = ["model_level_number", "grid_longitude"]
         self.data = next(theta.slices(coords))
         spec = (1, 1, 1)
-        self.fig1 = plt.figure()
-        self.ax1 = self.fig1.add_subplot(*spec)
-        self.fig2 = plt.figure()
-        self.ax2 = self.fig2.add_subplot(*spec)
+        self.figure1 = plt.figure()
+        self.axes1 = self.figure1.add_subplot(*spec)
+        self.figure2 = plt.figure()
+        self.axes2 = self.figure2.add_subplot(*spec)
 
-    def _check(self, mappable, fig, ax):
-        self.assertIs(mappable.axes, ax)
+    def _check(self, mappable, figure, axes):
+        self.assertIs(mappable.axes, axes)
         self.assertIs(mappable.colorbar.mappable, mappable)
-        self.assertIs(mappable.colorbar.ax.get_figure(), fig)
+        self.assertIs(mappable.colorbar.ax.get_figure(), figure)
 
-    def test__with_axes(self):
-        # plot using the first figure subplot axes
-        mappable = qplt.contourf(self.data, axes=self.ax1)
-        self._check(mappable, self.fig1, self.ax1)
+    def test_with_axes1(self):
+        # plot using the first figure subplot axes (explicit)
+        mappable = qplt.contourf(self.data, axes=self.axes1)
+        self._check(mappable, self.figure1, self.axes1)
 
-    def test__without_axes(self):
+    def test_with_axes2(self):
+        # plot using the second figure subplot axes (explicit)
+        mappable = qplt.contourf(self.data, axes=self.axes2)
+        self._check(mappable, self.figure2, self.axes2)
+
+    def test_without_axes__default(self):
         # plot using the second/last figure subplot axes (default)
         mappable = qplt.contourf(self.data)
-        self._check(mappable, self.fig2, self.ax2)
+        self._check(mappable, self.figure2, self.axes2)
 
 
 if __name__ == "__main__":
