@@ -1806,7 +1806,7 @@ def _mask_array(array, points_to_mask, in_place=False):
     else:
         # Return a new, independent array.
         result = al.ma.masked_array(array_data.copy(), mask=new_mask)
-        
+
     return result
 
 
