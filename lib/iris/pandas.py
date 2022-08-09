@@ -180,6 +180,13 @@ def as_data_frame(cube, dropna=True, asmultiindex=False, add_aux_coord=None):
             # Join to main data frame
             data_frame = data_frame.join(acoord_df, on=np.array(coord_names)[coord_bool][0])
 
+    # Add data from global attributes
+    if add_global_attributes:
+        global_attribute_names = list(rcp26.attributes.keys())
+        for global_attribute in add_global_attributes:
+            assert global_attribute in global_attribute_names, f'\"{global_attribute}\" not in cube' # Check global attribute exists
+            data_frame[global_attribute] = cube.attributes[global_attribute]
+
     if dropna:
         data_frame.dropna(inplace=True)
     if not asmultiindex:
