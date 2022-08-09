@@ -247,5 +247,35 @@ class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_data
+@tests.skip_plot
+class TestSubplotColorbar(tests.IrisTest):
+    def setUp(self):
+        theta = _load_theta()
+        coords = ["model_level_number", "grid_longitude"]
+        self.data = next(theta.slices(coords))
+
+    @staticmethod
+    def _plot():
+        fig1 = plt.figure()
+        ax1 = fig1.add_subplot(1, 1, 1)
+        fig2 = plt.figure()
+        _ = fig2.add_subplot(1, 1, 1)
+
+        return fig1, ax1, fig2
+
+    def test__with_axes(self):
+        fig1, ax1, _ = self._plot()
+        # plot using the first figure subplot axes
+        gcs = qplt.contourf(self.data, axes=ax1)
+        self.assertIs(gcs.colorbar.ax.get_figure(), fig1)
+
+    def test__without_axes(self):
+        _, _, fig2 = self._plot()
+        # plot using the second/last figure subplot axes (default)
+        gcs = qplt.contourf(self.data)
+        self.assertIs(gcs.colorbar.ax.get_figure(), fig2)
+
+
 if __name__ == "__main__":
     tests.main()
