@@ -76,6 +76,10 @@ This document explains the changes made to Iris for this release
    :func:`iris.plot.fill_between` and :func:`iris.quickplot.fill_between`.
    (:issue:`3493`, :pull:`4647`)
 
+#. `@rcomer`_ and `@bjlittle`_ (reviewer) re-wrote :func:`iris.util.mask_cube`
+   to provide lazy evaluation and greater flexibility with respect to input types.
+   (:issue:`3936`, :pull:`4889`)
+
 
 🐛 Bugs Fixed
 =============
@@ -136,6 +140,9 @@ This document explains the changes made to Iris for this release
    colorbar is added to the correct ``axes`` when specified as a keyword
    argument to a plotting routine. Otherwise, by default the colorbar will be
    added to the current axes of the current figure. (:pull:`4894`)
+
+#. `@rcomer`_ and `@bjlittle`_ (reviewer) modified :func:`iris.util.mask_cube` so it
+   either works in place or returns a new cube (:issue:`3717`, :pull:`4889`)
 
 
 💣 Incompatible Changes
@@ -270,7 +277,7 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) added building, testing and
    publishing of ``iris`` PyPI ``sdist`` and binary ``wheels`` as part of
-   our GitHub Continuous-Integration. (:pull`4849`)
+   our GitHub Continuous-Integration. (:pull:`4849`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
