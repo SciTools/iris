@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Welcome to `@krikru`_ who made their first contribution to Iris 🎉
 
 
 ✨ Features
@@ -135,6 +135,11 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified cube arithmetic to handle mismatches in the cube's data
    array type.  This prevents masks being lost in some cases and therefore
    resolves :issue:`2987`.  (:pull:`3790`)
+
+#. `@krikru`_ and `@rcomer`_ updated :mod:`iris.quickplot` such that the
+   colorbar is added to the correct ``axes`` when specified as a keyword
+   argument to a plotting routine. Otherwise, by default the colorbar will be
+   added to the current axes of the current figure. (:pull:`4894`)
 
 #. `@rcomer`_ and `@bjlittle`_ (reviewer) modified :func:`iris.util.mask_cube` so it
    either works in place or returns a new cube (:issue:`3717`, :pull:`4889`)
@@ -279,6 +284,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@evertrol: https://github.com/evertrol
+.. _@krikru: https://github.com/krikru
 
 
 .. comment
