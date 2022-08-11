@@ -162,11 +162,11 @@ def as_cube(
 
     if iris.FUTURE.pandas_ndim:
         # TODO: document this new alternative behaviour.
-        # TODO: check how this copes with Series (rather than DataFrame).
-        #  Should reject all 'cols' arguments.
         # TODO: include a docstring example of how to mask NaN's - shouldn't
         #  assume the user wants this by default.
         #   np.ma.masked_invalid(data, copy=False)
+
+        is_series = isinstance(pandas_array, pandas.Series)
 
         if copy:
             pandas_array = pandas_array.copy()
@@ -193,13 +193,6 @@ def as_cube(
             )
             raise ValueError(message)
 
-        non_data_columns = (
-            aux_coord_cols + cell_measure_cols + ancillary_variable_cols
-        )
-        data_columns = list(
-            filter(lambda c: c not in non_data_columns, pandas_array.columns)
-        )
-
         cube_shape = getattr(
             pandas_index, "levshape", (pandas_index.nunique(),)
         )
@@ -223,10 +216,19 @@ def as_cube(
             )
             return (instance, dimensions_)
 
+        non_data_names = []
         cube_kwargs = {}
-        for dm_class, columns, kwarg in class_arg_mapping:
+        for dm_class, column_names, kwarg in class_arg_mapping:
             class_kwarg = []
-            for column_name in columns:
+            if is_series and column_names:
+                message = (
+                    "The input pandas_array is a Series; ignoring "
+                    f"{dm_class.__name__} columns: {column_names} ."
+                )
+                warnings.warn(message)
+                continue
+            non_data_names.extend(column_names)
+            for column_name in column_names:
                 column = pandas_array[column_name]
 
                 dimensions = _series_index_unique(column)
@@ -268,14 +270,20 @@ def as_cube(
             dim_coord_kwarg.append(new_dim_coord)
         cube_kwargs["dim_coords_and_dims"] = dim_coord_kwarg
 
+        if is_series:
+            data_series_list = [pandas_array]
+        else:
+            data_series_list = [
+                pandas_array[column_name]
+                for column_name in pandas_array.columns
+                if column_name not in non_data_names
+            ]
         cubes = CubeList()
-        for column_name in data_columns:
-            cube_data = (
-                pandas_array[column_name].to_numpy().reshape(cube_shape)
-            )
+        for data_series in data_series_list:
+            cube_data = data_series.to_numpy().reshape(cube_shape)
             new_cube = Cube(cube_data, **cube_kwargs)
             # Use rename() to attempt standard_name but fall back on long_name.
-            new_cube.rename(column_name)
+            new_cube.rename(data_series.name)
             cubes.append(new_cube)
 
         return cubes
