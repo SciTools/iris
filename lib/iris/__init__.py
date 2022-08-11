@@ -101,7 +101,12 @@ import iris.config
 import iris.io
 
 from ._deprecation import IrisDeprecation, warn_deprecated
-from ._version import version as __version__  # noqa: F401
+
+try:
+    from ._version import version as __version__  # noqa: F401
+except ModuleNotFoundError:
+    __version__ = "unknown"
+
 
 try:
     import iris_sample_data
