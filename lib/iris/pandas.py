@@ -124,7 +124,7 @@ def _as_pandas_coord(coord):
     return index
 
 
-def as_data_frame(cube, dropna=True, asmultiindex=False, add_aux_coord=None, add_global_attributes=None):
+def as_data_frame(cube, dropna=False, asmultiindex=False, add_aux_coord=False, add_global_attributes=None):
     """
     Convert a :class:`Cube` to a Pandas `DataFrame`.
 
@@ -136,13 +136,13 @@ def as_data_frame(cube, dropna=True, asmultiindex=False, add_aux_coord=None, add
     Kwargs:
 
         * dropna:
-            If True, removes missing values from returned dataframe.
+            If True, removes missing values from returned dataframe. Defaults to False.
         * asmultiindex:
-            If True, returns a `DataFrame` with a `MultiIndex <https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html#pandas.MultiIndex>`_.
+            If True, returns a `DataFrame` with a `MultiIndex <https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html#pandas.MultiIndex>`_.  Defaults to False.
         * add_aux_coord:
-            A list of :class:`Cube` :class:`AuxCoord` names to add to the returned `DataFrame`.
+            If True, add all :class:`Cube` :class:`AuxCoord`s to add to the returned `DataFrame`. Defaults to False.
         * add_global_attributes:
-            A list of :class:`Cube` attributes to add to the returned `DataFrame`.
+            A list of :class:`Cube` attributes to add to the returned `DataFrame`. Defaults to None.
 
     .. note::
 
@@ -172,20 +172,19 @@ def as_data_frame(cube, dropna=True, asmultiindex=False, add_aux_coord=None, add
         coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
 
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
-    data_frame = pandas.DataFrame({cube.name(): data.flatten()}, index=index)
+    data_frame = pandas.DataFrame(data.ravel(), columns=[cube.name()], index=index)
 
     # Add aux coord information
     if add_aux_coord:
         aux_coord_names = list(map(lambda x: x.name(), cube.aux_coords))
-        for acoord in add_aux_coord:
-            assert acoord in aux_coord_names, f'\"{acoord}\" not in cube' # Check aux coord exists
+        for acoord in aux_coord_names:
             aux_coord = cube.coord(acoord)
             coord_bool = np.array(cube.shape) == aux_coord.shape[0] # Which dim coords match aux coord length
             aux_coord_index = np.array(coords)[coord_bool][0] # Get corresponding dim coord
             # Build aux coord dataframe
             acoord_df = pd.DataFrame({acoord: aux_coord.points}, index = pd.Index(data=aux_coord_index, name=np.array(coord_names)[coord_bool][0]))
             # Join to main data frame
-            data_frame = data_frame.join(acoord_df, on=np.array(coord_names)[coord_bool][0])
+            data_frame = pd.merge(data_frame, accord_df, on=np.array(coord_names)[coord_bool][0])
 
     # Add data from global attributes
     if add_global_attributes:
