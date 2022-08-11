@@ -152,46 +152,46 @@ def as_data_frame(cube, dropna=False, asmultiindex=False, add_aux_coord=False, a
     data = cube.data
     if ma.isMaskedArray(data):
         data = data.astype("f").filled(np.nan)
-    elif copy:
-        data = data.copy()
 
     # Extract dim coord information
     if cube.ndim != len(cube.dim_coords):
         # Create dummy dim coord information if dim coords not defined
         coord_names = ["dim" + str(n) for n in range(cube.ndim)]
         coords = [range(dim) for dim in cube.shape]
-        for c in cube.dim_coords:
+        for onecoord in cube.dim_coords:
             for i, dummyc in enumerate(coords):
-                if len(dummyc) == len(c.points):
-                    coords[i] = _as_pandas_coord(c)
-                    coord_names[i] = c.name()
+                if len(dummyc) == len(onecoord.points):
+                    coords[i] = _as_pandas_coord(onecoord)
+                    coord_names[i] = onecoord.name()
                 else:
                     pass
     else:
-        coord_names = list(map(lambda x: x.name(), cube.dim_coords))
-        coords = list(map(lambda x: _as_pandas_coord(x), cube.dim_coords))
+        coord_names = [x.name() for x in cube.dim_coords]
+        coords = [_as_pandas_coord(x) for x in cube.dim_coords]
 
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
     data_frame = pandas.DataFrame(data.ravel(), columns=[cube.name()], index=index)
 
     # Add aux coord information
     if add_aux_coord:
-        aux_coord_names = list(map(lambda x: x.name(), cube.aux_coords))
+        aux_coord_names = [x.name() for x in cube.aux_coords]
         for acoord in aux_coord_names:
             aux_coord = cube.coord(acoord)
             coord_bool = np.array(cube.shape) == aux_coord.shape[0] # Which dim coords match aux coord length
             aux_coord_index = np.array(coords)[coord_bool][0] # Get corresponding dim coord
             # Build aux coord dataframe
             acoord_df = pd.DataFrame({acoord: aux_coord.points}, index = pd.Index(data=aux_coord_index, name=np.array(coord_names)[coord_bool][0]))
-            # Join to main data frame
+            # Merge to main data frame
             data_frame = pd.merge(data_frame, accord_df, on=np.array(coord_names)[coord_bool][0])
 
     # Add data from global attributes
     if add_global_attributes:
         global_attribute_names = list(rcp26.attributes.keys())
         for global_attribute in add_global_attributes:
-            assert global_attribute in global_attribute_names, f'\"{global_attribute}\" not in cube' # Check global attribute exists
-            data_frame[global_attribute] = cube.attributes[global_attribute]
+            if global_attribute not in global_attribute_names:  # Check global attribute exists
+                raise ValueError(f'\"{global_attribute}\" not in cube')
+            else:
+                data_frame[global_attribute] = cube.attributes[global_attribute]
 
     if dropna:
         data_frame.dropna(inplace=True)
