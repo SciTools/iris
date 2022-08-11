@@ -27,6 +27,7 @@ except ImportError:
     from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
+from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
 
@@ -128,191 +129,257 @@ def as_cube(
     pandas_array,
     copy=True,
     calendars=None,
+):
+    """
+    Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
+
+    .. deprecated:: 3.3.0
+
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.pandas.as_cubes`, which offers richer
+        dimensional intelligence.
+
+    Parameters
+    ----------
+    pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
+        The Pandas object to convert
+    copy : bool, default=True
+        Whether to copy ``pandas_array``, or to create array views where
+        possible. Provided in case of memory limit concerns.
+    calendars : dict, optional
+        A dict mapping a dimension to a calendar. Required to convert datetime
+        indices/columns.
+
+    Notes
+    -----
+    This function will copy your data by default.
+
+    Examples
+    --------
+    >>> as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
+
+    >>> as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
+
+    """
+    message = (
+        "iris.pandas.as_cube has been deprecated, and will be removed in a "
+        "future release. Please use iris.pandas.as_cubes instead."
+    )
+    warn_deprecated(message)
+
+    calendars = calendars or {}
+    if pandas_array.ndim not in [1, 2]:
+        raise ValueError(
+            "Only 1D or 2D Pandas arrays "
+            "can currently be conveted to Iris cubes."
+        )
+
+    # Make the copy work consistently across NumPy 1.6 and 1.7.
+    # (When 1.7 takes a copy it preserves the C/Fortran ordering, but
+    # 1.6 doesn't. Since we don't care about preserving the order we can
+    # just force it back to C-order.)
+    order = "C" if copy else "A"
+    data = np.array(pandas_array, copy=copy, order=order)
+    cube = Cube(np.ma.masked_invalid(data, copy=False))
+    _add_iris_coord(
+        cube, "index", pandas_array.index, 0, calendars.get(0, None)
+    )
+    if pandas_array.ndim == 2:
+        _add_iris_coord(
+            cube,
+            "columns",
+            pandas_array.columns.values,
+            1,
+            calendars.get(1, None),
+        )
+    return cube
+
+
+def as_cubes(
+    pandas_array,
+    copy=True,
+    calendars=None,
     aux_coord_cols=None,
     cell_measure_cols=None,
     ancillary_variable_cols=None,
 ):
     """
-    Convert a Pandas array into an Iris cube.
+    Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
-    Args:
+    The index of ``pandas_array`` will be used for generating the
+    :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coord.DimCoord`\\ s.
+    Other dimensional metadata may span multiple dimensions - based on how the
+    column values vary with the index values.
 
-        * pandas_array - A Pandas Series or DataFrame.
+    Parameters
+    ----------
+    pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
+        The Pandas object to convert
+    copy : bool, default=True
+        Whether to copy ``pandas_array``, or to create array views where
+        possible. Provided in case of memory limit concerns.
+    calendars : dict, optional
+        Calendar conversions for individual coordinate columns/index-levels e.g.
+        ``{"my_column": cf_units.CALENDAR_360_DAY}``.
+    aux_coord_cols, cell_measure_cols, ancillary_variable_cols : list of str, optional
+        Names of columns to be converted into :class:`~iris.coords.AuxCoord`,
+        :class:`~iris.coords.CellMeasure` and
+        :class:`~iris.coords.AncillaryVariable` objects.
 
-    Kwargs:
+    Returns
+    --------
+    :class:`~iris.cube.CubeList`
+        One :class:`~iris.cube.Cube` for each column not referenced in
+        `aux_coord_cols`/`cell_measure_cols`/`ancillary_variable_cols`.
 
-        * copy      - Whether to make a copy of the data.
-                      Defaults to True.
+    Notes
+    -----
+    A :class:`~pandas.DataFrame` using columns as a second data dimension will
+    need to be 'melted' before conversion. See the Examples for how.
 
-        * calendars - A dict mapping a dimension to a calendar.
-                      Required to convert datetime indices/columns.
+    Dask ``DataFrame``s are not supported.
 
-    Example usage::
-
-        as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
-        as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
-
-    .. note:: This function will copy your data by default.
+    Examples
+    --------
 
     """
+    # TODO: examples. Should they all be doctests?
+    # TODO: include a docstring example of how to mask NaN's - shouldn't
+    #  assume the user wants this by default.
+    #   np.ma.masked_invalid(data, copy=False)
+    # TODO: example of melting 2D data into a single column - this is
+    #  something as_cube() users may miss.
+
     calendars = calendars or {}
     aux_coord_cols = aux_coord_cols or []
     cell_measure_cols = cell_measure_cols or []
     ancillary_variable_cols = ancillary_variable_cols or []
 
-    if iris.FUTURE.pandas_ndim:
-        # TODO: document this new alternative behaviour.
-        # TODO: include a docstring example of how to mask NaN's - shouldn't
-        #  assume the user wants this by default.
-        #   np.ma.masked_invalid(data, copy=False)
+    # TODO: document this new alternative behaviour.
 
-        is_series = isinstance(pandas_array, pandas.Series)
+    is_series = isinstance(pandas_array, pandas.Series)
 
-        if copy:
-            pandas_array = pandas_array.copy()
+    if copy:
+        pandas_array = pandas_array.copy()
 
-        # TODO: include a docstring example of how to provide dimension coords
-        #  as the index. This avoids needing to set the index
-        #  within this function - either silently modifying the original df, or
-        #  creating an unnecessary copy.
-        pandas_index = pandas_array.index
-        if not pandas_index.is_unique:
-            message = (
-                f"DataFrame index ({pandas_index.names}) is not unique per "
-                "row; cannot be used for DimCoords."
-            )
-            raise ValueError(message)
-
-        if not pandas_index.is_monotonic:
-            # Need monotonic index for use in DimCoord(s).
-            # This function doesn't sort_index itself since that breaks the
-            #  option to return a data view instead of a copy.
-            message = (
-                "Pandas index is not monotonic. Consider using the "
-                "sort_index() method before passing in."
-            )
-            raise ValueError(message)
-
-        cube_shape = getattr(
-            pandas_index, "levshape", (pandas_index.nunique(),)
+    # TODO: include a docstring example of how to provide dimension coords
+    #  as the index. This avoids needing to set the index
+    #  within this function - either silently modifying the original df, or
+    #  creating an unnecessary copy.
+    pandas_index = pandas_array.index
+    if not pandas_index.is_unique:
+        message = (
+            f"DataFrame index ({pandas_index.names}) is not unique per "
+            "row; cannot be used for DimCoords."
         )
+        raise ValueError(message)
 
-        class_arg_mapping = [
-            (AuxCoord, aux_coord_cols, "aux_coords_and_dims"),
-            (CellMeasure, cell_measure_cols, "cell_measures_and_dims"),
-            (
-                AncillaryVariable,
-                ancillary_variable_cols,
-                "ancillary_variables_and_dims",
-            ),
-        ]
+    if not pandas_index.is_monotonic:
+        # Need monotonic index for use in DimCoord(s).
+        # This function doesn't sort_index itself since that breaks the
+        #  option to return a data view instead of a copy.
+        message = (
+            "Pandas index is not monotonic. Consider using the "
+            "sort_index() method before passing in."
+        )
+        raise ValueError(message)
 
-        def format_dimensional_metadata(
-            dm_class_, values_, name_, dimensions_
-        ):
-            calendar = calendars.get(name_)
-            instance = _get_dimensional_metadata(
-                name_, values_, calendar, dm_class_
-            )
-            return (instance, dimensions_)
+    cube_shape = getattr(pandas_index, "levshape", (pandas_index.nunique(),))
 
-        non_data_names = []
-        cube_kwargs = {}
-        for dm_class, column_names, kwarg in class_arg_mapping:
-            class_kwarg = []
-            if is_series and column_names:
-                message = (
-                    "The input pandas_array is a Series; ignoring "
-                    f"{dm_class.__name__} columns: {column_names} ."
-                )
-                warnings.warn(message)
-                continue
-            non_data_names.extend(column_names)
-            for column_name in column_names:
-                column = pandas_array[column_name]
+    cube_kwargs = {}
 
-                dimensions = _series_index_unique(column)
-                if dimensions is None:
-                    message = (
-                        f"Column '{column_name}' does not vary consistently "
-                        "over any of the provided dimensions, so will not be "
-                        f"used as a cube {dm_class.__name__}."
-                    )
-                    warnings.warn(message, UserWarning, stacklevel=2)
-                    continue
+    def format_dimensional_metadata(dm_class_, values_, name_, dimensions_):
+        # Common convenience for to get the right DM in the right format for
+        #  Cube creation.
+        calendar = calendars.get(name_)
+        instance = _get_dimensional_metadata(
+            name_, values_, calendar, dm_class_
+        )
+        return (instance, dimensions_)
 
-                content = column.to_numpy()
-                # Remove duplicate entries to get down to the correct dimensions
-                #  for this object. _series_index_unique should have ensured
-                #  that we are indeed removing the duplicates.
-                shaped = content.reshape(cube_shape)
-                indices = [0] * len(cube_shape)
-                for dim in dimensions:
-                    indices[dim] = slice(None)
-                collapsed = shaped[tuple(indices)]
-
-                new_dm = format_dimensional_metadata(
-                    dm_class, collapsed, column_name, dimensions
-                )
-                class_kwarg.append(new_dm)
-
-            cube_kwargs[kwarg] = class_kwarg
-
-        dim_coord_kwarg = []
-        for ix, dim_name in enumerate(pandas_index.names):
-            if hasattr(pandas_index, "levels"):
-                coord_points = pandas_index.levels[ix]
-            else:
-                coord_points = pandas_index
-            new_dim_coord = format_dimensional_metadata(
-                DimCoord, coord_points, dim_name, ix
-            )
-            dim_coord_kwarg.append(new_dim_coord)
-        cube_kwargs["dim_coords_and_dims"] = dim_coord_kwarg
-
-        if is_series:
-            data_series_list = [pandas_array]
+    # DimCoords.
+    dim_coord_kwarg = []
+    for ix, dim_name in enumerate(pandas_index.names):
+        if hasattr(pandas_index, "levels"):
+            coord_points = pandas_index.levels[ix]
         else:
-            data_series_list = [
-                pandas_array[column_name]
-                for column_name in pandas_array.columns
-                if column_name not in non_data_names
-            ]
-        cubes = CubeList()
-        for data_series in data_series_list:
-            cube_data = data_series.to_numpy().reshape(cube_shape)
-            new_cube = Cube(cube_data, **cube_kwargs)
-            # Use rename() to attempt standard_name but fall back on long_name.
-            new_cube.rename(data_series.name)
-            cubes.append(new_cube)
-
-        return cubes
-    else:
-        if pandas_array.ndim not in [1, 2]:
-            raise ValueError(
-                "Only 1D or 2D Pandas arrays "
-                "can currently be conveted to Iris cubes."
-            )
-
-        # Make the copy work consistently across NumPy 1.6 and 1.7.
-        # (When 1.7 takes a copy it preserves the C/Fortran ordering, but
-        # 1.6 doesn't. Since we don't care about preserving the order we can
-        # just force it back to C-order.)
-        order = "C" if copy else "A"
-        data = np.array(pandas_array, copy=copy, order=order)
-        cube = Cube(np.ma.masked_invalid(data, copy=False))
-        _add_iris_coord(
-            cube, "index", pandas_array.index, 0, calendars.get(0, None)
+            coord_points = pandas_index
+        new_dim_coord = format_dimensional_metadata(
+            DimCoord, coord_points, dim_name, ix
         )
-        if pandas_array.ndim == 2:
-            _add_iris_coord(
-                cube,
-                "columns",
-                pandas_array.columns.values,
-                1,
-                calendars.get(1, None),
+        dim_coord_kwarg.append(new_dim_coord)
+    cube_kwargs["dim_coords_and_dims"] = dim_coord_kwarg
+
+    # Other dimensional metadata.
+    class_arg_mapping = [
+        (AuxCoord, aux_coord_cols, "aux_coords_and_dims"),
+        (CellMeasure, cell_measure_cols, "cell_measures_and_dims"),
+        (
+            AncillaryVariable,
+            ancillary_variable_cols,
+            "ancillary_variables_and_dims",
+        ),
+    ]
+
+    non_data_names = []
+    for dm_class, column_names, kwarg in class_arg_mapping:
+        class_kwarg = []
+        if is_series and column_names:
+            message = (
+                "The input pandas_array is a Series; ignoring "
+                f"{dm_class.__name__} columns: {column_names} ."
             )
-        return cube
+            warnings.warn(message)
+            continue
+        non_data_names.extend(column_names)
+        for column_name in column_names:
+            column = pandas_array[column_name]
+
+            dimensions = _series_index_unique(column)
+            if dimensions is None:
+                message = (
+                    f"Column '{column_name}' does not vary consistently "
+                    "over any of the provided dimensions, so will not be "
+                    f"used as a cube {dm_class.__name__}."
+                )
+                warnings.warn(message, UserWarning, stacklevel=2)
+                continue
+
+            content = column.to_numpy()
+            # Remove duplicate entries to get down to the correct dimensions
+            #  for this object. _series_index_unique should have ensured
+            #  that we are indeed removing the duplicates.
+            shaped = content.reshape(cube_shape)
+            indices = [0] * len(cube_shape)
+            for dim in dimensions:
+                indices[dim] = slice(None)
+            collapsed = shaped[tuple(indices)]
+
+            new_dm = format_dimensional_metadata(
+                dm_class, collapsed, column_name, dimensions
+            )
+            class_kwarg.append(new_dm)
+
+        cube_kwargs[kwarg] = class_kwarg
+
+    # Cube creation.
+    if is_series:
+        data_series_list = [pandas_array]
+    else:
+        data_series_list = [
+            pandas_array[column_name]
+            for column_name in pandas_array.columns
+            if column_name not in non_data_names
+        ]
+    cubes = CubeList()
+    for data_series in data_series_list:
+        cube_data = data_series.to_numpy().reshape(cube_shape)
+        new_cube = Cube(cube_data, **cube_kwargs)
+        # Use rename() to attempt standard_name but fall back on long_name.
+        new_cube.rename(data_series.name)
+        cubes.append(new_cube)
+
+    return cubes
 
 
 def _as_pandas_coord(coord):
