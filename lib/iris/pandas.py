@@ -108,9 +108,6 @@ def _series_index_unique(pandas_series: pandas.Series):
     if unique_number == 1:
         # Scalar - identical for all indices.
         result = ()
-    elif unique_number == pandas_index.nunique():
-        # Varies across all indices.
-        result = tuple(levels_range)
     else:
         result = None
         levels_combinations = chain(
@@ -186,6 +183,16 @@ def as_cube(
             )
             raise ValueError(message)
 
+        if not pandas_index.is_monotonic:
+            # Need monotonic index for use in DimCoord(s).
+            # This function doesn't sort_index itself since that breaks the
+            #  option to return a data view instead of a copy.
+            message = (
+                "Pandas index is not monotonic. Consider using the "
+                "sort_index() method before passing in."
+            )
+            raise ValueError(message)
+
         non_data_columns = (
             aux_coord_cols + cell_measure_cols + ancillary_variable_cols
         )
@@ -236,12 +243,10 @@ def as_cube(
                 # Remove duplicate entries to get down to the correct dimensions
                 #  for this object. _series_index_unique should have ensured
                 #  that we are indeed removing the duplicates.
-                inverted_shape = cube_shape[::-1]
-                shaped = content.reshape(inverted_shape)
-                indices = [0] * len(inverted_shape)
+                shaped = content.reshape(cube_shape)
+                indices = [0] * len(cube_shape)
                 for dim in dimensions:
-                    inverted_index = (dim + 1) * -1
-                    indices[inverted_index] = slice(None)
+                    indices[dim] = slice(None)
                 collapsed = shaped[tuple(indices)]
 
                 new_dm = format_dimensional_metadata(
