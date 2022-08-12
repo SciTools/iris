@@ -93,13 +93,13 @@ def custom_cmd(command_to_override, functions, help_doc=""):
             # directories are in place.
             command_to_override.run(self)
 
-            # build_lib is defined if we are building the package. Otherwise
-            # we want to to the work in-place.
-            dest = getattr(self, "build_lib", None)
-            if dest is None:
+            if self.editable_mode:
                 print(" [Running in-place]")
-                # Pick the source dir instead (currently in the sub-dir "lib")
+                # Pick the source dir instead (currently in the sub-dir "lib").
                 dest = "lib"
+            else:
+                # Not editable - must be building.
+                dest = self.build_lib
 
             for func in functions:
                 func(self, dest)
