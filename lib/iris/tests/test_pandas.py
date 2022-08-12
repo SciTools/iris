@@ -248,6 +248,7 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.ts, expected_ts)
         self.assertArrayEqual(data_frame.time, expected_time)
 
+
 @skip_pandas
 class TestSeriesAsCube(tests.IrisTest):
     def test_series_simple(self):
