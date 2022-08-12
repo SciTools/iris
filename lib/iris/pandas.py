@@ -194,16 +194,16 @@ def as_data_frame(
                 0
             ]  # Get corresponding dim coord
             # Build aux coord dataframe
-            acoord_df = pd.DataFrame(
+            acoord_df = pandas.DataFrame(
                 {acoord: aux_coord.points},
-                index=pd.Index(
+                index=pandas.Index(
                     data=aux_coord_index,
                     name=np.array(coord_names)[coord_bool][0],
                 ),
             )
             # Merge to main data frame
-            data_frame = pd.merge(
-                data_frame, accord_df, on=np.array(coord_names)[coord_bool][0]
+            data_frame = pandas.merge(
+                data_frame, acoord_df, on=np.array(coord_names)[coord_bool][0]
             )
 
     # Add data from global attributes
