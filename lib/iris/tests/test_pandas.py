@@ -45,9 +45,9 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(
             np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
         )
-        expected_dim0 = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
-        expected_dim1 = np.array([0, 1, 2, 3, 4, 0, 1, 2, 3, 4])
-        expected_foo = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expected_dim0 = np.repeat([0, 1], 5)
+        expected_dim1 = np.tile([0, 1, 2, 3, 4], 2)
+        expected_foo = np.arange(0, 10)
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.foo.values, expected_foo)
         self.assertArrayEqual(data_frame.dim0, expected_dim0)
@@ -59,9 +59,9 @@ class TestAsDataFrame(tests.IrisTest):
         )
         dim0 = DimCoord([10, 11], long_name="bar")
         cube.add_dim_coord(dim0, 0)
-        expected_bar = np.array([10, 10, 10, 10, 10, 11, 11, 11, 11, 11])
-        expected_dim1 = np.array([0, 1, 2, 3, 4, 0, 1, 2, 3, 4])
-        expected_foo = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expected_bar = np.repeat([10, 11], 5)
+        expected_dim1 = np.tile([0, 1, 2, 3, 4], 2)
+        expected_foo = np.arange(0, 10)
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.bar, expected_bar)
@@ -73,9 +73,9 @@ class TestAsDataFrame(tests.IrisTest):
         )
         dim1 = DimCoord([10, 11, 12, 13, 14], long_name="bar")
         cube.add_dim_coord(dim1, 1)
-        expected_dim0 = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
-        expected_bar = np.array([10, 11, 12, 13, 14, 10, 11, 12, 13, 14])
-        expected_foo = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expected_dim0 = np.repeat([0, 1], 5)
+        expected_bar = np.tile([10, 11, 12, 13, 14], 2)
+        expected_foo = np.arange(0, 10)
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.foo, expected_foo.data)
         self.assertArrayEqual(data_frame.dim0, expected_dim0)
@@ -87,8 +87,8 @@ class TestAsDataFrame(tests.IrisTest):
             [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], long_name="bar"
         )
         cube.add_dim_coord(dim_coord, 0)
-        expected_bar = np.array([10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
-        expected_foo = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expected_bar = np.arange(10, 20)
+        expected_foo = np.arange(0, 10)
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.bar, expected_bar)
@@ -101,9 +101,9 @@ class TestAsDataFrame(tests.IrisTest):
         dim1_coord = DimCoord([10, 11, 12, 13, 14], long_name="bar")
         cube2d.add_dim_coord(dim0_coord, 0)
         cube2d.add_dim_coord(dim1_coord, 1)
-        expected_milk = np.array([15, 15, 15, 15, 15, 16, 16, 16, 16, 16])
-        expected_bar = np.array([10, 11, 12, 13, 14, 10, 11, 12, 13, 14])
-        expected_foo = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expected_milk = np.repeat([15, 16], 5)
+        expected_bar = np.tile([10, 11, 12, 13, 14], 2)
+        expected_foo = np.arange(0, 10)
         data_frame = iris.pandas.as_data_frame(cube2d)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
@@ -126,180 +126,27 @@ class TestAsDataFrame(tests.IrisTest):
         cube3d.add_dim_coord(dim0_coord, 0)
         cube3d.add_dim_coord(dim1_coord, 1)
         cube3d.add_dim_coord(dim2_coord, 2)
-        expected_milk = np.array(
-            [
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                2,
-                3,
-                3,
-                3,
-                3,
-                3,
-                3,
-                3,
-                3,
-                3,
-                3,
-            ]
-        )
-        expected_bar = np.array(
-            [
-                10,
-                10,
-                10,
-                10,
-                10,
-                11,
-                11,
-                11,
-                11,
-                11,
-                10,
-                10,
-                10,
-                10,
-                10,
-                11,
-                11,
-                11,
-                11,
-                11,
-                10,
-                10,
-                10,
-                10,
-                10,
-                11,
-                11,
-                11,
-                11,
-                11,
-            ]
-        )
-        expected_kid = np.array(
-            [
-                20,
-                21,
-                22,
-                23,
-                24,
-                20,
-                21,
-                22,
-                23,
-                24,
-                20,
-                21,
-                22,
-                23,
-                24,
-                20,
-                21,
-                22,
-                23,
-                24,
-                20,
-                21,
-                22,
-                23,
-                24,
-                20,
-                21,
-                22,
-                23,
-                24,
-            ]
-        )
-        expected_foo = np.array(
-            [
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16,
-                17,
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29,
-            ]
-        )
+        expected_milk = np.repeat([1, 2, 3], 10)
+        expected_bar = np.tile(np.repeat([10, 11], 5), 3)
+        expected_kid = np.tile([20, 21, 22, 23, 24], 6)
+        expected_foo = np.arange(0, 30)
         data_frame = iris.pandas.as_data_frame(cube3d)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
         self.assertArrayEqual(data_frame.kid, expected_kid)
 
-    def test_masked_drop(self):
-        # Test with masked values dropped
-        data = np.ma.MaskedArray(
-            [[0, 1, 2, 3, 4.4], [5, 6, 7, 8, 9]],
-            mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]],
-        )
-        cube = Cube(data, long_name="foo")
-        expected_dim0 = np.array([0, 0, 0, 1, 1])
-        expected_dim1 = np.array([0, 2, 4, 1, 3])
-        expected_foo = np.array([0.0, 2.0, 4.4, 6.0, 8.0], dtype=np.float32)
-        data_frame_drop = iris.pandas.as_data_frame(cube)
-        self.assertArrayEqual(data_frame_drop.dim0, expected_dim0)
-        self.assertArrayEqual(data_frame_drop.dim1, expected_dim1)
-        self.assertArrayEqual(data_frame_drop.foo, expected_foo)
+    def test_copy_false(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        data_frame = iris.pandas.as_data_frame(cube, copy=False)
+        cube.data[2] = 99
+        self.assertEqual(cube.data[2], data_frame.foo[2])
 
-    def test_masked_nodrop(self):
-        # Test with masked values retained
-        data = np.ma.MaskedArray(
-            [[0, 1, 2, 3, 4.4], [5, 6, 7, 8, 9]],
-            mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]],
-        )
-        cube = Cube(data, long_name="foo")
-        expected_dim0 = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
-        expected_dim1 = np.array([0, 1, 2, 3, 4, 0, 1, 2, 3, 4])
-        expected_foo = np.array(
-            [0.0, np.nan, 2.0, np.nan, 4.4, np.nan, 6.0, np.nan, 8.0, np.nan],
-            dtype=np.float32,
-        )
-        data_frame_nodrop = iris.pandas.as_data_frame(cube, dropna=False)
-        self.assertArrayEqual(data_frame_nodrop.dim0, expected_dim0)
-        self.assertArrayEqual(data_frame_nodrop.dim1, expected_dim1)
-        self.assertArrayEqual(data_frame_nodrop.foo, expected_foo)
+    def test_copy_true(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        data_frame = iris.pandas.as_data_frame(cube, copy=True)
+        cube.data[2] = 99
+        self.assertNotEqual(cube.data[2], data_frame.foo[2])
 
     def test_time_standard(self):
         cube = Cube(
@@ -400,7 +247,6 @@ class TestAsDataFrame(tests.IrisTest):
         data_frame = iris.pandas.as_data_frame(cube)
         self.assertArrayEqual(data_frame.ts, expected_ts)
         self.assertArrayEqual(data_frame.time, expected_time)
-
 
 @skip_pandas
 class TestSeriesAsCube(tests.IrisTest):
