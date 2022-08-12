@@ -3,16 +3,25 @@
 Glossary
 =============
 
-.. _x:
-.. _dask:
+----
 
-.. _coordinates:
+.. _cartopy_gl:
+
+**Cartopy** -
+
+    A python package for producing maps, and other geospatial data. Allows plotting on these maps, over a range of projections.
+
+    Related: `MatPlotLib <matplotlib_gl_>`_
+
+    More information: `CartoPy Site <https://scitools.org.uk/cartopy/docs/latest/>`_
+
+`To top <glossary_>`_
 
 ----
 
 .. _coords_gl:
 
-    **Coordinates** -
+**Coordinates** -
 
     A container for data points, comes in three main flavours.
 
@@ -33,7 +42,7 @@ Glossary
 
 .. _cubes_gl:
 
-    **Cubes** -
+**Cubes** -
 
     Cubes are the main method of storing data in Iris. A cube consists of:
 
@@ -56,7 +65,7 @@ Glossary
 
 .. _cell_method_gl:
 
-    **Cell Method** -
+**Cell Method** -
 
     A cell method represent past operations on a cube's data, such as a MEAN or SUM operation
 
@@ -70,7 +79,7 @@ Glossary
 
 .. _coordinate_factory_gl:
 
-    **Coordinate Factory** -
+**Coordinate Factory** -
 
     A coordinate factory derives coordinates from the values of existing coordinates.
 
@@ -119,6 +128,20 @@ Glossary
     Related: `Standard Name <standard_name_gl_>`_ | `Cubes <cubes_gl_>`_
 
     More information: :doc:`iris_cubes`
+
+`To top <glossary_>`_
+
+----
+
+.. _matplotlib_gl:
+
+**MatPlotLib** -
+
+    A python package for plotting and projecting data in a wide variety of formats.
+
+    Related: `CartoPy <cartopy_gl_>`_ | `NumPy <numpy_gl_>`_
+
+    More information: `MatPlotLib <https://scitools.org.uk/cartopy/docs/latest/>`_
 
 `To top <glossary_>`_
 
@@ -207,7 +230,3 @@ Glossary
 `To top <glossary_>`_
 
 ----
-
-
-
-
