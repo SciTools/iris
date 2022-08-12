@@ -248,6 +248,15 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.ts, expected_ts)
         self.assertArrayEqual(data_frame.time, expected_time)
 
+    def test_attributes(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        cube.attributes["sheep"] = "baa"
+        expected_attribute = np.repeat("baa", 5)
+        data_frame = iris.pandas.as_data_frame(
+            cube, add_global_attributes=["sheep"]
+        )
+        self.assertArrayEqual(expected_attribute, data_frame.sheep)
+    
 
 @skip_pandas
 class TestSeriesAsCube(tests.IrisTest):

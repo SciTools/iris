@@ -208,7 +208,7 @@ def as_data_frame(
 
     # Add data from global attributes
     if add_global_attributes:
-        global_attribute_names = list(rcp26.attributes.keys())
+        global_attribute_names = list(cube.attributes.keys())
         for global_attribute in add_global_attributes:
             if (
                 global_attribute not in global_attribute_names
