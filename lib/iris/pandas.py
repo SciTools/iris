@@ -124,7 +124,13 @@ def _as_pandas_coord(coord):
     return index
 
 
-def as_data_frame(cube, dropna=False, asmultiindex=False, add_aux_coord=False, add_global_attributes=None):
+def as_data_frame(
+    cube,
+    copy=False,
+    asmultiindex=False,
+    add_aux_coord=False,
+    add_global_attributes=None,
+):
     """
     Convert a :class:`Cube` to a Pandas `DataFrame`.
 
@@ -135,8 +141,7 @@ def as_data_frame(cube, dropna=False, asmultiindex=False, add_aux_coord=False, a
 
     Kwargs:
 
-        * dropna:
-            If True, removes missing values from returned dataframe. Defaults to False.
+        * copy - Whether to make a copy of the data. Defaults to False.
         * asmultiindex:
             If True, returns a `DataFrame` with a `MultiIndex <https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html#pandas.MultiIndex>`_.  Defaults to False.
         * add_aux_coord:
@@ -146,10 +151,13 @@ def as_data_frame(cube, dropna=False, asmultiindex=False, add_aux_coord=False, a
 
     .. note::
 
-        TBC
+        By default, this function seeks to minimise data copying such that the new `DataFrame` shares a reference the `cube.data` values. If you want to break the reference between :class:`Cube` and `DataFrame` select `copy=True`.
 
     """
-    data = cube.data
+    if copy:
+        data = cube.data.copy()
+    else:
+        data = cube.data
     if ma.isMaskedArray(data):
         data = data.astype("f").filled(np.nan)
 
@@ -170,31 +178,47 @@ def as_data_frame(cube, dropna=False, asmultiindex=False, add_aux_coord=False, a
         coords = [_as_pandas_coord(x) for x in cube.dim_coords]
 
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
-    data_frame = pandas.DataFrame(data.ravel(), columns=[cube.name()], index=index)
+    data_frame = pandas.DataFrame(
+        data.ravel(), columns=[cube.name()], index=index
+    )
 
     # Add aux coord information
     if add_aux_coord:
         aux_coord_names = [x.name() for x in cube.aux_coords]
         for acoord in aux_coord_names:
             aux_coord = cube.coord(acoord)
-            coord_bool = np.array(cube.shape) == aux_coord.shape[0] # Which dim coords match aux coord length
-            aux_coord_index = np.array(coords)[coord_bool][0] # Get corresponding dim coord
+            coord_bool = (
+                np.array(cube.shape) == aux_coord.shape[0]
+            )  # Which dim coords match aux coord length
+            aux_coord_index = np.array(coords)[coord_bool][
+                0
+            ]  # Get corresponding dim coord
             # Build aux coord dataframe
-            acoord_df = pd.DataFrame({acoord: aux_coord.points}, index = pd.Index(data=aux_coord_index, name=np.array(coord_names)[coord_bool][0]))
+            acoord_df = pd.DataFrame(
+                {acoord: aux_coord.points},
+                index=pd.Index(
+                    data=aux_coord_index,
+                    name=np.array(coord_names)[coord_bool][0],
+                ),
+            )
             # Merge to main data frame
-            data_frame = pd.merge(data_frame, accord_df, on=np.array(coord_names)[coord_bool][0])
+            data_frame = pd.merge(
+                data_frame, accord_df, on=np.array(coord_names)[coord_bool][0]
+            )
 
     # Add data from global attributes
     if add_global_attributes:
         global_attribute_names = list(rcp26.attributes.keys())
         for global_attribute in add_global_attributes:
-            if global_attribute not in global_attribute_names:  # Check global attribute exists
-                raise ValueError(f'\"{global_attribute}\" not in cube')
+            if (
+                global_attribute not in global_attribute_names
+            ):  # Check global attribute exists
+                raise ValueError(f'"{global_attribute}" not in cube')
             else:
-                data_frame[global_attribute] = cube.attributes[global_attribute]
+                data_frame[global_attribute] = cube.attributes[
+                    global_attribute
+                ]
 
-    if dropna:
-        data_frame.dropna(inplace=True)
     if not asmultiindex:
         data_frame.reset_index(inplace=True)
 
