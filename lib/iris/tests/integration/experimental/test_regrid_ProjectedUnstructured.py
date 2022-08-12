@@ -9,6 +9,8 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import unittest
+
 import cartopy.crs as ccrs
 from cf_units import Unit
 import numpy as np
@@ -60,6 +62,9 @@ class TestProjectedUnstructured(tests.IrisTest):
             res[:, 0], (1, 73, 96), 299.99993826, 3.9223839688e-5
         )
 
+    @unittest.skip(
+        "Deprecated API and provenance of reference numbers unknown."
+    )
     def test_nearest_gnomonic_uk_domain(self):
         crs = ccrs.Gnomonic(central_latitude=60.0)
         uk_grid = self.global_grid.intersection(
