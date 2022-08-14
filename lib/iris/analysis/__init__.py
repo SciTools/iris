@@ -1611,14 +1611,18 @@ def _sum(array, **kwargs):
     else:
         wsum = np.sum(array, **kwargs)
     if returned_in:
+        al = da if iris._lazy_data.is_lazy_data(array) else np
         if weights_in is None:
-            weights = np.ones_like(array)
-            if iris._lazy_data.is_lazy_data(weights):
+            weights = al.ones_like(array)
+            if al is da:
+                # Dask version of ones_like does not preserve masks. See dask#9301.
                 weights = da.ma.masked_array(
                     weights, da.ma.getmaskarray(array)
                 )
         else:
-            weights = weights_in  # TODO should this also be masked?
+            weights = al.ma.masked_array(
+                weights_in, mask=da.ma.getmaskarray(array)
+            )
         rvalue = (wsum, np.sum(weights, axis=axis_in))
     else:
         rvalue = wsum
