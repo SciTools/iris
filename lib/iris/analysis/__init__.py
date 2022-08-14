@@ -1499,14 +1499,12 @@ def _weighted_percentile(
         return result
 
 
-@_build_dask_mdtol_function
-def _lazy_count(array, **kwargs):
-    array = iris._lazy_data.as_lazy_data(array)
+def _count(array, **kwargs):
     func = kwargs.pop("function", None)
     if not callable(func):
         emsg = "function must be a callable. Got {}."
         raise TypeError(emsg.format(type(func)))
-    return da.sum(func(array), **kwargs)
+    return np.sum(func(array), **kwargs)
 
 
 def _proportion(array, function, axis, **kwargs):
@@ -1740,9 +1738,9 @@ def _peak(array, **kwargs):
 #
 COUNT = Aggregator(
     "count",
-    iris._lazy_data.non_lazy(_lazy_count),
+    _count,
     units_func=lambda units: 1,
-    lazy_func=_lazy_count,
+    lazy_func=_build_dask_mdtol_function(_count),
 )
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
