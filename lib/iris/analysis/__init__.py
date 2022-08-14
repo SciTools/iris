@@ -1621,7 +1621,7 @@ def _sum(array, **kwargs):
                 )
         else:
             weights = al.ma.masked_array(
-                weights_in, mask=da.ma.getmaskarray(array)
+                weights_in, mask=al.ma.getmaskarray(array)
             )
         rvalue = (wsum, np.sum(weights, axis=axis_in))
     else:
