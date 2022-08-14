@@ -1508,7 +1508,6 @@ def _count(array, **kwargs):
 
 
 def _proportion(array, function, axis, **kwargs):
-    count = iris._lazy_data.non_lazy(_lazy_count)
     # if the incoming array is masked use that to count the total number of
     # values
     if ma.isMaskedArray(array):
@@ -1519,7 +1518,7 @@ def _proportion(array, function, axis, **kwargs):
             # case pass the array shape instead of the mask:
             total_non_masked = array.shape[axis]
         else:
-            total_non_masked = count(
+            total_non_masked = _count(
                 array.mask, axis=axis, function=np.logical_not, **kwargs
             )
             total_non_masked = ma.masked_equal(total_non_masked, 0)
@@ -1532,7 +1531,7 @@ def _proportion(array, function, axis, **kwargs):
     # a dtype for its data that is different to the dtype of the fill-value,
     # which can cause issues outside this function.
     # Reference - tests/unit/analyis/test_PROPORTION.py Test_masked.test_ma
-    numerator = count(array, axis=axis, function=function, **kwargs)
+    numerator = _count(array, axis=axis, function=function, **kwargs)
     result = ma.asarray(numerator / total_non_masked)
 
     return result
@@ -1615,7 +1614,9 @@ def _sum(array, **kwargs):
         if weights_in is None:
             weights = np.ones_like(array)
             if iris._lazy_data.is_lazy_data(weights):
-                weights = da.ma.masked_array(weights, da.ma.getmaskarray(array))
+                weights = da.ma.masked_array(
+                    weights, da.ma.getmaskarray(array)
+                )
         else:
             weights = weights_in  # TODO should this also be masked?
         rvalue = (wsum, np.sum(weights, axis=axis_in))
