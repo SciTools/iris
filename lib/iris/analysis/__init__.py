@@ -1602,23 +1602,23 @@ def _lazy_rms(array, axis, **kwargs):
     return da.sqrt(da.mean(array**2, axis=axis, **kwargs))
 
 
-@_build_dask_mdtol_function
-def _lazy_sum(array, **kwargs):
-    array = iris._lazy_data.as_lazy_data(array)
+def _sum(array, **kwargs):
     # weighted or scaled sum
     axis_in = kwargs.get("axis", None)
     weights_in = kwargs.pop("weights", None)
     returned_in = kwargs.pop("returned", False)
     if weights_in is not None:
-        wsum = da.sum(weights_in * array, **kwargs)
+        wsum = np.sum(weights_in * array, **kwargs)
     else:
-        wsum = da.sum(array, **kwargs)
+        wsum = np.sum(array, **kwargs)
     if returned_in:
         if weights_in is None:
-            weights = iris._lazy_data.as_lazy_data(np.ones_like(array))
+            weights = np.ones_like(array)
+            if iris._lazy_data.is_lazy_data(weights):
+                weights = da.ma.masked_array(weights, da.ma.getmaskarray(array))
         else:
-            weights = weights_in
-        rvalue = (wsum, da.sum(weights, axis=axis_in))
+            weights = weights_in  # TODO should this also be masked?
+        rvalue = (wsum, np.sum(weights, axis=axis_in))
     else:
         rvalue = wsum
     return rvalue
@@ -2112,8 +2112,8 @@ This aggregator handles masked data.
 
 SUM = WeightedAggregator(
     "sum",
-    iris._lazy_data.non_lazy(_lazy_sum),
-    lazy_func=_build_dask_mdtol_function(_lazy_sum),
+    _sum,
+    lazy_func=_build_dask_mdtol_function(_sum),
 )
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
