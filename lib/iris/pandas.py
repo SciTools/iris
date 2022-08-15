@@ -161,6 +161,15 @@ def as_cube(
     >>> as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     """
+    if iris.FUTURE.pandas_ndim:
+        message = (
+            "iris.FUTURE.pandas_ndim is set to True. iris.pandas.as_cube does "
+            "not support n-dimensional behaviour, and is therefore deprecated. "
+            "Please use iris.pandas.as_cubes instead, or set "
+            "iris.FUTURE.pandas_ndim=False if you want the legacy behaviour."
+        )
+        raise RuntimeError(message)
+
     message = (
         "iris.pandas.as_cube has been deprecated, and will be removed in a "
         "future release. Please use iris.pandas.as_cubes instead."
