@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Welcome to `@krikru`_ who made their first contribution to Iris 🎉
 
 
 ✨ Features
@@ -75,6 +75,10 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ and `@bjlittle`_ (reviewer) implemented
    :func:`iris.plot.fill_between` and :func:`iris.quickplot.fill_between`.
    (:issue:`3493`, :pull:`4647`)
+
+#. `@rcomer`_ and `@bjlittle`_ (reviewer) re-wrote :func:`iris.util.mask_cube`
+   to provide lazy evaluation and greater flexibility with respect to input types.
+   (:issue:`3936`, :pull:`4889`)
 
 
 🐛 Bugs Fixed
@@ -131,6 +135,14 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified cube arithmetic to handle mismatches in the cube's data
    array type.  This prevents masks being lost in some cases and therefore
    resolves :issue:`2987`.  (:pull:`3790`)
+
+#. `@krikru`_ and `@rcomer`_ updated :mod:`iris.quickplot` such that the
+   colorbar is added to the correct ``axes`` when specified as a keyword
+   argument to a plotting routine. Otherwise, by default the colorbar will be
+   added to the current axes of the current figure. (:pull:`4894`)
+
+#. `@rcomer`_ and `@bjlittle`_ (reviewer) modified :func:`iris.util.mask_cube` so it
+   either works in place or returns a new cube (:issue:`3717`, :pull:`4889`)
 
 
 💣 Incompatible Changes
@@ -190,6 +202,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ introduced the ``cf-units >=3.1`` minimum pin, reflecting the
    alignment of calendar behaviour in the two packages (see Incompatible Changes).
    (:pull:`4847`)
+
+#. `@trexfeathers`_ updated the install process to work with setuptools `>=v64`,
+   making `v64` the minimum compatible version. (:pull:`4903`)
 
 
 📚 Documentation
@@ -265,13 +280,18 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) added building, testing and
    publishing of ``iris`` PyPI ``sdist`` and binary ``wheels`` as part of
-   our GitHub Continuous-Integration. (:pull`4849`)
+   our GitHub Continuous-Integration. (:pull:`4849`)
+
+#. `@rcomer`_ and `@wjbenfold`_ (reviewer) used ``pytest`` parametrization to
+   streamline the gallery test code. (:pull:`4792`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
 .. _@evertrol: https://github.com/evertrol
+.. _@krikru: https://github.com/krikru
 
 
 .. comment

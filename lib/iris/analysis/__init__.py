@@ -1975,31 +1975,29 @@ PERCENTILE = PercentileAggregator()
 A :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
 :func:`scipy.stats.mstats.mquantiles` (default) or :func:`numpy.percentile` (if
-fast_percentile_method is True).
+``fast_percentile_method`` is True).
 
-**Required** kwargs associated with the use of this aggregator:
+Parameters
+----------
 
 percent : float or sequence of floats
     Percentile rank/s at which to extract value/s.
 
-Additional kwargs associated with the use of this aggregator:
-
-alphap : float
+alphap : float, default=1
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
-    Defaults to 1.
-betap : float
+betap : float, default=1
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
-    Defaults to 1.
-fast_percentile_method : bool
+fast_percentile_method : bool, default=False
     When set to True, uses :func:`numpy.percentile` method as a faster
     alternative to the :func:`scipy.stats.mstats.mquantiles` method.  An
     exception is raised if the data are masked and the missing data tolerance
-    is not 0.  Defaults to False.
+    is not 0.
 
-kwargs : dict, optional
+**kwargs : dict, optional
     Passed to :func:`scipy.stats.mstats.mquantiles` or :func:`numpy.percentile`.
 
-**For example**:
+Example
+-------
 
 To compute the 10th and 90th percentile over *time*::
 
