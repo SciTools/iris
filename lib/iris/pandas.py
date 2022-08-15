@@ -62,7 +62,7 @@ def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
 
     values = np.array(values)
 
-    if not iris.FUTURE.pandas_ndim:
+    if dm_class is None:
         if np.issubdtype(values.dtype, np.number) and iris.util.monotonic(
             values, strict=True
         ):
@@ -71,8 +71,9 @@ def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
             dm_class = AuxCoord
 
     instance = dm_class(values, units=units)
-    # Use rename() to attempt standard_name but fall back on long_name.
-    instance.rename(name)
+    if name is not None:
+        # Use rename() to attempt standard_name but fall back on long_name.
+        instance.rename(str(name))
 
     return instance
 
@@ -384,8 +385,9 @@ def as_cubes(
     for data_series in data_series_list:
         cube_data = data_series.to_numpy().reshape(cube_shape)
         new_cube = Cube(cube_data, **cube_kwargs)
-        # Use rename() to attempt standard_name but fall back on long_name.
-        new_cube.rename(data_series.name)
+        if data_series.name is not None:
+            # Use rename() to attempt standard_name but fall back on long_name.
+            new_cube.rename(str(data_series.name))
         cubes.append(new_cube)
 
     return cubes
