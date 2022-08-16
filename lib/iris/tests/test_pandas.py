@@ -32,7 +32,7 @@ skip_pandas = unittest.skipIf(
 )
 
 if pandas is not None:
-    from iris.coords import DimCoord
+    from iris.coords import DimCoord, AuxCoord
     from iris.cube import Cube
     import iris.pandas
 
@@ -256,7 +256,24 @@ class TestAsDataFrame(tests.IrisTest):
             cube, add_global_attributes=["sheep"]
         )
         self.assertArrayEqual(expected_attribute, data_frame.sheep)
-    
+
+    def test_aux_coord(self):
+            cube2d = Cube(
+                np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+            )
+            dim0_coord = DimCoord([15, 16], long_name="milk")
+            dim1_coord = DimCoord([10, 11, 12, 13, 14], long_name="bar")
+            aux1_coord = AuxCoord(['ten', 'eleven', 'twelve', 'thirteen', 'fourteen'], long_name='words')
+            cube2d.add_dim_coord(dim0_coord, 0)
+            cube2d.add_dim_coord(dim1_coord, 1)
+            cube2d.add_aux_coord(aux1_coord, 1)
+            expected_milk = np.repeat([15, 16], 5)
+            expected_bar = np.tile([10, 11, 12, 13, 14], 2)
+            expected_foo = np.arange(0, 10)
+            data_frame = iris.pandas.as_data_frame(cube2d)
+            self.assertArrayEqual(data_frame.foo, expected_foo)
+            self.assertArrayEqual(data_frame.milk, expected_milk)
+            self.assertArrayEqual(data_frame.bar, expected_bar)
 
 @skip_pandas
 class TestSeriesAsCube(tests.IrisTest):
