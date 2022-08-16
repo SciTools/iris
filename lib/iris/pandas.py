@@ -187,23 +187,21 @@ def as_data_frame(
         aux_coord_names = [x.name() for x in cube.aux_coords]
         for acoord in aux_coord_names:
             aux_coord = cube.coord(acoord)
-            coord_bool = (
-                np.array(cube.shape) == aux_coord.shape[0]
-            )  # Which dim coords match aux coord length
-            aux_coord_index = np.array(coords)[coord_bool][
-                0
-            ]  # Get corresponding dim coord
+            which_dim = cube.shape.index(aux_coord.shape[0])
+            aux_coord_index = coords[
+                which_dim
+            ]  # Make corresponding dim coord as aux coord index
             # Build aux coord dataframe
             acoord_df = pandas.DataFrame(
                 {acoord: aux_coord.points},
                 index=pandas.Index(
                     data=aux_coord_index,
-                    name=np.array(coord_names)[coord_bool][0],
+                    name=coord_names[which_dim],
                 ),
             )
             # Merge to main data frame
             data_frame = pandas.merge(
-                data_frame, acoord_df, on=np.array(coord_names)[coord_bool][0]
+                data_frame, acoord_df, on=coord_names[which_dim]
             )
 
     # Add data from global attributes
