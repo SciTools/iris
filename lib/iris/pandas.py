@@ -249,7 +249,7 @@ def as_cubes(
     A :class:`~pandas.DataFrame` using columns as a second data dimension will
     need to be 'melted' before conversion. See the Examples for how.
 
-    Dask ``DataFrame`` s are not supported.
+    Dask ``DataFrame``\\s are not supported.
 
     Examples
     --------
