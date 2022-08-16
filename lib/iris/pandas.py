@@ -345,15 +345,9 @@ def as_cubes(
         for column_name in column_names:
             column = pandas_array[column_name]
 
+            # Should be impossible for None to be returned - would require a
+            #  non-unique index, which we protect against.
             dimensions = _series_index_unique(column)
-            if dimensions is None:
-                message = (
-                    f"Column '{column_name}' does not vary consistently "
-                    "over any of the provided dimensions, so will not be "
-                    f"used as a cube {dm_class.__name__}."
-                )
-                warnings.warn(message, UserWarning, stacklevel=2)
-                continue
 
             content = column.to_numpy()
             # Remove duplicate entries to get down to the correct dimensions

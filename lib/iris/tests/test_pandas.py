@@ -724,35 +724,71 @@ class TestPandasAsCubes(tests.IrisTest):
         self.assertArrayEqual(result_coord.points, expected_points)
         assert result_coord.cube_dims(result_cube) == tuple()
 
-    def test_invalid_coord(self):
-        # message = (
-        #     f"Column '{column_name}' does not vary consistently "
-        #     "over any of the provided dimensions, so will not be "
-        #     f"used as a cube {dm_class.__name__}."
-        # )
-        pass
-
     def test_multi_phenom(self):
-        pass
+        df = self._create_pandas()
+        new_name = "new_phenom"
+        df[new_name] = df[0]
+        result = iris.pandas.as_cubes(df)
+
+        expected_coord = DimCoord(df.index.values)
+        expected_cube_kwargs = dict(dim_coords_and_dims=[(expected_coord, 0)])
+        expected_cube_0 = Cube(
+            data=df[0].values,
+            long_name=str(df[0].name),
+            **expected_cube_kwargs,
+        )
+        expected_cube_1 = Cube(
+            data=df[new_name].values,
+            long_name=new_name,
+            **expected_cube_kwargs,
+        )
+        assert result == [expected_cube_0, expected_cube_1]
 
     def test_no_phenom(self):
-        # ALL columns mentioned in args.
-        pass
+        df = self._create_pandas()
+        # Specify the only column as an AuxCoord.
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[0])
+
+        assert result == []
 
     def test_standard_name_phenom(self):
-        pass
+        # long_name behaviour is tested in test_1d_no_index.
+        df = self._create_pandas()
+        new_name = "air_temperature"
+        df = df.rename(columns={0: new_name})
+        result = iris.pandas.as_cubes(df)
+
+        result_cube = result[0]
+        assert result_cube.standard_name == new_name
 
     def test_standard_name_coord(self):
-        pass
+        # long_name behaviour is tested in test_1d_with_index.
+        df = self._create_pandas()
+        new_name = "longitude"
+        df.index.names = [new_name]
+        result = iris.pandas.as_cubes(df)
 
-    def test_long_name_phenom(self):
-        pass
+        result_cube = result[0]
+        result_coord = result_cube.coord(dim_coords=True)
+        assert result_coord.standard_name == new_name
 
-    def test_long_name_coord(self):
-        pass
+    def test_dtype_preserved_phenom(self):
+        df = self._create_pandas()
+        df = df.astype("int32")
+        result = iris.pandas.as_cubes(df)
 
-    def test_dtype_preserved(self):
-        pass
+        result_cube = result[0]
+        assert result_cube.dtype == np.int32
+
+    def test_dtype_preserved_coord(self):
+        df = self._create_pandas()
+        new_index = df.index.astype("float64")
+        df.index = new_index
+        result = iris.pandas.as_cubes(df)
+
+        result_cube = result[0]
+        result_coord = result_cube.coord(dim_coords=True)
+        assert result_coord.dtype == np.float64
 
     def test_series_with_col_args(self):
         pass
