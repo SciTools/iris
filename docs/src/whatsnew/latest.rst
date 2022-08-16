@@ -115,12 +115,6 @@ This document explains the changes made to Iris for this release
    to ``stderr`` when a :class:`~iris.fileformats.cf.CFReader` that fails to
    initialise is garbage collected. (:issue:`3312`, :pull:`4646`)
 
-#. `@stephenworsley`_ aligned the behaviour of :obj:`~iris.coords.Cell` equality
-   to match :obj:`~iris.coords.Coord` equality with respect to NaN values.
-   Two NaN valued Cells are now considered equal. This fixes :issue:`4681` and
-   causes NaN valued scalar coordinates to be able to merge be preserved during
-   cube merging. (:pull:`4701`)
-
 #. `@wjbenfold`_ fixed plotting of circular coordinates to extend kwarg arrays
    as well as the data. (:issue:`466`, :pull:`4649`)
 
@@ -273,7 +267,7 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ and `@jamesp`_ (reviewer) and `@lbdreyer`_ (reviewer) extended
    the GitHub Continuous-Integration to cover testing on ``py38``, ``py39``,
-   and ``py310``. (:pull:`4840` and :pull:`4852`)
+   and ``py310``. (:pull:`4840`)
 
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) adopted `setuptools-scm`_ for
    automated ``iris`` package versioning. (:pull:`4841`)
