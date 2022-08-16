@@ -145,7 +145,7 @@ def as_cube(
     pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
         The Pandas object to convert
     copy : bool, default=True
-        Whether to copy ``pandas_array``, or to create array views where
+        Whether to copy `pandas_array`, or to create array views where
         possible. Provided in case of memory limit concerns.
     calendars : dict, optional
         A dict mapping a dimension to a calendar. Required to convert datetime
