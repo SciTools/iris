@@ -368,18 +368,10 @@ def as_cubes(
             longitude                            -             x
 
     """
-    # TODO: include a docstring example of how to mask NaN's - shouldn't
-    #  assume the user wants this by default.
-    #   np.ma.masked_invalid(data, copy=False)
-    # TODO: example of melting 2D data into a single column - this is
-    #  something as_cube() users may miss.
-
     calendars = calendars or {}
     aux_coord_cols = aux_coord_cols or []
     cell_measure_cols = cell_measure_cols or []
     ancillary_variable_cols = ancillary_variable_cols or []
-
-    # TODO: document this new alternative behaviour.
 
     is_series = isinstance(pandas_array, pandas.Series)
 
