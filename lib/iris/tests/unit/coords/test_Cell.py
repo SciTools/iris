@@ -146,14 +146,6 @@ class Test___eq__(tests.IrisTest):
         self.assertNotEqual(cell, PartialDateTime(month=3, hour=12))
         self.assertNotEqual(cell, PartialDateTime(month=4))
 
-    def test_nan_other(self):
-        # Check that nans satisfy equality.
-        cell1 = Cell(np.nan)
-        cell2 = Cell(np.nan)
-        self.assertEqual(cell1, np.nan)
-        self.assertEqual(np.nan, cell1)
-        self.assertEqual(cell1, cell2)
-
 
 class Test_contains_point(tests.IrisTest):
     def test_datetimelike_bounded_cell(self):

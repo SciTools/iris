@@ -111,12 +111,6 @@ This document explains the changes made to Iris for this release
    to ``stderr`` when a :class:`~iris.fileformats.cf.CFReader` that fails to
    initialise is garbage collected. (:issue:`3312`, :pull:`4646`)
 
-#. `@stephenworsley`_ aligned the behaviour of :obj:`~iris.coords.Cell` equality
-   to match :obj:`~iris.coords.Coord` equality with respect to NaN values.
-   Two NaN valued Cells are now considered equal. This fixes :issue:`4681` and
-   causes NaN valued scalar coordinates to be able to merge be preserved during
-   cube merging. (:pull:`4701`)
-
 #. `@wjbenfold`_ fixed plotting of circular coordinates to extend kwarg arrays
    as well as the data. (:issue:`466`, :pull:`4649`)
 
@@ -139,10 +133,6 @@ This document explains the changes made to Iris for this release
    still be instantiated with ``calendar="gregorian"`` but their calendar
    attribute will be silently changed to "standard".  This may cause failures in
    code that explicitly checks the calendar attribute. (:pull:`4847`)
-
-#. `@bjlittle`_ accounted for the recent changes in ``python`` >=3.10.0 when
-   hashing a ``nan``. Specifically, a ``nan`` scalar coordinate will be
-   promoted to a vector ``nan`` coordinate during cube merge.
 
 
 🚀 Performance Enhancements
