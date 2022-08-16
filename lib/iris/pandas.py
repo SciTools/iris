@@ -216,8 +216,8 @@ def as_cubes(
     """
     Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
-    The index of ``pandas_array`` will be used for generating the
-    :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coord.DimCoord`\\ s.
+    The index of `pandas_array` will be used for generating the
+    :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`\\ s.
     Other dimensional metadata may span multiple dimensions - based on how the
     column values vary with the index values.
 
@@ -227,7 +227,7 @@ def as_cubes(
         The Pandas object to convert
     copy : bool, default=True
         Whether the Cube :attr:`~iris.cube.Cube.data` is a copy of the
-        ``pandas_array`` column, or a view of the same array. Arrays other than
+        `pandas_array` column, or a view of the same array. Arrays other than
         the data (coords etc.) are always copies. This option is provided to
         help with memory size concerns.
     calendars : dict, optional
@@ -249,7 +249,7 @@ def as_cubes(
     A :class:`~pandas.DataFrame` using columns as a second data dimension will
     need to be 'melted' before conversion. See the Examples for how.
 
-    Dask ``DataFrame``s are not supported.
+    Dask ``DataFrame`` s are not supported.
 
     Examples
     --------
