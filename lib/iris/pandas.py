@@ -155,11 +155,10 @@ def as_cube(
     -----
     This function will copy your data by default.
 
-    Examples
-    --------
-    >>> as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
+    Example usage::
 
-    >>> as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
+        as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
+        as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     """
     if iris.FUTURE.pandas_ndim:
