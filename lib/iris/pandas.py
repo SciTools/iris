@@ -24,7 +24,8 @@ import pandas
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
 except ImportError:
-    from pandas.tseries.index import DatetimeIndex  # pandas <0.20
+    pass
+    # from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
 from iris._deprecation import warn_deprecated
@@ -252,9 +253,121 @@ def as_cubes(
 
     Examples
     --------
+    >>> from iris.pandas import as_cubes
+    >>> import numpy as np
+    >>> from pandas import DataFrame, Series
+
+    Converting a simple :class:`~pandas.Series` :
+
+    >>> my_series = Series([300, 301, 302], name="air_temperature")
+    >>> converted_cubes = as_cubes(my_series)
+    >>> print(converted_cubes)
+    0: air_temperature / (unknown)         (unknown: 3)
+    >>> print(converted_cubes[0])
+    air_temperature / (unknown)         (unknown: 3)
+        Dimension coordinates:
+            unknown                             x
+
+    A :class:`~pandas.DataFrame`, with a custom index becoming the
+    :class:`~iris.coords.DimCoord` :
+
+    >>> my_df = DataFrame({
+    ...     "air_temperature": [300, 301, 302],
+    ...     "longitude": [30, 40, 50]
+    ...     })
+    >>> my_df = my_df.set_index("longitude")
+    >>> converted_cubes = as_cubes(my_df)
+    >>> print(converted_cubes[0])
+    air_temperature / (unknown)         (longitude: 3)
+        Dimension coordinates:
+            longitude                             x
+
+    A :class:`~pandas.DataFrame` representing two 3-dimensional datasets,
+    including a 2-dimensional :class:`~iris.coords.AuxCoord` :
+
+    >>> my_df = DataFrame({
+    ...     "air_temperature": np.arange(300, 312, 1),
+    ...     "air_pressure": np.arange(1000, 1012, 1),
+    ...     "longitude": [0, 10] * 6,
+    ...     "latitude": [25, 25, 35, 35] * 3,
+    ...     "height": ([0] * 4) + ([100] * 4) + ([200] * 4),
+    ...     "in_region": [True, False, False, False] * 3
+    ... })
+    >>> print(my_df)
+        air_temperature  air_pressure  longitude  latitude  height  in_region
+    0               300          1000          0        25       0       True
+    1               301          1001         10        25       0      False
+    2               302          1002          0        35       0      False
+    3               303          1003         10        35       0      False
+    4               304          1004          0        25     100       True
+    5               305          1005         10        25     100      False
+    6               306          1006          0        35     100      False
+    7               307          1007         10        35     100      False
+    8               308          1008          0        25     200       True
+    9               309          1009         10        25     200      False
+    10              310          1010          0        35     200      False
+    11              311          1011         10        35     200      False
+    >>> my_df = my_df.set_index(["longitude", "latitude", "height"])
+    >>> my_df = my_df.sort_index()
+    >>> converted_cubes = as_cubes(my_df, aux_coord_cols=["in_region"])
+    >>> print(converted_cubes)
+    0: air_temperature / (unknown)         (longitude: 2; latitude: 2; height: 3)
+    1: air_pressure / (unknown)            (longitude: 2; latitude: 2; height: 3)
+    >>> print(converted_cubes[0])
+    air_temperature / (unknown)         (longitude: 2; latitude: 2; height: 3)
+        Dimension coordinates:
+            longitude                             x            -          -
+            latitude                              -            x          -
+            height                                -            -          x
+        Auxiliary coordinates:
+            in_region                             x            x          -
+
+    Pandas uses ``NaN`` rather than masking data. Converted
+    :class:`~iris.cube.Cube`\\s can be masked in downstream user code :
+
+    >>> my_series = Series([300, np.NaN, 302], name="air_temperature")
+    >>> converted_cube = as_cubes(my_series)[0]
+    >>> print(converted_cube.data)
+    [300.  nan 302.]
+    >>> converted_cube.data = np.ma.masked_invalid(converted_cube.data)
+    >>> print(converted_cube.data)
+    [300.0 -- 302.0]
+
+    If the :class:`~pandas.DataFrame` uses columns as as a second dimension,
+    :func:`pandas.melt` should be used to convert the data to the expected
+    n-dimensional format :
+
+    >>> my_df = DataFrame({
+    ...     "latitude": [35, 25],
+    ...     0: [300, 301],
+    ...     10: [302, 303],
+    ... })
+    >>> print(my_df)
+       latitude    0   10
+    0        35  300  302
+    1        25  301  303
+    >>> my_df = my_df.melt(
+    ...     id_vars=["latitude"],
+    ...     value_vars=[0, 10],
+    ...     var_name="longitude",
+    ...     value_name="air_temperature"
+    ... )
+    >>> print(my_df)
+       latitude longitude  air_temperature
+    0        35         0              300
+    1        25         0              301
+    2        35        10              302
+    3        25        10              303
+    >>> my_df = my_df.set_index(["latitude", "longitude"])
+    >>> my_df = my_df.sort_index()
+    >>> converted_cube = as_cubes(my_df)[0]
+    >>> print(converted_cube)
+    air_temperature / (unknown)         (latitude: 2; longitude: 2)
+        Dimension coordinates:
+            latitude                             x             -
+            longitude                            -             x
 
     """
-    # TODO: examples. Should they all be doctests?
     # TODO: include a docstring example of how to mask NaN's - shouldn't
     #  assume the user wants this by default.
     #   np.ma.masked_invalid(data, copy=False)
@@ -273,10 +386,6 @@ def as_cubes(
     if copy:
         pandas_array = pandas_array.copy()
 
-    # TODO: include a docstring example of how to provide dimension coords
-    #  as the index. This avoids needing to set the index
-    #  within this function - either silently modifying the original df, or
-    #  creating an unnecessary copy.
     pandas_index = pandas_array.index
     if not pandas_index.is_unique:
         message = (
