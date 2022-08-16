@@ -226,11 +226,13 @@ def as_cubes(
     pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
         The Pandas object to convert
     copy : bool, default=True
-        Whether to copy ``pandas_array``, or to create array views where
-        possible. Provided in case of memory limit concerns.
+        Whether the Cube :attr:`~iris.cube.Cube.data` is a copy of the
+        ``pandas_array`` column, or a view of the same array. Arrays other than
+        the data (coords etc.) are always copies. This option is provided to
+        help with memory size concerns.
     calendars : dict, optional
-        Calendar conversions for individual coordinate columns/index-levels e.g.
-        ``{"my_column": cf_units.CALENDAR_360_DAY}``.
+        Calendar conversions for individual date-time coordinate
+        columns/index-levels e.g. ``{"my_column": cf_units.CALENDAR_360_DAY}``.
     aux_coord_cols, cell_measure_cols, ancillary_variable_cols : list of str, optional
         Names of columns to be converted into :class:`~iris.coords.AuxCoord`,
         :class:`~iris.coords.CellMeasure` and

@@ -4,11 +4,12 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import copy
-import datetime
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
+import iris.tests as tests  # isort:skip
+
+import copy
+import datetime
 from termios import IXOFF  # noqa: F401
 
 import cf_units
@@ -18,8 +19,7 @@ import numpy as np
 import pytest
 
 import iris
-
-import iris.tests as tests  # isort:skip
+from iris._deprecation import IrisDeprecation
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
@@ -405,6 +405,9 @@ class TestSeriesAsCube(tests.IrisTest):
 
 
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:.*as_cube has been deprecated.*:iris._deprecation.IrisDeprecation"
+)
 class TestDataFrameAsCube(tests.IrisTest):
     def test_data_frame_simple(self):
         data_frame = pandas.DataFrame(
@@ -504,20 +507,27 @@ class TestDataFrameAsCube(tests.IrisTest):
         cube.data[0, 0] = 99
         assert data_frame[0][0] == 99
 
+
+@skip_pandas
+class TestFutureAndDeprecation(tests.IrisTest):
     def test_future_error(self):
         iris.FUTURE.pandas_ndim = True
-        # Some sort of assert-raises.
-        pass
+        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+        with pytest.raises(
+            RuntimeError, match="does not support n-dimensional"
+        ):
+            _ = iris.pandas.as_cube(data_frame)
 
     def test_deprecation_warning(self):
-        pass
+        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+        with pytest.warns(
+            IrisDeprecation, match="as_cube has been deprecated"
+        ):
+            _ = iris.pandas.as_cube(data_frame)
 
 
 @skip_pandas
 class TestPandasAsCubes(tests.IrisTest):
-    # def setup_method(self):
-    # pass
-
     @staticmethod
     def _create_pandas(index_levels=0, is_series=False):
         index_length = 3
@@ -730,8 +740,10 @@ class TestPandasAsCubes(tests.IrisTest):
         df[new_name] = df[0]
         result = iris.pandas.as_cubes(df)
 
+        # Note the shared coord object between both Cubes.
         expected_coord = DimCoord(df.index.values)
         expected_cube_kwargs = dict(dim_coords_and_dims=[(expected_coord, 0)])
+
         expected_cube_0 = Cube(
             data=df[0].values,
             long_name=str(df[0].name),
@@ -790,46 +802,130 @@ class TestPandasAsCubes(tests.IrisTest):
         result_coord = result_cube.coord(dim_coords=True)
         assert result_coord.dtype == np.float64
 
-    def test_series_with_col_args(self):
-        pass
-
-    def test_datetime_dim_coord(self):
-        pass
-
-    def test_datetime_aux_coord(self):
-        pass
-
-    def test_numpy_datetime_dim_coord(self):
-        pass
-
-    def test_numpy_datetime_aux_coord(self):
-        pass
-
-    def test_cftime_dimcoord(self):
-        pass
-
-    def test_cftime_auxcoord(self):
-        pass
-
-    def test_calendar_dim_coord(self):
-        # index=[
-        #     datetime.datetime(2001, 1, 1, 1, 1, 1),
-        #     datetime.datetime(2002, 2, 2, 2, 2, 2),
-        # ],
-        pass
-
-    def test_calendar_aux_coord(self):
-        pass
-
     def test_string_phenom(self):
-        pass
+        # Strings can be uniquely troublesome.
+        df = self._create_pandas()
+        new_values = [str(v) for v in df[0]]
+        df[0] = new_values
+        result = iris.pandas.as_cubes(df)
+
+        result_cube = result[0]
+        self.assertArrayEqual(result_cube.data, new_values)
 
     def test_string_coord(self):
-        pass
+        # Strings can be uniquely troublesome.
+        # Must test using an AuxCoord since strings cannot be DimCoords.
+        df = self._create_pandas()
+        new_points = [str(v) for v in df.index.values]
+        coord_name = "foo"
+        df[coord_name] = new_points
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
 
-    def test_copy_not_view(self):
-        # Cover data and coords.
-        pass
+        result_cube = result[0]
+        result_coord = result_cube.coord(coord_name)
+        self.assertArrayEqual(result_coord.points, new_points)
+
+    def test_series_with_col_args(self):
+        series = self._create_pandas(is_series=True)
+        with pytest.warns(Warning, match="is a Series; ignoring"):
+            _ = iris.pandas.as_cubes(series, aux_coord_cols=["some_column"])
+
+    def test_phenom_view(self):
+        df = self._create_pandas()
+        result = iris.pandas.as_cubes(df, copy=False)
+
+        # Modify AFTER creating the Cube(s).
+        df[0][0] += 1
+
+        result_cube = result[0]
+        assert result_cube.data[0] == df[0][0]
+
+    def test_phenom_copy(self):
+        df = self._create_pandas()
+        result = iris.pandas.as_cubes(df)
+
+        # Modify AFTER creating the Cube(s).
+        df[0][0] += 1
+
+        result_cube = result[0]
+        assert result_cube.data[0] != df[0][0]
+
+    def test_coord_never_view(self):
+        # Using AuxCoord - DimCoords and Pandas indices are immutable.
+        df = self._create_pandas()
+        coord_name = "foo"
+        df[coord_name] = df.index.values
+        result = iris.pandas.as_cubes(
+            df, copy=False, aux_coord_cols=[coord_name]
+        )
+
+        # Modify AFTER creating the Cube(s).
+        df[coord_name][0] += 1
+
+        result_cube = result[0]
+        result_coord = result_cube.coord(coord_name)
+        assert result_coord.points[0] != df[coord_name][0]
+
+    def _test_dates_common(self, mode=None, alt_calendar=False):
+        df = self._create_pandas()
+        kwargs = dict(pandas_array=df)
+        coord_name = "dates"
+
+        if alt_calendar:
+            calendar = cf_units.CALENDAR_360_DAY
+            # Only pass this when non-default.
+            kwargs["calendars"] = {coord_name: calendar}
+            expected_points = [8640, 8641, 8642]
+        else:
+            calendar = cf_units.CALENDAR_STANDARD
+            expected_points = [8760, 8761, 8762]
+        expected_units = cf_units.Unit(
+            "hours since 1970-01-01 00:00:00", calendar=calendar
+        )
+
+        datetime_args = [(1971, 1, 1, i, 0, 0) for i in df.index.values]
+        if mode == "index":
+            values = [datetime.datetime(*a) for a in datetime_args]
+            df.index = pandas.Index(values, name=coord_name)
+        elif mode == "numpy":
+            values = [datetime.datetime(*a) for a in datetime_args]
+            df[coord_name] = values
+            kwargs["aux_coord_cols"] = [coord_name]
+        elif mode == "cftime":
+            values = [
+                cftime.datetime(*a, calendar=calendar) for a in datetime_args
+            ]
+            df[coord_name] = values
+            kwargs["aux_coord_cols"] = [coord_name]
+        else:
+            raise ValueError("mode needs to be set")
+
+        result = iris.pandas.as_cubes(**kwargs)
+
+        result_cube = result[0]
+        result_coord = result_cube.coord(coord_name)
+        assert result_coord.units == expected_units
+        self.assertArrayEqual(result_coord.points, expected_points)
+
+    def test_datetime_index(self):
+        self._test_dates_common(mode="index")
+
+    def test_datetime_index_calendar(self):
+        self._test_dates_common(mode="index", alt_calendar=True)
+
+    def test_numpy_datetime_coord(self):
+        # NumPy format is what happens if a Python datetime is assigned to a
+        #  Pandas column.
+        self._test_dates_common(mode="numpy")
+
+    def test_numpy_datetime_coord_calendar(self):
+        self._test_dates_common(mode="numpy", alt_calendar=True)
+
+    def test_cftime_coord(self):
+        self._test_dates_common(mode="cftime")
+
+    def test_cftime_coord_calendar(self):
+        self._test_dates_common(mode="cftime", alt_calendar=True)
 
 
 if __name__ == "__main__":
