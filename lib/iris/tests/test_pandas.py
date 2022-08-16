@@ -32,7 +32,7 @@ skip_pandas = unittest.skipIf(
 )
 
 if pandas is not None:
-    from iris.coords import DimCoord, AuxCoord
+    from iris.coords import AuxCoord, DimCoord
     from iris.cube import Cube
     import iris.pandas
 
