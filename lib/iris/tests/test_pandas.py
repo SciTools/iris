@@ -322,6 +322,9 @@ class TestAsDataFrame(tests.IrisTest):
 
 
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:.*as_cube has been deprecated.*:iris._deprecation.IrisDeprecation"
+)
 class TestSeriesAsCube(tests.IrisTest):
     def test_series_simple(self):
         series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
