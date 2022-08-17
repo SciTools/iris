@@ -25,7 +25,7 @@ try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
 except ImportError:
     pass
-    # from pandas.tseries.index import DatetimeIndex  # pandas <0.20
+    from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
 from iris._deprecation import warn_deprecated
