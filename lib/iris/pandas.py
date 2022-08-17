@@ -125,33 +125,48 @@ def _as_pandas_coord(coord):
 
 def as_data_frame(
     cube,
-    copy=False,
+    copy=True,
     asmultiindex=False,
     add_aux_coord=False,
     add_global_attributes=None,
 ):
     """
-    Convert a :class:`Cube` to a Pandas `DataFrame`.
+    Convert an n-dimensional :class:`Cube` to a :class:`~pandas.DataFrame`, including dimensional metadata.
 
-    Args:
+    :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are flattened into a long-style
+    :class:`~pandas.DataFrame`.  Other :attr:`~iris.cube.Cube.aux_coords` and :attr:`~iris.cube.Cube.attributes`
+    may be optionally added as additional :class:`~pandas.DataFrame` columns.
 
-        * cube:
-            The :class:`Cube` to be converted to a Pandas `DataFrame`.
+    Parameters
+    ----------
+    :class:`~iris.cube.Cube`:
+        The :class:`Cube` to be converted to a Pandas `DataFrame`.
+    copy: bool, default=True
+        Whether the Pandas `DataFrame` is a copy of the the Cube :attr:`~iris.cube.Cube.data`.
+        This option is provided to help with memory size concerns.
+    asmultiindex: bool, default=False
+        If True, returns a `DataFrame` with a `MultiIndex <https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html#pandas.MultiIndex>`_.
+    add_aux_coord: bool, default=False
+        If True, add all :attr:`~iris.cube.Cube.aux_coords` to add to the returned `DataFrame`.
+    add_global_attributes: list of str, optional
+        Names of :attr:`~iris.cube.Cube.attributes` to add to the returned `DataFrame`.
 
-    Kwargs:
+    Returns
+    -------
+    A :class:`~pandas.DataFrame`
 
-        * copy - Whether to make a copy of the data. Defaults to False.
-        * asmultiindex:
-            If True, returns a `DataFrame` with a `MultiIndex <https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html#pandas.MultiIndex>`_.  Defaults to False.
-        * add_aux_coord:
-            If True, add all :class:`Cube` :class:`AuxCoord`s to add to the returned `DataFrame`. Defaults to False.
-        * add_global_attributes:
-            A list of :class:`Cube` attributes to add to the returned `DataFrame`. Defaults to None.
+    Notes
+    -----
+    Dask ``DataFrame``\\s are not supported.
 
-    .. note::
+    Examples
+    --------
+    >>> from iris.pandas import as_data_frame
+    >>> import numpy as np
+    >>> from pandas import DataFrame
 
-        By default, this function seeks to minimise data copying such that the new `DataFrame` shares a reference the `cube.data` values. If you want to break the reference between :class:`Cube` and `DataFrame` select `copy=True`.
-
+    TODO
+    
     """
     if copy:
         data = cube.data.copy()
