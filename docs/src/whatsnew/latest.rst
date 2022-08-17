@@ -80,6 +80,14 @@ This document explains the changes made to Iris for this release
    to provide lazy evaluation and greater flexibility with respect to input types.
    (:issue:`3936`, :pull:`4889`)
 
+#. `@trexfeathers`_ and `@lbdreyer`_ (reviewer) added
+   :func:`iris.pandas.as_cubes`, which provides richer conversion from
+   Pandas :class:`~pandas.Series` / :class:`~pandas.DataFrame`\s to one or more
+   :class:`~iris.cube.Cube`\s. This includes: n-dimensional datasets,
+   :class:`~iris.coords.AuxCoord`\s, :class:`~iris.coords.CellMeasure`\s,
+   :class:`~iris.coords.AncillaryVariable`\s, and multi-dimensional
+   coordinates. (:pull:`4890`)
+
 
 🐛 Bugs Fixed
 =============
@@ -187,7 +195,10 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@trexfeathers`_ and `@lbdreyer`_ (reviewer) deprecated
+   :func:`iris.pandas.as_cube` in favour of the new
+   :func:`iris.pandas.as_cubes` - see `✨ Features`_ for more details.
+   (:pull:`4890`)
 
 
 🔗 Dependencies
