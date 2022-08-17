@@ -206,7 +206,7 @@ def as_cube(
 
 
 def as_cubes(
-    pandas_array,
+    pandas_structure,
     copy=True,
     calendars=None,
     aux_coord_cols=None,
@@ -216,18 +216,18 @@ def as_cubes(
     """
     Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
-    The index of `pandas_array` will be used for generating the
+    The index of `pandas_structure` will be used for generating the
     :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`\\ s.
     Other dimensional metadata may span multiple dimensions - based on how the
     column values vary with the index values.
 
     Parameters
     ----------
-    pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
+    pandas_structure : :class:`pandas.Series` or :class:`pandas.DataFrame`
         The Pandas object to convert
     copy : bool, default=True
         Whether the Cube :attr:`~iris.cube.Cube.data` is a copy of the
-        `pandas_array` column, or a view of the same array. Arrays other than
+        `pandas_structure` column, or a view of the same array. Arrays other than
         the data (coords etc.) are always copies. This option is provided to
         help with memory size concerns.
     calendars : dict, optional
@@ -373,12 +373,12 @@ def as_cubes(
     cell_measure_cols = cell_measure_cols or []
     ancillary_variable_cols = ancillary_variable_cols or []
 
-    is_series = isinstance(pandas_array, pandas.Series)
+    is_series = isinstance(pandas_structure, pandas.Series)
 
     if copy:
-        pandas_array = pandas_array.copy()
+        pandas_structure = pandas_structure.copy()
 
-    pandas_index = pandas_array.index
+    pandas_index = pandas_structure.index
     if not pandas_index.is_unique:
         message = (
             f"DataFrame index ({pandas_index.names}) is not unique per "
@@ -438,14 +438,14 @@ def as_cubes(
         class_kwarg = []
         if is_series and column_names:
             message = (
-                "The input pandas_array is a Series; ignoring "
+                "The input pandas_structure is a Series; ignoring "
                 f"{dm_class.__name__} columns: {column_names} ."
             )
             warnings.warn(message)
             continue
         non_data_names.extend(column_names)
         for column_name in column_names:
-            column = pandas_array[column_name]
+            column = pandas_structure[column_name]
 
             # Should be impossible for None to be returned - would require a
             #  non-unique index, which we protect against.
@@ -470,11 +470,11 @@ def as_cubes(
 
     # Cube creation.
     if is_series:
-        data_series_list = [pandas_array]
+        data_series_list = [pandas_structure]
     else:
         data_series_list = [
-            pandas_array[column_name]
-            for column_name in pandas_array.columns
+            pandas_structure[column_name]
+            for column_name in pandas_structure.columns
             if column_name not in non_data_names
         ]
     cubes = CubeList()
