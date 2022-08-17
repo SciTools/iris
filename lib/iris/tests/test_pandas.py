@@ -578,7 +578,7 @@ class TestPandasAsCubes(tests.IrisTest):
         result = iris.pandas.as_cubes(df)
 
         expected_coord = DimCoord(df.index.values, long_name=df.index.name)
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.dim_coords == (expected_coord,)
 
     def test_1d_series_no_index(self):
@@ -598,7 +598,7 @@ class TestPandasAsCubes(tests.IrisTest):
         expected_coord = DimCoord(
             series.index.values, long_name=series.index.name
         )
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.dim_coords == (expected_coord,)
 
     def test_3d(self):
@@ -609,7 +609,7 @@ class TestPandasAsCubes(tests.IrisTest):
             DimCoord(level.values, long_name=level.name)
             for level in df.index.levels
         ]
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.dim_coords == tuple(expected_coords)
 
     def test_3d_series(self):
@@ -620,7 +620,7 @@ class TestPandasAsCubes(tests.IrisTest):
             DimCoord(level.values, long_name=level.name)
             for level in series.index.levels
         ]
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.dim_coords == tuple(expected_coords)
 
     def test_non_unique_index(self):
@@ -650,7 +650,7 @@ class TestPandasAsCubes(tests.IrisTest):
         expected_aux_coord = AuxCoord(
             df[coord_name].values, long_name=coord_name
         )
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.aux_coords == (expected_aux_coord,)
 
     def test_cell_measure(self):
@@ -660,7 +660,7 @@ class TestPandasAsCubes(tests.IrisTest):
         result = iris.pandas.as_cubes(df, cell_measure_cols=[coord_name])
 
         expected_cm = CellMeasure(df[coord_name].values, long_name=coord_name)
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.cell_measures() == [expected_cm]
 
     def test_ancillary_variable(self):
@@ -672,7 +672,7 @@ class TestPandasAsCubes(tests.IrisTest):
         expected_av = AncillaryVariable(
             df[coord_name].values, long_name=coord_name
         )
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.ancillary_variables() == [expected_av]
 
     def test_3d_with_2d_coord(self):
@@ -684,7 +684,7 @@ class TestPandasAsCubes(tests.IrisTest):
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
 
         expected_points = coord_values.reshape(coord_shape)
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(coord_name)
         self.assertArrayEqual(result_coord.points, expected_points)
         assert result_coord.cube_dims(result_cube) == (0, 1)
@@ -698,7 +698,7 @@ class TestPandasAsCubes(tests.IrisTest):
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
 
         expected_points = coord_values.reshape(coord_shape)
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(coord_name)
         self.assertArrayEqual(result_coord.points, expected_points)
         assert result_coord.cube_dims(result_cube) == (0, 1, 2)
@@ -719,7 +719,7 @@ class TestPandasAsCubes(tests.IrisTest):
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
 
         expected_points = coord_values.reshape(coord_shape)
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(coord_name)
         self.assertArrayEqual(result_coord.points, expected_points)
         assert result_coord.cube_dims(result_cube) == (0, 1)
@@ -732,7 +732,7 @@ class TestPandasAsCubes(tests.IrisTest):
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
 
         expected_points = np.unique(coord_values)
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(coord_name)
         self.assertArrayEqual(result_coord.points, expected_points)
         assert result_coord.cube_dims(result_cube) == tuple()
@@ -773,7 +773,7 @@ class TestPandasAsCubes(tests.IrisTest):
         df = df.rename(columns={0: new_name})
         result = iris.pandas.as_cubes(df)
 
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.standard_name == new_name
 
     def test_standard_name_coord(self):
@@ -783,7 +783,7 @@ class TestPandasAsCubes(tests.IrisTest):
         df.index.names = [new_name]
         result = iris.pandas.as_cubes(df)
 
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(dim_coords=True)
         assert result_coord.standard_name == new_name
 
@@ -792,7 +792,7 @@ class TestPandasAsCubes(tests.IrisTest):
         df = df.astype("int32")
         result = iris.pandas.as_cubes(df)
 
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.dtype == np.int32
 
     def test_dtype_preserved_coord(self):
@@ -801,7 +801,7 @@ class TestPandasAsCubes(tests.IrisTest):
         df.index = new_index
         result = iris.pandas.as_cubes(df)
 
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(dim_coords=True)
         assert result_coord.dtype == np.float64
 
@@ -812,7 +812,7 @@ class TestPandasAsCubes(tests.IrisTest):
         df[0] = new_values
         result = iris.pandas.as_cubes(df)
 
-        result_cube = result[0]
+        (result_cube,) = result
         self.assertArrayEqual(result_cube.data, new_values)
 
     def test_string_coord(self):
@@ -824,7 +824,7 @@ class TestPandasAsCubes(tests.IrisTest):
         df[coord_name] = new_points
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
 
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(coord_name)
         self.assertArrayEqual(result_coord.points, new_points)
 
@@ -840,7 +840,7 @@ class TestPandasAsCubes(tests.IrisTest):
         # Modify AFTER creating the Cube(s).
         df[0][0] += 1
 
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.data[0] == df[0][0]
 
     def test_phenom_copy(self):
@@ -850,7 +850,7 @@ class TestPandasAsCubes(tests.IrisTest):
         # Modify AFTER creating the Cube(s).
         df[0][0] += 1
 
-        result_cube = result[0]
+        (result_cube,) = result
         assert result_cube.data[0] != df[0][0]
 
     def test_coord_never_view(self):
@@ -865,7 +865,7 @@ class TestPandasAsCubes(tests.IrisTest):
         # Modify AFTER creating the Cube(s).
         df[coord_name][0] += 1
 
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(coord_name)
         assert result_coord.points[0] != df[coord_name][0]
 
@@ -905,7 +905,7 @@ class TestPandasAsCubes(tests.IrisTest):
 
         result = iris.pandas.as_cubes(**kwargs)
 
-        result_cube = result[0]
+        (result_cube,) = result
         result_coord = result_cube.coord(coord_name)
         assert result_coord.units == expected_units
         self.assertArrayEqual(result_coord.points, expected_points)
