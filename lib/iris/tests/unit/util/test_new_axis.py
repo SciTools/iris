@@ -199,8 +199,8 @@ class Test:
         mask_shape = test_cube.data.mask.shape
         assert data_shape == mask_shape
 
-    def test_broadcast_scalar_coord(self, stock_cube):
-        result = new_axis(stock_cube, "time", broadcast=["wibble"])
+    def test_expand_scalar_coord(self, stock_cube):
+        result = new_axis(stock_cube, "time", expand_extras=["wibble"])
 
         expected = iris.cube.Cube(
             stock_cube.data[None], long_name="thingness", units="1"
@@ -217,11 +217,11 @@ class Test:
         assert result == expected
         self._assert_cube_notis(result, stock_cube)
 
-    def test_broadcast_scalar_coord_lazy_points(self, stock_cube):
+    def test_expand_scalar_coord_lazy_points(self, stock_cube):
         stock_cube.coord("wibble").points = as_lazy_data(
             stock_cube.coord("wibble").points
         )
-        result = new_axis(stock_cube, "time", broadcast=["wibble"])
+        result = new_axis(stock_cube, "time", expand_extras=["wibble"])
         assert stock_cube.coord("wibble").has_lazy_points()
         assert result.coord("wibble").has_lazy_points()
         assert (
@@ -229,9 +229,9 @@ class Test:
             == stock_cube.coord("wibble").points.shape
         )
 
-    def test_broadcast_scalar_coord_lazy_bounds(self, stock_cube):
+    def test_expand_scalar_coord_lazy_bounds(self, stock_cube):
         stock_cube.coord("wibble").bounds = as_lazy_data(np.array([[0, 2]]))
-        result = new_axis(stock_cube, "time", broadcast=["wibble"])
+        result = new_axis(stock_cube, "time", expand_extras=["wibble"])
         assert stock_cube.coord("wibble").has_lazy_bounds()
         assert result.coord("wibble").has_lazy_bounds()
         assert (
@@ -239,8 +239,8 @@ class Test:
             == stock_cube.coord("wibble").bounds.shape
         )
 
-    def test_broadcast_cell_measure(self, stock_cube):
-        result = new_axis(stock_cube, "time", broadcast=["cell_area"])
+    def test_expand_cell_measure(self, stock_cube):
+        result = new_axis(stock_cube, "time", expand_extras=["cell_area"])
 
         expected = iris.cube.Cube(
             stock_cube.data[None], long_name="thingness", units="1"
@@ -262,8 +262,8 @@ class Test:
         assert result == expected
         self._assert_cube_notis(result, stock_cube)
 
-    def test_broadcast_ancil_var(self, stock_cube):
-        result = new_axis(stock_cube, "time", broadcast=["quality_flag"])
+    def test_expand_ancil_var(self, stock_cube):
+        result = new_axis(stock_cube, "time", expand_extras=["quality_flag"])
 
         expected = iris.cube.Cube(
             stock_cube.data[None], long_name="thingness", units="1"
@@ -284,9 +284,9 @@ class Test:
         assert result == expected
         self._assert_cube_notis(result, stock_cube)
 
-    def test_broadcast_multiple(self, stock_cube):
+    def test_expand_multiple(self, stock_cube):
         result = new_axis(
-            stock_cube, "time", broadcast=["wibble", "cell_area"]
+            stock_cube, "time", expand_extras=["wibble", "cell_area"]
         )
 
         expected = iris.cube.Cube(

@@ -1032,7 +1032,7 @@ class Cube(CFVariableMixin):
                 pass
         if not found_item:
             raise KeyError(
-                f"{name_or_dimensional_metadata} " f"was not found in {self}"
+                f"{name_or_dimensional_metadata} was not found in {self}."
             )
         return found_item
 

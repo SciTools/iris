@@ -1096,7 +1096,7 @@ def format_array(arr):
     return result
 
 
-def new_axis(src_cube, scalar_coord=None, broadcast=[]):
+def new_axis(src_cube, scalar_coord=None, expand_extras=[]):
     """
     Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
@@ -1111,9 +1111,9 @@ def new_axis(src_cube, scalar_coord=None, broadcast=[]):
     * scalar_coord (:class:`iris.coord.Coord` or 'string')
         Scalar coordinate to promote to a dimension coordinate.
 
-    * broadcast (list)
+    * expand_extras (list)
         List of auxiliary coordinates, ancillary variables and cell measures
-        that will be broadcasted so that they map to the new dimension as well
+        that will be expanded so that they map to the new dimension as well
         as the existing dimensions.
 
     Returns:
@@ -1147,10 +1147,10 @@ def new_axis(src_cube, scalar_coord=None, broadcast=[]):
         return new_data
 
     def _handle_dimensional_metadata(
-        cube, dm_item, cube_add_method, broadcast
+        cube, dm_item, cube_add_method, expand_extras
     ):
         cube_dims = dm_item.cube_dims(cube)
-        if dm_item in broadcast:
+        if dm_item in expand_extras:
             if cube_dims == ():
                 new_dm_item, new_dims = dm_item.copy(), 0
             else:
@@ -1177,7 +1177,9 @@ def new_axis(src_cube, scalar_coord=None, broadcast=[]):
             emsg = scalar_coord.name() + "is not a scalar coordinate."
             raise ValueError(emsg)
 
-    broadcast = [src_cube._dimensional_metadata(item) for item in broadcast]
+    expand_extras = [
+        src_cube._dimensional_metadata(item) for item in expand_extras
+    ]
 
     new_cube = iris.cube.Cube(_reshape_data_array(src_cube._data_manager))
     new_cube.metadata = src_cube.metadata
@@ -1192,17 +1194,17 @@ def new_axis(src_cube, scalar_coord=None, broadcast=[]):
             new_cube.add_dim_coord(dim_coord, 0)
         else:
             _handle_dimensional_metadata(
-                src_cube, coord, new_cube.add_aux_coord, broadcast
+                src_cube, coord, new_cube.add_aux_coord, expand_extras
             )
 
     for cm in src_cube.cell_measures():
         _handle_dimensional_metadata(
-            src_cube, cm, new_cube.add_cell_measure, broadcast
+            src_cube, cm, new_cube.add_cell_measure, expand_extras
         )
 
     for av in src_cube.ancillary_variables():
         _handle_dimensional_metadata(
-            src_cube, av, new_cube.add_ancillary_variable, broadcast
+            src_cube, av, new_cube.add_ancillary_variable, expand_extras
         )
 
     nonderived_coords = src_cube.dim_coords + src_cube.aux_coords

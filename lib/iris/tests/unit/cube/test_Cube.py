@@ -2922,10 +2922,18 @@ class Test__dimensional_metadata:
     def test_two_with_same_name(self, cube):
         # If a cube has two _DimensionalMetadata objects with the same name, the
         # current behaviour results in _dimensional_metadata returning the first
-        # one it finds
+        # one it finds.
         cube.cell_measure("cell_area").rename("wibble")
         res = cube._dimensional_metadata("wibble")
         assert res == cube.coord("wibble")
+
+    def test_two_with_same_name_specify_instance(self, cube):
+        # The cube has two _DimensionalMetadata objects with the same name so
+        # we specify the _DimensionalMetadata instance to ensure it returns the
+        # correct one.
+        cube.cell_measure("cell_area").rename("wibble")
+        res = cube._dimensional_metadata(cube.cell_measure("wibble"))
+        assert res == cube.cell_measure("wibble")
 
 
 if __name__ == "__main__":
