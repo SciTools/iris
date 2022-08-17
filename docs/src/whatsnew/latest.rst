@@ -256,6 +256,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ made :func:`iris.tests.stock.simple_1d` respect the
    ``with_bounds`` argument. (:pull:`4658`)
 
+#. `@lbdreyer`_ replaced `nose`_ with `pytest`_ as Iris' test runner.
+   (:pull:`4734`)
+
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) migrated to GitHub Actions
    for Continuous-Integration. (:pull:`4503`)
 
@@ -299,5 +302,7 @@ This document explains the changes made to Iris for this release
 
 .. _Calendar: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#calendar
 .. _Cell Boundaries: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#cell-boundaries
+.. _nose: https://nose.readthedocs.io
 .. _PyData Sphinx Theme: https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html
+.. _pytest: https://docs.pytest.org
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
