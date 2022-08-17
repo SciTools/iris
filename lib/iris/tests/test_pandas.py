@@ -513,20 +513,14 @@ class TestDataFrameAsCube(tests.IrisTest):
 
 @skip_pandas
 class TestFutureAndDeprecation(tests.IrisTest):
-    def test_future_error(self):
-        iris.FUTURE.pandas_ndim = True
-        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-        with pytest.raises(
-            RuntimeError, match="does not support n-dimensional"
-        ):
-            _ = iris.pandas.as_cube(data_frame)
-
     def test_deprecation_warning(self):
         data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         with pytest.warns(
             IrisDeprecation, match="as_cube has been deprecated"
         ):
             _ = iris.pandas.as_cube(data_frame)
+
+    # Tests for FUTURE are expected when as_dataframe() is made n-dimensional.
 
 
 @skip_pandas

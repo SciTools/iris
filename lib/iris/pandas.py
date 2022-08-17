@@ -84,7 +84,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
     Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array.
     """
     # Most functionality has been abstracted to _get_dimensional_metadata,
-    #  allowing re-use in the new FUTURE.pandas_ndim behaviour.
+    #  allowing re-use in as_cube() and as_cubes().
     coord = _get_dimensional_metadata(name, points, calendar)
 
     if coord.__class__ == DimCoord:
@@ -162,15 +162,6 @@ def as_cube(
         as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     """
-    if iris.FUTURE.pandas_ndim:
-        message = (
-            "iris.FUTURE.pandas_ndim is set to True. iris.pandas.as_cube does "
-            "not support n-dimensional behaviour, and is therefore deprecated. "
-            "Please use iris.pandas.as_cubes instead, or set "
-            "iris.FUTURE.pandas_ndim=False if you want the legacy behaviour."
-        )
-        raise RuntimeError(message)
-
     message = (
         "iris.pandas.as_cube has been deprecated, and will be removed in a "
         "future release. Please use iris.pandas.as_cubes instead."
