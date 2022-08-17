@@ -21,6 +21,7 @@ dependencies:
   - python-xxhash
   - pyproj
   - scipy
+  - shapely < 1.8.3
 
 # Optional dependencies.
   - esmpy >=7.0
