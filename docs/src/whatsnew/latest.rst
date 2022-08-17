@@ -210,7 +210,7 @@ This document explains the changes made to Iris for this release
    making `v64` the minimum compatible version. (:pull:`4903`)
 
 #. `@stephenworsley`_ introduced the ``shapely < 1.8.3`` maximum pin, avoiding a
-   bug caused by its interaction with cartopy.
+   bug caused by its interaction with cartopy. (:pull:`4911`)
 
 
 📚 Documentation
