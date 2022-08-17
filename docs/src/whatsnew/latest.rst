@@ -206,6 +206,9 @@ This document explains the changes made to Iris for this release
    alignment of calendar behaviour in the two packages (see Incompatible Changes).
    (:pull:`4847`)
 
+#. `@bjlittle`_ introduced the ``sphinx-gallery >=0.11.0`` minimum pin.
+   (:pull:`4885`)
+
 #. `@trexfeathers`_ updated the install process to work with setuptools `>=v64`,
    making `v64` the minimum compatible version. (:pull:`4903`)
 
