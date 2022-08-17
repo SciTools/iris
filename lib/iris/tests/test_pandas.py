@@ -263,7 +263,7 @@ class TestAsDataFrame(tests.IrisTest):
             ValueError,
             iris.pandas.as_data_frame,
             cube,
-            add_global_attributes=["sheep"]
+            add_global_attributes=["sheep"],
         )
 
     def test_aux_coord(self):
@@ -287,8 +287,6 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.bar, expected_bar)
         self.assertArrayEqual(data_frame.words0, expected_words0)
         self.assertArrayEqual(data_frame.words1, expected_words1)
-
-    
 
 
 @skip_pandas
