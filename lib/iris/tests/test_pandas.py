@@ -801,6 +801,19 @@ class TestPandasAsCubes(tests.IrisTest):
         (result_cube,) = result
         assert result_cube.dtype == np.int32
 
+    def test_preserve_dim_order(self):
+        new_order = ["index_1", "index_0", "index_2"]
+
+        df = self._create_pandas(index_levels=3)
+        df = df.reset_index()
+        df = df.set_index(new_order)
+        df = df.sort_index()
+        result = iris.pandas.as_cubes(df)
+
+        (result_cube,) = result
+        dim_order = [c.name() for c in result_cube.dim_coords]
+        assert dim_order == new_order
+
     def test_dtype_preserved_coord(self):
         df = self._create_pandas()
         new_index = df.index.astype("float64")
