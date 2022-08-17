@@ -80,6 +80,12 @@ This document explains the changes made to Iris for this release
    to provide lazy evaluation and greater flexibility with respect to input types.
    (:issue:`3936`, :pull:`4889`)
 
+#. `@stephenworsley`_ and `@lbdreyer`_ added a new kwarg ``expand_extras`` to
+   :func:`iris.util.new_axis` which can be used to specify instances of
+   :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure` and
+   :class:`~iris.coords.AncillaryVariable` which should also be expanded to map
+   to the new axis. (:pull:`4896`)
+
 
 🐛 Bugs Fixed
 =============
