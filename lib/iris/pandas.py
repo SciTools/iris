@@ -9,7 +9,6 @@ Provide conversion to and from Pandas data structures.
 See also: http://pandas.pydata.org/
 
 """
-
 import datetime
 
 import cf_units
@@ -201,7 +200,7 @@ def as_data_frame(
             )
             # Merge to main data frame
             data_frame = pandas.merge(
-                data_frame, acoord_df, on=coord_names[which_dim]
+                data_frame, acoord_df, left_index=True, right_index=True
             )
 
     # Add data from global attributes
