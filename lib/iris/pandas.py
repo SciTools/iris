@@ -433,16 +433,17 @@ def as_cubes(
         ),
     ]
 
+    if is_series:
+        columns_ignored = any([len(t[1]) > 0 for t in class_arg_mapping])
+        if columns_ignored:
+            ignored_args = ", ".join([t[2] for t in class_arg_mapping])
+            message = f"The input pandas_structure is a Series; ignoring arguments: {ignored_args} ."
+            warnings.warn(message)
+        class_arg_mapping = []
+
     non_data_names = []
     for dm_class, column_names, kwarg in class_arg_mapping:
         class_kwarg = []
-        if is_series and column_names:
-            message = (
-                "The input pandas_structure is a Series; ignoring "
-                f"{dm_class.__name__} columns: {column_names} ."
-            )
-            warnings.warn(message)
-            continue
         non_data_names.extend(column_names)
         for column_name in column_names:
             column = pandas_structure[column_name]
