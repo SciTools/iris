@@ -161,21 +161,22 @@ def as_data_frame(
         data = data.astype("f").filled(np.nan)
 
     # Extract dim coord information
-    if cube.ndim != len(cube.dim_coords):
-        # Create dummy dim coord information if dim coords not defined
-        coord_names = ["dim" + str(n) for n in range(cube.ndim)]
-        coords = [range(dim) for dim in cube.shape]
-        for onecoord in cube.dim_coords:
-            for i, dummyc in enumerate(coords):
-                if len(dummyc) == len(onecoord.points):
-                    coords[i] = _as_pandas_coord(onecoord)
-                    coord_names[i] = onecoord.name()
-                else:
-                    pass
-    else:
-        coord_names = [x.name() for x in cube.dim_coords]
-        coords = [_as_pandas_coord(x) for x in cube.dim_coords]
+    dim_coord_list = [
+        cube.coords(dimensions=n, dim_coords=True) for n in range(cube.ndim)
+    ]
+    # Initalise recieving lists for DataFrame dim information
+    coords = list(range(cube.ndim))
+    coord_names = list(range(cube.ndim))
+    for dim_index, dim_coord in enumerate(dim_coord_list):
+        if not dim_coord:
+            # Create dummy dim coord information if dim coords not defined
+            coord_names[dim_index] = "dim" + str(dim_index)
+            coords[dim_index] = range(cube.shape[dim_index])
+        else:
+            coord_names[dim_index] = dim_coord[0].name()
+            coords[dim_index] = _as_pandas_coord(dim_coord[0])
 
+    # Make base DataFrame
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
     data_frame = pandas.DataFrame(
         data.ravel(), columns=[cube.name()], index=index
@@ -198,7 +199,7 @@ def as_data_frame(
                 data_frame, acoord_df, left_index=True, right_index=True
             )
 
-    # Add data from global attributes
+    # Add global attribute information
     if add_global_attributes:
         global_attribute_names = list(cube.attributes.keys())
         for global_attribute in add_global_attributes:
