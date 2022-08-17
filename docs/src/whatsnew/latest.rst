@@ -86,6 +86,9 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.AncillaryVariable` which should also be expanded to map
    to the new axis. (:pull:`4896`)
 
+#. `@stephenworsley`_ updated to the latest CF Standard Names Table ``v79``
+   (19 March 2022). (:pull:`4910`)
+
 
 🐛 Bugs Fixed
 =============
