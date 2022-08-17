@@ -635,6 +635,15 @@ class TestPandasAsCubes(tests.IrisTest):
         with pytest.raises(ValueError, match="not monotonic"):
             _ = iris.pandas.as_cubes(df)
 
+    def test_missing_rows(self):
+        df = self._create_pandas(index_levels=2)
+        df = df[:-1]
+
+        with pytest.raises(
+            ValueError, match="Not all index values have a corresponding row"
+        ):
+            _ = iris.pandas.as_cubes(df)
+
     def test_aux_coord(self):
         df = self._create_pandas()
         coord_name = "foo"
