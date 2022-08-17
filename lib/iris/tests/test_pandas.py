@@ -871,7 +871,7 @@ class TestPandasAsCubes(tests.IrisTest):
 
     def _test_dates_common(self, mode=None, alt_calendar=False):
         df = self._create_pandas()
-        kwargs = dict(pandas_array=df)
+        kwargs = dict(pandas_structure=df)
         coord_name = "dates"
 
         if alt_calendar:
