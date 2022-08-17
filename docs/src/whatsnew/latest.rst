@@ -80,6 +80,12 @@ This document explains the changes made to Iris for this release
    to provide lazy evaluation and greater flexibility with respect to input types.
    (:issue:`3936`, :pull:`4889`)
 
+#. `@stephenworsley`_ and `@lbdreyer`_ added a new kwarg ``expand_extras`` to
+   :func:`iris.util.new_axis` which can be used to specify instances of
+   :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure` and
+   :class:`~iris.coords.AncillaryVariable` which should also be expanded to map
+   to the new axis. (:pull:`4896`)
+
 #. `@trexfeathers`_ and `@lbdreyer`_ (reviewer) added
    :func:`iris.pandas.as_cubes`, which provides richer conversion from
    Pandas :class:`~pandas.Series` / :class:`~pandas.DataFrame`\s to one or more
@@ -122,12 +128,6 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ and `@evertrol`_ prevented an ``AttributeError`` being logged
    to ``stderr`` when a :class:`~iris.fileformats.cf.CFReader` that fails to
    initialise is garbage collected. (:issue:`3312`, :pull:`4646`)
-
-#. `@stephenworsley`_ aligned the behaviour of :obj:`~iris.coords.Cell` equality
-   to match :obj:`~iris.coords.Coord` equality with respect to NaN values.
-   Two NaN valued Cells are now considered equal. This fixes :issue:`4681` and
-   causes NaN valued scalar coordinates to be able to merge be preserved during
-   cube merging. (:pull:`4701`)
 
 #. `@wjbenfold`_ fixed plotting of circular coordinates to extend kwarg arrays
    as well as the data. (:issue:`466`, :pull:`4649`)
@@ -267,6 +267,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ made :func:`iris.tests.stock.simple_1d` respect the
    ``with_bounds`` argument. (:pull:`4658`)
 
+#. `@lbdreyer`_ replaced `nose`_ with `pytest`_ as Iris' test runner.
+   (:pull:`4734`)
+
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) migrated to GitHub Actions
    for Continuous-Integration. (:pull:`4503`)
 
@@ -284,7 +287,7 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ and `@jamesp`_ (reviewer) and `@lbdreyer`_ (reviewer) extended
    the GitHub Continuous-Integration to cover testing on ``py38``, ``py39``,
-   and ``py310``. (:pull:`4840` and :pull:`4852`)
+   and ``py310``. (:pull:`4840`)
 
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) adopted `setuptools-scm`_ for
    automated ``iris`` package versioning. (:pull:`4841`)
@@ -310,5 +313,7 @@ This document explains the changes made to Iris for this release
 
 .. _Calendar: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#calendar
 .. _Cell Boundaries: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#cell-boundaries
+.. _nose: https://nose.readthedocs.io
 .. _PyData Sphinx Theme: https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html
+.. _pytest: https://docs.pytest.org
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
