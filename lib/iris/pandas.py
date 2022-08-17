@@ -358,6 +358,9 @@ def as_cubes(
             longitude                            -             x
 
     """
+    if pandas_structure.empty:
+        return CubeList()
+
     calendars = calendars or {}
     aux_coord_cols = aux_coord_cols or []
     cell_measure_cols = cell_measure_cols or []

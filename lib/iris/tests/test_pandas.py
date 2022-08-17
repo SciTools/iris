@@ -38,7 +38,7 @@ skip_pandas = pytest.mark.skipif(
 
 if pandas is not None:
     from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
-    from iris.cube import Cube
+    from iris.cube import Cube, CubeList
     import iris.pandas
 
 
@@ -753,12 +753,24 @@ class TestPandasAsCubes(tests.IrisTest):
         )
         assert result == [expected_cube_0, expected_cube_1]
 
+    def test_empty_series(self):
+        series = pandas.Series(dtype=object)
+        result = iris.pandas.as_cubes(series)
+
+        assert result == CubeList()
+
+    def test_empty_dataframe(self):
+        df = pandas.DataFrame()
+        result = iris.pandas.as_cubes(df)
+
+        assert result == CubeList()
+
     def test_no_phenom(self):
         df = self._create_pandas()
         # Specify the only column as an AuxCoord.
         result = iris.pandas.as_cubes(df, aux_coord_cols=[0])
 
-        assert result == []
+        assert result == CubeList()
 
     def test_standard_name_phenom(self):
         # long_name behaviour is tested in test_1d_no_index.
