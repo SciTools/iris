@@ -258,7 +258,13 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(expected_attribute, data_frame.sheep)
 
     def test_attribute_error(self):
-        pass
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        self.assertRaises(
+            ValueError,
+            iris.pandas.as_data_frame,
+            cube,
+            add_global_attributes=["sheep"]
+        )
 
     def test_aux_coord(self):
         cube2d = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")

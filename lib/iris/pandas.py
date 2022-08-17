@@ -205,7 +205,7 @@ def as_data_frame(
             if (
                 global_attribute not in global_attribute_names
             ):  # Check global attribute exists
-                raise ValueError(f'"{global_attribute}" not in cube')
+                raise ValueError(f'"{global_attribute}" attribute not in cube')
             else:
                 data_frame[global_attribute] = cube.attributes[
                     global_attribute
