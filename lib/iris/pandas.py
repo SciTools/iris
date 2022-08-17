@@ -183,19 +183,14 @@ def as_data_frame(
 
     # Add aux coord information
     if add_aux_coord:
-        aux_coord_names = [x.name() for x in cube.aux_coords]
-        for acoord in aux_coord_names:
-            aux_coord = cube.coord(acoord)
-            which_dim = cube.shape.index(aux_coord.shape[0])
-            aux_coord_index = coords[
-                which_dim
-            ]  # Make corresponding dim coord as aux coord index
-            # Build aux coord dataframe
-            acoord_df = pandas.DataFrame(
-                {acoord: aux_coord.points},
+        for aux_coord_index, aux_coord in enumerate(cube.aux_coords):
+            # Build aux coord dataframe with corresponding dim coord as aux coord index
+            acoord_df = pandas.Series(
+                aux_coord.points,
+                name=aux_coord.name(),
                 index=pandas.Index(
-                    data=aux_coord_index,
-                    name=coord_names[which_dim],
+                    data=coords[aux_coord_index],
+                    name=coord_names[aux_coord_index],
                 ),
             )
             # Merge to main data frame

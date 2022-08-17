@@ -257,26 +257,32 @@ class TestAsDataFrame(tests.IrisTest):
         )
         self.assertArrayEqual(expected_attribute, data_frame.sheep)
 
+    def test_attribute_error(self):
+        pass
+
     def test_aux_coord(self):
-        cube2d = Cube(
-            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
-        )
+        cube2d = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
         dim0_coord = DimCoord([15, 16], long_name="milk")
-        dim1_coord = DimCoord([10, 11, 12, 13, 14], long_name="bar")
-        aux1_coord = AuxCoord(
-            ["ten", "eleven", "twelve", "thirteen", "fourteen"],
-            long_name="words",
-        )
+        dim1_coord = DimCoord([10, 11], long_name="bar")
+        aux0_coord = AuxCoord(["fiveteen", "sixteen"], long_name="words0")
+        aux1_coord = AuxCoord(["ten", "eleven"], long_name="words1")
         cube2d.add_dim_coord(dim0_coord, 0)
         cube2d.add_dim_coord(dim1_coord, 1)
+        cube2d.add_aux_coord(aux0_coord, 0)
         cube2d.add_aux_coord(aux1_coord, 1)
-        expected_milk = np.repeat([15, 16], 5)
-        expected_bar = np.tile([10, 11, 12, 13, 14], 2)
-        expected_foo = np.arange(0, 10)
-        data_frame = iris.pandas.as_data_frame(cube2d)
+        expected_milk = np.repeat([15, 16], 2)
+        expected_bar = np.tile([10, 11], 2)
+        expected_foo = np.array([0, 1, 5, 6])
+        expected_words0 = np.repeat(["fiveteen", "sixteen"], 2)
+        expected_words1 = np.tile(["ten", "eleven"], 2)
+        data_frame = iris.pandas.as_data_frame(cube2d, add_aux_coord=True)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
+        self.assertArrayEqual(data_frame.words0, expected_words0)
+        self.assertArrayEqual(data_frame.words1, expected_words1)
+
+    
 
 
 @skip_pandas
