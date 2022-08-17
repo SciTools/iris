@@ -18,6 +18,7 @@ from iris.cube import Cube
 
 class TestSave(tests.IrisTest):
     def test_pathlib_save(self):
+        # DOESN'T CHECK TILDES WORK DUE TO MOCK.
         file_mock = mock.Mock()
         # Have to configure after creation because "name" is special
         file_mock.configure_mock(name="string")
@@ -25,6 +26,11 @@ class TestSave(tests.IrisTest):
         find_saver_mock = self.patch(
             "iris.io.find_saver", return_value=(lambda *args, **kwargs: None)
         )
+
+        def replace_expand(file_specs, files_expected=True):
+            return file_specs
+
+        self.patch("iris.io.expand_filespecs", replace_expand)
 
         test_variants = [
             ("string", "string"),

@@ -96,6 +96,13 @@ class TestExpandFilespecs(tests.IrisTest):
 
         self.assertMultiLineEqual(str(err.exception), expected)
 
+    def test_false_bool(self):
+        tempdir = self.tmpdir
+        msg = os.path.join(tempdir, "no_exist.txt")
+        result = iio.expand_filespecs([msg], False)[0]
+        self.assertEqual(result, msg)
+
+
 
 if __name__ == "__main__":
     tests.main()

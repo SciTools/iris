@@ -131,7 +131,7 @@ def decode_uri(uri, default="file"):
     return scheme, part
 
 
-def expand_filespecs(file_specs):
+def expand_filespecs(file_specs, files_expected=True):
     """
     Find all matching file paths from a list of file-specs.
 
@@ -139,12 +139,13 @@ def expand_filespecs(file_specs):
 
     * file_specs (iterable of string):
         File paths which may contain '~' elements or wildcards.
+    * files_expected (boolean):
+        A check to see if file is expected to exist (i.e. for load).
 
     Returns:
         A well-ordered list of matching absolute file paths.
         If any of the file-specs match no existing files, an
         exception is raised.
-
     """
     # Remove any hostname component - currently unused
     filenames = [
@@ -154,26 +155,28 @@ def expand_filespecs(file_specs):
         for fn in file_specs
     ]
 
-    # Try to expand all filenames as globs
-    glob_expanded = OrderedDict(
-        [[fn, sorted(glob.glob(fn))] for fn in filenames]
-    )
+    if files_expected:
+        # Try to expand all filenames as globs
+        glob_expanded = OrderedDict(
+            [[fn, sorted(glob.glob(fn))] for fn in filenames]
+        )
 
-    # If any of the specs expanded to an empty list then raise an error
-    all_expanded = glob_expanded.values()
-
-    if not all(all_expanded):
-        msg = "One or more of the files specified did not exist:"
-        for pattern, expanded in glob_expanded.items():
-            if expanded:
-                msg += '\n    - "{}" matched {} file(s)'.format(
-                    pattern, len(expanded)
-                )
-            else:
-                msg += '\n    * "{}" didn\'t match any files'.format(pattern)
-        raise IOError(msg)
-
-    return [fname for fnames in all_expanded for fname in fnames]
+        # If any of the specs expanded to an empty list then raise an error
+        all_expanded = glob_expanded.values()
+        if not all(all_expanded):
+            msg = "One or more of the files specified did not exist:"
+            for pattern, expanded in glob_expanded.items():
+                if expanded:
+                    msg += '\n    - "{}" matched {} file(s)'.format(
+                        pattern, len(expanded)
+                    )
+                else:
+                    msg += '\n    * "{}" didn\'t match any files'.format(pattern)
+            raise IOError(msg)
+        result = [fname for fnames in all_expanded for fname in fnames]
+    else:
+        result = filenames
+    return result
 
 
 def load_files(filenames, callback, constraints=None):
@@ -418,11 +421,12 @@ def save(source, target, saver=None, **kwargs):
 
     """
     from iris.cube import Cube, CubeList
-
     # Determine format from filename
     if isinstance(target, pathlib.PurePath):
         target = str(target)
     if isinstance(target, str) and saver is None:
+        # Converts tilde or wildcards to absolute path
+        target = expand_filespecs([str(target)], False)[0]
         saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
