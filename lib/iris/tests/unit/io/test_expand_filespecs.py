@@ -103,6 +103,5 @@ class TestExpandFilespecs(tests.IrisTest):
         self.assertEqual(result, msg)
 
 
-
 if __name__ == "__main__":
     tests.main()

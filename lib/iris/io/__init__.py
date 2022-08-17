@@ -171,7 +171,9 @@ def expand_filespecs(file_specs, files_expected=True):
                         pattern, len(expanded)
                     )
                 else:
-                    msg += '\n    * "{}" didn\'t match any files'.format(pattern)
+                    msg += '\n    * "{}" didn\'t match any files'.format(
+                        pattern
+                    )
             raise IOError(msg)
         result = [fname for fnames in all_expanded for fname in fnames]
     else:
@@ -421,6 +423,7 @@ def save(source, target, saver=None, **kwargs):
 
     """
     from iris.cube import Cube, CubeList
+
     # Determine format from filename
     if isinstance(target, pathlib.PurePath):
         target = str(target)
