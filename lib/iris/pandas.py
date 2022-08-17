@@ -323,7 +323,7 @@ def as_cubes(
     >>> print(converted_cube.data)
     [300.0 -- 302.0]
 
-    If the :class:`~pandas.DataFrame` uses columns as as a second dimension,
+    If the :class:`~pandas.DataFrame` uses columns as a second dimension,
     :func:`pandas.melt` should be used to convert the data to the expected
     n-dimensional format :
 
