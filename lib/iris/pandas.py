@@ -401,7 +401,7 @@ def as_cubes(
     cube_kwargs = {}
 
     def format_dimensional_metadata(dm_class_, values_, name_, dimensions_):
-        # Common convenience for to get the right DM in the right format for
+        # Common convenience to get the right DM in the right format for
         #  Cube creation.
         calendar = calendars.get(name_)
         instance = _get_dimensional_metadata(
