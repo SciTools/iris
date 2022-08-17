@@ -24,7 +24,6 @@ import pandas
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
 except ImportError:
-    pass
     from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
