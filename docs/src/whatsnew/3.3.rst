@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.3 (18 Aug 2022) [unreleased]
-*******************************
+v3.3 (18 Aug 2022) [release candidate]
+**************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -24,7 +24,8 @@ This document explains the changes made to Iris for this release
    * We've improved the functionality of :func:`iris.util.mask_cube`.
    * We've improved the functionality and performance of the
      :obj:`iris.analysis.PERCENTILE` aggregator.
-   * We've completed implementation of our benchmarking infrastructure.
+   * We've completed implementation of our :ref:`contributing.benchmarks`
+     infrastructure.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
