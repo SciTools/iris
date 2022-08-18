@@ -221,7 +221,7 @@ This document explains the changes made to Iris for this release
    (:pull:`4885`)
 
 #. `@trexfeathers`_ updated the install process to work with setuptools
-  ``>=v64``, making ``v64`` the minimum compatible version. (:pull:`4903`)
+   ``>=v64``, making ``v64`` the minimum compatible version. (:pull:`4903`)
 
 #. `@stephenworsley`_ and `@trexfeathers`_ introduced the ``shapely < 1.8.3``
    maximum pin, avoiding a bug caused by its interaction with cartopy.
