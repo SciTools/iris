@@ -220,8 +220,8 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ introduced the ``sphinx-gallery >=0.11.0`` minimum pin.
    (:pull:`4885`)
 
-#. `@trexfeathers`_ updated the install process to work with setuptools `>=v64`,
-   making `v64` the minimum compatible version. (:pull:`4903`)
+#. `@trexfeathers`_ updated the install process to work with setuptools
+  ``>=v64``, making ``v64`` the minimum compatible version. (:pull:`4903`)
 
 #. `@stephenworsley`_ and `@trexfeathers`_ introduced the ``shapely < 1.8.3``
    maximum pin, avoiding a bug caused by its interaction with cartopy.
@@ -248,8 +248,8 @@ This document explains the changes made to Iris for this release
    numpydoc strings and fixed some API documentation rendering.
    See :ref:`docstrings`. (:issue:`4657`, :pull:`4689`)
 
-#. `@trexfeathers`_ added a page with examples of converting various mesh
-   formats into the Iris Mesh Data Model. (:pull:`4739`)
+#. `@trexfeathers`_ and `@lbdreyer`_ added a page with examples of converting
+   various mesh formats into the Iris Mesh Data Model. (:pull:`4739`)
 
 #. `@rcomer`_ updated the "Load a Time Series of Data From the NEMO Model"
    gallery example. (:pull:`4741`)
