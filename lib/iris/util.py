@@ -1096,7 +1096,7 @@ def format_array(arr):
     return result
 
 
-def new_axis(src_cube, scalar_coord=None, expand_extras=[]):
+def new_axis(src_cube, scalar_coord=None, expand_extras=()):
     """
     Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
@@ -1111,10 +1111,10 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=[]):
     * scalar_coord (:class:`iris.coord.Coord` or 'string')
         Scalar coordinate to promote to a dimension coordinate.
 
-    * expand_extras (list)
-        List of auxiliary coordinates, ancillary variables and cell measures
-        that will be expanded so that they map to the new dimension as well
-        as the existing dimensions.
+    * expand_extras (iterable)
+        Auxiliary coordinates, ancillary variables and cell measures which will
+        be expanded so that they map to the new dimension as well as the
+        existing dimensions.
 
     Returns:
         A new :class:`iris.cube.Cube` instance with one extra leading dimension
