@@ -424,8 +424,6 @@ def save(source, target, saver=None, **kwargs):
         target = str(target)
     if isinstance(target, str) and saver is None:
         saver = find_saver(target)
-    elif hasattr(target, "name") and saver is None:
-        saver = find_saver(target.name)
     elif isinstance(saver, str):
         saver = find_saver(saver)
     if saver is None:
