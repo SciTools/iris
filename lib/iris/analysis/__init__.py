@@ -1500,6 +1500,12 @@ def _weighted_percentile(
 
 
 def _count(array, **kwargs):
+    """
+    Counts the number of points along the axis that satisfy the condition
+    specified by ``function``.  Uses Dask's support for NEP13/18 to work as
+    either a lazy or a real function.
+
+    """
     func = kwargs.pop("function", None)
     if not callable(func):
         emsg = "function must be a callable. Got {}."
@@ -1602,7 +1608,11 @@ def _lazy_rms(array, axis, **kwargs):
 
 
 def _sum(array, **kwargs):
-    # weighted or scaled sum
+    """
+    Weighted or scaled sum.  Uses Dask's support for NEP13/18 to work as either
+    a lazy or a real function.
+
+    """
     axis_in = kwargs.get("axis", None)
     weights_in = kwargs.pop("weights", None)
     returned_in = kwargs.pop("returned", False)
