@@ -4240,6 +4240,11 @@ x            -              -
             aggregateby_weights = None
 
         aggregateby_data = stack(result, axis=dimension_to_groupby)
+        # Ensure plain ndarray is output if plain ndarray was input.
+        if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(
+            input_data
+        ):
+            aggregateby_data = ma.getdata(aggregateby_data)
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
