@@ -4178,7 +4178,7 @@ x            -              -
         data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
         data_shape[dimension_to_groupby] = len(groupby)
 
-        # Choose appropriate data and functions.
+        # Choose appropriate data and functions for data aggregation.
         if aggregator.lazy_func is not None and self.has_lazy_data():
             stack = da.stack
             input_data = self.lazy_data()
