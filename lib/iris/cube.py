@@ -4195,19 +4195,11 @@ x            -              -
             len(data_shape) - dimension_to_groupby - 1
         )
 
-        # Dask indexing doesn't cope with tuples but lists are OK.
-        slice_list = [
-            list(groupby_slice)
-            if isinstance(groupby_slice, tuple)
-            else groupby_slice
-            for groupby_slice in groupby.group()
-        ]
-
         groupby_subarrs = map(
-            lambda groupby_slice: input_data[
-                front_slice + (groupby_slice,) + back_slice
-            ],
-            slice_list,
+            lambda groupby_slice: iris.util._slice_data_with_keys(
+                input_data, front_slice + (groupby_slice,) + back_slice
+            )[1],
+            groupby.group(),
         )
 
         if weights is not None:
@@ -4215,7 +4207,7 @@ x            -              -
                 lambda groupby_slice: weights[
                     front_slice + (groupby_slice,) + back_slice
                 ],
-                slice_list,
+                groupby.group(),
             )
         else:
             groupby_subweights = (None for _ in range(len(groupby)))
