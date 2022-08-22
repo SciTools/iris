@@ -5,18 +5,20 @@
 # licensing details.
 """Unit tests for the `iris.io.expand_filespecs` function."""
 
+import os
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 from pathlib import Path
-
-import iris.tests as tests  # isort:skip
-
-import os
 import shutil
 import tempfile
 import textwrap
 
 import iris.io as iio
+
+import iris.tests as tests  # isort:skip
+
+
 
 
 class TestExpandFilespecs(tests.IrisTest):
@@ -116,9 +118,7 @@ class TestExpandFilespecs(tests.IrisTest):
         try:
             os.chdir(self.tmpdir)
             item_out = iio.expand_filespecs(["no_exist.txt"], False)
-            item_in = [
-                os.path.join(self.tmpdir, "no_exist.txt")
-            ]
+            item_in = [os.path.join(self.tmpdir, "no_exist.txt")]
             self.assertEqual(item_out, item_in)
         finally:
             os.chdir(cwd)
