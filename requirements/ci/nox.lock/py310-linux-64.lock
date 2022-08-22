@@ -200,7 +200,7 @@ https://conda.anaconda.org/conda-forge/linux-64/pysocks-1.7.1-py310hff52083_5.ta
 https://conda.anaconda.org/conda-forge/noarch/python-dateutil-2.8.2-pyhd8ed1ab_0.tar.bz2#dd999d1cc9f79e67dbb855c8924c7984
 https://conda.anaconda.org/conda-forge/linux-64/python-xxhash-3.0.0-py310h5764c6d_1.tar.bz2#b6f54b7c4177a745d5e6e4319282253a
 https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0-py310h5764c6d_4.tar.bz2#505dcf6be997e732d7a33831950dc3cf
-https://conda.anaconda.org/conda-forge/linux-64/setuptools-65.0.2-py310hff52083_0.tar.bz2#fe4e6907626e7d9a6de503c88f5f7b27
+https://conda.anaconda.org/conda-forge/linux-64/setuptools-65.1.0-py310hff52083_0.tar.bz2#7e961bc719caa7d24d085eda64c62dc3
 https://conda.anaconda.org/conda-forge/linux-64/tornado-6.2-py310h5764c6d_0.tar.bz2#c42dcb37acd84b3ca197f03f57ef927d
 https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.3.0-hd8ed1ab_0.tar.bz2#f3e98e944832fb271a0dbda7b7771dc6
 https://conda.anaconda.org/conda-forge/linux-64/unicodedata2-14.0.0-py310h5764c6d_1.tar.bz2#791689ce9e578e2e83b635974af61743
@@ -208,8 +208,8 @@ https://conda.anaconda.org/conda-forge/linux-64/virtualenv-20.16.3-py310hff52083
 https://conda.anaconda.org/conda-forge/linux-64/brotlipy-0.7.0-py310h5764c6d_1004.tar.bz2#6499bb11b7feffb63b26847fc9181319
 https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.1-py310hde88566_0.tar.bz2#1f84cf065287d73aa0233d432d3a1ba9
 https://conda.anaconda.org/conda-forge/linux-64/cryptography-37.0.4-py310h597c629_0.tar.bz2#f285746449d16d92884f4ce0cfe26679
-https://conda.anaconda.org/conda-forge/noarch/dask-core-2022.8.0-pyhd8ed1ab_0.tar.bz2#b097a86c177b459f6c9a68a077cade0e
-https://conda.anaconda.org/conda-forge/linux-64/fonttools-4.35.0-py310h5764c6d_0.tar.bz2#71d8a7387c733792ee9922357a44232d
+https://conda.anaconda.org/conda-forge/noarch/dask-core-2022.8.1-pyhd8ed1ab_0.tar.bz2#df5026dbf551bb992cdf247b08e11078
+https://conda.anaconda.org/conda-forge/linux-64/fonttools-4.36.0-py310h5764c6d_0.tar.bz2#75969f26ba850c17f6ceab6434aa1b0d
 https://conda.anaconda.org/conda-forge/linux-64/gst-plugins-base-1.20.3-hf6a322e_0.tar.bz2#6ea2ce6265c3207876ef2369b7479f08
 https://conda.anaconda.org/conda-forge/noarch/jinja2-3.1.2-pyhd8ed1ab_1.tar.bz2#c8490ed5c70966d232fdd389d0dbed37
 https://conda.anaconda.org/conda-forge/linux-64/mo_pack-0.2.0-py310hde88566_1007.tar.bz2#c2ec7c118184ddfd855fc3698d1c8e63
@@ -254,5 +254,5 @@ https://conda.anaconda.org/conda-forge/noarch/requests-2.28.1-pyhd8ed1ab_0.tar.b
 https://conda.anaconda.org/conda-forge/noarch/sphinx-4.5.0-pyh6c4a22f_0.tar.bz2#46b38d88c4270ff9ba78a89c83c66345
 https://conda.anaconda.org/conda-forge/noarch/pydata-sphinx-theme-0.8.1-pyhd8ed1ab_0.tar.bz2#7d8390ec71225ea9841b276552fdffba
 https://conda.anaconda.org/conda-forge/noarch/sphinx-copybutton-0.5.0-pyhd8ed1ab_0.tar.bz2#4c969cdd5191306c269490f7ff236d9c
-https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.11.0-pyhd8ed1ab_0.tar.bz2#9fcb2988f0d82b9af2131ef4b4567240
+https://conda.anaconda.org/conda-forge/noarch/sphinx-gallery-0.11.1-pyhd8ed1ab_0.tar.bz2#729254314a5d178eefca50acbc2687b8
 https://conda.anaconda.org/conda-forge/noarch/sphinx-panels-0.6.0-pyhd8ed1ab_0.tar.bz2#6eec6480601f5d15babf9c3b3987f34a
