@@ -5,13 +5,13 @@
 What's New in Iris
 ------------------
 
-.. include:: latest.rst
+.. include:: 3.3.rst
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   latest.rst
+   3.3.rst
    3.2.rst
    3.1.rst
    3.0.rst

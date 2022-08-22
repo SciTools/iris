@@ -1,13 +1,13 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+v3.3 (18 Aug 2022) [release candidate]
+**************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
+.. dropdown:: :opticon:`report` v3.3.0 Release Highlights
    :container: + shadow
    :title: text-primary text-center font-weight-bold
    :body: bg-light
@@ -16,7 +16,16 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
-   * N/A
+   * We've added support for datums, loading them from NetCDF when the
+     :obj:`iris.FUTURE.datum_support` flag is set.
+   * We've greatly improved the speed of linear interpolation.
+   * We've added the function :func:`iris.pandas.as_cubes` for richer
+     conversion from Pandas.
+   * We've improved the functionality of :func:`iris.util.mask_cube`.
+   * We've improved the functionality and performance of the
+     :obj:`iris.analysis.PERCENTILE` aggregator.
+   * We've completed implementation of our :ref:`contributing.benchmarks`
+     infrastructure.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -88,6 +97,14 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ updated to the latest CF Standard Names Table ``v79``
    (19 March 2022). (:pull:`4910`)
+
+#. `@trexfeathers`_ and `@lbdreyer`_ (reviewer) added
+   :func:`iris.pandas.as_cubes`, which provides richer conversion from
+   Pandas :class:`~pandas.Series` / :class:`~pandas.DataFrame`\s to one or more
+   :class:`~iris.cube.Cube`\s. This includes: n-dimensional datasets,
+   :class:`~iris.coords.AuxCoord`\s, :class:`~iris.coords.CellMeasure`\s,
+   :class:`~iris.coords.AncillaryVariable`\s, and multi-dimensional
+   coordinates. (:pull:`4890`)
 
 
 🐛 Bugs Fixed
@@ -190,7 +207,10 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@trexfeathers`_ and `@lbdreyer`_ (reviewer) deprecated
+   :func:`iris.pandas.as_cube` in favour of the new
+   :func:`iris.pandas.as_cubes` - see `✨ Features`_ for more details.
+   (:pull:`4890`)
 
 
 🔗 Dependencies
@@ -206,8 +226,15 @@ This document explains the changes made to Iris for this release
    alignment of calendar behaviour in the two packages (see Incompatible Changes).
    (:pull:`4847`)
 
-#. `@trexfeathers`_ updated the install process to work with setuptools `>=v64`,
-   making `v64` the minimum compatible version. (:pull:`4903`)
+#. `@bjlittle`_ introduced the ``sphinx-gallery >=0.11.0`` minimum pin.
+   (:pull:`4885`)
+
+#. `@trexfeathers`_ updated the install process to work with setuptools
+   ``>=v64``, making ``v64`` the minimum compatible version. (:pull:`4903`)
+
+#. `@stephenworsley`_ and `@trexfeathers`_ introduced the ``shapely < 1.8.3``
+   maximum pin, avoiding a bug caused by its interaction with cartopy.
+   (:pull:`4911`, :pull:`4917`)
 
 
 📚 Documentation
@@ -230,8 +257,8 @@ This document explains the changes made to Iris for this release
    numpydoc strings and fixed some API documentation rendering.
    See :ref:`docstrings`. (:issue:`4657`, :pull:`4689`)
 
-#. `@trexfeathers`_ added a page with examples of converting various mesh
-   formats into the Iris Mesh Data Model. (:pull:`4739`)
+#. `@trexfeathers`_ and `@lbdreyer`_ added a page with examples of converting
+   various mesh formats into the Iris Mesh Data Model. (:pull:`4739`)
 
 #. `@rcomer`_ updated the "Load a Time Series of Data From the NEMO Model"
    gallery example. (:pull:`4741`)
