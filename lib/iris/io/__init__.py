@@ -139,7 +139,7 @@ def expand_filespecs(file_specs, files_expected=True):
     ----------
     file_specs : iterable of str
         File paths which may contain ``~`` elements or wildcards.
-    files_expected : bool
+    files_expected : bool, default=True
         Whether file is expected to exist (i.e. for load).
 
     Returns
@@ -433,7 +433,7 @@ def save(source, target, saver=None, **kwargs):
         target = str(target)
     if isinstance(target, str) and saver is None:
         # Converts tilde or wildcards to absolute path
-        target = expand_filespecs([str(target)], False)[0]
+        (target,) = expand_filespecs([str(target)], False)
         saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
