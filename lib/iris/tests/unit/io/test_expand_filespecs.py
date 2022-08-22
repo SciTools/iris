@@ -5,20 +5,17 @@
 # licensing details.
 """Unit tests for the `iris.io.expand_filespecs` function."""
 
-import os
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+import iris.tests as tests  # isort:skip
+
+import os
 from pathlib import Path
 import shutil
 import tempfile
 import textwrap
 
 import iris.io as iio
-
-import iris.tests as tests  # isort:skip
-
-
 
 
 class TestExpandFilespecs(tests.IrisTest):
