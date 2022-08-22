@@ -25,13 +25,15 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Welcome to `@ESadek-MO`_ who made their first contribution to Iris 🎉
 
 
 ✨ Features
 ===========
 
-#. N/A
+#. `@ESadek-MO`_ edited :func:`~iris.io.expand_filespecs` to allow expansion of
+    non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
+    (:issue:`4772`, :pull:`4913`)
 
 
 🐛 Bugs Fixed
