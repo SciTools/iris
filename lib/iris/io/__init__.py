@@ -133,8 +133,12 @@ def decode_uri(uri, default="file"):
 
 def expand_filespecs(file_specs, files_expected=True):
     """
+    Short Summary
+    -------------
     Find all matching file paths from a list of file-specs.
 
+    Parameters
+    ----------
     Args:
 
     * file_specs (iterable of string):
@@ -142,10 +146,16 @@ def expand_filespecs(file_specs, files_expected=True):
     * files_expected (boolean):
         A check to see if file is expected to exist (i.e. for load).
 
-    Returns:
-        A well-ordered list of matching absolute file paths.
-        If any of the file-specs match no existing files, an
-        exception is raised.
+    Returns
+    -------
+        if files_expected is True:
+        fnames : [string]
+            A well-ordered list of matching absolute file paths.
+            If any of the file-specs match no existing files, an
+            exception is raised.
+        if files_expected is False:
+        filename : [string]
+            A list of expanded file paths.
     """
     # Remove any hostname component - currently unused
     filenames = [
@@ -344,82 +354,86 @@ def find_saver(filespec):
 
 def save(source, target, saver=None, **kwargs):
     """
-    Save one or more Cubes to file (or other writeable).
+        Short Summary
+        -------------
+        Save one or more Cubes to file (or other writeable).
 
-    Iris currently supports three file formats for saving, which it can
-    recognise by filename extension:
+        Iris currently supports three file formats for saving, which it can
+        recognise by filename extension:
 
-        * netCDF - the Unidata network Common Data Format:
-            * see :func:`iris.fileformats.netcdf.save`
-        * GRIB2 - the WMO GRIdded Binary data format:
-            * see :func:`iris_grib.save_grib2`.
-        * PP - the Met Office UM Post Processing Format:
-            * see :func:`iris.fileformats.pp.save`
+            * netCDF - the Unidata network Common Data Format:
+                * see :func:`iris.fileformats.netcdf.save`
+            * GRIB2 - the WMO GRIdded Binary data format:
+                * see :func:`iris_grib.save_grib2`.
+            * PP - the Met Office UM Post Processing Format:
+                * see :func:`iris.fileformats.pp.save`
 
-    A custom saver can be provided to the function to write to a different
-    file format.
+        A custom saver can be provided to the function to write to a different
+        file format.
 
-    Args:
+        Parameters
+        ----------
+        Args:
 
-    * source:
-        :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
-        sequence of cubes.
-    * target:
-        A filename (or writeable, depending on file format).
-        When given a filename or file, Iris can determine the
-        file format. Filename can be given as a string or
-        :class:`pathlib.PurePath`.
+        * source:
+            :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
+            sequence of cubes.
+        * target:
+            A filename (or writeable, depending on file format).
+            When given a filename or file, Iris can determine the
+            file format. Filename can be given as a string or
+            :class:`pathlib.PurePath`.
 
-    Kwargs:
+        Kwargs:
 
-    * saver:
-        Optional. Specifies the file format to save.
-        If omitted, Iris will attempt to determine the format.
+        ** saver:
+            Optional. Specifies the file format to save.
+            If omitted, Iris will attempt to determine the format.
 
-        If a string, this is the recognised filename extension
-        (where the actual filename may not have it).
-        Otherwise the value is a saver function, of the form:
-        ``my_saver(cube, target)`` plus any custom keywords. It
-        is assumed that a saver will accept an ``append`` keyword
-        if it's file format can handle multiple cubes. See also
-        :func:`iris.io.add_saver`.
+            If a string, this is the recognised filename extension
+            (where the actual filename may not have it).
+            Otherwise the value is a saver function, of the form:
+            ``my_saver(cube, target)`` plus any custom keywords. It
+            is assumed that a saver will accept an ``append`` keyword
+            if it's file format can handle multiple cubes. See also
+            :func:`iris.io.add_saver`.
 
-    All other keywords are passed through to the saver function; see the
-    relevant saver documentation for more information on keyword arguments.
+        All other keywords are passed through to the saver function; see the
+        relevant saver documentation for more information on keyword arguments.
 
-    Examples::
+        Examples
+        --------
+            # Save a cube to PP
+            >>> iris.save(my_cube, "myfile.pp")
 
-        # Save a cube to PP
-        iris.save(my_cube, "myfile.pp")
+            # Save a cube list to a PP file, appending to the contents of the file
+            # if it already exists
+            >>> iris.save(my_cube_list, "myfile.pp", append=True)
 
-        # Save a cube list to a PP file, appending to the contents of the file
-        # if it already exists
-        iris.save(my_cube_list, "myfile.pp", append=True)
+            # Save a cube to netCDF, defaults to NETCDF4 file format
+            >>> iris.save(my_cube, "myfile.nc")
 
-        # Save a cube to netCDF, defaults to NETCDF4 file format
-        iris.save(my_cube, "myfile.nc")
+            # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
+            >>> iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
-        # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
-        iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
+        .. warning::
 
-    .. warning::
+           Saving a cube whose data has been loaded lazily
+           (if `cube.has_lazy_data()` returns `True`) to the same file it expects
+           to load data from will cause both the data in-memory and the data on
+           disk to be lost.
 
-       Saving a cube whose data has been loaded lazily
-       (if `cube.has_lazy_data()` returns `True`) to the same file it expects
-       to load data from will cause both the data in-memory and the data on
-       disk to be lost.
+           .. code-block:: python
 
-       .. code-block:: python
+              cube = iris.load_cube("somefile.nc")
+              # The next line causes data loss in 'somefile.nc' and the cube.
+              iris.save(cube, "somefile.nc")
 
-          cube = iris.load_cube("somefile.nc")
-          # The next line causes data loss in 'somefile.nc' and the cube.
-          iris.save(cube, "somefile.nc")
+           In general, overwriting a file which is the source for any lazily loaded
+           data can result in corruption. Users should proceed with caution when
+           attempting to overwrite an existing file.
 
-       In general, overwriting a file which is the source for any lazily loaded
-       data can result in corruption. Users should proceed with caution when
-       attempting to overwrite an existing file.
-
-    """
+        """
     from iris.cube import Cube, CubeList
     # Determine format from filename
     if isinstance(target, pathlib.PurePath):
