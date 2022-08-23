@@ -86,9 +86,16 @@ author = "Iris Developers"
 # The version info for the project you're documenting, acts as replacement for
 # |version|, also used in various other places throughout the built documents.
 
-version = get_version("scitools-iris")
-if version.endswith("+dirty"):
-    version = version[: -len("+dirty")]
+if on_rtd:
+    # Get the version string that was generated when RTD installed Iris - RTD
+    #  later modifies Iris' source, causing setuptools_scm to advance the
+    #  version string away from its correct value.
+    from iris._version import __version__
+
+    version = __version__
+else:
+    version = get_version("scitools-iris")
+
 release = version
 autolog(f"Iris Version = {version}")
 autolog(f"Iris Release = {release}")

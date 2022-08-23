@@ -1,20 +1,21 @@
 {% if on_rtd %}
     {% if rtd_version == 'latest' %}
         <span title="latest development version">
-            <img src="https://img.shields.io/badge/latest_version-{{ version }}-orange?style=flat">
+            <img src="https://img.shields.io/badge/⚠️_version='latest'-{{ version }}-gold?style=flat">
         </span>
     {% elif rtd_version == 'stable' %}
         <span title="stable version">
-            <img src="https://img.shields.io/badge/stable_version-{{ version }}-green?style=flat">
+            <img src="https://img.shields.io/badge/✨️_version='stable'-{{ version }}-green?style=flat">
         </span>
     {% else %}
-        <span title="old version (not stable or latest)">
-            <img src="https://img.shields.io/badge/old_version-{{ version }}-red?style=?style=flat">
+        {# Covers builds for any specific versions/commits, including RC's. #}
+        <span title="fixed version (not 'stable' or 'latest')">
+            <img src="https://img.shields.io/badge/🔒_version=fixed-{{ version }}-red?style=?style=flat">
         </span>
     {% endif %}
 {%- else %}
     {# not on rtd #}
     <span title="development version">
-        <img src="https://img.shields.io/badge/dev_version-{{ version }}-blue?style=?style=flat">
+        <img src="https://img.shields.io/badge/✏️_version=dev-{{ version }}-blue?style=?style=flat">
     </span>
 {%- endif %}
