@@ -318,6 +318,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ and `@wjbenfold`_ (reviewer) used ``pytest`` parametrization to
    streamline the gallery test code. (:pull:`4792`)
 
+#. `@trexfeathers`_ improved settings to better working with
+   ``setuptools_scm``. (:pull:`4925`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
