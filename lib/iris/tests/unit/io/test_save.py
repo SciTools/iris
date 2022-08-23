@@ -26,6 +26,12 @@ class TestSave(tests.IrisTest):
             "iris.io.find_saver", return_value=(lambda *args, **kwargs: None)
         )
 
+        def replace_expand(file_specs, files_expected=True):
+            return file_specs
+
+        # does not expand filepaths due to patch
+        self.patch("iris.io.expand_filespecs", replace_expand)
+
         test_variants = [
             ("string", "string"),
             (Path("string/string"), "string/string"),

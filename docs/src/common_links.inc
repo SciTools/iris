@@ -53,6 +53,7 @@
 .. _@cpelley: https://github.com/cpelley
 .. _@djkirkham: https://github.com/djkirkham
 .. _@DPeterK: https://github.com/DPeterK
+.. _@ESadek-MO: https://github.com/ESadek-MO
 .. _@esc24: https://github.com/esc24
 .. _@jamesp: https://github.com/jamesp
 .. _@jonseddon: https://github.com/jonseddon
