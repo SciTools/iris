@@ -39,8 +39,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. `@rcomer`_ factored masking into the returned sum-of-weights calculation from
-   :obj:`~iris.analysis.SUM`. (:pull:`4905`)
+#. `@rcomer`_ and `@pp-mo`_ (reviewer) factored masking into the returned
+   sum-of-weights calculation from :obj:`~iris.analysis.SUM`. (:pull:`4905`)
 
 
 💣 Incompatible Changes
@@ -52,9 +52,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. `@rcomer`_ increased aggregation speed for :obj:`~iris.analysis.SUM`,
-   :obj:`~iris.analysis.COUNT` and :obj:`~iris.analysis.PROPORTION` on real
-   data. (:pull:`4905`)
+#. `@rcomer`_ and `@pp-mo`_ (reviewer) increased aggregation speed for
+   :obj:`~iris.analysis.SUM`, :obj:`~iris.analysis.COUNT` and
+   :obj:`~iris.analysis.PROPORTION` on real data. (:pull:`4905`)
 
 
 🔥 Deprecations
