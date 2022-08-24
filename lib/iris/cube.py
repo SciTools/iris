@@ -1991,7 +1991,7 @@ class Cube(CFVariableMixin):
                 if not isinstance(name_or_coord, str):
                     _name = name_or_coord.name()
                     emsg = (
-                        "Expected to find exactly 1  coordinate matching the "
+                        "Expected to find exactly 1 coordinate matching the "
                         f"{_name!r} coordinate, but found none."
                     )
                     raise iris.exceptions.CoordinateNotFoundError(emsg)
@@ -2197,7 +2197,7 @@ class Cube(CFVariableMixin):
             if isinstance(name_or_cell_measure, str):
                 bad_name = name_or_cell_measure
                 emsg = (
-                    "Expected to find exactly 1  cell measure matching the "
+                    "Expected to find exactly 1 cell measure matching the "
                     f"{bad_name!r} cell measure, but found none."
                 )
                 raise iris.exceptions.CoordinateNotFoundError(emsg)
@@ -2288,7 +2288,7 @@ class Cube(CFVariableMixin):
             if isinstance(name_or_ancillary_variable, str):
                 bad_name = name_or_ancillary_variable
                 emsg = (
-                    "Expected to find exactly 1  ancillary_variable matching "
+                    "Expected to find exactly 1 ancillary_variable matching "
                     f"the {bad_name!r} ancillary_variable, but found none."
                 )
                 raise iris.exceptions.CoordinateNotFoundError(emsg)
