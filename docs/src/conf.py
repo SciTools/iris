@@ -43,6 +43,9 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 
 # This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
+# Make rtd_version safe for use in shields.io badges.
+rtd_version = rtd_version.replace("_", "__")
+rtd_version = rtd_version.replace("-", "--")
 
 # branch, tag, external (for pull request builds), or unknown.
 rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
