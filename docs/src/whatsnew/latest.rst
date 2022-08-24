@@ -79,7 +79,8 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@rcomer`_ removed the obsolete ``setUpClass`` method from Iris testing.
+   (:pull:`4927`)
 
 
 .. comment

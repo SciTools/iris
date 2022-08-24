@@ -213,11 +213,6 @@ class IrisTest_nometa(unittest.TestCase):
 
     _assertion_counts = collections.defaultdict(int)
 
-    @classmethod
-    def setUpClass(cls):
-        # Ensure that the CF profile if turned-off for testing.
-        iris.site_configuration["cf_profile"] = None
-
     def _assert_str_same(
         self,
         reference_str,
