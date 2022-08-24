@@ -883,7 +883,9 @@ def _binary_op_common(
         rhs = other.core_data()
     else:
         # The rhs must be an array.
-        if not iris._lazy_data.is_lazy_data(other):
+        if iris._lazy_data.is_lazy_data(other):
+            rhs = other
+        else:
             rhs = np.asanyarray(other)
 
     def unary_func(lhs):
