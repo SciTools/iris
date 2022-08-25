@@ -42,8 +42,15 @@ v3.3.1 |build_date| [unreleased]
 
    The patches in this release of Iris include:
 
-#. `@pp-mo`_ fixed the Jupyter notebook display of :class:`~iris.cube.CubeList`.
-   (:issue:`4973`, :pull:`4976`)
+    #. `@pp-mo`_ fixed the Jupyter notebook display of :class:`~iris.cube.CubeList`.
+       (:issue:`4973`, :pull:`4976`)
+
+    #. `@pp-mo`_ fixed a bug in NAME loaders where data with no associated statistic would
+       load as a cube with invalid cell-methods, which cannot be printed or saved to netcdf.
+       (:issue:`3288`, :pull:`4933`)
+
+    #. `@pp-mo`_ ensured that :data:`iris.cube.Cube.cell_methods` must always be an iterable
+       of :class:`iris.coords.CellMethod` objects (:pull:`4933`).
 
 
 📢 Announcements

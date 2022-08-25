@@ -9,6 +9,7 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from collections import namedtuple
 from itertools import permutations
 from unittest import mock
 
@@ -3046,6 +3047,84 @@ class TestHtmlRepr:
             # "CubeRepresentation(cube).repr_html()" was called exactly once, with no args
             mock.call()
         ]
+
+
+class Test__cell_methods:
+    @pytest.fixture(autouse=True)
+    def cell_measures_testdata(self):
+        self.cube = Cube([0])
+        self.cm = CellMethod("mean", "time", "6hr")
+        self.cm2 = CellMethod("max", "latitude", "4hr")
+
+    def test_none(self):
+        assert self.cube.cell_methods == ()
+
+    def test_one(self):
+        cube = Cube([0], cell_methods=[self.cm])
+        expected = (self.cm,)
+        assert expected == cube.cell_methods
+
+    def test_empty_assigns(self):
+        testargs = [(), [], {}, 0, 0.0, False, None]
+        results = []
+        for arg in testargs:
+            cube = self.cube.copy()
+            cube.cell_methods = arg  # assign test object
+            results.append(cube.cell_methods)  # capture what is read back
+        expected_results = [()] * len(testargs)
+        assert expected_results == results
+
+    def test_single_assigns(self):
+        cms = (self.cm, self.cm2)
+        # Any type of iterable ought to work
+        # But N.B. *not* testing sets, as order is not stable
+        testargs = [cms, list(cms), {cm: 1 for cm in cms}]
+        results = []
+        for arg in testargs:
+            cube = self.cube.copy()
+            cube.cell_methods = arg  # assign test object
+            results.append(cube.cell_methods)  # capture what is read back
+        expected_results = [cms] * len(testargs)
+        assert expected_results == results
+
+    def test_fail_assign_noniterable(self):
+        test_object = object()
+        with pytest.raises(TypeError, match="not iterable"):
+            self.cube.cell_methods = test_object
+
+    def test_fail_create_noniterable(self):
+        test_object = object()
+        with pytest.raises(TypeError, match="not iterable"):
+            Cube([0], cell_methods=test_object)
+
+    def test_fail_assign_noncellmethod(self):
+        test_object = object()
+        with pytest.raises(ValueError, match="not an iris.coords.CellMethod"):
+            self.cube.cell_methods = (test_object,)
+
+    def test_fail_create_noncellmethod(self):
+        test_object = object()
+        with pytest.raises(ValueError, match="not an iris.coords.CellMethod"):
+            Cube([0], cell_methods=[test_object])
+
+    def test_assign_derivedcellmethod(self):
+        class DerivedCellMethod(CellMethod):
+            pass
+
+        test_object = DerivedCellMethod("mean", "time", "6hr")
+        cms = (test_object,)
+        self.cube.cell_methods = (test_object,)
+        assert cms == self.cube.cell_methods
+
+    def test_fail_assign_duckcellmethod(self):
+        # Can't currently assign a "duck-typed" CellMethod replacement, since
+        # implementation requires class membership (boo!)
+        DuckCellMethod = namedtuple("DuckCellMethod", CellMethod._names)
+        test_object = DuckCellMethod(
+            *CellMethod._names
+        )  # fill props with value==name
+        with pytest.raises(ValueError, match="not an iris.coords.CellMethod"):
+            self.cube.cell_methods = (test_object,)
 
 
 if __name__ == "__main__":
