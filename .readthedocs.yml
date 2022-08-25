@@ -11,6 +11,12 @@ build:
       # to allow setuptools-scm to correctly auto-discover the version.
       - git fetch --unshallow
       - git fetch --all
+    # Need to stash the local changes that Read the Docs makes so that
+    #  setuptools_scm can generate the correct Iris version.
+    pre_install:
+      - git stash
+    post_install:
+      - git stash pop
 
 conda:
   environment: requirements/ci/readthedocs.yml
