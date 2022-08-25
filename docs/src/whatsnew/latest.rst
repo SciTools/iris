@@ -42,6 +42,11 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ and `@pp-mo`_ (reviewer) factored masking into the returned
    sum-of-weights calculation from :obj:`~iris.analysis.SUM`. (:pull:`4905`)
 
+#. `@schlunma`_ fixed a bug which prevented using
+   :meth:`iris.cube.Cube.collapsed` on coordinates whose number of bounds
+   differs from 0 or 2. This enables the use of this method on mesh
+   coordinates. (:issue:`4672`, :pull:`4870`)
+
 
 💣 Incompatible Changes
 =======================
