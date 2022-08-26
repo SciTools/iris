@@ -78,7 +78,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@ESadek-MO`_, `@TTV-Intrepid`_ and `@trexfeathers`_ added a gallery example for zonal
+   means plotted parallel to a cartographic plot. (:pull:`4871`)
 
 
 💼 Internal
