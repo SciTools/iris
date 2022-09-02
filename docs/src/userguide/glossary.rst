@@ -81,6 +81,9 @@ _________________
    Coordinate Factory
         A coordinate factory derives coordinates (sometimes referred to as
         derived coordinates) from the values of existing coordinates.
+        E.g. A hybrid height factory might use "height above sea level"
+        and "height at ground level" coordinate data to calculate a
+        "height above ground level" coordinate.
 
         | **Related:** :term:`Cubes`
         | **More information:** :doc:`iris_cubes`
