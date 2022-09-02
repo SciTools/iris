@@ -565,6 +565,67 @@ class Test_collapsed__warning(tests.IrisTest):
         self._assert_nowarn_collapse_without_weight(coords, warn)
 
 
+class Test_collapsed_coord_with_3_bounds(tests.IrisTest):
+    def setUp(self):
+        self.cube = Cube([1, 2])
+
+        bounds = [[0.0, 1.0, 2.0], [2.0, 3.0, 4.0]]
+        lat = AuxCoord([1.0, 2.0], bounds=bounds, standard_name="latitude")
+        lon = AuxCoord([1.0, 2.0], bounds=bounds, standard_name="longitude")
+
+        self.cube.add_aux_coord(lat, 0)
+        self.cube.add_aux_coord(lon, 0)
+
+    def _assert_warn_cannot_check_contiguity(self, warn):
+        # Ensure that warning is raised.
+        for coord in ["latitude", "longitude"]:
+            msg = (
+                f"Cannot check if coordinate is contiguous: Invalid "
+                f"operation for '{coord}', with 3 bound(s). Contiguous "
+                f"bounds are only defined for 1D coordinates with 2 "
+                f"bounds. Metadata may not be fully descriptive for "
+                f"'{coord}'. Ignoring bounds."
+            )
+            self.assertIn(mock.call(msg), warn.call_args_list)
+
+    def _assert_cube_as_expected(self, cube):
+        """Ensure that cube data and coordiantes are as expected."""
+        self.assertArrayEqual(cube.data, np.array(3))
+
+        lat = cube.coord("latitude")
+        self.assertArrayAlmostEqual(lat.points, np.array([1.5]))
+        self.assertArrayAlmostEqual(lat.bounds, np.array([[1.0, 2.0]]))
+
+        lon = cube.coord("longitude")
+        self.assertArrayAlmostEqual(lon.points, np.array([1.5]))
+        self.assertArrayAlmostEqual(lon.bounds, np.array([[1.0, 2.0]]))
+
+    def test_collapsed_lat_with_3_bounds(self):
+        """Collapse latitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed("latitude", iris.analysis.SUM)
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
+
+    def test_collapsed_lon_with_3_bounds(self):
+        """Collapse longitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed(
+                "longitude", iris.analysis.SUM
+            )
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
+
+    def test_collapsed_lat_lon_with_3_bounds(self):
+        """Collapse latitude and longitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed(
+                ["latitude", "longitude"], iris.analysis.SUM
+            )
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
+
+
 class Test_summary(tests.IrisTest):
     def setUp(self):
         self.cube = Cube(0)

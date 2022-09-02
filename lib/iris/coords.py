@@ -2215,12 +2215,24 @@ class Coord(_DimensionalMetadata):
                     "Metadata may not be fully descriptive for {!r}."
                 )
                 warnings.warn(msg.format(self.name()))
-            elif not self.is_contiguous():
-                msg = (
-                    "Collapsing a non-contiguous coordinate. "
-                    "Metadata may not be fully descriptive for {!r}."
-                )
-                warnings.warn(msg.format(self.name()))
+            else:
+                try:
+                    self._sanity_check_bounds()
+                except ValueError as exc:
+                    msg = (
+                        "Cannot check if coordinate is contiguous: {} "
+                        "Metadata may not be fully descriptive for {!r}. "
+                        "Ignoring bounds."
+                    )
+                    warnings.warn(msg.format(str(exc), self.name()))
+                    self.bounds = None
+                else:
+                    if not self.is_contiguous():
+                        msg = (
+                            "Collapsing a non-contiguous coordinate. "
+                            "Metadata may not be fully descriptive for {!r}."
+                        )
+                        warnings.warn(msg.format(self.name()))
 
             if self.has_bounds():
                 item = self.core_bounds()

@@ -32,14 +32,20 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@ESadek-MO`_ edited :func:`~iris.io.expand_filespecs` to allow expansion of
-    non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
-    (:issue:`4772`, :pull:`4913`)
+   non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
+   (:issue:`4772`, :pull:`4913`)
 
 
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@rcomer`_ and `@pp-mo`_ (reviewer) factored masking into the returned
+   sum-of-weights calculation from :obj:`~iris.analysis.SUM`. (:pull:`4905`)
+
+#. `@schlunma`_ fixed a bug which prevented using
+   :meth:`iris.cube.Cube.collapsed` on coordinates whose number of bounds
+   differs from 0 or 2. This enables the use of this method on mesh
+   coordinates. (:issue:`4672`, :pull:`4870`)
 
 
 💣 Incompatible Changes
@@ -51,7 +57,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@rcomer`_ and `@pp-mo`_ (reviewer) increased aggregation speed for
+   :obj:`~iris.analysis.SUM`, :obj:`~iris.analysis.COUNT` and
+   :obj:`~iris.analysis.PROPORTION` on real data. (:pull:`4905`)
 
 
 🔥 Deprecations
@@ -63,7 +71,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@rcomer`_ introduced the ``dask >=2.26`` minimum pin, so that Iris can benefit
+   from Dask's support for `NEP13`_ and `NEP18`_. (:pull:`4905`)
 
 
 📚 Documentation
@@ -75,7 +84,8 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@rcomer`_ removed the obsolete ``setUpClass`` method from Iris testing.
+   (:pull:`4927`)
 
 
 .. comment
@@ -89,3 +99,5 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 
+.. _NEP13: https://numpy.org/neps/nep-0013-ufunc-overrides.html
+.. _NEP18: https://numpy.org/neps/nep-0018-array-function-protocol.html

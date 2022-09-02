@@ -14,14 +14,14 @@ dependencies:
   - cartopy >=0.20
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2
+  - dask-core >=2.26
   - matplotlib
   - netcdf4
   - numpy >=1.19
   - python-xxhash
   - pyproj
   - scipy
-  - shapely < 1.8.3
+  - shapely !=1.8.3
 
 # Optional dependencies.
   - esmpy >=7.0
