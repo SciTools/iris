@@ -69,5 +69,6 @@
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers
+.. _@TTV-Intrepid: https://github.com/TTV-Intrepid
 .. _@wjbenfold: https://github.com/wjbenfold
 .. _@zklaus: https://github.com/zklaus
