@@ -68,7 +68,9 @@ def main():
     )  # create 3rd axis
     fig.add_axes(ax3)  # plots ax3
     plt.sca(ax3)
-    iplt.plot(collapsed_temp, collapsed_temp.coord("latitude"))  # plots temp collapsed over long
+    iplt.plot(
+        collapsed_temp, collapsed_temp.coord("latitude")
+    )  # plots temp collapsed over long
     ax3.axhline(0, color="k", linewidth=0.5)
 
     # creates zonal mean details
