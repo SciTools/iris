@@ -49,14 +49,14 @@ def main():
     ax1.set_ylim(*ylim)
 
     # Create a Matplotlib AxesDivider object to allow alignment of other Axes objects.
-    divider = make_axes_locatable(ax1)  # ?
+    divider = make_axes_locatable(ax1)
 
     # Gives the air temperature bar size, colour and a title.
     ax2 = divider.new_vertical(
         size="5%", pad=0.5, axes_class=plt.Axes, pack_start=True
     )  # creates 2nd axis
     fig.add_axes(ax2)  # plots ax2
-    plt.sca(ax2)  # ?
+    plt.sca(ax2)
     cbar = plt.colorbar(
         im, cax=ax2, orientation="horizontal"
     )  # puts colour bar on second axis
@@ -67,9 +67,9 @@ def main():
         size="30%", pad=0.4, axes_class=plt.Axes
     )  # create 3rd axis
     fig.add_axes(ax3)  # plots ax3
-    plt.sca(ax3)  # ?
-    iplt.plot(collapsed_temp)  # plots temp collpased over long
-    ax3.axvline(0, color="k", linewidth=0.5)
+    plt.sca(ax3)
+    iplt.plot(collapsed_temp, collapsed_temp.coord("latitude"))  # plots temp collapsed over long
+    ax3.axhline(0, color="k", linewidth=0.5)
 
     # creates zonal mean details
     ax3.set_title("Zonal mean")
