@@ -26,6 +26,7 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Welcome to `@ESadek-MO`_ who made their first contribution to Iris 🎉
+#. Welcome to `@TTV-Intrepid`_ who made their first contribution to Iris 🎉
 
 
 ✨ Features
@@ -92,6 +93,8 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
+
+.. _@TTV-Intrepid: https://github.com/TTV-Intrepid
 
 
 
