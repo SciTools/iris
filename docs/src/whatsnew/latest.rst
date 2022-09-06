@@ -25,8 +25,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Welcome to `@ESadek-MO`_ who made their first contribution to Iris 🎉
-#. Welcome to `@TTV-Intrepid`_ who made their first contribution to Iris 🎉
+#. Welcome to `@ESadek-MO`_ and `@TTV-Intrepid`_  who made their first contributions to Iris 🎉
 
 
 ✨ Features
