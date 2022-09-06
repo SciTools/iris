@@ -3,15 +3,8 @@
 Glossary
 =============
 
-| :term:`A` | :term:`B` | :term:`C` | :term:`D` | :term:`E` | :term:`F` | :term:`G`
-| :term:`H` | :term:`I` | :term:`J` | :term:`K` | :term:`L` | :term:`M` | :term:`N`
-| :term:`O` | :term:`P` | :term:`Q` | :term:`R` | :term:`S` | :term:`T` | :term:`U`
-| :term:`V` | :term:`W` | :term:`X` | :term:`Y` | :term:`Z` |
-
 .. glossary::
-   **A**
-   **B**
-   **C**
+
    Cartopy
         A python package for producing maps, and other geospatial data.
         Allows plotting on these maps, over a range of projections.
@@ -72,7 +65,7 @@ Glossary
         | **More information:** :doc:`iris_cubes`
         |
 
-   **D**
+
    Dask
         A data analytics python library. Iris predominantly uses Dask Arrays;
         a collection of NumPy-esque arrays. The data is operated in batches,
@@ -82,8 +75,6 @@ Glossary
         | **More information:** :doc:`real_and_lazy_data`
         |
 
-   **E**
-   **F**
    Fields File (FF) Format
         A meteorological file format, the output of the Unified Model.
 
@@ -92,7 +83,6 @@ Glossary
         | **More information:** `Unified Model <https://www.metoffice.gov.uk/research/approach/modelling-systems/unified-model/index>`_
         |
 
-   **G**
    GRIB Format
         A WMO-standard meteorological file format.
 
@@ -102,11 +92,6 @@ Glossary
          **|** `GRIB 2 User Guide.pdf <https://old.wmo.int/extranet/pages/prog/www/WMOCodes/Guides/GRIB/GRIB2_062006.pdf>`_
         |
 
-   **H**
-   **I**
-   **J**
-   **K**
-   **L**
    Lazy Data
         Data stored in hard drive, and then temporarily loaded into RAM in
         batches when needed. Allows of less memory usage and faster performance,
@@ -124,7 +109,6 @@ Glossary
         | **More information:** :doc:`iris_cubes`
         |
 
-   **M**
    Matplotlib
         A python package for plotting and projecting data in a wide variety
         of formats.
@@ -140,7 +124,6 @@ Glossary
         | **More information:** :doc:`../further_topics/metadata`
         |
 
-   **N**
    NetCDF Format
         A meteorological file format; this is the data model
         iris is based on. Follows `CF Conventions <http://cfconventions.org/>`_.
@@ -159,8 +142,6 @@ Glossary
         | **More information:** `NumPy.org <https://numpy.org/>`_
         |
 
-   **O**
-   **P**
    Phenomenon
         The primary data which is measured, usually within a cube, e.g.
         air temperature.
@@ -177,8 +158,6 @@ Glossary
         | **More information:** `PP Wikipedia Page <https://en.wikipedia.org/wiki/PP-format>`_
         |
 
-   **Q**
-   **R**
    Real Data
         Data that has been loaded into RAM, as opposed to sitting
         on the hard drive.
@@ -187,7 +166,6 @@ Glossary
         | **More information:** :doc:`real_and_lazy_data`
         |
 
-   **S**
    Standard Name
         A name describing a :term:`phenomenon`, keeping within
         bounds of `CF Standardisation <http://cfconventions.org/standard-names.html>`_.
@@ -196,8 +174,6 @@ Glossary
         | **More information:** :doc:`iris_cubes`
         |
 
-   **T**
-   **U**
    Units
         The unit with which the phenomenon is measured.
 
@@ -205,9 +181,6 @@ Glossary
         | **More information:** :doc:`iris_cubes`
         |
 
-   **V**
-   **W**
-   **X**
    Xarray
         A python library for sophisticated labelled multi-dimensional operations.
         Has a broader scope than Iris - it is not focused on meteorological data.
@@ -216,8 +189,6 @@ Glossary
         | **More information:** `Xarray Documentation <https://docs.xarray.dev/en/stable/index.html>`_
         |
 
-   **Y**
-   **Z**
-   ----
+----
 
 `To top <glossary_>`_
