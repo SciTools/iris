@@ -4076,8 +4076,9 @@ x            -              -
         # coordinate dimension.
         shared_coords = list(
             filter(
-                lambda coord_: coord_ not in groupby_coords,
-                self.coords(contains_dimension=dimension_to_groupby),
+                lambda coord_: coord_ not in groupby_coords
+                and dimension_to_groupby in self.coord_dims(coord_),
+                self.dim_coords + self.aux_coords,
             )
         )
 
@@ -4108,6 +4109,11 @@ x            -              -
         aggregateby_cube = aggregateby_cube[key]
         for coord in groupby_coords + shared_coords:
             aggregateby_cube.remove_coord(coord)
+
+        coord_mapping = {}
+        for coord in aggregateby_cube.coords():
+            orig_id = id(self.coord(coord))
+            coord_mapping[orig_id] = coord
 
         # Determine the group-by cube data shape.
         data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
@@ -4237,6 +4243,10 @@ x            -              -
                 aggregateby_cube.add_aux_coord(
                     new_coord, self.coord_dims(lookup_coord)
                 )
+            coord_mapping[id(lookup_coord)] = new_coord
+
+        for factory in self.aux_factories:
+            aggregateby_cube.add_aux_factory(factory.updated(coord_mapping))
 
         # Attach the aggregate-by data into the aggregate-by cube.
         if aggregateby_weights is None:
