@@ -3,14 +3,15 @@ import sys
 
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py
-from setuptools.command.develop import develop as develop_cmd
+from setuptools.command.develop import develop
 
 
 class BaseCommand(Command):
     """A valid no-op command for setuptools & distutils."""
 
-    description = "A no-op command."
-    user_options = []
+    description: str = "A no-op command."
+    editable_mode: bool = True
+    user_options: list = []
 
     def initialize_options(self):
         pass
@@ -20,6 +21,10 @@ class BaseCommand(Command):
 
     def run(self):
         pass
+
+
+class DevelopCommand(develop):
+    editable_mode: bool = True
 
 
 def build_std_names(cmd, directory):
@@ -32,41 +37,45 @@ def build_std_names(cmd, directory):
     cmd.spawn(args)
 
 
-def custom_cmd(command_to_override, functions, help_doc=""):
+def custom_cmd(klass, functions, help=""):
     """
     Allows command specialisation to include calls to the given functions.
 
     """
 
-    class ExtendedCommand(command_to_override):
-        description = help_doc or command_to_override.description
+    class CustomCommand(klass):
+        description = help or klass.description
 
         def run(self):
-            # Run the original command first to make sure all the target
-            # directories are in place.
-            command_to_override.run(self)
+            # Run the original command to perform associated behaviour.
+            klass.run(self)
 
+            # Determine the target root directory
             if self.editable_mode:
-                print(" [Running in-place]")
                 # Pick the source dir instead (currently in the sub-dir "lib").
-                dest = "lib"
+                target = "lib"
+                msg = "in-place"
             else:
                 # Not editable - must be building.
-                dest = self.build_lib
+                target = self.build_lib
+                msg = "as-build"
 
+            print(f"\n[Running {msg}]")
+
+            # Run the custom command functions.
             for func in functions:
-                func(self, dest)
+                func(self, target)
 
-    return ExtendedCommand
+    return CustomCommand
 
 
 custom_commands = {
-    "develop": custom_cmd(develop_cmd, [build_std_names]),
+    "develop": custom_cmd(DevelopCommand, [build_std_names]),
     "build_py": custom_cmd(build_py, [build_std_names]),
     "std_names": custom_cmd(
         BaseCommand,
         [build_std_names],
-        help_doc="generate CF standard name module",
+        help="generate CF standard names module",
     ),
 }
 
