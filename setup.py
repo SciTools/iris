@@ -3,14 +3,14 @@ import sys
 
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py
-from setuptools.command.develop import develop as develop_cmd
+from setuptools.command.develop import develop
 
 
 class BaseCommand(Command):
-    """A valid no-op command for setuptools & distutils."""
+    """A minimal no-op setuptools command."""
 
-    description = "A no-op command."
-    user_options = []
+    description: str = "A no-op command."
+    user_options: list = []
 
     def initialize_options(self):
         pass
@@ -22,51 +22,64 @@ class BaseCommand(Command):
         pass
 
 
-def build_std_names(cmd, directory):
-    # Call out to tools/generate_std_names.py to build std_names module.
-
-    script_path = os.path.join("tools", "generate_std_names.py")
-    xml_path = os.path.join("etc", "cf-standard-name-table.xml")
-    module_path = os.path.join(directory, "iris", "std_names.py")
-    args = (sys.executable, script_path, xml_path, module_path)
-    cmd.spawn(args)
-
-
-def custom_cmd(command_to_override, functions, help_doc=""):
+def custom_command(cmd, help=""):
     """
-    Allows command specialisation to include calls to the given functions.
+    Factory function to generate a custom command that adds additional
+    behaviour to build the CF standard names module.
 
     """
 
-    class ExtendedCommand(command_to_override):
-        description = help_doc or command_to_override.description
+    class CustomCommand(cmd):
+        description = help or cmd.description
+
+        def _build_std_names(self, directory):
+            # Call out to tools/generate_std_names.py to build std_names module.
+
+            script_path = os.path.join("tools", "generate_std_names.py")
+            xml_path = os.path.join("etc", "cf-standard-name-table.xml")
+            module_path = os.path.join(directory, "iris", "std_names.py")
+            args = (sys.executable, script_path, xml_path, module_path)
+            self.spawn(args)
+
+        def finalize_options(self):
+            # Execute the parent "cmd" class method.
+            cmd.finalize_options(self)
+
+            if (
+                not hasattr(self, "editable_mode")
+                or self.editable_mode is None
+            ):
+                # Default to editable i.e., applicable to "std_names" and
+                # and "develop" commands.
+                self.editable_mode = True
 
         def run(self):
-            # Run the original command first to make sure all the target
-            # directories are in place.
-            command_to_override.run(self)
+            # Execute the parent "cmd" class method.
+            cmd.run(self)
 
+            # Determine the target root directory
             if self.editable_mode:
-                print(" [Running in-place]")
                 # Pick the source dir instead (currently in the sub-dir "lib").
-                dest = "lib"
+                target = "lib"
+                msg = "in-place"
             else:
                 # Not editable - must be building.
-                dest = self.build_lib
+                target = self.build_lib
+                msg = "as-build"
 
-            for func in functions:
-                func(self, dest)
+            print(f"\n[Running {msg}]")
 
-    return ExtendedCommand
+            # Build the CF standard names.
+            self._build_std_names(target)
+
+    return CustomCommand
 
 
 custom_commands = {
-    "develop": custom_cmd(develop_cmd, [build_std_names]),
-    "build_py": custom_cmd(build_py, [build_std_names]),
-    "std_names": custom_cmd(
-        BaseCommand,
-        [build_std_names],
-        help_doc="generate CF standard name module",
+    "develop": custom_command(develop),
+    "build_py": custom_command(build_py),
+    "std_names": custom_command(
+        BaseCommand, help="generate CF standard names"
     ),
 }
 
