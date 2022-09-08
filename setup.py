@@ -1,5 +1,4 @@
 import os
-from shutil import copyfile
 import sys
 
 from setuptools import Command, setup
@@ -21,13 +20,6 @@ class BaseCommand(Command):
 
     def run(self):
         pass
-
-
-def copy_copyright(cmd, directory):
-    # Copy the COPYRIGHT information into the package root
-    iris_build_dir = os.path.join(directory, "iris")
-    for fname in ["COPYING", "COPYING.LESSER"]:
-        copyfile(fname, os.path.join(iris_build_dir, fname))
 
 
 def build_std_names(cmd, directory):
@@ -70,7 +62,7 @@ def custom_cmd(command_to_override, functions, help_doc=""):
 
 custom_commands = {
     "develop": custom_cmd(develop_cmd, [build_std_names]),
-    "build_py": custom_cmd(build_py, [build_std_names, copy_copyright]),
+    "build_py": custom_cmd(build_py, [build_std_names]),
     "std_names": custom_cmd(
         BaseCommand,
         [build_std_names],
