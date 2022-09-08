@@ -378,14 +378,14 @@ class CubeSummary:
             ScalarCoordSection, "Scalar coordinates:", cube, scalar_coords
         )
         add_scalar_section(
-            ScalarAncillaryVariableSection,
-            "Scalar ancillary variables:",
-            scalar_ancillary_variables,
-        )
-        add_scalar_section(
             ScalarCellMeasureSection,
             "Scalar cell measures:",
             scalar_cell_measures,
+        )
+        add_scalar_section(
+            ScalarAncillaryVariableSection,
+            "Scalar ancillary variables:",
+            scalar_ancillary_variables,
         )
         add_scalar_section(
             CellMethodSection, "Cell methods:", cube.cell_methods

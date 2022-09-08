@@ -260,12 +260,11 @@ class CubePrinter:
                 elif title in ("attributes:", "cell methods:", "mesh:"):
                     for title, value in zip(sect.names, sect.values):
                         add_scalar_row(title, value)
-                elif title == "scalar ancillary variables:":
-                    # These are just strings: nothing in the 'value' column.
-                    for name in sect.contents:
-                        add_scalar_row(name)
-                elif title == "scalar cell measures:":
-                    # These are just strings: nothing in the 'value' column.
+                elif title in (
+                    "scalar ancillary variables:",
+                    "scalar cell measures:",
+                ):
+                    # These are just strings: nothing in the 'va"scalar cell measures:"lue' column.
                     for name in sect.contents:
                         add_scalar_row(name)
                 else:

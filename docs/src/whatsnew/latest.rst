@@ -47,12 +47,12 @@ This document explains the changes made to Iris for this release
    differs from 0 or 2. This enables the use of this method on mesh
    coordinates. (:issue:`4672`, :pull:`4870`)
 
-#. `@lbdreyer`_ fixed the cube print out such that scalar ancillary variables
-   are displayed in a dedicated section rather than being added to section for
-   vector ancillary variables. Further, ancillary variables and cell measures
-   that are scalar as they map to cube dimension of length 1 are included in the
-   respective vector sections, mathcing the handling of coordinates.
-   (:pull:`4945`)
+#. `@lbdreyer`_ and `@pp-mo`_ (reviewer) fixed the cube print out such that
+   scalar ancillary variables are displayed in a dedicated section rather than
+   being added to the vector ancillary variables section. Further, ancillary
+   variables and cell measures that map to a cube dimension of length 1 are now
+   included in the respective vector sections, matching the handling of
+   coordinates. (:pull:`4945`)
 
 
 💣 Incompatible Changes
