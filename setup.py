@@ -23,20 +23,6 @@ class BaseCommand(Command):
         pass
 
 
-class CleanSource(BaseCommand):
-    description = "clean orphaned pyc/pyo files from the source directory"
-
-    def run(self):
-        for root_path, dir_names, file_names in os.walk("lib"):
-            for file_name in file_names:
-                if file_name.endswith("pyc") or file_name.endswith("pyo"):
-                    compiled_path = os.path.join(root_path, file_name)
-                    source_path = compiled_path[:-1]
-                    if not os.path.exists(source_path):
-                        print("Cleaning", compiled_path)
-                        os.remove(compiled_path)
-
-
 def copy_copyright(cmd, directory):
     # Copy the COPYRIGHT information into the package root
     iris_build_dir = os.path.join(directory, "iris")
@@ -90,7 +76,6 @@ custom_commands = {
         [build_std_names],
         help_doc="generate CF standard name module",
     ),
-    "clean_source": CleanSource,
 }
 
 
