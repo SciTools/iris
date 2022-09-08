@@ -74,8 +74,8 @@ class Test_CubeSummary(tests.IrisTest):
         expected_scalar_sections = [
             "Mesh:",
             "Scalar coordinates:",
-            "Scalar ancillary variables:",
             "Scalar cell measures:",
+            "Scalar ancillary variables:",
             "Cell methods:",
             "Attributes:",
         ]

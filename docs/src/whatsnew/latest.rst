@@ -51,8 +51,7 @@ This document explains the changes made to Iris for this release
    scalar ancillary variables are displayed in a dedicated section rather than
    being added to the vector ancillary variables section. Further, ancillary
    variables and cell measures that map to a cube dimension of length 1 are now
-   included in the respective vector sections, matching the handling of
-   coordinates. (:pull:`4945`)
+   included in the respective vector sections. (:pull:`4945`)
 
 
 💣 Incompatible Changes
