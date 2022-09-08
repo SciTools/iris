@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 import os
 from shutil import copyfile
 import sys
@@ -6,30 +5,6 @@ import sys
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop as develop_cmd
-
-
-@contextmanager
-def temporary_path(directory):
-    """
-    Context manager that adds and subsequently removes the given directory
-    to sys.path
-
-    """
-    sys.path.insert(0, directory)
-    try:
-        yield
-    finally:
-        del sys.path[0]
-
-
-# Add full path so Python doesn't load any __init__.py in the intervening
-# directories, thereby saving setup.py from additional dependencies.
-with temporary_path("lib/iris/tests/runner"):
-    from _runner import TestRunner  # noqa:
-
-
-class SetupTestRunner(TestRunner, Command):
-    pass
 
 
 class BaseCommand(Command):
@@ -108,7 +83,6 @@ def custom_cmd(command_to_override, functions, help_doc=""):
 
 
 custom_commands = {
-    "test": SetupTestRunner,
     "develop": custom_cmd(develop_cmd, [build_std_names]),
     "build_py": custom_cmd(build_py, [build_std_names, copy_copyright]),
     "std_names": custom_cmd(

@@ -88,6 +88,10 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed the obsolete ``setUpClass`` method from Iris testing.
    (:pull:`4927`)
 
+#. `@bjlittle`_ and `@lbdreyer`_ (reviewer) removed support for
+   ``python setup.py test``, which is a deprecated approach to executing
+   package tests, see `pypa/setuptools#1684`_. (:pull:`4948`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -97,10 +101,9 @@ This document explains the changes made to Iris for this release
 
 
 
-
 .. comment
     Whatsnew resources in alphabetical order:
 
-
 .. _NEP13: https://numpy.org/neps/nep-0013-ufunc-overrides.html
 .. _NEP18: https://numpy.org/neps/nep-0018-array-function-protocol.html
+.. _pypa/setuptools#1684: https://github.com/pypa/setuptools/issues/1684
