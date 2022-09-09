@@ -349,6 +349,20 @@ class TestCubePrintout__to_string(tests.IrisTest):
         ]
         self.assertEqual(rep, expected)
 
+    def test_section_vector_ancils_length_1(self):
+        # Check ancillary variables that map to a cube dimension of length 1
+        # are not interpreted as scalar ancillary variables.
+        cube = Cube(np.zeros((1, 3)), long_name="name", units=1)
+        cube.add_ancillary_variable(AncillaryVariable([0], long_name="av1"), 0)
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 1; -- : 3)",
+            "    Ancillary variables:",
+            "        av1                             x       -",
+        ]
+        self.assertEqual(rep, expected)
+
     def test_section_vector_cell_measures(self):
         cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
         cube.add_cell_measure(CellMeasure([0, 1, 2], long_name="cm"), 1)
@@ -356,6 +370,20 @@ class TestCubePrintout__to_string(tests.IrisTest):
         rep = cube_replines(cube)
         expected = [
             "name / (1)                          (-- : 2; -- : 3)",
+            "    Cell measures:",
+            "        cm                              -       x",
+        ]
+        self.assertEqual(rep, expected)
+
+    def test_section_vector_cell_measures_length_1(self):
+        # Check cell measures that map to a cube dimension of length 1 are not
+        # interpreted as scalar cell measures.
+        cube = Cube(np.zeros((2, 1)), long_name="name", units=1)
+        cube.add_cell_measure(CellMeasure([0], long_name="cm"), 1)
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 2; -- : 1)",
             "    Cell measures:",
             "        cm                              -       x",
         ]
@@ -424,8 +452,8 @@ class TestCubePrintout__to_string(tests.IrisTest):
         rep = cube_replines(cube)
         expected = [
             "name / (1)                          (-- : 2; -- : 3)",
-            "    Ancillary variables:",
-            "        av                              -       -",
+            "    Scalar ancillary variables:",
+            "        av",
         ]
         self.assertEqual(rep, expected)
 

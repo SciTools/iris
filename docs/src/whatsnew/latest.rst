@@ -50,6 +50,12 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@lbdreyer`_ (reviewer) fixed the building of the CF
    Standard Names module ``iris.std_names`` for the ``setup.py`` commands
    ``develop`` and ``std_names``. (:issue:`4951`, :pull:`4952`)
+   
+#. `@lbdreyer`_ and `@pp-mo`_ (reviewer) fixed the cube print out such that
+   scalar ancillary variables are displayed in a dedicated section rather than
+   being added to the vector ancillary variables section. Further, ancillary
+   variables and cell measures that map to a cube dimension of length 1 are now
+   included in the respective vector sections. (:pull:`4945`)
 
 
 💣 Incompatible Changes
