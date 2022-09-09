@@ -288,6 +288,25 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.words0, expected_words0)
         self.assertArrayEqual(data_frame.words1, expected_words1)
 
+    def test_multidim_aux(self):
+        cube = Cube(
+            np.arange(300, 312, 1).reshape(2, 2, 3),
+            long_name="air_temperature",
+        )
+        dim0_coord = DimCoord([0, 10], long_name="longitude")
+        dim1_coord = DimCoord([25, 35], long_name="latitude")
+        dim2_coord = DimCoord([0, 100, 200], long_name="height")
+        aux0_coord = AuxCoord(
+            [[True, False], [False, False]], long_name="in_region"
+        )
+        cube.add_dim_coord(dim0_coord, 0)
+        cube.add_dim_coord(dim1_coord, 1)
+        cube.add_dim_coord(dim2_coord, 2)
+        cube.add_aux_coord(aux0_coord, data_dims=(0, 1))
+        expected_in_region = np.repeat([True, False, False, False], 3)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        self.assertArrayEqual(data_frame.in_region, expected_in_region)
+
 
 @skip_pandas
 class TestSeriesAsCube(tests.IrisTest):

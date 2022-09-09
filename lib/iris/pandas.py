@@ -161,12 +161,9 @@ def as_data_frame(
 
     Examples
     --------
-    >>> from iris.pandas import as_data_frame
-    >>> import numpy as np
-    >>> from pandas import DataFrame
 
     TODO
-    
+
     """
     if copy:
         data = cube.data.copy()
@@ -200,15 +197,26 @@ def as_data_frame(
     # Add aux coord information
     if add_aux_coord:
         for aux_coord_index, aux_coord in enumerate(cube.aux_coords):
-            # Build aux coord dataframe with corresponding dim coord as aux coord index
-            acoord_df = pandas.Series(
-                aux_coord.points,
-                name=aux_coord.name(),
-                index=pandas.Index(
-                    data=coords[aux_coord_index],
-                    name=coord_names[aux_coord_index],
-                ),
-            )
+            if aux_coord.ndim == 1:
+                # Build aux coord dataframe with corresponding dim coord as aux coord index
+                acoord_df = pandas.Series(
+                    aux_coord.points,
+                    name=aux_coord.name(),
+                    index=pandas.Index(
+                        data=coords[aux_coord_index],
+                        name=coord_names[aux_coord_index],
+                    ),
+                )
+            else:
+                # Aux coord that spans > 1 dimension
+                acoord_df = pandas.DataFrame(
+                    aux_coord.points.ravel(),
+                    columns=[aux_coord.name()],
+                    index=pandas.MultiIndex.from_product(
+                        coords[slice(aux_coord.ndim)],
+                        names=coord_names[slice(aux_coord.ndim)],
+                    ),
+                )
             # Merge to main data frame
             data_frame = pandas.merge(
                 data_frame, acoord_df, left_index=True, right_index=True
