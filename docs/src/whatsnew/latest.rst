@@ -47,6 +47,10 @@ This document explains the changes made to Iris for this release
    differs from 0 or 2. This enables the use of this method on mesh
    coordinates. (:issue:`4672`, :pull:`4870`)
 
+#. `@bjlittle`_ and `@lbdreyer`_ (reviewer) fixed the building of the CF
+   Standard Names module ``iris.std_names`` for the ``setup.py`` commands
+   ``develop`` and ``std_names``. (:issue:`4951`, :pull:`4952`)
+   
 #. `@lbdreyer`_ and `@pp-mo`_ (reviewer) fixed the cube print out such that
    scalar ancillary variables are displayed in a dedicated section rather than
    being added to the vector ancillary variables section. Further, ancillary
@@ -94,6 +98,11 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed the obsolete ``setUpClass`` method from Iris testing.
    (:pull:`4927`)
 
+#. `@bjlittle`_ and `@lbdreyer`_ (reviewer) removed support for
+   ``python setup.py test``, which is a deprecated approach to executing
+   package tests, see `pypa/setuptools#1684`_.  Also performed assorted
+   ``setup.py`` script hygiene. (:pull:`4948`, :pull:`4949`, :pull:`4950`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -103,10 +112,9 @@ This document explains the changes made to Iris for this release
 
 
 
-
 .. comment
     Whatsnew resources in alphabetical order:
 
-
 .. _NEP13: https://numpy.org/neps/nep-0013-ufunc-overrides.html
 .. _NEP18: https://numpy.org/neps/nep-0018-array-function-protocol.html
+.. _pypa/setuptools#1684: https://github.com/pypa/setuptools/issues/1684
