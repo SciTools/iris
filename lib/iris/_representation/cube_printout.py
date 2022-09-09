@@ -264,7 +264,7 @@ class CubePrinter:
                     "scalar ancillary variables:",
                     "scalar cell measures:",
                 ):
-                    # These are just strings: nothing in the 'va"scalar cell measures:"lue' column.
+                    # These are just strings: nothing in the 'value' column.
                     for name in sect.contents:
                         add_scalar_row(name)
                 else:
