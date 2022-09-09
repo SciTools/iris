@@ -47,6 +47,10 @@ This document explains the changes made to Iris for this release
    differs from 0 or 2. This enables the use of this method on mesh
    coordinates. (:issue:`4672`, :pull:`4870`)
 
+#. `@bjlittle`_ and `@lbdreyer`_ (reviewer) fixed the building of the CF
+   Standard Names module ``iris.std_names`` for the ``setup.py`` commands
+   ``develop`` and ``std_names``. (:issue:`4951`, :pull:`4952`)
+
 
 💣 Incompatible Changes
 =======================
@@ -90,7 +94,8 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ and `@lbdreyer`_ (reviewer) removed support for
    ``python setup.py test``, which is a deprecated approach to executing
-   package tests, see `pypa/setuptools#1684`_. (:pull:`4948`)
+   package tests, see `pypa/setuptools#1684`_.  Also performed assorted
+   ``setup.py`` script hygiene. (:pull:`4948`, :pull:`4949`, :pull:`4950`)
 
 
 .. comment
