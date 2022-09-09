@@ -5,19 +5,19 @@
 # licensing details.
 """Integration tests for loading and saving netcdf files."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from contextlib import contextmanager
 from itertools import repeat
 import os.path
 from os.path import join as path_join
+from pathlib import Path
 import shutil
 import tempfile
 from unittest import mock
 import warnings
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import netCDF4
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -36,6 +36,8 @@ from iris.fileformats.netcdf import (
 import iris.tests.stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
 import iris.tests.unit.fileformats.netcdf.test_load_cubes as tlc
+
+import iris.tests as tests  # isort:skip
 
 
 @tests.skip_data
@@ -904,7 +906,6 @@ class TestConstrainedLoad(tests.IrisTest):
         cubes = iris.load(self.filename)
         self.assertEqual(len(cubes), 3)
 
-
 class TestSkippedCoord:
     # If a coord/cell measure/etcetera cannot be added to the loaded Cube, a
     #  Warning is raised and the coord is skipped.
@@ -952,6 +953,199 @@ data:
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
+
+
+class TestLoadSaveAttributes(tests.IrisTest):
+    @classmethod
+    def setUpClass(cls) -> None:
+        # make a temporary directory for transient netcdf save/loads
+        cls.tmpdir = tempfile.mkdtemp()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree(cls.tmpdir)
+
+    def _testfile_path(self, basename: str) -> str:
+        # Make a filepath in the temporary directory, based on the name of the calling
+        # test method, and the "self.attrname" it sets up.
+        result_path = self.result_path(ext="")
+        testname = Path(result_path).name
+        # Turn that into convenient temporary filenames
+        path = (
+            f"{self.tmpdir}/nc_attr__{self.attrname}__{testname}_{basename}.nc"
+        )
+        return path
+
+    @staticmethod
+    def _default_vars_and_attrvalues(vars_and_attrvalues):
+        # Simple default strategy : turn a simple value into {'var': value}
+        if not isinstance(vars_and_attrvalues, dict):
+            # Treat single non-dict argument as a value for a single variable
+            vars_and_attrvalues = {"var": vars_and_attrvalues}
+        return vars_and_attrvalues
+
+    def _create_testcase(
+        self,
+        attr_name,
+        global_attr_value=None,
+        vars_and_attrvalues=None,
+        globalval_file2=None,
+        var_values_file2=None,
+    ):
+        # A generalised routine for creating a netcdf testfile to test behaviour of a
+        # specific attribute (name).
+        # Creates a temporary input netcdf file (or two) with specific global and
+        # variable-local versions of a specific attribute.  Then load all files and
+        # re-save to a single output netcdf file.
+        # Returns the output filepath in self.result_filepath.
+        # Make temporary filenames
+
+        # Every testcase sets this, implictly used elsewhere.
+        self.attrname = attr_name
+
+        # Make some input file paths.
+        filepath1 = self._testfile_path("testfile")
+        filepath2 = self._testfile_path("testfile2")
+
+        def make_file(
+            filepath: str, global_value=None, var_values=None
+        ) -> str:
+            ds = netCDF4.Dataset(filepath, "w")
+            if global_value is not None:
+                ds.setncattr(self.attrname, global_value)
+            ds.createDimension("x", 3)
+            if var_values:
+                var_values = self._default_vars_and_attrvalues(var_values)
+                for var_name, value in var_values.items():
+                    v = ds.createVariable(var_name, int, ("x",))
+                    if value is not None:
+                        v.setncattr(self.attrname, value)
+            ds.close()
+            return filepath
+
+        # Create one input file (always).
+        filepaths = make_file(
+            filepath1,
+            global_value=global_attr_value,
+            var_values=vars_and_attrvalues,
+        )
+        if globalval_file2 is not None or var_values_file2 is not None:
+            # Make a second testfile and add it to files-to-be-loaded.
+            filepaths = [  # replaces single str with list of 2
+                filepaths,
+                make_file(
+                    filepath2,
+                    global_value=globalval_file2,
+                    var_values=var_values_file2,
+                ),
+            ]
+
+        # Do a load+save to produce a testable output result in a new file.
+        output_filepath = self._testfile_path("result")
+        cubes = iris.load(filepaths)
+        iris.save(cubes, output_filepath)
+        # Every testcase sets this - implicitly used by _check_expected_results.
+        self.result_filepath = output_filepath
+
+    def _check_expected_results(
+        self, global_attr_value=None, vars_and_attrvalues=None
+    ):
+        # The counterpart to _create_testcase, with similar control arguments.
+        # Check existence (or not) and values of expected global and local attributes
+        # in the test result file (in self.result_filepath).
+        # N.B. only ever one result-file, but it can still have multiple variables
+        ds = netCDF4.Dataset(self.result_filepath)
+        if global_attr_value is None:
+            self.assertNotIn(self.attrname, ds.ncattrs())
+        else:
+            self.assertIn(self.attrname, ds.ncattrs())
+            self.assertEqual(global_attr_value, ds.getncattr(self.attrname))
+        if vars_and_attrvalues:
+            vars_and_attrvalues = self._default_vars_and_attrvalues(
+                vars_and_attrvalues
+            )
+            for var_name, value in vars_and_attrvalues.items():
+                self.assertIn(var_name, ds.variables)
+                v = ds.variables[var_name]
+                if value is None:
+                    self.assertNotIn(self.attrname, v.ncattrs())
+                else:
+                    self.assertIn(self.attrname, v.ncattrs())
+                    self.assertEqual(value, v.getncattr(self.attrname))
+
+    def test_simple_case(self):
+        # Default behaviour for general user-attributes.
+        # The global result is ignored when there are loca l
+        vars1 = {"f1_v1": "f1v1", "f1_v2": "f2v2"}
+        vars2 = {"f2_v1": "x1", "f2_v2": "x2"}
+        self._create_testcase(
+            attr_name="random",  # A generic "user" attribute with no special handling
+            global_attr_value="global_file1",
+            vars_and_attrvalues=vars1,
+            globalval_file2="global_file2",
+            var_values_file2=vars2,
+        )
+        self._check_expected_results(
+            global_attr_value=None,  # local values eclipse the global ones
+            vars_and_attrvalues=vars1.copy().update(vars2),
+        )
+
+    def test_matching_promoted(self):
+        # matching user-attributes are promoted to a global one.
+        self._create_testcase(
+            attr_name="random",
+            global_attr_value="global_file1",
+            vars_and_attrvalues={"v1": "same-value", "v2": "same-value"},
+        )
+        self._check_expected_results(
+            global_attr_value="same-value",
+            vars_and_attrvalues={"v1": None, "v2": None},
+        )
+
+    def test_matching_crossfile_promoted(self):
+        # matching user-attributes are promoted, even across input files.
+        self._create_testcase(
+            attr_name="random",
+            global_attr_value="global_file1",
+            vars_and_attrvalues={"v1": "same-value", "v2": "same-value"},
+            var_values_file2={"f2_v1": "same-value", "f2_v2": "same-value"},
+        )
+        self._check_expected_results(
+            global_attr_value="same-value",
+            vars_and_attrvalues={
+                x: None for x in ("v1", "v2", "f2_v1", "f2_v2")
+            },
+        )
+
+    def test_nonmatching_remainlocal(self):
+        # Non-matching user attributes remain 'local' to the individual variables.
+        self._create_testcase(
+            attr_name="random",
+            global_attr_value="global_file1",
+            vars_and_attrvalues={"v1": "same-value", "v2": "different-value"},
+        )
+        self._check_expected_results(
+            global_attr_value=None,  # NB it still destroys the global one !!
+            vars_and_attrvalues={"v1": "same-value", "v2": "different-value"},
+        )
+
+    # Note: the usual 'Conventions' behaviour is already tested elsewhere
+    # - see TestConventionsAttributes above
+
+    def test_conventions_var_local(self):
+        # What happens if 'Conventions' appears as a variable-local attribute.
+        # N.B. this is not good CF, but we'll see what happens anyway.
+        self._create_testcase(
+            attr_name="Conventions",
+            global_attr_value=None,
+            vars_and_attrvalues="user_set",
+        )
+        self._check_expected_results(
+            global_attr_value="CF-1.7",  # this is standard output from
+            vars_and_attrvalues={
+                "var": None
+            },  # the variable has NO such attr.
+        )
 
 
 if __name__ == "__main__":
