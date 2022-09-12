@@ -10,6 +10,7 @@ See also: http://pandas.pydata.org/
 
 """
 import datetime
+from itertools import chain, combinations
 
 import cf_units
 from cf_units import Unit
@@ -65,26 +66,26 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
 
 def as_cube(pandas_array, copy=True, calendars=None):
     """
-    Convert a Pandas array into an Iris cube.
+        Convert a Pandas array into an Iris cube.
 
-    Args:
+        Args:
 
-        * pandas_array - A Pandas Series or DataFrame.
+            * pandas_array - A Pandas Series or DataFrame.
 
-    Kwargs:
+        Kwargs:
 
-        * copy      - Whether to make a copy of the data.
-                      Defaults to True.
+            * copy      - Whether to make a copy of the data.
+                          Defaults to True.
 
-        * calendars - A dict mapping a dimension to a calendar.
-                      Required to convert datetime indices/columns.
+            * calendars - A dict mapping a dimension to a calendar.
+                          Required to convert datetime indices/columns.
 
     Example usage::
 
-        as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
-        as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
+            as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
+            as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
-    .. note:: This function will copy your data by default.
+        .. note:: This function will copy your data by default.
 
     """
     calendars = calendars or {}
@@ -123,6 +124,14 @@ def _as_pandas_coord(coord):
     return index
 
 
+def _get_dim_combinations(ndim):
+    """Get all possible dim coordinate combinations."""
+    dimcomb = []
+    for l in range(1, ndim + 1):
+        dimcomb += list(combinations(range(ndim), l))
+    return dimcomb
+
+
 def as_data_frame(
     cube,
     copy=True,
@@ -131,8 +140,6 @@ def as_data_frame(
     add_global_attributes=None,
 ):
     """
-    Convert an n-dimensional :class:`Cube` to a :class:`~pandas.DataFrame`, including dimensional metadata.
-
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are flattened into a long-style
     :class:`~pandas.DataFrame`.  Other :attr:`~iris.cube.Cube.aux_coords` and :attr:`~iris.cube.Cube.attributes`
     may be optionally added as additional :class:`~pandas.DataFrame` columns.
@@ -161,6 +168,30 @@ def as_data_frame(
 
     Examples
     --------
+    >>> import iris
+    >>> from iris.pandas import as_data_frame
+
+    Convert a simple :class:`~iris.cube.Cube` :
+
+    >>> path = iris.sample_data_path('ostia_monthly.nc')
+    >>> cube = iris.load_cube(path)
+    >>> df = ipd.as_data_frame(cube)
+    >>> print(df)
+                            time  latitude   longitude  surface_temperature
+    0       2006-04-16 00:00:00 -4.999992    0.000000           301.659271
+    1       2006-04-16 00:00:00 -4.999992    0.833333           301.785004
+    2       2006-04-16 00:00:00 -4.999992    1.666667           301.820984
+    3       2006-04-16 00:00:00 -4.999992    2.500000           301.865234
+    4       2006-04-16 00:00:00 -4.999992    3.333333           301.926819
+    ...                     ...       ...         ...                  ...
+    419899  2010-09-16 00:00:00  4.444450  355.833313           298.779938
+    419900  2010-09-16 00:00:00  4.444450  356.666656           298.913147
+    419901  2010-09-16 00:00:00  4.444450  357.500000                  NaN
+    419902  2010-09-16 00:00:00  4.444450  358.333313                  NaN
+    419903  2010-09-16 00:00:00  4.444450  359.166656           298.995148
+
+    [419904 rows x 4 columns]
+
 
     TODO
 
@@ -173,20 +204,28 @@ def as_data_frame(
         data = data.astype("f").filled(np.nan)
 
     # Extract dim coord information
-    dim_coord_list = [
-        cube.coords(dimensions=n, dim_coords=True) for n in range(cube.ndim)
-    ]
+    dim_coord_list = list(
+        chain.from_iterable(
+            [
+                [
+                    [n, coord]
+                    for coord in cube.coords(dimensions=n, dim_coords=True)
+                ]
+                for n in range(cube.ndim)
+            ]
+        )
+    )
     # Initalise recieving lists for DataFrame dim information
     coords = list(range(cube.ndim))
     coord_names = list(range(cube.ndim))
-    for dim_index, dim_coord in enumerate(dim_coord_list):
+    for dim_index, dim_coord in dim_coord_list:
         if not dim_coord:
             # Create dummy dim coord information if dim coords not defined
             coord_names[dim_index] = "dim" + str(dim_index)
             coords[dim_index] = range(cube.shape[dim_index])
         else:
-            coord_names[dim_index] = dim_coord[0].name()
-            coords[dim_index] = _as_pandas_coord(dim_coord[0])
+            coord_names[dim_index] = dim_coord.name()
+            coords[dim_index] = _as_pandas_coord(dim_coord)
 
     # Make base DataFrame
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
@@ -194,33 +233,40 @@ def as_data_frame(
         data.ravel(), columns=[cube.name()], index=index
     )
 
-    # Add aux coord information
+    # Add AuxCoord & scalar coordinate information
     if add_aux_coord:
-        for aux_coord_index, aux_coord in enumerate(cube.aux_coords):
-            if aux_coord.ndim == 1:
-                # Build aux coord dataframe with corresponding dim coord as aux coord index
-                acoord_df = pandas.Series(
-                    aux_coord.points,
-                    name=aux_coord.name(),
-                    index=pandas.Index(
-                        data=coords[aux_coord_index],
-                        name=coord_names[aux_coord_index],
-                    ),
-                )
-            else:
-                # Aux coord that spans > 1 dimension
-                acoord_df = pandas.DataFrame(
-                    aux_coord.points.ravel(),
-                    columns=[aux_coord.name()],
-                    index=pandas.MultiIndex.from_product(
-                        coords[slice(aux_coord.ndim)],
-                        names=coord_names[slice(aux_coord.ndim)],
-                    ),
-                )
+        # Extract aux coord information
+        aux_coord_list = list(
+            chain.from_iterable(
+                [
+                    [
+                        [n, coord]
+                        for coord in cube.coords(
+                            dimensions=n, dim_coords=False
+                        )
+                    ]
+                    for n in _get_dim_combinations(cube.ndim)
+                ]
+            )
+        )
+        for aux_coord_index, aux_coord in aux_coord_list:
+            acoord_df = pandas.DataFrame(
+                aux_coord.points.ravel(),
+                columns=[aux_coord.name()],
+                index=pandas.MultiIndex.from_product(
+                    [coords[i] for i in aux_coord_index],
+                    names=[coord_names[i] for i in aux_coord_index],
+                ),
+            )
             # Merge to main data frame
             data_frame = pandas.merge(
                 data_frame, acoord_df, left_index=True, right_index=True
             )
+
+        # Add scalar coordinate information
+        scalar_coord_list = cube.coords(dimensions=(), dim_coords=False)
+        for scalar_coord in scalar_coord_list:
+            data_frame[scalar_coord.name()] = scalar_coord.points.squeeze()
 
     # Add global attribute information
     if add_global_attributes:
@@ -235,7 +281,10 @@ def as_data_frame(
                     global_attribute
                 ]
 
-    if not asmultiindex:
-        data_frame.reset_index(inplace=True)
-
-    return data_frame
+    # Final sort by dim order
+    if asmultiindex:
+        return data_frame.reorder_levels(coord_names).sort_index()
+    else:
+        return (
+            data_frame.reorder_levels(coord_names).sort_index().reset_index()
+        )
