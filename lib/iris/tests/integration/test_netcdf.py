@@ -1011,12 +1011,14 @@ class TestLoadSaveAttributes(tests.IrisTest):
             if global_value is not None:
                 ds.setncattr(self.attrname, global_value)
             ds.createDimension("x", 3)
-            if var_values:
-                var_values = self._default_vars_and_attrvalues(var_values)
-                for var_name, value in var_values.items():
-                    v = ds.createVariable(var_name, int, ("x",))
-                    if value is not None:
-                        v.setncattr(self.attrname, value)
+            # Rationalise the per-variable requirements
+            # N.B. this *always* makes at least one variable, as otherwise we would
+            # load no cubes.
+            var_values = self._default_vars_and_attrvalues(var_values)
+            for var_name, value in var_values.items():
+                v = ds.createVariable(var_name, int, ("x",))
+                if value is not None:
+                    v.setncattr(self.attrname, value)
             ds.close()
             return filepath
 
@@ -1182,16 +1184,18 @@ class TestLoadSaveAttributes(tests.IrisTest):
             vars_and_attrvalues={"v1": "same-value", "v2": "different-value"},
         )
 
-    #
+    #####################################
     # WIP ...
     # We have a number of different "classes" of recognised attributes which are
     # handled differently.
     # We may not test all cases, but only one of each "class".  Or we might be able
     # to do them all (not yet clear how).
-    #
 
+    #####################################
+    # === "Conventions" ===  - which is a case to itself
     # Note: the usual 'Conventions' behaviour is already tested elsewhere
     # - see TestConventionsAttributes above
+
     def test_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
         # N.B. this is not good CF, but we'll see what happens anyway.
@@ -1205,6 +1209,44 @@ class TestLoadSaveAttributes(tests.IrisTest):
             vars_and_attrvalues={
                 "var": None
             },  # the variable has NO such attr.
+        )
+
+    # TODO: do we need one of these ?
+    # def test_conventions_var_both(self):
+
+    #####################################
+    # === 'history' ===  - a prototype for attributes that "ought" to be global-only
+    # TODO: replicate this for 'feature_type' and 'title'
+    #
+
+    def test_history__global(self):
+        self.create_testcase(
+            attr_name="history",
+            global_attr_value="Global tracked history",
+        )
+        self.check_expected_results(
+            global_attr_value="Global tracked history",
+        )
+
+    def test_history__local(self):
+        # Strictly, not correct.
+        self.create_testcase(
+            attr_name="history",
+            vars_and_attrvalues="Local history setting",
+        )
+        self.check_expected_results(
+            global_attr_value="Local history setting",
+        )
+
+    def test_history__both(self):
+        self.create_testcase(
+            attr_name="history",
+            global_attr_value="Global tracked history",
+            vars_and_attrvalues="Local history setting",
+        )
+        # N.B.: local "wins", even though it is not good CF
+        self.check_expected_results(
+            global_attr_value="Local history setting",
         )
 
 
