@@ -5,6 +5,10 @@
 # licensing details.
 """Integration tests for loading and saving netcdf files."""
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from contextlib import contextmanager
 from itertools import repeat
 import os.path
@@ -16,8 +20,6 @@ from typing import Iterable
 from unittest import mock
 import warnings
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
 import netCDF4
 import netCDF4 as nc
 import numpy as np
@@ -37,8 +39,6 @@ from iris.fileformats.netcdf import (
 import iris.tests.stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
 import iris.tests.unit.fileformats.netcdf.test_load_cubes as tlc
-
-import iris.tests as tests  # isort:skip
 
 
 @tests.skip_data
