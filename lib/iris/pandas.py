@@ -192,8 +192,46 @@ def as_data_frame(
 
     [419904 rows x 4 columns]
 
+    Using `add_aux_coord=True` maps `~iris.coords.AuxCoord` and scalar coordinate information
+    to the `~pandas.DataFrame`:
 
-    TODO
+    >>> df = ipd.as_data_frame(cube, add_aux_coord=True)
+    >>> print(df)
+                            time  latitude   longitude  surface_temperature  forecast_reference_time  forecast_period
+    0       2006-04-16 00:00:00 -4.999992    0.000000           301.659271                 318108.0                0
+    1       2006-04-16 00:00:00 -4.999992    0.833333           301.785004                 318108.0                0
+    2       2006-04-16 00:00:00 -4.999992    1.666667           301.820984                 318108.0                0
+    3       2006-04-16 00:00:00 -4.999992    2.500000           301.865234                 318108.0                0
+    4       2006-04-16 00:00:00 -4.999992    3.333333           301.926819                 318108.0                0
+    ...                     ...       ...         ...                  ...                      ...              ...
+    419899  2010-09-16 00:00:00  4.444450  355.833313           298.779938                 356844.0                0
+    419900  2010-09-16 00:00:00  4.444450  356.666656           298.913147                 356844.0                0
+    419901  2010-09-16 00:00:00  4.444450  357.500000                  NaN                 356844.0                0
+    419902  2010-09-16 00:00:00  4.444450  358.333313                  NaN                 356844.0                0
+    419903  2010-09-16 00:00:00  4.444450  359.166656           298.995148                 356844.0                0
+
+    [419904 rows x 6 columns]
+
+    To add netCDF global attribution information to the `~pandas.DataFrame`, specifiy the attribute using the `add_global_attributes`
+    keyword:
+
+    >>> df = ipd.as_data_frame(cube, add_aux_coord=True, add_global_attributes=['STASH'])
+    >>> print(df)
+                            time  latitude   longitude  ...  forecast_reference_time  forecast_period       STASH
+    0       2006-04-16 00:00:00 -4.999992    0.000000  ...                 318108.0                0  m01s00i024
+    1       2006-04-16 00:00:00 -4.999992    0.833333  ...                 318108.0                0  m01s00i024
+    2       2006-04-16 00:00:00 -4.999992    1.666667  ...                 318108.0                0  m01s00i024
+    3       2006-04-16 00:00:00 -4.999992    2.500000  ...                 318108.0                0  m01s00i024
+    4       2006-04-16 00:00:00 -4.999992    3.333333  ...                 318108.0                0  m01s00i024
+    ...                     ...       ...         ...  ...                      ...              ...         ...
+    419899  2010-09-16 00:00:00  4.444450  355.833313  ...                 356844.0                0  m01s00i024
+    419900  2010-09-16 00:00:00  4.444450  356.666656  ...                 356844.0                0  m01s00i024
+    419901  2010-09-16 00:00:00  4.444450  357.500000  ...                 356844.0                0  m01s00i024
+    419902  2010-09-16 00:00:00  4.444450  358.333313  ...                 356844.0                0  m01s00i024
+    419903  2010-09-16 00:00:00  4.444450  359.166656  ...                 356844.0                0  m01s00i024
+
+    [419904 rows x 7 columns]
+
 
     """
     if copy:
@@ -277,9 +315,17 @@ def as_data_frame(
             ):  # Check global attribute exists
                 raise ValueError(f'"{global_attribute}" attribute not in cube')
             else:
-                data_frame[global_attribute] = cube.attributes[
-                    global_attribute
-                ]
+                if isinstance(
+                    cube.attributes[global_attribute],
+                    iris.fileformats.pp.STASH,
+                ):
+                    data_frame[global_attribute] = str(
+                        cube.attributes[global_attribute]
+                    )
+                else:
+                    data_frame[global_attribute] = cube.attributes[
+                        global_attribute
+                    ]
 
     # Final sort by dim order
     if asmultiindex:
