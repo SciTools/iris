@@ -973,7 +973,10 @@ def global_attr(request):
     return request.param  # Return the name of the attribute to test.
 
 # Attributes to test, which should be 'data' type by default
-_DATA_TEST__ATTRS = iris.fileformats.netcdf._CF_DATA_ATTRS
+_DATA_TEST__ATTRS = (
+    iris.fileformats.netcdf._CF_DATA_ATTRS
+    + iris.fileformats.netcdf._UKMO_DATA_ATTRS
+)
 
 
 # Define a fixture to parametrise over the 'data-style' test attributes.
@@ -1013,6 +1016,9 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         # test method, and the "self.attrname" it sets up.
         testname = self._calling_testname()
         # Turn that into a suitable temporary filename
+        ext_name = getattr(self, "testname_extension", "")
+        if ext_name:
+            basename = basename + "_" + ext_name
         path_str = (
             f"{self.tmpdir}/nc_attr__{self.attrname}__{testname}_{basename}.nc"
         )
@@ -1092,6 +1098,14 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         cubes = iris.load(input_filepaths)
         iris.save(cubes, output_filepath)
 
+    def _print_files_debug(self):
+        import os
+
+        print("Inputs.....")
+        for fp in self.input_filepaths + [self.result_filepath]:
+            print(f"FILE>>>>>{fp}")
+            os.system("ncdump -h " + fp)
+
     @pytest.fixture
     def attribute_testcase(self, tmp_path_factory):
         """
@@ -1134,6 +1148,7 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
             self._roundtrip_load_and_save(
                 self.input_filepaths, self.result_filepath
             )
+            # self._print_files_debug()
             return self.result_filepath
 
         return create_testcase_call
@@ -1405,28 +1420,63 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
     #  = those specific ones which 'ought' only to be data-local
     #
 
-    def test_datastyle__local(self, data_attr, attribute_testcase):
+    @pytest.mark.parametrize("origin_style", ["input_global", "input_local"])
+    def test_datastyle(self, data_attr, attribute_testcase, origin_style):
         # data-style attributes should *not* get 'promoted' to global ones
-        attrval = f"Data-attr-{data_attr}"
+        # Set the name extension to avoid tests with different 'style' params having
+        # collissions over identical testfile names
+        self.testname_extension = origin_style
+
+        attrval = f"Attr-setting-{data_attr}"
         if data_attr == "missing_value":
-            # Special-case : 'missing_value' type must be compatible with the variable
+            # Special-cases : 'missing_value' type must be compatible with the variable
             attrval = 303
-        attribute_testcase(attr_name=data_attr, vars_and_attrvalues=attrval)
+        elif data_attr == "ukmo__process_flags":
+            # What this does when a GLOBAL attr seems to be weird + unintended.
+            # 'this' --> 't h i s'
+            attrval = "process"
+            # NOTE: it's also supposed to handle vector values - which we are not
+            # testing.
+
+        # NOTE: results *should* be the same whether the original attribute is written
+        # as global or a variable attribute
+        if origin_style == "input_global":
+            # Record in source as a global attribute
+            attribute_testcase(attr_name=data_attr, global_attr_value=attrval)
+        else:
+            assert origin_style == "input_local"
+            # Record in source as a variable-local attribute
+            attribute_testcase(
+                attr_name=data_attr, vars_and_attrvalues=attrval
+            )
+
         if data_attr in iris.fileformats.netcdf._CF_DATA_ATTRS:
             # These ones are simply discarded on loading.
-            # By experiment, this overlap between _CF_ATTRS and _CF_DATA_ATTRS only
-            # contains 'missing_value' and 'standard_error_multiplier'.
-            self.check_expected_results(
-                # Combining them "demotes" the common global attributes to local ones
-                global_attr_value=None,
-                vars_and_attrvalues=None,
-            )
+            # By experiment, this overlap between _CF_ATTRS and _CF_DATA_ATTRS
+            # currently contains only 'missing_value' and 'standard_error_multiplier'.
+            expect_global = None
+            expect_var = None
         else:
-            self.check_expected_results(
-                # Combining them "demotes" the common global attributes to local ones
-                global_attr_value=None,
-                vars_and_attrvalues=attrval,
-            )
+            expect_global = None
+            if (
+                data_attr == "ukmo__process_flags"
+                and origin_style == "input_global"
+            ):
+                # This is very odd behaviour + surely unintended.
+                # It's supposed to handle vector values (which we are not checking).
+                # But the weird behaviour only applies to the 'global' test, which is
+                # obviously not normal usage anyway.
+                attrval = "p r o c e s s"
+            expect_var = attrval
+
+        if data_attr == "STASH":
+            # A special case, output translates this to a different attribute name.
+            self.attrname = "um_stash_source"
+
+        self.check_expected_results(
+            global_attr_value=expect_global,
+            vars_and_attrvalues=expect_var,
+        )
 
 
 if __name__ == "__main__":
