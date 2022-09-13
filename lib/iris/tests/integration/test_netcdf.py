@@ -1335,10 +1335,14 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         # Multiple *different* local settings are retained, not promoted
         attr_1 = f"Local-{global_attr}-1"
         attr_2 = f"Local-{global_attr}-2"
-        attribute_testcase(
-            attr_name=global_attr,
-            vars_and_attrvalues={"v1": attr_1, "v2": attr_2},
-        )
+        with pytest.warns(
+            UserWarning, match="should only be a CF global attribute"
+        ):
+            # A warning should be raised when writing the result.
+            attribute_testcase(
+                attr_name=global_attr,
+                vars_and_attrvalues={"v1": attr_1, "v2": attr_2},
+            )
         self.check_expected_results(
             global_attr_value=None,
             vars_and_attrvalues={"v1": attr_1, "v2": attr_2},
@@ -1362,13 +1366,17 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         # Different global attributes from multiple files are retained as local ones
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
-        attribute_testcase(
-            attr_name=global_attr,
-            global_attr_value=attr_1,
-            vars_and_attrvalues={"v1": None},
-            globalval_file2=attr_2,
-            var_values_file2={"v2": None},
-        )
+        with pytest.warns(
+            UserWarning, match="should only be a CF global attribute"
+        ):
+            # A warning should be raised when writing the result.
+            attribute_testcase(
+                attr_name=global_attr,
+                global_attr_value=attr_1,
+                vars_and_attrvalues={"v1": None},
+                globalval_file2=attr_2,
+                var_values_file2={"v2": None},
+            )
         self.check_expected_results(
             # Combining them "demotes" the common global attributes to local ones
             vars_and_attrvalues={"v1": attr_1, "v2": attr_2}
@@ -1397,18 +1405,28 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
     #  = those specific ones which 'ought' only to be data-local
     #
 
-    # def test_datastyle__local(self, data_attr, attribute_testcase):
-    #     # data-style attributes should *not* get 'promoted' to global ones
-    #     attrval = f"Data-attr-{data_attr}"
-    #     attribute_testcase(
-    #         attr_name=data_attr,
-    #         vars_and_attrvalues=attrval
-    #     )
-    #     self.check_expected_results(
-    #         # Combining them "demotes" the common global attributes to local ones
-    #         global_attr_value=None,
-    #         vars_and_attrvalues=attrval
-    #     )
+    def test_datastyle__local(self, data_attr, attribute_testcase):
+        # data-style attributes should *not* get 'promoted' to global ones
+        attrval = f"Data-attr-{data_attr}"
+        if data_attr == "missing_value":
+            # Special-case : 'missing_value' type must be compatible with the variable
+            attrval = 303
+        attribute_testcase(attr_name=data_attr, vars_and_attrvalues=attrval)
+        if data_attr in iris.fileformats.netcdf._CF_DATA_ATTRS:
+            # These ones are simply discarded on loading.
+            # By experiment, this overlap between _CF_ATTRS and _CF_DATA_ATTRS only
+            # contains 'missing_value' and 'standard_error_multiplier'.
+            self.check_expected_results(
+                # Combining them "demotes" the common global attributes to local ones
+                global_attr_value=None,
+                vars_and_attrvalues=None,
+            )
+        else:
+            self.check_expected_results(
+                # Combining them "demotes" the common global attributes to local ones
+                global_attr_value=None,
+                vars_and_attrvalues=attrval,
+            )
 
 
 if __name__ == "__main__":
