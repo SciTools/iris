@@ -16,7 +16,7 @@ import os.path
 from os.path import join as path_join
 import shutil
 import tempfile
-from typing import Iterable
+from typing import Iterable, Optional, Union
 from unittest import mock
 import warnings
 
@@ -956,39 +956,67 @@ data:
             _ = cube.coord("lat")
 
 
-class TestLoadSaveAttributes:  # (tests.IrisTest):
-    # @classmethod
-    # def setUpClass(cls) -> None:
-    #     # make a temporary directory for transient netcdf save/loads
-    #     cls.tmpdir = tempfile.mkdtemp()
-    #
-    # @classmethod
-    # def tearDownClass(cls) -> None:
-    #     shutil.rmtree(cls.tmpdir)
+# Attributes to test, which should be 'global' type by default
+_GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf._CF_GLOBAL_ATTRS)
+# Remove this one, which has peculiar behaviour + is tested separately
+# N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
+# one is processed.
+_GLOBAL_TEST_ATTRS -= set(["conventions"])
 
+
+# Define a fixture to parametrise tests over the 'global-style' test attributes.
+# This just provides a more concise way of writing parametrised tests.
+@pytest.fixture(params=_GLOBAL_TEST_ATTRS)
+def global_attr(request):
+    # N.B. "request" is a standard PyTest fixture
+    return request.param  # Return the name of the attribute to test.
+
+
+# Attributes to test, which should be 'data' type by default
+_DATA_TEST__ATTRS = iris.fileformats.netcdf._CF_DATA_ATTRS
+
+
+# Define a fixture to parametrise over the 'data-style' test attributes.
+# This just provides a more concise way of writing parametrised tests.
+@pytest.fixture(params=_DATA_TEST__ATTRS)
+def data_attr(request):
+    # N.B. "request" is a standard PyTest fixture
+    return request.param  # Return the name of the attribute to test.
+
+
+class TestLoadSaveAttributes:  # (tests.IrisTest):
     @staticmethod
     def _calling_testname():
-        # Code pinched from iris.tests
-        # Look up the calling stack for a function named "test_*"
+        """
+        Search up the callstack for a function named "test_*", and return the name for
+        use as a test identifier.
+
+        Returns
+        -------
+        test_name : str
+            Returns a string, with the initial "test_" removed.
+        """
+        test_name = None
         stack = inspect.stack()
         for frame in stack[1:]:
-            if "test_" in frame[3]:
-                basename = frame[3].replace("test_", "")
+            full_name = frame[3]
+            if full_name.startswith("test_"):
+                # Return the name with the inital "test_" removed.
+                test_name = full_name.replace("test_", "")
                 break
-        # Return the name with the inital "test_" removed.
-        return basename
+        # Search should not fail, unless we were called from an inappropriate place?
+        assert test_name is not None
+        return test_name
 
     def _testfile_path(self, basename: str) -> str:
         # Make a filepath in the temporary directory, based on the name of the calling
         # test method, and the "self.attrname" it sets up.
-        # result_path = self.result_path(ext="")
-        # testname = Path(result_path).name
         testname = self._calling_testname()
-        # Turn that into convenient temporary filenames
-        path = (
+        # Turn that into a suitable temporary filename
+        path_str = (
             f"{self.tmpdir}/nc_attr__{self.attrname}__{testname}_{basename}.nc"
         )
-        return path
+        return path_str
 
     @staticmethod
     def _default_vars_and_attrvalues(vars_and_attrvalues):
@@ -1000,18 +1028,19 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
 
     def _create_testcase_files(
         self,
-        global_attr_value=None,
-        vars_and_attrvalues=None,
-        globalval_file2=None,
-        var_values_file2=None,
+        global_attr_value: Optional[str] = None,
+        vars_and_attrvalues: Union[None, str, dict] = None,
+        globalval_file2: Optional[str] = None,
+        var_values_file2: Union[None, str, dict] = None,
     ):
-        # A generalised routine for creating a netcdf testfile to test behaviour of a
-        # specific attribute (name).
-        # Creates a temporary input netcdf file (or two) with specific global and
-        # variable-local versions of a specific attribute.  Then load all files and
-        # re-save to a single output netcdf file.
-        # Writes the output filepath into self.result_filepath.
+        """
+        Create temporary input netcdf files with specific content.
 
+        A generalised routine for creating a netcdf testfile to test behaviour of a
+        specific attribute (name).
+        Create a temporary input netcdf file (or two) with specific global and
+        variable-local versions of a specific attribute.
+        """
         # Make some input file paths.
         filepath1 = self._testfile_path("testfile")
         filepath2 = self._testfile_path("testfile2")
@@ -1054,21 +1083,31 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         return filepaths
 
     def _roundtrip_load_and_save(
-        self, input_filepaths: Iterable[str], output_filepath: str
-    ) -> str:
+        self, input_filepaths: Union[str, Iterable[str]], output_filepath: str
+    ) -> None:
+        """
+        Load netcdf input file(s) and re-write all to a given output file.
+        """
         # Do a load+save to produce a testable output result in a new file.
-        output_filepath = self._testfile_path("result")
         cubes = iris.load(input_filepaths)
         iris.save(cubes, output_filepath)
-        # Every testcase sets this - implicitly used by check_expected_results.
-        self.result_filepath = output_filepath
 
     @pytest.fixture
     def attribute_testcase(self, tmp_path_factory):
-        # Using this implicitly installs the common temporary directory.
+        """
+        Fixture to setup an individual testcase.
+        Returns a callable to be used by the test routine to configure the testcase.
+
+        N.B. "tmp_path_factory" is a standard PyTest fixture, providing a temporary
+        dirpath shared by all tests, which is a bit quicker and more debuggable than
+        having one-per-testcase.
+        This fixture stores that path that on the instance, from where various
+        subsidiary routines can get it, since this is always called first.
+        """
+        # Store the temporary directory path on the test instance
         self.tmpdir = str(tmp_path_factory.getbasetemp())
 
-        # It returns a callable, used to configure the testcase.
+        # The fixture returns a callable, which is used to configure each testcase.
         def create_testcase_call(
             attr_name,
             global_attr_value=None,
@@ -1076,6 +1115,14 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
             globalval_file2=None,
             var_values_file2=None,
         ):
+            """
+            Initialise the testcase from the passed-in controls, configure the input
+            files and run a save-load roundtrip to produce the output file.
+
+            The name of the tested attribute and all the temporary filepaths are stored
+            on the instance, from where check_expected_results can get them.
+
+            """
             self.attrname = attr_name
             self.input_filepaths = self._create_testcase_files(
                 global_attr_value=global_attr_value,
@@ -1083,11 +1130,11 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
                 globalval_file2=globalval_file2,
                 var_values_file2=var_values_file2,
             )
-            self.output_filepath = self._testfile_path("result")
+            self.result_filepath = self._testfile_path("result")
             self._roundtrip_load_and_save(
-                self.input_filepaths, self.output_filepath
+                self.input_filepaths, self.result_filepath
             )
-            return self.output_filepath
+            return self.result_filepath
 
         return create_testcase_call
 
@@ -1158,8 +1205,11 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
             globalval_file2="global_file2",
             var_values_file2=vars2,
         )
-        # combine all 4 vars in
-        all_vars_and_attrs = vars1 | vars2
+        # combine all 4 vars in one dict
+        all_vars_and_attrs = vars1.copy()
+        all_vars_and_attrs.update(vars2)
+        # TODO: replace with "|", when we drop Python 3.8
+        # see: https://peps.python.org/pep-0584/
         # just check they are all there and distinct
         assert len(all_vars_and_attrs) == len(vars1) + len(vars2)
         self.check_expected_results(
@@ -1217,76 +1267,147 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
     # # === "Conventions" ===  - which is a case to itself
     # # Note: the usual 'Conventions' behaviour is already tested elsewhere
     # # - see TestConventionsAttributes above
-    #
-    # def test_conventions_var_local(self):
-    #     # What happens if 'Conventions' appears as a variable-local attribute.
-    #     # N.B. this is not good CF, but we'll see what happens anyway.
-    #     self.create_testcase(
-    #         attr_name="Conventions",
-    #         global_attr_value=None,
-    #         vars_and_attrvalues="user_set",
-    #     )
-    #     self.check_expected_results(
-    #         global_attr_value="CF-1.7",  # this is standard output from
-    #         vars_and_attrvalues={
-    #             "var": None
-    #         },  # the variable has NO such attr.
-    #     )
-    #
-    # # TODO: do we need one of these ?
-    # # def test_conventions_var_both(self):
-    #
-    # #####################################
-    # # === 'history' ===  - a prototype for attributes that "ought" to be global-only
-    # # TODO: replicate this for 'feature_type' and 'title'
-    # #
-    #
-    # @pytest.mark.parametrize('attrname', iris.fileformats.netcdf._CF_GLOBAL_ATTRS)
 
-    @pytest.mark.parametrize(
-        "attrname", iris.fileformats.netcdf._CF_GLOBAL_ATTRS
-    )
-    def test_globaltype__global(self, attrname, attribute_testcase):
-        attr_content = f"Global tracked {attrname}"
+    def test_conventions_var_local(self, attribute_testcase):
+        # What happens if 'Conventions' appears as a variable-local attribute.
+        # N.B. this is not good CF, but we'll see what happens anyway.
         attribute_testcase(
-            attr_name=attrname,
+            attr_name="Conventions",
+            global_attr_value=None,
+            vars_and_attrvalues="user_set",
+        )
+        self.check_expected_results(
+            global_attr_value="CF-1.7",  # this is standard output from
+            vars_and_attrvalues=None,
+        )
+
+    def test_conventions_var_both(self, attribute_testcase):
+        # What happens if 'Conventions' appears as both global + local attribute.
+        attribute_testcase(
+            attr_name="Conventions",
+            global_attr_value="global-setting",
+            vars_and_attrvalues="local-setting",
+        )
+        self.check_expected_results(
+            global_attr_value="CF-1.7",  # this is standard output from
+            vars_and_attrvalues=None,
+        )
+
+    #######################################################
+    # Tests on "global" style attributes
+    #  = those specific ones which 'ought' only to be global (except on collisions)
+    #
+
+    def test_globalstyle__global(self, global_attr, attribute_testcase):
+        attr_content = f"Global tracked {global_attr}"
+        attribute_testcase(
+            attr_name=global_attr,
             global_attr_value=attr_content,
         )
-        if attrname.lower() == "conventions":
-            # 'conventions' is a special case, as it gets removed due to a case-
-            # insensiive match to 'Conventions'.
-            self.check_expected_results(global_attr_value=None)
-        else:
-            self.check_expected_results(global_attr_value=attr_content)
+        self.check_expected_results(global_attr_value=attr_content)
 
-    @pytest.mark.parametrize(
-        "attrname", iris.fileformats.netcdf._CF_GLOBAL_ATTRS
-    )
-    def test_globaltype__local(self, attrname, attribute_testcase):
+    def test_globalstyle__local(self, global_attr, attribute_testcase):
         # Strictly, not correct CF, but let's see what it does with it.
-        attr_content = f"Local tracked {attrname}"
+        attr_content = f"Local tracked {global_attr}"
         attribute_testcase(
-            attr_name=attrname,
+            attr_name=global_attr,
             vars_and_attrvalues=attr_content,
         )
-        if attrname.lower() == "conventions":
-            # 'conventions' is a special case, as it gets removed due to a case-
-            # insensiive match to 'Conventions'.
-            self.check_expected_results(global_attr_value=None)  # lost
-        else:
-            self.check_expected_results(
-                global_attr_value=attr_content
-            )  # "promoted"
+        self.check_expected_results(
+            global_attr_value=attr_content
+        )  # "promoted"
 
-    # def test_globaltype__both(self):
-    #     self.create_testcase(
-    #         attr_name="history",
-    #         global_attr_value="Global tracked history",
-    #         vars_and_attrvalues="Local history setting",
+    def test_globalstyle__both(self, global_attr, attribute_testcase):
+        attr_global = f"Global-{global_attr}"
+        attr_local = f"Local-{global_attr}"
+        attribute_testcase(
+            attr_name=global_attr,
+            global_attr_value=attr_global,
+            vars_and_attrvalues=attr_local,
+        )
+        self.check_expected_results(
+            global_attr_value=attr_local  # promoted local setting "wins"
+        )
+
+    def test_globalstyle__multivar_different(
+        self, global_attr, attribute_testcase
+    ):
+        # Multiple *different* local settings are retained, not promoted
+        attr_1 = f"Local-{global_attr}-1"
+        attr_2 = f"Local-{global_attr}-2"
+        attribute_testcase(
+            attr_name=global_attr,
+            vars_and_attrvalues={"v1": attr_1, "v2": attr_2},
+        )
+        self.check_expected_results(
+            global_attr_value=None,
+            vars_and_attrvalues={"v1": attr_1, "v2": attr_2},
+        )
+
+    def test_globalstyle__multivar_same(self, global_attr, attribute_testcase):
+        # Multiple *same* local settings are promoted to a common global one
+        attrval = f"Locally-defined-{global_attr}"
+        attribute_testcase(
+            attr_name=global_attr,
+            vars_and_attrvalues={"v1": attrval, "v2": attrval},
+        )
+        self.check_expected_results(
+            global_attr_value=attrval,
+            vars_and_attrvalues={"v1": None, "v2": None},
+        )
+
+    def test_globalstyle__multifile_different(
+        self, global_attr, attribute_testcase
+    ):
+        # Different global attributes from multiple files are retained as local ones
+        attr_1 = f"Global-{global_attr}-1"
+        attr_2 = f"Global-{global_attr}-2"
+        attribute_testcase(
+            attr_name=global_attr,
+            global_attr_value=attr_1,
+            vars_and_attrvalues={"v1": None},
+            globalval_file2=attr_2,
+            var_values_file2={"v2": None},
+        )
+        self.check_expected_results(
+            # Combining them "demotes" the common global attributes to local ones
+            vars_and_attrvalues={"v1": attr_1, "v2": attr_2}
+        )
+
+    def test_globalstyle__multifile_same(
+        self, global_attr, attribute_testcase
+    ):
+        # Matching global attributes in multiple files are retained as global
+        attrval = f"Global-{global_attr}"
+        attribute_testcase(
+            attr_name=global_attr,
+            global_attr_value=attrval,
+            vars_and_attrvalues={"v1": None},
+            globalval_file2=attrval,
+            var_values_file2={"v2": None},
+        )
+        self.check_expected_results(
+            # Combining them "demotes" the common global attributes to local ones
+            global_attr_value=attrval,
+            vars_and_attrvalues={"v1": None, "v2": None},
+        )
+
+    #######################################################
+    # Tests on "data" style attributes
+    #  = those specific ones which 'ought' only to be data-local
+    #
+
+    # def test_datastyle__local(self, data_attr, attribute_testcase):
+    #     # data-style attributes should *not* get 'promoted' to global ones
+    #     attrval = f"Data-attr-{data_attr}"
+    #     attribute_testcase(
+    #         attr_name=data_attr,
+    #         vars_and_attrvalues=attrval
     #     )
-    #     # N.B.: local "wins", even though it is not good CF
     #     self.check_expected_results(
-    #         global_attr_value="Local history setting",
+    #         # Combining them "demotes" the common global attributes to local ones
+    #         global_attr_value=None,
+    #         vars_and_attrvalues=attrval
     #     )
 
 
