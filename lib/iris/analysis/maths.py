@@ -240,7 +240,7 @@ def add(cube, other, dim=None, in_place=False):
         An instance of :class:`iris.cube.Cube`.
     * other:
         An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+        or a number or :class:`numpy.ndarray` or :class:`dask.array.Array`.
 
     Kwargs:
 
@@ -294,7 +294,7 @@ def subtract(cube, other, dim=None, in_place=False):
         An instance of :class:`iris.cube.Cube`.
     * other:
         An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+        or a number or :class:`numpy.ndarray` or :class:`dask.array.Array`.
 
     Kwargs:
 
@@ -348,8 +348,8 @@ def _add_subtract_common(
     operation_name       - the public name of the operation (e.g. 'divide')
     cube                 - the cube whose data is used as the first argument
                            to `operation_function`
-    other                - the cube, coord, ndarray or number whose data is
-                           used as the second argument
+    other                - the cube, coord, ndarray, dask array or number whose
+                           data is used as the second argument
     new_dtype            - the expected dtype of the output. Used in the
                            case of scalar masked arrays
     dim                  - dimension along which to apply `other` if it's a
@@ -392,7 +392,7 @@ def multiply(cube, other, dim=None, in_place=False):
         An instance of :class:`iris.cube.Cube`.
     * other:
         An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+        or a number or :class:`numpy.ndarray` or :class:`dask.array.Array`.
 
     Kwargs:
 
@@ -469,7 +469,7 @@ def divide(cube, other, dim=None, in_place=False):
         An instance of :class:`iris.cube.Cube`.
     * other:
         An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+        or a number or :class:`numpy.ndarray` or :class:`dask.array.Array`.
 
     Kwargs:
 
@@ -842,8 +842,8 @@ def _binary_op_common(
     operation_name       - the public name of the operation (e.g. 'divide')
     cube                 - the cube whose data is used as the first argument
                            to `operation_function`
-    other                - the cube, coord, ndarray or number whose data is
-                           used as the second argument
+    other                - the cube, coord, ndarray, dask array or number whose
+                           data is used as the second argument
     new_dtype            - the expected dtype of the output. Used in the
                            case of scalar masked arrays
     new_unit             - unit for the resulting quantity
@@ -1197,7 +1197,7 @@ class IFunc:
         Kwargs:
 
         * other
-            A cube, coord, ndarray or number whose data is used as the
+            A cube, coord, ndarray, dask array or number whose data is used as the
             second argument to the data function.
 
         * new_name:

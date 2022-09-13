@@ -1977,9 +1977,9 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     """
     Masks any cells in the cube's data array which correspond to cells marked
     ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be
-    specified as a :class:`numpy.ndarray`, :class:`iris.coords.Coord` or
-    :class:`iris.cube.Cube`, following the same broadcasting approach as cube
-    arithmetic (see :ref:`cube maths`).
+    specified as a :class:`numpy.ndarray`, :class:`dask.array.Array`,
+    :class:`iris.coords.Coord` or :class:`iris.cube.Cube`, following the same
+    broadcasting approach as cube arithmetic (see :ref:`cube maths`).
 
     Parameters
     ----------
@@ -1987,7 +1987,7 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     cube : iris.cube.Cube
         Cube containing data that requires masking.
 
-    points_to_mask : numpy.ndarray, iris.coords.Coord or iris.cube.Cube
+    points_to_mask : numpy.ndarray, dask.array.Array, iris.coords.Coord or iris.cube.Cube
         Specifies booleans (or ones and zeros) indicating which points will be masked.
 
     in_place : bool, default=False
