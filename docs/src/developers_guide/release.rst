@@ -226,7 +226,6 @@ Release Steps
 
 #. Create the release feature branch ``v1.9.x`` on `SciTools/iris`_.
    The only exception is for a point/bugfix release, as it should already exist
-#. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
 #. Update the ``whatsnew`` for the release:
 
    * Use ``git`` to rename ``docs/src/whatsnew/latest.rst`` to the release
@@ -235,6 +234,8 @@ Release Steps
      include statement and toctree.
    * Use ``git`` to delete the ``docs/src/whatsnew/latest.rst.template`` file
    * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
+     Replace this with ``[release candidate]`` for the release candidate and
+     remove this for the actual release.
      Note that, the Iris version and release date are updated automatically
      when the documentation is built
    * Review the file for correctness
@@ -253,6 +254,7 @@ Release Steps
 #. Once all the above steps are complete, the release is cut, using
    the :guilabel:`Draft a new release` button on the
    `Iris release page <https://github.com/SciTools/iris/releases>`_
+   and targeting the release branch
 
 
 Post Release Steps
@@ -267,10 +269,11 @@ Post Release Steps
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
    see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
-#. Make a new ``latest.rst`` from ``latest.rst.template`` and update the include
-   statement and the toctree in ``index.rst`` to point at the new
+#. Merge back to ``main``. This should be done after all releases, including
+   the release candidate, and also after major changes to the release branch.
+#. On main, make a new ``latest.rst`` from ``latest.rst.template`` and update
+   the include statement and the toctree in ``index.rst`` to point at the new
    ``latest.rst``.
-#. Merge back to ``main``
 
 
 .. _SciTools/iris: https://github.com/SciTools/iris
