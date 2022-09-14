@@ -13,9 +13,11 @@ name: Refresh Lockfiles
 
 
 on:
+  # Temporarily enabled for push - for testing.
+  push:
   workflow_dispatch:
   schedule:
-    # Run once a week on a Saturday night 
+    # Run once a week on a Saturday night
     # N.B. "should" be quoted, according to
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
     - cron: "1 0 * * 6"
