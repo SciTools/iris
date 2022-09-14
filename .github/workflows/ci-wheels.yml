@@ -18,6 +18,7 @@ on:
       - "auto-update-lockfiles"
       - "pre-commit-ci-update-config"
       - "dependabot/*"
+      - "conda-lock-mamba"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
