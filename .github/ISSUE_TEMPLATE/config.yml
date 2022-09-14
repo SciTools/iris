@@ -6,4 +6,4 @@ contact_links:
      about: Engage with the Iris community to discuss your issue
   -  name: ❓ Usage Question
      url: https://github.com/SciTools/iris/discussions/categories/q-a
-     About: Raise a question about how to use Iris in the Q&A section of Discussions.
+     about: Raise a question about how to use Iris in the Q&A section of Discussions
