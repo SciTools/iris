@@ -1112,46 +1112,51 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         Fixture to setup an individual testcase.
         Returns a callable to be used by the test routine to configure the testcase.
 
+        By providing this facility as a _fixture_, rather than just a method, we can
+        get every test using it to also include 'tmp_path_factory' and record its path,
+        without needing extra boilerplate for that in every test method.
+
         N.B. "tmp_path_factory" is a standard PyTest fixture, providing a temporary
         dirpath shared by all tests, which is a bit quicker and more debuggable than
         having one-per-testcase.
         This fixture stores that path that on the instance, from where various
-        subsidiary routines can get it, since this is always called first.
+        subsidiary routines can get at it -- since this code is always called first.
         """
         # Store the temporary directory path on the test instance
         self.tmpdir = str(tmp_path_factory.getbasetemp())
+        # Return the setup method for subsequent testcase configuration
+        #  -- so the caller just "calls the fixture".
+        return self._create_testcase_call
 
-        # The fixture returns a callable, which is used to configure each testcase.
-        def create_testcase_call(
-            attr_name,
-            global_attr_value=None,
-            vars_and_attrvalues=None,
-            globalval_file2=None,
-            var_values_file2=None,
-        ):
-            """
-            Initialise the testcase from the passed-in controls, configure the input
-            files and run a save-load roundtrip to produce the output file.
+    def _create_testcase_call(
+        self,
+        attr_name,
+        global_attr_value=None,
+        vars_and_attrvalues=None,
+        globalval_file2=None,
+        var_values_file2=None,
+    ):
+        """
+        Initialise the testcase from the passed-in controls, configure the input
+        files and run a save-load roundtrip to produce the output file.
 
-            The name of the tested attribute and all the temporary filepaths are stored
-            on the instance, from where check_expected_results can get them.
+        The name of the tested attribute and all the temporary filepaths are stored
+        on the instance, from where check_expected_results can get them.
 
-            """
-            self.attrname = attr_name
-            self.input_filepaths = self._create_testcase_files(
-                global_attr_value=global_attr_value,
-                vars_and_attrvalues=vars_and_attrvalues,
-                globalval_file2=globalval_file2,
-                var_values_file2=var_values_file2,
-            )
-            self.result_filepath = self._testfile_path("result")
-            self._roundtrip_load_and_save(
-                self.input_filepaths, self.result_filepath
-            )
-            # self._print_files_debug()
-            return self.result_filepath
-
-        return create_testcase_call
+        """
+        self.attrname = attr_name
+        self.input_filepaths = self._create_testcase_files(
+            global_attr_value=global_attr_value,
+            vars_and_attrvalues=vars_and_attrvalues,
+            globalval_file2=globalval_file2,
+            var_values_file2=var_values_file2,
+        )
+        self.result_filepath = self._testfile_path("result")
+        self._roundtrip_load_and_save(
+            self.input_filepaths, self.result_filepath
+        )
+        # self._print_files_debug()
+        return self.result_filepath
 
     def check_expected_results(
         self, global_attr_value=None, vars_and_attrvalues=None
