@@ -293,7 +293,7 @@ def _curvilinear_to_rectilinear_regrid(
 ):
     sparse_matrix, sum_weights, rows, grid_cube = regrid_info
 
-    inds = [-1, -2][: len(dims)][::-1]
+    inds = list(range(-len(dims), 0))
     data = np.moveaxis(data, dims, inds)
     data_shape = data.shape
     grid_size = np.prod([data_shape[ind] for ind in inds])
@@ -349,7 +349,10 @@ def _curvilinear_to_rectilinear_regrid(
     if len(dims) == 1:
         new_data_shape.append(grid_cube.shape[1])
         dims = (dims[0], dims[0] + 1)
-        inds = [-2, -1]
+    if len(dims) < 2:
+        new_data_shape = new_data_shape[:2 - len(dims)]
+        dims = dims[:2]
+    inds = [-2, -1]
 
     result = weighted_mean.reshape(new_data_shape)
     result = np.moveaxis(result, inds, dims)
