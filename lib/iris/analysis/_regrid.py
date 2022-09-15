@@ -300,6 +300,7 @@ def _curvilinear_to_rectilinear_regrid(
 
     # Calculate the numerator of the weighted mean (M, 1).
     is_masked = ma.isMaskedArray(data)
+    sum_weights = np.ones(data_shape).reshape(-1, grid_size) @ sparse_matrix.T
     if not is_masked:
         data = data
     else:
@@ -311,7 +312,6 @@ def _curvilinear_to_rectilinear_regrid(
             # Zero any masked source points so they add nothing in output sums.
             mask = data.mask
             r_data[mask] = 0.0
-            data = r_data
             # Calculate a new 'sum_weights' to allow for missing source points.
             # N.B. it is more efficient to use the original once-calculated
             # sparse matrix, but in this case we can't.
@@ -319,21 +319,18 @@ def _curvilinear_to_rectilinear_regrid(
             # than repeating the whole sparse calculation.
             valid_src_cells = ~mask.reshape(-1, grid_size)
             sum_weights = valid_src_cells @ sparse_matrix.T
-            # Work out where output cells are missing all contributions.
-            # This allows for where 'rows' contains output cells that have no
-            # data because of missing input points.
-            zero_sums = sum_weights == 0.0
-            # Make sure we can still divide by sum_weights[rows].
-            sum_weights[zero_sums] = 1.0
+        data = r_data
+    # Work out where output cells are missing all contributions.
+    # This allows for where 'rows' contains output cells that have no
+    # data because of missing input points.
+    zero_sums = sum_weights == 0.0
+    # Make sure we can still divide by sum_weights[rows].
+    sum_weights[zero_sums] = 1.0
 
     # Calculate sum in each target cell, over contributions from each source
     # cell.
     numerator = data.reshape(-1, grid_size) @ sparse_matrix.T
 
-    # Create a template for the weighted mean result.
-    weighted_mean = ma.masked_all(numerator.shape, dtype=numerator.dtype)
-    # Calculate final results in all relevant places.
-    # weighted_mean[rows] = numerator[rows] / sum_weights[rows]
     weighted_mean = numerator / sum_weights
     if is_masked:
         # Ensure masked points where relevant source cells were all missing.
@@ -349,7 +346,7 @@ def _curvilinear_to_rectilinear_regrid(
     if len(dims) == 1:
         new_data_shape.append(grid_cube.shape[1])
         dims = (dims[0], dims[0] + 1)
-    if len(dims) < 2:
+    if len(dims) > 2:
         new_data_shape = new_data_shape[: 2 - len(dims)]
         dims = dims[:2]
     inds = [-2, -1]
