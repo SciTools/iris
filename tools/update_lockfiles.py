@@ -17,6 +17,15 @@ import argparse
 from pathlib import Path
 import subprocess
 import sys
+from warnings import warn
+
+
+message = (
+    "Iris' large requirements may require Mamba to successfully solve. If you "
+    "don't want to install Mamba, consider using the workflow_dispatch on "
+    "Iris' GitHub action."
+)
+warn(message)
 
 
 try:
@@ -29,9 +38,9 @@ parser = argparse.ArgumentParser(
     "Iris Lockfile Generator",
 )
 
-parser.add_argument('files', nargs='+', 
+parser.add_argument('files', nargs='+',
     help="List of environment.yml files to lock")
-parser.add_argument('--output-dir', '-o', default='.', 
+parser.add_argument('--output-dir', '-o', default='.',
     help="Directory to save output lock files")
 
 args = parser.parse_args()
@@ -43,7 +52,7 @@ for infile in args.files:
     ftype = fname.split('.')[-1]
     if ftype.lower() in ('yaml', 'yml'):
         fname = '.'.join(fname.split('.')[:-1])
-    
+
     # conda-lock --filename-template expects a string with a "...{platform}..."
     # placeholder in it, so we have to build the .lock filname without
     # using .format
