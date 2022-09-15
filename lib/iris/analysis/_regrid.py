@@ -350,7 +350,7 @@ def _curvilinear_to_rectilinear_regrid(
         new_data_shape.append(grid_cube.shape[1])
         dims = (dims[0], dims[0] + 1)
     if len(dims) < 2:
-        new_data_shape = new_data_shape[:2 - len(dims)]
+        new_data_shape = new_data_shape[: 2 - len(dims)]
         dims = dims[:2]
     inds = [-2, -1]
 
