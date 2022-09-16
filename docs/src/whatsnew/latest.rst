@@ -88,6 +88,8 @@ This document explains the changes made to Iris for this release
    See `SciTools/cartopy@fcb784d`_ and `SciTools/cartopy@8860a81`_ for more
    details.
    (:pull:`4968`)
+#. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a problem
+   with segfaults. (:pull:`4968`)
 
 
 📚 Documentation
