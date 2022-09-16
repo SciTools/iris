@@ -511,5 +511,52 @@ class TestNonEarthPlanet(tests.IrisTest):
         rotate_winds(u, v, other_cs)
 
 
+class TestLazyRotateWinds(tests.IrisTest):
+    def _compare_lazy_rotate_winds(self, masked):
+        # Compute wind rotation with NumPy data first, then with Dask arrays,
+        # and compare results
+
+        # Choose target coord system that will (not) lead to masked results
+        if masked:
+            coord_sys = iris.coord_systems.OSGB()
+        else:
+            coord_sys = iris.coord_systems.GeogCS(6371229)
+
+        u, v = uv_cubes()
+        u_lazy = u.copy(data=u.lazy_data())
+        v_lazy = v.copy(data=v.lazy_data())
+
+        ut_ref, vt_ref = rotate_winds(u.copy(), v.copy(), coord_sys)
+        self.assertFalse(ut_ref.has_lazy_data())
+        self.assertFalse(vt_ref.has_lazy_data())
+        # Check if choice of target coordinates leads to (no) masking
+        self.assertTrue(ma.isMaskedArray(ut_ref.data) == masked)
+
+        # Results are lazy if at least one component is lazy
+        ut, vt = rotate_winds(u_lazy.copy(), v.copy(), coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        ut, vt = rotate_winds(u.copy(), v_lazy.copy(),coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        ut, vt = rotate_winds(u_lazy.copy(), v_lazy.copy(), coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+    def test_lazy_rotate_winds_masked(self):
+        self._compare_lazy_rotate_winds(True)
+
+    def test_lazy_rotate_winds_notmasked(self):
+        self._compare_lazy_rotate_winds(False)
+
+
 if __name__ == "__main__":
     tests.main()
