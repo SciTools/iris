@@ -1170,6 +1170,18 @@ def rotate_winds(u_cube, v_cube, target_cs):
         x = x.transpose()
         y = y.transpose()
 
+    # Create resulting cubes - produce lazy output data if at least
+    # one input cube has lazy data
+    lazy_output = u_cube.has_lazy_data() or v_cube.has_lazy_data()
+    if lazy_output:
+        ut_cube = u_cube.copy(data=da.empty_like(u_cube.lazy_data()))
+        vt_cube = v_cube.copy(data=da.empty_like(v_cube.lazy_data()))
+    else:
+        ut_cube = u_cube.copy()
+        vt_cube = v_cube.copy()
+    ut_cube.rename("transformed_{}".format(u_cube.name()))
+    vt_cube.rename("transformed_{}".format(v_cube.name()))
+
     # Get distance scalings for source crs.
     ds_dx1, ds_dy1 = _crs_distance_differentials(src_crs, x, y)
 
@@ -1192,28 +1204,14 @@ def rotate_winds(u_cube, v_cube, target_cs):
         src_crs, x, y, target_crs, ds, dx2, dy2
     )
     apply_mask = mask.any()
-
-    # Create resulting cubes - both will be lazy if at least one input cube is
-    lazy_output = u_cube.has_lazy_data() or v_cube.has_lazy_data()
     if apply_mask:
         # Make masked arrays to accept masking.
         if lazy_output:
-            # Use da.ma.empty_like to preserve Dask array attributes like chunking
-            ut_cube = u_cube.copy(data=da.ma.empty_like(u_cube.lazy_data()))
-            vt_cube = v_cube.copy(data=da.ma.empty_like(v_cube.lazy_data()))
+            ut_cube = ut_cube.copy(data=da.ma.masked_array(ut_cube.core_data()))
+            vt_cube = vt_cube.copy(data=da.ma.masked_array(vt_cube.core_data()))
         else:
-            ut_cube = u_cube.copy(data=ma.asanyarray(u_cube.data))
-            vt_cube = v_cube.copy(data=ma.asanyarray(v_cube.data))
-    else:
-        if lazy_output:
-            ut_cube = u_cube.copy(data=u_cube.lazy_data())
-            vt_cube = v_cube.copy(data=v_cube.lazy_data())
-        else:
-            ut_cube = u_cube.copy()
-            vt_cube = v_cube.copy()
-
-    ut_cube.rename("transformed_{}".format(u_cube.name()))
-    vt_cube.rename("transformed_{}".format(v_cube.name()))
+            ut_cube.data = ma.asanyarray(ut_cube.data)
+            vt_cube.data = ma.asanyarray(vt_cube.data)
 
     # Project vectors with u, v components one horiz slice at a time and
     # insert into the resulting cubes.
