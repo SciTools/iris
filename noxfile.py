@@ -183,6 +183,7 @@ def tests(session: nox.sessions.Session):
 
     """
     prepare_venv(session)
+    session.install("netcdf4==1.6.1")
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
     session.run(
