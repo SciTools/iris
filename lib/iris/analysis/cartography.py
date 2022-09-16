@@ -1008,8 +1008,8 @@ def _transform_distance_vectors_tolerance_mask(
     u_one_t, v_zero_t = _transform_distance_vectors(ones, zeros, ds, dx2, dy2)
     u_zero_t, v_one_t = _transform_distance_vectors(zeros, ones, ds, dx2, dy2)
     # Squared magnitudes should be equal to one within acceptable tolerance.
-    # A value of atol=2e-3 is used, which corresponds to a change in magnitude
-    # of approximately 0.1%.
+    # A value of atol=2e-3 is used, which masks any magnitude changes >0.5%
+    #  (approx percentage - based on experimenting).
     sqmag_1_0 = u_one_t**2 + v_zero_t**2
     sqmag_0_1 = u_zero_t**2 + v_one_t**2
     mask = np.logical_not(
