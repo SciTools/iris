@@ -332,13 +332,12 @@ def _curvilinear_to_rectilinear_regrid(
     numerator = data.reshape(-1, grid_size) @ sparse_matrix.T
 
     weighted_mean = numerator / sum_weights
-    if is_masked:
-        # Ensure masked points where relevant source cells were all missing.
-        if np.any(zero_sums):
-            # Make masked if it wasn't.
-            weighted_mean = np.ma.asarray(weighted_mean)
-            # Mask where contributing sums were zero.
-            weighted_mean[zero_sums] = np.ma.masked
+    # Ensure masked points where relevant source cells were all missing.
+    if np.any(zero_sums):
+        # Make masked if it wasn't.
+        weighted_mean = np.ma.asarray(weighted_mean)
+        # Mask where contributing sums were zero.
+        weighted_mean[zero_sums] = np.ma.masked
 
     new_data_shape = list(data_shape)
     for dim, length in zip(dims, grid_cube.shape):
@@ -378,7 +377,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
         _curvilinear_to_rectilinear_regrid, regrid_info=regrid_info
     )
     result = _create_cube(
-        result_data, src_cube, dims, (tx.copy(), ty.copy()), 2, regrid_callback
+        result_data, src_cube, dims, (ty.copy(), tx.copy()), 2, regrid_callback
     )
     return result
 
