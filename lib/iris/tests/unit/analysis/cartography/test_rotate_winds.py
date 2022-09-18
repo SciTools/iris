@@ -513,8 +513,7 @@ class TestNonEarthPlanet(tests.IrisTest):
 
 class TestLazyRotateWinds(tests.IrisTest):
     def _compare_lazy_rotate_winds(self, masked):
-        # Compute wind rotation with NumPy data first, then with Dask arrays,
-        # and compare results
+        # Compute wind rotation with lazy data and compare results
 
         # Choose target coord system that will (not) lead to masked results
         if masked:
@@ -524,15 +523,15 @@ class TestLazyRotateWinds(tests.IrisTest):
 
         u, v = uv_cubes()
 
-        # Create lazy cubes, setting explicit chunksizes to test if
-        # Dask array metadata is preserved
-        u_lazy = u.copy(data=u.lazy_data().rechunk([2,1]))
-        v_lazy = v.copy(data=v.lazy_data().rechunk([1,2]))
+        # Create deep copy of the cubes with rechunked lazy data to check if
+        # input data is modified, and if Dask metadata is preserved
+        u_lazy = u.copy(data=u.copy().lazy_data().rechunk([2,1]))
+        v_lazy = v.copy(data=v.copy().lazy_data().rechunk([1,2]))
 
         ut_ref, vt_ref = rotate_winds(u, v, coord_sys)
         self.assertFalse(ut_ref.has_lazy_data())
         self.assertFalse(vt_ref.has_lazy_data())
-        # Check if choice of target coordinates leads to (no) masking
+        # Ensure that choice of target coordinates leads to (no) masking
         self.assertTrue(ma.isMaskedArray(ut_ref.data) == masked)
 
         # Results are lazy if at least one component is lazy
@@ -558,7 +557,7 @@ class TestLazyRotateWinds(tests.IrisTest):
         self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
         self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
 
-        # Check that input data has not been modified
+        # Ensure that input data has not been modified
         self.assertArrayAllClose(u.data, u_lazy.data, rtol=1e-5)
         self.assertArrayAllClose(v.data, v_lazy.data, rtol=1e-5)
 
