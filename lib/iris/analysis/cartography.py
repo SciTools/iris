@@ -15,9 +15,9 @@ import warnings
 import cartopy.crs as ccrs
 import cartopy.img_transform
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
-import dask.array as da
 
 import iris.coord_systems
 import iris.coords
@@ -1207,8 +1207,12 @@ def rotate_winds(u_cube, v_cube, target_cs):
     if apply_mask:
         # Make masked arrays to accept masking.
         if lazy_output:
-            ut_cube = ut_cube.copy(data=da.ma.masked_array(ut_cube.core_data()))
-            vt_cube = vt_cube.copy(data=da.ma.masked_array(vt_cube.core_data()))
+            ut_cube = ut_cube.copy(
+                data=da.ma.masked_array(ut_cube.core_data())
+            )
+            vt_cube = vt_cube.copy(
+                data=da.ma.masked_array(vt_cube.core_data())
+            )
         else:
             ut_cube.data = ma.asanyarray(ut_cube.data)
             vt_cube.data = ma.asanyarray(vt_cube.data)

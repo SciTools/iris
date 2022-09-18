@@ -525,8 +525,8 @@ class TestLazyRotateWinds(tests.IrisTest):
 
         # Create deep copy of the cubes with rechunked lazy data to check if
         # input data is modified, and if Dask metadata is preserved
-        u_lazy = u.copy(data=u.copy().lazy_data().rechunk([2,1]))
-        v_lazy = v.copy(data=v.copy().lazy_data().rechunk([1,2]))
+        u_lazy = u.copy(data=u.copy().lazy_data().rechunk([2, 1]))
+        v_lazy = v.copy(data=v.copy().lazy_data().rechunk([1, 2]))
 
         ut_ref, vt_ref = rotate_winds(u, v, coord_sys)
         self.assertFalse(ut_ref.has_lazy_data())
@@ -538,22 +538,22 @@ class TestLazyRotateWinds(tests.IrisTest):
         ut, vt = rotate_winds(u_lazy, v, coord_sys)
         self.assertTrue(ut.has_lazy_data())
         self.assertTrue(vt.has_lazy_data())
-        self.assertTrue(ut.core_data().chunksize == (2,1))
+        self.assertTrue(ut.core_data().chunksize == (2, 1))
         self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
         self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
 
         ut, vt = rotate_winds(u, v_lazy, coord_sys)
         self.assertTrue(ut.has_lazy_data())
         self.assertTrue(vt.has_lazy_data())
-        self.assertTrue(vt.core_data().chunksize == (1,2))
+        self.assertTrue(vt.core_data().chunksize == (1, 2))
         self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
         self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
 
         ut, vt = rotate_winds(u_lazy, v_lazy, coord_sys)
         self.assertTrue(ut.has_lazy_data())
         self.assertTrue(vt.has_lazy_data())
-        self.assertTrue(ut.core_data().chunksize == (2,1))
-        self.assertTrue(vt.core_data().chunksize == (1,2))
+        self.assertTrue(ut.core_data().chunksize == (2, 1))
+        self.assertTrue(vt.core_data().chunksize == (1, 2))
         self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
         self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
 
