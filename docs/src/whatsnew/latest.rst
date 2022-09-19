@@ -35,6 +35,9 @@ This document explains the changes made to Iris for this release
    non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
    (:issue:`4772`, :pull:`4913`)
 
+#. `@tinyendian`_ edited :func:`~iris.analysis.cartography.rotate_winds` to
+   enable lazy computation of rotated wind vector components (:issue:`4934`,
+   :pull:`4972`)
 
 🐛 Bugs Fixed
 =============
