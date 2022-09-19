@@ -118,6 +118,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@tinyendian: https://github.com/tinyendian
 .. _@TTV-Intrepid: https://github.com/TTV-Intrepid
 
 
