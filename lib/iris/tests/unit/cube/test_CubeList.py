@@ -735,5 +735,39 @@ class Test_CubeList_copy(tests.IrisTest):
         self.assertIsInstance(self.copied_cube_list, iris.cube.CubeList)
 
 
+class TestHtmlRepr:
+    """
+    Confirm that Cubelist._repr_html_() creates a fresh
+    :class:`iris.experimental.representation.CubeListRepresentation` object, and uses
+    it in the expected way.
+
+    Notes
+    -----
+    This only tests code connectivity.  The functionality is tested elsewhere, at
+    `iris.tests.unit.experimental.representation.test_CubeListRepresentation`
+    """
+
+    @staticmethod
+    def test__repr_html_():
+        test_cubelist = CubeList([])
+
+        target = "iris.experimental.representation.CubeListRepresentation"
+        instance_mock = mock.MagicMock(
+            repr_html=mock.MagicMock()  # return_value='')  # NB this must return a string
+        )
+        with mock.patch(target, return_value=instance_mock) as class_mock:
+            # Exercise the function-under-test.
+            test_cubelist._repr_html_()
+
+        assert class_mock.call_args_list == [
+            # "CubeListRepresentation()" was called exactly once, with the cubelist as arg
+            mock.call(test_cubelist)
+        ]
+        assert instance_mock.repr_html.call_args_list == [
+            # "CubeListRepresentation(cubelist).repr_html()" was called exactly once, with no args
+            mock.call()
+        ]
+
+
 if __name__ == "__main__":
     tests.main()
