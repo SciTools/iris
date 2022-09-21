@@ -357,5 +357,9 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
 
         masked_data = ma.masked_array(cube.data)
         masked_data[at_iy, at_ix] = ma.masked
+        if in_y:
+            masked_data[at_iy, at_ix - 1] = ma.masked
+        else:
+            masked_data[at_iy - 1, at_ix] = ma.masked
 
     cube.data = masked_data

@@ -2001,7 +2001,9 @@ class Coord(_DimensionalMetadata):
                         modification = (index.astype(int) * 360) * sign
                         upper_bounds -= modification
 
-                diffs_along_bounds = ~np.isclose(upper_bounds, lower_bounds)
+                diffs_along_bounds = ~np.isclose(
+                    upper_bounds, lower_bounds, rtol=rtol, atol=atol
+                )
                 diffs_along_axis = np.logical_or(
                     diffs_along_bounds[0], diffs_along_bounds[1]
                 )
