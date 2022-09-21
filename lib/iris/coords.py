@@ -1950,13 +1950,8 @@ class Coord(_DimensionalMetadata):
             contiguous = np.allclose(
                 self.bounds[1:, 0], self.bounds[:-1, 1], rtol=rtol, atol=atol
             )
-            diffs = np.logical_not(
-                np.isclose(
-                    self.bounds[1:, 0],
-                    self.bounds[:-1, 1],
-                    rtol=rtol,
-                    atol=atol,
-                )
+            diffs = ~np.isclose(
+                self.bounds[1:, 0], self.bounds[:-1, 1], rtol=rtol, atol=atol
             )
 
         elif self.ndim == 2:
@@ -2006,12 +2001,12 @@ class Coord(_DimensionalMetadata):
                         modification = (index.astype(int) * 360) * sign
                         upper_bounds -= modification
 
-                diffs_along_bounds = not np.isclose(upper_bounds, lower_bounds)
+                diffs_along_bounds = ~np.isclose(upper_bounds, lower_bounds)
                 diffs_along_axis = np.logical_or(
                     diffs_along_bounds[0], diffs_along_bounds[1]
                 )
 
-                contiguous_along_axis = not np.any(diffs_along_axis)
+                contiguous_along_axis = ~np.any(diffs_along_axis)
                 return diffs_along_axis, contiguous_along_axis
 
             diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis="x")
