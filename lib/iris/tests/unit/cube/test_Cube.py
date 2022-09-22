@@ -2929,7 +2929,7 @@ class Test__dimensional_metadata:
         assert res == simplecube.ancillary_variable("quality_flag")
 
     def test_two_with_same_name(self, simplecube):
-        # If a simplecube has two _DimensionalMetadata objects with the same name, the
+        # If a cube has two _DimensionalMetadata objects with the same name, the
         # current behaviour results in _dimensional_metadata returning the first
         # one it finds.
         simplecube.cell_measure("cell_area").rename("wibble")
@@ -2937,7 +2937,7 @@ class Test__dimensional_metadata:
         assert res == simplecube.coord("wibble")
 
     def test_two_with_same_name_specify_instance(self, simplecube):
-        # The simplecube has two _DimensionalMetadata objects with the same name so
+        # The cube has two _DimensionalMetadata objects with the same name so
         # we specify the _DimensionalMetadata instance to ensure it returns the
         # correct one.
         simplecube.cell_measure("cell_area").rename("wibble")
@@ -2950,7 +2950,7 @@ class Test__dimensional_metadata:
 class TestReprs:
     """
     Confirm that str(cube), repr(cube) and cube.summary() work by creating a fresh
-    fresh :class:`iris._representation.cube_printout.CubePrinter` object, and using it
+    :class:`iris._representation.cube_printout.CubePrinter` object, and using it
     in the expected ways.
 
     Notes

@@ -752,10 +752,7 @@ class TestHtmlRepr:
         test_cubelist = CubeList([])
 
         target = "iris.experimental.representation.CubeListRepresentation"
-        instance_mock = mock.MagicMock(
-            repr_html=mock.MagicMock()  # return_value='')  # NB this must return a string
-        )
-        with mock.patch(target, return_value=instance_mock) as class_mock:
+        with mock.patch(target) as class_mock:
             # Exercise the function-under-test.
             test_cubelist._repr_html_()
 
@@ -763,7 +760,7 @@ class TestHtmlRepr:
             # "CubeListRepresentation()" was called exactly once, with the cubelist as arg
             mock.call(test_cubelist)
         ]
-        assert instance_mock.repr_html.call_args_list == [
+        assert class_mock.return_value.repr_html.call_args_list == [
             # "CubeListRepresentation(cubelist).repr_html()" was called exactly once, with no args
             mock.call()
         ]
