@@ -302,8 +302,12 @@ class TestAsDataFrame(tests.IrisTest):
         aux2_coord = AuxCoord(["ten", "eleven"], long_name="words2")
         cube.add_dim_coord(dim0_coord, 0)
         cube.add_dim_coord(dim1_coord, 1)
-        cube.add_aux_coord(aux0_coord, 0)  # Two aux coords associated with dim0
-        cube.add_aux_coord(aux1_coord, 0)  # Two aux coords associated with dim0
+        cube.add_aux_coord(
+            aux0_coord, 0
+        )  # Two aux coords associated with dim0
+        cube.add_aux_coord(
+            aux1_coord, 0
+        )  # Two aux coords associated with dim0
         cube.add_aux_coord(aux2_coord, 1)
         expected_milk = np.repeat([15, 16], 2)
         expected_bar = np.tile([10, 11], 2)
