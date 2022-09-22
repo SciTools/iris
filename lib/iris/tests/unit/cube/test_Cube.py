@@ -15,6 +15,7 @@ from unittest import mock
 from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris._lazy_data import as_lazy_data
 import iris.analysis
@@ -562,6 +563,67 @@ class Test_collapsed__warning(tests.IrisTest):
             self.cube.collapsed(coords, aggregator)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
+
+
+class Test_collapsed_coord_with_3_bounds(tests.IrisTest):
+    def setUp(self):
+        self.cube = Cube([1, 2])
+
+        bounds = [[0.0, 1.0, 2.0], [2.0, 3.0, 4.0]]
+        lat = AuxCoord([1.0, 2.0], bounds=bounds, standard_name="latitude")
+        lon = AuxCoord([1.0, 2.0], bounds=bounds, standard_name="longitude")
+
+        self.cube.add_aux_coord(lat, 0)
+        self.cube.add_aux_coord(lon, 0)
+
+    def _assert_warn_cannot_check_contiguity(self, warn):
+        # Ensure that warning is raised.
+        for coord in ["latitude", "longitude"]:
+            msg = (
+                f"Cannot check if coordinate is contiguous: Invalid "
+                f"operation for '{coord}', with 3 bound(s). Contiguous "
+                f"bounds are only defined for 1D coordinates with 2 "
+                f"bounds. Metadata may not be fully descriptive for "
+                f"'{coord}'. Ignoring bounds."
+            )
+            self.assertIn(mock.call(msg), warn.call_args_list)
+
+    def _assert_cube_as_expected(self, cube):
+        """Ensure that cube data and coordiantes are as expected."""
+        self.assertArrayEqual(cube.data, np.array(3))
+
+        lat = cube.coord("latitude")
+        self.assertArrayAlmostEqual(lat.points, np.array([1.5]))
+        self.assertArrayAlmostEqual(lat.bounds, np.array([[1.0, 2.0]]))
+
+        lon = cube.coord("longitude")
+        self.assertArrayAlmostEqual(lon.points, np.array([1.5]))
+        self.assertArrayAlmostEqual(lon.bounds, np.array([[1.0, 2.0]]))
+
+    def test_collapsed_lat_with_3_bounds(self):
+        """Collapse latitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed("latitude", iris.analysis.SUM)
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
+
+    def test_collapsed_lon_with_3_bounds(self):
+        """Collapse longitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed(
+                "longitude", iris.analysis.SUM
+            )
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
+
+    def test_collapsed_lat_lon_with_3_bounds(self):
+        """Collapse latitude and longitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed(
+                ["latitude", "longitude"], iris.analysis.SUM
+            )
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
 
 
 class Test_summary(tests.IrisTest):
@@ -2873,6 +2935,66 @@ class Test__eq__meta(tests.IrisTest):
         cube2.add_cell_method(cmth1)
         cube2.add_cell_method(cmth2)
         self.assertTrue(cube1 == cube2)
+
+
+class Test__dimensional_metadata:
+    @pytest.fixture
+    def cube(self):
+        return stock.simple_2d_w_cell_measure_ancil_var()
+
+    def test_not_found(self, cube):
+        with pytest.raises(KeyError, match="was not found in"):
+            cube._dimensional_metadata("grid_latitude")
+
+    def test_dim_coord_name_found(self, cube):
+        res = cube._dimensional_metadata("bar")
+        assert res == cube.coord("bar")
+
+    def test_dim_coord_instance_found(self, cube):
+        res = cube._dimensional_metadata(cube.coord("bar"))
+        assert res == cube.coord("bar")
+
+    def test_aux_coord_name_found(self, cube):
+        res = cube._dimensional_metadata("wibble")
+        assert res == cube.coord("wibble")
+
+    def test_aux_coord_instance_found(self, cube):
+        res = cube._dimensional_metadata(cube.coord("wibble"))
+        assert res == cube.coord("wibble")
+
+    def test_cell_measure_name_found(self, cube):
+        res = cube._dimensional_metadata("cell_area")
+        assert res == cube.cell_measure("cell_area")
+
+    def test_cell_measure_instance_found(self, cube):
+        res = cube._dimensional_metadata(cube.cell_measure("cell_area"))
+        assert res == cube.cell_measure("cell_area")
+
+    def test_ancillary_var_name_found(self, cube):
+        res = cube._dimensional_metadata("quality_flag")
+        assert res == cube.ancillary_variable("quality_flag")
+
+    def test_ancillary_var_instance_found(self, cube):
+        res = cube._dimensional_metadata(
+            cube.ancillary_variable("quality_flag")
+        )
+        assert res == cube.ancillary_variable("quality_flag")
+
+    def test_two_with_same_name(self, cube):
+        # If a cube has two _DimensionalMetadata objects with the same name, the
+        # current behaviour results in _dimensional_metadata returning the first
+        # one it finds.
+        cube.cell_measure("cell_area").rename("wibble")
+        res = cube._dimensional_metadata("wibble")
+        assert res == cube.coord("wibble")
+
+    def test_two_with_same_name_specify_instance(self, cube):
+        # The cube has two _DimensionalMetadata objects with the same name so
+        # we specify the _DimensionalMetadata instance to ensure it returns the
+        # correct one.
+        cube.cell_measure("cell_area").rename("wibble")
+        res = cube._dimensional_metadata(cube.cell_measure("wibble"))
+        assert res == cube.cell_measure("wibble")
 
 
 if __name__ == "__main__":
