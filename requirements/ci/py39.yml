@@ -7,20 +7,21 @@ dependencies:
   - python =3.9
 
 # Setup dependencies.
-  - setuptools >=45
+  - setuptools >=64
   - setuptools-scm >=7
 
 # Core dependencies.
   - cartopy >=0.20
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2
+  - dask-core >=2.26
   - matplotlib
   - netcdf4
   - numpy >=1.19
   - python-xxhash
   - pyproj
   - scipy
+  - shapely !=1.8.3
 
 # Optional dependencies.
   - esmpy >=7.0

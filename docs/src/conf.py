@@ -25,7 +25,9 @@ import ntpath
 import os
 from pathlib import Path
 import re
+from subprocess import run
 import sys
+from urllib.parse import quote
 import warnings
 
 
@@ -42,11 +44,21 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 
 # This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
+if rtd_version is not None:
+    # Make rtd_version safe for use in shields.io badges.
+    rtd_version = rtd_version.replace("_", "__")
+    rtd_version = rtd_version.replace("-", "--")
+    rtd_version = quote(rtd_version)
+
+# branch, tag, external (for pull request builds), or unknown.
+rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
 
 # For local testing purposes we can force being on RTD and the version
 # on_rtd = True           # useful for testing
 # rtd_version = "latest"  # useful for testing
 # rtd_version = "stable"  # useful for testing
+# rtd_version_type = "tag"  # useful for testing
+# rtd_version = "my_branch"   # useful for testing
 
 if on_rtd:
     autolog("Build running on READTHEDOCS server")
@@ -85,10 +97,7 @@ author = "Iris Developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version|, also used in various other places throughout the built documents.
-
 version = get_version("scitools-iris")
-if version.endswith("+dirty"):
-    version = version[: -len("+dirty")]
 release = version
 autolog(f"Iris Version = {version}")
 autolog(f"Iris Release = {release}")
@@ -225,6 +234,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -302,6 +312,9 @@ html_theme_options = {
     "show_toc_level": 1,
 }
 
+rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
+commit_sha = rev_parse.stdout.decode().strip()
+
 html_context = {
     # pydata_theme
     "github_repo": "iris",
@@ -311,9 +324,11 @@ html_context = {
     # custom
     "on_rtd": on_rtd,
     "rtd_version": rtd_version,
+    "rtd_version_type": rtd_version_type,
     "version": version,
     "copyright_years": copyright_years,
     "python_version": build_python_version,
+    "commit_sha": commit_sha,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

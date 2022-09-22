@@ -131,20 +131,26 @@ def decode_uri(uri, default="file"):
     return scheme, part
 
 
-def expand_filespecs(file_specs):
+def expand_filespecs(file_specs, files_expected=True):
     """
     Find all matching file paths from a list of file-specs.
 
-    Args:
+    Parameters
+    ----------
+    file_specs : iterable of str
+        File paths which may contain ``~`` elements or wildcards.
+    files_expected : bool, default=True
+        Whether file is expected to exist (i.e. for load).
 
-    * file_specs (iterable of string):
-        File paths which may contain '~' elements or wildcards.
-
-    Returns:
-        A well-ordered list of matching absolute file paths.
-        If any of the file-specs match no existing files, an
-        exception is raised.
-
+    Returns
+    -------
+    list of str
+        if files_expected is ``True``:
+            A well-ordered list of matching absolute file paths.
+            If any of the file-specs match no existing files, an
+            exception is raised.
+        if files_expected is ``False``:
+            A list of expanded file paths.
     """
     # Remove any hostname component - currently unused
     filenames = [
@@ -154,26 +160,30 @@ def expand_filespecs(file_specs):
         for fn in file_specs
     ]
 
-    # Try to expand all filenames as globs
-    glob_expanded = OrderedDict(
-        [[fn, sorted(glob.glob(fn))] for fn in filenames]
-    )
+    if files_expected:
+        # Try to expand all filenames as globs
+        glob_expanded = OrderedDict(
+            [[fn, sorted(glob.glob(fn))] for fn in filenames]
+        )
 
-    # If any of the specs expanded to an empty list then raise an error
-    all_expanded = glob_expanded.values()
-
-    if not all(all_expanded):
-        msg = "One or more of the files specified did not exist:"
-        for pattern, expanded in glob_expanded.items():
-            if expanded:
-                msg += '\n    - "{}" matched {} file(s)'.format(
-                    pattern, len(expanded)
-                )
-            else:
-                msg += '\n    * "{}" didn\'t match any files'.format(pattern)
-        raise IOError(msg)
-
-    return [fname for fnames in all_expanded for fname in fnames]
+        # If any of the specs expanded to an empty list then raise an error
+        all_expanded = glob_expanded.values()
+        if not all(all_expanded):
+            msg = "One or more of the files specified did not exist:"
+            for pattern, expanded in glob_expanded.items():
+                if expanded:
+                    msg += '\n    - "{}" matched {} file(s)'.format(
+                        pattern, len(expanded)
+                    )
+                else:
+                    msg += '\n    * "{}" didn\'t match any files'.format(
+                        pattern
+                    )
+            raise IOError(msg)
+        result = [fname for fnames in all_expanded for fname in fnames]
+    else:
+        result = filenames
+    return result
 
 
 def load_files(filenames, callback, constraints=None):
@@ -356,65 +366,64 @@ def save(source, target, saver=None, **kwargs):
     A custom saver can be provided to the function to write to a different
     file format.
 
-    Args:
-
-    * source:
-        :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
-        sequence of cubes.
-    * target:
-        A filename (or writeable, depending on file format).
+    Parameters
+    ----------
+    source : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
+    target : str or pathlib.PurePath or io.TextIOWrapper
         When given a filename or file, Iris can determine the
-        file format. Filename can be given as a string or
-        :class:`pathlib.PurePath`.
-
-    Kwargs:
-
-    * saver:
-        Optional. Specifies the file format to save.
+        file format.
+    saver : str or function, optional
+        Specifies the file format to save.
         If omitted, Iris will attempt to determine the format.
-
         If a string, this is the recognised filename extension
         (where the actual filename may not have it).
+
         Otherwise the value is a saver function, of the form:
         ``my_saver(cube, target)`` plus any custom keywords. It
         is assumed that a saver will accept an ``append`` keyword
-        if it's file format can handle multiple cubes. See also
+        if its file format can handle multiple cubes. See also
         :func:`iris.io.add_saver`.
+    **kwargs : dict, optional
+        All other keywords are passed through to the saver function; see the
+        relevant saver documentation for more information on keyword arguments.
 
-    All other keywords are passed through to the saver function; see the
-    relevant saver documentation for more information on keyword arguments.
+    Warnings
+    --------
+    Saving a cube whose data has been loaded lazily
+    (if `cube.has_lazy_data()` returns `True`) to the same file it expects
+    to load data from will cause both the data in-memory and the data on
+    disk to be lost.
 
-    Examples::
+    .. code-block:: python
 
-        # Save a cube to PP
-        iris.save(my_cube, "myfile.pp")
+       cube = iris.load_cube("somefile.nc")
+       # The next line causes data loss in 'somefile.nc' and the cube.
+       iris.save(cube, "somefile.nc")
 
-        # Save a cube list to a PP file, appending to the contents of the file
-        # if it already exists
-        iris.save(my_cube_list, "myfile.pp", append=True)
+    In general, overwriting a file which is the source for any lazily loaded
+    data can result in corruption. Users should proceed with caution when
+    attempting to overwrite an existing file.
 
-        # Save a cube to netCDF, defaults to NETCDF4 file format
-        iris.save(my_cube, "myfile.nc")
+    Examples
+    --------
+    >>> # Setting up
+    >>> import iris
+    >>> my_cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+    >>> my_cube_list = iris.load(iris.sample_data_path('space_weather.nc'))
 
-        # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
-        iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
+    >>> # Save a cube to PP
+    >>> iris.save(my_cube, "myfile.pp")
 
-    .. warning::
+    >>> # Save a cube list to a PP file, appending to the contents of the file
+    >>> # if it already exists
+    >>> iris.save(my_cube_list, "myfile.pp", append=True)
 
-       Saving a cube whose data has been loaded lazily
-       (if `cube.has_lazy_data()` returns `True`) to the same file it expects
-       to load data from will cause both the data in-memory and the data on
-       disk to be lost.
+    >>> # Save a cube to netCDF, defaults to NETCDF4 file format
+    >>> iris.save(my_cube, "myfile.nc")
 
-       .. code-block:: python
+    >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
+    >>> iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
-          cube = iris.load_cube("somefile.nc")
-          # The next line causes data loss in 'somefile.nc' and the cube.
-          iris.save(cube, "somefile.nc")
-
-       In general, overwriting a file which is the source for any lazily loaded
-       data can result in corruption. Users should proceed with caution when
-       attempting to overwrite an existing file.
 
     """
     from iris.cube import Cube, CubeList
@@ -423,6 +432,8 @@ def save(source, target, saver=None, **kwargs):
     if isinstance(target, pathlib.PurePath):
         target = str(target)
     if isinstance(target, str) and saver is None:
+        # Converts tilde or wildcards to absolute path
+        (target,) = expand_filespecs([str(target)], False)
         saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)

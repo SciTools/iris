@@ -20,7 +20,13 @@ import iris.aux_factory
 from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.coords import (
+    AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
+    CellMethod,
+    DimCoord,
+)
 from iris.cube import Cube
 
 from ._stock_2d_latlons import (  # noqa
@@ -401,6 +407,35 @@ def simple_2d_w_multidim_and_scalars():
     cube.add_aux_coord(yet_an_other)
     cube.add_aux_coord(my_multi_dim_coord, [0, 1])
 
+    return cube
+
+
+def simple_2d_w_cell_measure_ancil_var():
+    """
+    Returns a two dimensional cube with a CellMeasure and AncillaryVariable.
+
+    >>> print(simple_2d_w_cell_measure_ancil_var())
+    thingness / (1)                     (bar: 3; foo: 4)
+        Dimension coordinates:
+            bar                             x       -
+            foo                             -       x
+        Cell measures:
+            cell_area                       x       x
+        Ancillary variables:
+            quality_flag                    x       -
+        Scalar coordinates:
+            wibble                      1
+
+    """
+    cube = simple_2d()
+    cube.add_aux_coord(AuxCoord([1], long_name="wibble"), None)
+    cube.add_ancillary_variable(
+        AncillaryVariable([1, 2, 3], standard_name="quality_flag"), 0
+    )
+    cube.add_cell_measure(
+        CellMeasure(np.arange(12).reshape(3, 4), standard_name="cell_area"),
+        (0, 1),
+    )
     return cube
 
 

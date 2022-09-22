@@ -24,7 +24,7 @@ This document explains the changes made to Iris for this release
 
 NOTE: section below is a template for bugfix patches
 ====================================================
-    (Please remove this section when creating an initial 'dev.rst')
+    (Please remove this section when creating an initial 'latest.rst')
 
 v3.X.X (DD MMM YYYY)
 ====================
@@ -41,8 +41,8 @@ v3.X.X (DD MMM YYYY)
 
 NOTE: section above is a template for bugfix patches
 ====================================================
-    (Please remove this section when creating an initial 'dev.rst')
-    
+    (Please remove this section when creating an initial 'latest.rst')
+
 
 
 📢 Announcements

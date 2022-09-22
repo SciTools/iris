@@ -24,6 +24,8 @@ import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data
+from iris.common import SERVICES
+from iris.common.lenient import _lenient_client
 import iris.exceptions
 
 
@@ -1094,7 +1096,7 @@ def format_array(arr):
     return result
 
 
-def new_axis(src_cube, scalar_coord=None):
+def new_axis(src_cube, scalar_coord=None, expand_extras=()):
     """
     Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
@@ -1109,9 +1111,16 @@ def new_axis(src_cube, scalar_coord=None):
     * scalar_coord (:class:`iris.coord.Coord` or 'string')
         Scalar coordinate to promote to a dimension coordinate.
 
+    * expand_extras (iterable)
+        Auxiliary coordinates, ancillary variables and cell measures which will
+        be expanded so that they map to the new dimension as well as the
+        existing dimensions.
+
     Returns:
         A new :class:`iris.cube.Cube` instance with one extra leading dimension
-        (length 1).
+        (length 1). Chosen auxiliary coordinates, cell measures and ancillary
+        variables will also be given an additional dimension, associated with
+        the leading dimension of the cube.
 
     For example::
 
@@ -1120,40 +1129,83 @@ def new_axis(src_cube, scalar_coord=None):
         >>> ncube = iris.util.new_axis(cube, 'time')
         >>> ncube.shape
         (1, 360, 360)
-
     """
-    from iris.coords import DimCoord
-    from iris.cube import Cube
+
+    def _reshape_data_array(data_manager):
+        # Indexing numpy arrays requires loading deferred data here returning a
+        # copy of the data with a new leading dimension.
+        # If the data of the source cube (or values of the dimensional metadata
+        # object) is a Masked Constant, it is changed here to a Masked Array to
+        # allow the mask to gain an extra dimension with the data.
+        if data_manager.has_lazy_data():
+            new_data = data_manager.lazy_data()[None]
+        else:
+            if isinstance(data_manager.data, ma.core.MaskedConstant):
+                new_data = ma.array([np.nan], mask=[True])
+            else:
+                new_data = data_manager.data[None]
+        return new_data
+
+    def _handle_dimensional_metadata(
+        cube, dm_item, cube_add_method, expand_extras
+    ):
+        cube_dims = dm_item.cube_dims(cube)
+        if dm_item in expand_extras:
+            if cube_dims == ():
+                new_dm_item, new_dims = dm_item.copy(), 0
+            else:
+                new_dims = np.concatenate([(0,), np.array(cube_dims) + 1])
+                new_values = _reshape_data_array(dm_item._values_dm)
+                kwargs = dm_item.metadata._asdict()
+                new_dm_item = dm_item.__class__(new_values, **kwargs)
+                try:
+                    if dm_item.has_bounds():
+                        new_dm_item.bounds = _reshape_data_array(
+                            dm_item._bounds_dm
+                        )
+                except AttributeError:
+                    pass
+        else:
+            new_dims = np.array(cube_dims) + 1
+            new_dm_item = dm_item.copy()
+
+        cube_add_method(new_dm_item, new_dims)
 
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
+        if not scalar_coord.shape == (1,):
+            emsg = scalar_coord.name() + "is not a scalar coordinate."
+            raise ValueError(emsg)
 
-    # Indexing numpy arrays requires loading deferred data here returning a
-    # copy of the data with a new leading dimension.
-    # If the source cube is a Masked Constant, it is changed here to a Masked
-    # Array to allow the mask to gain an extra dimension with the data.
-    if src_cube.has_lazy_data():
-        new_cube = Cube(src_cube.lazy_data()[None])
-    else:
-        if isinstance(src_cube.data, ma.core.MaskedConstant):
-            new_data = ma.array([np.nan], mask=[True])
-        else:
-            new_data = src_cube.data[None]
-        new_cube = Cube(new_data)
+    expand_extras = [
+        src_cube._dimensional_metadata(item) for item in expand_extras
+    ]
 
+    new_cube = iris.cube.Cube(_reshape_data_array(src_cube._data_manager))
     new_cube.metadata = src_cube.metadata
-
-    for coord in src_cube.aux_coords:
-        if scalar_coord and scalar_coord == coord:
-            dim_coord = DimCoord.from_coord(coord)
-            new_cube.add_dim_coord(dim_coord, 0)
-        else:
-            dims = np.array(src_cube.coord_dims(coord)) + 1
-            new_cube.add_aux_coord(coord.copy(), dims)
 
     for coord in src_cube.dim_coords:
         coord_dims = np.array(src_cube.coord_dims(coord)) + 1
         new_cube.add_dim_coord(coord.copy(), coord_dims)
+
+    for coord in src_cube.aux_coords:
+        if scalar_coord and scalar_coord == coord:
+            dim_coord = iris.coords.DimCoord.from_coord(coord)
+            new_cube.add_dim_coord(dim_coord, 0)
+        else:
+            _handle_dimensional_metadata(
+                src_cube, coord, new_cube.add_aux_coord, expand_extras
+            )
+
+    for cm in src_cube.cell_measures():
+        _handle_dimensional_metadata(
+            src_cube, cm, new_cube.add_cell_measure, expand_extras
+        )
+
+    for av in src_cube.ancillary_variables():
+        _handle_dimensional_metadata(
+            src_cube, av, new_cube.add_ancillary_variable, expand_extras
+        )
 
     nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
     coord_mapping = {
@@ -1754,29 +1806,123 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     return bad_points_boolean
 
 
-def mask_cube(cube, points_to_mask):
+def _mask_array(array, points_to_mask, in_place=False):
     """
-    Masks any cells in the data array which correspond to cells marked `True`
-    in the `points_to_mask` array.
+    Apply masking to array where points_to_mask is True/non-zero.  Designed to
+    work with iris.analysis.maths._binary_op_common so array and points_to_mask
+    will be broadcastable to each other.  array and points_to_mask may be numpy
+    or dask types (or one of each).
 
-    Args:
-
-    * cube (`iris.cube.Cube`):
-        A 2-dimensional instance of :class:`iris.cube.Cube`.
-
-    * points_to_mask (`numpy.ndarray` of bool):
-        A 2d boolean array of Truth values representing points to mask in the
-        x and y arrays of the cube.
-
-    Returns:
-
-    * result (`iris.cube.Cube`):
-        A cube whose data array is masked at points specified by input array.
+    If array is lazy then in_place is ignored: _math_op_common will use the
+    returned value regardless of in_place, so we do not need to implement it
+    here.  If in_place is True then array must be a np.ma.MaskedArray or dask
+    array (must be a dask array if points_to_mask is lazy).
 
     """
-    cube.data = ma.masked_array(cube.data)
-    cube.data[points_to_mask] = ma.masked
-    return cube
+    # Decide which array library to use.
+    if is_lazy_data(points_to_mask) or is_lazy_data(array):
+        al = da
+        if not is_lazy_data(array) and in_place:
+            # Non-lazy array and lazy mask should not come up for in_place
+            # case, due to _binary_op_common handling added at #3790.
+            raise TypeError(
+                "Cannot apply lazy mask in-place to a non-lazy array."
+            )
+        in_place = False
+
+    elif in_place and not isinstance(array, ma.MaskedArray):
+        raise TypeError("Cannot apply a mask in-place to a plain numpy array.")
+    else:
+        al = np
+
+    points_to_mask = points_to_mask.astype(bool)
+
+    # Treat any masked points on our mask as False.
+    points_to_mask = al.ma.filled(points_to_mask, False)
+
+    # Get broadcasted views of the arrays.  Note that broadcast_arrays does not
+    # preserve masks, so we need to explicitly handle any exising mask on array.
+    array_mask = al.ma.getmaskarray(array)
+
+    array_data, array_mask, points_to_mask = al.broadcast_arrays(
+        array, array_mask, points_to_mask
+    )
+
+    new_mask = al.logical_or(array_mask, points_to_mask)
+
+    if in_place:
+        array.mask = new_mask
+        result = array  # Resolve uses returned value even if working in place.
+    else:
+        # Return a new, independent array.
+        result = al.ma.masked_array(array_data.copy(), mask=new_mask)
+
+    return result
+
+
+@_lenient_client(services=SERVICES)
+def mask_cube(cube, points_to_mask, in_place=False, dim=None):
+    """
+    Masks any cells in the cube's data array which correspond to cells marked
+    ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be
+    specified as a :class:`numpy.ndarray`, :class:`iris.coords.Coord` or
+    :class:`iris.cube.Cube`, following the same broadcasting approach as cube
+    arithmetic (see :ref:`cube maths`).
+
+    Parameters
+    ----------
+
+    cube : iris.cube.Cube
+        Cube containing data that requires masking.
+
+    points_to_mask : numpy.ndarray, iris.coords.Coord or iris.cube.Cube
+        Specifies booleans (or ones and zeros) indicating which points will be masked.
+
+    in_place : bool, default=False
+        If `True`, masking is applied to the input cube.  Otherwise a copy is masked
+        and returned.
+
+    dim : int, optional
+        If `points_to_mask` is a coord which does not exist on the cube, specify the
+        dimension to which it should be mapped.
+
+    Returns
+    -------
+
+    iris.cube.Cube
+        A cube whose data array is masked at points specified by ``points_to_mask``.
+
+    Notes
+    -----
+
+    If either ``cube`` or ``points_to_mask`` is lazy, the result will be lazy.
+
+    """
+    if in_place and not cube.has_lazy_data():
+        # Ensure cube data is masked type so we can work on it in-place.
+        cube.data = ma.asanyarray(cube.data)
+        mask_function = functools.partial(_mask_array, in_place=True)
+    else:
+        mask_function = _mask_array
+
+    input_metadata = cube.metadata
+    result = iris.analysis.maths._binary_op_common(
+        mask_function,
+        "mask",
+        cube,
+        points_to_mask,
+        cube.units,
+        in_place=in_place,
+        dim=dim,
+        sanitise_metadata=False,
+    )
+
+    # Resolve combines the metadata from the two operands, but we want to
+    # preserve the metadata from the (first) input cube.
+    result.metadata = input_metadata
+
+    if not in_place:
+        return result
 
 
 def equalise_attributes(cubes):
