@@ -29,6 +29,7 @@ import iris
 from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
+from iris.fileformats import pp
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
@@ -501,9 +502,21 @@ def _as_pandas_coord(coord):
 def _get_dim_combinations(ndim):
     """Get all possible dim coordinate combinations."""
     dimcomb = []
-    for l in range(1, ndim + 1):
-        dimcomb += list(combinations(range(ndim), l))
+    for dim_length in range(1, ndim + 1):
+        dimcomb += list(combinations(range(ndim), dim_length))
     return dimcomb
+
+
+def _make_coord_list(cube):
+    outlist = []
+    ndims = cube.ndim
+    for dimn in range(ndims):
+        for coord in cube.coords(dimensions=dimn, dim_coords=True):
+            if not coord:
+                outlist += [dimn, None]
+            else:
+                outlist += [dimn, coord]
+    return outlist
 
 
 def as_data_frame(
@@ -608,6 +621,19 @@ def as_data_frame(
 
 
     """
+    # Checks
+    if not isinstance(cube, iris.cube.Cube):
+        raise ValueError(f"Input must be an iris.cube.Cube instance")
+    if add_global_attributes:
+        global_attribute_names = list(cube.attributes.keys())
+        for global_attribute in add_global_attributes:
+            if (
+                global_attribute not in global_attribute_names
+            ):  # Check global attribute exists
+                raise ValueError(
+                    f'"{global_attribute}" not found in cube attributes'
+                )
+
     if copy:
         data = cube.data.copy()
     else:
@@ -616,29 +642,17 @@ def as_data_frame(
         data = data.astype("f").filled(np.nan)
 
     # Extract dim coord information
-    dim_coord_list = list(
-        chain.from_iterable(
-            [
-                [
-                    [n, coord]
-                    for coord in cube.coords(dimensions=n, dim_coords=True)
-                ]
-                for n in range(cube.ndim)
-            ]
-        )
-    )
-    # Initalise recieving lists for DataFrame dim information
-    coords = list(range(cube.ndim))
-    coord_names = list(range(cube.ndim))
-    for dim_index, dim_coord in dim_coord_list:
-        if not dim_coord:
-            # Create dummy dim coord information if dim coords not defined
-            coord_names[dim_index] = "dim" + str(dim_index)
-            coords[dim_index] = range(cube.shape[dim_index])
-        else:
-            coord_names[dim_index] = dim_coord.name()
-            coords[dim_index] = _as_pandas_coord(dim_coord)
-
+    dim_coord_list = [
+        [
+            cube.coords(dimensions=n, dim_coords=True)[0].name(),
+            _as_pandas_coord(cube.coords(dimensions=n, dim_coords=True)[0]),
+        ]
+        if cube.coords(dimensions=n, dim_coords=True)
+        else ["dim" + str(n), range(cube.shape[n])]
+        for n in range(cube.ndim)
+    ]
+    # Extract separate lists for dim names and dim values
+    coord_names, coords = list(zip(*dim_coord_list))
     # Make base DataFrame
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
     data_frame = pandas.DataFrame(
@@ -682,24 +696,15 @@ def as_data_frame(
 
     # Add global attribute information
     if add_global_attributes:
-        global_attribute_names = list(cube.attributes.keys())
-        for global_attribute in add_global_attributes:
-            if (
-                global_attribute not in global_attribute_names
-            ):  # Check global attribute exists
-                raise ValueError(f'"{global_attribute}" attribute not in cube')
-            else:
-                if isinstance(
-                    cube.attributes[global_attribute],
-                    iris.fileformats.pp.STASH,
-                ):
-                    data_frame[global_attribute] = str(
-                        cube.attributes[global_attribute]
-                    )
-                else:
-                    data_frame[global_attribute] = cube.attributes[
-                        global_attribute
-                    ]
+        if isinstance(
+            cube.attributes[global_attribute],
+            pp.STASH,
+        ):
+            data_frame[global_attribute] = str(
+                cube.attributes[global_attribute]
+            )
+        else:
+            data_frame[global_attribute] = cube.attributes[global_attribute]
 
     # Final sort by dim order
     if asmultiindex:
