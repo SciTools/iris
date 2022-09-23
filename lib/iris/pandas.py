@@ -539,16 +539,17 @@ def as_data_frame(
     copy: bool, default=True
         Whether the Pandas `DataFrame` is a copy of the the Cube :attr:`~iris.cube.Cube.data`.
         This option is provided to help with memory size concerns.
-    asmultiindex: bool, default=False
-        If True, returns a `DataFrame` with a `MultiIndex <https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html#pandas.MultiIndex>`_.
     add_aux_coord: bool, default=False
         If True, add all :attr:`~iris.cube.Cube.aux_coords` to add to the returned `DataFrame`.
     add_global_attributes: list of str, optional
-        Names of :attr:`~iris.cube.Cube.attributes` to add to the returned `DataFrame`.
+        Names of :attr:`~iris.cube.Cube.attributes` to add to the returned `DataFrame`. Raises an
+        error if the names are not found in :attr:`~iris.cube.Cube.attributes`.
 
     Returns
     -------
-    A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame`
+    :class:`~pandas.DataFrame`
+        A :class:`~pandas.DataFrame` with :class:`~iris.cube.Cube` dimensions
+        forming a :class:`~pandas.MultiIndex` 
 
     Notes
     -----
@@ -568,45 +569,69 @@ def as_data_frame(
     >>> cube = iris.load_cube(path)
     >>> df = ipd.as_data_frame(cube)
     >>> print(df)
-                            time  latitude   longitude  surface_temperature
-    0       2006-04-16 00:00:00 -4.999992    0.000000           301.659271
-    1       2006-04-16 00:00:00 -4.999992    0.833333           301.785004
-    2       2006-04-16 00:00:00 -4.999992    1.666667           301.820984
-    3       2006-04-16 00:00:00 -4.999992    2.500000           301.865234
-    4       2006-04-16 00:00:00 -4.999992    3.333333           301.926819
-    ...                     ...       ...         ...                  ...
-    419899  2010-09-16 00:00:00  4.444450  355.833313           298.779938
-    419900  2010-09-16 00:00:00  4.444450  356.666656           298.913147
-    419901  2010-09-16 00:00:00  4.444450  357.500000                  NaN
-    419902  2010-09-16 00:00:00  4.444450  358.333313                  NaN
-    419903  2010-09-16 00:00:00  4.444450  359.166656           298.995148
+                                                surface_temperature
+    time                latitude  longitude                      
+    2006-04-16 00:00:00 -4.999992 0.000000             301.659271
+                                  0.833333             301.785004
+                                  1.666667             301.820984
+                                  2.500000             301.865234
+                                  3.333333             301.926819
+    ...                                                       ...
+    2010-09-16 00:00:00  4.444450 355.833313           298.779938
+                                  356.666656           298.913147
+                                  357.500000                  NaN
+                                  358.333313                  NaN
+                                  359.166656           298.995148
 
-    [419904 rows x 4 columns]
+    [419904 rows x 1 columns]
 
-    Using `add_aux_coord=True` maps `~iris.coords.AuxCoord` and scalar coordinate information
-    to the `~pandas.DataFrame`:
+
+    Using `add_aux_coord=True` maps :class:`~iris.coords.AuxCoord` and scalar coordinate information
+    to the :class:`~pandas.DataFrame`:
 
     >>> df = ipd.as_data_frame(cube, add_aux_coord=True)
     >>> print(df)
-                            time  latitude   longitude  surface_temperature  forecast_reference_time  forecast_period
-    0       2006-04-16 00:00:00 -4.999992    0.000000           301.659271                 318108.0                0
-    1       2006-04-16 00:00:00 -4.999992    0.833333           301.785004                 318108.0                0
-    2       2006-04-16 00:00:00 -4.999992    1.666667           301.820984                 318108.0                0
-    3       2006-04-16 00:00:00 -4.999992    2.500000           301.865234                 318108.0                0
-    4       2006-04-16 00:00:00 -4.999992    3.333333           301.926819                 318108.0                0
-    ...                     ...       ...         ...                  ...                      ...              ...
-    419899  2010-09-16 00:00:00  4.444450  355.833313           298.779938                 356844.0                0
-    419900  2010-09-16 00:00:00  4.444450  356.666656           298.913147                 356844.0                0
-    419901  2010-09-16 00:00:00  4.444450  357.500000                  NaN                 356844.0                0
-    419902  2010-09-16 00:00:00  4.444450  358.333313                  NaN                 356844.0                0
-    419903  2010-09-16 00:00:00  4.444450  359.166656           298.995148                 356844.0                0
+                                            surface_temperature  forecast_reference_time  forecast_period
+    time                latitude  longitude                                                                
+    2006-04-16 00:00:00 -4.999992 0.000000             301.659271                 318108.0                0
+                                  0.833333             301.785004                 318108.0                0
+                                  1.666667             301.820984                 318108.0                0
+                                  2.500000             301.865234                 318108.0                0
+                                  3.333333             301.926819                 318108.0                0
+    ...                                                       ...                      ...              ...
+    2010-09-16 00:00:00  4.444450 355.833313           298.779938                 356844.0                0
+                                  356.666656           298.913147                 356844.0                0
+                                  357.500000                  NaN                 356844.0                0
+                                  358.333313                  NaN                 356844.0                0
+                                  359.166656           298.995148                 356844.0                0
 
-    [419904 rows x 6 columns]
+    [419904 rows x 3 columns]
 
-    To add netCDF global attribution information to the `~pandas.DataFrame`, specifiy the attribute using the `add_global_attributes`
+    To add netCDF global attribution information to the :class:`~pandas.DataFrame`, specifiy the attribute using the `add_global_attributes`
     keyword:
 
     >>> df = ipd.as_data_frame(cube, add_aux_coord=True, add_global_attributes=['STASH'])
+    >>> print(df)
+                                            surface_temperature  forecast_reference_time  forecast_period       STASH
+    time                latitude  longitude                                                                            
+    2006-04-16 00:00:00 -4.999992 0.000000             301.659271                 318108.0                0  m01s00i024
+                                  0.833333             301.785004                 318108.0                0  m01s00i024
+                                  1.666667             301.820984                 318108.0                0  m01s00i024
+                                  2.500000             301.865234                 318108.0                0  m01s00i024
+                                  3.333333             301.926819                 318108.0                0  m01s00i024
+    ...                                                       ...                      ...              ...         ...
+    2010-09-16 00:00:00  4.444450 355.833313           298.779938                 356844.0                0  m01s00i024
+                                  356.666656           298.913147                 356844.0                0  m01s00i024
+                                  357.500000                  NaN                 356844.0                0  m01s00i024
+                                  358.333313                  NaN                 356844.0                0  m01s00i024
+                                  359.166656           298.995148                 356844.0                0  m01s00i024
+
+    [419904 rows x 4 columns]
+
+    To return a :class:`~pandas.DataFrame` without a :class:`~pandas.MultiIndex` use :meth:`~pandas.DataFrame.reset_index`. Optionally 
+    use `inplace=True` keyword to modify the DataFrame rather than creating a new one:
+
+    >>> df.reset_index(inplace=True)
     >>> print(df)
                             time  latitude   longitude  ...  forecast_reference_time  forecast_period       STASH
     0       2006-04-16 00:00:00 -4.999992    0.000000  ...                 318108.0                0  m01s00i024
@@ -622,7 +647,6 @@ def as_data_frame(
     419903  2010-09-16 00:00:00  4.444450  359.166656  ...                 356844.0                0  m01s00i024
 
     [419904 rows x 7 columns]
-
 
     """
     # Checks
