@@ -656,14 +656,14 @@ def as_data_frame(
     2         301.820984
     3         301.865234
     4         301.926819
-                ...    
+                ...
     419899    298.779938
     419900    298.913147
     419901           NaN
     419902           NaN
     419903    298.995148
     Name: surface_temperature, Length: 419904, dtype: float32
-    
+
     """
     # Checks
     if not isinstance(cube, iris.cube.Cube):
