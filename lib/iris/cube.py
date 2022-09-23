@@ -185,6 +185,12 @@ class CubeList(list):
             )
             raise ValueError(msg)
 
+    def _repr_html_(self):
+        from iris.experimental.representation import CubeListRepresentation
+
+        representer = CubeListRepresentation(self)
+        return representer.repr_html()
+
     # TODO #370 Which operators need overloads?
 
     def __add__(self, other):

@@ -2876,64 +2876,176 @@ class Test__eq__meta(tests.IrisTest):
         self.assertTrue(cube1 == cube2)
 
 
+@pytest.fixture
+def simplecube():
+    return stock.simple_2d_w_cell_measure_ancil_var()
+
+
 class Test__dimensional_metadata:
-    @pytest.fixture
-    def cube(self):
-        return stock.simple_2d_w_cell_measure_ancil_var()
+    """
+    Tests for the "Cube._dimensional_data" method.
 
-    def test_not_found(self, cube):
+    NOTE: test could all be static methods, but that adds a line to each definition.
+    """
+
+    def test_not_found(self, simplecube):
         with pytest.raises(KeyError, match="was not found in"):
-            cube._dimensional_metadata("grid_latitude")
+            simplecube._dimensional_metadata("grid_latitude")
 
-    def test_dim_coord_name_found(self, cube):
-        res = cube._dimensional_metadata("bar")
-        assert res == cube.coord("bar")
+    def test_dim_coord_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("bar")
+        assert res == simplecube.coord("bar")
 
-    def test_dim_coord_instance_found(self, cube):
-        res = cube._dimensional_metadata(cube.coord("bar"))
-        assert res == cube.coord("bar")
+    def test_dim_coord_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(simplecube.coord("bar"))
+        assert res == simplecube.coord("bar")
 
-    def test_aux_coord_name_found(self, cube):
-        res = cube._dimensional_metadata("wibble")
-        assert res == cube.coord("wibble")
+    def test_aux_coord_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("wibble")
+        assert res == simplecube.coord("wibble")
 
-    def test_aux_coord_instance_found(self, cube):
-        res = cube._dimensional_metadata(cube.coord("wibble"))
-        assert res == cube.coord("wibble")
+    def test_aux_coord_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(simplecube.coord("wibble"))
+        assert res == simplecube.coord("wibble")
 
-    def test_cell_measure_name_found(self, cube):
-        res = cube._dimensional_metadata("cell_area")
-        assert res == cube.cell_measure("cell_area")
+    def test_cell_measure_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("cell_area")
+        assert res == simplecube.cell_measure("cell_area")
 
-    def test_cell_measure_instance_found(self, cube):
-        res = cube._dimensional_metadata(cube.cell_measure("cell_area"))
-        assert res == cube.cell_measure("cell_area")
-
-    def test_ancillary_var_name_found(self, cube):
-        res = cube._dimensional_metadata("quality_flag")
-        assert res == cube.ancillary_variable("quality_flag")
-
-    def test_ancillary_var_instance_found(self, cube):
-        res = cube._dimensional_metadata(
-            cube.ancillary_variable("quality_flag")
+    def test_cell_measure_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(
+            simplecube.cell_measure("cell_area")
         )
-        assert res == cube.ancillary_variable("quality_flag")
+        assert res == simplecube.cell_measure("cell_area")
 
-    def test_two_with_same_name(self, cube):
+    def test_ancillary_var_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("quality_flag")
+        assert res == simplecube.ancillary_variable("quality_flag")
+
+    def test_ancillary_var_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(
+            simplecube.ancillary_variable("quality_flag")
+        )
+        assert res == simplecube.ancillary_variable("quality_flag")
+
+    def test_two_with_same_name(self, simplecube):
         # If a cube has two _DimensionalMetadata objects with the same name, the
         # current behaviour results in _dimensional_metadata returning the first
         # one it finds.
-        cube.cell_measure("cell_area").rename("wibble")
-        res = cube._dimensional_metadata("wibble")
-        assert res == cube.coord("wibble")
+        simplecube.cell_measure("cell_area").rename("wibble")
+        res = simplecube._dimensional_metadata("wibble")
+        assert res == simplecube.coord("wibble")
 
-    def test_two_with_same_name_specify_instance(self, cube):
+    def test_two_with_same_name_specify_instance(self, simplecube):
         # The cube has two _DimensionalMetadata objects with the same name so
         # we specify the _DimensionalMetadata instance to ensure it returns the
         # correct one.
-        cube.cell_measure("cell_area").rename("wibble")
-        res = cube._dimensional_metadata(cube.cell_measure("wibble"))
-        assert res == cube.cell_measure("wibble")
+        simplecube.cell_measure("cell_area").rename("wibble")
+        res = simplecube._dimensional_metadata(
+            simplecube.cell_measure("wibble")
+        )
+        assert res == simplecube.cell_measure("wibble")
+
+
+class TestReprs:
+    """
+    Confirm that str(cube), repr(cube) and cube.summary() work by creating a fresh
+    :class:`iris._representation.cube_printout.CubePrinter` object, and using it
+    in the expected ways.
+
+    Notes
+    -----
+    This only tests code connectivity.  The functionality is tested elsewhere, in
+    `iris.tests.unit._representation.cube_printout.test_CubePrintout`.
+    """
+
+    # Note: logically this could be a staticmethod, but that seems to upset Pytest
+    @pytest.fixture
+    def patched_cubeprinter(self):
+        target = "iris._representation.cube_printout.CubePrinter"
+        instance_mock = mock.MagicMock(
+            to_string=mock.MagicMock(
+                return_value=""
+            )  # NB this must return a string
+        )
+        with mock.patch(target, return_value=instance_mock) as class_mock:
+            yield class_mock, instance_mock
+
+    @staticmethod
+    def _check_expected_effects(
+        simplecube, patched_cubeprinter, oneline, padding
+    ):
+        class_mock, instance_mock = patched_cubeprinter
+        assert class_mock.call_args_list == [
+            # "CubePrinter()" was called exactly once, with the cube as arg
+            mock.call(simplecube)
+        ]
+        assert instance_mock.to_string.call_args_list == [
+            # "CubePrinter(cube).to_string()" was called exactly once, with these args
+            mock.call(oneline=oneline, name_padding=padding)
+        ]
+
+    def test_str_effects(self, simplecube, patched_cubeprinter):
+        str(simplecube)
+        self._check_expected_effects(
+            simplecube, patched_cubeprinter, oneline=False, padding=35
+        )
+
+    def test_repr_effects(self, simplecube, patched_cubeprinter):
+        repr(simplecube)
+        self._check_expected_effects(
+            simplecube, patched_cubeprinter, oneline=True, padding=1
+        )
+
+    def test_summary_effects(self, simplecube, patched_cubeprinter):
+        simplecube.summary(
+            shorten=mock.sentinel.oneliner, name_padding=mock.sentinel.padding
+        )
+        self._check_expected_effects(
+            simplecube,
+            patched_cubeprinter,
+            oneline=mock.sentinel.oneliner,
+            padding=mock.sentinel.padding,
+        )
+
+
+class TestHtmlRepr:
+    """
+    Confirm that Cube._repr_html_() creates a fresh
+    :class:`iris.experimental.representation.CubeRepresentation` object, and uses it
+    in the expected way.
+
+    Notes
+    -----
+    This only tests code connectivity.  The functionality is tested elsewhere, in
+    `iris.tests.unit.experimental.representation.test_CubeRepresentation`.
+    """
+
+    # Note: logically this could be a staticmethod, but that seems to upset Pytest
+    @pytest.fixture
+    def patched_cubehtml(self):
+        target = "iris.experimental.representation.CubeRepresentation"
+        instance_mock = mock.MagicMock(
+            repr_html=mock.MagicMock(
+                return_value=""
+            )  # NB this must return a string
+        )
+        with mock.patch(target, return_value=instance_mock) as class_mock:
+            yield class_mock, instance_mock
+
+    @staticmethod
+    def test__repr_html__effects(simplecube, patched_cubehtml):
+        simplecube._repr_html_()
+
+        class_mock, instance_mock = patched_cubehtml
+        assert class_mock.call_args_list == [
+            # "CubeRepresentation()" was called exactly once, with the cube as arg
+            mock.call(simplecube)
+        ]
+        assert instance_mock.repr_html.call_args_list == [
+            # "CubeRepresentation(cube).repr_html()" was called exactly once, with no args
+            mock.call()
+        ]
 
 
 if __name__ == "__main__":

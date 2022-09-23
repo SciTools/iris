@@ -31,6 +31,21 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
+v3.3.1 |build_date| [unreleased]
+================================
+
+.. dropdown:: :opticon:`alert` v3.3.1 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches in this release of Iris include:
+
+#. `@pp-mo`_ fixed the Jupyter notebook display of :class:`~iris.cube.CubeList`.
+   (:issue:`4973`, :pull:`4976`)
+
+
 📢 Announcements
 ================
 
