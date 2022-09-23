@@ -1898,12 +1898,12 @@ class Coord(_DimensionalMetadata):
         if self.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(self)
 
-        points = self.core_points()
-        bounds = self.core_bounds()
+        points = self.points
+        bounds = self.bounds
         if self.units.is_time_reference():
-            points = self.units.num2date(self.core_points())
+            points = self.units.num2date(points)
             if self.has_bounds():
-                bounds = self.units.num2date(self.core_bounds())
+                bounds = self.units.num2date(bounds)
 
         if self.has_bounds():
             for point, bound in zip(points, bounds):
