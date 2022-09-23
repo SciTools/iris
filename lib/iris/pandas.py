@@ -25,13 +25,13 @@ try:
 except ImportError:
     from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
+import pdb
+
 import iris
 from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats import pp
-
-import pdb
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
@@ -549,7 +549,7 @@ def as_data_frame(
     -------
     :class:`~pandas.DataFrame`
         A :class:`~pandas.DataFrame` with :class:`~iris.cube.Cube` dimensions
-        forming a :class:`~pandas.MultiIndex` 
+        forming a :class:`~pandas.MultiIndex`
 
     Notes
     -----
@@ -570,7 +570,7 @@ def as_data_frame(
     >>> df = ipd.as_data_frame(cube)
     >>> print(df)
                                                 surface_temperature
-    time                latitude  longitude                      
+    time                latitude  longitude
     2006-04-16 00:00:00 -4.999992 0.000000             301.659271
                                   0.833333             301.785004
                                   1.666667             301.820984
@@ -592,7 +592,7 @@ def as_data_frame(
     >>> df = ipd.as_data_frame(cube, add_aux_coord=True)
     >>> print(df)
                                             surface_temperature  forecast_reference_time  forecast_period
-    time                latitude  longitude                                                                
+    time                latitude  longitude
     2006-04-16 00:00:00 -4.999992 0.000000             301.659271                 318108.0                0
                                   0.833333             301.785004                 318108.0                0
                                   1.666667             301.820984                 318108.0                0
@@ -613,7 +613,7 @@ def as_data_frame(
     >>> df = ipd.as_data_frame(cube, add_aux_coord=True, add_global_attributes=['STASH'])
     >>> print(df)
                                             surface_temperature  forecast_reference_time  forecast_period       STASH
-    time                latitude  longitude                                                                            
+    time                latitude  longitude
     2006-04-16 00:00:00 -4.999992 0.000000             301.659271                 318108.0                0  m01s00i024
                                   0.833333             301.785004                 318108.0                0  m01s00i024
                                   1.666667             301.820984                 318108.0                0  m01s00i024
@@ -628,7 +628,7 @@ def as_data_frame(
 
     [419904 rows x 4 columns]
 
-    To return a :class:`~pandas.DataFrame` without a :class:`~pandas.MultiIndex` use :meth:`~pandas.DataFrame.reset_index`. Optionally 
+    To return a :class:`~pandas.DataFrame` without a :class:`~pandas.MultiIndex` use :meth:`~pandas.DataFrame.reset_index`. Optionally
     use `inplace=True` keyword to modify the DataFrame rather than creating a new one:
 
     >>> df.reset_index(inplace=True)

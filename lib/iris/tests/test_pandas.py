@@ -317,7 +317,9 @@ class TestAsDataFrame(tests.IrisTest):
         expected_words0 = np.repeat(["fiveteen0", "sixteen0"], 2)
         expected_words1 = np.repeat(["fiveteen1", "sixteen1"], 2)
         expected_words2 = np.tile(["ten", "eleven"], 2)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True).reset_index()
+        data_frame = iris.pandas.as_data_frame(
+            cube, add_aux_coord=True
+        ).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
