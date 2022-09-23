@@ -209,6 +209,11 @@ branch, and then released by tagging ``v1.9.1``.
 
 New features shall not be included in a point release, these are for bug fixes.
 
+``whatsnew`` entries should be added to the existing 
+``docs/src/whatsnew/v1.9.rst`` file in a new ``v1.9.1`` section. A template for 
+this bugfix patches section can be found in the 
+``docs/src/whatsnew/latest.rst.template`` file.
+
 A point release does not require a release candidate, but the rest of the
 release process is to be followed, including the merge back of changes into
 ``main``.
