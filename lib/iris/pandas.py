@@ -648,6 +648,22 @@ def as_data_frame(
 
     [419904 rows x 7 columns]
 
+    To retrieve a :class:`~pandas.Series` from `df` :class:`~pandas.DataFrame`, subselect a column:
+
+    >>> df['surface_temperature']
+    0         301.659271
+    1         301.785004
+    2         301.820984
+    3         301.865234
+    4         301.926819
+                ...    
+    419899    298.779938
+    419900    298.913147
+    419901           NaN
+    419902           NaN
+    419903    298.995148
+    Name: surface_temperature, Length: 419904, dtype: float32
+    
     """
     # Checks
     if not isinstance(cube, iris.cube.Cube):
