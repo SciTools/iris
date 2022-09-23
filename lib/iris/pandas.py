@@ -31,6 +31,8 @@ from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats import pp
 
+import pdb
+
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
     """
@@ -522,7 +524,6 @@ def _make_coord_list(cube):
 def as_data_frame(
     cube,
     copy=True,
-    asmultiindex=False,
     add_aux_coord=False,
     add_global_attributes=None,
 ):
@@ -547,11 +548,14 @@ def as_data_frame(
 
     Returns
     -------
-    A :class:`~pandas.DataFrame`
+    A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame`
 
     Notes
     -----
     Dask ``DataFrame``\\s are not supported.
+
+    A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default. Use the :meth:`~pandas.DataFrame.reset_index`
+    to return a :class:`~pandas.DataFrame` without :class:`~pandas.MultiIndex` levels. Use 'inplace=True` to preserve memory object reference.
 
     Examples
     --------
@@ -706,10 +710,8 @@ def as_data_frame(
         else:
             data_frame[global_attribute] = cube.attributes[global_attribute]
 
-    # Final sort by dim order
-    if asmultiindex:
+    if copy:
         return data_frame.reorder_levels(coord_names).sort_index()
     else:
-        return (
-            data_frame.reorder_levels(coord_names).sort_index().reset_index()
-        )
+        data_frame.reorder_levels(coord_names).sort_index(inplace=True)
+        return data_frame

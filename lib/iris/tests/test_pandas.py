@@ -53,7 +53,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_dim0 = np.repeat([0, 1], 5)
         expected_dim1 = np.tile([0, 1, 2, 3, 4], 2)
         expected_foo = np.arange(0, 10)
-        data_frame = iris.pandas.as_data_frame(cube)
+        data_frame = iris.pandas.as_data_frame(cube).reset_index()
         self.assertArrayEqual(data_frame.foo.values, expected_foo)
         self.assertArrayEqual(data_frame.dim0, expected_dim0)
         self.assertArrayEqual(data_frame.dim1, expected_dim1)
@@ -67,7 +67,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_bar = np.repeat([10, 11], 5)
         expected_dim1 = np.tile([0, 1, 2, 3, 4], 2)
         expected_foo = np.arange(0, 10)
-        data_frame = iris.pandas.as_data_frame(cube)
+        data_frame = iris.pandas.as_data_frame(cube).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.bar, expected_bar)
         self.assertArrayEqual(data_frame.dim1, expected_dim1)
@@ -81,7 +81,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_dim0 = np.repeat([0, 1], 5)
         expected_bar = np.tile([10, 11, 12, 13, 14], 2)
         expected_foo = np.arange(0, 10)
-        data_frame = iris.pandas.as_data_frame(cube)
+        data_frame = iris.pandas.as_data_frame(cube).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo.data)
         self.assertArrayEqual(data_frame.dim0, expected_dim0)
         self.assertArrayEqual(data_frame.bar, expected_bar)
@@ -94,7 +94,7 @@ class TestAsDataFrame(tests.IrisTest):
         cube.add_dim_coord(dim_coord, 0)
         expected_bar = np.arange(10, 20)
         expected_foo = np.arange(0, 10)
-        data_frame = iris.pandas.as_data_frame(cube)
+        data_frame = iris.pandas.as_data_frame(cube).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.bar, expected_bar)
 
@@ -109,7 +109,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_milk = np.repeat([15, 16], 5)
         expected_bar = np.tile([10, 11, 12, 13, 14], 2)
         expected_foo = np.arange(0, 10)
-        data_frame = iris.pandas.as_data_frame(cube2d)
+        data_frame = iris.pandas.as_data_frame(cube2d).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
@@ -135,7 +135,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_bar = np.tile(np.repeat([10, 11], 5), 3)
         expected_kid = np.tile([20, 21, 22, 23, 24], 6)
         expected_foo = np.arange(0, 30)
-        data_frame = iris.pandas.as_data_frame(cube3d)
+        data_frame = iris.pandas.as_data_frame(cube3d).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
@@ -198,7 +198,7 @@ class TestAsDataFrame(tests.IrisTest):
             ],
             dtype=object,
         )
-        data_frame = iris.pandas.as_data_frame(cube)
+        data_frame = iris.pandas.as_data_frame(cube).reset_index()
         self.assertArrayEqual(data_frame.ts, expected_ts)
         self.assertArrayEqual(data_frame.time, expected_time)
 
@@ -249,7 +249,7 @@ class TestAsDataFrame(tests.IrisTest):
             dtype=object,
         )
         expected_ts = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        data_frame = iris.pandas.as_data_frame(cube)
+        data_frame = iris.pandas.as_data_frame(cube).reset_index()
         self.assertArrayEqual(data_frame.ts, expected_ts)
         self.assertArrayEqual(data_frame.time, expected_time)
 
@@ -286,7 +286,9 @@ class TestAsDataFrame(tests.IrisTest):
         expected_foo = np.array([0, 1, 5, 6])
         expected_words0 = np.repeat(["fiveteen", "sixteen"], 2)
         expected_words1 = np.tile(["ten", "eleven"], 2)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        data_frame = iris.pandas.as_data_frame(
+            cube, add_aux_coord=True
+        ).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
@@ -315,7 +317,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_words0 = np.repeat(["fiveteen0", "sixteen0"], 2)
         expected_words1 = np.repeat(["fiveteen1", "sixteen1"], 2)
         expected_words2 = np.tile(["ten", "eleven"], 2)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True).reset_index()
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.milk, expected_milk)
         self.assertArrayEqual(data_frame.bar, expected_bar)
