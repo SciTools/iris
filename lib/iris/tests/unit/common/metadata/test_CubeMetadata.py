@@ -27,6 +27,7 @@ def _make_metadata(
     long_name=None,
     var_name=None,
     attributes=None,
+    global_attributes=None,
     force_mapping=True,
 ):
     if force_mapping:
@@ -42,6 +43,7 @@ def _make_metadata(
         units=None,
         attributes=attributes,
         cell_methods=None,
+        global_attributes=global_attributes,
     )
 
 
@@ -53,6 +55,7 @@ class Test(tests.IrisTest):
         self.units = mock.sentinel.units
         self.attributes = mock.sentinel.attributes
         self.cell_methods = mock.sentinel.cell_methods
+        self.global_attributes = mock.sentinel.global_attributes
         self.cls = CubeMetadata
 
     def test_repr(self):
@@ -63,10 +66,11 @@ class Test(tests.IrisTest):
             units=self.units,
             attributes=self.attributes,
             cell_methods=self.cell_methods,
+            global_attributes=self.global_attributes,
         )
         fmt = (
             "CubeMetadata(standard_name={!r}, long_name={!r}, var_name={!r}, "
-            "units={!r}, attributes={!r}, cell_methods={!r})"
+            "units={!r}, attributes={!r}, cell_methods={!r}, global_attributes={!r})"
         )
         expected = fmt.format(
             self.standard_name,
@@ -75,6 +79,7 @@ class Test(tests.IrisTest):
             self.units,
             self.attributes,
             self.cell_methods,
+            self.global_attributes,
         )
         self.assertEqual(expected, repr(metadata))
 
@@ -86,6 +91,7 @@ class Test(tests.IrisTest):
             "units",
             "attributes",
             "cell_methods",
+            "global_attributes",
         )
         self.assertEqual(self.cls._fields, expected)
 
@@ -94,12 +100,20 @@ class Test(tests.IrisTest):
 
 
 @pytest.fixture(params=CubeMetadata._fields)
+# Fixture to parametrise tests over all CubeMetadata fields.
 def fieldname(request):
     return request.param
 
 
 @pytest.fixture(params=["strict", "lenient"])
+# Fixture to parametrise tests over strict/lenient behaviour.
 def op_leniency(request):
+    return request.param
+
+
+@pytest.fixture(params=["attributes", "global_attributes"])
+# Fixture to parametrise atrribute tests over global/local attributes fields.
+def attributes_fieldname(request):
     return request.param
 
 
@@ -114,6 +128,8 @@ class Test___eq__:
             # Must be a mapping.
             attributes=dict(),
             cell_methods=sentinel.cell_methods,
+            # Must be a mapping.
+            global_attributes=dict(),
         )
         # Setup another values tuple with all-distinct content objects.
         self.rvalues = deepcopy(self.lvalues)
@@ -157,7 +173,7 @@ class Test___eq__:
 
     def test_op_different__none(self, fieldname, op_leniency):
         # One side has field=value, and the other field=None, both strict + lenient.
-        if fieldname == "attributes":
+        if fieldname in ("attributes", "global_attributes"):
             # Must be a dict, cannot be None.
             pytest.skip()
         else:
@@ -186,7 +202,7 @@ class Test___eq__:
 
     def test_op_different__value(self, fieldname, op_leniency):
         # Compare when a given field value is changed, both strict + lenient.
-        if fieldname == "attributes":
+        if fieldname in ("attributes", "global_attributes"):
             # Dicts have more possibilities: handled separately.
             pytest.skip()
         else:
@@ -218,11 +234,13 @@ class Test___eq__:
                 assert lmetadata.__eq__(rmetadata) == expect_success
                 assert rmetadata.__eq__(lmetadata) == expect_success
 
-    def test_op_different__attribute_extra(self, op_leniency):
+    def test_op_different__attribute_extra(
+        self, attributes_fieldname, op_leniency
+    ):
         # Check when one set of attributes has an extra entry.
         is_lenient = op_leniency == "lenient"
         lmetadata = self.cls(**self.lvalues)
-        self.rvalues["attributes"]["_extra_"] = 1
+        self.rvalues[attributes_fieldname]["_extra_"] = 1
         rmetadata = self.cls(**self.rvalues)
         # This counts as equal *only* in the lenient case.
         expect_success = is_lenient
@@ -233,11 +251,13 @@ class Test___eq__:
             assert lmetadata.__eq__(rmetadata) == expect_success
             assert rmetadata.__eq__(lmetadata) == expect_success
 
-    def test_op_different__attribute_value(self, op_leniency):
+    def test_op_different__attribute_value(
+        self, attributes_fieldname, op_leniency
+    ):
         # lhs and rhs have different values for an attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
-        self.lvalues["attributes"]["_extra_"] = mock.sentinel.value1
-        self.rvalues["attributes"]["_extra_"] = mock.sentinel.value2
+        self.lvalues[attributes_fieldname]["_extra_"] = mock.sentinel.value1
+        self.rvalues[attributes_fieldname]["_extra_"] = mock.sentinel.value2
         lmetadata = self.cls(**self.lvalues)
         rmetadata = self.cls(**self.rvalues)
         with mock.patch(
@@ -251,10 +271,12 @@ class Test___eq__:
 class Test___lt__(tests.IrisTest):
     def setUp(self):
         self.cls = CubeMetadata
-        self.one = self.cls(1, 1, 1, 1, 1, 1)
-        self.two = self.cls(1, 1, 1, 2, 1, 1)
-        self.none = self.cls(1, 1, 1, None, 1, 1)
-        self.attributes_cm = self.cls(1, 1, 1, 1, 10, 10)
+        self.one = self.cls(1, 1, 1, 1, 1, 1, 1)
+        self.two = self.cls(1, 1, 1, 2, 1, 1, 1)
+        self.none = self.cls(1, 1, 1, None, 1, 1, 1)
+        self.attributes = self.cls(1, 1, 1, 1, 10, 1, 1)
+        self.cm = self.cls(1, 1, 1, 1, 1, 10, 1)
+        self.globalattributes = self.cls(1, 1, 1, 1, 1, 1, 10)
 
     def test__ascending_lt(self):
         result = self.one < self.two
@@ -272,11 +294,15 @@ class Test___lt__(tests.IrisTest):
         result = self.none < self.one
         self.assertTrue(result)
 
-    def test__ignore_attributes_cell_methods(self):
-        result = self.one < self.attributes_cm
-        self.assertFalse(result)
-        result = self.attributes_cm < self.one
-        self.assertFalse(result)
+    def test__ignore_attributes_cellmethods_globalattributes(self):
+        # None of these things is comparable : *all* comparisons fail when any of
+        # these differs between lhs + rhs.
+        self.assertFalse(self.one < self.cm)
+        self.assertFalse(self.cm < self.one)
+        self.assertFalse(self.one < self.attributes)
+        self.assertFalse(self.attributes < self.one)
+        self.assertFalse(self.one < self.globalattributes)
+        self.assertFalse(self.globalattributes < self.one)
 
 
 class Test_combine:
@@ -289,6 +315,7 @@ class Test_combine:
             units=sentinel.units,
             attributes=sentinel.attributes,
             cell_methods=sentinel.cell_methods,
+            global_attributes=sentinel.global_attributes,
         )
         # Get a second copy with all-new objects.
         self.rvalues = deepcopy(self.lvalues)
@@ -344,7 +371,7 @@ class Test_combine:
 
     def test_op_different__none(self, fieldname, op_leniency):
         # One side has field=value, and the other field=None, both strict + lenient.
-        if fieldname == "attributes":
+        if fieldname in ("attributes", "global_attributes"):
             # Can't be None : Tested separately
             pytest.skip()
 
@@ -405,13 +432,19 @@ class Test_combine:
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
-    def test_op_different__attribute_extra(self, op_leniency):
+    def test_op_different__attribute_extra(
+        self, attributes_fieldname, op_leniency
+    ):
         # One field has an extra attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
 
-        self.lvalues["attributes"] = {"_a_common_": mock.sentinel.dummy}
-        self.rvalues["attributes"] = self.lvalues["attributes"].copy()
-        self.rvalues["attributes"]["_extra_"] = mock.sentinel.testvalue
+        self.lvalues[attributes_fieldname] = {
+            "_a_common_": mock.sentinel.dummy
+        }
+        self.rvalues[attributes_fieldname] = self.lvalues[
+            attributes_fieldname
+        ].copy()
+        self.rvalues[attributes_fieldname]["_extra_"] = mock.sentinel.testvalue
         lmetadata = self.cls(**self.lvalues)
         rmetadata = self.cls(**self.rvalues)
 
@@ -429,15 +462,17 @@ class Test_combine:
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
-    def test_op_different__attribute_value(self, op_leniency):
+    def test_op_different__attribute_value(
+        self, attributes_fieldname, op_leniency
+    ):
         # lhs and rhs have different values for an attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
 
-        self.lvalues["attributes"] = {
+        self.lvalues[attributes_fieldname] = {
             "_a_common_": self.dummy,
             "_b_common_": mock.sentinel.value1,
         }
-        self.lvalues["attributes"] = {
+        self.lvalues[attributes_fieldname] = {
             "_a_common_": self.dummy,
             "_b_common_": mock.sentinel.value2,
         }
@@ -447,7 +482,7 @@ class Test_combine:
         # Result has entirely EMPTY attributes (whether strict or lenient).
         # TODO: is this maybe a mistake of the existing implementation ?
         expected = self.lvalues.copy()
-        expected["attributes"] = None
+        expected[attributes_fieldname] = None
 
         with mock.patch(
             "iris.common.metadata._LENIENT", return_value=is_lenient
@@ -467,6 +502,7 @@ class Test_difference:
             units=sentinel.units,
             attributes=dict(),  # MUST be a dict
             cell_methods=sentinel.cell_methods,
+            global_attributes=dict(),  # MUST be a dict
         )
         # Make a copy with all-different objects in it.
         self.rvalues = deepcopy(self.lvalues)
@@ -519,7 +555,7 @@ class Test_difference:
 
     def test_op_different__none(self, fieldname, op_leniency):
         # One side has field=value, and the other field=None, both strict + lenient.
-        if fieldname in ("attributes",):
+        if fieldname in ("attributes", "global_attributes"):
             # These cannot properly be set to 'None'.  Tested elsewhere.
             pytest.skip()
 
@@ -585,22 +621,24 @@ class Test_difference:
         assert lmetadata.difference(rmetadata)._asdict() == ldiff_metadata
         assert rmetadata.difference(lmetadata)._asdict() == rdiff_metadata
 
-    def test_op_different__attribute_extra(self, op_leniency):
+    def test_op_different__attribute_extra(
+        self, attributes_fieldname, op_leniency
+    ):
         # One field has an extra attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
-        self.lvalues["attributes"] = {"_a_common_": self.dummy}
+        self.lvalues[attributes_fieldname] = {"_a_common_": self.dummy}
         lmetadata = self.cls(**self.lvalues)
         rvalues = deepcopy(self.lvalues)
-        rvalues["attributes"]["_b_extra_"] = mock.sentinel.extra
+        rvalues[attributes_fieldname]["_b_extra_"] = mock.sentinel.extra
         rmetadata = self.cls(**rvalues)
 
         if not is_lenient:
             # In this case, attributes returns a "difference dictionary"
             diffentry = tuple([{}, {"_b_extra_": mock.sentinel.extra}])
             lexpected = self.none._asdict()
-            lexpected["attributes"] = diffentry
+            lexpected[attributes_fieldname] = diffentry
             rexpected = lexpected.copy()
-            rexpected["attributes"] = diffentry[::-1]
+            rexpected[attributes_fieldname] = diffentry[::-1]
 
         with mock.patch(
             "iris.common.metadata._LENIENT", return_value=is_lenient
@@ -614,15 +652,17 @@ class Test_difference:
                 assert lmetadata.difference(rmetadata)._asdict() == lexpected
                 assert rmetadata.difference(lmetadata)._asdict() == rexpected
 
-    def test_op_different__attribute_value(self, op_leniency):
+    def test_op_different__attribute_value(
+        self, attributes_fieldname, op_leniency
+    ):
         # lhs and rhs have different values for an attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
-        self.lvalues["attributes"] = {
+        self.lvalues[attributes_fieldname] = {
             "_a_common_": self.dummy,
             "_b_extra_": mock.sentinel.value1,
         }
         lmetadata = self.cls(**self.lvalues)
-        self.rvalues["attributes"] = {
+        self.rvalues[attributes_fieldname] = {
             "_a_common_": self.dummy,
             "_b_extra_": mock.sentinel.value2,
         }
@@ -636,9 +676,9 @@ class Test_difference:
             ]
         )
         lexpected = self.none._asdict()
-        lexpected["attributes"] = diffentry
+        lexpected[attributes_fieldname] = diffentry
         rexpected = lexpected.copy()
-        rexpected["attributes"] = diffentry[::-1]
+        rexpected[attributes_fieldname] = diffentry[::-1]
 
         with mock.patch(
             "iris.common.metadata._LENIENT", return_value=is_lenient

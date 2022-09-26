@@ -595,7 +595,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     def _is_attributes(field, left, right):
         """Determine whether we have two 'attributes' dictionaries."""
         return (
-            field == "attributes"
+            field in ("attributes", "global_attributes")
             and isinstance(left, Mapping)
             and isinstance(right, Mapping)
         )
@@ -1081,7 +1081,7 @@ class CubeMetadata(BaseMetadata):
 
     """
 
-    _members = "cell_methods"
+    _members = ("cell_methods", "global_attributes")
 
     __slots__ = ()
 
@@ -1101,7 +1101,11 @@ class CubeMetadata(BaseMetadata):
         def _sort_key(item):
             keys = []
             for field in item._fields:
-                if field not in ("attributes", "cell_methods"):
+                if field not in (
+                    "attributes",
+                    "global_attributes",
+                    "cell_methods",
+                ):
                     value = getattr(item, field)
                     keys.extend((value is not None, value))
             return tuple(keys)
@@ -1121,16 +1125,30 @@ class CubeMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
+        # Perform lenient combination of parent (BaseMetadata) members.
+        result = super()._combine_lenient(other)
         # Perform "strict" combination for "cell_methods".
         value = (
             self.cell_methods
             if self.cell_methods == other.cell_methods
             else None
         )
-        # Perform lenient combination of the other parent members.
-        result = super()._combine_lenient(other)
         result.append(value)
-
+        # Perform lenient combination for "global_attributes"
+        left = self.global_attributes
+        right = other.global_attributes
+        value = None
+        if self._is_attributes("global_attributes", left, right):
+            value = self._combine_lenient_attributes(left, right)
+        else:
+            # Default logic is the general fallback for member comparison
+            if left == right:
+                value = left
+            elif left is None:
+                value = right
+            elif right is None:
+                value = left
+        result.append(value)
         return result
 
     def _compare_lenient(self, other):
@@ -1149,8 +1167,13 @@ class CubeMetadata(BaseMetadata):
         # Perform "strict" comparison for "cell_methods".
         result = self.cell_methods == other.cell_methods
         if result:
+            # Perform lenient comparison of global_attributes.
+            result = self._compare_lenient_attributes(
+                self.global_attributes, other.global_attributes
+            )
+        if result:
+            # Compare BaseMetadata aspects.
             result = super()._compare_lenient(other)
-
         return result
 
     def _difference_lenient(self, other):
@@ -1166,16 +1189,20 @@ class CubeMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
-        # Perform "strict" difference for "cell_methods".
-        value = (
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        # Calculate + add "strict" difference for "cell_methods".
+        cms_value = (
             None
             if self.cell_methods == other.cell_methods
             else (self.cell_methods, other.cell_methods)
         )
-        # Perform lenient difference of the other parent members.
-        result = super()._difference_lenient(other)
-        result.append(value)
+        # Calculate + add "lenient" difference for "global_attributes".
+        gattrs_value = self._difference_lenient_attributes(
+            self.global_attributes, other.global_attributes
+        )
 
+        result.extend([cms_value, gattrs_value])
         return result
 
     @property
