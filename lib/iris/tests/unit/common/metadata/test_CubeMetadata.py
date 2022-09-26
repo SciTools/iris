@@ -444,7 +444,7 @@ class Test_combine:
         lmetadata = self.cls(**self.lvalues)
         rmetadata = self.cls(**self.rvalues)
 
-        # Result contains entirely EMPTY attributes (either strict or lenient).
+        # Result has entirely EMPTY attributes (whether strict or lenient).
         # TODO: is this maybe a mistake of the existing implementation ?
         expected = self.lvalues.copy()
         expected["attributes"] = None
@@ -457,30 +457,31 @@ class Test_combine:
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
 
-class Test_difference(tests.IrisTest):
-    def setUp(self):
-        self.values = dict(
+class Test_difference:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.lvalues = dict(
             standard_name=sentinel.standard_name,
             long_name=sentinel.long_name,
             var_name=sentinel.var_name,
             units=sentinel.units,
-            attributes=sentinel.attributes,
+            attributes=dict(),  # MUST be a dict
             cell_methods=sentinel.cell_methods,
         )
+        # Make a copy with all-different objects in it.
+        self.rvalues = deepcopy(self.lvalues)
         self.dummy = sentinel.dummy
         self.cls = CubeMetadata
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
-        self.assertEqual(
-            BaseMetadata.difference.__doc__, self.cls.difference.__doc__
-        )
+        assert self.cls.difference.__doc__ == BaseMetadata.difference.__doc__
 
     def test_lenient_service(self):
         qualname_difference = _qualname(self.cls.difference)
-        self.assertIn(qualname_difference, _LENIENT)
-        self.assertTrue(_LENIENT[qualname_difference])
-        self.assertTrue(_LENIENT[self.cls.difference])
+        assert qualname_difference in _LENIENT
+        assert _LENIENT[qualname_difference]
+        assert _LENIENT[self.cls.difference]
 
     def test_lenient_default(self):
         other = sentinel.other
@@ -490,11 +491,8 @@ class Test_difference(tests.IrisTest):
         ) as mocker:
             result = self.none.difference(other)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=None), kwargs)
+        assert return_value == result
+        assert mocker.call_args_list == [mock.call(other, lenient=None)]
 
     def test_lenient(self):
         other = sentinel.other
@@ -505,178 +503,124 @@ class Test_difference(tests.IrisTest):
         ) as mocker:
             result = self.none.difference(other, lenient=lenient)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=lenient), kwargs)
+        assert return_value == result
+        assert mocker.call_args_list == [mock.call(other, lenient=lenient)]
 
-    def test_op_lenient_same(self):
-        lmetadata = self.cls(**self.values)
-        rmetadata = self.cls(**self.values)
+    def test_op_same(self, op_leniency):
+        is_lenient = op_leniency == "lenient"
+        lmetadata = self.cls(**self.lvalues)
+        rmetadata = self.cls(**self.rvalues)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertIsNone(lmetadata.difference(rmetadata))
-            self.assertIsNone(rmetadata.difference(lmetadata))
+        with mock.patch(
+            "iris.common.metadata._LENIENT", return_value=is_lenient
+        ):
+            assert lmetadata.difference(rmetadata) is None
+            assert rmetadata.difference(lmetadata) is None
 
-    def test_op_lenient_same_none(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["var_name"] = None
-        rmetadata = self.cls(**right)
+    def test_op_different__none(self, fieldname, op_leniency):
+        if fieldname in ("attributes",):  # 'units'):
+            # These cannot properly be set to 'None'.  Tested elsewhere.
+            pytest.skip()
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertIsNone(lmetadata.difference(rmetadata))
-            self.assertIsNone(rmetadata.difference(lmetadata))
+        is_lenient = op_leniency == "lenient"
 
-    def test_op_lenient_same_cell_methods_none(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["cell_methods"] = None
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["cell_methods"] = (sentinel.cell_methods, None)
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["cell_methods"] = (None, sentinel.cell_methods)
+        lmetadata = self.cls(**self.lvalues)
+        self.rvalues[fieldname] = None
+        rmetadata = self.cls(**self.rvalues)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
+        if fieldname in ("units", "cell_methods"):
+            # These ones are always "strict"
+            strict_result = True
+        elif fieldname in ("standard_name", "long_name", "var_name"):
+            strict_result = not is_lenient
+        else:
+            # Ensure we are handling all the different field cases
+            raise ValueError(
+                f"{self.__name__} unhandled fieldname : {fieldname}"
             )
 
-    def test_op_lenient_different(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["units"] = self.dummy
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["units"] = (left["units"], right["units"])
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["units"] = lexpected["units"][::-1]
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
+        if strict_result:
+            diffentry = tuple(
+                [getattr(mm, fieldname) for mm in (lmetadata, rmetadata)]
             )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
+            lexpected = self.none._asdict()
+            lexpected[fieldname] = diffentry
+            rexpected = lexpected.copy()
+            rexpected[fieldname] = diffentry[::-1]
+            # NOTE: in these cases, the difference metadata will fail an == operation,
+            # because of the 'None' entries.
+            # But we can use metadata._asdict() and test that.
 
-    def test_op_lenient_different_cell_methods(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["cell_methods"] = self.dummy
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["cell_methods"] = (
-            left["cell_methods"],
-            right["cell_methods"],
+        with mock.patch(
+            "iris.common.metadata._LENIENT", return_value=is_lenient
+        ):
+            if strict_result:
+                assert lmetadata.difference(rmetadata)._asdict() == lexpected
+                assert rmetadata.difference(lmetadata)._asdict() == rexpected
+            else:
+                # Expect NO differences
+                assert lmetadata.difference(rmetadata) is None
+                assert rmetadata.difference(lmetadata) is None
+
+    def test_op_different__attribute_extra(self, op_leniency):
+        is_lenient = op_leniency == "lenient"
+        self.lvalues["attributes"] = {"_a_common_": self.dummy}
+        lmetadata = self.cls(**self.lvalues)
+        rvalues = deepcopy(self.lvalues)
+        rvalues["attributes"]["_b_extra_"] = mock.sentinel.extra
+        rmetadata = self.cls(**rvalues)
+
+        if not is_lenient:
+            # In this case, attributes returns a "difference dictionary"
+            diffentry = tuple([{}, {"_b_extra_": mock.sentinel.extra}])
+            lexpected = self.none._asdict()
+            lexpected["attributes"] = diffentry
+            rexpected = lexpected.copy()
+            rexpected["attributes"] = diffentry[::-1]
+
+        with mock.patch(
+            "iris.common.metadata._LENIENT", return_value=is_lenient
+        ):
+            if is_lenient:
+                # It recognises no difference
+                assert lmetadata.difference(rmetadata) is None
+                assert rmetadata.difference(lmetadata) is None
+            else:
+                # As calculated above
+                assert lmetadata.difference(rmetadata)._asdict() == lexpected
+                assert rmetadata.difference(lmetadata)._asdict() == rexpected
+
+    def test_op_different__attribute_value(self, op_leniency):
+        is_lenient = op_leniency == "lenient"
+        self.lvalues["attributes"] = {
+            "_a_common_": self.dummy,
+            "_b_extra_": mock.sentinel.value1,
+        }
+        lmetadata = self.cls(**self.lvalues)
+        self.rvalues["attributes"] = {
+            "_a_common_": self.dummy,
+            "_b_extra_": mock.sentinel.value2,
+        }
+        rmetadata = self.cls(**self.rvalues)
+
+        # In this case, attributes returns a "difference dictionary"
+        diffentry = tuple(
+            [
+                {"_b_extra_": mock.sentinel.value1},
+                {"_b_extra_": mock.sentinel.value2},
+            ]
         )
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["cell_methods"] = lexpected["cell_methods"][::-1]
+        lexpected = self.none._asdict()
+        lexpected["attributes"] = diffentry
+        rexpected = lexpected.copy()
+        rexpected["attributes"] = diffentry[::-1]
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
-
-    def test_op_strict_same(self):
-        lmetadata = self.cls(**self.values)
-        rmetadata = self.cls(**self.values)
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertIsNone(lmetadata.difference(rmetadata))
-            self.assertIsNone(rmetadata.difference(lmetadata))
-
-    def test_op_strict_different(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["long_name"] = self.dummy
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["long_name"] = (left["long_name"], right["long_name"])
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["long_name"] = lexpected["long_name"][::-1]
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
-
-    def test_op_strict_different_cell_methods(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["cell_methods"] = self.dummy
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["cell_methods"] = (
-            left["cell_methods"],
-            right["cell_methods"],
-        )
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["cell_methods"] = lexpected["cell_methods"][::-1]
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
-
-    def test_op_strict_different_none(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["long_name"] = None
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["long_name"] = (left["long_name"], right["long_name"])
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["long_name"] = lexpected["long_name"][::-1]
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
-
-    def test_op_strict_different_measure_none(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["cell_methods"] = None
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["cell_methods"] = (
-            left["cell_methods"],
-            right["cell_methods"],
-        )
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["cell_methods"] = lexpected["cell_methods"][::-1]
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
+        with mock.patch(
+            "iris.common.metadata._LENIENT", return_value=is_lenient
+        ):
+            # As calculated above -- same for both strict + lenient
+            assert lmetadata.difference(rmetadata)._asdict() == lexpected
+            assert rmetadata.difference(lmetadata)._asdict() == rexpected
 
 
 class Test_equal(tests.IrisTest):
