@@ -25,8 +25,6 @@ try:
 except ImportError:
     from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
-import pdb
-
 import iris
 from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
@@ -521,6 +519,48 @@ def _make_coord_list(cube):
     return outlist
 
 
+def as_series(cube, copy=True):
+    """
+    Convert a 1D cube to a Pandas Series.
+
+    .. deprecated:: 3.3.2
+    
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.pandas.as_data_frame`, which offers improved
+        multi dimension handling.
+        
+    Args:
+        * cube - The cube to convert to a Pandas Series.
+    Kwargs:
+        * copy - Whether to make a copy of the data.
+                 Defaults to True. Must be True for masked data.
+    .. note::
+        This function will copy your data by default.
+        If you have a large array that cannot be copied,
+        make sure it is not masked and use copy=False.
+    """
+        message = (
+        "iris.pandas.as_series has been deprecated, and will be removed in a "
+        "future release. Please use iris.pandas.as_data_frame instead."
+    )
+    warn_deprecated(message)
+
+    data = cube.data
+    if ma.isMaskedArray(data):
+        if not copy:
+            raise ValueError("Masked arrays must always be copied.")
+        data = data.astype("f").filled(np.nan)
+    elif copy:
+        data = data.copy()
+    index = None
+    if cube.dim_coords:
+        index = _as_pandas_coord(cube.dim_coords[0])
+    series = pandas.Series(data, index)
+    if not copy:
+        _assert_shared(data, series)
+    return series
+
+
 def as_data_frame(
     cube,
     copy=True,
@@ -534,14 +574,14 @@ def as_data_frame(
 
     Parameters
     ----------
-    :class:`~iris.cube.Cube`:
+    :class:`~iris.cube.Cube`
         The :class:`Cube` to be converted to a Pandas `DataFrame`.
-    copy: bool, default=True
+    copy : bool, default=True
         Whether the Pandas `DataFrame` is a copy of the the Cube :attr:`~iris.cube.Cube.data`.
         This option is provided to help with memory size concerns.
-    add_aux_coord: bool, default=False
+    add_aux_coord : bool, default=False
         If True, add all :attr:`~iris.cube.Cube.aux_coords` to add to the returned `DataFrame`.
-    add_global_attributes: list of str, optional
+    add_global_attributes : list of str, optional
         Names of :attr:`~iris.cube.Cube.attributes` to add to the returned `DataFrame`. Raises an
         error if the names are not found in :attr:`~iris.cube.Cube.attributes`.
 
@@ -584,7 +624,6 @@ def as_data_frame(
                                   359.166656           298.995148
 
     [419904 rows x 1 columns]
-
 
     Using `add_aux_coord=True` maps :class:`~iris.coords.AuxCoord` and scalar coordinate information
     to the :class:`~pandas.DataFrame`:
