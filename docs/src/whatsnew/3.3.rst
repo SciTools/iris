@@ -55,10 +55,10 @@ v3.3.1 |build_date| [unreleased]
     #. `@trexfeathers`_ advanced the Cartopy pin to ``>=0.21``, as Cartopy's
        change to default Transverse Mercator projection affects an Iris test.
        See `SciTools/cartopy@fcb784d`_ and `SciTools/cartopy@8860a81`_ for more
-       details. (:pull:`4968`)
+       details. (:pull:`4992`)
 
     #. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a
-       problem with segfaults. (:pull:`4968`)
+       problem with segfaults. (:pull:`4992`)
 
 
 📢 Announcements
