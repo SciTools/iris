@@ -502,11 +502,13 @@ def _as_pandas_coord(coord):
 def _assert_shared(np_obj, pandas_obj):
     """Ensure the pandas object shares memory."""
     values = pandas_obj.values
+
     def _get_base(array):
         # Chase the stack of NumPy `base` references back to the original array
         while array.base is not None:
             array = array.base
         return array
+
     base = _get_base(values)
     np_base = _get_base(np_obj)
     if base is not np_base:
