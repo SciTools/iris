@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Welcome to `@ESadek-MO`_ who made their first contribution to Iris 🎉
+#. Welcome to `@ESadek-MO`_ and `@hsteptoe`_ who made their first contribution to Iris 🎉
 
 
 ✨ Features
@@ -34,6 +34,12 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ edited :func:`~iris.io.expand_filespecs` to allow expansion of
    non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
    (:issue:`4772`, :pull:`4913`)
+
+#. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.pandas.as_data_frame`,
+   which provides improved conversion of :class:`~iris.cube.Cube`\s to 
+   :class:`~pandas.DataFrame`\s. This includes better handling of multiple 
+   :class:`~iris.cube.Cube`dimensions, auxiliary coordinates and attribute information.
+   (:issue:`4526`, :pull:`4669`)
 
 
 🐛 Bugs Fixed
@@ -65,7 +71,10 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) deprecated
+   :func:`iris.pandas.as_series` in favour of the new
+   :func:`iris.pandas.as_data_frame` - see `✨ Features`_ for more details.
+   (:pull:`4669`)
 
 
 🔗 Dependencies
