@@ -499,6 +499,23 @@ def _as_pandas_coord(coord):
     return index
 
 
+def _assert_shared(np_obj, pandas_obj):
+    """Ensure the pandas object shares memory."""
+    values = pandas_obj.values
+    def _get_base(array):
+        # Chase the stack of NumPy `base` references back to the original array
+        while array.base is not None:
+            array = array.base
+        return array
+    base = _get_base(values)
+    np_base = _get_base(np_obj)
+    if base is not np_base:
+        msg = "Pandas {} does not share memory".format(
+            type(pandas_obj).__name__
+        )
+        raise AssertionError(msg)
+
+
 def _get_dim_combinations(ndim):
     """Get all possible dim coordinate combinations."""
     dimcomb = []
@@ -706,7 +723,7 @@ def as_data_frame(
     """
     # Checks
     if not isinstance(cube, iris.cube.Cube):
-        raise ValueError(f"Input must be an iris.cube.Cube instance")
+        raise ValueError("Input must be an iris.cube.Cube instance")
     if add_global_attributes:
         global_attribute_names = list(cube.attributes.keys())
         for global_attribute in add_global_attributes:
