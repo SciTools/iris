@@ -52,6 +52,14 @@ v3.3.1 |build_date| [unreleased]
     #. `@pp-mo`_ ensured that :data:`iris.cube.Cube.cell_methods` must always be an iterable
        of :class:`iris.coords.CellMethod` objects (:pull:`4933`).
 
+    #. `@trexfeathers`_ advanced the Cartopy pin to ``>=0.21``, as Cartopy's
+       change to default Transverse Mercator projection affects an Iris test.
+       See `SciTools/cartopy@fcb784d`_ and `SciTools/cartopy@8860a81`_ for more
+       details. (:pull:`4968`)
+
+    #. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a
+       problem with segfaults. (:pull:`4968`)
+
 
 📢 Announcements
 ================
@@ -361,3 +369,5 @@ v3.3.1 |build_date| [unreleased]
 .. _PyData Sphinx Theme: https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html
 .. _pytest: https://docs.pytest.org
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
+.. _SciTools/cartopy@fcb784d: https://github.com/SciTools/cartopy/commit/fcb784daa65d95ed9a74b02ca292801c02bc4108
+.. _SciTools/cartopy@8860a81: https://github.com/SciTools/cartopy/commit/8860a8186d4dc62478e74c83f3b2b3e8f791372e
