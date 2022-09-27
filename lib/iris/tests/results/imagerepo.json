@@ -34,6 +34,7 @@
     "gallery_tests.test_plot_wind_barbs.0": "e9e161e996169316c1fe9e96c29e36739e13c07c3d61c07f39813929c07f3f01",
     "gallery_tests.test_plot_wind_speed.0": "e9e960e996169306c1fe9e96c29e36739e03c06c3d61c07f3da139e1c07f3f01",
     "gallery_tests.test_plot_wind_speed.1": "e9e960e996169306c1ee9f96c29e36739653c06c3d61c07f39a139e1c07f3f01",
+    "gallery_tests.test_plot_zonal_means.0": "b45b3071c9a4c9a6c69c363cc327cbb3cb9634d8c9e63cf336738c6634d8c384",
     "iris.tests.experimental.test_animate.IntegrationTest.test_cube_animation.0": "fe81c17e817e3e81817e3e81857e7a817e81c17e7e81c17e7a81817e817e8c2e",
     "iris.tests.experimental.test_animate.IntegrationTest.test_cube_animation.1": "fe81857e817e7a85817e7a81857e7e817e81917a7e81817e7a81817e817e843e",
     "iris.tests.experimental.test_animate.IntegrationTest.test_cube_animation.2": "be81817ec17e7a81c17e7e81857e3e803e81817a3e81c17e7a81c17ec97e2c2f",
