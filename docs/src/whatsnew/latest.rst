@@ -131,6 +131,10 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed a now redundant workaround for an old matplotlib bug,
    highlighted by :issue:`4090`.  (:pull:`4999`)
 
+#. `@rcomer`_ added the ``show`` option to the documentation Makefiles, as a
+   convenient way for contributors to view their built documenation.
+   (:pull:`5000`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
