@@ -120,7 +120,7 @@ This document explains the changes made to Iris for this release
    :mod:`~iris.fileformats.netcdf.loader` and :mod:`~iris.fileformats.netcdf.saver`
    submodules, just to make the code easier to handle.
 
-#. `@trexfeathers` adapted the benchmark for importing :mod:`iris.palette` to
+#. `@trexfeathers`_ adapted the benchmark for importing :mod:`iris.palette` to
    cope with new colormap behaviour in Matplotlib `v3.6`. (:pull:`4998`)
 
 
