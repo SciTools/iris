@@ -13,13 +13,23 @@ Glossary
         | **More information:** `CartoPy Site <https://scitools.org.uk/cartopy/docs/latest/>`_
         |
 
+   CF Conventions
+        Rules for storing meteorological Climate and Forecast data in
+        :term:`NetCDF Format` files, defining a standard metadata format to
+        describe what the data is.
+        This also forms the data model which iris is based on.
+
+        | **Related:** :term:`NetCDF Format`
+        | **More information:** `CF Conventions <http://cfconventions.org/>`_
+        |
+
    Coordinates
         A container for data points, comes in three main flavours.
 
         - Dimensional Coordinates -
-            A coordinate that represents a singular data dimension.
-            These are organised in ascending order of dimension. Can only
-            contain numerical data.
+            A coordinate that describes a single data dimension of a cube.
+            They can only contain numerical values, in a sorted order (ascending
+            or descending).
         - Auxiliary Coordinates -
             A coordinate that can map to multiple data dimensions. Can
             contain any type of data.
@@ -39,22 +49,23 @@ Glossary
         - :term:`Standard Name`
         - :term:`Long Name`
         - :term:`Units`
-        - :term:`Cell Method`
-        - :term:`Coordinate Factory`
+        - :term:`Cell Methods`
+        - :term:`Coordinate Factories`
 
         | **Related:** :term:`NumPy`
         | **More information:** :doc:`iris_cubes`
         |
 
-   Cell Method
-        A cell method represent past operations on a cube's data, such as a
+   Cell Methods
+        A cell method represents that a cube's data has been derived from
+        a past statistical operation, such as a
         MEAN or SUM operation.
 
         | **Related:** :term:`Cubes`
         | **More information:** :doc:`iris_cubes`
         |
 
-   Coordinate Factory
+   Coordinate Factories
         A coordinate factory derives coordinates (sometimes referred to as
         derived coordinates) from the values of existing coordinates.
         E.g. A hybrid height factory might use "height above sea level"
@@ -125,8 +136,9 @@ Glossary
         |
 
    NetCDF Format
-        A meteorological file format; this is the data model
-        iris is based on. Follows `CF Conventions <http://cfconventions.org/>`_.
+        A flexible file format for storing multi-dimensional array-like data.
+        When Iris loads this format, it also especially recognises and interprets data
+        encoded according to the :term:`CF Conventions`.
 
         | **Related:** :term:`Fields File (FF) Format`
          **|** :term:`GRIB Format` **|** :term:`Post Processing (PP) Format`
@@ -167,15 +179,15 @@ Glossary
         |
 
    Standard Name
-        A name describing a :term:`phenomenon`, keeping within
-        bounds of `CF Standardisation <http://cfconventions.org/standard-names.html>`_.
+        A name describing a :term:`phenomenon`,  one from a fixed list
+        defined at `CF Standard Names <http://cfconventions.org/standard-names.html>`_.
 
         | **Related:** :term:`Long Name` **|** :term:`Cubes`
         | **More information:** :doc:`iris_cubes`
         |
 
    Units
-        The unit with which the phenomenon is measured.
+        The unit with which the :term:`phenomenon` is measured e.g. m / sec.
 
         | **Related:** :term:`Cubes`
         | **More information:** :doc:`iris_cubes`
