@@ -116,6 +116,10 @@ This document explains the changes made to Iris for this release
    package tests, see `pypa/setuptools#1684`_.  Also performed assorted
    ``setup.py`` script hygiene. (:pull:`4948`, :pull:`4949`, :pull:`4950`)
 
+#. `@pp-mo`_ split the module :mod:`iris.fileformats.netcdf` into separate
+   :mod:`~iris.fileformats.netcdf.loader` and :mod:`~iris.fileformats.netcdf.saver`
+   submodules, just to make the code easier to handle.
+
 #. `@trexfeathers` adapted the benchmark for importing :mod:`iris.palette` to
    cope with new colormap behaviour in Matplotlib `v3.6`. (:pull:`4998`)
 
