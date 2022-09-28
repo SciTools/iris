@@ -16,7 +16,7 @@ import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _get_cf_var_data
+from iris.fileformats.netcdf.loader import _get_cf_var_data
 
 
 class Test__get_cf_var_data(tests.IrisTest):

@@ -13,7 +13,9 @@ from unittest.mock import MagicMock
 
 import iris
 from iris.fileformats.cf import CFDataVariable
-from iris.fileformats.netcdf import _translate_constraints_to_var_callback
+from iris.fileformats.netcdf.loader import (
+    _translate_constraints_to_var_callback,
+)
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
