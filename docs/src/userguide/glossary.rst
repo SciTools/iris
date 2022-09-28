@@ -13,7 +13,7 @@ Glossary
         | **More information:** `CartoPy Site <https://scitools.org.uk/cartopy/docs/latest/>`_
         |
 
-   CF Conventions
+   CF Convention
         Rules for storing meteorological Climate and Forecast data in
         :term:`NetCDF Format` files, defining a standard metadata format to
         describe what the data is.
@@ -23,32 +23,32 @@ Glossary
         | **More information:** `CF Conventions <http://cfconventions.org/>`_
         |
 
-   Coordinates
+   Coordinate
         A container for data points, comes in three main flavours.
 
-        - Dimensional Coordinates -
+        - Dimensional Coordinate -
             A coordinate that describes a single data dimension of a cube.
             They can only contain numerical values, in a sorted order (ascending
             or descending).
-        - Auxiliary Coordinates -
+        - Auxiliary Coordinate -
             A coordinate that can map to multiple data dimensions. Can
             contain any type of data.
-        - Scalar Coordinates -
+        - Scalar Coordinate -
                 A coordinate that is not mapped to any data dimension, instead
                 representing the cube as a whole.
 
-        | **Related:** :term:`Cubes`
+        | **Related:** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
-   Cubes
+   Cube
         Cubes are the main method of storing data in Iris. A cube can consist of:
 
         - Array of :term:`Phenomenon` Data (Required)
-        - :term:`Coordinates`
+        - :term:`Coordinate`
         - :term:`Standard Name`
         - :term:`Long Name`
-        - :term:`Units`
+        - :term:`Units <Unit>`
         - :term:`Cell Methods <Cell Method>`
         - :term:`Coordinate Factories <Coordinate Factory>`
 
@@ -61,7 +61,7 @@ Glossary
         a past statistical operation, such as a
         MEAN or SUM operation.
 
-        | **Related:** :term:`Cubes`
+        | **Related:** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
@@ -72,7 +72,7 @@ Glossary
         and "height at ground level" coordinate data to calculate a
         "height above ground level" coordinate.
 
-        | **Related:** :term:`Cubes`
+        | **Related:** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
@@ -116,7 +116,7 @@ Glossary
         A name describing a :term:`phenomenon`, not limited to the
         the same restraints as :term:`standard name`.
 
-        | **Related:** :term:`Standard Name` **|** :term:`Cubes`
+        | **Related:** :term:`Standard Name` **|** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
@@ -131,25 +131,25 @@ Glossary
    Metadata
         The data which is used to describe phenomenon data e.g. longitude.
 
-        | **Related:** :term:`Phenomenon` **|** :term:`Cubes`
+        | **Related:** :term:`Phenomenon` **|** :term:`Cube`
         | **More information:** :doc:`../further_topics/metadata`
         |
 
    NetCDF Format
         A flexible file format for storing multi-dimensional array-like data.
         When Iris loads this format, it also especially recognises and interprets data
-        encoded according to the :term:`CF Conventions`.
+        encoded according to the :term:`CF Convention`.
 
         | **Related:** :term:`Fields File (FF) Format`
          **|** :term:`GRIB Format` **|** :term:`Post Processing (PP) Format`
-        | **More information:** `NetCD-4 Python Git <https://github.com/Unidata/netcdf4-python>`_
+        | **More information:** `NetCDF-4 Python Git <https://github.com/Unidata/netcdf4-python>`_
         |
 
    NumPy
         A mathematical Python library, predominantly based around
         multi-dimensional arrays.
 
-        | **Related:** :term:`Dask`  **|** :term:`Cubes`
+        | **Related:** :term:`Dask`  **|** :term:`Cube`
          **|** :term:`Xarray`
         | **More information:** `NumPy.org <https://numpy.org/>`_
         |
@@ -158,7 +158,7 @@ Glossary
         The primary data which is measured, usually within a cube, e.g.
         air temperature.
 
-        | **Related:** :term:`Metadata` **|** :term:`Cubes`
+        | **Related:** :term:`Metadata` **|** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
@@ -182,14 +182,14 @@ Glossary
         A name describing a :term:`phenomenon`,  one from a fixed list
         defined at `CF Standard Names <http://cfconventions.org/standard-names.html>`_.
 
-        | **Related:** :term:`Long Name` **|** :term:`Cubes`
+        | **Related:** :term:`Long Name` **|** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
-   Units
+   Unit
         The unit with which the :term:`phenomenon` is measured e.g. m / sec.
 
-        | **Related:** :term:`Cubes`
+        | **Related:** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
