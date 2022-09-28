@@ -83,13 +83,19 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ introduced the ``dask >=2.26`` minimum pin, so that Iris can benefit
    from Dask's support for `NEP13`_ and `NEP18`_. (:pull:`4905`)
+
 #. `@trexfeathers`_ advanced the Cartopy pin to ``>=0.21``, as Cartopy's
    change to default Transverse Mercator projection affects an Iris test.
    See `SciTools/cartopy@fcb784d`_ and `SciTools/cartopy@8860a81`_ for more
    details.
    (:pull:`4968`)
+
 #. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a problem
    with segfaults. (:pull:`4968`)
+
+#. `@trexfeathers`_ updated the Matplotlib colormap registration in
+   :mod:`iris.palette` in response to a deprecation warning. Using the new
+   Matplotlib API also means a ``matplotlib>=3.5`` pin. (:pull:`4998`)
 
 
 📚 Documentation
@@ -114,6 +120,9 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ split the module :mod:`iris.fileformats.netcdf` into separate
    :mod:`~iris.fileformats.netcdf.loader` and :mod:`~iris.fileformats.netcdf.saver`
    submodules, just to make the code easier to handle.
+
+#. `@trexfeathers`_ adapted the benchmark for importing :mod:`iris.palette` to
+   cope with new colormap behaviour in Matplotlib `v3.6`. (:pull:`4998`)
 
 
 .. comment
