@@ -49,14 +49,14 @@ Glossary
         - :term:`Standard Name`
         - :term:`Long Name`
         - :term:`Units`
-        - :term:`Cell Methods`
-        - :term:`Coordinate Factories`
+        - :term:`Cell Methods <Cell Method>`
+        - :term:`Coordinate Factories <Coordinate Factory>`
 
         | **Related:** :term:`NumPy`
         | **More information:** :doc:`iris_cubes`
         |
 
-   Cell Methods
+   Cell Method
         A cell method represents that a cube's data has been derived from
         a past statistical operation, such as a
         MEAN or SUM operation.
@@ -65,7 +65,7 @@ Glossary
         | **More information:** :doc:`iris_cubes`
         |
 
-   Coordinate Factories
+   Coordinate Factory
         A coordinate factory derives coordinates (sometimes referred to as
         derived coordinates) from the values of existing coordinates.
         E.g. A hybrid height factory might use "height above sea level"
