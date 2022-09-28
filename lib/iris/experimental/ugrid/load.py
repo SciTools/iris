@@ -8,8 +8,7 @@
 Extensions to Iris' NetCDF loading to allow the construction of
 :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es from UGRID data in the file.
 
-Eventual destination: :mod:`iris.fileformats.netcdf` (plan to split that module
-into ``load`` and ``save`` in future).
+Eventual destination: :mod:`iris.fileformats.netcdf`.
 
 """
 from contextlib import contextmanager
@@ -19,8 +18,8 @@ import threading
 
 from ...config import get_logger
 from ...coords import AuxCoord
-from ...fileformats import netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
+from ...fileformats.netcdf import loader as nc_loader
 from ...io import decode_uri, expand_filespecs
 from ...util import guess_coord_axis
 from .cf import (
@@ -202,7 +201,7 @@ def load_meshes(uris, var_name=None):
             else:
                 handling_format_spec = FORMAT_AGENT.get_spec(source, None)
 
-            if handling_format_spec.handler == netcdf.load_cubes:
+            if handling_format_spec.handler == nc_loader.load_cubes:
                 valid_sources.append(source)
             else:
                 message = f"Ignoring non-NetCDF file: {source}"
@@ -239,7 +238,7 @@ def _build_aux_coord(coord_var, file_path):
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
-    points_data = netcdf._get_cf_var_data(coord_var, file_path)
+    points_data = nc_loader._get_cf_var_data(coord_var, file_path)
 
     # Bounds will not be loaded:
     # Bounds may be present, but the UGRID conventions state this would
@@ -293,7 +292,7 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
-    indices_data = netcdf._get_cf_var_data(connectivity_var, file_path)
+    indices_data = nc_loader._get_cf_var_data(connectivity_var, file_path)
 
     cf_role = connectivity_var.cf_role
     start_index = connectivity_var.start_index
@@ -462,7 +461,7 @@ def _build_mesh(cf, mesh_var, file_path):
     )
     mesh_elements = filter(None, mesh_elements)
     for iris_object in mesh_elements:
-        netcdf._add_unused_attributes(
+        nc_loader._add_unused_attributes(
             iris_object, cf.cf_group[iris_object.var_name]
         )
 
