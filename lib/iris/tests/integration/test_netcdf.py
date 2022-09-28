@@ -957,7 +957,7 @@ data:
 
 
 # Attributes to test, which should be 'global' type by default
-_GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf._CF_GLOBAL_ATTRS)
+_GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
 # Remove this one, which has peculiar behaviour + is tested separately
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
 # one is processed.
@@ -974,8 +974,8 @@ def global_attr(request):
 
 # Attributes to test, which should be 'data' type by default
 _DATA_TEST__ATTRS = (
-    iris.fileformats.netcdf._CF_DATA_ATTRS
-    + iris.fileformats.netcdf._UKMO_DATA_ATTRS
+    iris.fileformats.netcdf.saver._CF_DATA_ATTRS
+    + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
 )
 
 
@@ -1455,7 +1455,7 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
                 attr_name=data_attr, vars_and_attrvalues=attrval
             )
 
-        if data_attr in iris.fileformats.netcdf._CF_DATA_ATTRS:
+        if data_attr in iris.fileformats.netcdf.saver._CF_DATA_ATTRS:
             # These ones are simply discarded on loading.
             # By experiment, this overlap between _CF_ATTRS and _CF_DATA_ATTRS
             # currently contains only 'missing_value' and 'standard_error_multiplier'.
