@@ -222,6 +222,10 @@ This document explains the changes made to Iris for this release
    bin in the system PATH.
    (:pull:`4794`)
 
+#. `@pp-mo`_ split the module :mod:`iris.fileformats.netcdf` into separate
+   :mod:`~iris.fileformats.netcdf.loader` and :mod:`~iris.fileformats.netcdf.saver`
+   submodules, just to make the code easier to handle.
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

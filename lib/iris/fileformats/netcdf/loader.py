@@ -4,12 +4,13 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Module to support the loading of a NetCDF file into an Iris cube.
-The "Load parts" of the module :mod:`iris.fileformats.netcdf`.
+Module to support the loading of Iris cubes from NetCDF files, also using the CF
+conventions for metadata interpretation.
 
-See also: `netCDF4 python <https://github.com/Unidata/netcdf4-python>`_
+See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
+and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 
-Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
+Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 import warnings
