@@ -5,17 +5,25 @@
 # licensing details.
 from importlib import import_module, reload
 
-# For use in reset_colormaps.
-from matplotlib import colormaps
+################
+# Prepare info for reset_colormaps:
 
-colormaps_orig = set(colormaps)
+# Import and capture colormaps.
+from matplotlib import colormaps  # isort:skip
+
+_COLORMAPS_ORIG = set(colormaps)
+
+# Import iris.palette, which modifies colormaps.
 import iris.palette
 
-_ = iris.palette
-from matplotlib import colormaps
+# Derive which colormaps have been added by iris.palette.
+_COLORMAPS_MOD = set(colormaps)
+COLORMAPS_EXTRA = _COLORMAPS_MOD - _COLORMAPS_ORIG
 
-colormaps_mod = set(colormaps)
-colormaps_extra = colormaps_mod - colormaps_orig
+# Touch iris.palette to prevent linters complaining.
+_ = iris.palette
+
+################
 
 
 class Iris:
@@ -41,7 +49,7 @@ class Iris:
         if reset_colormaps:
             # Needed because reload() will attempt to register new colormaps a
             #  second time, which errors by default.
-            for cm_name in colormaps_extra:
+            for cm_name in COLORMAPS_EXTRA:
                 colormaps.unregister(cm_name)
 
         reload(mod)
