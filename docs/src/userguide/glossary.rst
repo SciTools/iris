@@ -13,7 +13,7 @@ Glossary
         | **More information:** `CartoPy Site <https://scitools.org.uk/cartopy/docs/latest/>`_
         |
 
-   CF Convention
+   CF Conventions
         Rules for storing meteorological Climate and Forecast data in
         :term:`NetCDF Format` files, defining a standard metadata format to
         describe what the data is.
@@ -45,10 +45,10 @@ Glossary
         Cubes are the main method of storing data in Iris. A cube can consist of:
 
         - Array of :term:`Phenomenon` Data (Required)
-        - :term:`Coordinate`
+        - :term:`Coordinates <Coordinate>`
         - :term:`Standard Name`
         - :term:`Long Name`
-        - :term:`Units <Unit>`
+        - :term:`Unit`
         - :term:`Cell Methods <Cell Method>`
         - :term:`Coordinate Factories <Coordinate Factory>`
 
@@ -129,7 +129,10 @@ Glossary
         |
 
    Metadata
-        The data which is used to describe phenomenon data e.g. longitude.
+        The information which describes a phenomenon.
+        Within Iris specifically, all information which
+        distinguishes one phenomenon from another,
+        e.g. :term:`units <Unit>` or :term:`Cell Methods <Cell Method>`
 
         | **Related:** :term:`Phenomenon` **|** :term:`Cube`
         | **More information:** :doc:`../further_topics/metadata`
@@ -138,7 +141,7 @@ Glossary
    NetCDF Format
         A flexible file format for storing multi-dimensional array-like data.
         When Iris loads this format, it also especially recognises and interprets data
-        encoded according to the :term:`CF Convention`.
+        encoded according to the :term:`CF Conventions`.
 
         | **Related:** :term:`Fields File (FF) Format`
          **|** :term:`GRIB Format` **|** :term:`Post Processing (PP) Format`
@@ -158,7 +161,8 @@ Glossary
         The primary data which is measured, usually within a cube, e.g.
         air temperature.
 
-        | **Related:** :term:`Metadata` **|** :term:`Cube`
+        | **Related:** :term:`Metadata`
+         **|** :term:`Standard Name` **|** :term:`Cube`
         | **More information:** :doc:`iris_cubes`
         |
 
@@ -174,7 +178,7 @@ Glossary
         Data that has been loaded into RAM, as opposed to sitting
         on the hard drive.
 
-        | **Related:** :term:`Lazy Data`
+        | **Related:** :term:`Lazy Data` **|** :term:`NumPy`
         | **More information:** :doc:`real_and_lazy_data`
         |
 
