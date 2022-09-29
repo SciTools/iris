@@ -128,6 +128,8 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ adapted the benchmark for importing :mod:`iris.palette` to
    cope with new colormap behaviour in Matplotlib `v3.6`. (:pull:`4998`)
 
+#. `@rcomer`_ removed a now redundant workaround for an old matplotlib bug,
+   highlighted by :issue:`4090`.  (:pull:`4999`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
