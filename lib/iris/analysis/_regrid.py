@@ -1161,8 +1161,8 @@ def _create_cube(
     if len(src_dims) == 2:
         grid_dim_x, grid_dim_y = src_dims
     elif len(src_dims) == 1:
-        grid_dim_y = src_dims[0]
-        grid_dim_x = grid_dim_y + 1
+        grid_dim_x = src_dims[0]
+        grid_dim_y = grid_dim_x + 1
     else:
         raise ValueError(
             f"Source grid must be described by 1 or 2 dimensions, got {len(src_dims)}"

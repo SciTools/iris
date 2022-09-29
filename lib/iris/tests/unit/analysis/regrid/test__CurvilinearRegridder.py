@@ -219,7 +219,7 @@ class Test__call__multidimensional(tests.IrisTest):
         grid_cube.add_dim_coord(grid_y_coord, 0)
         grid_cube.add_dim_coord(grid_x_coord, 1)
 
-        # Define some key points in true-lat/lon thta have known positions
+        # Define some key points in true-lat/lon that have known positions
         # First 3x2 points in the centre of each output cell.
         x_centres, y_centres = np.meshgrid(
             grid_x_coord.points, grid_y_coord.points
