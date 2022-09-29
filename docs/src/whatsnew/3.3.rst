@@ -32,7 +32,7 @@ This document explains the changes made to Iris for this release
 
 
 v3.3.1 (29 Sep 2022)
-================================
+====================
 
 .. dropdown:: :opticon:`alert` v3.3.1 Patches
    :container: + shadow
