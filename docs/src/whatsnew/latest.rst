@@ -50,7 +50,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@lbdreyer`_ (reviewer) fixed the building of the CF
    Standard Names module ``iris.std_names`` for the ``setup.py`` commands
    ``develop`` and ``std_names``. (:issue:`4951`, :pull:`4952`)
-   
+
 #. `@lbdreyer`_ and `@pp-mo`_ (reviewer) fixed the cube print out such that
    scalar ancillary variables are displayed in a dedicated section rather than
    being added to the vector ancillary variables section. Further, ancillary
@@ -71,6 +71,10 @@ This document explains the changes made to Iris for this release
    :obj:`~iris.analysis.SUM`, :obj:`~iris.analysis.COUNT` and
    :obj:`~iris.analysis.PROPORTION` on real data. (:pull:`4905`)
 
+#. `@bouweandela` made :meth:`iris.coords.Coord.cells` faster for time
+   coordinates. This also affects :meth:`iris.cube.Cube.extract`,
+   :meth:`iris.cube.Cube.subset`, and :meth:`iris.coords.Coord.intersect`.
+   (:pull:`4969`)
 
 🔥 Deprecations
 ===============
