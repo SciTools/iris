@@ -71,7 +71,7 @@ This document explains the changes made to Iris for this release
    :obj:`~iris.analysis.SUM`, :obj:`~iris.analysis.COUNT` and
    :obj:`~iris.analysis.PROPORTION` on real data. (:pull:`4905`)
 
-#. `@bouweandela` made :meth:`iris.coords.Coord.cells` faster for time
+#. `@bouweandela`_ made :meth:`iris.coords.Coord.cells` faster for time
    coordinates. This also affects :meth:`iris.cube.Cube.extract`,
    :meth:`iris.cube.Cube.subset`, and :meth:`iris.coords.Coord.intersect`.
    (:pull:`4969`)
