@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="VOLCANIC_ASH_AIR_CONCENTRATION" units="g/m2">
+    <attributes>
+      <attribute name="End of release" value="0000UTC 13/01/2011"/>
+      <attribute name="Forecast duration" value="6 hours"/>
+      <attribute name="Met data" value="NWP Flow.ECMWF ERAInt Regional"/>
+      <attribute name="NAME Version" value="NAME III (version 7.2)"/>
+      <attribute name="Quantity" value="Air Concentration"/>
+      <attribute name="Release height" value="Multiple Sources"/>
+      <attribute name="Release location" value="Multiple Sources"/>
+      <attribute name="Release rate" value="Multiple Sources"/>
+      <attribute name="Run time" value="1333UTC 07/12/2018"/>
+      <attribute name="Species" value="VOLCANIC_ASH"/>
+      <attribute name="Species Category" value="VOLCANIC"/>
+      <attribute name="Start of release" value="2200UTC 12/01/2011"/>
+      <attribute name="Time Av or Int" value="No time averaging"/>
+      <attribute name="Title" value="VA_Tutorial"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[29.9375, 30.0625],
+		[30.0625, 30.1875]]" id="77a50eb5" points="[30.0, 30.125]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[[9.9375, 10.0625],
+		[10.0625, 10.1875]]" id="f913a8b3" points="[10.0, 10.125]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord bounds="[[359686.0, 359686.0]]" id="cb784457" points="[359686.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+      </coord>
+      <coord>
+        <auxCoord id="e92ff7b7" long_name="z" points="[Vertical integral]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xecbb4b55" dtype="float32" shape="(2, 2)"/>
+  </cube>
+</cubes>
