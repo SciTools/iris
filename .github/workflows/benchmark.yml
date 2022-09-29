@@ -71,7 +71,7 @@ jobs:
       - name: Run overnight benchmarks
         run: |
           first_commit=${{ inputs.first_commit }}
-          if [ "$first_commit" != "" ]
+          if [ "$first_commit" == "" ]
           then
             first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
           fi
