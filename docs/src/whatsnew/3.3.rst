@@ -31,7 +31,7 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
-v3.3.1 |build_date| [unreleased]
+v3.3.1 (29 Sep 2022)
 ================================
 
 .. dropdown:: :opticon:`alert` v3.3.1 Patches
