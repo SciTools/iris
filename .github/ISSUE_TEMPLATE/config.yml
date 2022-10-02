@@ -4,3 +4,6 @@ contact_links:
   -  name: 💬 Iris GitHub Discussions
      url: https://github.com/SciTools/iris/discussions
      about: Engage with the Iris community to discuss your issue
+  -  name: ❓ Usage Question
+     url: https://github.com/SciTools/iris/discussions/categories/q-a
+     about: Raise a question about how to use Iris in the Q&A section of Discussions

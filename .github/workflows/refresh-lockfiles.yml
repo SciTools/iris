@@ -48,11 +48,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: install conda-lock
+      - name: install requirements
         run: |
           source $CONDA/bin/activate base
-          conda install -y -c conda-forge conda-lock
+          conda install -y -c conda-forge conda-libmamba-solver conda-lock
       - name: generate lockfile
+        env:
+          CONDA_EXPERIMENTAL_SOLVER: libmamba
         run: |
           $CONDA/bin/conda-lock lock -k explicit -p linux-64 -f requirements/ci/${{matrix.python}}.yml
           mv conda-linux-64.lock ${{matrix.python}}-linux-64.lock

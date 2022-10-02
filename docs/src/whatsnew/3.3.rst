@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.3 (18 Aug 2022) [release candidate]
-**************************************
+v3.3 (1 Sep 2022)
+*****************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -201,7 +201,7 @@ This document explains the changes made to Iris for this release
 #. NumPy ``v1.23`` behaviour changes mean that
    :func:`iris.experimental.ugrid.utils.recombine_submeshes` now uses ~3x as
    much memory; testing shows a ~16-million point mesh will now use ~600MB.
-   Investigated by `@pp-mo` and `@trexfeathers`. (:issue:`4845`)
+   Investigated by `@pp-mo`_ and `@trexfeathers`_. (:issue:`4845`)
 
 
 🔥 Deprecations
