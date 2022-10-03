@@ -17,7 +17,7 @@ from unittest import mock
 
 import numpy as np
 
-from iris.fileformats.netcdf import _FillValueMaskCheckAndStoreTarget
+from iris.fileformats.netcdf.saver import _FillValueMaskCheckAndStoreTarget
 
 
 class Test__FillValueMaskCheckAndStoreTarget(tests.IrisTest):

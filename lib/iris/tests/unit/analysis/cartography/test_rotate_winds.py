@@ -16,6 +16,7 @@ import iris.tests as tests  # isort:skip
 import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris.analysis.cartography import rotate_winds, unrotate_pole
 import iris.coord_systems
@@ -410,7 +411,11 @@ class TestRotatedToOSGB(tests.IrisTest):
 class TestMasking(tests.IrisTest):
     def test_rotated_to_osgb(self):
         # Rotated Pole data with large extent.
-        x = np.linspace(311.9, 391.1, 10)
+        # A 'correct' answer is not known for this test; it is therefore
+        #  written as a 'benchmark' style test - a change in behaviour will
+        #  cause a test failure, requiring developers to approve/reject the
+        #  new behaviour.
+        x = np.linspace(221.9, 301.1, 10)
         y = np.linspace(-23.6, 24.8, 8)
         u, v = uv_cubes(x, y)
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
@@ -422,14 +427,14 @@ class TestMasking(tests.IrisTest):
         # Snapshot of mask with fixed tolerance of atol=2e-3
         expected_mask = np.array(
             [
-                [1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-                [1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-                [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
-                [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
-                [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
-                [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
-                [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
-                [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
+                [0, 0, 0, 1, 1, 1, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
+                [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+                [0, 0, 0, 0, 1, 1, 1, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 1, 1, 1, 0, 1, 1, 1, 0, 0],
+                [0, 1, 0, 0, 0, 0, 1, 1, 1, 0],
             ],
             np.bool_,
         )
@@ -443,7 +448,7 @@ class TestMasking(tests.IrisTest):
         # Calculate percentage error (note there are no zero magnitudes
         # so we can divide safely).
         anom = 100.0 * np.abs(res_mag - expected_mag) / expected_mag
-        self.assertTrue(anom[~ut.data.mask].max() < 0.1)
+        assert anom[~ut.data.mask].max() == pytest.approx(0.3227935)
 
     def test_rotated_to_unrotated(self):
         # Suffiently accurate so that no mask is introduced.

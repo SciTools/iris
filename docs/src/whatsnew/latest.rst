@@ -50,7 +50,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@lbdreyer`_ (reviewer) fixed the building of the CF
    Standard Names module ``iris.std_names`` for the ``setup.py`` commands
    ``develop`` and ``std_names``. (:issue:`4951`, :pull:`4952`)
-   
+
 #. `@lbdreyer`_ and `@pp-mo`_ (reviewer) fixed the cube print out such that
    scalar ancillary variables are displayed in a dedicated section rather than
    being added to the vector ancillary variables section. Further, ancillary
@@ -71,6 +71,10 @@ This document explains the changes made to Iris for this release
    :obj:`~iris.analysis.SUM`, :obj:`~iris.analysis.COUNT` and
    :obj:`~iris.analysis.PROPORTION` on real data. (:pull:`4905`)
 
+#. `@bouweandela`_ made :meth:`iris.coords.Coord.cells` faster for time
+   coordinates. This also affects :meth:`iris.cube.Cube.extract`,
+   :meth:`iris.cube.Cube.subset`, and :meth:`iris.coords.Coord.intersect`.
+   (:pull:`4969`)
 
 🔥 Deprecations
 ===============
@@ -84,12 +88,26 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ introduced the ``dask >=2.26`` minimum pin, so that Iris can benefit
    from Dask's support for `NEP13`_ and `NEP18`_. (:pull:`4905`)
 
+#. `@trexfeathers`_ advanced the Cartopy pin to ``>=0.21``, as Cartopy's
+   change to default Transverse Mercator projection affects an Iris test.
+   See `SciTools/cartopy@fcb784d`_ and `SciTools/cartopy@8860a81`_ for more
+   details.
+   (:pull:`4968`)
+
+#. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a problem
+   with segfaults. (:pull:`4968`)
+
+#. `@trexfeathers`_ updated the Matplotlib colormap registration in
+   :mod:`iris.palette` in response to a deprecation warning. Using the new
+   Matplotlib API also means a ``matplotlib>=3.5`` pin. (:pull:`4998`)
+
 
 📚 Documentation
 ================
 
 #. `@ESadek-MO`_, `@TTV-Intrepid`_ and `@trexfeathers`_ added a gallery example for zonal
    means plotted parallel to a cartographic plot. (:pull:`4871`)
+#. `@Esadek-MO`_ added a key-terms :doc:`glossary` page into the user guide. (:pull:`4902`)
 
 
 💼 Internal
@@ -103,6 +121,15 @@ This document explains the changes made to Iris for this release
    package tests, see `pypa/setuptools#1684`_.  Also performed assorted
    ``setup.py`` script hygiene. (:pull:`4948`, :pull:`4949`, :pull:`4950`)
 
+#. `@pp-mo`_ split the module :mod:`iris.fileformats.netcdf` into separate
+   :mod:`~iris.fileformats.netcdf.loader` and :mod:`~iris.fileformats.netcdf.saver`
+   submodules, just to make the code easier to handle.
+
+#. `@trexfeathers`_ adapted the benchmark for importing :mod:`iris.palette` to
+   cope with new colormap behaviour in Matplotlib `v3.6`. (:pull:`4998`)
+
+#. `@rcomer`_ removed a now redundant workaround for an old matplotlib bug,
+   highlighted by :issue:`4090`.  (:pull:`4999`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -110,9 +137,13 @@ This document explains the changes made to Iris for this release
 
 .. _@TTV-Intrepid: https://github.com/TTV-Intrepid
 
+
+
 .. comment
     Whatsnew resources in alphabetical order:
 
 .. _NEP13: https://numpy.org/neps/nep-0013-ufunc-overrides.html
 .. _NEP18: https://numpy.org/neps/nep-0018-array-function-protocol.html
 .. _pypa/setuptools#1684: https://github.com/pypa/setuptools/issues/1684
+.. _SciTools/cartopy@fcb784d: https://github.com/SciTools/cartopy/commit/fcb784daa65d95ed9a74b02ca292801c02bc4108
+.. _SciTools/cartopy@8860a81: https://github.com/SciTools/cartopy/commit/8860a8186d4dc62478e74c83f3b2b3e8f791372e

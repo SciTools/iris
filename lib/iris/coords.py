@@ -1895,7 +1895,22 @@ class Coord(_DimensionalMetadata):
               ...
 
         """
-        return _CellIterator(self)
+        if self.ndim != 1:
+            raise iris.exceptions.CoordinateMultiDimError(self)
+
+        points = self.points
+        bounds = self.bounds
+        if self.units.is_time_reference():
+            points = self.units.num2date(points)
+            if self.has_bounds():
+                bounds = self.units.num2date(bounds)
+
+        if self.has_bounds():
+            for point, bound in zip(points, bounds):
+                yield Cell(point, bound)
+        else:
+            for point in points:
+                yield Cell(point)
 
     def _sanity_check_bounds(self):
         if self.ndim == 1:
@@ -3135,22 +3150,6 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
-
-
-# See Coord.cells() for the description/context.
-class _CellIterator(Iterator):
-    def __init__(self, coord):
-        self._coord = coord
-        if coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(coord)
-        self._indices = iter(range(coord.shape[0]))
-
-    def __next__(self):
-        # NB. When self._indices runs out it will raise StopIteration for us.
-        i = next(self._indices)
-        return self._coord.cell(i)
-
-    next = __next__
 
 
 # See ExplicitCoord._group() for the description/context.
