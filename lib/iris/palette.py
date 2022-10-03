@@ -15,6 +15,7 @@ import os.path
 import re
 
 import cf_units
+from matplotlib import colormaps as mpl_colormaps
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
 import numpy as np
@@ -337,7 +338,7 @@ def _load_palette():
             )
 
         # Register the color map for use.
-        mpl_cm.register_cmap(cmap=cmap)
+        mpl_colormaps.register(cmap)
 
 
 # Ensure to load the color map palettes.

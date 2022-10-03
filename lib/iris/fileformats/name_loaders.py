@@ -571,7 +571,9 @@ def _generate_cubes(
                 cube.attributes[key] = value
 
         if cell_methods is not None:
-            cube.add_cell_method(cell_methods[i])
+            cell_method = cell_methods[i]
+            if cell_method is not None:
+                cube.add_cell_method(cell_method)
 
         yield cube
 
@@ -610,7 +612,7 @@ def _build_cell_methods(av_or_ints, coord):
             cell_method = None
             msg = "Unknown {} statistic: {!r}. Unable to create cell method."
             warnings.warn(msg.format(coord, av_or_int))
-        cell_methods.append(cell_method)
+        cell_methods.append(cell_method)  # NOTE: this can be a None
     return cell_methods
 
 

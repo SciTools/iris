@@ -8,8 +8,7 @@
 Extensions to Iris' NetCDF saving to allow
 :class:`~iris.experimental.ugrid.mesh.Mesh` saving in UGRID format.
 
-Eventual destination: :mod:`iris.fileformats.netcdf` (plan to split that module
-into ``load`` and ``save`` in future).
+Eventual destination: :mod:`iris.fileformats.netcdf`.
 
 """
 from collections.abc import Iterable

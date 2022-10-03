@@ -1344,11 +1344,6 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         axes=axes,
     )
 
-    # set the _is_stroked property to get a single color grid.
-    # See https://github.com/matplotlib/matplotlib/issues/1302
-    result._is_stroked = False
-    if hasattr(result, "_wrapped_collection_fix"):
-        result._wrapped_collection_fix._is_stroked = False
     return result
 
 

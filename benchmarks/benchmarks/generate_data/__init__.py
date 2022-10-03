@@ -113,7 +113,7 @@ def load_realised():
     file loading, but some benchmarks are only meaningful if starting with real
     arrays.
     """
-    from iris.fileformats.netcdf import _get_cf_var_data as pre_patched
+    from iris.fileformats.netcdf.loader import _get_cf_var_data as pre_patched
 
     def patched(cf_var, filename):
         return as_concrete_data(pre_patched(cf_var, filename))
