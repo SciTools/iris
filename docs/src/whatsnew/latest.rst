@@ -132,7 +132,7 @@ This document explains the changes made to Iris for this release
    highlighted by :issue:`4090`.  (:pull:`4999`)
 
 #. `@rcomer`_ added the ``show`` option to the documentation Makefiles, as a
-   convenient way for contributors to view their built documenation.
+   convenient way for contributors to view their built documentation.
    (:pull:`5000`)
 
 .. comment
