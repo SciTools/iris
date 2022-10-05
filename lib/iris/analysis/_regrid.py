@@ -692,7 +692,6 @@ class RectilinearRegridder:
 
         # Prepare the result data array
         shape = list(src_data.shape)
-        init_shape = shape.copy()
         final_shape = shape.copy()
         if x_dim is not None:
             assert shape[x_dim] == src_x_coord.shape[0]
@@ -700,16 +699,16 @@ class RectilinearRegridder:
             final_shape[x_dim] = shape[x_dim]
         else:
             shape.append(1)
-            init_shape.append(1)
             x_dim = len(shape) - 1
+            src_data = np.expand_dims(src_data, -1)
         if y_dim is not None:
             assert shape[y_dim] == src_y_coord.shape[0]
             shape[y_dim] = sample_grid_x.shape[0]
             final_shape[y_dim] = shape[y_dim]
         else:
             shape.append(1)
-            init_shape.append(1)
             y_dim = len(shape) - 1
+            src_data = np.expand_dims(src_data, -1)
 
         dtype = src_data.dtype
         if method == "linear":
@@ -756,7 +755,7 @@ class RectilinearRegridder:
         # interpolator.
         index = [0] * len(shape)
         index[x_dim] = index[y_dim] = slice(None)
-        initial_data = src_data.reshape(init_shape)[tuple(index)]
+        initial_data = src_data[tuple(index)]
         if y_dim < x_dim:
             initial_data = initial_data.T
 
@@ -822,7 +821,7 @@ class RectilinearRegridder:
             index = list(index)
             index[x_dim] = index[y_dim] = slice(None)
 
-            src_subset = src_data.reshape(init_shape)[tuple(index)]
+            src_subset = src_data[tuple(index)]
             interpolator.fill_value = mode.fill_value
             data[tuple(index)] = interpolate(src_subset)
 
