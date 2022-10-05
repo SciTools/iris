@@ -1119,6 +1119,13 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
         sample_grid_x=meshgrid_x,
         sample_grid_y=meshgrid_y,
     )
+    # TODO: investigate if an area weighted callback would be more appropriate.
+    # _regrid_callback = functools.partial(
+    #     _regrid_area_weighted_array,
+    #     weights_info=weights_info,
+    #     index_info=index_info,
+    #     mdtol=mdtol,
+    # )
 
     def regrid_callback(*args, **kwargs):
         _data, dims = args

@@ -692,11 +692,24 @@ class RectilinearRegridder:
 
         # Prepare the result data array
         shape = list(src_data.shape)
-        assert shape[x_dim] == src_x_coord.shape[0]
-        assert shape[y_dim] == src_y_coord.shape[0]
-
-        shape[y_dim] = sample_grid_x.shape[0]
-        shape[x_dim] = sample_grid_x.shape[1]
+        init_shape = shape.copy()
+        final_shape = shape.copy()
+        if x_dim is not None:
+            assert shape[x_dim] == src_x_coord.shape[0]
+            shape[x_dim] = sample_grid_x.shape[1]
+            final_shape[x_dim] = shape[x_dim]
+        else:
+            shape.append(1)
+            init_shape.append(1)
+            x_dim = len(shape) - 1
+        if y_dim is not None:
+            assert shape[y_dim] == src_y_coord.shape[0]
+            shape[y_dim] = sample_grid_x.shape[0]
+            final_shape[y_dim] = shape[y_dim]
+        else:
+            shape.append(1)
+            init_shape.append(1)
+            y_dim = len(shape) - 1
 
         dtype = src_data.dtype
         if method == "linear":
@@ -718,7 +731,11 @@ class RectilinearRegridder:
             if src_x_coord.points.size > 1
             else False
         )
-        reverse_y = src_y_coord.points[0] > src_y_coord.points[1]
+        reverse_y = (
+            src_y_coord.points[0] > src_y_coord.points[1]
+            if src_y_coord.points.size > 1
+            else False
+        )
         flip_index = [slice(None)] * src_data.ndim
         if reverse_x:
             src_x_coord = src_x_coord[::-1]
@@ -737,9 +754,9 @@ class RectilinearRegridder:
 
         # Slice out the first full 2D piece of data for construction of the
         # interpolator.
-        index = [0] * src_data.ndim
+        index = [0] * len(shape)
         index[x_dim] = index[y_dim] = slice(None)
-        initial_data = src_data[tuple(index)]
+        initial_data = src_data.reshape(init_shape)[tuple(index)]
         if y_dim < x_dim:
             initial_data = initial_data.T
 
@@ -805,7 +822,7 @@ class RectilinearRegridder:
             index = list(index)
             index[x_dim] = index[y_dim] = slice(None)
 
-            src_subset = src_data[tuple(index)]
+            src_subset = src_data.reshape(init_shape)[tuple(index)]
             interpolator.fill_value = mode.fill_value
             data[tuple(index)] = interpolate(src_subset)
 
@@ -824,6 +841,7 @@ class RectilinearRegridder:
                     data = np.ma.MaskedArray(data, mask=False)
                     data.mask[tuple(index)] = new_mask
 
+        data = data.reshape(final_shape)
         return data
 
     @staticmethod
@@ -1171,7 +1189,7 @@ def _create_cube(
         grid_dim_x = grid_dim_y = min(src_dims)
     for tgt_coord, dim in zip(tgt_coords, (grid_dim_x, grid_dim_y)):
         if len(tgt_coord.shape) == 1:
-            if isinstance(tgt_coord, DimCoord):
+            if isinstance(tgt_coord, DimCoord) and dim is not None:
                 result.add_dim_coord(tgt_coord, dim)
             else:
                 result.add_aux_coord(tgt_coord, dim)
@@ -1187,10 +1205,13 @@ def _create_cube(
             dims = src.coord_dims(coord)
             if set(src_dims).intersection(set(dims)):
                 continue
+            if coord in tgt_coords:
+                continue
             offset = num_tgt_dims - len(src_dims)
-            dims = [
-                dim if dim < max(src_dims) else dim + offset for dim in dims
-            ]
+            max_src_dim = max(
+                dim for dim in list(src_dims) + [0] if dim is not None
+            )
+            dims = [dim if dim < max_src_dim else dim + offset for dim in dims]
             result_coord = coord.copy()
             # Add result_coord to the owner of add_method.
             add_method(result_coord, dims)
@@ -1211,7 +1232,10 @@ def _create_cube(
     ):
         # Determine which of the reference surface's dimensions span the X
         # and Y dimensions of the source cube.
-        relative_surface_dims = [surface_dims.index(dim) for dim in src_dims]
+        relative_surface_dims = [
+            surface_dims.index(dim) if dim is not None else None
+            for dim in src_dims
+        ]
         surface = regrid_callback(
             src_surface_coord.points,
             relative_surface_dims,
