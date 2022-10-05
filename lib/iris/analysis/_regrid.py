@@ -1174,15 +1174,14 @@ def _create_cube(
 
     result = Cube(data)
 
-    if len(src_dims) == 2:
-        grid_dim_x, grid_dim_y = src_dims
+    if len(src_dims) >= 2:
+        # TODO: For len(src_dims) > 2, this code currently assumes that
+        #  all dimensions are consecutive. Other cases ought to be supported.
+        grid_dim_x, grid_dim_y = src_dims[:2]
     elif len(src_dims) == 1:
         grid_dim_x = src_dims[0]
         grid_dim_y = grid_dim_x + 1
-    else:
-        raise ValueError(
-            f"Source grid must be described by 1 or 2 dimensions, got {len(src_dims)}"
-        )
+
     if num_tgt_dims == 1:
         grid_dim_x = grid_dim_y = min(src_dims)
     for tgt_coord, dim in zip(tgt_coords, (grid_dim_x, grid_dim_y)):
