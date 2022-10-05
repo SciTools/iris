@@ -223,8 +223,8 @@ as the **nodes** when creating the Iris
 
 `NEMO`_ data on ORCA tripolar grid
 ----------------------------------
-..  figure:: images/NEMO_ORCA_platecarree.png
-    :width: 400
+..  figure:: images/orca_grid.png
+    :width: 300
     :alt: Plot of ORCA-gridded data from NEMO.
 
 NEMO can use various grids, but is frequently used with ORCA type grids.
