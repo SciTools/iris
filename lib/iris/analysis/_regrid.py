@@ -20,7 +20,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.util import _meshgrid
+from iris.util import _meshgrid, guess_coord_axis
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):
@@ -1204,7 +1204,7 @@ def _create_cube(
             dims = src.coord_dims(coord)
             if set(src_dims).intersection(set(dims)):
                 continue
-            if coord in tgt_coords:
+            if guess_coord_axis(coord) in ["X", "Y"]:
                 continue
             offset = num_tgt_dims - len(src_dims)
             max_src_dim = max(
