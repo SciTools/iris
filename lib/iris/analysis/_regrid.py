@@ -51,7 +51,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
     Check inputs and calculate the sparse regrid matrix and related info.
-    The 'regrid info' returned can be re-used over many 2d slices.
+    The 'regrid info' returned can be re-used over many cubes.
 
     """
     if src_cube.aux_factories:
@@ -291,6 +291,12 @@ def _curvilinear_to_rectilinear_regrid(
     dims,
     regrid_info,
 ):
+    """
+    Part of 'regrid_weighted_curvilinear_to_rectilinear' which acts on the data.
+
+    Perform the prepared regrid calculation on an array.
+
+    """
     sparse_matrix, sum_weights, rows, grid_cube = regrid_info
 
     inds = list(range(-len(dims), 0))
@@ -360,7 +366,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     """
     Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
-    Perform the prepared regrid calculation on a single 2d cube.
+    Perform the prepared regrid calculation on a single cube.
 
     """
     dims = src_cube.coord_dims(
@@ -994,10 +1000,10 @@ def _create_cube(
     r"""
     Return a new cube for the result of regridding.
     Returned cube represents the result of regridding the source cube
-    onto the new grid/mesh.
+    onto the horizontal coordinates (e.g. latitude) of the target cube.
     All the metadata and coordinates of the result cube are copied from
     the source cube, with two exceptions:
-        - Grid/mesh coordinates are copied from the target cube.
+        - Horizontal coordinates are copied from the target cube.
         - Auxiliary coordinates which span the grid dimensions are
           ignored.
     Parameters
@@ -1010,11 +1016,11 @@ def _create_cube(
         The dimensions of the X and Y coordinate within the source Cube.
     tgt_coords : tuple of :class:`iris.coords.Coord`\\ 's
         Either two 1D :class:`iris.coords.DimCoord`\\ 's, two 1D
-        :class:`iris.experimental.ugrid.DimCoord`\\ 's or two 2D
+        :class:`iris.experimental.ugrid.DimCoord`\\ 's or two ND
         :class:`iris.coords.AuxCoord`\\ 's representing the new grid's
         X and Y coordinates.
     num_tgt_dims : int
-        The number of dimensions that the target grid/mesh spans.
+        The number of dimensions that the `tgt_coords` span.
     regrid_callback : callable
         The routine that will be used to calculate the interpolated
         values of any reference surfaces.
