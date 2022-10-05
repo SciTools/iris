@@ -307,7 +307,7 @@ def _curvilinear_to_rectilinear_regrid(
         # Use raw data array
         r_data = data.data
         # Check if there are any masked source points to take account of.
-        is_masked = np.ma.is_masked(data)
+        is_masked = ma.is_masked(data)
         if is_masked:
             # Zero any masked source points so they add nothing in output sums.
             mask = data.mask
@@ -333,11 +333,10 @@ def _curvilinear_to_rectilinear_regrid(
 
     weighted_mean = numerator / sum_weights
     # Ensure masked points where relevant source cells were all missing.
+    weighted_mean = ma.asarray(weighted_mean)
     if np.any(zero_sums):
-        # Make masked if it wasn't.
-        weighted_mean = np.ma.asarray(weighted_mean)
         # Mask where contributing sums were zero.
-        weighted_mean[zero_sums] = np.ma.masked
+        weighted_mean[zero_sums] = ma.masked
 
     new_data_shape = list(data_shape)
     for dim, length in zip(dims, grid_cube.shape):
@@ -828,16 +827,16 @@ class RectilinearRegridder:
             if ma.isMaskedArray(data) or mode.force_mask:
                 # NB. np.ma.getmaskarray returns an array of `False` if
                 # `src_subset` is not a masked array.
-                src_mask = np.ma.getmaskarray(src_subset)
+                src_mask = ma.getmaskarray(src_subset)
                 interpolator.fill_value = mode.mask_fill_value
                 mask_fraction = interpolate(src_mask)
                 new_mask = mask_fraction > 0
 
-                if np.ma.isMaskedArray(data):
+                if ma.isMaskedArray(data):
                     data.mask[tuple(index)] = new_mask
                 elif np.any(new_mask):
                     # Set mask=False to ensure we have an expanded mask array.
-                    data = np.ma.MaskedArray(data, mask=False)
+                    data = ma.MaskedArray(data, mask=False)
                     data.mask[tuple(index)] = new_mask
 
         data = data.reshape(final_shape)
