@@ -6,6 +6,12 @@ on:
   schedule:
     # Runs every day at 23:00.
     - cron: "0 23 * * *"
+  workflow_dispatch:
+    inputs:
+      first_commit:
+        description: "Argument to be passed to the overnight benchmark script."
+        required: false
+        type: string
 
 jobs:
   benchmark:
@@ -15,7 +21,7 @@ jobs:
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
-      IRIS_TEST_DATA_VERSION: "2.14"
+      IRIS_TEST_DATA_VERSION: "2.15"
       # Lets us manually bump the cache to rebuild
       ENV_CACHE_BUILD: "0"
       TEST_DATA_CACHE_BUILD: "2"
@@ -64,7 +70,12 @@ jobs:
 
       - name: Run overnight benchmarks
         run: |
-          first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
+          first_commit=${{ inputs.first_commit }}
+          if [ "$first_commit" == "" ]
+          then
+            first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
+          fi
+          
           if [ "$first_commit" != "" ]
           then
             nox --session="benchmarks(overnight)" -- $first_commit

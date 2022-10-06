@@ -1013,7 +1013,9 @@ class TestAggregators(tests.IrisTest):
         # [[ 0  1  2  3]
         #  [ 4  5  6  7]
         #  [ 8  9 10 11]]
-        iris.util.mask_cube(cube, np.isin(cube.data, [0, 2, 3, 5, 7, 11]))
+        iris.util.mask_cube(
+            cube, np.isin(cube.data, [0, 2, 3, 5, 7, 11]), in_place=True
+        )
         # [[--  1 -- --]
         #  [ 4 --  6 --]
         #  [ 8  9 10 --]]

@@ -575,6 +575,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(data_props["mesh"], mesh_name)
         self.assertEqual(data_props["location"], "face")
 
+    @tests.skip_data
     def test_nonmesh_hybrid_dim(self):
         # Check a case with a hybrid non-mesh dimension
         cube = realistic_4d()

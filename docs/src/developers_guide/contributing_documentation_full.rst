@@ -61,7 +61,10 @@ If you wish to run a full clean build you can run::
     make clean
     make html
 
-This is useful for a final test before committing your changes.
+This is useful for a final test before committing your changes. Having built
+the documentation, you can view them in your default browser via::
+
+    make show
 
 .. note:: In order to preserve a clean build for the html, all **warnings**
           have been promoted to be **errors** to ensure they are addressed.
@@ -72,14 +75,20 @@ This is useful for a final test before committing your changes.
 Testing
 ~~~~~~~
 
-There are a ways to test various aspects of the documentation.  The
-``make`` commands shown below can be run in the ``docs`` or
-``docs/src`` directory.
+There are various ways to test aspects of the documentation.
 
 Each :ref:`contributing.documentation.gallery` entry has a corresponding test.
-To run the tests::
+To run all the gallery tests::
 
-    make gallerytest
+    pytest -v docs/gallery_tests/test_gallery_examples.py
+
+To run a test for a single gallery example, use the ``pytest -k`` option for
+pattern matching, e.g.::
+
+    pytest -v -k plot_coriolis docs/gallery_tests/test_gallery_examples.py
+
+The ``make`` commands shown below can be run in the ``docs`` or ``docs/src``
+directory.
 
 Many documentation pages includes python code itself that can be run to ensure
 it is still valid or to demonstrate examples.  To ensure these tests pass
@@ -147,7 +156,7 @@ can exclude the module from the API documentation.  Add the entry to the
 Gallery
 ~~~~~~~
 
-The Iris :ref:`sphx_glr_generated_gallery` uses a sphinx extension named
+The Iris :ref:`gallery_index` uses a sphinx extension named
 `sphinx-gallery <https://sphinx-gallery.github.io/stable/>`_
 that auto generates reStructuredText (rst) files based upon a gallery source
 directory that abides directory and filename convention.

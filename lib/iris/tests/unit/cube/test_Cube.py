@@ -9,12 +9,14 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from collections import namedtuple
 from itertools import permutations
 from unittest import mock
 
 from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris._lazy_data import as_lazy_data
 import iris.analysis
@@ -562,6 +564,67 @@ class Test_collapsed__warning(tests.IrisTest):
             self.cube.collapsed(coords, aggregator)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
+
+
+class Test_collapsed_coord_with_3_bounds(tests.IrisTest):
+    def setUp(self):
+        self.cube = Cube([1, 2])
+
+        bounds = [[0.0, 1.0, 2.0], [2.0, 3.0, 4.0]]
+        lat = AuxCoord([1.0, 2.0], bounds=bounds, standard_name="latitude")
+        lon = AuxCoord([1.0, 2.0], bounds=bounds, standard_name="longitude")
+
+        self.cube.add_aux_coord(lat, 0)
+        self.cube.add_aux_coord(lon, 0)
+
+    def _assert_warn_cannot_check_contiguity(self, warn):
+        # Ensure that warning is raised.
+        for coord in ["latitude", "longitude"]:
+            msg = (
+                f"Cannot check if coordinate is contiguous: Invalid "
+                f"operation for '{coord}', with 3 bound(s). Contiguous "
+                f"bounds are only defined for 1D coordinates with 2 "
+                f"bounds. Metadata may not be fully descriptive for "
+                f"'{coord}'. Ignoring bounds."
+            )
+            self.assertIn(mock.call(msg), warn.call_args_list)
+
+    def _assert_cube_as_expected(self, cube):
+        """Ensure that cube data and coordiantes are as expected."""
+        self.assertArrayEqual(cube.data, np.array(3))
+
+        lat = cube.coord("latitude")
+        self.assertArrayAlmostEqual(lat.points, np.array([1.5]))
+        self.assertArrayAlmostEqual(lat.bounds, np.array([[1.0, 2.0]]))
+
+        lon = cube.coord("longitude")
+        self.assertArrayAlmostEqual(lon.points, np.array([1.5]))
+        self.assertArrayAlmostEqual(lon.bounds, np.array([[1.0, 2.0]]))
+
+    def test_collapsed_lat_with_3_bounds(self):
+        """Collapse latitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed("latitude", iris.analysis.SUM)
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
+
+    def test_collapsed_lon_with_3_bounds(self):
+        """Collapse longitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed(
+                "longitude", iris.analysis.SUM
+            )
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
+
+    def test_collapsed_lat_lon_with_3_bounds(self):
+        """Collapse latitude and longitude with 3 bounds."""
+        with mock.patch("warnings.warn") as warn:
+            collapsed_cube = self.cube.collapsed(
+                ["latitude", "longitude"], iris.analysis.SUM
+            )
+        self._assert_warn_cannot_check_contiguity(warn)
+        self._assert_cube_as_expected(collapsed_cube)
 
 
 class Test_summary(tests.IrisTest):
@@ -2873,6 +2936,256 @@ class Test__eq__meta(tests.IrisTest):
         cube2.add_cell_method(cmth1)
         cube2.add_cell_method(cmth2)
         self.assertTrue(cube1 == cube2)
+
+
+@pytest.fixture
+def simplecube():
+    return stock.simple_2d_w_cell_measure_ancil_var()
+
+
+class Test__dimensional_metadata:
+    """
+    Tests for the "Cube._dimensional_data" method.
+
+    NOTE: test could all be static methods, but that adds a line to each definition.
+    """
+
+    def test_not_found(self, simplecube):
+        with pytest.raises(KeyError, match="was not found in"):
+            simplecube._dimensional_metadata("grid_latitude")
+
+    def test_dim_coord_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("bar")
+        assert res == simplecube.coord("bar")
+
+    def test_dim_coord_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(simplecube.coord("bar"))
+        assert res == simplecube.coord("bar")
+
+    def test_aux_coord_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("wibble")
+        assert res == simplecube.coord("wibble")
+
+    def test_aux_coord_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(simplecube.coord("wibble"))
+        assert res == simplecube.coord("wibble")
+
+    def test_cell_measure_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("cell_area")
+        assert res == simplecube.cell_measure("cell_area")
+
+    def test_cell_measure_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(
+            simplecube.cell_measure("cell_area")
+        )
+        assert res == simplecube.cell_measure("cell_area")
+
+    def test_ancillary_var_name_found(self, simplecube):
+        res = simplecube._dimensional_metadata("quality_flag")
+        assert res == simplecube.ancillary_variable("quality_flag")
+
+    def test_ancillary_var_instance_found(self, simplecube):
+        res = simplecube._dimensional_metadata(
+            simplecube.ancillary_variable("quality_flag")
+        )
+        assert res == simplecube.ancillary_variable("quality_flag")
+
+    def test_two_with_same_name(self, simplecube):
+        # If a cube has two _DimensionalMetadata objects with the same name, the
+        # current behaviour results in _dimensional_metadata returning the first
+        # one it finds.
+        simplecube.cell_measure("cell_area").rename("wibble")
+        res = simplecube._dimensional_metadata("wibble")
+        assert res == simplecube.coord("wibble")
+
+    def test_two_with_same_name_specify_instance(self, simplecube):
+        # The cube has two _DimensionalMetadata objects with the same name so
+        # we specify the _DimensionalMetadata instance to ensure it returns the
+        # correct one.
+        simplecube.cell_measure("cell_area").rename("wibble")
+        res = simplecube._dimensional_metadata(
+            simplecube.cell_measure("wibble")
+        )
+        assert res == simplecube.cell_measure("wibble")
+
+
+class TestReprs:
+    """
+    Confirm that str(cube), repr(cube) and cube.summary() work by creating a fresh
+    :class:`iris._representation.cube_printout.CubePrinter` object, and using it
+    in the expected ways.
+
+    Notes
+    -----
+    This only tests code connectivity.  The functionality is tested elsewhere, in
+    `iris.tests.unit._representation.cube_printout.test_CubePrintout`.
+    """
+
+    # Note: logically this could be a staticmethod, but that seems to upset Pytest
+    @pytest.fixture
+    def patched_cubeprinter(self):
+        target = "iris._representation.cube_printout.CubePrinter"
+        instance_mock = mock.MagicMock(
+            to_string=mock.MagicMock(
+                return_value=""
+            )  # NB this must return a string
+        )
+        with mock.patch(target, return_value=instance_mock) as class_mock:
+            yield class_mock, instance_mock
+
+    @staticmethod
+    def _check_expected_effects(
+        simplecube, patched_cubeprinter, oneline, padding
+    ):
+        class_mock, instance_mock = patched_cubeprinter
+        assert class_mock.call_args_list == [
+            # "CubePrinter()" was called exactly once, with the cube as arg
+            mock.call(simplecube)
+        ]
+        assert instance_mock.to_string.call_args_list == [
+            # "CubePrinter(cube).to_string()" was called exactly once, with these args
+            mock.call(oneline=oneline, name_padding=padding)
+        ]
+
+    def test_str_effects(self, simplecube, patched_cubeprinter):
+        str(simplecube)
+        self._check_expected_effects(
+            simplecube, patched_cubeprinter, oneline=False, padding=35
+        )
+
+    def test_repr_effects(self, simplecube, patched_cubeprinter):
+        repr(simplecube)
+        self._check_expected_effects(
+            simplecube, patched_cubeprinter, oneline=True, padding=1
+        )
+
+    def test_summary_effects(self, simplecube, patched_cubeprinter):
+        simplecube.summary(
+            shorten=mock.sentinel.oneliner, name_padding=mock.sentinel.padding
+        )
+        self._check_expected_effects(
+            simplecube,
+            patched_cubeprinter,
+            oneline=mock.sentinel.oneliner,
+            padding=mock.sentinel.padding,
+        )
+
+
+class TestHtmlRepr:
+    """
+    Confirm that Cube._repr_html_() creates a fresh
+    :class:`iris.experimental.representation.CubeRepresentation` object, and uses it
+    in the expected way.
+
+    Notes
+    -----
+    This only tests code connectivity.  The functionality is tested elsewhere, in
+    `iris.tests.unit.experimental.representation.test_CubeRepresentation`.
+    """
+
+    # Note: logically this could be a staticmethod, but that seems to upset Pytest
+    @pytest.fixture
+    def patched_cubehtml(self):
+        target = "iris.experimental.representation.CubeRepresentation"
+        instance_mock = mock.MagicMock(
+            repr_html=mock.MagicMock(
+                return_value=""
+            )  # NB this must return a string
+        )
+        with mock.patch(target, return_value=instance_mock) as class_mock:
+            yield class_mock, instance_mock
+
+    @staticmethod
+    def test__repr_html__effects(simplecube, patched_cubehtml):
+        simplecube._repr_html_()
+
+        class_mock, instance_mock = patched_cubehtml
+        assert class_mock.call_args_list == [
+            # "CubeRepresentation()" was called exactly once, with the cube as arg
+            mock.call(simplecube)
+        ]
+        assert instance_mock.repr_html.call_args_list == [
+            # "CubeRepresentation(cube).repr_html()" was called exactly once, with no args
+            mock.call()
+        ]
+
+
+class Test__cell_methods:
+    @pytest.fixture(autouse=True)
+    def cell_measures_testdata(self):
+        self.cube = Cube([0])
+        self.cm = CellMethod("mean", "time", "6hr")
+        self.cm2 = CellMethod("max", "latitude", "4hr")
+
+    def test_none(self):
+        assert self.cube.cell_methods == ()
+
+    def test_one(self):
+        cube = Cube([0], cell_methods=[self.cm])
+        expected = (self.cm,)
+        assert expected == cube.cell_methods
+
+    def test_empty_assigns(self):
+        testargs = [(), [], {}, 0, 0.0, False, None]
+        results = []
+        for arg in testargs:
+            cube = self.cube.copy()
+            cube.cell_methods = arg  # assign test object
+            results.append(cube.cell_methods)  # capture what is read back
+        expected_results = [()] * len(testargs)
+        assert expected_results == results
+
+    def test_single_assigns(self):
+        cms = (self.cm, self.cm2)
+        # Any type of iterable ought to work
+        # But N.B. *not* testing sets, as order is not stable
+        testargs = [cms, list(cms), {cm: 1 for cm in cms}]
+        results = []
+        for arg in testargs:
+            cube = self.cube.copy()
+            cube.cell_methods = arg  # assign test object
+            results.append(cube.cell_methods)  # capture what is read back
+        expected_results = [cms] * len(testargs)
+        assert expected_results == results
+
+    def test_fail_assign_noniterable(self):
+        test_object = object()
+        with pytest.raises(TypeError, match="not iterable"):
+            self.cube.cell_methods = test_object
+
+    def test_fail_create_noniterable(self):
+        test_object = object()
+        with pytest.raises(TypeError, match="not iterable"):
+            Cube([0], cell_methods=test_object)
+
+    def test_fail_assign_noncellmethod(self):
+        test_object = object()
+        with pytest.raises(ValueError, match="not an iris.coords.CellMethod"):
+            self.cube.cell_methods = (test_object,)
+
+    def test_fail_create_noncellmethod(self):
+        test_object = object()
+        with pytest.raises(ValueError, match="not an iris.coords.CellMethod"):
+            Cube([0], cell_methods=[test_object])
+
+    def test_assign_derivedcellmethod(self):
+        class DerivedCellMethod(CellMethod):
+            pass
+
+        test_object = DerivedCellMethod("mean", "time", "6hr")
+        cms = (test_object,)
+        self.cube.cell_methods = (test_object,)
+        assert cms == self.cube.cell_methods
+
+    def test_fail_assign_duckcellmethod(self):
+        # Can't currently assign a "duck-typed" CellMethod replacement, since
+        # implementation requires class membership (boo!)
+        DuckCellMethod = namedtuple("DuckCellMethod", CellMethod._names)
+        test_object = DuckCellMethod(
+            *CellMethod._names
+        )  # fill props with value==name
+        with pytest.raises(ValueError, match="not an iris.coords.CellMethod"):
+            self.cube.cell_methods = (test_object,)
 
 
 if __name__ == "__main__":

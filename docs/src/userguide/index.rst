@@ -35,6 +35,7 @@ they may serve as a useful reference for future exploration.
    cube_maths
    citation
    code_maintenance
+   glossary
 
 
 .. toctree::

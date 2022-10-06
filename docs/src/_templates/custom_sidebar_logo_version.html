@@ -1,20 +1,26 @@
 {% if on_rtd %}
     {% if rtd_version == 'latest' %}
         <span title="latest development version">
-            <img src="https://img.shields.io/badge/latest_version-{{ version }}-orange?style=flat">
+            <img src="https://img.shields.io/badge/⚠️_version_('latest')-{{ version }}-gold?style=flat">
         </span>
     {% elif rtd_version == 'stable' %}
         <span title="stable version">
-            <img src="https://img.shields.io/badge/stable_version-{{ version }}-green?style=flat">
+            <img src="https://img.shields.io/badge/✨️_version_('stable')-{{ version }}-green?style=flat">
+        </span>
+    {% elif rtd_version_type == 'tag' %}
+        {# Covers builds for specific tags, including RC's. #}
+        <span title="archived version (not 'stable' or 'latest')">
+            <img src="https://img.shields.io/badge/🔒_version_(archived)-{{ version }}-red?style=?style=flat">
         </span>
     {% else %}
-        <span title="old version (not stable or latest)">
-            <img src="https://img.shields.io/badge/old_version-{{ version }}-red?style=?style=flat">
+        {# Anything else build by RTD will be the HEAD of an activated branch #}
+        <span title="non-tagged branch commit">
+            <img src="https://img.shields.io/badge/🚧_branch-{{ rtd_version }}_@_{{ commit_sha }}-blue?style=?style=flat">
         </span>
     {% endif %}
 {%- else %}
     {# not on rtd #}
-    <span title="development version">
-        <img src="https://img.shields.io/badge/dev_version-{{ version }}-blue?style=?style=flat">
+    <span title="non-tagged development commit">
+        <img src="https://img.shields.io/badge/🚧_commit_SHA-{{ commit_sha }}-blue?style=?style=flat">
     </span>
 {%- endif %}

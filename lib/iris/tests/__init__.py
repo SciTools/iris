@@ -141,15 +141,77 @@ def main():
         unittest.main()
 
 
+def _assert_masked_array(assertion, a, b, strict, **kwargs):
+    # Compare masks.
+    a_mask, b_mask = ma.getmaskarray(a), ma.getmaskarray(b)
+    np.testing.assert_array_equal(a_mask, b_mask)
+
+    if strict:
+        # Compare all data values.
+        assertion(a.data, b.data, **kwargs)
+    else:
+        # Compare only unmasked data values.
+        assertion(
+            ma.compressed(a),
+            ma.compressed(b),
+            **kwargs,
+        )
+
+
+def assert_masked_array_equal(a, b, strict=False):
+    """
+    Check that masked arrays are equal. This requires the
+    unmasked values and masks to be identical.
+
+    Args:
+
+    * a, b (array-like):
+        Two arrays to compare.
+
+    Kwargs:
+
+    * strict (bool):
+        If True, perform a complete mask and data array equality check.
+        If False (default), the data array equality considers only unmasked
+        elements.
+
+    """
+    _assert_masked_array(np.testing.assert_array_equal, a, b, strict)
+
+
+def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
+    """
+    Check that masked arrays are almost equal. This requires the
+    masks to be identical, and the unmasked values to be almost
+    equal.
+
+    Args:
+
+    * a, b (array-like):
+        Two arrays to compare.
+
+    Kwargs:
+
+    * strict (bool):
+        If True, perform a complete mask and data array equality check.
+        If False (default), the data array equality considers only unmasked
+        elements.
+
+    * decimal (int):
+        Equality tolerance level for
+        :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
+        'abs(desired-actual) < 0.5 * 10**(-decimal)'
+
+    """
+    _assert_masked_array(
+        np.testing.assert_array_almost_equal, a, b, strict, decimal=decimal
+    )
+
+
 class IrisTest_nometa(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
     _assertion_counts = collections.defaultdict(int)
-
-    @classmethod
-    def setUpClass(cls):
-        # Ensure that the CF profile if turned-off for testing.
-        iris.site_configuration["cf_profile"] = None
 
     def _assert_str_same(
         self,
@@ -587,85 +649,14 @@ class IrisTest_nometa(unittest.TestCase):
         msg = msg.format(expected_regexp, matches)
         self.assertFalse(matches, msg)
 
-    def _assertMaskedArray(self, assertion, a, b, strict, **kwargs):
-        # Define helper function to extract unmasked values as a 1d
-        # array.
-        def unmasked_data_as_1d_array(array):
-            array = ma.asarray(array)
-            if array.ndim == 0:
-                if array.mask:
-                    data = np.array([])
-                else:
-                    data = np.array([array.data])
-            else:
-                data = array.data[~ma.getmaskarray(array)]
-            return data
-
-        # Compare masks. This will also check that the array shapes
-        # match, which is not tested when comparing unmasked values if
-        # strict is False.
-        a_mask, b_mask = ma.getmaskarray(a), ma.getmaskarray(b)
-        np.testing.assert_array_equal(a_mask, b_mask)
-
-        if strict:
-            assertion(a.data, b.data, **kwargs)
-        else:
-            assertion(
-                unmasked_data_as_1d_array(a),
-                unmasked_data_as_1d_array(b),
-                **kwargs,
-            )
-
-    def assertMaskedArrayEqual(self, a, b, strict=False):
-        """
-        Check that masked arrays are equal. This requires the
-        unmasked values and masks to be identical.
-
-        Args:
-
-        * a, b (array-like):
-            Two arrays to compare.
-
-        Kwargs:
-
-        * strict (bool):
-            If True, perform a complete mask and data array equality check.
-            If False (default), the data array equality considers only unmasked
-            elements.
-
-        """
-        self._assertMaskedArray(np.testing.assert_array_equal, a, b, strict)
+    assertMaskedArrayEqual = staticmethod(assert_masked_array_equal)
 
     def assertArrayAlmostEqual(self, a, b, decimal=6):
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
 
-    def assertMaskedArrayAlmostEqual(self, a, b, decimal=6, strict=False):
-        """
-        Check that masked arrays are almost equal. This requires the
-        masks to be identical, and the unmasked values to be almost
-        equal.
-
-        Args:
-
-        * a, b (array-like):
-            Two arrays to compare.
-
-        Kwargs:
-
-        * strict (bool):
-            If True, perform a complete mask and data array equality check.
-            If False (default), the data array equality considers only unmasked
-            elements.
-
-        * decimal (int):
-            Equality tolerance level for
-            :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
-            'abs(desired-actual) < 0.5 * 10**(-decimal)'
-
-        """
-        self._assertMaskedArray(
-            np.testing.assert_array_almost_equal, a, b, strict, decimal=decimal
-        )
+    assertMaskedArrayAlmostEqual = staticmethod(
+        assert_masked_array_almost_equal
+    )
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
         """

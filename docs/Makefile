@@ -55,8 +55,8 @@ linkcheck:
 		echo "Running linkcheck in $$i..."; \
 		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) linkcheck); done
 
-gallerytest:
-	@echo
-	@echo "Running \"gallery\" tests..."
-	@echo
-	python -m unittest discover -v -t . 
+show:
+	@for i in $(SUBDIRS); do \
+		echo "Running show in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) show); done
+

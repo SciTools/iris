@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="int32" long_name="thingness" units="1">
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord bounds="[[0, 1],
+		[1, 2],
+		[2, 3],
+		[3, 4],
+		[4, 5],
+		[5, 6],
+		[6, 7],
+		[7, 8],
+		[8, 9],
+		[9, 10],
+		[10, 11]]" id="b0d35dcf" long_name="foo" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]" shape="(11,)" units="Unit('1')" value_type="int32"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="int32" shape="(11,)" state="loaded"/>
+  </cube>
+</cubes>

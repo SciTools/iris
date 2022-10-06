@@ -774,6 +774,7 @@ def _binary_op_common(
     new_dtype=None,
     dim=None,
     in_place=False,
+    sanitise_metadata=True,
 ):
     """
     Function which shares common code between binary operations.
@@ -792,6 +793,8 @@ def _binary_op_common(
                            coordinate that is not found in `cube`
     in_place             - whether or not to apply the operation in place to
                            `cube` and `cube.data`
+    sanitise_metadata    - whether or not to remove metadata using
+                           _sanitise_metadata function
     """
     from iris.cube import Cube
 
@@ -837,6 +840,20 @@ def _binary_op_common(
             raise TypeError(emsg)
         return data
 
+    if in_place and not cube.has_lazy_data():
+        # In-place arithmetic doesn't work if array type of LHS is less complex
+        # than RHS.
+        if iris._lazy_data.is_lazy_data(rhs):
+            cube.data = cube.lazy_data()
+        elif ma.is_masked(rhs) and not isinstance(cube.data, ma.MaskedArray):
+            cube.data = ma.array(cube.data)
+
+    elif isinstance(
+        cube.core_data(), ma.MaskedArray
+    ) and iris._lazy_data.is_lazy_data(rhs):
+        # Workaround for #2987.  numpy#15200 discusses the general problem.
+        cube = cube.copy(cube.lazy_data())
+
     result = _math_op_common(
         cube,
         unary_func,
@@ -844,13 +861,15 @@ def _binary_op_common(
         new_dtype=new_dtype,
         in_place=in_place,
         skeleton_cube=skeleton_cube,
+        sanitise_metadata=sanitise_metadata,
     )
 
     if isinstance(other, Cube):
         # Insert the resultant data from the maths operation
         # within the resolved cube.
         result = resolver.cube(result.core_data(), in_place=in_place)
-        _sanitise_metadata(result, new_unit)
+        if sanitise_metadata:
+            _sanitise_metadata(result, new_unit)
 
     return result
 
@@ -932,6 +951,7 @@ def _math_op_common(
     new_dtype=None,
     in_place=False,
     skeleton_cube=False,
+    sanitise_metadata=True,
 ):
     from iris.cube import Cube
 
@@ -965,7 +985,8 @@ def _math_op_common(
     ):
         new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
 
-    _sanitise_metadata(new_cube, new_unit)
+    if sanitise_metadata:
+        _sanitise_metadata(new_cube, new_unit)
 
     return new_cube
 

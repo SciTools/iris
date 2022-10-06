@@ -342,6 +342,8 @@ class Test2dPoints(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_data
+@tests.skip_plot
 class Test1dFillBetween(tests.GraphicsTest):
     def setUp(self):
         super().setUp()

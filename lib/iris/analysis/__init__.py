@@ -1499,18 +1499,21 @@ def _weighted_percentile(
         return result
 
 
-@_build_dask_mdtol_function
-def _lazy_count(array, **kwargs):
-    array = iris._lazy_data.as_lazy_data(array)
+def _count(array, **kwargs):
+    """
+    Counts the number of points along the axis that satisfy the condition
+    specified by ``function``.  Uses Dask's support for NEP13/18 to work as
+    either a lazy or a real function.
+
+    """
     func = kwargs.pop("function", None)
     if not callable(func):
         emsg = "function must be a callable. Got {}."
         raise TypeError(emsg.format(type(func)))
-    return da.sum(func(array), **kwargs)
+    return np.sum(func(array), **kwargs)
 
 
 def _proportion(array, function, axis, **kwargs):
-    count = iris._lazy_data.non_lazy(_lazy_count)
     # if the incoming array is masked use that to count the total number of
     # values
     if ma.isMaskedArray(array):
@@ -1521,7 +1524,7 @@ def _proportion(array, function, axis, **kwargs):
             # case pass the array shape instead of the mask:
             total_non_masked = array.shape[axis]
         else:
-            total_non_masked = count(
+            total_non_masked = _count(
                 array.mask, axis=axis, function=np.logical_not, **kwargs
             )
             total_non_masked = ma.masked_equal(total_non_masked, 0)
@@ -1534,7 +1537,7 @@ def _proportion(array, function, axis, **kwargs):
     # a dtype for its data that is different to the dtype of the fill-value,
     # which can cause issues outside this function.
     # Reference - tests/unit/analyis/test_PROPORTION.py Test_masked.test_ma
-    numerator = count(array, axis=axis, function=function, **kwargs)
+    numerator = _count(array, axis=axis, function=function, **kwargs)
     result = ma.asarray(numerator / total_non_masked)
 
     return result
@@ -1604,23 +1607,33 @@ def _lazy_rms(array, axis, **kwargs):
     return da.sqrt(da.mean(array**2, axis=axis, **kwargs))
 
 
-@_build_dask_mdtol_function
-def _lazy_sum(array, **kwargs):
-    array = iris._lazy_data.as_lazy_data(array)
-    # weighted or scaled sum
+def _sum(array, **kwargs):
+    """
+    Weighted or scaled sum.  Uses Dask's support for NEP13/18 to work as either
+    a lazy or a real function.
+
+    """
     axis_in = kwargs.get("axis", None)
     weights_in = kwargs.pop("weights", None)
     returned_in = kwargs.pop("returned", False)
     if weights_in is not None:
-        wsum = da.sum(weights_in * array, **kwargs)
+        wsum = np.sum(weights_in * array, **kwargs)
     else:
-        wsum = da.sum(array, **kwargs)
+        wsum = np.sum(array, **kwargs)
     if returned_in:
+        al = da if iris._lazy_data.is_lazy_data(array) else np
         if weights_in is None:
-            weights = iris._lazy_data.as_lazy_data(np.ones_like(array))
+            weights = al.ones_like(array)
+            if al is da:
+                # Dask version of ones_like does not preserve masks. See dask#9301.
+                weights = da.ma.masked_array(
+                    weights, da.ma.getmaskarray(array)
+                )
         else:
-            weights = weights_in
-        rvalue = (wsum, da.sum(weights, axis=axis_in))
+            weights = al.ma.masked_array(
+                weights_in, mask=al.ma.getmaskarray(array)
+            )
+        rvalue = (wsum, np.sum(weights, axis=axis_in))
     else:
         rvalue = wsum
     return rvalue
@@ -1740,9 +1753,9 @@ def _peak(array, **kwargs):
 #
 COUNT = Aggregator(
     "count",
-    iris._lazy_data.non_lazy(_lazy_count),
+    _count,
     units_func=lambda units: 1,
-    lazy_func=_lazy_count,
+    lazy_func=_build_dask_mdtol_function(_count),
 )
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
@@ -1975,31 +1988,29 @@ PERCENTILE = PercentileAggregator()
 A :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
 :func:`scipy.stats.mstats.mquantiles` (default) or :func:`numpy.percentile` (if
-fast_percentile_method is True).
+``fast_percentile_method`` is True).
 
-**Required** kwargs associated with the use of this aggregator:
+Parameters
+----------
 
 percent : float or sequence of floats
     Percentile rank/s at which to extract value/s.
 
-Additional kwargs associated with the use of this aggregator:
-
-alphap : float
+alphap : float, default=1
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
-    Defaults to 1.
-betap : float
+betap : float, default=1
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
-    Defaults to 1.
-fast_percentile_method : bool
+fast_percentile_method : bool, default=False
     When set to True, uses :func:`numpy.percentile` method as a faster
     alternative to the :func:`scipy.stats.mstats.mquantiles` method.  An
     exception is raised if the data are masked and the missing data tolerance
-    is not 0.  Defaults to False.
+    is not 0.
 
-kwargs : dict, optional
+**kwargs : dict, optional
     Passed to :func:`scipy.stats.mstats.mquantiles` or :func:`numpy.percentile`.
 
-**For example**:
+Example
+-------
 
 To compute the 10th and 90th percentile over *time*::
 
@@ -2116,8 +2127,8 @@ This aggregator handles masked data.
 
 SUM = WeightedAggregator(
     "sum",
-    iris._lazy_data.non_lazy(_lazy_sum),
-    lazy_func=_build_dask_mdtol_function(_lazy_sum),
+    _sum,
+    lazy_func=_build_dask_mdtol_function(_sum),
 )
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates

@@ -1266,13 +1266,7 @@ def _get_2d_coord_bound_grid(bounds):
     return result
 
 
-class _Hash:
-    """Mutable hash property"""
-
-    slots = ("_hash",)
-
-
-class Cell(namedtuple("Cell", ["point", "bound"]), _Hash):
+class Cell(namedtuple("Cell", ["point", "bound"])):
     """
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
@@ -1332,18 +1326,6 @@ class Cell(namedtuple("Cell", ["point", "bound"]), _Hash):
 
         return super().__new__(cls, point, bound)
 
-    def __init__(self, *args, **kwargs):
-        # Pre-compute the hash value of this instance at creation time based
-        # on the Cell.point alone. This results in a significant performance
-        # gain, as Cell.__hash__ is reduced to a minimalist attribute lookup
-        # for each invocation.
-        try:
-            value = 0 if np.isnan(self.point) else hash((self.point,))
-        except TypeError:
-            # Passing a string to np.isnan causes this exception.
-            value = hash((self.point,))
-        self._hash = value
-
     def __mod__(self, mod):
         point = self.point
         bound = self.bound
@@ -1363,20 +1345,7 @@ class Cell(namedtuple("Cell", ["point", "bound"]), _Hash):
         return Cell(point, bound)
 
     def __hash__(self):
-        # Required for >py39 and >np1.22.x due to changes in Cell behaviour for
-        # Cell.point=np.nan, as calling super().__hash__() returns a different
-        # hash each time and thus does not trigger the following call to
-        # Cell.__eq__ to determine equality.
-        # Note that, no explicit Cell.bound nan check is performed here.
-        # That is delegated to Cell.__eq__ instead. It's imperative we keep
-        # Cell.__hash__ light-weight to minimise performance degradation.
-        # Also see Cell.__init__ for Cell._hash assignment.
-        # Reference:
-        #   - https://bugs.python.org/issue43475
-        #   - https://github.com/numpy/numpy/issues/18833
-        #   - https://github.com/numpy/numpy/pull/18908
-        #   - https://github.com/numpy/numpy/issues/21210
-        return self._hash
+        return super().__hash__()
 
     def __eq__(self, other):
         """
@@ -1384,27 +1353,14 @@ class Cell(namedtuple("Cell", ["point", "bound"]), _Hash):
         compared.
 
         """
-
-        def nan_equality(x, y):
-            return (
-                isinstance(x, (float, np.number))
-                and np.isnan(x)
-                and isinstance(y, (float, np.number))
-                and np.isnan(y)
-            )
-
         if isinstance(other, (int, float, np.number)) or hasattr(
             other, "timetuple"
         ):
             if self.bound is not None:
                 return self.contains_point(other)
-            elif nan_equality(self.point, other):
-                return True
             else:
                 return self.point == other
         elif isinstance(other, Cell):
-            if nan_equality(self.point, other.point):
-                return True
             return (self.point == other.point) and (
                 self.bound == other.bound or self.bound == other.bound[::-1]
             )
@@ -1939,7 +1895,22 @@ class Coord(_DimensionalMetadata):
               ...
 
         """
-        return _CellIterator(self)
+        if self.ndim != 1:
+            raise iris.exceptions.CoordinateMultiDimError(self)
+
+        points = self.points
+        bounds = self.bounds
+        if self.units.is_time_reference():
+            points = self.units.num2date(points)
+            if self.has_bounds():
+                bounds = self.units.num2date(bounds)
+
+        if self.has_bounds():
+            for point, bound in zip(points, bounds):
+                yield Cell(point, bound)
+        else:
+            for point in points:
+                yield Cell(point)
 
     def _sanity_check_bounds(self):
         if self.ndim == 1:
@@ -2259,12 +2230,24 @@ class Coord(_DimensionalMetadata):
                     "Metadata may not be fully descriptive for {!r}."
                 )
                 warnings.warn(msg.format(self.name()))
-            elif not self.is_contiguous():
-                msg = (
-                    "Collapsing a non-contiguous coordinate. "
-                    "Metadata may not be fully descriptive for {!r}."
-                )
-                warnings.warn(msg.format(self.name()))
+            else:
+                try:
+                    self._sanity_check_bounds()
+                except ValueError as exc:
+                    msg = (
+                        "Cannot check if coordinate is contiguous: {} "
+                        "Metadata may not be fully descriptive for {!r}. "
+                        "Ignoring bounds."
+                    )
+                    warnings.warn(msg.format(str(exc), self.name()))
+                    self.bounds = None
+                else:
+                    if not self.is_contiguous():
+                        msg = (
+                            "Collapsing a non-contiguous coordinate. "
+                            "Metadata may not be fully descriptive for {!r}."
+                        )
+                        warnings.warn(msg.format(self.name()))
 
             if self.has_bounds():
                 item = self.core_bounds()
@@ -3167,22 +3150,6 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
-
-
-# See Coord.cells() for the description/context.
-class _CellIterator(Iterator):
-    def __init__(self, coord):
-        self._coord = coord
-        if coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(coord)
-        self._indices = iter(range(coord.shape[0]))
-
-    def __next__(self):
-        # NB. When self._indices runs out it will raise StopIteration for us.
-        i = next(self._indices)
-        return self._coord.cell(i)
-
-    next = __next__
 
 
 # See ExplicitCoord._group() for the description/context.

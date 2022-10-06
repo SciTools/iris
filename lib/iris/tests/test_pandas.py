@@ -10,12 +10,16 @@ import iris.tests as tests  # isort:skip
 
 import copy
 import datetime
-import unittest
+from termios import IXOFF  # noqa: F401
 
 import cf_units
 import cftime
 import matplotlib.units
 import numpy as np
+import pytest
+
+import iris
+from iris._deprecation import IrisDeprecation
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
@@ -27,13 +31,14 @@ except ImportError:
     pandas = None
 matplotlib.units.registry = default_units_registry
 
-skip_pandas = unittest.skipIf(
-    pandas is None, 'Test(s) require "pandas", ' "which is not available."
+skip_pandas = pytest.mark.skipif(
+    pandas is None,
+    reason='Test(s) require "pandas", ' "which is not available.",
 )
 
 if pandas is not None:
-    from iris.coords import DimCoord
-    from iris.cube import Cube
+    from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
+    from iris.cube import Cube, CubeList
     import iris.pandas
 
 
@@ -80,7 +85,7 @@ class TestAsSeries(tests.IrisTest):
         ]
         series = iris.pandas.as_series(cube)
         self.assertArrayEqual(series, cube.data)
-        self.assertListEqual(list(series.index), expected_index)
+        assert list(series.index) == expected_index
 
     def test_time_360(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="ts")
@@ -107,37 +112,37 @@ class TestAsSeries(tests.IrisTest):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
         series = iris.pandas.as_series(cube)
         series[0] = 99
-        self.assertEqual(cube.data[0], 0)
+        assert cube.data[0] == 0
 
     def test_copy_int32_false(self):
         cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
-        self.assertEqual(cube.data[0], 99)
+        assert cube.data[0] == 99
 
     def test_copy_int64_false(self):
         cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
-        self.assertEqual(cube.data[0], 99)
+        assert cube.data[0] == 99
 
     def test_copy_float_false(self):
         cube = Cube(np.array([0, 1, 2, 3.3, 4]), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
-        self.assertEqual(cube.data[0], 99)
+        assert cube.data[0] == 99
 
     def test_copy_masked_true(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
         series = iris.pandas.as_series(cube)
         series[0] = 99
-        self.assertEqual(cube.data[0], 0)
+        assert cube.data[0] == 0
 
     def test_copy_masked_false(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = iris.pandas.as_series(cube, copy=False)
 
 
@@ -230,8 +235,8 @@ class TestAsDataFrame(tests.IrisTest):
             )
             for day_offset in day_offsets
         ]
-        self.assertTrue(all(data_frame.columns == timestamps))
-        self.assertTrue(all(data_frame.index == [0, 1]))
+        assert all(data_frame.columns == timestamps)
+        assert all(data_frame.index == [0, 1])
 
     def test_time_360(self):
         cube = Cube(
@@ -261,7 +266,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 0)
+        assert cube.data[0, 0] == 0
 
     def test_copy_int32_false(self):
         cube = Cube(
@@ -270,7 +275,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
     def test_copy_int64_false(self):
         cube = Cube(
@@ -279,7 +284,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
     def test_copy_float_false(self):
         cube = Cube(
@@ -287,7 +292,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
     def test_copy_masked_true(self):
         data = np.ma.MaskedArray(
@@ -297,7 +302,7 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(data, long_name="foo")
         data_frame = iris.pandas.as_data_frame(cube)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 0)
+        assert cube.data[0, 0] == 0
 
     def test_copy_masked_false(self):
         data = np.ma.MaskedArray(
@@ -305,7 +310,7 @@ class TestAsDataFrame(tests.IrisTest):
             mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]],
         )
         cube = Cube(data, long_name="foo")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = iris.pandas.as_data_frame(cube, copy=False)
 
     def test_copy_false_with_cube_view(self):
@@ -313,10 +318,13 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(data[:], long_name="foo")
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
-        self.assertEqual(cube.data[0, 0], 99)
+        assert cube.data[0, 0] == 99
 
 
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:.*as_cube has been deprecated.*:iris._deprecation.IrisDeprecation"
+)
 class TestSeriesAsCube(tests.IrisTest):
     def test_series_simple(self):
         series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
@@ -390,16 +398,19 @@ class TestSeriesAsCube(tests.IrisTest):
         series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         cube = iris.pandas.as_cube(series)
         cube.data[0] = 99
-        self.assertEqual(series[5], 0)
+        assert series[5] == 0
 
     def test_copy_false(self):
         series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         cube = iris.pandas.as_cube(series, copy=False)
         cube.data[0] = 99
-        self.assertEqual(series[5], 99)
+        assert series[5] == 99
 
 
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:.*as_cube has been deprecated.*:iris._deprecation.IrisDeprecation"
+)
 class TestDataFrameAsCube(tests.IrisTest):
     def test_data_frame_simple(self):
         data_frame = pandas.DataFrame(
@@ -491,13 +502,461 @@ class TestDataFrameAsCube(tests.IrisTest):
         data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         cube = iris.pandas.as_cube(data_frame)
         cube.data[0, 0] = 99
-        self.assertEqual(data_frame[0][0], 0)
+        assert data_frame[0][0] == 0
 
     def test_copy_false(self):
         data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         cube = iris.pandas.as_cube(data_frame, copy=False)
         cube.data[0, 0] = 99
-        self.assertEqual(data_frame[0][0], 99)
+        assert data_frame[0][0] == 99
+
+
+@skip_pandas
+class TestFutureAndDeprecation(tests.IrisTest):
+    def test_deprecation_warning(self):
+        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+        with pytest.warns(
+            IrisDeprecation, match="as_cube has been deprecated"
+        ):
+            _ = iris.pandas.as_cube(data_frame)
+
+    # Tests for FUTURE are expected when as_dataframe() is made n-dimensional.
+
+
+@skip_pandas
+class TestPandasAsCubes(tests.IrisTest):
+    @staticmethod
+    def _create_pandas(index_levels=0, is_series=False):
+        index_length = 3
+
+        index_names = [f"index_{i}" for i in range(index_levels)]
+        index_values = [
+            np.arange(index_length) * 10 * (i + 1) for i in range(index_levels)
+        ]
+
+        if index_levels == 1:
+            index = pandas.Index(index_values[0], name=index_names[0])
+            data_length = index_length
+        elif index_levels > 1:
+            index = pandas.MultiIndex.from_product(
+                index_values, names=index_names
+            )
+            data_length = index.nunique()
+        else:
+            index = None
+            data_length = index_length
+
+        data = np.arange(data_length) * 10
+
+        if is_series:
+            class_ = pandas.Series
+        else:
+            class_ = pandas.DataFrame
+
+        return class_(data, index=index)
+
+    def test_1d_no_index(self):
+        df = self._create_pandas()
+        result = iris.pandas.as_cubes(df)
+
+        expected_coord = DimCoord(df.index.values)
+        expected_cube = Cube(
+            data=df[0].values,
+            long_name=str(df[0].name),
+            dim_coords_and_dims=[(expected_coord, 0)],
+        )
+        assert result == [expected_cube]
+
+    def test_1d_with_index(self):
+        df = self._create_pandas(index_levels=1)
+        result = iris.pandas.as_cubes(df)
+
+        expected_coord = DimCoord(df.index.values, long_name=df.index.name)
+        (result_cube,) = result
+        assert result_cube.dim_coords == (expected_coord,)
+
+    def test_1d_series_no_index(self):
+        series = self._create_pandas(is_series=True)
+        result = iris.pandas.as_cubes(series)
+
+        expected_coord = DimCoord(series.index.values)
+        expected_cube = Cube(
+            data=series.values, dim_coords_and_dims=[(expected_coord, 0)]
+        )
+        assert result == [expected_cube]
+
+    def test_1d_series_with_index(self):
+        series = self._create_pandas(index_levels=1, is_series=True)
+        result = iris.pandas.as_cubes(series)
+
+        expected_coord = DimCoord(
+            series.index.values, long_name=series.index.name
+        )
+        (result_cube,) = result
+        assert result_cube.dim_coords == (expected_coord,)
+
+    def test_3d(self):
+        df = self._create_pandas(index_levels=3)
+        result = iris.pandas.as_cubes(df)
+
+        expected_coords = [
+            DimCoord(level.values, long_name=level.name)
+            for level in df.index.levels
+        ]
+        (result_cube,) = result
+        assert result_cube.dim_coords == tuple(expected_coords)
+
+    def test_3d_series(self):
+        series = self._create_pandas(index_levels=3, is_series=True)
+        result = iris.pandas.as_cubes(series)
+
+        expected_coords = [
+            DimCoord(level.values, long_name=level.name)
+            for level in series.index.levels
+        ]
+        (result_cube,) = result
+        assert result_cube.dim_coords == tuple(expected_coords)
+
+    def test_non_unique_index(self):
+        df = self._create_pandas(index_levels=1)
+        new_index = df.index.values
+        new_index[1] = new_index[0]
+        df.set_index(new_index)
+
+        with pytest.raises(ValueError, match="not unique per row"):
+            _ = iris.pandas.as_cubes(df)
+
+    def test_non_monotonic_index(self):
+        df = self._create_pandas(index_levels=1)
+        new_index = df.index.values
+        new_index[:2] = new_index[1::-1]
+        df.set_index(new_index)
+
+        with pytest.raises(ValueError, match="not monotonic"):
+            _ = iris.pandas.as_cubes(df)
+
+    def test_missing_rows(self):
+        df = self._create_pandas(index_levels=2)
+        df = df[:-1]
+
+        with pytest.raises(
+            ValueError, match="Not all index values have a corresponding row"
+        ):
+            _ = iris.pandas.as_cubes(df)
+
+    def test_aux_coord(self):
+        df = self._create_pandas()
+        coord_name = "foo"
+        df[coord_name] = df.index.values
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
+
+        expected_aux_coord = AuxCoord(
+            df[coord_name].values, long_name=coord_name
+        )
+        (result_cube,) = result
+        assert result_cube.aux_coords == (expected_aux_coord,)
+
+    def test_cell_measure(self):
+        df = self._create_pandas()
+        coord_name = "foo"
+        df[coord_name] = df.index.values
+        result = iris.pandas.as_cubes(df, cell_measure_cols=[coord_name])
+
+        expected_cm = CellMeasure(df[coord_name].values, long_name=coord_name)
+        (result_cube,) = result
+        assert result_cube.cell_measures() == [expected_cm]
+
+    def test_ancillary_variable(self):
+        df = self._create_pandas()
+        coord_name = "foo"
+        df[coord_name] = df.index.values
+        result = iris.pandas.as_cubes(df, ancillary_variable_cols=[coord_name])
+
+        expected_av = AncillaryVariable(
+            df[coord_name].values, long_name=coord_name
+        )
+        (result_cube,) = result
+        assert result_cube.ancillary_variables() == [expected_av]
+
+    def test_3d_with_2d_coord(self):
+        df = self._create_pandas(index_levels=3)
+        coord_shape = df.index.levshape[:2]
+        coord_values = np.arange(np.product(coord_shape))
+        coord_name = "foo"
+        df[coord_name] = coord_values.repeat(df.index.levshape[-1])
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
+
+        expected_points = coord_values.reshape(coord_shape)
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        self.assertArrayEqual(result_coord.points, expected_points)
+        assert result_coord.cube_dims(result_cube) == (0, 1)
+
+    def test_coord_varies_all_indices(self):
+        df = self._create_pandas(index_levels=3)
+        coord_shape = df.index.levshape
+        coord_values = np.arange(np.product(coord_shape))
+        coord_name = "foo"
+        df[coord_name] = coord_values
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
+
+        expected_points = coord_values.reshape(coord_shape)
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        self.assertArrayEqual(result_coord.points, expected_points)
+        assert result_coord.cube_dims(result_cube) == (0, 1, 2)
+
+    def test_category_coord(self):
+        # Something that varies on a dimension, but doesn't change with every
+        #  increment.
+        df = self._create_pandas(index_levels=2)
+        coord_shape = df.index.levshape
+        coord_values = np.arange(np.product(coord_shape))
+        coord_name = "foo"
+
+        # Create a repeating value along a dimension.
+        step = coord_shape[-1]
+        coord_values[1::step] = coord_values[::step]
+
+        df[coord_name] = coord_values
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
+
+        expected_points = coord_values.reshape(coord_shape)
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        self.assertArrayEqual(result_coord.points, expected_points)
+        assert result_coord.cube_dims(result_cube) == (0, 1)
+
+    def test_scalar_coord(self):
+        df = self._create_pandas()
+        coord_values = np.ones(len(df))
+        coord_name = "foo"
+        df[coord_name] = coord_values
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
+
+        expected_points = np.unique(coord_values)
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        self.assertArrayEqual(result_coord.points, expected_points)
+        assert result_coord.cube_dims(result_cube) == tuple()
+
+    def test_multi_phenom(self):
+        df = self._create_pandas()
+        new_name = "new_phenom"
+        df[new_name] = df[0]
+        result = iris.pandas.as_cubes(df)
+
+        # Note the shared coord object between both Cubes.
+        expected_coord = DimCoord(df.index.values)
+        expected_cube_kwargs = dict(dim_coords_and_dims=[(expected_coord, 0)])
+
+        expected_cube_0 = Cube(
+            data=df[0].values,
+            long_name=str(df[0].name),
+            **expected_cube_kwargs,
+        )
+        expected_cube_1 = Cube(
+            data=df[new_name].values,
+            long_name=new_name,
+            **expected_cube_kwargs,
+        )
+        assert result == [expected_cube_0, expected_cube_1]
+
+    def test_empty_series(self):
+        series = pandas.Series(dtype=object)
+        result = iris.pandas.as_cubes(series)
+
+        assert result == CubeList()
+
+    def test_empty_dataframe(self):
+        df = pandas.DataFrame()
+        result = iris.pandas.as_cubes(df)
+
+        assert result == CubeList()
+
+    def test_no_phenom(self):
+        df = self._create_pandas()
+        # Specify the only column as an AuxCoord.
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[0])
+
+        assert result == CubeList()
+
+    def test_standard_name_phenom(self):
+        # long_name behaviour is tested in test_1d_no_index.
+        df = self._create_pandas()
+        new_name = "air_temperature"
+        df = df.rename(columns={0: new_name})
+        result = iris.pandas.as_cubes(df)
+
+        (result_cube,) = result
+        assert result_cube.standard_name == new_name
+
+    def test_standard_name_coord(self):
+        # long_name behaviour is tested in test_1d_with_index.
+        df = self._create_pandas()
+        new_name = "longitude"
+        df.index.names = [new_name]
+        result = iris.pandas.as_cubes(df)
+
+        (result_cube,) = result
+        result_coord = result_cube.coord(dim_coords=True)
+        assert result_coord.standard_name == new_name
+
+    def test_dtype_preserved_phenom(self):
+        df = self._create_pandas()
+        df = df.astype("int32")
+        result = iris.pandas.as_cubes(df)
+
+        (result_cube,) = result
+        assert result_cube.dtype == np.int32
+
+    def test_preserve_dim_order(self):
+        new_order = ["index_1", "index_0", "index_2"]
+
+        df = self._create_pandas(index_levels=3)
+        df = df.reset_index()
+        df = df.set_index(new_order)
+        df = df.sort_index()
+        result = iris.pandas.as_cubes(df)
+
+        (result_cube,) = result
+        dim_order = [c.name() for c in result_cube.dim_coords]
+        assert dim_order == new_order
+
+    def test_dtype_preserved_coord(self):
+        df = self._create_pandas()
+        new_index = df.index.astype("float64")
+        df.index = new_index
+        result = iris.pandas.as_cubes(df)
+
+        (result_cube,) = result
+        result_coord = result_cube.coord(dim_coords=True)
+        assert result_coord.dtype == np.float64
+
+    def test_string_phenom(self):
+        # Strings can be uniquely troublesome.
+        df = self._create_pandas()
+        new_values = [str(v) for v in df[0]]
+        df[0] = new_values
+        result = iris.pandas.as_cubes(df)
+
+        (result_cube,) = result
+        self.assertArrayEqual(result_cube.data, new_values)
+
+    def test_string_coord(self):
+        # Strings can be uniquely troublesome.
+        # Must test using an AuxCoord since strings cannot be DimCoords.
+        df = self._create_pandas()
+        new_points = [str(v) for v in df.index.values]
+        coord_name = "foo"
+        df[coord_name] = new_points
+        result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
+
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        self.assertArrayEqual(result_coord.points, new_points)
+
+    def test_series_with_col_args(self):
+        series = self._create_pandas(is_series=True)
+        with pytest.warns(Warning, match="is a Series; ignoring"):
+            _ = iris.pandas.as_cubes(series, aux_coord_cols=["some_column"])
+
+    def test_phenom_view(self):
+        df = self._create_pandas()
+        result = iris.pandas.as_cubes(df, copy=False)
+
+        # Modify AFTER creating the Cube(s).
+        df[0][0] += 1
+
+        (result_cube,) = result
+        assert result_cube.data[0] == df[0][0]
+
+    def test_phenom_copy(self):
+        df = self._create_pandas()
+        result = iris.pandas.as_cubes(df)
+
+        # Modify AFTER creating the Cube(s).
+        df[0][0] += 1
+
+        (result_cube,) = result
+        assert result_cube.data[0] != df[0][0]
+
+    def test_coord_never_view(self):
+        # Using AuxCoord - DimCoords and Pandas indices are immutable.
+        df = self._create_pandas()
+        coord_name = "foo"
+        df[coord_name] = df.index.values
+        result = iris.pandas.as_cubes(
+            df, copy=False, aux_coord_cols=[coord_name]
+        )
+
+        # Modify AFTER creating the Cube(s).
+        df[coord_name][0] += 1
+
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        assert result_coord.points[0] != df[coord_name][0]
+
+    def _test_dates_common(self, mode=None, alt_calendar=False):
+        df = self._create_pandas()
+        kwargs = dict(pandas_structure=df)
+        coord_name = "dates"
+
+        if alt_calendar:
+            calendar = cf_units.CALENDAR_360_DAY
+            # Only pass this when non-default.
+            kwargs["calendars"] = {coord_name: calendar}
+            expected_points = [8640, 8641, 8642]
+        else:
+            calendar = cf_units.CALENDAR_STANDARD
+            expected_points = [8760, 8761, 8762]
+        expected_units = cf_units.Unit(
+            "hours since 1970-01-01 00:00:00", calendar=calendar
+        )
+
+        datetime_args = [(1971, 1, 1, i, 0, 0) for i in df.index.values]
+        if mode == "index":
+            values = [datetime.datetime(*a) for a in datetime_args]
+            df.index = pandas.Index(values, name=coord_name)
+        elif mode == "numpy":
+            values = [datetime.datetime(*a) for a in datetime_args]
+            df[coord_name] = values
+            kwargs["aux_coord_cols"] = [coord_name]
+        elif mode == "cftime":
+            values = [
+                cftime.datetime(*a, calendar=calendar) for a in datetime_args
+            ]
+            df[coord_name] = values
+            kwargs["aux_coord_cols"] = [coord_name]
+        else:
+            raise ValueError("mode needs to be set")
+
+        result = iris.pandas.as_cubes(**kwargs)
+
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        assert result_coord.units == expected_units
+        self.assertArrayEqual(result_coord.points, expected_points)
+
+    def test_datetime_index(self):
+        self._test_dates_common(mode="index")
+
+    def test_datetime_index_calendar(self):
+        self._test_dates_common(mode="index", alt_calendar=True)
+
+    def test_numpy_datetime_coord(self):
+        # NumPy format is what happens if a Python datetime is assigned to a
+        #  Pandas column.
+        self._test_dates_common(mode="numpy")
+
+    def test_numpy_datetime_coord_calendar(self):
+        self._test_dates_common(mode="numpy", alt_calendar=True)
+
+    def test_cftime_coord(self):
+        self._test_dates_common(mode="cftime")
+
+    def test_cftime_coord_calendar(self):
+        self._test_dates_common(mode="cftime", alt_calendar=True)
 
 
 if __name__ == "__main__":
