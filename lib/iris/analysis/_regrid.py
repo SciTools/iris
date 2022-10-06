@@ -1035,8 +1035,6 @@ def _create_cube(
     result = Cube(data)
 
     if len(src_dims) >= 2:
-        # TODO: For len(src_dims) > 2, this code currently assumes that
-        #  all dimensions are consecutive. Other cases ought to be supported.
         grid_dim_x, grid_dim_y = src_dims[:2]
     elif len(src_dims) == 1:
         grid_dim_x = src_dims[0]
@@ -1064,11 +1062,21 @@ def _create_cube(
                 continue
             if guess_coord_axis(coord) in ["X", "Y"]:
                 continue
-            offset = num_tgt_dims - len(src_dims)
-            max_src_dim = max(
-                dim for dim in list(src_dims) + [0] if dim is not None
-            )
-            dims = [dim if dim < max_src_dim else dim + offset for dim in dims]
+
+            def dim_offset(dim):
+                offset = sum(
+                    [
+                        d <= dim
+                        for d in (grid_dim_x, grid_dim_y)
+                        if d is not None
+                    ]
+                )
+                if offset and num_tgt_dims == 1:
+                    offset -= 1
+                offset -= sum([d <= dim for d in src_dims if d is not None])
+                return dim + offset
+
+            dims = [dim_offset(dim) for dim in dims]
             result_coord = coord.copy()
             # Add result_coord to the owner of add_method.
             add_method(result_coord, dims)
