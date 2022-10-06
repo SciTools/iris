@@ -1345,7 +1345,14 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return Cell(point, bound)
 
     def __hash__(self):
-        return super().__hash__()
+        # See __eq__ for the definition of when two cells are equal.
+        if self.bound is None:
+            return hash(self.point)
+        bound = self.bound
+        rbound = bound[::-1]
+        if rbound < bound:
+            bound = rbound
+        return hash((self.point, bound))
 
     def __eq__(self, other):
         """
@@ -2397,18 +2404,16 @@ class Coord(_DimensionalMetadata):
             )
             raise ValueError(msg)
 
-        # Cache self.cells for speed. We can also use the index operation on a
-        # list conveniently.
-        self_cells = [cell for cell in self.cells()]
+        # Cache self.cells for speed. We can also use the dict for fast index
+        # lookup.
+        self_cells = {cell: idx for idx, cell in enumerate(self.cells())}
 
         # Maintain a list of indices on self for which cells exist in both self
         # and other.
         self_intersect_indices = []
         for cell in other.cells():
-            try:
-                self_intersect_indices.append(self_cells.index(cell))
-            except ValueError:
-                pass
+            if cell in self_cells:
+                self_intersect_indices.append(self_cells[cell])
 
         if return_indices is False and self_intersect_indices == []:
             raise ValueError(
