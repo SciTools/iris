@@ -221,6 +221,9 @@ as the **nodes** when creating the Iris
                     <AuxCoord: longitude / (degrees)  [...]  shape(666328,)>
                     <AuxCoord: latitude / (degrees)  [...]  shape(666328,)>
 
+
+.. _ORCA_example:
+
 `NEMO`_ data on ORCA tripolar grid
 ----------------------------------
 ..  figure:: images/orca_grid.png
