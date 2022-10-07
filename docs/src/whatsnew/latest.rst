@@ -35,6 +35,9 @@ This document explains the changes made to Iris for this release
    non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
    (:issue:`4772`, :pull:`4913`)
 
+#. `@trexfeathers`_ and `Julian Heming`_ added new mappings between CF
+   standard names and UK Met Office LBFC codes. (:pull:`4859`)
+
 
 🐛 Bugs Fixed
 =============
@@ -142,6 +145,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@TTV-Intrepid: https://github.com/TTV-Intrepid
+.. _Julian Heming: https://www.metoffice.gov.uk/research/people/julian-heming
 
 
 
