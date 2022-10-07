@@ -18,7 +18,6 @@ import operator
 import warnings
 import zlib
 
-import cftime
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -1411,16 +1410,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         ):
             raise ValueError("Unexpected operator_method")
 
-        # Prevent silent errors resulting from missing cftime
-        # behaviour.
-        if isinstance(other, cftime.datetime) or (
-            isinstance(self.point, cftime.datetime)
-            and not isinstance(other, iris.time.PartialDateTime)
-        ):
-            raise TypeError(
-                "Cannot determine the order of " "cftime.datetime objects"
-            )
-
         if isinstance(other, Cell):
             # Cell vs Cell comparison for providing a strict sort order
             if self.bound is None:
@@ -1485,19 +1474,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
                 else:
                     me = max(self.bound)
 
-            # Work around to handle cftime.datetime comparison, which
-            # doesn't return NotImplemented on failure in some versions of the
-            # library
-            try:
-                result = operator_method(me, other)
-            except TypeError:
-                rop = {
-                    operator.lt: operator.gt,
-                    operator.gt: operator.lt,
-                    operator.le: operator.ge,
-                    operator.ge: operator.le,
-                }[operator_method]
-                result = rop(other, me)
+            result = operator_method(me, other)
 
         return result
 
