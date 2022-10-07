@@ -1589,6 +1589,10 @@ def _rms(array, axis, **kwargs):
 
 
 def _lazy_rms(array, axis, **kwargs):
+    # Note that, since we specifically need the ma version of average to handle
+    # weights correctly with masked data, we cannot rely on NEP13/18 and need
+    # to implement a separate lazy RMS function.
+
     rval = da.sqrt(da.ma.average(array**2, axis=axis, **kwargs))
 
     return rval
