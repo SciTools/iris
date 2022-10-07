@@ -60,6 +60,9 @@ This document explains the changes made to Iris for this release
    variables and cell measures that map to a cube dimension of length 1 are now
    included in the respective vector sections. (:pull:`4945`)
 
+#. `@rcomer`_ removed some old redundant code that prevented determining the
+   order of time cells. (:issue:`4697`, :pull:`4729`)
+
 
 💣 Incompatible Changes
 =======================
