@@ -35,10 +35,14 @@ The gallery contains several interesting worked examples of how an
 
 """
 
-from collections import OrderedDict
+from __future__ import annotations
+
 from collections.abc import Iterable
 import functools
 from functools import wraps
+import itertools
+from numbers import Number
+from typing import Optional, Union
 import warnings
 
 import dask.array as da
@@ -2252,8 +2256,11 @@ class _Groupby:
     """
 
     def __init__(
-        self, groupby_coords, shared_coords=None, climatological=False
-    ):
+        self,
+        groupby_coords: list[iris.coords.Coord],
+        shared_coords: Optional[list[tuple[iris.coords.Coord, int]]] = None,
+        climatological: bool = False,
+    ) -> None:
         """
         Determine the group slices over the group-by coordinates.
 
@@ -2277,15 +2284,15 @@ class _Groupby:
 
         """
         #: Group-by and shared coordinates that have been grouped.
-        self.coords = []
-        self._groupby_coords = []
-        self._shared_coords = []
-        self._slices_by_key = OrderedDict()
+        self.coords: list[iris.coords.Coord] = []
+        self._groupby_coords: list[iris.coords.Coord] = []
+        self._shared_coords: list[tuple[iris.coords.Coord, int]] = []
+        self._groupby_indices: list[tuple[int, ...]] = []
         self._stop = None
         # Ensure group-by coordinates are iterable.
         if not isinstance(groupby_coords, Iterable):
             raise TypeError(
-                "groupby_coords must be a " "`collections.Iterable` type."
+                "groupby_coords must be a `collections.Iterable` type."
             )
 
         # Add valid group-by coordinates.
@@ -2297,7 +2304,7 @@ class _Groupby:
             # Ensure shared coordinates are iterable.
             if not isinstance(shared_coords, Iterable):
                 raise TypeError(
-                    "shared_coords must be a " "`collections.Iterable` type."
+                    "shared_coords must be a `collections.Iterable` type."
                 )
             # Add valid shared coordinates.
             for coord, dim in shared_coords:
@@ -2308,9 +2315,11 @@ class _Groupby:
 
         # Stores mapping from original cube coords to new ones, as metadata may
         # not match
-        self.coord_replacement_mapping = []
+        self.coord_replacement_mapping: list[
+            tuple[iris.coords.Coord, iris.coords.Coord]
+        ] = []
 
-    def _add_groupby_coord(self, coord):
+    def _add_groupby_coord(self, coord: iris.coords.Coord) -> None:
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
         if self._stop is None:
@@ -2324,7 +2333,7 @@ class _Groupby:
             raise ValueError("Shared coordinates have different lengths.")
         self._shared_coords.append((coord, dim))
 
-    def group(self):
+    def group(self) -> list[tuple[int, ...]]:
         """
         Calculate the groups and associated slices over one or more group-by
         coordinates.
@@ -2333,147 +2342,84 @@ class _Groupby:
         group slices.
 
         Returns:
-            A generator of the coordinate group slices.
+            A list of the coordinate group slices.
 
         """
-        if self._groupby_coords:
-            if not self._slices_by_key:
-                items = []
-                groups = []
+        if not self._groupby_indices:
+            # Construct the group indices for each group over the group-by
+            # coordinates. Keep constructing until all group-by coordinate
+            # groups are exhausted.
 
-                for coord in self._groupby_coords:
-                    groups.append(iris.coords._GroupIterator(coord.points))
-                    items.append(next(groups[-1]))
+            def group_iterator(points):
+                start = 0
+                for _, group in itertools.groupby(points):
+                    stop = sum((1 for _ in group), start)
+                    yield slice(start, stop)
+                    start = stop
 
-                # Construct the group slice for each group over the group-by
-                # coordinates. Keep constructing until all group-by coordinate
-                # groups are exhausted.
-                while any([item is not None for item in items]):
-                    # Determine the extent (start, stop) of the group given
-                    # each current group-by coordinate group.
-                    start = max(
-                        [
-                            item.groupby_slice.start
-                            for item in items
-                            if item is not None
-                        ]
-                    )
-                    stop = min(
-                        [
-                            item.groupby_slice.stop
-                            for item in items
-                            if item is not None
-                        ]
-                    )
-                    # Construct composite group key for the group using the
-                    # start value from each group-by coordinate.
-                    key = tuple(
-                        [coord.points[start] for coord in self._groupby_coords]
-                    )
-                    # Associate group slice with group key within the ordered
-                    # dictionary.
-                    self._slices_by_key.setdefault(key, []).append(
-                        slice(start, stop)
-                    )
-                    # Prepare for the next group slice construction over the
-                    # group-by coordinates.
-                    for item_index, item in enumerate(items):
-                        if item is None:
-                            continue
-                        # Get coordinate current group slice.
-                        groupby_slice = item.groupby_slice
-                        # Determine whether coordinate has spanned all its
-                        # groups i.e. its full length
-                        # or whether we need to get the coordinates next group.
-                        if groupby_slice.stop == self._stop:
-                            # This coordinate has exhausted all its groups,
-                            # so remove it.
-                            items[item_index] = None
-                        elif groupby_slice.stop == stop:
-                            # The current group of this coordinate is
-                            # exhausted, so get the next one.
-                            items[item_index] = next(groups[item_index])
+            groups = [group_iterator(c.points) for c in self._groupby_coords]
+            groupby_slices = [next(group) for group in groups]
+            indices_by_key: dict[
+                tuple[Union[Number, str], ...], list[int]
+            ] = {}
+            while any(s is not None for s in groupby_slices):
+                # Determine the extent (start, stop) of the group given
+                # each current group-by coordinate group.
+                start = max(s.start for s in groupby_slices if s is not None)
+                stop = min(s.stop for s in groupby_slices if s is not None)
+                # Construct composite group key for the group using the
+                # start value from each group-by coordinate.
+                key = tuple(
+                    coord.points[start] for coord in self._groupby_coords
+                )
+                # Associate group slice with group key within the ordered
+                # dictionary.
+                indices_by_key.setdefault(key, []).extend(range(start, stop))
+                # Prepare for the next group slice construction over the
+                # group-by coordinates.
+                for index, groupby_slice in enumerate(groupby_slices):
+                    if groupby_slice is None:
+                        continue
+                    # Determine whether coordinate has spanned all its
+                    # groups i.e. its full length
+                    # or whether we need to get the coordinates next group.
+                    if groupby_slice.stop == self._stop:
+                        # This coordinate has exhausted all its groups,
+                        # so remove it.
+                        groupby_slices[index] = None
+                    elif groupby_slice.stop == stop:
+                        # The current group of this coordinate is
+                        # exhausted, so get the next one.
+                        groupby_slices[index] = next(groups[index])
 
-                # Merge multiple slices together into one tuple.
-                self._slice_merge()
-                # Calculate the new group-by coordinates.
-                self._compute_groupby_coords()
-                # Calculate the new shared coordinates.
-                self._compute_shared_coords()
-            # Generate the group-by slices/groups.
-            for groupby_slice in self._slices_by_key.values():
-                yield groupby_slice
+            # Cache the indices
+            self._groupby_indices = [tuple(i) for i in indices_by_key.values()]
+            # Calculate the new group-by coordinates.
+            self._compute_groupby_coords()
+            # Calculate the new shared coordinates.
+            self._compute_shared_coords()
 
-        return
+        # Return the group-by indices/groups.
+        return self._groupby_indices
 
-    def _slice_merge(self):
-        """
-        Merge multiple slices into one tuple and collapse items from
-        containing list.
-
-        """
-        # Iterate over the ordered dictionary in order to reduce
-        # multiple slices into a single tuple and collapse
-        # all items from containing list.
-        for key, groupby_slices in self._slices_by_key.items():
-            if len(groupby_slices) > 1:
-                # Compress multiple slices into tuple representation.
-                groupby_indicies = []
-
-                for groupby_slice in groupby_slices:
-                    groupby_indicies.extend(
-                        range(groupby_slice.start, groupby_slice.stop)
-                    )
-
-                self._slices_by_key[key] = tuple(groupby_indicies)
-            else:
-                # Remove single inner slice from list.
-                self._slices_by_key[key] = groupby_slices[0]
-
-    def _compute_groupby_coords(self):
+    def _compute_groupby_coords(self) -> None:
         """Create new group-by coordinates given the group slices."""
-
-        groupby_slice = []
-
-        # Iterate over the ordered dictionary in order to construct
-        # a group-by slice that samples the first element from each group.
-        for key_slice in self._slices_by_key.values():
-            if isinstance(key_slice, tuple):
-                groupby_slice.append(key_slice[0])
-            else:
-                groupby_slice.append(key_slice.start)
-
-        groupby_slice = np.array(groupby_slice)
+        # Construct a group-by slice that samples the first element from each
+        # group.
+        groupby_slice = np.array([i[0] for i in self._groupby_indices])
 
         # Create new group-by coordinates from the group-by slice.
         self.coords = [coord[groupby_slice] for coord in self._groupby_coords]
 
-    def _compute_shared_coords(self):
+    def _compute_shared_coords(self) -> None:
         """Create the new shared coordinates given the group slices."""
-
-        groupby_indices = []
-        groupby_bounds = []
-
-        # Iterate over the ordered dictionary in order to construct a list of
-        # tuple group indices, and a list of the respective bounds of those
-        # indices.
-        for key_slice in self._slices_by_key.values():
-            if isinstance(key_slice, tuple):
-                indices = key_slice
-            else:
-                indices = tuple(range(*key_slice.indices(self._stop)))
-
-            groupby_indices.append(indices)
-            groupby_bounds.append((indices[0], indices[-1]))
-
-        # Create new shared bounded coordinates.
         for coord, dim in self._shared_coords:
             climatological_coord = (
                 self.climatological and coord.units.is_time_reference()
             )
             if coord.points.dtype.kind in "SU":
                 if coord.bounds is None:
-                    new_points = []
+                    new_points_list = []
                     new_bounds = None
                     # np.apply_along_axis does not work with str.join, so we
                     # need to loop through the array directly. First move axis
@@ -2481,32 +2427,32 @@ class _Groupby:
                     work_arr = np.moveaxis(coord.points, dim, -1)
                     shape = work_arr.shape
                     work_shape = (-1, shape[-1])
-                    new_shape = (len(self),)
+                    new_shape: tuple[int, ...] = (len(self),)
                     if coord.ndim > 1:
                         new_shape += shape[:-1]
                     work_arr = work_arr.reshape(work_shape)
 
-                    for indices in groupby_indices:
+                    for indices in self._groupby_indices:
                         for arr in work_arr:
-                            new_points.append("|".join(arr.take(indices)))
+                            new_points_list.append("|".join(arr.take(indices)))
 
                     # Reinstate flattened dimensions. Aggregated dim now leads.
-                    new_points = np.array(new_points).reshape(new_shape)
+                    new_points = np.array(new_points_list).reshape(new_shape)
 
                     # Move aggregated dimension back to position it started in.
                     new_points = np.moveaxis(new_points, 0, dim)
                 else:
                     msg = (
-                        "collapsing the bounded string coordinate {0!r}"
-                        " is not supported".format(coord.name())
+                        "collapsing the bounded string coordinate"
+                        f" {coord.name()!r} is not supported"
                     )
                     raise ValueError(msg)
             else:
-                new_bounds = []
+                new_bounds_list = []
                 if coord.has_bounds():
                     # Derive new coord's bounds from bounds.
                     item = coord.bounds
-                    maxmin_axis = (dim, -1)
+                    maxmin_axis: Union[int, tuple[int, int]] = (dim, -1)
                     first_choices = coord.bounds.take(0, -1)
                     last_choices = coord.bounds.take(1, -1)
 
@@ -2523,12 +2469,13 @@ class _Groupby:
                 # Construct list of coordinate group boundary pairs.
                 if monotonic:
                     # Use first and last bound or point for new bounds.
-                    for start, stop in groupby_bounds:
+                    for indices in self._groupby_indices:
+                        start, stop = indices[0], indices[-1]
                         if (
                             getattr(coord, "circular", False)
                             and (stop + 1) == self._stop
                         ):
-                            new_bounds.append(
+                            new_bounds_list.append(
                                 [
                                     first_choices.take(start, dim),
                                     first_choices.take(0, dim)
@@ -2536,7 +2483,7 @@ class _Groupby:
                                 ]
                             )
                         else:
-                            new_bounds.append(
+                            new_bounds_list.append(
                                 [
                                     first_choices.take(start, dim),
                                     last_choices.take(stop, dim),
@@ -2544,9 +2491,9 @@ class _Groupby:
                             )
                 else:
                     # Use min and max bound or point for new bounds.
-                    for indices in groupby_indices:
+                    for indices in self._groupby_indices:
                         item_slice = item.take(indices, dim)
-                        new_bounds.append(
+                        new_bounds_list.append(
                             [
                                 item_slice.min(axis=maxmin_axis),
                                 item_slice.max(axis=maxmin_axis),
@@ -2557,7 +2504,7 @@ class _Groupby:
                 # dimension last, and the aggregated dimension back in its
                 # original position.
                 new_bounds = np.moveaxis(
-                    np.array(new_bounds), (0, 1), (dim, -1)
+                    np.array(new_bounds_list), (0, 1), (dim, -1)
                 )
 
                 # Now create the new bounded group shared coordinate.
@@ -2569,8 +2516,8 @@ class _Groupby:
                         new_points = new_bounds.mean(-1)
                 except TypeError:
                     msg = (
-                        "The {0!r} coordinate on the collapsing dimension"
-                        " cannot be collapsed.".format(coord.name())
+                        f"The {coord.name()!r} coordinate on the collapsing"
+                        " dimension cannot be collapsed."
                     )
                     raise ValueError(msg)
 
@@ -2588,29 +2535,16 @@ class _Groupby:
 
             self.coords.append(new_coord)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Calculate the number of groups given the group-by coordinates."""
+        return len(self.group())
 
-        if self._slices_by_key:
-            value = len(self._slices_by_key)
-        else:
-            value = len([s for s in self.group()])
-
-        return value
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         groupby_coords = [coord.name() for coord in self._groupby_coords]
-
-        if self._shared_coords_by_name:
-            shared_coords = [coord.name() for coord in self._shared_coords]
-            shared_string = ", shared_coords=%r)" % shared_coords
-        else:
-            shared_string = ")"
-
-        return "%s(%r%s" % (
-            self.__class__.__name__,
-            groupby_coords,
-            shared_string,
+        shared_coords = [item[0].name() for item in self._shared_coords]
+        return (
+            f"{self.__class__.__name__}({groupby_coords!r}"
+            f", shared_coords={shared_coords!r})"
         )
 
 
