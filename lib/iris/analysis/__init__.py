@@ -2059,14 +2059,16 @@ An :class:`~iris.analysis.Aggregator` instance that calculates
 the root mean square over a :class:`~iris.cube.Cube`, as computed by
 ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
-Additional kwargs associated with the use of this aggregator:
+Parameters
+----------
 
-* weights (float ndarray):
+weights : array-like, optional
     Weights matching the shape of the cube or the length of the window for
     rolling window operations. The weights are applied to the squares when
     taking the mean.
 
-**For example**:
+Example
+-------
 
 To compute the zonal root mean square over the *longitude* axis of a cube::
 
