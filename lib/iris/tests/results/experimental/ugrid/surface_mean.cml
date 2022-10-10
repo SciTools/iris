@@ -20,7 +20,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -30,7 +30,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -71,7 +71,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -81,7 +81,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -122,7 +122,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -132,7 +132,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -173,7 +173,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -183,7 +183,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -224,7 +224,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -234,7 +234,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -275,7 +275,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -285,7 +285,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -326,7 +326,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -336,7 +336,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -377,7 +377,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -387,7 +387,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -428,7 +428,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -438,7 +438,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -479,7 +479,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -489,7 +489,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -530,7 +530,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -540,7 +540,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -581,7 +581,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -591,7 +591,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -632,7 +632,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -642,7 +642,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -683,7 +683,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -693,7 +693,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -734,7 +734,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -744,7 +744,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -785,7 +785,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -795,7 +795,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -836,7 +836,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -846,7 +846,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
@@ -887,7 +887,7 @@
 		..., 
 		[-37.7044, -36.9373, -37.9318, -38.7655],
 		[-36.9373, -36.1244, -37.0517, -37.9318],
-		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
 		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
@@ -897,7 +897,7 @@
 		..., 
 		[230.625, 228.75, 226.883, 228.774],
 		[228.75, 226.875, 225.0, 226.883],
-		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		[226.875, 225.0, 223.125, 225.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.933, 317.808, 319.683, ..., 228.759,
 		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
