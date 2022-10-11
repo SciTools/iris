@@ -76,6 +76,10 @@ This document explains the changes made to Iris for this release
    :meth:`iris.cube.Cube.subset`, and :meth:`iris.coords.Coord.intersect`.
    (:pull:`4969`)
 
+#. `@bouweandela`_ improved the speed of :meth:`iris.cube.Cube.subset` /
+   :meth:`iris.coords.Coord.intersect`.
+   (:pull:`4955`)
+
 🔥 Deprecations
 ===============
 
