@@ -501,6 +501,7 @@ class Saver:
 
         * filename (string):
             Name of the netCDF file to save the cube.
+            OR a writeable object supporting the netCF4.Dataset api.
 
         * netcdf_format (string):
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
@@ -543,29 +544,37 @@ class Saver:
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: NetCDF dataset
-        try:
-            self._dataset = netCDF4.Dataset(
-                filename, mode="w", format=netcdf_format
-            )
-        except RuntimeError:
-            dir_name = os.path.dirname(filename)
-            if not os.path.isdir(dir_name):
-                msg = "No such file or directory: {}".format(dir_name)
-                raise IOError(msg)
-            if not os.access(dir_name, os.R_OK | os.W_OK):
-                msg = "Permission denied: {}".format(filename)
-                raise IOError(msg)
-            else:
-                raise
+        self._dataset = None  # this line just for the API page
+
+        # Detect if we were passed a pre-opened dataset
+        self._to_open_dataset = hasattr(filename, "createVariable")
+        if self._to_open_dataset:
+            self._dataset = filename
+        else:
+            try:
+                self._dataset = netCDF4.Dataset(
+                    filename, mode="w", format=netcdf_format
+                )
+            except RuntimeError:
+                dir_name = os.path.dirname(filename)
+                if not os.path.isdir(dir_name):
+                    msg = "No such file or directory: {}".format(dir_name)
+                    raise IOError(msg)
+                if not os.access(dir_name, os.R_OK | os.W_OK):
+                    msg = "Permission denied: {}".format(filename)
+                    raise IOError(msg)
+                else:
+                    raise
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
-
         self._dataset.sync()
-        self._dataset.close()
+        if not self._to_open_dataset:
+            # Only close if the Saver created it.
+            self._dataset.close()
 
     def write(
         self,
