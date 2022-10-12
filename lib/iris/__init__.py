@@ -89,7 +89,7 @@ All the load functions share very similar arguments:
 
 """
 
-from collections import Iterable
+from collections.abc import Iterable
 import contextlib
 import glob
 import itertools
