@@ -117,7 +117,7 @@ def decode_uri(uri, default="file"):
         ('file', 'dataZoo/...')
 
         >>> print(decode_uri({}))
-        ('data', {}})
+        ('data', {})
 
     """
     if isinstance(uri, pathlib.PurePath):

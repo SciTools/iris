@@ -13,6 +13,7 @@ and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
+from collections import Iterable
 import warnings
 
 import netCDF4
@@ -529,7 +530,7 @@ def load_cubes(filenames, callback=None, constraints=None):
     # Create an actions engine.
     engine = _actions_engine()
 
-    if isinstance(filenames, str):
+    if isinstance(filenames, str) or not isinstance(filenames, Iterable):
         filenames = [filenames]
 
     for filename in filenames:

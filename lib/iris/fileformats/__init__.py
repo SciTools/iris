@@ -147,7 +147,7 @@ FORMAT_AGENT.add_spec(
             for x in ("variables", "dimensions", "groups", "ncattrs")
         ),
         netcdf.load_cubes,  # using the same call : it must distinguish.
-        priority=6,
+        priority=4,
         constraint_aware_handler=True,
     )
 )
