@@ -587,7 +587,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 warnings.warn("{}".format(e))
 
             # Perform any user registered callback function.
-            cube = run_callback(callback, cube, cf_var, cf.filename)
+            cube = run_callback(callback, cube, cf_var, file_source)
 
             # Callback mechanism may return None, which must not be yielded
             if cube is None:
