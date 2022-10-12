@@ -12,7 +12,7 @@ variables:
 		time:units = "hours since 1900-01-01 00:00:0.0" ;
 		time:standard_name = "time" ;
 		time:long_name = "time" ;
-		time:calendar = "gregorian" ;
+		time:calendar = "standard" ;
 	int levelist(levelist) ;
 		levelist:long_name = "model_level_number" ;
 	float latitude(latitude) ;
