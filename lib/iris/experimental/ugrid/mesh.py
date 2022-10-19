@@ -2839,9 +2839,7 @@ class MeshCoord(AuxCoord):
             msg = "Cannot yet create a MeshCoord without points."
             raise ValueError(msg)
 
-        # TODO: rationalise with inner call ??
-        # # Get the 'coord identity' metadata from the relevant node-coordinate.
-        #
+        # Get the 'coord identity' metadata from the relevant node-coordinate.
         node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
         node_metadict = node_coord.metadata._asdict()
         # Use node metadata, unless location is face/edge.
@@ -2896,15 +2894,7 @@ class MeshCoord(AuxCoord):
                     raise ValueError(msg)
 
         # Call parent constructor to handle the common constructor args.
-        super().__init__(
-            points,
-            bounds=bounds,
-            standard_name=use_metadict["standard_name"],
-            long_name=use_metadict["long_name"],
-            var_name=use_metadict["var_name"],
-            units=use_metadict["units"],
-            attributes=use_metadict["attributes"],
-        )
+        super().__init__(points, bounds=bounds, **use_metadict)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
     # These are all read-only.
