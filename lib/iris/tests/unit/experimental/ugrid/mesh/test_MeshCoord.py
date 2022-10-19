@@ -893,6 +893,29 @@ class Test__metadata:
                 location=location_face_or_edge, axis=axis_x_or_y
             )
 
+    def test_faceedge_fail_missing_stdnames(
+        self, location_face_or_edge, axis_x_or_y
+    ):
+        # "standard_name" compared with None also causes an error.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        self.node_coord.standard_name = None
+        # N.B. in the absence of a standard-name, we **must** provide an extra ".axis"
+        # property, or the coordinate cannot be correctly identified in the Mesh.
+        # This is a bit of a kludge, but works with current code.
+        self.node_coord.axis = axis_x_or_y
+
+        location_name = "longitude" if axis_x_or_y == "x" else "latitude"
+        msg = (
+            "Node coordinate .*"
+            f"disagrees with the {location_face_or_edge} coordinate .*, "
+            'in having a "standard_name" value of '
+            f"None instead of '{location_name}'"
+        )
+        with pytest.raises(ValueError, match=msg):
+            self.mesh.to_MeshCoord(
+                location=location_face_or_edge, axis=axis_x_or_y
+            )
+
     def test_faceedge_fail_mismatched_units(
         self, location_face_or_edge, axis_x_or_y
     ):
@@ -909,6 +932,17 @@ class Test__metadata:
             self.mesh.to_MeshCoord(
                 location=location_face_or_edge, axis=axis_x_or_y
             )
+
+    def test_faceedge_missing_units(self, location_face_or_edge, axis_x_or_y):
+        # Units compared with a None ("unknown") is not an error.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        self.node_coord.units = None
+        # This is OK
+        meshcoord = self.mesh.to_MeshCoord(
+            location=self.location, axis=self.axis
+        )
+        # ... but also, check that the result matches the expected face/edge coord.
+        self.coord_metadata_matches(meshcoord, self.location_coord)
 
 
 if __name__ == "__main__":
