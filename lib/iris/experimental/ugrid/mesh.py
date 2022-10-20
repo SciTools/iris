@@ -2847,10 +2847,10 @@ class MeshCoord(AuxCoord):
         if location != "node":
             # Location is either "edge" or "face" - get the relevant coord.
             kwargs = {f"include_{location}s": True, "axis": axis}
-            bounds_coord = self.mesh.coord(**kwargs)
+            location_coord = self.mesh.coord(**kwargs)
 
             # Take the MeshCoord metadata from the 'location' coord.
-            use_metadict = bounds_coord.metadata._asdict()
+            use_metadict = location_coord.metadata._asdict()
             unit_unknown = Unit(None)
 
             # N.B. at present, coords in a Mesh are stored+accessed by 'axis', which
@@ -2887,7 +2887,7 @@ class MeshCoord(AuxCoord):
                     ]
                     msg = (
                         f"Node coordinate {node_coord!r} disagrees with the "
-                        f"{location} coordinate {bounds_coord!r}, "
+                        f"{location} coordinate {location_coord!r}, "
                         f'in having a "{key}" value of {nodes_value} '
                         f"instead of {bounds_value}."
                     )
