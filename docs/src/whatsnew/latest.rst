@@ -38,6 +38,15 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `Julian Heming`_ added new mappings between CF
    standard names and UK Met Office LBFC codes. (:pull:`4859`)
 
+#. `@pp-mo`_ changed the metadata of a face/edge-type
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord`, to be same as the face/edge
+   coordinate in the mesh from which it takes its ``.points``.  Previously, all MeshCoords
+   took their metadata from the node coord, but only a node-type MeshCoord now does
+   that.  Also, the MeshCoord ``.var_name`` is now that of the underlying coord, whereas
+   previously this was always None.  These changes make MeshCoord more like an ordinary
+   :class:`~iris.coords.AuxCoord`, which avoids some specific known usage problems.
+   (:issue:`4860`, :pull:`5020`)
+
 
 🐛 Bugs Fixed
 =============
