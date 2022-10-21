@@ -505,7 +505,7 @@ class DeferredSaveWrapper:
     TODO: could be improved with a caching scheme, but this just about works.
     """
 
-    def __init__(self, filepath: str, cf_var: netCDF4.Variable):
+    def __init__(self, filepath, cf_var):
         # Grab useful properties of the variable, including the identifying 'name'.
         self.path = filepath
         for key in ("shape", "dtype", "ndim", "name"):
