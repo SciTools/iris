@@ -35,6 +35,9 @@ This document explains the changes made to Iris for this release
    non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
    (:issue:`4772`, :pull:`4913`)
 
+#. `@trexfeathers`_ and `Julian Heming`_ added new mappings between CF
+   standard names and UK Met Office LBFC codes. (:pull:`4859`)
+
 #. `@pp-mo`_ changed the metadata of a face/edge-type
    :class:`~iris.experimental.ugrid.mesh.MeshCoord`, to be same as the face/edge
    coordinate in the mesh from which it takes its ``.points``.  Previously, all MeshCoords
@@ -66,6 +69,9 @@ This document explains the changes made to Iris for this release
    variables and cell measures that map to a cube dimension of length 1 are now
    included in the respective vector sections. (:pull:`4945`)
 
+#. `@rcomer`_ removed some old redundant code that prevented determining the
+   order of time cells. (:issue:`4697`, :pull:`4729`)
+
 
 💣 Incompatible Changes
 =======================
@@ -84,6 +90,10 @@ This document explains the changes made to Iris for this release
    coordinates. This also affects :meth:`iris.cube.Cube.extract`,
    :meth:`iris.cube.Cube.subset`, and :meth:`iris.coords.Coord.intersect`.
    (:pull:`4969`)
+
+#. `@bouweandela`_ improved the speed of :meth:`iris.cube.Cube.subset` /
+   :meth:`iris.coords.Coord.intersect`.
+   (:pull:`4955`)
 
 🔥 Deprecations
 ===============
@@ -117,6 +127,8 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_, `@TTV-Intrepid`_ and `@trexfeathers`_ added a gallery example for zonal
    means plotted parallel to a cartographic plot. (:pull:`4871`)
 #. `@Esadek-MO`_ added a key-terms :ref:`glossary` page into the user guide. (:pull:`4902`)
+#. `@pp-mo`_ added a :ref:`code example <ORCA_example>`
+   for converting ORCA-gridded data to an unstructured cube. (:pull:`5013`)
 
 
 💼 Internal
@@ -149,6 +161,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@TTV-Intrepid: https://github.com/TTV-Intrepid
+.. _Julian Heming: https://www.metoffice.gov.uk/research/people/julian-heming
 
 
 
