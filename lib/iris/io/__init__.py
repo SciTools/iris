@@ -477,8 +477,9 @@ def save(source, target, saver=None, **kwargs):
             for i, cube in enumerate(source):
                 if i != 0:
                     kwargs["append"] = True
-                result.append(saver(cube, target, **kwargs))
+                saver(cube, target, **kwargs)
 
+            result = None
         # Netcdf saver.
         else:
             result = saver(source, target, **kwargs)
