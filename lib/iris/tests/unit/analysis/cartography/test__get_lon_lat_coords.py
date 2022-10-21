@@ -6,9 +6,10 @@
 """Test function :func:`iris.analysis.cartography._get_lon_lat_coords"""
 
 import pytest
-from iris.tests.stock import lat_lon_cube
+
 from iris.analysis.cartography import _get_lon_lat_coords as g_lon_lat
 from iris.coords import AuxCoord
+from iris.tests.stock import lat_lon_cube
 
 
 @pytest.fixture
@@ -66,7 +67,9 @@ def double_dim_cube(dim_only_cube):
 
 
 def test_double_dim(double_dim_cube):
-    with pytest.raises(ValueError, match="with multiple.*is currently disallowed"):
+    with pytest.raises(
+        ValueError, match="with multiple.*is currently disallowed"
+    ):
         _ = g_lon_lat(double_dim_cube)
 
 
@@ -78,7 +81,9 @@ def double_aux_cube(aux_only_cube):
 
 
 def test_double_aux(double_aux_cube):
-    with pytest.raises(ValueError, match="with multiple.*is currently disallowed"):
+    with pytest.raises(
+        ValueError, match="with multiple.*is currently disallowed"
+    ):
         _ = g_lon_lat(double_aux_cube)
 
 
