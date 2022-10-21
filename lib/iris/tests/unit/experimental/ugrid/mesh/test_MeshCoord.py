@@ -49,12 +49,8 @@ class Test___init__(tests.IrisTest):
             face_x_coord = meshcoord.mesh.coord(include_faces=True, axis=axis)
             for key in face_x_coord.metadata._fields:
                 meshval = getattr(meshcoord, key)
-                if key == "var_name":
-                    # var_name is unused.
-                    self.assertIsNone(meshval)
-                else:
-                    # names, units and attributes are derived from the node coord.
-                    self.assertEqual(meshval, getattr(face_x_coord, key))
+                # All relevant attributes are derived from the face coord.
+                self.assertEqual(meshval, getattr(face_x_coord, key))
 
     def test_fail_bad_mesh(self):
         with self.assertRaisesRegex(TypeError, "must be a.*Mesh"):
