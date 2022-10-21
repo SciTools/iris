@@ -23,6 +23,7 @@ from typing import List
 import warnings
 
 import cf_units
+import dask
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -496,10 +497,51 @@ class _FillValueMaskCheckAndStoreTarget:
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
+class DeferredSaveWrapper:
+    """
+    An object which mimics the data access of a netCDF4.Variable, and can be written to.
+    It encapsulates the netcdf file and variable which are actually to be written to.
+    This opens the file each time, to enable writing the data chunk, then closes it.
+    TODO: could be improved with a caching scheme, but this just about works.
+    """
+
+    def __init__(self, filepath: str, cf_var: netCDF4.Variable):
+        # Grab useful properties of the variable, including the identifying 'name'.
+        self.path = filepath
+        for key in ("shape", "dtype", "ndim", "name"):
+            setattr(self, key, getattr(cf_var, key))
+
+    def __setitem__(self, keys, array_data):
+        # Write to the variable.
+        # Re-open the file for writing.
+        dataset = netCDF4.Dataset(self.path, "r+")
+        try:
+            var = dataset.variables[self.name]
+            var[keys] = array_data
+        finally:
+            dataset.close()
+
+    def __repr__(self):
+        fmt = (
+            "<{self.__class__.__name__} shape={self.shape}"
+            " dtype={self.dtype!r} path={self.path!r}"
+            " name={self.name!r}>"
+        )
+        return fmt.format(self=self)
+
+
+@dask.delayed
+def combined_delayeds(*args):
+    """A delayed function which simply computes all its arguments."""
+    # Dask computes the lazy args before passing them here.
+    # So job done -- we don't need to do anything with them.
+    pass
+
+
 class Saver:
     """A manager for saving netcdf files."""
 
-    def __init__(self, filename, netcdf_format):
+    def __init__(self, filename, netcdf_format, compute=True):
         """
         A manager for saving netcdf files.
 
@@ -511,6 +553,15 @@ class Saver:
         * netcdf_format (string):
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
+
+        * compute (bool):
+            If True, the Saver performs normal 'synchronous' data writes, where data
+            is streamed directly into file variables during the save operation.
+            If False, the file is created as normal, but computation and streaming of
+            any lazy array content is instead deferred to :class:`dask.delayed` objects,
+            which are held in a list in the saver 'delayed_writes' property.
+            The relavant file variables are created empty, and the write can
+            subsequently be completed by computing the 'save.deferred_writes'.
 
         Returns:
             None.
@@ -548,7 +599,14 @@ class Saver:
         self._mesh_dims = {}
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
+        #: Whether lazy saving.
+        self.lazy_saves = not compute
+        #: A list of deferred writes (if lazy saving)
+        self.deferred_writes = []
+        #: Target filepath
+        self.filepath = filename
         #: NetCDF dataset
+        self._dataset = None
         try:
             self._dataset = _thread_safe_nc.DatasetWrapper(
                 filename, mode="w", format=netcdf_format
@@ -2444,8 +2502,7 @@ class Saver:
 
         return "{}_{}".format(varname, num)
 
-    @staticmethod
-    def _lazy_stream_data(data, fill_value, fill_warn, cf_var):
+    def _lazy_stream_data(self, data, fill_value, fill_warn, cf_var):
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
             # Reduce dimensionality where the data array has an extra dimension
@@ -2455,13 +2512,36 @@ class Saver:
             data = data.squeeze(axis=0)
 
         if is_lazy_data(data):
+            if self.lazy_saves:
+                # deferred lazy streaming
+                def store(data, cf_var, fill_value):
+                    # Create a data-writeable object that we can stream into, which
+                    # encapsulates the file to be opened + variable to be written.
+                    writeable_var_wrapper = DeferredSaveWrapper(
+                        self.filepath, cf_var
+                    )
+                    # Add a delayed save to our 'deferred_writes' list.
+                    self.deferred_writes.append(
+                        da.store(
+                            [data], [writeable_var_wrapper], compute=False
+                        )
+                    )
+                    # NOTE: in this case, no checking of fill-value violations so just
+                    # return dummy values for this.
+                    # TODO: just for now -- can probably make this work later
+                    is_masked, contains_value = False, False
+                    return is_masked, contains_value
 
-            def store(data, cf_var, fill_value):
-                # Store lazy data and check whether it is masked and contains
-                # the fill value
-                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
-                da.store([data], [target])
-                return target.is_masked, target.contains_value
+            else:
+                # Immediate streaming store : check mask+fill as we go.
+                def store(data, cf_var, fill_value):
+                    # Store lazy data and check whether it is masked and contains
+                    # the fill value
+                    target = _FillValueMaskCheckAndStoreTarget(
+                        cf_var, fill_value
+                    )
+                    da.store([data], [target])
+                    return target.is_masked, target.contains_value
 
         else:
 
@@ -2530,6 +2610,7 @@ def save(
     least_significant_digit=None,
     packing=None,
     fill_value=None,
+    compute=True,
 ):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
@@ -2652,6 +2733,14 @@ def save(
         `:class:`iris.cube.CubeList`, or a single element, and each element of
         this argument will be applied to each cube separately.
 
+    * compute (bool):
+        When False, create the output file but defer writing any lazy array content to
+        its variables, such as (lazy) data and aux-coords points and bounds.
+        Instead return a class:`dask.delayed` which, when computed, will compute all
+        the lazy content and stream it to complete the file.
+        Several such data saves can be performed in parallel, by passing a list of them
+        into a :func:`dask.compute` call.
+
     Returns:
         None.
 
@@ -2752,7 +2841,7 @@ def save(
                 raise ValueError(msg)
 
     # Initialise Manager for saving
-    with Saver(filename, netcdf_format) as sman:
+    with Saver(filename, netcdf_format, compute=compute) as sman:
         # Iterate through the cubelist.
         for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(
@@ -2797,3 +2886,10 @@ def save(
 
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=conventions)
+
+        if compute:
+            result = None
+        else:
+            # For lazy save, return a single 'delayed' representing all lazy writes.
+            result = combined_delayeds(sman.deferred_writes)
+        return result

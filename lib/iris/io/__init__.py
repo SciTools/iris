@@ -454,7 +454,7 @@ def save(source, target, saver=None, **kwargs):
 
     # Single cube?
     if isinstance(source, Cube):
-        saver(source, target, **kwargs)
+        result = saver(source, target, **kwargs)
 
     # CubeList or sequence of cubes?
     elif isinstance(source, CubeList) or (
@@ -473,13 +473,17 @@ def save(source, target, saver=None, **kwargs):
             # Force append=True for the tail cubes. Don't modify the incoming
             # kwargs.
             kwargs = kwargs.copy()
+            result = []
             for i, cube in enumerate(source):
                 if i != 0:
                     kwargs["append"] = True
-                saver(cube, target, **kwargs)
+                result.append(saver(cube, target, **kwargs))
+
         # Netcdf saver.
         else:
-            saver(source, target, **kwargs)
+            result = saver(source, target, **kwargs)
 
     else:
         raise ValueError("Cannot save; non Cube found in source")
+
+    return result
