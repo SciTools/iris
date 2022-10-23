@@ -25,6 +25,8 @@ import warnings
 import cf_units
 import dask
 import dask.array as da
+from dask.utils import SerializableLock
+import filelock
 import netCDF4
 import numpy as np
 import numpy.ma as ma
@@ -499,37 +501,31 @@ class DeferredSaveWrapper:
     TODO: could be improved with a caching scheme, but this just about works.
     """
 
-    def __init__(self, filepath, cf_var):
-        # Grab useful properties of the variable, including the identifying 'name'.
+    def __init__(self, filepath, cf_var, lockfile_path):
         self.path = filepath
-        for key in ("shape", "dtype", "ndim", "name"):
-            setattr(self, key, getattr(cf_var, key))
+        self.varname = cf_var.name
+        self.lockfile_path = lockfile_path
 
     def __setitem__(self, keys, array_data):
         # Write to the variable.
-        # Re-open the file for writing.
-        dataset = netCDF4.Dataset(self.path, "r+")
+        # First acquire a file-specific lock
+        # Importantly, in working via the file-system, this is common to all workers,
+        # even when using processes or distributed.
+        lock = filelock.FileLock(self.lockfile_path)
+        lock.acquire()
+        # Now re-open the file for writing + write to the specific file variable.
+        dataset = None
         try:
-            var = dataset.variables[self.name]
+            dataset = netCDF4.Dataset(self.path, "r+")
+            var = dataset.variables[self.varname]
             var[keys] = array_data
         finally:
-            dataset.close()
+            if dataset:
+                dataset.close()
+            lock.release()
 
     def __repr__(self):
-        fmt = (
-            "<{self.__class__.__name__} shape={self.shape}"
-            " dtype={self.dtype!r} path={self.path!r}"
-            " name={self.name!r}>"
-        )
-        return fmt.format(self=self)
-
-
-@dask.delayed
-def combined_delayeds(*args):
-    """A delayed function which simply computes all its arguments."""
-    # Dask computes the lazy args before passing them here.
-    # So job done -- we don't need to do anything with them.
-    pass
+        return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"
 
 
 class Saver:
@@ -595,23 +591,25 @@ class Saver:
         self._formula_terms_cache = {}
         #: Whether lazy saving.
         self.lazy_saves = not compute
-        #: A list of deferred writes (if lazy saving)
+        #: A list of deferred writes for lazy saving : each is a (source, target) pair
         self.deferred_writes = []
         #: Target filepath
-        self.filepath = filename
+        self.filepath = os.path.abspath(filename)
+        #: Target lockfile path
+        self._lockfile_path = self.filepath + ".lock"
         #: NetCDF dataset
         self._dataset = None
         try:
             self._dataset = netCDF4.Dataset(
-                filename, mode="w", format=netcdf_format
+                self.filepath, mode="w", format=netcdf_format
             )
         except RuntimeError:
-            dir_name = os.path.dirname(filename)
+            dir_name = os.path.dirname(self.filepath)
             if not os.path.isdir(dir_name):
                 msg = "No such file or directory: {}".format(dir_name)
                 raise IOError(msg)
             if not os.access(dir_name, os.R_OK | os.W_OK):
-                msg = "Permission denied: {}".format(filename)
+                msg = "Permission denied: {}".format(self.filepath)
                 raise IOError(msg)
             else:
                 raise
@@ -2516,14 +2514,10 @@ class Saver:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
                     writeable_var_wrapper = DeferredSaveWrapper(
-                        self.filepath, cf_var
+                        self.filepath, cf_var, self._lockfile_path
                     )
-                    # Add a delayed save to our 'deferred_writes' list.
-                    self.deferred_writes.append(
-                        da.store(
-                            [data], [writeable_var_wrapper], compute=False
-                        )
-                    )
+                    # Add to the list of deferred writes, used in _deferred_save().
+                    self.deferred_writes.append((data, writeable_var_wrapper))
                     # NOTE: in this case, no checking of fill-value violations so just
                     # return dummy values for this.
                     # TODO: just for now -- can probably make this work later
@@ -2588,6 +2582,39 @@ class Saver:
                 "keyword during saving, otherwise use ncedit/equivalent."
             )
             warnings.warn(msg.format(cf_var.name, fill_value))
+
+    def _deferred_save(self):
+        """
+        Create a 'delayed' to trigger file completion for lazy saves.
+
+        This contains all the deferred writes, which complete the file by filling out
+        the data of variables initially created empty.
+
+        """
+        # Create a lock to satisfy the da.store call.
+        # We need a serialisable lock for scheduling with processes or distributed.
+        # See : https://github.com/dask/distributed/issues/780
+        # However, this does *not* imply safe access for file writing in parallel.
+        # For that, DeferredSaveWrapper uses a filelock as well.
+        lock = SerializableLock()
+
+        # Create a single delayed da.store operation to complete the file.
+        sources, targets = zip(*self.deferred_writes)
+        result = da.store(sources, targets, compute=False, lock=lock)
+
+        # Wrap that in an extra operation that follows it by deleting the lockfile.
+        @dask.delayed
+        def postsave_remove_lockfile(store_op, lock_path):
+            if os.path.exists(lock_path):
+                try:
+                    os.unlink(lock_path)
+                except Exception as e:
+                    msg = f'Could not remove lockfile "{lock_path}".  Error:\n{e}'
+                    raise Exception(msg)
+
+        result = postsave_remove_lockfile(result, self._lockfile_path)
+
+        return result
 
 
 def save(
@@ -2886,6 +2913,6 @@ def save(
         if compute:
             result = None
         else:
-            # For lazy save, return a single 'delayed' representing all lazy writes.
-            result = combined_delayeds(sman.deferred_writes)
+            result = sman._deferred_save()
+
         return result
