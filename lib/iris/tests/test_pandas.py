@@ -329,7 +329,7 @@ class TestAsDataFrame(tests.IrisTest):
 
     def test_multidim_aux(self):
         cube = Cube(
-            np.arange(300, 312, 1).reshape(2, 2, 3),
+            np.arange(300, 312, 1).reshape([2, 2, 3]),
             long_name="air_temperature",
         )
         dim0_coord = DimCoord([0, 10], long_name="longitude")
