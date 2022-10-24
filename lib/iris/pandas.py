@@ -542,7 +542,7 @@ def as_series(cube, copy=True):
     """
     Convert a 1D cube to a Pandas Series.
 
-    .. deprecated:: 3.3.2
+    .. deprecated:: 3.4.0
 
         This function is scheduled for removal in a future release, being
         replaced by :func:`iris.pandas.as_data_frame`, which offers improved
