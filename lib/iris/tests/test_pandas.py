@@ -151,7 +151,7 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
         data_frame = iris.pandas.as_data_frame(cube, copy=True)
         cube.data[2] = 99
-        self.assertNotEqual(cube.data[2], data_frame.foo[2])
+        assert cube.data[2] != data_frame.foo[2]
 
     def test_time_standard(self):
         cube = Cube(
