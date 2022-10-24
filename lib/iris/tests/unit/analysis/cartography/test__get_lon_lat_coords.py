@@ -39,7 +39,7 @@ def dim_aux_cube(dim_only_cube):
     dim_aux_cube.add_aux_coord(lat_aux, 0)
     dim_aux_cube.add_aux_coord(lon_aux, 1)
 
-    return  dim_aux_cube
+    return dim_aux_cube
 
 
 def test_dim_aux(dim_aux_cube):
@@ -59,7 +59,7 @@ def aux_only_cube(dim_aux_cube):
     aux_only_cube.remove_coord(lon_dim)
     aux_only_cube.remove_coord(lat_dim)
 
-    return  dim_aux_cube
+    return dim_aux_cube
 
 
 def test_aux_only(aux_only_cube):
@@ -76,7 +76,7 @@ def double_dim_cube(dim_only_cube):
     double_dim_cube = dim_only_cube
     double_dim_cube.coord("latitude").standard_name = "grid_longitude"
 
-    return  double_dim_cube
+    return double_dim_cube
 
 
 def test_double_dim(double_dim_cube):
@@ -106,7 +106,7 @@ def missing_lat_cube(dim_only_cube):
     missing_lat_cube = dim_only_cube
     missing_lat_cube.remove_coord("latitude")
 
-    return  missing_lat_cube
+    return missing_lat_cube
 
 
 def test_missing_coord(missing_lat_cube):
