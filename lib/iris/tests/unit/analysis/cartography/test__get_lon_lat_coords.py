@@ -6,9 +6,10 @@
 """Test function :func:`iris.analysis.cartography._get_lon_lat_coords"""
 
 import pytest
-from iris.tests.stock import lat_lon_cube
+
 from iris.analysis.cartography import _get_lon_lat_coords as g_lon_lat
 from iris.coords import AuxCoord
+from iris.tests.stock import lat_lon_cube
 
 
 @pytest.fixture
@@ -111,4 +112,3 @@ def missing_lat_cube(dim_only_cube):
 def test_missing_coord(missing_lat_cube):
     with pytest.raises(IndexError):
         g_lon_lat(missing_lat_cube)
-
