@@ -732,7 +732,7 @@ def as_data_frame(
             if (
                 global_attribute not in global_attribute_names
             ):  # Check global attribute exists
-                raise ValueError(
+                raise KeyError(
                     f'"{global_attribute}" not found in cube attributes'
                 )
 
