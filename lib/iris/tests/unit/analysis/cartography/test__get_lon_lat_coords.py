@@ -13,7 +13,7 @@ from iris.coords import AuxCoord
 
 @pytest.fixture
 def dim_only_cube():
-    yield lat_lon_cube()
+    return lat_lon_cube()
 
 
 def test_dim_only(dim_only_cube):
@@ -38,7 +38,7 @@ def dim_aux_cube(dim_only_cube):
     dim_aux_cube.add_aux_coord(lat_aux, 0)
     dim_aux_cube.add_aux_coord(lon_aux, 1)
 
-    yield dim_aux_cube
+    return  dim_aux_cube
 
 
 def test_dim_aux(dim_aux_cube):
@@ -58,7 +58,7 @@ def aux_only_cube(dim_aux_cube):
     aux_only_cube.remove_coord(lon_dim)
     aux_only_cube.remove_coord(lat_dim)
 
-    yield dim_aux_cube
+    return  dim_aux_cube
 
 
 def test_aux_only(aux_only_cube):
@@ -75,7 +75,7 @@ def double_dim_cube(dim_only_cube):
     double_dim_cube = dim_only_cube
     double_dim_cube.coord("latitude").standard_name = "grid_longitude"
 
-    yield double_dim_cube
+    return  double_dim_cube
 
 
 def test_double_dim(double_dim_cube):
@@ -90,7 +90,7 @@ def double_aux_cube(aux_only_cube):
     double_aux_cube = aux_only_cube
     double_aux_cube.coord("grid_latitude").standard_name = "longitude"
 
-    yield double_aux_cube
+    return double_aux_cube
 
 
 def test_double_aux(double_aux_cube):
@@ -105,7 +105,7 @@ def missing_lat_cube(dim_only_cube):
     missing_lat_cube = dim_only_cube
     missing_lat_cube.remove_coord("latitude")
 
-    yield missing_lat_cube
+    return  missing_lat_cube
 
 
 def test_missing_coord(missing_lat_cube):
