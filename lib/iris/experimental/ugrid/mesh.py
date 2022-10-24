@@ -2841,16 +2841,60 @@ class MeshCoord(AuxCoord):
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
         node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
+        node_metadict = node_coord.metadata._asdict()
+        # Use node metadata, unless location is face/edge.
+        use_metadict = node_metadict.copy()
+        if location != "node":
+            # Location is either "edge" or "face" - get the relevant coord.
+            kwargs = {f"include_{location}s": True, "axis": axis}
+            location_coord = self.mesh.coord(**kwargs)
+
+            # Take the MeshCoord metadata from the 'location' coord.
+            use_metadict = location_coord.metadata._asdict()
+            unit_unknown = Unit(None)
+
+            # N.B. at present, coords in a Mesh are stored+accessed by 'axis', which
+            # means they must have a standard_name.  So ...
+            # (a) the 'location' (face/edge) coord *always* has a useable phenomenon
+            #     identity.
+            # (b) we still want to check that location+node coords have the same
+            #     phenomenon (i.e. physical meaning identity + units), **but** ...
+            # (c) we will accept/ignore some differences : not just "var_name", but
+            #     also "long_name" *and* "attributes".  So it is *only* "standard_name"
+            #     and "units" that cause an error if they differ.
+            for key in ("standard_name", "units"):
+                bounds_value = use_metadict[key]
+                nodes_value = node_metadict[key]
+                if key == "units" and (
+                    bounds_value == unit_unknown or nodes_value == unit_unknown
+                ):
+                    # Allow "any" unit to match no-units (for now)
+                    continue
+                if bounds_value != nodes_value:
+
+                    def fix_repr(val):
+                        # Tidy values appearance by converting Unit to string, and
+                        # wrapping strings in '', but leaving other types as a
+                        # plain str() representation.
+                        if isinstance(val, Unit):
+                            val = str(val)
+                        if isinstance(val, str):
+                            val = repr(val)
+                        return val
+
+                    nodes_value, bounds_value = [
+                        fix_repr(val) for val in (nodes_value, bounds_value)
+                    ]
+                    msg = (
+                        f"Node coordinate {node_coord!r} disagrees with the "
+                        f"{location} coordinate {location_coord!r}, "
+                        f'in having a "{key}" value of {nodes_value} '
+                        f"instead of {bounds_value}."
+                    )
+                    raise ValueError(msg)
+
         # Call parent constructor to handle the common constructor args.
-        super().__init__(
-            points,
-            bounds=bounds,
-            standard_name=node_coord.standard_name,
-            long_name=node_coord.long_name,
-            var_name=None,  # We *don't* "represent" the underlying node var
-            units=node_coord.units,
-            attributes=node_coord.attributes,
-        )
+        super().__init__(points, bounds=bounds, **use_metadict)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
     # These are all read-only.
