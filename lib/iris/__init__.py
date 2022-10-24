@@ -157,6 +157,12 @@ class Future(threading.local):
             iris.FUTURE.example_future_flag does not exist. It is provided
             as an example.
 
+        .. todo::
+
+            Document the ``pandas_ndim`` flag once iris#4669 is merged - can
+            add cross-referencing documentation both here and in
+            iris.pandas.as_dataframe().
+
         """
         # The flag 'example_future_flag' is provided as a reference for the
         # structure of this class.
