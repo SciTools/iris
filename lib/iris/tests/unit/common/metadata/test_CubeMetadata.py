@@ -156,7 +156,7 @@ class Test___eq__:
             assert rmetadata.__eq__(lmetadata)
 
     def test_op_different__none(self, fieldname, op_leniency):
-        # Compare when a given field is set with 'None', both strict + lenient.
+        # One side has field=value, and the other field=None, both strict + lenient.
         if fieldname == "attributes":
             # Must be a dict, cannot be None.
             pytest.skip()
@@ -234,7 +234,7 @@ class Test___eq__:
             assert rmetadata.__eq__(lmetadata) == expect_success
 
     def test_op_different__attribute_value(self, op_leniency):
-        # Check when one set of attributes has an extra entry.
+        # lhs and rhs have different values for an attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
         self.lvalues["attributes"]["_extra_"] = mock.sentinel.value1
         self.rvalues["attributes"]["_extra_"] = mock.sentinel.value2
@@ -343,7 +343,7 @@ class Test_combine:
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
     def test_op_different__none(self, fieldname, op_leniency):
-        # One field has a given field set to 'None', both strict + lenient.
+        # One side has field=value, and the other field=None, both strict + lenient.
         if fieldname == "attributes":
             # Can't be None : Tested separately
             pytest.skip()
@@ -384,7 +384,7 @@ class Test_combine:
     def test_op_different__value(self, fieldname, op_leniency):
         # One field has different value for lhs/rhs, both strict + lenient.
         if fieldname == "attributes":
-            # Can't be None : Tested separately
+            # Attribute behaviours are tested separately
             pytest.skip()
 
         is_lenient = op_leniency == "lenient"
@@ -394,7 +394,7 @@ class Test_combine:
         lmetadata = self.cls(**self.lvalues)
         rmetadata = self.cls(**self.rvalues)
 
-        # In all cases, this field should be None in the result
+        # In all cases, this field should be None in the result : leniency has no effect
         expected = self.lvalues.copy()
         expected[fieldname] = None
 
@@ -518,7 +518,8 @@ class Test_difference:
             assert rmetadata.difference(lmetadata) is None
 
     def test_op_different__none(self, fieldname, op_leniency):
-        if fieldname in ("attributes",):  # 'units'):
+        # One side has field=value, and the other field=None, both strict + lenient.
+        if fieldname in ("attributes",):
             # These cannot properly be set to 'None'.  Tested elsewhere.
             pytest.skip()
 
@@ -543,13 +544,13 @@ class Test_difference:
             diffentry = tuple(
                 [getattr(mm, fieldname) for mm in (lmetadata, rmetadata)]
             )
+            # NOTE: in these cases, the difference metadata will fail an == operation,
+            # because of the 'None' entries.
+            # But we can use metadata._asdict() and test that.
             lexpected = self.none._asdict()
             lexpected[fieldname] = diffentry
             rexpected = lexpected.copy()
             rexpected[fieldname] = diffentry[::-1]
-            # NOTE: in these cases, the difference metadata will fail an == operation,
-            # because of the 'None' entries.
-            # But we can use metadata._asdict() and test that.
 
         with mock.patch(
             "iris.common.metadata._LENIENT", return_value=is_lenient
@@ -562,7 +563,30 @@ class Test_difference:
                 assert lmetadata.difference(rmetadata) is None
                 assert rmetadata.difference(lmetadata) is None
 
+    def test_op_different__value(self, fieldname, op_leniency):
+        # One field has different value for lhs/rhs, both strict + lenient.
+        if fieldname == "attributes":
+            # Attribute behaviours are tested separately
+            pytest.skip()
+
+        self.lvalues[fieldname] = mock.sentinel.value1
+        self.rvalues[fieldname] = mock.sentinel.value2
+        lmetadata = self.cls(**self.lvalues)
+        rmetadata = self.cls(**self.rvalues)
+
+        # In all cases, this field should show a difference : leniency has no effect
+        ldiff_values = (mock.sentinel.value1, mock.sentinel.value2)
+        ldiff_metadata = self.none._asdict()
+        ldiff_metadata[fieldname] = ldiff_values
+        rdiff_metadata = self.none._asdict()
+        rdiff_metadata[fieldname] = ldiff_values[::-1]
+
+        # Check both l+r and r+l
+        assert lmetadata.difference(rmetadata)._asdict() == ldiff_metadata
+        assert rmetadata.difference(lmetadata)._asdict() == rdiff_metadata
+
     def test_op_different__attribute_extra(self, op_leniency):
+        # One field has an extra attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
         self.lvalues["attributes"] = {"_a_common_": self.dummy}
         lmetadata = self.cls(**self.lvalues)
@@ -591,6 +615,7 @@ class Test_difference:
                 assert rmetadata.difference(lmetadata)._asdict() == rexpected
 
     def test_op_different__attribute_value(self, op_leniency):
+        # lhs and rhs have different values for an attribute, both strict + lenient.
         is_lenient = op_leniency == "lenient"
         self.lvalues["attributes"] = {
             "_a_common_": self.dummy,
