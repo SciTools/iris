@@ -908,6 +908,7 @@ class TestConstrainedLoad(tests.IrisTest):
         self.assertEqual(len(cubes), 3)
 
 
+<<<<<<< HEAD
 class TestSkippedCoord:
     # If a coord/cell measure/etcetera cannot be added to the loaded Cube, a
     #  Warning is raised and the coord is skipped.
@@ -958,6 +959,23 @@ data:
 
 
 # Attributes to test, which should be 'global' type by default
+=======
+#
+# Testing handling of netCDF file ("global")  and variable ("local") attributes.
+#
+
+# First define the known controlled attribute names defined by netCDf and CF conventions
+#
+# Note: certain attributes these are "normally" global (e.g. "Conventions"), whilst
+# others will only usually appear on a data-variable (e.g. "scale_factor"",
+# "coordinates").
+# I'm calling these 'global-style' and 'data-style'.
+# Any attributes either belongs to one of these 2 groups, or neither.  Those 3 distinct
+# types may then have different behaviour in Iris load + save.
+
+# A list of "global-style" attribute names : those which should be global attributes by
+# default (i.e. file- or group-level, *not* attached to a variable).
+>>>>>>> Small review changes.
 _GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
 # Remove this one, which has peculiar behaviour + is tested separately
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
@@ -972,7 +990,8 @@ def global_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
 
-# Attributes to test, which should be 'data' type by default
+# A list of "data-style" attribute names : those which should be variable attributes by
+# default (aka "local" or "data" attributes) .
 _DATA_TEST__ATTRS = (
     iris.fileformats.netcdf.saver._CF_DATA_ATTRS
     + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
@@ -987,12 +1006,14 @@ def data_attr(request):
     return request.param  # Return the name of the attribute to test.
 
 
-class TestLoadSaveAttributes:  # (tests.IrisTest):
+class TestLoadSaveAttributes:
     @staticmethod
     def _calling_testname():
         """
         Search up the callstack for a function named "test_*", and return the name for
         use as a test identifier.
+
+        Idea borrowed from :meth:`iris.tests.IrisTest_nometa.result_path`.
 
         Returns
         -------
@@ -1042,10 +1063,9 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         """
         Create temporary input netcdf files with specific content.
 
-        A generalised routine for creating a netcdf testfile to test behaviour of a
-        specific attribute (name).
-        Create a temporary input netcdf file (or two) with specific global and
-        variable-local versions of a specific attribute.
+        Creates a temporary netcdf test file (or two) with the given global and
+        variable-local attributes.
+        The file(s) are used to test the behaviour of the attribute.
         """
         # Make some input file paths.
         filepath1 = self._testfile_path("testfile")
@@ -1098,14 +1118,6 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         cubes = iris.load(input_filepaths)
         iris.save(cubes, output_filepath)
 
-    def _print_files_debug(self):
-        import os
-
-        print("Inputs.....")
-        for fp in self.input_filepaths + [self.result_filepath]:
-            print(f"FILE>>>>>{fp}")
-            os.system("ncdump -h " + fp)
-
     @pytest.fixture
     def attribute_testcase(self, tmp_path_factory):
         """
@@ -1155,7 +1167,6 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         self._roundtrip_load_and_save(
             self.input_filepaths, self.result_filepath
         )
-        # self._print_files_debug()
         return self.result_filepath
 
     def check_expected_results(
@@ -1269,11 +1280,11 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
         attribute_testcase(
             attr_name="random",
             global_attr_value="global_file1",
-            vars_and_attrvalues={"v1": "same-value", "v2": "different-value"},
+            vars_and_attrvalues={"v1": "value-1", "v2": "value-2"},
         )
         self.check_expected_results(
             global_attr_value=None,  # NB it still destroys the global one !!
-            vars_and_attrvalues={"v1": "same-value", "v2": "different-value"},
+            vars_and_attrvalues={"v1": "value-1", "v2": "value-2"},
         )
 
     # #####################################
@@ -1405,7 +1416,7 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
     def test_globalstyle__multifile_same(
         self, global_attr, attribute_testcase
     ):
-        # Matching global attributes in multiple files are retained as global
+        # Matching global-type attributes in multiple files are retained as global
         attrval = f"Global-{global_attr}"
         attribute_testcase(
             attr_name=global_attr,
@@ -1415,8 +1426,9 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
             var_values_file2={"v2": None},
         )
         self.check_expected_results(
-            # Combining them "demotes" the common global attributes to local ones
+            # The attribute remains as a common global setting
             global_attr_value=attrval,
+            # The individual variables do *not* have an attribute of this name
             vars_and_attrvalues={"v1": None, "v2": None},
         )
 
@@ -1429,7 +1441,7 @@ class TestLoadSaveAttributes:  # (tests.IrisTest):
     def test_datastyle(self, data_attr, attribute_testcase, origin_style):
         # data-style attributes should *not* get 'promoted' to global ones
         # Set the name extension to avoid tests with different 'style' params having
-        # collissions over identical testfile names
+        # collisions over identical testfile names
         self.testname_extension = origin_style
 
         attrval = f"Attr-setting-{data_attr}"
