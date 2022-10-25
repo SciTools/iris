@@ -1051,9 +1051,10 @@ class TestLoadSaveAttributes:
 
     def _create_testcase_files(
         self,
-        global_attr_value: Optional[str] = None,
-        vars_and_attrvalues: Union[None, str, dict] = None,
-        globalval_file2: Optional[str] = None,
+        attr_name: str,
+        global_value_file1: Optional[str] = None,
+        var_values_file1: Union[None, str, dict] = None,
+        global_value_file2: Optional[str] = None,
         var_values_file2: Union[None, str, dict] = None,
     ):
         """
@@ -1062,6 +1063,10 @@ class TestLoadSaveAttributes:
         Creates a temporary netcdf test file (or two) with the given global and
         variable-local attributes.
         The file(s) are used to test the behaviour of the attribute.
+
+        Note: 'var_values_file<X>' args are dictionaries.  The named variables are
+        created, with an attribute = the dictionary value, *except* that a dictionary
+        value of None means that a local attribute is _not_ created on the variable.
         """
         # Make some input file paths.
         filepath1 = self._testfile_path("testfile")
@@ -1072,7 +1077,7 @@ class TestLoadSaveAttributes:
         ) -> str:
             ds = netCDF4.Dataset(filepath, "w")
             if global_value is not None:
-                ds.setncattr(self.attrname, global_value)
+                ds.setncattr(attr_name, global_value)
             ds.createDimension("x", 3)
             # Rationalise the per-variable requirements
             # N.B. this *always* makes at least one variable, as otherwise we would
@@ -1081,7 +1086,7 @@ class TestLoadSaveAttributes:
             for var_name, value in var_values.items():
                 v = ds.createVariable(var_name, int, ("x",))
                 if value is not None:
-                    v.setncattr(self.attrname, value)
+                    v.setncattr(attr_name, value)
             ds.close()
             return filepath
 
@@ -1089,16 +1094,16 @@ class TestLoadSaveAttributes:
         filepaths = [
             make_file(
                 filepath1,
-                global_value=global_attr_value,
-                var_values=vars_and_attrvalues,
+                global_value=global_value_file1,
+                var_values=var_values_file1,
             )
         ]
-        if globalval_file2 is not None or var_values_file2 is not None:
+        if global_value_file2 is not None or var_values_file2 is not None:
             # Make a second testfile and add it to files-to-be-loaded.
             filepaths.append(
                 make_file(
                     filepath2,
-                    global_value=globalval_file2,
+                    global_value=global_value_file2,
                     var_values=var_values_file2,
                 ),
             )
@@ -1114,50 +1119,42 @@ class TestLoadSaveAttributes:
         cubes = iris.load(input_filepaths)
         iris.save(cubes, output_filepath)
 
-    @pytest.fixture
-    def attribute_testcase(self, tmp_path_factory):
+    @pytest.fixture(autouse=True)
+    def make_tempdir(self, tmp_path_factory):
         """
-        Fixture to setup an individual testcase.
-        Returns a callable to be used by the test routine to configure the testcase.
+        Automatically-run fixture to make every test use 'tmp_path_factory' to provide
+        a directory for temporary files, and record it on the test instance.
 
-        By providing this facility as a _fixture_, rather than just a method, we can
-        get every test using it to also include 'tmp_path_factory' and record its path,
-        without needing extra boilerplate for that in every test method.
-
-        N.B. "tmp_path_factory" is a standard PyTest fixture, providing a temporary
-        dirpath shared by all tests, which is a bit quicker and more debuggable than
-        having one-per-testcase.
-        This fixture stores that path that on the instance, from where various
-        subsidiary routines can get at it -- since this code is always called first.
+        N.B. "tmp_path_factory" is a standard PyTest fixture, which provides a dirpath
+        *shared* by all tests.  This is a bit quicker and more debuggable than having a
+        directory per-testcase.
         """
         # Store the temporary directory path on the test instance
         self.tmpdir = str(tmp_path_factory.getbasetemp())
-        # Return the setup method for subsequent testcase configuration
-        #  -- so the caller just "calls the fixture".
-        return self._create_testcase_call
 
-    def _create_testcase_call(
+    def create_testcase(
         self,
         attr_name,
-        global_attr_value=None,
-        vars_and_attrvalues=None,
-        globalval_file2=None,
-        var_values_file2=None,
+        global_value_file1=None,
+        vars_values_file1=None,
+        global_value_file2=None,
+        vars_values_file2=None,
     ):
         """
         Initialise the testcase from the passed-in controls, configure the input
         files and run a save-load roundtrip to produce the output file.
 
         The name of the tested attribute and all the temporary filepaths are stored
-        on the instance, from where check_expected_results can get them.
+        on the instance, from where "self.check_expected_results()" can get them.
 
         """
         self.attrname = attr_name
         self.input_filepaths = self._create_testcase_files(
-            global_attr_value=global_attr_value,
-            vars_and_attrvalues=vars_and_attrvalues,
-            globalval_file2=globalval_file2,
-            var_values_file2=var_values_file2,
+            attr_name=attr_name,
+            global_value_file1=global_value_file1,
+            var_values_file1=vars_values_file1,
+            global_value_file2=global_value_file2,
+            var_values_file2=vars_values_file2,
         )
         self.result_filepath = self._testfile_path("result")
         self._roundtrip_load_and_save(
@@ -1166,23 +1163,27 @@ class TestLoadSaveAttributes:
         return self.result_filepath
 
     def check_expected_results(
-        self, global_attr_value=None, vars_and_attrvalues=None
+        self, global_attr_value=None, var_attr_vals=None
     ):
-        # The counterpart to _create_testcase, with similar control arguments.
-        # Check existence (or not) and values of expected global and local attributes
-        # in the test result file (in self.result_filepath).
-        # N.B. only ever one result-file, but it can still have multiple variables
+        """
+        Run checks on the generated output file.
+
+        The counterpart to create_testcase, with similar control arguments.
+        Check existence (or not) of : a global attribute, named variables, and their
+        local attributes.  Values of 'None' mean to check that the relevant global/local
+        attribute does *not* exist.
+        """
+        # N.B. there is only ever one result-file, but it can contain various variables
+        # which came from different input files.
         ds = netCDF4.Dataset(self.result_filepath)
         if global_attr_value is None:
             assert self.attrname not in ds.ncattrs()
         else:
             assert self.attrname in ds.ncattrs()
             assert ds.getncattr(self.attrname) == global_attr_value
-        if vars_and_attrvalues:
-            vars_and_attrvalues = self._default_vars_and_attrvalues(
-                vars_and_attrvalues
-            )
-            for var_name, value in vars_and_attrvalues.items():
+        if var_attr_vals:
+            var_attr_vals = self._default_vars_and_attrvalues(var_attr_vals)
+            for var_name, value in var_attr_vals.items():
                 assert var_name in ds.variables
                 v = ds.variables[var_name]
                 if value is None:
@@ -1191,11 +1192,11 @@ class TestLoadSaveAttributes:
                     assert self.attrname in v.ncattrs()
                     assert v.getncattr(self.attrname) == value
 
-    def test_usertype_single_global(self, attribute_testcase):
-        attribute_testcase(
+    def test_usertype_single_global(self):
+        self.create_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
-            global_attr_value="single-value",
-            vars_and_attrvalues={
+            global_value_file1="single-value",
+            vars_values_file1={
                 "myvar": None
             },  # the variable has no such attribute
         )
@@ -1203,34 +1204,34 @@ class TestLoadSaveAttributes:
         # It simply remains global.
         self.check_expected_results(
             global_attr_value="single-value",  # local values eclipse the global ones
-            vars_and_attrvalues={
+            var_attr_vals={
                 "myvar": None
             },  # the variable has no such attribute
         )
 
-    def test_usertype_single_local(self, attribute_testcase):
+    def test_usertype_single_local(self):
         # Default behaviour for a general local user-attribute.
         # It results in a "promoted" global attribute.
-        attribute_testcase(
+        self.create_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
-            vars_and_attrvalues={"myvar": "single-value"},
+            vars_values_file1={"myvar": "single-value"},
         )
         self.check_expected_results(
             global_attr_value="single-value",  # local values eclipse the global ones
             # N.B. the output var has NO such attribute
         )
 
-    def test_usertype_multiple_different(self, attribute_testcase):
+    def test_usertype_multiple_different(self):
         # Default behaviour for general user-attributes.
         # The global attribute is lost because there are local ones.
         vars1 = {"f1_v1": "f1v1", "f1_v2": "f2v2"}
         vars2 = {"f2_v1": "x1", "f2_v2": "x2"}
-        attribute_testcase(
+        self.create_testcase(
             attr_name="random",  # A generic "user" attribute with no special handling
-            global_attr_value="global_file1",
-            vars_and_attrvalues=vars1,
-            globalval_file2="global_file2",
-            var_values_file2=vars2,
+            global_value_file1="global_file1",
+            vars_values_file1=vars1,
+            global_value_file2="global_file2",
+            vars_values_file2=vars2,
         )
         # combine all 4 vars in one dict
         all_vars_and_attrs = vars1.copy()
@@ -1241,46 +1242,44 @@ class TestLoadSaveAttributes:
         assert len(all_vars_and_attrs) == len(vars1) + len(vars2)
         self.check_expected_results(
             global_attr_value=None,  # local values eclipse the global ones
-            vars_and_attrvalues=all_vars_and_attrs,
+            var_attr_vals=all_vars_and_attrs,
         )
 
-    def test_usertype_matching_promoted(self, attribute_testcase):
+    def test_usertype_matching_promoted(self):
         # matching local user-attributes are "promoted" to a global one.
-        attribute_testcase(
+        self.create_testcase(
             attr_name="random",
-            global_attr_value="global_file1",
-            vars_and_attrvalues={"v1": "same-value", "v2": "same-value"},
+            global_value_file1="global_file1",
+            vars_values_file1={"v1": "same-value", "v2": "same-value"},
         )
         self.check_expected_results(
             global_attr_value="same-value",
-            vars_and_attrvalues={"v1": None, "v2": None},
+            var_attr_vals={"v1": None, "v2": None},
         )
 
-    def test_usertype_matching_crossfile_promoted(self, attribute_testcase):
+    def test_usertype_matching_crossfile_promoted(self):
         # matching user-attributes are promoted, even across input files.
-        attribute_testcase(
+        self.create_testcase(
             attr_name="random",
-            global_attr_value="global_file1",
-            vars_and_attrvalues={"v1": "same-value", "v2": "same-value"},
-            var_values_file2={"f2_v1": "same-value", "f2_v2": "same-value"},
+            global_value_file1="global_file1",
+            vars_values_file1={"v1": "same-value", "v2": "same-value"},
+            vars_values_file2={"f2_v1": "same-value", "f2_v2": "same-value"},
         )
         self.check_expected_results(
             global_attr_value="same-value",
-            vars_and_attrvalues={
-                x: None for x in ("v1", "v2", "f2_v1", "f2_v2")
-            },
+            var_attr_vals={x: None for x in ("v1", "v2", "f2_v1", "f2_v2")},
         )
 
-    def test_usertype_nonmatching_remainlocal(self, attribute_testcase):
+    def test_usertype_nonmatching_remainlocal(self):
         # Non-matching user attributes remain 'local' to the individual variables.
-        attribute_testcase(
+        self.create_testcase(
             attr_name="random",
-            global_attr_value="global_file1",
-            vars_and_attrvalues={"v1": "value-1", "v2": "value-2"},
+            global_value_file1="global_file1",
+            vars_values_file1={"v1": "value-1", "v2": "value-2"},
         )
         self.check_expected_results(
             global_attr_value=None,  # NB it still destroys the global one !!
-            vars_and_attrvalues={"v1": "value-1", "v2": "value-2"},
+            var_attr_vals={"v1": "value-1", "v2": "value-2"},
         )
 
     # #####################################
@@ -1295,29 +1294,29 @@ class TestLoadSaveAttributes:
     # # Note: the usual 'Conventions' behaviour is already tested elsewhere
     # # - see TestConventionsAttributes above
 
-    def test_conventions_var_local(self, attribute_testcase):
+    def test_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
         # N.B. this is not good CF, but we'll see what happens anyway.
-        attribute_testcase(
+        self.create_testcase(
             attr_name="Conventions",
-            global_attr_value=None,
-            vars_and_attrvalues="user_set",
+            global_value_file1=None,
+            vars_values_file1="user_set",
         )
         self.check_expected_results(
             global_attr_value="CF-1.7",  # this is standard output from
-            vars_and_attrvalues=None,
+            var_attr_vals=None,
         )
 
-    def test_conventions_var_both(self, attribute_testcase):
+    def test_conventions_var_both(self):
         # What happens if 'Conventions' appears as both global + local attribute.
-        attribute_testcase(
+        self.create_testcase(
             attr_name="Conventions",
-            global_attr_value="global-setting",
-            vars_and_attrvalues="local-setting",
+            global_value_file1="global-setting",
+            vars_values_file1="local-setting",
         )
         self.check_expected_results(
             global_attr_value="CF-1.7",  # this is standard output from
-            vars_and_attrvalues=None,
+            var_attr_vals=None,
         )
 
     #######################################################
@@ -1325,40 +1324,38 @@ class TestLoadSaveAttributes:
     #  = those specific ones which 'ought' only to be global (except on collisions)
     #
 
-    def test_globalstyle__global(self, global_attr, attribute_testcase):
+    def test_globalstyle__global(self, global_attr):
         attr_content = f"Global tracked {global_attr}"
-        attribute_testcase(
+        self.create_testcase(
             attr_name=global_attr,
-            global_attr_value=attr_content,
+            global_value_file1=attr_content,
         )
         self.check_expected_results(global_attr_value=attr_content)
 
-    def test_globalstyle__local(self, global_attr, attribute_testcase):
+    def test_globalstyle__local(self, global_attr):
         # Strictly, not correct CF, but let's see what it does with it.
         attr_content = f"Local tracked {global_attr}"
-        attribute_testcase(
+        self.create_testcase(
             attr_name=global_attr,
-            vars_and_attrvalues=attr_content,
+            vars_values_file1=attr_content,
         )
         self.check_expected_results(
             global_attr_value=attr_content
         )  # "promoted"
 
-    def test_globalstyle__both(self, global_attr, attribute_testcase):
+    def test_globalstyle__both(self, global_attr):
         attr_global = f"Global-{global_attr}"
         attr_local = f"Local-{global_attr}"
-        attribute_testcase(
+        self.create_testcase(
             attr_name=global_attr,
-            global_attr_value=attr_global,
-            vars_and_attrvalues=attr_local,
+            global_value_file1=attr_global,
+            vars_values_file1=attr_local,
         )
         self.check_expected_results(
             global_attr_value=attr_local  # promoted local setting "wins"
         )
 
-    def test_globalstyle__multivar_different(
-        self, global_attr, attribute_testcase
-    ):
+    def test_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained, not promoted
         attr_1 = f"Local-{global_attr}-1"
         attr_2 = f"Local-{global_attr}-2"
@@ -1366,30 +1363,28 @@ class TestLoadSaveAttributes:
             UserWarning, match="should only be a CF global attribute"
         ):
             # A warning should be raised when writing the result.
-            attribute_testcase(
+            self.create_testcase(
                 attr_name=global_attr,
-                vars_and_attrvalues={"v1": attr_1, "v2": attr_2},
+                vars_values_file1={"v1": attr_1, "v2": attr_2},
             )
         self.check_expected_results(
             global_attr_value=None,
-            vars_and_attrvalues={"v1": attr_1, "v2": attr_2},
+            var_attr_vals={"v1": attr_1, "v2": attr_2},
         )
 
-    def test_globalstyle__multivar_same(self, global_attr, attribute_testcase):
+    def test_globalstyle__multivar_same(self, global_attr):
         # Multiple *same* local settings are promoted to a common global one
         attrval = f"Locally-defined-{global_attr}"
-        attribute_testcase(
+        self.create_testcase(
             attr_name=global_attr,
-            vars_and_attrvalues={"v1": attrval, "v2": attrval},
+            vars_values_file1={"v1": attrval, "v2": attrval},
         )
         self.check_expected_results(
             global_attr_value=attrval,
-            vars_and_attrvalues={"v1": None, "v2": None},
+            var_attr_vals={"v1": None, "v2": None},
         )
 
-    def test_globalstyle__multifile_different(
-        self, global_attr, attribute_testcase
-    ):
+    def test_globalstyle__multifile_different(self, global_attr):
         # Different global attributes from multiple files are retained as local ones
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
@@ -1397,35 +1392,33 @@ class TestLoadSaveAttributes:
             UserWarning, match="should only be a CF global attribute"
         ):
             # A warning should be raised when writing the result.
-            attribute_testcase(
+            self.create_testcase(
                 attr_name=global_attr,
-                global_attr_value=attr_1,
-                vars_and_attrvalues={"v1": None},
-                globalval_file2=attr_2,
-                var_values_file2={"v2": None},
+                global_value_file1=attr_1,
+                vars_values_file1={"v1": None},
+                global_value_file2=attr_2,
+                vars_values_file2={"v2": None},
             )
         self.check_expected_results(
             # Combining them "demotes" the common global attributes to local ones
-            vars_and_attrvalues={"v1": attr_1, "v2": attr_2}
+            var_attr_vals={"v1": attr_1, "v2": attr_2}
         )
 
-    def test_globalstyle__multifile_same(
-        self, global_attr, attribute_testcase
-    ):
+    def test_globalstyle__multifile_same(self, global_attr):
         # Matching global-type attributes in multiple files are retained as global
         attrval = f"Global-{global_attr}"
-        attribute_testcase(
+        self.create_testcase(
             attr_name=global_attr,
-            global_attr_value=attrval,
-            vars_and_attrvalues={"v1": None},
-            globalval_file2=attrval,
-            var_values_file2={"v2": None},
+            global_value_file1=attrval,
+            vars_values_file1={"v1": None},
+            global_value_file2=attrval,
+            vars_values_file2={"v2": None},
         )
         self.check_expected_results(
             # The attribute remains as a common global setting
             global_attr_value=attrval,
             # The individual variables do *not* have an attribute of this name
-            vars_and_attrvalues={"v1": None, "v2": None},
+            var_attr_vals={"v1": None, "v2": None},
         )
 
     #######################################################
@@ -1435,7 +1428,7 @@ class TestLoadSaveAttributes:
     #
 
     @pytest.mark.parametrize("origin_style", ["input_global", "input_local"])
-    def test_localstyle(self, local_attr, attribute_testcase, origin_style):
+    def test_localstyle(self, local_attr, origin_style):
         # local-style attributes should *not* get 'promoted' to global ones
         # Set the name extension to avoid tests with different 'style' params having
         # collisions over identical testfile names
@@ -1456,12 +1449,14 @@ class TestLoadSaveAttributes:
         # as global or a variable attribute
         if origin_style == "input_global":
             # Record in source as a global attribute
-            attribute_testcase(attr_name=local_attr, global_attr_value=attrval)
+            self.create_testcase(
+                attr_name=local_attr, global_value_file1=attrval
+            )
         else:
             assert origin_style == "input_local"
             # Record in source as a variable-local attribute
-            attribute_testcase(
-                attr_name=local_attr, vars_and_attrvalues=attrval
+            self.create_testcase(
+                attr_name=local_attr, vars_values_file1=attrval
             )
 
         if local_attr in iris.fileformats.netcdf.saver._CF_DATA_ATTRS:
@@ -1489,7 +1484,7 @@ class TestLoadSaveAttributes:
 
         self.check_expected_results(
             global_attr_value=expect_global,
-            vars_and_attrvalues=expect_var,
+            var_attr_vals=expect_var,
         )
 
 
