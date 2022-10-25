@@ -1192,6 +1192,12 @@ class TestLoadSaveAttributes:
                     assert self.attrname in v.ncattrs()
                     assert v.getncattr(self.attrname) == value
 
+    #######################################################
+    # Tests on "user-style" attributes.
+    # This means any arbitrary attribute which a user might have added -- i.e. one with
+    # a name which is *not* recognised in the netCDF or CF conventions.
+    #
+
     def test_usertype_single_global(self):
         self.create_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
@@ -1282,17 +1288,15 @@ class TestLoadSaveAttributes:
             var_attr_vals={"v1": "value-1", "v2": "value-2"},
         )
 
-    # #####################################
-    # # WIP ...
-    # # We have a number of different "classes" of recognised attributes which are
-    # # handled differently.
-    # # We may not test all cases, but only one of each "class".  Or we might be able
-    # # to do them all (not yet clear how).
+    #######################################################
+    # Tests on "Conventions" attribute.
+    # Note: the usual 'Conventions' behaviour is already tested elsewhere
+    # - see :class:`TestConventionsAttributes` above
     #
-    # #####################################
-    # # === "Conventions" ===  - which is a case to itself
-    # # Note: the usual 'Conventions' behaviour is already tested elsewhere
-    # # - see TestConventionsAttributes above
+    # TODO: the name 'conventions' (lower-case) is also listed in _CF_GLOBAL_ATTRS, but
+    # we have excluded it from the global-attrs testing here.  We probably still need to
+    # test what that does, though it's inclusion might simply be a mistake.
+    #
 
     def test_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
