@@ -908,7 +908,6 @@ class TestConstrainedLoad(tests.IrisTest):
         self.assertEqual(len(cubes), 3)
 
 
-<<<<<<< HEAD
 class TestSkippedCoord:
     # If a coord/cell measure/etcetera cannot be added to the loaded Cube, a
     #  Warning is raised and the coord is skipped.
@@ -958,24 +957,18 @@ data:
             _ = cube.coord("lat")
 
 
-# Attributes to test, which should be 'global' type by default
-=======
 #
-# Testing handling of netCDF file ("global")  and variable ("local") attributes.
-#
-
 # First define the known controlled attribute names defined by netCDf and CF conventions
 #
 # Note: certain attributes these are "normally" global (e.g. "Conventions"), whilst
 # others will only usually appear on a data-variable (e.g. "scale_factor"",
 # "coordinates").
-# I'm calling these 'global-style' and 'data-style'.
+# I'm calling these 'global-style' and 'local-style'.
 # Any attributes either belongs to one of these 2 groups, or neither.  Those 3 distinct
 # types may then have different behaviour in Iris load + save.
 
 # A list of "global-style" attribute names : those which should be global attributes by
 # default (i.e. file- or group-level, *not* attached to a variable).
->>>>>>> Small review changes.
 _GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
 # Remove this one, which has peculiar behaviour + is tested separately
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
@@ -990,18 +983,18 @@ def global_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
 
-# A list of "data-style" attribute names : those which should be variable attributes by
-# default (aka "local" or "data" attributes) .
-_DATA_TEST__ATTRS = (
+# A list of "local-style" attribute names : those which should be variable attributes
+# by default (aka "local", "variable" or "data" attributes) .
+_LOCAL_TEST_ATTRS = (
     iris.fileformats.netcdf.saver._CF_DATA_ATTRS
     + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
 )
 
 
-# Define a fixture to parametrise over the 'data-style' test attributes.
+# Define a fixture to parametrise over the 'local-style' test attributes.
 # This just provides a more concise way of writing parametrised tests.
-@pytest.fixture(params=_DATA_TEST__ATTRS)
-def data_attr(request):
+@pytest.fixture(params=_LOCAL_TEST_ATTRS)
+def local_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
 
@@ -1433,22 +1426,23 @@ class TestLoadSaveAttributes:
         )
 
     #######################################################
-    # Tests on "data" style attributes
-    #  = those specific ones which 'ought' only to be data-local
+    # Tests on "local" style attributes
+    #  = those specific ones which 'ought' to appear attached to a variable, rather than
+    #  being global
     #
 
     @pytest.mark.parametrize("origin_style", ["input_global", "input_local"])
-    def test_datastyle(self, data_attr, attribute_testcase, origin_style):
-        # data-style attributes should *not* get 'promoted' to global ones
+    def test_localstyle(self, local_attr, attribute_testcase, origin_style):
+        # local-style attributes should *not* get 'promoted' to global ones
         # Set the name extension to avoid tests with different 'style' params having
         # collisions over identical testfile names
         self.testname_extension = origin_style
 
-        attrval = f"Attr-setting-{data_attr}"
-        if data_attr == "missing_value":
+        attrval = f"Attr-setting-{local_attr}"
+        if local_attr == "missing_value":
             # Special-cases : 'missing_value' type must be compatible with the variable
             attrval = 303
-        elif data_attr == "ukmo__process_flags":
+        elif local_attr == "ukmo__process_flags":
             # What this does when a GLOBAL attr seems to be weird + unintended.
             # 'this' --> 't h i s'
             attrval = "process"
@@ -1459,15 +1453,15 @@ class TestLoadSaveAttributes:
         # as global or a variable attribute
         if origin_style == "input_global":
             # Record in source as a global attribute
-            attribute_testcase(attr_name=data_attr, global_attr_value=attrval)
+            attribute_testcase(attr_name=local_attr, global_attr_value=attrval)
         else:
             assert origin_style == "input_local"
             # Record in source as a variable-local attribute
             attribute_testcase(
-                attr_name=data_attr, vars_and_attrvalues=attrval
+                attr_name=local_attr, vars_and_attrvalues=attrval
             )
 
-        if data_attr in iris.fileformats.netcdf.saver._CF_DATA_ATTRS:
+        if local_attr in iris.fileformats.netcdf.saver._CF_DATA_ATTRS:
             # These ones are simply discarded on loading.
             # By experiment, this overlap between _CF_ATTRS and _CF_DATA_ATTRS
             # currently contains only 'missing_value' and 'standard_error_multiplier'.
@@ -1476,7 +1470,7 @@ class TestLoadSaveAttributes:
         else:
             expect_global = None
             if (
-                data_attr == "ukmo__process_flags"
+                local_attr == "ukmo__process_flags"
                 and origin_style == "input_global"
             ):
                 # This is very odd behaviour + surely unintended.
@@ -1486,7 +1480,7 @@ class TestLoadSaveAttributes:
                 attrval = "p r o c e s s"
             expect_var = attrval
 
-        if data_attr == "STASH":
+        if local_attr == "STASH":
             # A special case, output translates this to a different attribute name.
             self.attrname = "um_stash_source"
 
