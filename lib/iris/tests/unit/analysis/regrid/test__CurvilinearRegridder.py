@@ -15,11 +15,12 @@ import numpy as np
 
 from iris.analysis._regrid import CurvilinearRegridder as Regridder
 from iris.analysis.cartography import rotate_pole
+from iris.aux_factory import HybridHeightFactory
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.pp import EARTH_RADIUS
-from iris.tests.stock import global_pp, lat_lon_cube
+from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
 
@@ -166,6 +167,62 @@ class Test___call__(tests.IrisTest):
                 mock.call(src_grid, mock.sentinel.regrid_info),
                 mock.call(different_src_cube, mock.sentinel.regrid_info),
             ],
+        )
+
+    def test_derived_coords(self):
+        src = realistic_4d()[0]
+        tgt = realistic_4d()
+        new_lon, new_lat = np.meshgrid(
+            src.coord("grid_longitude").points,
+            src.coord("grid_latitude").points,
+        )
+        coord_system = src.coord("grid_latitude").coord_system
+        lat = AuxCoord(
+            new_lat, standard_name="latitude", coord_system=coord_system
+        )
+        lon = AuxCoord(
+            new_lon, standard_name="longitude", coord_system=coord_system
+        )
+        lat_t = AuxCoord(
+            new_lat.T, standard_name="latitude", coord_system=coord_system
+        )
+        lon_t = AuxCoord(
+            new_lon.T, standard_name="longitude", coord_system=coord_system
+        )
+
+        src.remove_coord("grid_latitude")
+        src.remove_coord("grid_longitude")
+        src_t = src.copy()
+        src.add_aux_coord(lat, [1, 2])
+        src.add_aux_coord(lon, [1, 2])
+        src_t.add_aux_coord(lat_t, [2, 1])
+        src_t.add_aux_coord(lon_t, [2, 1])
+        rg = Regridder(src, tgt)
+        res = rg(src)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
+        )
+        assert np.allclose(
+            res.coord("altitude").points, src.coord("altitude").points
+        )
+        src.transpose([0, 2, 1])
+        res = rg(src)
+        assert np.allclose(
+            res.coord("altitude").points, src.coord("altitude").points
+        )
+
+        rg_t = Regridder(src_t, tgt)
+        res_t = rg_t(src_t)
+        assert np.allclose(
+            res_t.coord("altitude").points,
+            np.moveaxis(src_t.coord("altitude").points, 1, 2),
+        )
+        src_t.transpose([0, 2, 1])
+        res_t = rg_t(src_t)
+        assert np.allclose(
+            res_t.coord("altitude").points,
+            np.moveaxis(src_t.coord("altitude").points, 1, 2),
         )
 
 

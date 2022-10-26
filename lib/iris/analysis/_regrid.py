@@ -54,14 +54,16 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     The 'regrid info' returned can be re-used over many cubes.
 
     """
-    if src_cube.aux_factories:
-        msg = "All source cube derived coordinates will be ignored."
-        warnings.warn(msg)
 
     # Get the source cube x and y 2D auxiliary coordinates.
     sx, sy = src_cube.coord(axis="x"), src_cube.coord(axis="y")
     # Get the target grid cube x and y dimension coordinates.
     tx, ty = get_xy_dim_coords(grid_cube)
+
+    sl = [0] * grid_cube.ndim
+    sl[grid_cube.coord_dims(tx)[0]] = np.s_[:]
+    sl[grid_cube.coord_dims(ty)[0]] = np.s_[:]
+    grid_cube = grid_cube[tuple(sl)]
 
     if sx.units != sy.units:
         msg = (
@@ -345,7 +347,7 @@ def _curvilinear_to_rectilinear_regrid(
         weighted_mean[zero_sums] = ma.masked
 
     new_data_shape = list(data_shape)
-    for dim, length in zip(dims, grid_cube.shape):
+    for dim, length in zip(inds, grid_cube.shape):
         new_data_shape[dim] = length
     if len(dims) == 1:
         new_data_shape.append(grid_cube.shape[1])
