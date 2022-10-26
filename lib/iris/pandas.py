@@ -741,6 +741,8 @@ def as_data_frame(
     else:
         data = cube.data
     if ma.isMaskedArray(data):
+        if not copy:
+            raise ValueError("Masked arrays must always be copied.")
         data = data.astype("f").filled(np.nan)
 
     # Extract dim coord information
