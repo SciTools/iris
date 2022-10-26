@@ -1198,7 +1198,7 @@ class TestLoadSaveAttributes:
     # a name which is *not* recognised in the netCDF or CF conventions.
     #
 
-    def test_usertype_single_global(self):
+    def test_01_usertype_single_global(self):
         self.create_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
             global_value_file1="single-value",
@@ -1215,7 +1215,7 @@ class TestLoadSaveAttributes:
             },  # the variable has no such attribute
         )
 
-    def test_usertype_single_local(self):
+    def test_02_usertype_single_local(self):
         # Default behaviour for a general local user-attribute.
         # It results in a "promoted" global attribute.
         self.create_testcase(
@@ -1227,7 +1227,7 @@ class TestLoadSaveAttributes:
             # N.B. the output var has NO such attribute
         )
 
-    def test_usertype_multiple_different(self):
+    def test_03_usertype_multiple_different(self):
         # Default behaviour for general user-attributes.
         # The global attribute is lost because there are local ones.
         vars1 = {"f1_v1": "f1v1", "f1_v2": "f2v2"}
@@ -1251,7 +1251,7 @@ class TestLoadSaveAttributes:
             var_attr_vals=all_vars_and_attrs,
         )
 
-    def test_usertype_matching_promoted(self):
+    def test_04_usertype_matching_promoted(self):
         # matching local user-attributes are "promoted" to a global one.
         self.create_testcase(
             attr_name="random",
@@ -1263,7 +1263,7 @@ class TestLoadSaveAttributes:
             var_attr_vals={"v1": None, "v2": None},
         )
 
-    def test_usertype_matching_crossfile_promoted(self):
+    def test_05_usertype_matching_crossfile_promoted(self):
         # matching user-attributes are promoted, even across input files.
         self.create_testcase(
             attr_name="random",
@@ -1276,7 +1276,7 @@ class TestLoadSaveAttributes:
             var_attr_vals={x: None for x in ("v1", "v2", "f2_v1", "f2_v2")},
         )
 
-    def test_usertype_nonmatching_remainlocal(self):
+    def test_06_usertype_nonmatching_remainlocal(self):
         # Non-matching user attributes remain 'local' to the individual variables.
         self.create_testcase(
             attr_name="random",
@@ -1298,7 +1298,7 @@ class TestLoadSaveAttributes:
     # test what that does, though it's inclusion might simply be a mistake.
     #
 
-    def test_conventions_var_local(self):
+    def test_07_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
         # N.B. this is not good CF, but we'll see what happens anyway.
         self.create_testcase(
@@ -1311,7 +1311,7 @@ class TestLoadSaveAttributes:
             var_attr_vals=None,
         )
 
-    def test_conventions_var_both(self):
+    def test_08_conventions_var_both(self):
         # What happens if 'Conventions' appears as both global + local attribute.
         self.create_testcase(
             attr_name="Conventions",
@@ -1328,7 +1328,7 @@ class TestLoadSaveAttributes:
     #  = those specific ones which 'ought' only to be global (except on collisions)
     #
 
-    def test_globalstyle__global(self, global_attr):
+    def test_09_globalstyle__global(self, global_attr):
         attr_content = f"Global tracked {global_attr}"
         self.create_testcase(
             attr_name=global_attr,
@@ -1336,7 +1336,7 @@ class TestLoadSaveAttributes:
         )
         self.check_expected_results(global_attr_value=attr_content)
 
-    def test_globalstyle__local(self, global_attr):
+    def test_10_globalstyle__local(self, global_attr):
         # Strictly, not correct CF, but let's see what it does with it.
         attr_content = f"Local tracked {global_attr}"
         self.create_testcase(
@@ -1347,7 +1347,7 @@ class TestLoadSaveAttributes:
             global_attr_value=attr_content
         )  # "promoted"
 
-    def test_globalstyle__both(self, global_attr):
+    def test_11_globalstyle__both(self, global_attr):
         attr_global = f"Global-{global_attr}"
         attr_local = f"Local-{global_attr}"
         self.create_testcase(
@@ -1359,7 +1359,7 @@ class TestLoadSaveAttributes:
             global_attr_value=attr_local  # promoted local setting "wins"
         )
 
-    def test_globalstyle__multivar_different(self, global_attr):
+    def test_12_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained, not promoted
         attr_1 = f"Local-{global_attr}-1"
         attr_2 = f"Local-{global_attr}-2"
@@ -1376,7 +1376,7 @@ class TestLoadSaveAttributes:
             var_attr_vals={"v1": attr_1, "v2": attr_2},
         )
 
-    def test_globalstyle__multivar_same(self, global_attr):
+    def test_13_globalstyle__multivar_same(self, global_attr):
         # Multiple *same* local settings are promoted to a common global one
         attrval = f"Locally-defined-{global_attr}"
         self.create_testcase(
@@ -1388,7 +1388,7 @@ class TestLoadSaveAttributes:
             var_attr_vals={"v1": None, "v2": None},
         )
 
-    def test_globalstyle__multifile_different(self, global_attr):
+    def test_14_globalstyle__multifile_different(self, global_attr):
         # Different global attributes from multiple files are retained as local ones
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
@@ -1408,7 +1408,7 @@ class TestLoadSaveAttributes:
             var_attr_vals={"v1": attr_1, "v2": attr_2}
         )
 
-    def test_globalstyle__multifile_same(self, global_attr):
+    def test_15_globalstyle__multifile_same(self, global_attr):
         # Matching global-type attributes in multiple files are retained as global
         attrval = f"Global-{global_attr}"
         self.create_testcase(
@@ -1432,7 +1432,7 @@ class TestLoadSaveAttributes:
     #
 
     @pytest.mark.parametrize("origin_style", ["input_global", "input_local"])
-    def test_localstyle(self, local_attr, origin_style):
+    def test_16_localstyle(self, local_attr, origin_style):
         # local-style attributes should *not* get 'promoted' to global ones
         # Set the name extension to avoid tests with different 'style' params having
         # collisions over identical testfile names
