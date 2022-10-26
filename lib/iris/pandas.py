@@ -725,7 +725,7 @@ def as_data_frame(
     """
     # Checks
     if not isinstance(cube, iris.cube.Cube):
-        raise ValueError("Input must be an iris.cube.Cube instance")
+        raise TypeError(f"Expected input to be iris.cube.Cube instance, got: {type(cube)}")
     if add_global_attributes:
         global_attribute_names = list(cube.attributes.keys())
         for global_attribute in add_global_attributes:
