@@ -189,7 +189,6 @@ def tests(session: nox.sessions.Session):
         "python",
         "-m",
         "iris.tests.runner",
-        "--num-processors=1",
         "--default-tests",
         "--system-tests",
     )
