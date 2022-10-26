@@ -22,6 +22,7 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube
 import iris.exceptions
+from iris.tests.stock import realistic_4d
 
 
 class Test_aggregated_by(tests.IrisTest):
@@ -839,6 +840,38 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertArrayEqual(categorised_coord.points, np.arange(2))
         self.assertIsNone(categorised_coord.bounds)
         self.assertFalse(categorised_coord.climatological)
+
+
+class Test_aggregated_by__derived(tests.IrisTest):
+    def setUp(self):
+        self.cube = realistic_4d()[:, :10, :6, :8]
+        self.time_cat_coord = AuxCoord(
+            [0, 0, 1, 1, 2, 2], long_name="time_cat"
+        )
+        self.cube.add_aux_coord(self.time_cat_coord, 0)
+        height_data = np.zeros(self.cube.shape[1])
+        height_data[5:] = 1
+        self.height_cat_coord = AuxCoord(height_data, long_name="height_cat")
+        self.cube.add_aux_coord(self.height_cat_coord, 1)
+        self.aggregator = iris.analysis.MEAN
+
+    def test_grouped_dim(self):
+        result = self.cube.aggregated_by(
+            self.height_cat_coord,
+            self.aggregator,
+        )
+        assert len(result.aux_factories) == 1
+        altitude = result.coord("altitude")
+        assert altitude.shape == (2, 6, 8)
+
+    def test_ungrouped_dim(self):
+        result = self.cube.aggregated_by(
+            self.time_cat_coord,
+            self.aggregator,
+        )
+        assert len(result.aux_factories) == 1
+        altitude = result.coord("altitude")
+        assert altitude.shape == (10, 6, 8)
 
 
 if __name__ == "__main__":

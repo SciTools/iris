@@ -4243,8 +4243,9 @@ x            -              -
                 aggregateby_cube.add_aux_coord(
                     new_coord, self.coord_dims(lookup_coord)
                 )
-            coord_mapping[id(lookup_coord)] = new_coord
+            coord_mapping[id(self.coord(lookup_coord))] = new_coord
 
+        aggregateby_cube._aux_factories = []
         for factory in self.aux_factories:
             aggregateby_cube.add_aux_factory(factory.updated(coord_mapping))
 
