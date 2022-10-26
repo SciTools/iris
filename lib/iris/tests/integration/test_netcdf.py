@@ -978,7 +978,7 @@ _GLOBAL_TEST_ATTRS -= set(["conventions"])
 
 # Define a fixture to parametrise tests over the 'global-style' test attributes.
 # This just provides a more concise way of writing parametrised tests.
-@pytest.fixture(params=_GLOBAL_TEST_ATTRS)
+@pytest.fixture(params=sorted(_GLOBAL_TEST_ATTRS))
 def global_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
@@ -993,7 +993,7 @@ _LOCAL_TEST_ATTRS = (
 
 # Define a fixture to parametrise over the 'local-style' test attributes.
 # This just provides a more concise way of writing parametrised tests.
-@pytest.fixture(params=_LOCAL_TEST_ATTRS)
+@pytest.fixture(params=sorted(_LOCAL_TEST_ATTRS))
 def local_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
