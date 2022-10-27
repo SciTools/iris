@@ -543,20 +543,24 @@ def as_series(cube, copy=True):
     Convert a 1D cube to a Pandas Series.
 
     .. deprecated:: 3.4.0
-
         This function is scheduled for removal in a future release, being
         replaced by :func:`iris.pandas.as_data_frame`, which offers improved
         multi dimension handling.
 
-    Args:
-        * cube - The cube to convert to a Pandas Series.
-    Kwargs:
-        * copy - Whether to make a copy of the data.
-                 Defaults to True. Must be True for masked data.
-    .. note::
-        This function will copy your data by default.
-        If you have a large array that cannot be copied,
-        make sure it is not masked and use copy=False.
+    Parameters
+    ----------
+    cube: :class:`Cube`
+        The cube to convert to a Pandas Series.
+    copy : bool, default=True
+        Whether to make a copy of the data.
+        Defaults to True. Must be True for masked data.
+
+    Notes
+    -----
+    This function will copy your data by default.
+    If you have a large array that cannot be copied,
+    make sure it is not masked and use copy=False.
+
     """
     message = (
         "iris.pandas.as_series has been deprecated, and will be removed in a "
