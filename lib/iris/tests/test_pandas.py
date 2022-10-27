@@ -351,7 +351,7 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.scalar_coord, expected_scalar_coord)
 
     def test_instance_error(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             _ = iris.pandas.as_data_frame(list())
 
 
