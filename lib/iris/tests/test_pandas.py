@@ -327,7 +327,10 @@ class TestAsDataFrame(tests.IrisTest):
         expected_in_region = np.repeat([True, False, False, False], 3)
         data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
         self.assertArrayEqual(data_frame.in_region, expected_in_region)
-        
+
+    def test_instance_error(self):
+        with pytest.raises(ValueError):
+            _ = iris.pandas.as_data_frame(list())
 
 
 @skip_pandas
