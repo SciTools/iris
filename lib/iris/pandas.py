@@ -537,6 +537,12 @@ def _make_dim_coord_list(cube):
             outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]
     return outlist
 
+def _make_aux_coord_list(cube):
+    outlist = []
+    for n in _get_dim_combinations(cube.ndim):
+        for coord in cube.coords(dimensions=n, dim_coords=False):
+            outlist += [[n, coord]]
+    return list(chain.from_iterable([outlist]))
 
 def as_series(cube, copy=True):
     """
@@ -746,19 +752,7 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
     # Add AuxCoord & scalar coordinate information
     if add_aux_coord:
         # Extract aux coord information
-        aux_coord_list = list(
-            chain.from_iterable(
-                [
-                    [
-                        [n, coord]
-                        for coord in cube.coords(
-                            dimensions=n, dim_coords=False
-                        )
-                    ]
-                    for n in _get_dim_combinations(cube.ndim)
-                ]
-            )
-        )
+        aux_coord_list = _make_aux_coord_list(cube)
         for aux_coord_index, aux_coord in aux_coord_list:
             acoord_df = pandas.DataFrame(
                 aux_coord.points.ravel(),
