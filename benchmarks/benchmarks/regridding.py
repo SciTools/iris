@@ -12,8 +12,11 @@ Regridding benchmark test
 # importing anything else
 from iris import tests  # isort:skip
 
+import numpy as np
+
 import iris
-from iris.analysis import AreaWeighted
+from iris.analysis import AreaWeighted, PointInCell
+from iris.coords import AuxCoord
 
 
 class HorizontalChunkedRegridding:
@@ -52,4 +55,49 @@ class HorizontalChunkedRegridding:
         # Regrid the chunked cube
         out = self.chunked_cube.regrid(self.template_cube, self.scheme_area_w)
         # Realise data
+        out.data
+
+
+class CurvilinearRegridding:
+    def setup(self) -> None:
+        # Prepare a cube and a template
+
+        cube_file_path = tests.get_data_path(
+            ["NetCDF", "regrid", "regrid_xyt.nc"]
+        )
+        self.cube = iris.load_cube(cube_file_path)
+
+        # Make the source cube curvilinear
+        x_coord = self.cube.coord("longitude")
+        y_coord = self.cube.coord("latitude")
+        xx, yy = np.meshgrid(x_coord.points, y_coord.points)
+        self.cube.remove_coord(x_coord)
+        self.cube.remove_coord(y_coord)
+        x_coord_2d = AuxCoord(
+            xx,
+            standard_name=x_coord.standard_name,
+            units=x_coord.units,
+            coord_system=x_coord.coord_system,
+        )
+        y_coord_2d = AuxCoord(
+            yy,
+            standard_name=y_coord.standard_name,
+            units=y_coord.units,
+            coord_system=y_coord.coord_system,
+        )
+        self.cube.add_aux_coord(x_coord_2d, (1, 2))
+        self.cube.add_aux_coord(y_coord_2d, (1, 2))
+
+        template_file_path = tests.get_data_path(
+            ["NetCDF", "regrid", "regrid_template_global_latlon.nc"]
+        )
+        self.template_cube = iris.load_cube(template_file_path)
+
+        # Prepare a regridding scheme
+        self.scheme_pic = PointInCell()
+
+    def time_regrid_pic(self) -> None:
+        # Regrid the cube onto the template.
+        out = self.cube.regrid(self.template_cube, self.scheme_pic)
+        # Realise the data
         out.data
