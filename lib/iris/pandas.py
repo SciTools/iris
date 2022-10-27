@@ -580,11 +580,7 @@ def as_series(cube, copy=True):
     return series
 
 
-def as_data_frame(
-    cube,
-    copy=True,
-    add_aux_coord=False
-):
+def as_data_frame(cube, copy=True, add_aux_coord=False):
     """
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are flattened into a long-style
     :class:`~pandas.DataFrame`.  Other :attr:`~iris.cube.Cube.aux_coords` and :attr:`~iris.cube.Cube.attributes`
@@ -723,15 +719,6 @@ def as_data_frame(
         raise TypeError(
             f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
         )
-    if add_global_attributes:
-        global_attribute_names = list(cube.attributes.keys())
-        for global_attribute in add_global_attributes:
-            if (
-                global_attribute not in global_attribute_names
-            ):  # Check global attribute exists
-                raise KeyError(
-                    f'"{global_attribute}" not found in cube attributes'
-                )
 
     if copy:
         data = cube.data.copy()
