@@ -585,6 +585,11 @@ def project(cube, target_proj, nx=None, ny=None):
 
     .. note::
 
+        If there are both dim and aux latitude-longitude coordinates, only
+        the dim coordinates will be used.
+
+    .. note::
+
         This function assumes global data and will if necessary extrapolate
         beyond the geographical extent of the source cube using a nearest
         neighbour approach. nx and ny then include those points which are
