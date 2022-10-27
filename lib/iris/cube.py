@@ -2200,7 +2200,7 @@ class Cube(CFVariableMixin):
                 bad_name = (
                     name_or_cell_measure and name_or_cell_measure.name()
                 ) or ""
-                if name_or_cell_measure:
+                if name_or_cell_measure is not None:
                     emsg = (
                         "Expected to find exactly 1 cell measure matching the given "
                         f"{bad_name!r} cell measure's metadata, but found none."
@@ -2293,7 +2293,7 @@ class Cube(CFVariableMixin):
                     name_or_ancillary_variable
                     and name_or_ancillary_variable.name()
                 ) or ""
-                if name_or_ancillary_variable:
+                if name_or_ancillary_variable is not None:
                     emsg = (
                         "Expected to find exactly 1 ancillary_variable matching the "
                         f"given {bad_name!r} ancillary_variable's metadata, but found "
