@@ -526,15 +526,16 @@ def _get_dim_combinations(ndim):
     return dimcomb
 
 
-def _make_coord_list(cube):
+def _make_dim_coord_list(cube):
     outlist = []
     ndims = cube.ndim
     for dimn in range(ndims):
-        for coord in cube.coords(dimensions=dimn, dim_coords=True):
-            if not coord:
-                outlist += [dimn, None]
-            else:
-                outlist += [dimn, coord]
+        onecoord = cube.coords(dimensions=dimn, dim_coords=True)
+        if onecoord:
+            outlist += [[onecoord[0].name(),
+            _as_pandas_coord(onecoord[0])]]
+        else:
+            outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]   
     return outlist
 
 
@@ -588,7 +589,7 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
 
     Parameters
     ----------
-    :class:`~iris.cube.Cube`
+    cube: :class:`Cube`
         The :class:`Cube` to be converted to a Pandas `DataFrame`.
     copy : bool, default=True
         Whether the Pandas `DataFrame` is a copy of the the Cube :attr:`~iris.cube.Cube.data`.
@@ -730,15 +731,7 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
         data = data.astype("f").filled(np.nan)
 
     # Extract dim coord information
-    dim_coord_list = [
-        [
-            cube.coords(dimensions=n, dim_coords=True)[0].name(),
-            _as_pandas_coord(cube.coords(dimensions=n, dim_coords=True)[0]),
-        ]
-        if cube.coords(dimensions=n, dim_coords=True)
-        else ["dim" + str(n), range(cube.shape[n])]
-        for n in range(cube.ndim)
-    ]
+    dim_coord_list = _make_dim_coord_list(cube)
     # Extract separate lists for dim names and dim values
     coord_names, coords = list(zip(*dim_coord_list))
     # Make base DataFrame
