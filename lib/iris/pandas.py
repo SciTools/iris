@@ -532,10 +532,9 @@ def _make_dim_coord_list(cube):
     for dimn in range(ndims):
         onecoord = cube.coords(dimensions=dimn, dim_coords=True)
         if onecoord:
-            outlist += [[onecoord[0].name(),
-            _as_pandas_coord(onecoord[0])]]
+            outlist += [[onecoord[0].name(), _as_pandas_coord(onecoord[0])]]
         else:
-            outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]   
+            outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]
     return outlist
 
 
