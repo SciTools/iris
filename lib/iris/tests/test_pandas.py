@@ -342,6 +342,14 @@ class TestAsDataFrame(tests.IrisTest):
         data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
         self.assertArrayEqual(data_frame.in_region, expected_in_region)
 
+    def test_add_scalar_coord(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        scalar_coord = iris.coords.AuxCoord(1, long_name='scalar_coord', units='no_unit')
+        cube.add_aux_coord(scalar_coord)
+        expected_scalar_coord = np.repeat(1, 4)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        self.assertArrayEqual(data_frame.scalar_coord, expected_scalar_coord)
+
     def test_instance_error(self):
         with pytest.raises(ValueError):
             _ = iris.pandas.as_data_frame(list())
