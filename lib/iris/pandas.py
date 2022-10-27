@@ -583,8 +583,7 @@ def as_series(cube, copy=True):
 def as_data_frame(
     cube,
     copy=True,
-    add_aux_coord=False,
-    add_global_attributes=None,
+    add_aux_coord=False
 ):
     """
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are flattened into a long-style
@@ -600,9 +599,6 @@ def as_data_frame(
         This option is provided to help with memory size concerns.
     add_aux_coord : bool, default=False
         If True, add all :attr:`~iris.cube.Cube.aux_coords` to add to the returned `DataFrame`.
-    add_global_attributes : list of str, optional
-        Names of :attr:`~iris.cube.Cube.attributes` to add to the returned `DataFrame`. Raises an
-        error if the names are not found in :attr:`~iris.cube.Cube.attributes`.
 
     Returns
     -------
@@ -665,10 +661,9 @@ def as_data_frame(
 
     [419904 rows x 3 columns]
 
-    To add netCDF global attribution information to the :class:`~pandas.DataFrame`, specifiy the attribute using the `add_global_attributes`
-    keyword:
+    To add netCDF global attribution information to the :class:`~pandas.DataFrame`, add a column directly to the :class:`~pandas.DataFrame`:
 
-    >>> df = ipd.as_data_frame(cube, add_aux_coord=True, add_global_attributes=['STASH'])
+    >>> df['STASH] = str(cube.attributes['STASH'])
     >>> print(df)
                                             surface_temperature  forecast_reference_time  forecast_period       STASH
     time                latitude  longitude
@@ -725,7 +720,9 @@ def as_data_frame(
     """
     # Checks
     if not isinstance(cube, iris.cube.Cube):
-        raise TypeError(f"Expected input to be iris.cube.Cube instance, got: {type(cube)}")
+        raise TypeError(
+            f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
+        )
     if add_global_attributes:
         global_attribute_names = list(cube.attributes.keys())
         for global_attribute in add_global_attributes:
@@ -797,18 +794,6 @@ def as_data_frame(
         scalar_coord_list = cube.coords(dimensions=(), dim_coords=False)
         for scalar_coord in scalar_coord_list:
             data_frame[scalar_coord.name()] = scalar_coord.points.squeeze()
-
-    # Add global attribute information
-    if add_global_attributes:
-        if isinstance(
-            cube.attributes[global_attribute],
-            pp.STASH,
-        ):
-            data_frame[global_attribute] = str(
-                cube.attributes[global_attribute]
-            )
-        else:
-            data_frame[global_attribute] = cube.attributes[global_attribute]
 
     if copy:
         return data_frame.reorder_levels(coord_names).sort_index()

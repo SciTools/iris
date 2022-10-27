@@ -253,24 +253,6 @@ class TestAsDataFrame(tests.IrisTest):
         self.assertArrayEqual(data_frame.ts, expected_ts)
         self.assertArrayEqual(data_frame.time, expected_time)
 
-    def test_attributes(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
-        cube.attributes["sheep"] = "baa"
-        expected_attribute = np.repeat("baa", 5)
-        data_frame = iris.pandas.as_data_frame(
-            cube, add_global_attributes=["sheep"]
-        )
-        self.assertArrayEqual(expected_attribute, data_frame.sheep)
-
-    def test_attribute_error(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
-        self.assertRaises(
-            ValueError,
-            iris.pandas.as_data_frame,
-            cube,
-            add_global_attributes=["sheep"],
-        )
-
     def test_aux_coord(self):
         cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
         dim0_coord = DimCoord([15, 16], long_name="milk")
@@ -345,6 +327,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_in_region = np.repeat([True, False, False, False], 3)
         data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
         self.assertArrayEqual(data_frame.in_region, expected_in_region)
+        
 
 
 @skip_pandas
