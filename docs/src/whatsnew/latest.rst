@@ -47,6 +47,13 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.AuxCoord`, which avoids some specific known usage problems.
    (:issue:`4860`, :pull:`5020`)
 
+#. `@Esadek-MO`_ and `@trexfeathers`_ added dim coord
+   prioritisation to ``_get_lon_lat_coords()`` in :mod:`iris.analysis.cartography`.
+   This allows :func:`iris.analysis.cartography.area_weights` and
+   :func:`~iris.analysis.cartography.project` to handle cubes which contain
+   both dim and aux coords of the same type e.g. ``longitude`` and ``grid_longitude``.
+   (:issue:`3916`, :pull:`5029`).
+
 
 🐛 Bugs Fixed
 =============
