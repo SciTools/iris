@@ -172,7 +172,10 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     new_data = interpolator(tgt_levels, src_data, cube_data, axis=axis)
 
     # Create a result cube with the correct shape and metadata.
-    result = Cube(new_data, **cube.copy().metadata._asdict())
+    # TODO-splitattrs: fix this
+    kwargs = cube.metadata._asdict()
+    kwargs.pop("global_attributes")
+    result = Cube(new_data, **kwargs)
 
     # Copy across non z-dimension coordinates from the source cube
     # to the result cube.

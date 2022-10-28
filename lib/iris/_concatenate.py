@@ -784,6 +784,12 @@ class _ProtoCube:
 
             # Build the new cube.
             kwargs = cube_signature.defn._asdict()
+            # Hack for now just to make this work, since we added a "global_attributes"
+            # field to CubeMetadata, which we are not yet using, but we have no matching
+            # keyword in the Cube constructor call.
+            kwargs.pop("global_attributes")
+            # TODO-splitattrs: in future we will provide some way of passing separate
+            #  local+global attributes into the Cube constructor.  Fix this properly then.
             cube = iris.cube.Cube(
                 data,
                 dim_coords_and_dims=dim_coords_and_dims,

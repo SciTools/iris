@@ -4466,6 +4466,7 @@ class Test_cube(tests.IrisTest):
             units=Unit("K"),
             attributes={},
             cell_methods=(),
+            global_attributes=None,  # TODO-splitattrs: should be {}, when implemented
         )
         lhs_cube = Cube(self.data)
         lhs_cube.metadata = self.cube_metadata

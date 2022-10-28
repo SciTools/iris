@@ -314,10 +314,12 @@ class Test__metadata_setter(tests.IrisTest):
 
     def test_class_cubemetadata(self):
         self.args["cell_methods"] = None
+        self.args["global_attributes"] = None
         metadata = CubeMetadata(**self.args)
         self.item.metadata = metadata
         expected = metadata._asdict()
         del expected["cell_methods"]
+        del expected["global_attributes"]
         self.assertEqual(self.item._metadata_manager.values, expected)
         self.assertIsNot(
             self.item._metadata_manager.attributes, metadata.attributes

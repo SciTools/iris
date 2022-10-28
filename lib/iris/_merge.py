@@ -391,6 +391,9 @@ class _CubeSignature(
                 )
             )
         if self_defn.attributes != other_defn.attributes:
+            # TODO-splitattrs: this needs to change to handle both global + local
+            #  attributes, when they are in active use. We probably *ought* to be using
+            #  metadata.difference for this.
             diff_keys = set(self_defn.attributes.keys()) ^ set(
                 other_defn.attributes.keys()
             )
@@ -1594,6 +1597,12 @@ class ProtoCube:
             for coord, dims in self._aux_coords_and_dims
         ]
         kwargs = dict(zip(CubeMetadata._fields, signature.defn))
+        # Hack for now just to make this work, since we added a "global_attributes"
+        # field to CubeMetadata, which we are not yet using, but we have no matching
+        # keyword in the Cube constructor call.
+        kwargs.pop("global_attributes")
+        # TODO-splitattrs: in future we will provide some way of passing separate
+        #  local+global attributes into the Cube constructor.  Fix this properly then.
 
         cms_and_dims = [
             (deepcopy(cm), dims) for cm, dims in self._cell_measures_and_dims

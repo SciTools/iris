@@ -242,4 +242,8 @@ class CFVariableMixin:
 
             # Ensure to always set state through the individual mixin/container
             # setter functions.
-            setattr(self, field, value)
+            # Since we don't have a 'global_attributes' cube property, we need to avoid
+            # setting a property that doesn't exist.
+            # TODO - splitattrs: fix this properly later.
+            if hasattr(self, field):
+                setattr(self, field, value)
