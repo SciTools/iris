@@ -13,7 +13,12 @@ import copy
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
+from iris._lazy_data import (
+    as_concrete_data,
+    as_lazy_data,
+    copy_lazy_data,
+    is_lazy_data,
+)
 
 
 class DataManager:
@@ -174,7 +179,7 @@ class DataManager:
             if data is None:
                 # Copy the managed data.
                 if self.has_lazy_data():
-                    data = copy.deepcopy(self._lazy_array, memo)
+                    data = copy_lazy_data(self._lazy_array)
                 else:
                     data = self._real_array.copy()
             else:
