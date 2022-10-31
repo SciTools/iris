@@ -2118,7 +2118,7 @@ To obtain the biased standard deviation::
 
 .. note::
 
-    Lazy operation is supported, via :func:`dask.array.nanstd`.
+    Lazy operation is supported, via :func:`dask.array.std`.
 
 This aggregator handles masked data.
 
@@ -2192,7 +2192,7 @@ To obtain the biased variance::
 
 .. note::
 
-    Lazy operation is supported, via :func:`dask.array.nanvar`.
+    Lazy operation is supported, via :func:`dask.array.var`.
 
 This aggregator handles masked data.
 
