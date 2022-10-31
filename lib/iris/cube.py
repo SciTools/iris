@@ -841,15 +841,6 @@ class CubeAttrsDict(MutableMapping):
                     self[key] = value
 
     #
-    # Provide a serialisation interface
-    #
-    def __getstate__(self):
-        return (self.locals, self.globals)
-
-    def __setstate__(self, state):
-        self.locals, self.globals = state
-
-    #
     # Ensure that the stored local/global dictionaries are "LimitedAttributeDicts".
     #
     @property
@@ -867,6 +858,49 @@ class CubeAttrsDict(MutableMapping):
     @globals.setter
     def globals(self, attributes):
         self._globals = LimitedAttributeDict(attributes or {})
+
+    #
+    # Provide a serialisation interface
+    #
+    def __getstate__(self):
+        return (self.locals, self.globals)
+
+    def __setstate__(self, state):
+        self.locals, self.globals = state
+
+    #
+    # Support simple comparison, even when contents are arrays.
+    #
+    def __eq__(self, other):
+        # Copied from :class:`~iris.common.mixin.LimitedAttributeDict`
+        match = set(self.keys()) == set(other.keys())
+        if match:
+            for key, value in self.items():
+                match = value == other[key]
+                try:
+                    match = bool(match)
+                except ValueError:
+                    match = match.all()
+                if not match:
+                    break
+        return match
+
+    def __ne__(self, other):
+        return not self == other
+
+    #
+    # Provide a copy method, as for 'dict', but *not* provided by MutableMapping
+    #
+    def copy(self):
+        """
+        Return a copy.
+
+        Implemented as a deepcopy, consistent with general Iris usage.
+
+        """
+        globals = deepcopy(self.globals)
+        locals = deepcopy(self.locals)
+        return CubeAttrsDict(globals=globals, locals=locals)
 
     #
     # The remaining methods are sufficient to generate a complete standard Mapping
@@ -940,13 +974,6 @@ class CubeAttrsDict(MutableMapping):
     def __repr__(self):
         # Special repr form, showing "real" contents.
         return f"CubeAttrsDict(globals={self.globals}, locals={self.locals})"
-
-    # A copy method is wanted, which is *not* provided by MutableMapping
-    def copy(self):
-        # Implement as a deepcopy, consistent with general Iris usage.
-        globals = deepcopy(self.globals)
-        locals = deepcopy(self.locals)
-        return CubeAttrsDict(globals=globals, locals=locals)
 
 
 class Cube(CFVariableMixin):
