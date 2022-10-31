@@ -14,6 +14,7 @@ from collections.abc import Container, Iterable, Iterator, MutableMapping
 import copy
 from copy import deepcopy
 from functools import partial, reduce
+import itertools
 import operator
 import warnings
 from xml.dom.minidom import Document
@@ -33,6 +34,7 @@ import iris.analysis.maths
 import iris.aux_factory
 from iris.common import CFVariableMixin, CubeMetadata, metadata_manager_factory
 from iris.common.metadata import metadata_filter
+from iris.common.mixin import LimitedAttributeDict
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
@@ -758,6 +760,195 @@ def _is_single_item(testee):
     return isinstance(testee, str) or not isinstance(testee, Iterable)
 
 
+class CubeAttrsDict(MutableMapping):
+    """
+    A dict-like object for "Cube.attributes", which provides unified user access to
+    the combined cube 'local' and 'global' attributes, mimicking the behaviour of a
+    simple dict.
+
+    This supports all the regular methods of a 'dict',
+    However, a few things such as the detailed print (repr) are different.
+
+    In addition, the 'locals' and 'globals' properties provide specific access to local
+    and global attributes, as regular `~iris.common.mixin.LimitedAttributeDict`s.
+
+    Notes
+    -----
+    For type testing, "issubclass(CubeAttrsDict, Mapping)" is True, but
+    "issubclass(CubeAttrsDict, dict)" is False.
+
+    Properties 'locals' and 'globals' are the two sets of cube attributes.  These are
+    both :class:`~iris.common.mixin.LimitedAttributeDict`.  The CubeAttrsDict object
+    contains *no* additional state of its own, but simply acts as a view on these two.
+
+    When reading (__getitem__, pop. popitem, keys, values etc), it contains all the
+    keys + values of both 'locals' and 'globals'.  When a key occurs in *both* 'locals'
+    and 'globals', the result is the local value.
+
+    When writing (__setitem__, setdefault, update, etc) to a key already present, the
+    existing entry in either 'locals' or 'globals' is updated.  If both are present,
+    'locals' is updated.
+
+    When writing to a new key, this generally updates 'locals'.  However, certain
+    specific names would never normally be 'data' attributes, and these are written as
+    'globals' instead.  These are determined by Appendix A of the
+    `_CF Conventions: https://cfconventions.org/` .
+    At present, these are : 'conventions', 'featureType', 'history', 'title'.
+
+    Examples
+    --------
+    .. doctest::
+        :hide:
+        >>> cube = Cube([0])
+
+        >>> cube.attributes.update({'history':'fresh', 'x':3})
+        >>> print(cube.attributes)
+        {'history': 'fresh', 'x': 3}
+        >>> print(repr(cube.attributes))
+        CubeAttrsDict(globals={'history': 'fresh'}, locals={'x': 3})
+
+        >>> cube.attributes['history'] += '+added'
+        >>> print(repr(cube.attributes))
+        CubeAttrsDict(globals={'history': 'fresh+added'}, locals={'x': 3})
+
+        >>> cube.attributes.locals['history'] = 'per-var'
+        >>> print(cube.attributes)
+        {'history': 'per-var', 'x': 3}
+        >>> print(repr(cube.attributes))
+        CubeAttrsDict(globals={'history': 'fresh+added'}, locals={'x': 3, 'history': 'per-var'})
+
+    """
+
+    def __init__(self, combined=None, locals=None, globals=None):
+        # Allow initialisation from a generic dictionary, or local/global specific ones.
+        # Initialise local + global, defaulting to empty.
+        # N.B. this is also the way to achieve copy-less construction.
+        self.locals = locals
+        self.globals = globals
+        # Update with combined, if present.
+        if combined:
+            # Treat a single input as a 'copy' operation.
+            # N.B. enforce deep copying, consistent with general Iris usage.
+            if hasattr(combined, "globals") and hasattr(combined, "locals"):
+                globals = deepcopy(combined.globals)
+                locals = deepcopy(combined.locals)
+                self.globals.update(globals)
+                self.locals.update(locals)
+            else:
+                # Convert an arbitrary single input value to a dict, and update.
+                combined = deepcopy(dict(combined))
+                for key, value in combined.items():
+                    self[key] = value
+
+    #
+    # Provide a serialisation interface
+    #
+    def __getstate__(self):
+        return (self.locals, self.globals)
+
+    def __setstate__(self, state):
+        self.locals, self.globals = state
+
+    #
+    # Ensure that the stored local/global dictionaries are "LimitedAttributeDicts".
+    #
+    @property
+    def locals(self):
+        return self._locals
+
+    @locals.setter
+    def locals(self, attributes):
+        self._locals = LimitedAttributeDict(attributes or {})
+
+    @property
+    def globals(self):
+        return self._globals
+
+    @globals.setter
+    def globals(self, attributes):
+        self._globals = LimitedAttributeDict(attributes or {})
+
+    #
+    # The remaining methods are sufficient to generate a complete standard Mapping
+    # API -- see docs for :class:`collections.abc.MutableMapping`.
+    #
+
+    def __iter__(self):
+        # Ordering: all global keys, then all local ones, but omitting duplicates.
+        # NOTE: this means that in the "summary" view, attributes present in both
+        # locals+globals are listed first, amongst the globals, even though they appear
+        # with the *value* from locals.
+        # Otherwise follows order of insertion, as is normal for dicts.
+        return itertools.chain(
+            self.globals.keys(),
+            (x for x in self.locals.keys() if x not in self.globals),
+        )
+
+    def __len__(self):
+        # Return the number of keys in the 'combined' view.
+        return len(list(iter(self)))
+
+    def __getitem__(self, key):
+        # Fetch an item from the "combined attributes".
+        # If both present, the local setting takes priority.
+        if key in self.locals:
+            store = self.locals
+        else:
+            store = self.globals
+        return store[key]
+
+    def __setitem__(self, key, value):
+        # Assign an attribute value.
+        #  Make local or global according to the existing content, or the known set of
+        # "normally global" attributes given by CF.
+
+        # If an attribute of this name is already present, update that
+        # (the local one having priority).
+        if key in self.locals:
+            store = self.locals
+        elif key in self.globals:
+            store = self.globals
+        else:
+            # If NO existing attribute,  create local unless it is a "known global" one.
+            from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
+
+            # Not in existing
+            if key in _CF_GLOBAL_ATTRS:
+                store = self.globals
+            else:
+                store = self.locals
+
+        store[key] = value
+
+    def __delitem__(self, key):
+        """
+        Remove an attribute
+
+        Delete from both local + global.
+
+        """
+        if key in self.locals:
+            del self.locals[key]
+        if key in self.globals:
+            del self.globals[key]
+
+    def __str__(self):
+        # Print it just like a "normal" dictionary.
+        # Convert to a normal dict to do that.
+        return str(dict(self))
+
+    def __repr__(self):
+        # Special repr form, showing "real" contents.
+        return f"CubeAttrsDict(globals={self.globals}, locals={self.locals})"
+
+    # A copy method is wanted, which is *not* provided by MutableMapping
+    def copy(self):
+        # Implement as a deepcopy, consistent with general Iris usage.
+        globals = deepcopy(self.globals)
+        locals = deepcopy(self.locals)
+        return CubeAttrsDict(globals=globals, locals=locals)
+
+
 class Cube(CFVariableMixin):
     """
     A single Iris cube of data and metadata.
@@ -1011,6 +1202,22 @@ class Cube(CFVariableMixin):
 
         """
         return self._metadata_manager._names
+
+    #
+    # Ensure that .attributes is always a :class:`CubeAttrsDict`.
+    #
+    @property
+    def attributes(self):
+        return self._metadata_manager.attributes
+
+    @attributes.setter
+    def attributes(self, attributes):
+        """
+        An override to CfVariableMixin.attributes.setter, which ensures that Cube
+        attributes are stored in a way which distinguishes global + local ones.
+
+        """
+        self._metadata_manager.attributes = CubeAttrsDict(attributes)
 
     def _dimensional_metadata(self, name_or_dimensional_metadata):
         """
