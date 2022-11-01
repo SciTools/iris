@@ -776,7 +776,7 @@ class CubeAttrsDict(MutableMapping):
     However, a few things such as the detailed print (repr) are different.
 
     In addition, the 'locals' and 'globals' properties provide specific access to local
-    and global attributes, as regular `~iris.common.mixin.LimitedAttributeDict`s.
+    and global attributes, as regular :class:`~iris.common.mixin.LimitedAttributeDict`s.
 
     Notes
     -----
@@ -796,7 +796,7 @@ class CubeAttrsDict(MutableMapping):
     'locals' is updated.
 
     When writing to a new key, this generally updates 'locals'.  However, certain
-    specific names would never normally be 'data' attributes, and these are written as
+    specific names would never normally be 'data' attributes, and these are created as
     'globals' instead.  These are determined by Appendix A of the
     `_CF Conventions: https://cfconventions.org/` .
     At present, these are : 'conventions', 'featureType', 'history', 'title'.
@@ -836,6 +836,7 @@ class CubeAttrsDict(MutableMapping):
             # Treat a single input as a 'copy' operation.
             # N.B. enforce deep copying, consistent with general Iris usage.
             if hasattr(combined, "globals") and hasattr(combined, "locals"):
+                # Copy a mapping with globals/locals, like another 'CubeAttrsDict'
                 globals = deepcopy(combined.globals)
                 locals = deepcopy(combined.locals)
                 self.globals.update(globals)
