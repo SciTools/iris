@@ -810,16 +810,17 @@ the ``from_metadata`` class method. For example, given the following
 
 .. doctest:: metadata-convert
 
-    >>> cube.metadata  # doctest: +SKIP
-    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    >>> cube.metadata
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={}, locals={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 We can easily convert it to a :class:`~iris.common.metadata.DimCoordMetadata` instance
 using ``from_metadata``,
 
 .. doctest:: metadata-convert
 
-    >>> DimCoordMetadata.from_metadata(cube.metadata)  # doctest: +SKIP
-    DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=None, climatological=None, circular=None)
+    >>> newmeta = DimCoordMetadata.from_metadata(cube.metadata)
+    >>> print(newmeta)
+    DimCoordMetadata(standard_name=air_temperature, var_name=air_temperature, units=K, attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'})
 
 By examining :numref:`metadata members table`, we can see that the
 :class:`~iris.cube.Cube` and :class:`~iris.coords.DimCoord` container
@@ -849,9 +850,9 @@ class instance,
 
 .. doctest:: metadata-convert
 
-    >>> longitude.metadata.from_metadata(cube.metadata)
-    DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=None, climatological=None, circular=None)
-
+   >>> newmeta = longitude.metadata.from_metadata(cube.metadata)
+   >>> print(newmeta)
+   DimCoordMetadata(standard_name=air_temperature, var_name=air_temperature, units=K, attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'})
 
 .. _metadata assignment:
 
