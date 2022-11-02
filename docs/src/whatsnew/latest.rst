@@ -83,7 +83,15 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@trexfeathers`_ altered testing to accept new Dask copying behaviour from
+   `dask/dask#9555`_ - copies of a Dask array created using ``da.from_array()``
+   will all ``compute()`` to a shared identical array. So creating a
+   :class:`~iris.cube.Cube` using ``Cube(data=da.from_array(...``, then
+   using :class:`~iris.cube.Cube` :meth:`~iris.cube.Cube.copy`,
+   will produce two :class:`~iris.cube.Cube`\s that both return an identical
+   array when requesting :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.data`.
+   We do not expect this to affect typical user workflows but please get in
+   touch if you need help. (:pull:`5041`)
 
 
 🚀 Performance Enhancements
@@ -127,15 +135,7 @@ This document explains the changes made to Iris for this release
    :mod:`iris.palette` in response to a deprecation warning. Using the new
    Matplotlib API also means a ``matplotlib>=3.5`` pin. (:pull:`4998`)
 
-#. `@trexfeathers`_ altered testing to accept new Dask copying behaviour from
-   `dask/dask#9555`_ - copies of a Dask array created using ``da.from_array()``
-   will all ``compute()`` to a shared identical array. So creating a
-   :class:`~iris.cube.Cube` using ``Cube(data=da.from_array(...``, then
-   using :class:`~iris.cube.Cube` :meth:`~iris.cube.Cube.copy`,
-   will produce two :class:`~iris.cube.Cube`\s that both return an identical
-   array when requesting :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.data`.
-   We do not expect this to affect typical user workflows but please get in
-   touch if you need help. (:pull:`5041`)
+#. See `💣 Incompatible Changes`_ for notes about `dask/dask#9555`_.
 
 
 📚 Documentation
