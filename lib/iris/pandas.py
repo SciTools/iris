@@ -766,18 +766,24 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
         # Extract aux coord information
         aux_coord_list = _make_aux_coord_list(cube)
         for aux_coord_name, aux_coord_index, aux_coord in aux_coord_list:
-            acoord_df = pandas.DataFrame(
-                aux_coord.ravel(),
-                columns=[aux_coord_name],
-                index=pandas.MultiIndex.from_product(
-                    [coords[i] for i in aux_coord_index],
-                    names=[coord_names[i] for i in aux_coord_index],
-                ),
-            )
-            # Merge to main data frame
-            data_frame = pandas.merge(
-                data_frame, acoord_df, left_index=True, right_index=True
-            )
+            if not aux_coord_index:
+                wmsg = (f"{aux_coord_name} has no associated dimensions."
+                        "This variable will not be added to the DataFrame.")
+                warnings.warn(wmsg, Warning, stacklevel=2) 
+                pass
+            else:
+                acoord_df = pandas.DataFrame(
+                    aux_coord.ravel(),
+                    columns=[aux_coord_name],
+                    index=pandas.MultiIndex.from_product(
+                        [coords[i] for i in aux_coord_index],
+                        names=[coord_names[i] for i in aux_coord_index],
+                    ),
+                )
+                # Merge to main data frame
+                data_frame = pandas.merge(
+                    data_frame, acoord_df, left_index=True, right_index=True
+                )
 
         # Add scalar coordinate information
         scalar_coord_list = cube.coords(dimensions=(), dim_coords=False)
