@@ -856,6 +856,10 @@ class Test_aggregated_by__derived(tests.IrisTest):
         self.aggregator = iris.analysis.MEAN
 
     def test_grouped_dim(self):
+        """
+        Check that derived coordinates are maintained when the coordinates they
+        derive from are aggregated.
+        """
         result = self.cube.aggregated_by(
             self.height_cat_coord,
             self.aggregator,
@@ -864,14 +868,25 @@ class Test_aggregated_by__derived(tests.IrisTest):
         altitude = result.coord("altitude")
         assert altitude.shape == (2, 6, 8)
 
+        # Check the bounds are derived as expected.
+        orig_alt_bounds = self.cube.coord("altitude").bounds
+        bounds_0 = orig_alt_bounds[0::5, :, :, 0]
+        bounds_1 = orig_alt_bounds[4::5, :, :, 1]
+        expected_bounds = np.stack([bounds_0, bounds_1], axis=-1)
+        assert np.array_equal(expected_bounds, result.coord("altitude").bounds)
+
     def test_ungrouped_dim(self):
+        """
+        Check that derived coordinates are preserved when aggregating along a
+        different axis.
+        """
         result = self.cube.aggregated_by(
             self.time_cat_coord,
             self.aggregator,
         )
         assert len(result.aux_factories) == 1
         altitude = result.coord("altitude")
-        assert altitude.shape == (10, 6, 8)
+        assert altitude == self.cube.coord("altitude")
 
 
 if __name__ == "__main__":
