@@ -537,12 +537,14 @@ def _make_dim_coord_list(cube):
             outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]
     return outlist
 
+
 def _make_aux_coord_list(cube):
     outlist = []
     for n in _get_dim_combinations(cube.ndim):
         for coord in cube.coords(dimensions=n, dim_coords=False):
             outlist += [[n, coord]]
     return list(chain.from_iterable([outlist]))
+
 
 def as_series(cube, copy=True):
     """
@@ -604,7 +606,8 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
         Whether the Pandas `DataFrame` is a copy of the the Cube :attr:`~iris.cube.Cube.data`.
         This option is provided to help with memory size concerns.
     add_aux_coord : bool, default=False
-        If True, add all :attr:`~iris.cube.Cube.aux_coords` to add to the returned `DataFrame`.
+        If True, add all :attr:`~iris.cube.Cube.aux_coords` (including scalar coordinates)
+        to the returned `DataFrame`.
 
     Returns
     -------
@@ -618,6 +621,10 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
 
     A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default. Use the :meth:`~pandas.DataFrame.reset_index`
     to return a :class:`~pandas.DataFrame` without :class:`~pandas.MultiIndex` levels. Use 'inplace=True` to preserve memory object reference.
+
+    Warnings
+    --------
+    Where the :class:`Cube` contains masked values, these become :float:`numpy.nan` in the returned `DataFrame`.
 
     Examples
     --------
