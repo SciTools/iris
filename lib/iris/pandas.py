@@ -529,9 +529,10 @@ def _get_dim_combinations(ndim):
 def _make_dim_coord_list(cube):
     outlist = []
     ndims = cube.ndim
-    for dimn, coord in enumerate(cube.coords(dim_coords=True))
-        if coord:
-            outlist += [[coord.name(), _as_pandas_coord(coord)]]
+    for dimn in range(ndims):
+        onecoord = cube.coords(dimensions=dimn, dim_coords=True)
+        if onecoord:
+            outlist += [[onecoord[0].name(), _as_pandas_coord(onecoord[0])]]
         else:
             outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]
     return outlist
@@ -539,11 +540,14 @@ def _make_dim_coord_list(cube):
 
 def _make_aux_coord_list(cube):
     outlist = []
+    # Get Auxiliary coordinates
     for n in _get_dim_combinations(cube.ndim):
         for coord in cube.coords(dimensions=n, dim_coords=False):
             outlist += [[coord.name(), n, _as_pandas_coord(coord)]]
+    # Get Ancillary variables
+    for ancil_var in cube.ancillary_variables():
+        outlist += [[ancil_var.name(), cube.ancillary_variable_dims(ancil_var), ancil_var.data]]
     return list(chain.from_iterable([outlist]))
-
 
 def as_series(cube, copy=True):
     """
