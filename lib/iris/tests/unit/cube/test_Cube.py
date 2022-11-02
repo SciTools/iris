@@ -1865,12 +1865,14 @@ class Test_copy(tests.IrisTest):
     def _check_copy(self, cube, cube_copy):
         self.assertIsNot(cube_copy, cube)
         self.assertEqual(cube_copy, cube)
-        self.assertIsNot(cube_copy.data, cube.data)
+        self.assertIsNot(cube_copy.core_data(), cube.core_data())
         if ma.isMaskedArray(cube.data):
             self.assertMaskedArrayEqual(cube_copy.data, cube.data)
             if cube.data.mask is not ma.nomask:
                 # "No mask" is a constant : all other cases must be distinct.
-                self.assertIsNot(cube_copy.data.mask, cube.data.mask)
+                self.assertIsNot(
+                    cube_copy.core_data().mask, cube.core_data().mask
+                )
         else:
             self.assertArrayEqual(cube_copy.data, cube.data)
 
@@ -1911,6 +1913,9 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
+        # 2022-11-02: Dask's current behaviour is that the computed array will
+        #  be the same for cube and cube.copy(), even if the Dask arrays are
+        #  different.
         cube = Cube(as_lazy_data(np.array([1, 0])))
         self._check_copy(cube, cube.copy())
 
