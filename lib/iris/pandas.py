@@ -546,8 +546,15 @@ def _make_aux_coord_list(cube):
             outlist += [[coord.name(), n, _as_pandas_coord(coord)]]
     # Get Ancillary variables
     for ancil_var in cube.ancillary_variables():
-        outlist += [[ancil_var.name(), cube.ancillary_variable_dims(ancil_var), ancil_var.data]]
+        outlist += [
+            [
+                ancil_var.name(),
+                cube.ancillary_variable_dims(ancil_var),
+                ancil_var.data,
+            ]
+        ]
     return list(chain.from_iterable([outlist]))
+
 
 def as_series(cube, copy=True):
     """
@@ -761,16 +768,14 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
         data.ravel(), columns=[cube.name()], index=index
     )
 
-    # Add AuxCoord & scalar coordinate information
+    # Add AuxCoord, ancillary variables & scalar coordinate information
     if add_aux_coord:
         # Extract aux coord information
         aux_coord_list = _make_aux_coord_list(cube)
         for aux_coord_name, aux_coord_index, aux_coord in aux_coord_list:
             if not aux_coord_index:
-                wmsg = (f"{aux_coord_name} has no associated dimensions."
-                        "This variable will not be added to the DataFrame.")
-                warnings.warn(wmsg, Warning, stacklevel=2) 
-                pass
+                # Treat like a scalar coordinate
+                data_frame[aux_coord_name] = aux_coord.squeeze()
             else:
                 acoord_df = pandas.DataFrame(
                     aux_coord.ravel(),
@@ -788,7 +793,9 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
         # Add scalar coordinate information
         scalar_coord_list = cube.coords(dimensions=(), dim_coords=False)
         for scalar_coord in scalar_coord_list:
-            data_frame[scalar_coord.name()] = _as_pandas_coord(scalar_coord).squeeze()
+            data_frame[scalar_coord.name()] = _as_pandas_coord(
+                scalar_coord
+            ).squeeze()
 
     if copy:
         return data_frame.reorder_levels(coord_names).sort_index()
