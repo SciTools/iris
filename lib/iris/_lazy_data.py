@@ -417,27 +417,3 @@ def map_complete_blocks(src, func, dims, out_sizes):
         out_chunks[dim] = size
 
     return data.map_blocks(func, chunks=out_chunks, dtype=src.dtype)
-
-
-def copy_lazy_data(data: da.Array) -> da.Array:
-    """
-    Copy a lazy data array, ensuring compute() will return a different array to the original.
-
-    Replicates legacy Dask behaviour removed in dask#9555.
-
-    Parameters
-    ----------
-    data : Dask Array
-        The lazy data array to be copied.
-
-    Returns
-    -------
-    Dask Array
-        A copy of `data`.
-
-    """
-    if data.npartitions == 1:
-        result = data.map_blocks(dask.utils.M.copy)
-    else:
-        result = data.copy()
-    return result
