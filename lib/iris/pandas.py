@@ -535,7 +535,7 @@ def _make_dim_coord_list(cube):
             outlist += [[onecoord[0].name(), _as_pandas_coord(onecoord[0])]]
         else:
             outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]
-    return outlist
+    return list(zip(*outlist))
 
 
 def _make_aux_coord_list(cube):
@@ -544,6 +544,11 @@ def _make_aux_coord_list(cube):
     for n in _get_dim_combinations(cube.ndim):
         for coord in cube.coords(dimensions=n, dim_coords=False):
             outlist += [[coord.name(), n, _as_pandas_coord(coord)]]
+    return list(chain.from_iterable([outlist]))
+
+
+def _make_ancillary_variables_list(cube):
+    outlist = []
     # Get Ancillary variables
     for ancil_var in cube.ancillary_variables():
         outlist += [
@@ -551,6 +556,20 @@ def _make_aux_coord_list(cube):
                 ancil_var.name(),
                 cube.ancillary_variable_dims(ancil_var),
                 ancil_var.data,
+            ]
+        ]
+    return list(chain.from_iterable([outlist]))
+
+
+def _make_cell_measures_list(cube):
+    outlist = []
+    # Get cell measures
+    for cell_measure in cube.cell_measures():
+        outlist += [
+            [
+                cell_measure.name(),
+                cube.cell_measure_dims(cell_measure),
+                cell_measure.data,
             ]
         ]
     return list(chain.from_iterable([outlist]))
@@ -602,7 +621,13 @@ def as_series(cube, copy=True):
     return series
 
 
-def as_data_frame(cube, copy=True, add_aux_coord=False):
+def as_data_frame(
+    cube,
+    copy=True,
+    add_aux_coord=False,
+    add_cell_measures=False,
+    add_ancillary_variables=None,
+):
     """
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are flattened into a long-style
     :class:`~pandas.DataFrame`.  Other :attr:`~iris.cube.Cube.aux_coords` and :attr:`~iris.cube.Cube.attributes`
@@ -618,6 +643,10 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
     add_aux_coord : bool, default=False
         If True, add all :attr:`~iris.cube.Cube.aux_coords` (including scalar coordinates)
         to the returned `DataFrame`.
+    add_cell_measures : bool, default=False
+        If True, add :attr:`~iris.cube.Cube.cell_measures` to the returned `DataFrame`.
+    add_ancillary_variables: bool, default=False
+        If True, add :attr:`~iris.cube.Cube.ancillary_variables` to the returned `DataFrame`.
 
     Returns
     -------
@@ -627,7 +656,7 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
 
     Notes
     -----
-    Dask ``DataFrame``\\s are not supported.
+    Dask ``DataFrame``\\s are not supported.ancillary_variable
 
     A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default. Use the :meth:`~pandas.DataFrame.reset_index`
     to return a :class:`~pandas.DataFrame` without :class:`~pandas.MultiIndex` levels. Use 'inplace=True` to preserve memory object reference.
@@ -758,23 +787,22 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
             raise ValueError("Masked arrays must always be copied.")
         data = data.astype("f").filled(np.nan)
 
-    # Extract dim coord information
-    dim_coord_list = _make_dim_coord_list(cube)
-    # Extract separate lists for dim names and dim values
-    coord_names, coords = list(zip(*dim_coord_list))
+    # Extract dim coord information: separate lists for dim names and dim values
+    coord_names, coords = _make_dim_coord_list(cube)
     # Make base DataFrame
     index = pandas.MultiIndex.from_product(coords, names=coord_names)
     data_frame = pandas.DataFrame(
         data.ravel(), columns=[cube.name()], index=index
     )
 
-    # Add AuxCoord, ancillary variables & scalar coordinate information
     if add_aux_coord:
         # Extract aux coord information
-        aux_coord_list = _make_aux_coord_list(cube)
-        for aux_coord_name, aux_coord_index, aux_coord in aux_coord_list:
+        for aux_coord_name, aux_coord_index, aux_coord in _make_aux_coord_list(
+            cube
+        ):
             if not aux_coord_index:
-                # Treat like a scalar coordinate
+                # Broadcast any auxillary informtation without an associated
+                # dimension over the whole DataFrame
                 data_frame[aux_coord_name] = aux_coord.squeeze()
             else:
                 acoord_df = pandas.DataFrame(
@@ -791,11 +819,62 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
                 )
 
         # Add scalar coordinate information
-        scalar_coord_list = cube.coords(dimensions=(), dim_coords=False)
-        for scalar_coord in scalar_coord_list:
+        for scalar_coord in cube.coords(dimensions=(), dim_coords=False):
             data_frame[scalar_coord.name()] = _as_pandas_coord(
                 scalar_coord
             ).squeeze()
+
+    if add_ancillary_variables:
+        # Extract aux coord information
+        for (
+            an_var_name,
+            an_var_index,
+            an_var,
+        ) in _make_ancillary_variables_list(cube):
+            if not an_var_index:
+                # Broadcast any auxillary information without an associated
+                # dimension over the whole DataFrame
+                data_frame[an_var_name] = an_var.squeeze()
+            else:
+                acoord_df = pandas.DataFrame(
+                    an_var.ravel(),
+                    columns=[an_var_name],
+                    index=pandas.MultiIndex.from_product(
+                        [coords[i] for i in an_var_index],
+                        names=[coord_names[i] for i in an_var_index],
+                    ),
+                )
+                # Merge to main data frame
+                data_frame = pandas.merge(
+                    data_frame, acoord_df, left_index=True, right_index=True
+                )
+
+    if add_cell_measures:
+        for (
+            cell_measure_name,
+            cell_measure_index,
+            cell_measure,
+        ) in _make_cell_measures_list(cube):
+            if not cell_measure_index:
+                # Broadcast any cell measure information without an associated
+                # dimension over the whole DataFrame
+                data_frame[cell_measure_name] = cell_measure.squeeze()
+            else:
+                cell_measure_df = pandas.DataFrame(
+                    cell_measure.ravel(),
+                    columns=[cell_measure_name],
+                    index=pandas.MultiIndex.from_product(
+                        [coords[i] for i in cell_measure_index],
+                        names=[coord_names[i] for i in cell_measure_index],
+                    ),
+                )
+                # Merge to main data frame
+                data_frame = pandas.merge(
+                    data_frame,
+                    cell_measure_df,
+                    left_index=True,
+                    right_index=True,
+                )
 
     if copy:
         return data_frame.reorder_levels(coord_names).sort_index()
