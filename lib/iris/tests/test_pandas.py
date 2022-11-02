@@ -344,11 +344,31 @@ class TestAsDataFrame(tests.IrisTest):
 
     def test_add_scalar_coord(self):
         cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
-        scalar_coord = iris.coords.AuxCoord(1, long_name='scalar_coord', units='no_unit')
+        scalar_coord = iris.coords.AuxCoord(
+            1, long_name="scalar_coord", units="no_unit"
+        )
         cube.add_aux_coord(scalar_coord)
         expected_scalar_coord = np.repeat(1, 4)
         data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
         self.assertArrayEqual(data_frame.scalar_coord, expected_scalar_coord)
+
+    def test_add_ancillary_variable(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        dim0_coord = DimCoord([0, 10], long_name="bar")
+        cube.add_dim_coord(dim0_coord, 0)
+        av = iris.coords.AncillaryVariable([10, 100], long_name="ancil_bar")
+        av2 = iris.coords.AncillaryVariable([1000], long_name="ancil_bar2")
+        cube.add_ancillary_variable(av, 0)
+        cube.add_ancillary_variable(av2)
+        expected_ancillary_variable = np.repeat([10, 100], 2)
+        expected_ancillary_variable2 = np.repeat([1000], 4)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        self.assertArrayEqual(
+            data_frame.ancil_bar, expected_ancillary_variable
+        )
+        self.assertArrayEqual(
+            data_frame.ancil_bar2, expected_ancillary_variable2
+        )
 
     def test_instance_error(self):
         with pytest.raises(TypeError):
