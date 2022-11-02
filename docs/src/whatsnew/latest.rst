@@ -79,6 +79,12 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed some old redundant code that prevented determining the
    order of time cells. (:issue:`4697`, :pull:`4729`)
 
+#. `@stephenworsley`_ improved the accuracy of the error messages for
+   :meth:`~iris.cube.Cube.coord` when failing to find coordinates in the case where
+   a coordinate is given as the argument. Similarly, improved the error messages for
+   :meth:`~iris.cube.Cube.cell_measure` and :meth:`~iris.cube.Cube.ancillary_variable`.
+   (:issue:`4898`, :pull:`4928`)
+
 
 💣 Incompatible Changes
 =======================

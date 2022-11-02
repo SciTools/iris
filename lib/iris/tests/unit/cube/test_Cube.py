@@ -2533,6 +2533,25 @@ class Test_remove_metadata(tests.IrisTest):
             self.cube.remove_ancillary_variable("notname")
 
 
+class TestCoords(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
+        cube.add_dim_coord(x_coord, 1)
+        self.x_coord = x_coord
+        self.cube = cube
+
+    def test_bad_coord(self):
+        bad_coord = self.x_coord.copy()
+        bad_coord.attributes = {"bad": "attribute"}
+        re = (
+            "Expected to find exactly 1 coordinate matching the given "
+            "'x' coordinate's metadata, but found none."
+        )
+        with self.assertRaisesRegex(CoordinateNotFoundError, re):
+            _ = self.cube.coord(bad_coord)
+
+
 class Test__getitem_CellMeasure(tests.IrisTest):
     def setUp(self):
         cube = Cube(np.arange(6).reshape(2, 3))

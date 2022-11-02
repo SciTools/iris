@@ -1990,6 +1990,12 @@ class Cube(CFVariableMixin):
             if name_or_coord is not None:
                 if not isinstance(name_or_coord, str):
                     _name = name_or_coord.name()
+                    emsg = (
+                        "Expected to find exactly 1 coordinate matching the given "
+                        f"{_name!r} coordinate's metadata, but found none."
+                    )
+                    raise iris.exceptions.CoordinateNotFoundError(emsg)
+
             bad_name = _name or standard_name or long_name or ""
             emsg = (
                 f"Expected to find exactly 1 {bad_name!r} coordinate, "
@@ -2194,9 +2200,15 @@ class Cube(CFVariableMixin):
                 bad_name = (
                     name_or_cell_measure and name_or_cell_measure.name()
                 ) or ""
+                if name_or_cell_measure is not None:
+                    emsg = (
+                        "Expected to find exactly 1 cell measure matching the given "
+                        f"{bad_name!r} cell measure's metadata, but found none."
+                    )
+                    raise iris.exceptions.CellMeasureNotFoundError(emsg)
             msg = (
-                "Expected to find exactly 1 %s cell_measure, but found "
-                "none." % bad_name
+                f"Expected to find exactly 1 {bad_name!r} cell measure, "
+                "but found none."
             )
             raise iris.exceptions.CellMeasureNotFoundError(msg)
 
@@ -2281,9 +2293,16 @@ class Cube(CFVariableMixin):
                     name_or_ancillary_variable
                     and name_or_ancillary_variable.name()
                 ) or ""
+                if name_or_ancillary_variable is not None:
+                    emsg = (
+                        "Expected to find exactly 1 ancillary_variable matching the "
+                        f"given {bad_name!r} ancillary_variable's metadata, but found "
+                        "none."
+                    )
+                    raise iris.exceptions.AncillaryVariableNotFoundError(emsg)
             msg = (
-                "Expected to find exactly 1 {!s} ancillary_variable, but "
-                "found none.".format(bad_name)
+                f"Expected to find exactly 1 {bad_name!r} ancillary_variable, "
+                "but found none."
             )
             raise iris.exceptions.AncillaryVariableNotFoundError(msg)
 
