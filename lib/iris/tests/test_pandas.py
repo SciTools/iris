@@ -356,19 +356,39 @@ class TestAsDataFrame(tests.IrisTest):
         cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
         dim0_coord = DimCoord([0, 10], long_name="bar")
         cube.add_dim_coord(dim0_coord, 0)
-        av = iris.coords.AncillaryVariable([10, 100], long_name="ancil_bar")
-        av2 = iris.coords.AncillaryVariable([1000], long_name="ancil_bar2")
+        av = AncillaryVariable([10, 100], long_name="ancil_bar")
+        av2 = AncillaryVariable(
+            [1000], long_name="ancil_bar2"
+        )  # Scalar ancillary variable
         cube.add_ancillary_variable(av, 0)
         cube.add_ancillary_variable(av2)
         expected_ancillary_variable = np.repeat([10, 100], 2)
         expected_ancillary_variable2 = np.repeat([1000], 4)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        data_frame = iris.pandas.as_data_frame(
+            cube, add_ancillary_variables=True
+        )
         self.assertArrayEqual(
             data_frame.ancil_bar, expected_ancillary_variable
         )
         self.assertArrayEqual(
             data_frame.ancil_bar2, expected_ancillary_variable2
         )
+
+    def test_add_cell_measures(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        dim0_coord = DimCoord([0, 10], long_name="bar")
+        cube.add_dim_coord(dim0_coord, 0)
+        cm = CellMeasure([10, 100], long_name="cell_measure")
+        cm2 = CellMeasure(
+            1e4, long_name="cell_measure2"
+        )  # Scalar cell measure
+        cube.add_cell_measure(cm, 0)
+        cube.add_cell_measure(cm2)
+        expected_cell_measure = np.repeat([10, 100], 2)
+        expected_cell_measure2 = np.repeat(1e4, 4)
+        data_frame = iris.pandas.as_data_frame(cube, add_cell_measures=True)
+        self.assertArrayEqual(data_frame.cell_measure, expected_cell_measure)
+        self.assertArrayEqual(data_frame.cell_measure2, expected_cell_measure2)
 
     def test_instance_error(self):
         with pytest.raises(TypeError):
