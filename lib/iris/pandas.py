@@ -529,10 +529,9 @@ def _get_dim_combinations(ndim):
 def _make_dim_coord_list(cube):
     outlist = []
     ndims = cube.ndim
-    for dimn in range(ndims):
-        onecoord = cube.coords(dimensions=dimn, dim_coords=True)
-        if onecoord:
-            outlist += [[onecoord[0].name(), _as_pandas_coord(onecoord[0])]]
+    for dimn, coord in enumerate(cube.coords(dim_coords=True))
+        if coord:
+            outlist += [[coord.name(), _as_pandas_coord(coord)]]
         else:
             outlist += [["dim" + str(dimn), range(cube.shape[dimn])]]
     return outlist
@@ -542,7 +541,7 @@ def _make_aux_coord_list(cube):
     outlist = []
     for n in _get_dim_combinations(cube.ndim):
         for coord in cube.coords(dimensions=n, dim_coords=False):
-            outlist += [[n, coord]]
+            outlist += [[coord.name(), n, _as_pandas_coord(coord)]]
     return list(chain.from_iterable([outlist]))
 
 
@@ -621,6 +620,8 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
 
     A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default. Use the :meth:`~pandas.DataFrame.reset_index`
     to return a :class:`~pandas.DataFrame` without :class:`~pandas.MultiIndex` levels. Use 'inplace=True` to preserve memory object reference.
+
+    :class:`Cube` data `dtype` is preserved.
 
     Warnings
     --------
@@ -760,10 +761,10 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
     if add_aux_coord:
         # Extract aux coord information
         aux_coord_list = _make_aux_coord_list(cube)
-        for aux_coord_index, aux_coord in aux_coord_list:
+        for aux_coord_name, aux_coord_index, aux_coord in aux_coord_list:
             acoord_df = pandas.DataFrame(
-                aux_coord.points.ravel(),
-                columns=[aux_coord.name()],
+                aux_coord.ravel(),
+                columns=[aux_coord_name],
                 index=pandas.MultiIndex.from_product(
                     [coords[i] for i in aux_coord_index],
                     names=[coord_names[i] for i in aux_coord_index],
@@ -777,7 +778,7 @@ def as_data_frame(cube, copy=True, add_aux_coord=False):
         # Add scalar coordinate information
         scalar_coord_list = cube.coords(dimensions=(), dim_coords=False)
         for scalar_coord in scalar_coord_list:
-            data_frame[scalar_coord.name()] = scalar_coord.points.squeeze()
+            data_frame[scalar_coord.name()] = _as_pandas_coord(scalar_coord).squeeze()
 
     if copy:
         return data_frame.reorder_levels(coord_names).sort_index()
