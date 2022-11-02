@@ -127,6 +127,16 @@ This document explains the changes made to Iris for this release
    :mod:`iris.palette` in response to a deprecation warning. Using the new
    Matplotlib API also means a ``matplotlib>=3.5`` pin. (:pull:`4998`)
 
+#. `@trexfeathers`_ altered testing to accept new Dask copying behaviour from
+   `dask/dask#9555`_ - copies of a Dask array created using ``da.from_array()``
+   will all ``compute()`` to a shared identical array. So creating a
+   :class:`~iris.cube.Cube` using ``Cube(data=da.from_array(...``, then
+   using :class:`~iris.cube.Cube` :meth:`~iris.cube.Cube.copy`,
+   will produce two :class:`~iris.cube.Cube`\s that both return an identical
+   array when requesting :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.data`.
+   We do not expect this to affect typical user workflows but please get in
+   touch if you need help. (:pull:`5041`)
+
 
 📚 Documentation
 ================
@@ -180,3 +190,4 @@ This document explains the changes made to Iris for this release
 .. _pypa/setuptools#1684: https://github.com/pypa/setuptools/issues/1684
 .. _SciTools/cartopy@fcb784d: https://github.com/SciTools/cartopy/commit/fcb784daa65d95ed9a74b02ca292801c02bc4108
 .. _SciTools/cartopy@8860a81: https://github.com/SciTools/cartopy/commit/8860a8186d4dc62478e74c83f3b2b3e8f791372e
+.. _dask/dask#9555: https://github.com/dask/dask/pull/9555
