@@ -601,7 +601,7 @@ Now, let's compare the two above instances and see what ``attributes`` member di
 
 .. doctest:: richer-metadata
 
-    >>> longitude.metadata.difference(metadata)
+    >>> longitude.metadata.difference(metadata)  # doctest: +SKIP
     DimCoordMetadata(standard_name=None, long_name=None, var_name=None, units=None, attributes=({'neutral face': '😐'}, {'neutral face': '😜', 'upside-down face': '🙃'}), coord_system=None, climatological=None, circular=None)
 
 
@@ -700,8 +700,8 @@ which is replaced with a **different value**,
     >>> metadata = cube.metadata._replace(standard_name="air_pressure_at_sea_level")
     >>> metadata != cube.metadata
     True
-    >>> metadata.combine(cube.metadata)
-    CubeMetadata(standard_name=None, long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Model scenario': 'A1B', 'STASH': STASH(model=1, section=3, item=236), 'Conventions': 'CF-1.5', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    >>> metadata.combine(cube.metadata)  # doctest: +SKIP
+    CubeMetadata(standard_name=None, long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'Model scenario': 'A1B', 'STASH': STASH(model=1, section=3, item=236), 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 The ``combine`` method combines metadata by performing a **strict** comparison
 between each of the associated metadata member values,
