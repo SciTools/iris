@@ -10,12 +10,19 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from collections import OrderedDict
-from collections.abc import Container, Iterable, Iterator, MutableMapping
 import copy
 from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
+from typing import (
+    Container,
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+    Optional,
+)
 import warnings
 from xml.dom.minidom import Document
 import zlib
@@ -825,38 +832,56 @@ class CubeAttrsDict(MutableMapping):
 
     """
 
-    def __init__(self, combined=None, locals=None, globals=None):
+    def __init__(
+        self,
+        combined: Optional[Mapping] = "__unset",
+        locals: Optional[Mapping] = None,
+        globals: Optional[Mapping] = None,
+    ):
         # Allow initialisation from a generic dictionary, or local/global specific ones.
-        # Initialise local + global, defaulting to empty.
-        # N.B. this is also the way to achieve copy-less construction.
+        # First initialise locals + globals, defaulting to empty.
         self.locals = locals
         self.globals = globals
         # Update with combined, if present.
-        if combined:
-            # Treat a single input as a 'copy' operation.
+        if not isinstance(combined, str) or combined != "__unset":
+            # Treat a single input with 'locals' and 'globals' properties as an
+            # existing CubeAttrsDict, and update from its content.
             # N.B. enforce deep copying, consistent with general Iris usage.
             if hasattr(combined, "globals") and hasattr(combined, "locals"):
                 # Copy a mapping with globals/locals, like another 'CubeAttrsDict'
-                globals = deepcopy(combined.globals)
-                locals = deepcopy(combined.locals)
-                self.globals.update(globals)
-                self.locals.update(locals)
+                self.globals.update(deepcopy(combined.globals))
+                self.locals.update(deepcopy(combined.locals))
             else:
-                # Convert an arbitrary single input value to a dict, and update.
-                combined = deepcopy(dict(combined))
-                for key, value in combined.items():
-                    self[key] = value
+                # Treat any arbitrary single input value as a mapping (dict), and
+                # update from it.
+                self.update(dict(deepcopy(combined)))
 
     #
     # Ensure that the stored local/global dictionaries are "LimitedAttributeDicts".
     #
+    @staticmethod
+    def _normalise_attrs(
+        attributes: Optional[Mapping],
+    ) -> LimitedAttributeDict:
+        # Convert an input attributes arg into a standard form.
+        # N.B. content is always a LimitedAttributeDict, and a deep copy of input.
+        # Allow arg of None, etc.
+        if not attributes:
+            attributes = {}
+        else:
+            attributes = deepcopy(attributes)
+
+        # Ensure the expected mapping type.
+        attributes = LimitedAttributeDict(attributes)
+        return attributes
+
     @property
     def locals(self):
         return self._locals
 
     @locals.setter
     def locals(self, attributes):
-        self._locals = LimitedAttributeDict(attributes or {})
+        self._locals = self._normalise_attrs(attributes)
 
     @property
     def globals(self):
@@ -864,7 +889,7 @@ class CubeAttrsDict(MutableMapping):
 
     @globals.setter
     def globals(self, attributes):
-        self._globals = LimitedAttributeDict(attributes or {})
+        self._globals = self._normalise_attrs(attributes)
 
     #
     # Provide a serialisation interface
@@ -879,18 +904,10 @@ class CubeAttrsDict(MutableMapping):
     # Support simple comparison, even when contents are arrays.
     #
     def __eq__(self, other):
-        # Copied from :class:`~iris.common.mixin.LimitedAttributeDict`
-        match = set(self.keys()) == set(other.keys())
-        if match:
-            for key, value in self.items():
-                match = value == other[key]
-                try:
-                    match = bool(match)
-                except ValueError:
-                    match = match.all()
-                if not match:
-                    break
-        return match
+        # For equality, require both globals + locals to match
+        other = CubeAttrsDict(other)
+        result = self.locals == other.locals and self.globals == other.globals
+        return result
 
     def __ne__(self, other):
         return not self == other
@@ -902,12 +919,10 @@ class CubeAttrsDict(MutableMapping):
         """
         Return a copy.
 
-        Implemented as a deepcopy, consistent with general Iris usage.
+        Implemented with deep copying, consistent with general Iris usage.
 
         """
-        globals = deepcopy(self.globals)
-        locals = deepcopy(self.locals)
-        return CubeAttrsDict(globals=globals, locals=locals)
+        return CubeAttrsDict(globals=self.globals, locals=self.locals)
 
     #
     # The remaining methods are sufficient to generate a complete standard Mapping
@@ -1252,7 +1267,7 @@ class Cube(CFVariableMixin):
         attributes are stored in a way which distinguishes global + local ones.
 
         """
-        self._metadata_manager.attributes = CubeAttrsDict(attributes)
+        self._metadata_manager.attributes = CubeAttrsDict(attributes or {})
 
     def _dimensional_metadata(self, name_or_dimensional_metadata):
         """
