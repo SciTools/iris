@@ -916,7 +916,7 @@ class CubeAttrsDict(MutableMapping):
         Implemented with deep copying, consistent with general Iris usage.
 
         """
-        return CubeAttrsDict(globals=self.globals, locals=self.locals)
+        return CubeAttrsDict(self)
 
     #
     # The remaining methods are sufficient to generate a complete standard Mapping
