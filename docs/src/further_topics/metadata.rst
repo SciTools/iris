@@ -131,7 +131,7 @@ We can easily get all of the associated metadata of the :class:`~iris.cube.Cube`
 using the ``metadata`` property:
 
     >>> cube.metadata
-    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={}, locals={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 We can also inspect the ``metadata`` of the ``longitude``
 :class:`~iris.coords.DimCoord` attached to the :class:`~iris.cube.Cube` in the same way:
@@ -601,7 +601,7 @@ Now, let's compare the two above instances and see what ``attributes`` member di
 
 .. doctest:: richer-metadata
 
-    >>> longitude.metadata.difference(metadata)  # doctest: +SKIP
+    >>> longitude.metadata.difference(metadata)
     DimCoordMetadata(standard_name=None, long_name=None, var_name=None, units=None, attributes=({'neutral face': '😐'}, {'neutral face': '😜', 'upside-down face': '🙃'}), coord_system=None, climatological=None, circular=None)
 
 
@@ -675,8 +675,8 @@ For example, consider the following :class:`~iris.common.metadata.CubeMetadata`,
 
 .. doctest:: metadata-combine
 
-    >>> cube.metadata  # doctest: +SKIP
-    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    >>> cube.metadata
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={}, locals={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 We can perform the **identity function** by comparing the metadata with itself,
 
@@ -700,8 +700,8 @@ which is replaced with a **different value**,
     >>> metadata = cube.metadata._replace(standard_name="air_pressure_at_sea_level")
     >>> metadata != cube.metadata
     True
-    >>> metadata.combine(cube.metadata)  # doctest: +SKIP
-    CubeMetadata(standard_name=None, long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'STASH': STASH(model=1, section=3, item=236), 'source': 'Data from Met Office Unified Model 6.05', 'Model scenario': 'A1B', 'Conventions': 'CF-1.5'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    >>> metadata.combine(cube.metadata)
+    CubeMetadata(standard_name=None, long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Model scenario': 'A1B', 'STASH': STASH(model=1, section=3, item=236), 'Conventions': 'CF-1.5', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 The ``combine`` method combines metadata by performing a **strict** comparison
 between each of the associated metadata member values,
@@ -979,7 +979,7 @@ Indeed, it's also possible to assign to the ``metadata`` property with a
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
     >>> longitude.metadata = cube.metadata
-    >>> longitude.metadata  # doctest: +SKIP
+    >>> longitude.metadata
     DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 Note that, only **common** metadata members will be assigned new associated
