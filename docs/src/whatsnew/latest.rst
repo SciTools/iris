@@ -38,7 +38,7 @@ This document explains the changes made to Iris for this release
 #. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.pandas.as_data_frame`,
    which provides improved conversion of :class:`~iris.cube.Cube`\s to 
    :class:`~pandas.DataFrame`\s. This includes better handling of multiple 
-   :class:`~iris.cube.Cube`dimensions, auxiliary coordinates and attribute information.
+   :class:`~iris.cube.Cube` dimensions, auxiliary coordinates and attribute information.
    (:issue:`4526`, :pull:`4669`)
 
 
