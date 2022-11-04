@@ -684,10 +684,10 @@ def as_data_frame(
     >>> path = iris.sample_data_path('ostia_monthly.nc')
     >>> cube = iris.load_cube(path)
     >>> df = as_data_frame(cube)
-    >>> print(df) 
+    >>> print(df)
     ... # doctest: +NORMALIZE_WHITESPACE
                                               surface_temperature
-    time                latitude  longitude                      
+    time                latitude  longitude
     2006-04-16 00:00:00 -4.999992 0.000000             301.659271
                                   0.833333             301.785004
                                   1.666667             301.820984
@@ -699,8 +699,8 @@ def as_data_frame(
                                   357.500000                  NaN
                                   358.333313                  NaN
                                   359.166656           298.995148
-    <BLANKLINE>                                                  
-    [419904 rows x 1 columns]                                    
+    <BLANKLINE>
+    [419904 rows x 1 columns]
 
     Using ``add_aux_coords=True`` maps :class:`~iris.coords.AuxCoord` and scalar
     coordinate information to the :class:`~pandas.DataFrame`:
