@@ -39,6 +39,7 @@ This document explains the changes made to Iris for this release
    which provides improved conversion of :class:`~iris.cube.Cube`\s to 
    :class:`~pandas.DataFrame`\s. This includes better handling of multiple 
    :class:`~iris.cube.Cube`dimensions, auxiliary coordinates and attribute information.
+   (:issue:`4526`, :pull:`4669`)
 
 
 🐛 Bugs Fixed
