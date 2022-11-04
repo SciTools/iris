@@ -702,7 +702,7 @@ def as_data_frame(
     <BLANKLINE>                                                  
     [419904 rows x 1 columns]                                    
 
-    Using `add_aux_coord=True` maps :class:`~iris.coords.AuxCoord` and scalar
+    Using ``add_aux_coords=True`` maps :class:`~iris.coords.AuxCoord` and scalar
     coordinate information to the :class:`~pandas.DataFrame`:
 
     >>> df = as_data_frame(cube, add_aux_coords=True)
