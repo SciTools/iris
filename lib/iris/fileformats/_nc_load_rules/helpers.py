@@ -435,7 +435,7 @@ def build_cube_metadata(engine):
         try:
             cube.attributes.globals[str(attr_name)] = attr_value
         except ValueError as e:
-            msg = "Skipping global attribute {!r}: {}"
+            msg = "Skipping disallowed global attribute {!r}: {}"
             warnings.warn(msg.format(attr_name, str(e)))
 
 
