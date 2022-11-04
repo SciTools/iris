@@ -29,7 +29,6 @@ import iris
 from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
-from iris.fileformats import pp
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
@@ -624,29 +623,35 @@ def as_series(cube, copy=True):
 def as_data_frame(
     cube,
     copy=True,
-    add_aux_coord=False,
+    add_aux_coords=False,
     add_cell_measures=False,
     add_ancillary_variables=None,
 ):
     """
-    :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are flattened into a long-style
-    :class:`~pandas.DataFrame`.  Other :attr:`~iris.cube.Cube.aux_coords` and :attr:`~iris.cube.Cube.attributes`
+    Convert a 2D cube to a Pandas DataFrame.
+
+    :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
+    flattened into a long-style :class:`~pandas.DataFrame`.  Other
+    :attr:`~iris.cube.Cube.aux_coords`, :attr:`~iris.cube.Cube.aux_coords` and :attr:`~iris.cube.Cube.attributes`
     may be optionally added as additional :class:`~pandas.DataFrame` columns.
 
     Parameters
     ----------
-    cube: :class:`Cube`
-        The :class:`Cube` to be converted to a Pandas `DataFrame`.
+    cube: :class:`~iris.cube.Cube`
+        The :class:`~iris.cube.Cube` to be converted to a :class:`pandas.DataFrame`.
     copy : bool, default=True
-        Whether the Pandas `DataFrame` is a copy of the the Cube :attr:`~iris.cube.Cube.data`.
-        This option is provided to help with memory size concerns.
-    add_aux_coord : bool, default=False
-        If True, add all :attr:`~iris.cube.Cube.aux_coords` (including scalar coordinates)
-        to the returned `DataFrame`.
+        Whether the :class:`pandas.DataFrame` is a copy of the the Cube
+        :attr:`~iris.cube.Cube.data`. This option is provided to help with memory
+        size concerns.
+    add_aux_coords : bool, default=False
+        If True, add all :attr:`~iris.cube.Cube.aux_coords` (including scalar
+        coordinates) to the returned :class:`pandas.DataFrame`.
     add_cell_measures : bool, default=False
-        If True, add :attr:`~iris.cube.Cube.cell_measures` to the returned `DataFrame`.
+        If True, add :attr:`~iris.cube.Cube.cell_measures` to the returned
+        :class:`pandas.DataFrame`.
     add_ancillary_variables: bool, default=False
-        If True, add :attr:`~iris.cube.Cube.ancillary_variables` to the returned `DataFrame`.
+        If True, add :attr:`~iris.cube.Cube.ancillary_variables` to the returned
+        :class:`pandas.DataFrame`.
 
     Returns
     -------
@@ -656,23 +661,26 @@ def as_data_frame(
 
     Notes
     -----
-    Dask ``DataFrame``\\s are not supported.ancillary_variable
+    Dask ``DataFrame``\\s are not supported.
 
-    A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default. Use the :meth:`~pandas.DataFrame.reset_index`
-    to return a :class:`~pandas.DataFrame` without :class:`~pandas.MultiIndex` levels. Use 'inplace=True` to preserve memory object reference.
+    A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default.
+    Use the :meth:`~pandas.DataFrame.reset_index` to return a
+    :class:`~pandas.DataFrame` without :class:`~pandas.MultiIndex` levels. Use
+    'inplace=True` to preserve memory object reference.
 
-    :class:`Cube` data `dtype` is preserved.
+    :class:`~iris.cube.Cube` data `dtype` is preserved.
 
     Warnings
     --------
-    Where the :class:`Cube` contains masked values, these become :float:`numpy.nan` in the returned `DataFrame`.
+    Where the :class:`~iris.cube.Cube` contains masked values, these become
+    :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
 
     Examples
     --------
     >>> import iris
     >>> from iris.pandas import as_data_frame
 
-    Convert a simple :class:`~iris.cube.Cube` :
+    Convert a simple :class:`~iris.cube.Cube`:
 
     >>> path = iris.sample_data_path('ostia_monthly.nc')
     >>> cube = iris.load_cube(path)
@@ -694,8 +702,8 @@ def as_data_frame(
 
     [419904 rows x 1 columns]
 
-    Using `add_aux_coord=True` maps :class:`~iris.coords.AuxCoord` and scalar coordinate information
-    to the :class:`~pandas.DataFrame`:
+    Using `add_aux_coord=True` maps :class:`~iris.coords.AuxCoord` and scalar
+    coordinate information to the :class:`~pandas.DataFrame`:
 
     >>> df = ipd.as_data_frame(cube, add_aux_coord=True)
     >>> print(df)
@@ -715,7 +723,8 @@ def as_data_frame(
 
     [419904 rows x 3 columns]
 
-    To add netCDF global attribution information to the :class:`~pandas.DataFrame`, add a column directly to the :class:`~pandas.DataFrame`:
+    To add netCDF global attribution information to the :class:`~pandas.DataFrame`,
+    add a column directly to the :class:`~pandas.DataFrame`:
 
     >>> df['STASH] = str(cube.attributes['STASH'])
     >>> print(df)
@@ -735,8 +744,9 @@ def as_data_frame(
 
     [419904 rows x 4 columns]
 
-    To return a :class:`~pandas.DataFrame` without a :class:`~pandas.MultiIndex` use :meth:`~pandas.DataFrame.reset_index`. Optionally
-    use `inplace=True` keyword to modify the DataFrame rather than creating a new one:
+    To return a :class:`~pandas.DataFrame` without a :class:`~pandas.MultiIndex`
+    use :meth:`~pandas.DataFrame.reset_index`. Optionally use `inplace=True` keyword
+    to modify the DataFrame rather than creating a new one:
 
     >>> df.reset_index(inplace=True)
     >>> print(df)
@@ -755,7 +765,8 @@ def as_data_frame(
 
     [419904 rows x 7 columns]
 
-    To retrieve a :class:`~pandas.Series` from `df` :class:`~pandas.DataFrame`, subselect a column:
+    To retrieve a :class:`~pandas.Series` from `df` :class:`~pandas.DataFrame`,
+    subselect a column:
 
     >>> df['surface_temperature']
     0         301.659271
@@ -815,7 +826,11 @@ def as_data_frame(
                 )
                 # Merge to main data frame
                 data_frame = pandas.merge(
-                    data_frame, acoord_df, left_index=True, right_index=True
+                    data_frame,
+                    acoord_df,
+                    left_index=True,
+                    right_index=True,
+                    sort=False,
                 )
 
         # Add scalar coordinate information
