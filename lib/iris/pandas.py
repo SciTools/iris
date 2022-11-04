@@ -9,7 +9,6 @@ Provide conversion to and from Pandas data structures.
 See also: http://pandas.pydata.org/
 
 """
-
 import datetime
 from itertools import chain, combinations
 import warnings
@@ -157,8 +156,8 @@ def as_cube(
 
     Example usage::
 
-        as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
-        as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
+            as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
+            as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     """
     message = (
@@ -518,26 +517,92 @@ def _assert_shared(np_obj, pandas_obj):
         raise AssertionError(msg)
 
 
+def _make_dim_coord_list(cube):
+    """Get Dimension coordinates."""
+    outlist = []
+    for dimn in range(cube.ndim):
+        dimn_coord = cube.coords(dimensions=dimn, dim_coords=True)
+        if dimn_coord:
+            outlist += [
+                [dimn_coord[0].name(), _as_pandas_coord(dimn_coord[0])]
+            ]
+        else:
+            outlist += [[f"dim{dimn}", range(cube.shape[dimn])]]
+    return list(zip(*outlist))
+
+
+def _make_aux_coord_list(cube):
+    """Get Auxiliary coordinates."""
+    outlist = []
+    for aux_coord in cube.coords(dim_coords=False):
+        outlist += [
+            [
+                aux_coord.name(),
+                cube.coord_dims(aux_coord),
+                _as_pandas_coord(aux_coord),
+            ]
+        ]
+    return list(chain.from_iterable([outlist]))
+
+
+def _make_ancillary_variables_list(cube):
+    """Get Ancillary variables."""
+    outlist = []
+    for ancil_var in cube.ancillary_variables():
+        outlist += [
+            [
+                ancil_var.name(),
+                cube.ancillary_variable_dims(ancil_var),
+                ancil_var.data,
+            ]
+        ]
+    return list(chain.from_iterable([outlist]))
+
+
+def _make_cell_measures_list(cube):
+    """Get cell measures."""
+    outlist = []
+    for cell_measure in cube.cell_measures():
+        outlist += [
+            [
+                cell_measure.name(),
+                cube.cell_measure_dims(cell_measure),
+                cell_measure.data,
+            ]
+        ]
+    return list(chain.from_iterable([outlist]))
+
+
 def as_series(cube, copy=True):
     """
     Convert a 1D cube to a Pandas Series.
 
-    Args:
+    .. deprecated:: 3.4.0
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.pandas.as_data_frame`, which offers improved
+        multi dimension handling.
 
-        * cube - The cube to convert to a Pandas Series.
+    Parameters
+    ----------
+    cube: :class:`Cube`
+        The cube to convert to a Pandas Series.
+    copy : bool, default=True
+        Whether to make a copy of the data.
+        Defaults to True. Must be True for masked data.
 
-    Kwargs:
-
-        * copy - Whether to make a copy of the data.
-                 Defaults to True. Must be True for masked data.
-
-    .. note::
-
-        This function will copy your data by default.
-        If you have a large array that cannot be copied,
-        make sure it is not masked and use copy=False.
+    Notes
+    -----
+    This function will copy your data by default.
+    If you have a large array that cannot be copied,
+    make sure it is not masked and use copy=False.
 
     """
+    message = (
+        "iris.pandas.as_series has been deprecated, and will be removed in a "
+        "future release. Please use iris.pandas.as_data_frame instead."
+    )
+    warn_deprecated(message)
+
     data = cube.data
     if ma.isMaskedArray(data):
         if not copy:
@@ -545,61 +610,241 @@ def as_series(cube, copy=True):
         data = data.astype("f").filled(np.nan)
     elif copy:
         data = data.copy()
-
     index = None
     if cube.dim_coords:
         index = _as_pandas_coord(cube.dim_coords[0])
-
     series = pandas.Series(data, index)
     if not copy:
         _assert_shared(data, series)
-
     return series
 
 
-def as_data_frame(cube, copy=True):
+def as_data_frame(
+    cube,
+    copy=True,
+    add_aux_coords=False,
+    add_cell_measures=False,
+    add_ancillary_variables=False,
+):
     """
     Convert a 2D cube to a Pandas DataFrame.
 
-    Args:
+    :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
+    flattened into a long-style :class:`~pandas.DataFrame`.  Other
+    :attr:`~iris.cube.Cube.aux_coords`, :attr:`~iris.cube.Cube.aux_coords` and :attr:`~iris.cube.Cube.attributes`
+    may be optionally added as additional :class:`~pandas.DataFrame` columns.
 
-        * cube - The cube to convert to a Pandas DataFrame.
+    Parameters
+    ----------
+    cube: :class:`~iris.cube.Cube`
+        The :class:`~iris.cube.Cube` to be converted to a :class:`pandas.DataFrame`.
+    copy : bool, default=True
+        Whether the :class:`pandas.DataFrame` is a copy of the the Cube
+        :attr:`~iris.cube.Cube.data`. This option is provided to help with memory
+        size concerns.
+    add_aux_coords : bool, default=False
+        If True, add all :attr:`~iris.cube.Cube.aux_coords` (including scalar
+        coordinates) to the returned :class:`pandas.DataFrame`.
+    add_cell_measures : bool, default=False
+        If True, add :attr:`~iris.cube.Cube.cell_measures` to the returned
+        :class:`pandas.DataFrame`.
+    add_ancillary_variables: bool, default=False
+        If True, add :attr:`~iris.cube.Cube.ancillary_variables` to the returned
+        :class:`pandas.DataFrame`.
 
-    Kwargs:
+    Returns
+    -------
+    :class:`~pandas.DataFrame`
+        A :class:`~pandas.DataFrame` with :class:`~iris.cube.Cube` dimensions
+        forming a :class:`~pandas.MultiIndex`
 
-        * copy - Whether to make a copy of the data.
-                 Defaults to True. Must be True for masked data
-                 and some data types (see notes below).
+    Notes
+    -----
+    Dask ``DataFrame``\\s are not supported.
 
-    .. note::
+    A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default.
+    Use the :meth:`~pandas.DataFrame.reset_index` to return a
+    :class:`~pandas.DataFrame` without :class:`~pandas.MultiIndex` levels. Use
+    'inplace=True` to preserve memory object reference.
 
-        This function will copy your data by default.
-        If you have a large array that cannot be copied,
-        make sure it is not masked and use copy=False.
+    :class:`~iris.cube.Cube` data `dtype` is preserved.
 
-    .. note::
+    Warnings
+    --------
+    Where the :class:`~iris.cube.Cube` contains masked values, these become
+    :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
 
-        Pandas will sometimes make a copy of the array,
-        for example when creating from an int32 array.
-        Iris will detect this and raise an exception if copy=False.
+    Examples
+    --------
+    >>> import iris
+    >>> from iris.pandas import as_data_frame
+
+    Convert a simple :class:`~iris.cube.Cube`:
+
+    >>> path = iris.sample_data_path('ostia_monthly.nc')
+    >>> cube = iris.load_cube(path)
+    >>> df = as_data_frame(cube)
+    >>> print(df)
+    ... # doctest: +NORMALIZE_WHITESPACE
+                                              surface_temperature
+    time                latitude  longitude
+    2006-04-16 00:00:00 -4.999992 0.000000             301.659271
+                                  0.833333             301.785004
+                                  1.666667             301.820984
+                                  2.500000             301.865234
+                                  3.333333             301.926819
+    ...                                                       ...
+    2010-09-16 00:00:00  4.444450 355.833313           298.779938
+                                  356.666656           298.913147
+                                  357.500000                  NaN
+                                  358.333313                  NaN
+                                  359.166656           298.995148
+    <BLANKLINE>
+    [419904 rows x 1 columns]
+
+    Using ``add_aux_coords=True`` maps :class:`~iris.coords.AuxCoord` and scalar
+    coordinate information to the :class:`~pandas.DataFrame`:
+
+    >>> df = as_data_frame(cube, add_aux_coords=True)
+    >>> print(df)
+    ... # doctest: +NORMALIZE_WHITESPACE
+                                              surface_temperature  ...  forecast_reference_time
+    time                latitude  longitude                        ...
+    2006-04-16 00:00:00 -4.999992 0.000000             301.659271  ...      2006-04-16 12:00:00
+                                  0.833333             301.785004  ...      2006-04-16 12:00:00
+                                  1.666667             301.820984  ...      2006-04-16 12:00:00
+                                  2.500000             301.865234  ...      2006-04-16 12:00:00
+                                  3.333333             301.926819  ...      2006-04-16 12:00:00
+    ...                                                       ...  ...                      ...
+    2010-09-16 00:00:00  4.444450 355.833313           298.779938  ...      2010-09-16 12:00:00
+                                  356.666656           298.913147  ...      2010-09-16 12:00:00
+                                  357.500000                  NaN  ...      2010-09-16 12:00:00
+                                  358.333313                  NaN  ...      2010-09-16 12:00:00
+                                  359.166656           298.995148  ...      2010-09-16 12:00:00
+    <BLANKLINE>
+    [419904 rows x 3 columns]
+
+    To add netCDF global attribution information to the :class:`~pandas.DataFrame`,
+    add a column directly to the :class:`~pandas.DataFrame`:
+
+    >>> df['STASH'] = str(cube.attributes['STASH'])
+    >>> print(df)
+    ... # doctest: +NORMALIZE_WHITESPACE
+                                              surface_temperature  ...       STASH
+    time                latitude  longitude                        ...
+    2006-04-16 00:00:00 -4.999992 0.000000             301.659271  ...  m01s00i024
+                                  0.833333             301.785004  ...  m01s00i024
+                                  1.666667             301.820984  ...  m01s00i024
+                                  2.500000             301.865234  ...  m01s00i024
+                                  3.333333             301.926819  ...  m01s00i024
+    ...                                                       ...  ...         ...
+    2010-09-16 00:00:00  4.444450 355.833313           298.779938  ...  m01s00i024
+                                  356.666656           298.913147  ...  m01s00i024
+                                  357.500000                  NaN  ...  m01s00i024
+                                  358.333313                  NaN  ...  m01s00i024
+                                  359.166656           298.995148  ...  m01s00i024
+    <BLANKLINE>
+    [419904 rows x 4 columns]
+
+    To return a :class:`~pandas.DataFrame` without a :class:`~pandas.MultiIndex`
+    use :meth:`~pandas.DataFrame.reset_index`. Optionally use `inplace=True` keyword
+    to modify the DataFrame rather than creating a new one:
+
+    >>> df.reset_index(inplace=True)
+    >>> print(df)
+    ... # doctest: +NORMALIZE_WHITESPACE
+                           time  latitude  ...  forecast_reference_time       STASH
+    0       2006-04-16 00:00:00 -4.999992  ...      2006-04-16 12:00:00  m01s00i024
+    1       2006-04-16 00:00:00 -4.999992  ...      2006-04-16 12:00:00  m01s00i024
+    2       2006-04-16 00:00:00 -4.999992  ...      2006-04-16 12:00:00  m01s00i024
+    3       2006-04-16 00:00:00 -4.999992  ...      2006-04-16 12:00:00  m01s00i024
+    4       2006-04-16 00:00:00 -4.999992  ...      2006-04-16 12:00:00  m01s00i024
+    ...                     ...       ...  ...                      ...         ...
+    419899  2010-09-16 00:00:00  4.444450  ...      2010-09-16 12:00:00  m01s00i024
+    419900  2010-09-16 00:00:00  4.444450  ...      2010-09-16 12:00:00  m01s00i024
+    419901  2010-09-16 00:00:00  4.444450  ...      2010-09-16 12:00:00  m01s00i024
+    419902  2010-09-16 00:00:00  4.444450  ...      2010-09-16 12:00:00  m01s00i024
+    419903  2010-09-16 00:00:00  4.444450  ...      2010-09-16 12:00:00  m01s00i024
+    <BLANKLINE>
+    [419904 rows x 7 columns]
+
+    To retrieve a :class:`~pandas.Series` from `df` :class:`~pandas.DataFrame`,
+    subselect a column:
+
+    >>> df['surface_temperature']
+    0         301.659271
+    1         301.785004
+    2         301.820984
+    3         301.865234
+    4         301.926819
+                ...
+    419899    298.779938
+    419900    298.913147
+    419901           NaN
+    419902           NaN
+    419903    298.995148
+    Name: surface_temperature, Length: 419904, dtype: float32
 
     """
-    data = cube.data
+
+    def merge_metadata(meta_var_list):
+        """Add auxiliary cube metadata to the DataFrame"""
+        nonlocal data_frame
+        for meta_var_name, meta_var_index, meta_var in meta_var_list:
+            if not meta_var_index:
+                # Broadcast any meta var informtation without an associated
+                # dimension over the whole DataFrame
+                data_frame[meta_var_name] = meta_var.squeeze()
+            else:
+                meta_df = pandas.DataFrame(
+                    meta_var.ravel(),
+                    columns=[meta_var_name],
+                    index=pandas.MultiIndex.from_product(
+                        [coords[i] for i in meta_var_index],
+                        names=[coord_names[i] for i in meta_var_index],
+                    ),
+                )
+                # Merge to main data frame
+                data_frame = pandas.merge(
+                    data_frame,
+                    meta_df,
+                    left_index=True,
+                    right_index=True,
+                    sort=False,
+                )
+        return data_frame
+
+    # Checks
+    if not isinstance(cube, iris.cube.Cube):
+        raise TypeError(
+            f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
+        )
+    if copy:
+        data = cube.data.copy()
+    else:
+        data = cube.data
     if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
         data = data.astype("f").filled(np.nan)
-    elif copy:
-        data = data.copy()
 
-    index = columns = None
-    if cube.coords(dimensions=[0]):
-        index = _as_pandas_coord(cube.coord(dimensions=[0]))
-    if cube.coords(dimensions=[1]):
-        columns = _as_pandas_coord(cube.coord(dimensions=[1]))
+    # Extract dim coord information: separate lists for dim names and dim values
+    coord_names, coords = _make_dim_coord_list(cube)
+    # Make base DataFrame
+    index = pandas.MultiIndex.from_product(coords, names=coord_names)
+    data_frame = pandas.DataFrame(
+        data.ravel(), columns=[cube.name()], index=index
+    )
 
-    data_frame = pandas.DataFrame(data, index, columns)
-    if not copy:
-        _assert_shared(data, data_frame)
+    if add_aux_coords:
+        data_frame = merge_metadata(_make_aux_coord_list(cube))
+    if add_ancillary_variables:
+        data_frame = merge_metadata(_make_ancillary_variables_list(cube))
+    if add_cell_measures:
+        data_frame = merge_metadata(_make_cell_measures_list(cube))
 
-    return data_frame
+    if copy:
+        return data_frame.reorder_levels(coord_names).sort_index()
+    else:
+        data_frame.reorder_levels(coord_names).sort_index(inplace=True)
+        return data_frame
