@@ -386,9 +386,13 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         [dsleft.pop(key) for key in keys]
         [dsright.pop(key) for key in keys]
         # Now bring the result together.
-        result = {k: left[k] for k, _ in common}
-        result.update({k: left[k] for k in dsleft.keys()})
-        result.update({k: right[k] for k in dsright.keys()})
+        # NB result keys order is : first common keys (in left order) ; then left-only ;
+        # then right-only.
+        result = {
+            k: left[k] for k in left if any(key == k for key, hsh in common)
+        }
+        result.update({k: left[k] for k in left if k in dsleft})
+        result.update({k: right[k] for k in right if k in dsright})
 
         return result
 
@@ -406,7 +410,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Intersection of common items.
         common = sleft & sright
         # Now bring the result together.
-        result = {k: left[k] for k, _ in common}
+        # N.B. key order matches 'left'.
+        result = {k: left[k] for k in left if k in common}
 
         return result
 
@@ -562,8 +567,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             result = None
         else:
             # Replace hash-rvalue with original rvalue.
-            dsleft = {k: left[k] for k in dsleft.keys()}
-            dsright = {k: right[k] for k in dsright.keys()}
+            # NB key orders match the originals
+            dsleft = {k: left[k] for k in left if k in dsleft}
+            dsright = {k: right[k] for k in right if k in dsright}
             result = (dsleft, dsright)
 
         return result
@@ -585,8 +591,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             result = None
         else:
             # Replace hash-rvalue with original rvalue.
-            dsleft = {k: left[k] for k in dsleft.keys()}
-            dsright = {k: right[k] for k in dsright.keys()}
+            # NB key orders match the originals
+            dsleft = {k: left[k] for k in left if k in dsleft}
+            dsright = {k: right[k] for k in right if k in dsright}
             result = (dsleft, dsright)
 
         return result
