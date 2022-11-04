@@ -540,9 +540,14 @@ def _make_dim_coord_list(cube):
 def _make_aux_coord_list(cube):
     outlist = []
     # Get Auxiliary coordinates
-    for n in _get_dim_combinations(cube.ndim):
-        for coord in cube.coords(dimensions=n, dim_coords=False):
-            outlist += [[coord.name(), n, _as_pandas_coord(coord)]]
+    for aux_coord in cube.coords(dim_coords=False):
+        outlist += [
+            [
+                aux_coord.name(),
+                cube.coord_dims(aux_coord),
+                _as_pandas_coord(aux_coord),
+            ]
+        ]
     return list(chain.from_iterable([outlist]))
 
 
@@ -625,7 +630,7 @@ def as_data_frame(
     copy=True,
     add_aux_coords=False,
     add_cell_measures=False,
-    add_ancillary_variables=None,
+    add_ancillary_variables=False,
 ):
     """
     Convert a 2D cube to a Pandas DataFrame.
@@ -788,7 +793,6 @@ def as_data_frame(
         raise TypeError(
             f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
         )
-
     if copy:
         data = cube.data.copy()
     else:
@@ -806,7 +810,7 @@ def as_data_frame(
         data.ravel(), columns=[cube.name()], index=index
     )
 
-    if add_aux_coord:
+    if add_aux_coords:
         # Extract aux coord information
         for aux_coord_name, aux_coord_index, aux_coord in _make_aux_coord_list(
             cube
