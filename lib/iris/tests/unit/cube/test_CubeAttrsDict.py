@@ -12,6 +12,7 @@ import pytest
 
 from iris.common.mixin import LimitedAttributeDict
 from iris.cube import CubeAttrsDict
+from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
 
 
 @pytest.fixture
@@ -23,7 +24,7 @@ def sample_attrs() -> CubeAttrsDict:
 
 def check_content(attrs, locals=None, globals=None, matches=None):
     # Check a CubeAttrsDict for expected properties.
-    # If locals/globals are set (including =None), test for equality and not identity.
+    # If locals/globals are set, test for equality and non-identity.
     assert isinstance(attrs, CubeAttrsDict)
     attr_locals, attr_globals = attrs.locals, attrs.globals
     assert type(attr_locals) == LimitedAttributeDict
@@ -233,13 +234,16 @@ class TestDictOrderBehaviour:
 class TestSettingBehaviours:
     def test_add_localtype(self):
         attrs = CubeAttrsDict()
+        # Any attribute not recognised as global should go into 'locals'
         attrs["z"] = 3
         check_content(attrs, locals={"z": 3})
 
-    def test_add_globaltype(self):
+    @pytest.mark.parametrize("attrname", _CF_GLOBAL_ATTRS)
+    def test_add_globaltype(self, attrname):
+        # These specific attributes are recognised as belonging in 'globals'
         attrs = CubeAttrsDict()
-        attrs["history"] = "this"
-        check_content(attrs, globals={"history": "this"})
+        attrs[attrname] = "this"
+        check_content(attrs, globals={attrname: "this"})
 
     def test_overwrite_local(self):
         attrs = CubeAttrsDict(locals={"a": 1})
@@ -252,21 +256,22 @@ class TestSettingBehaviours:
         attrs["a"] = "this"
         check_content(attrs, globals={"a": "this"})
 
-    def test_overwrite_forced_local(self):
-        attrs = CubeAttrsDict(locals={"history": 1})
-        # The attr remains local, even though it would be created global by default
-        attrs["history"] = 2
-        check_content(attrs, locals={"history": 2})
+    @pytest.mark.parametrize("global_attrname", _CF_GLOBAL_ATTRS)
+    def test_overwrite_forced_local(self, global_attrname):
+        attrs = CubeAttrsDict(locals={global_attrname: 1})
+        # The attr *remains* local, even though it would be created global by default
+        attrs[global_attrname] = 2
+        check_content(attrs, locals={global_attrname: 2})
 
     def test_overwrite_forced_global(self):
         attrs = CubeAttrsDict(globals={"data": 1})
-        # The attr remains global, even though it would be created global by default
+        # The attr remains local, even though it would be created local by default
         attrs["data"] = 2
         check_content(attrs, globals={"data": 2})
 
     def test_overwrite_both(self):
         attrs = CubeAttrsDict(locals={"z": 1}, globals={"z": 1})
-        # Where both exits, it will update the local one
+        # Where both exist, it will always update the local one
         attrs["z"] = 2
         check_content(attrs, locals={"z": 2}, globals={"z": 1})
 
@@ -282,3 +287,37 @@ class TestSettingBehaviours:
         # change the global, makes no difference
         sample_attrs.globals["z"] == "other"
         assert sample_attrs["z"] == "new"
+
+    @pytest.mark.parametrize("globals_or_locals", ("globals", "locals"))
+    @pytest.mark.parametrize(
+        "value_type",
+        ("replace", "emptylist", "emptytuple", "none", "zero", "false"),
+    )
+    def test_replace_subdict(self, globals_or_locals, value_type):
+        # Writing to attrs.xx always replaces content with a *new* LimitedAttributeDict
+        locals, globals = {"a": 1}, {"b": 2}
+        attrs = CubeAttrsDict(locals=locals, globals=globals)
+        # Snapshot old + write new value, of either locals or globals
+        old_content = getattr(attrs, globals_or_locals)
+        value = {
+            "replace": {"qq": 77},
+            "emptytuple": (),
+            "emptylist": [],
+            "none": None,
+            "zero": 0,
+            "false": False,
+        }[value_type]
+        setattr(attrs, globals_or_locals, value)
+        # check new content is expected type and value
+        new_content = getattr(attrs, globals_or_locals)
+        assert isinstance(new_content, LimitedAttributeDict)
+        assert new_content is not old_content
+        if value_type != "replace":
+            value = {}
+        assert new_content == value
+        # Check expected whole: i.e. either globals or locals was replaced with value
+        if globals_or_locals == "globals":
+            globals = value
+        else:
+            locals = value
+        check_content(attrs, locals=locals, globals=globals)
