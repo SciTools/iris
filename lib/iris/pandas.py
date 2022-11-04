@@ -709,7 +709,7 @@ def as_data_frame(
     >>> print(df)
     ... # doctest: +NORMALIZE_WHITESPACE
                                               surface_temperature  ...  forecast_reference_time
-    time                latitude  longitude                        ...                         
+    time                latitude  longitude                        ...
     2006-04-16 00:00:00 -4.999992 0.000000             301.659271  ...      2006-04-16 12:00:00
                                   0.833333             301.785004  ...      2006-04-16 12:00:00
                                   1.666667             301.820984  ...      2006-04-16 12:00:00
@@ -731,7 +731,7 @@ def as_data_frame(
     >>> print(df)
     ... # doctest: +NORMALIZE_WHITESPACE
                                               surface_temperature  ...       STASH
-    time                latitude  longitude                        ...            
+    time                latitude  longitude                        ...
     2006-04-16 00:00:00 -4.999992 0.000000             301.659271  ...  m01s00i024
                                   0.833333             301.785004  ...  m01s00i024
                                   1.666667             301.820984  ...  m01s00i024
