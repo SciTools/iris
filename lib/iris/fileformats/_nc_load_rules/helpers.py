@@ -433,7 +433,7 @@ def build_cube_metadata(engine):
     # Set the cube global attributes.
     for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
         try:
-            cube.attributes[str(attr_name)] = attr_value
+            cube.attributes.globals[str(attr_name)] = attr_value
         except ValueError as e:
             msg = "Skipping global attribute {!r}: {}"
             warnings.warn(msg.format(attr_name, str(e)))
