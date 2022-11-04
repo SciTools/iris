@@ -294,7 +294,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_foo = np.array([0, 1, 5, 6])
         expected_words0 = np.repeat(["fiveteen", "sixteen"], 2)
         expected_words1 = np.tile(["ten", "eleven"], 2)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.words0, expected_words0)
         self.assertArrayEqual(data_frame.words1, expected_words1)
@@ -317,7 +317,7 @@ class TestAsDataFrame(tests.IrisTest):
         expected_words0 = np.repeat(["fiveteen0", "sixteen0"], 2)
         expected_words1 = np.repeat(["fiveteen1", "sixteen1"], 2)
         expected_words2 = np.tile(["ten", "eleven"], 2)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
         self.assertArrayEqual(data_frame.foo, expected_foo)
         self.assertArrayEqual(data_frame.words0, expected_words0)
         self.assertArrayEqual(data_frame.words1, expected_words1)
@@ -339,7 +339,7 @@ class TestAsDataFrame(tests.IrisTest):
         cube.add_dim_coord(dim2_coord, 2)
         cube.add_aux_coord(aux0_coord, data_dims=(0, 1))
         expected_in_region = np.repeat([True, False, False, False], 3)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
         self.assertArrayEqual(data_frame.in_region, expected_in_region)
 
     def test_add_scalar_coord(self):
@@ -349,7 +349,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         cube.add_aux_coord(scalar_coord)
         expected_scalar_coord = np.repeat(1, 4)
-        data_frame = iris.pandas.as_data_frame(cube, add_aux_coord=True)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
         self.assertArrayEqual(data_frame.scalar_coord, expected_scalar_coord)
 
     def test_add_ancillary_variable(self):
