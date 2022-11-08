@@ -75,6 +75,10 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         )
         self.bounds = bounds
 
+        # test_dimcoord_not_added() and test_auxcoord_not_added have been
+        #  written in pytest-style, but the rest of the class is pending
+        #  migration. Defining self.monkeypatch (not the
+        #  typical practice in pure pytest) allows this transitional state.
         self.monkeypatch = pytest.MonkeyPatch()
 
     def _set_cf_coord_var(self, points):

@@ -282,6 +282,9 @@ class TestCoordConstruction(tests.IrisTest):
             new=get_cf_bounds_var,
         )
 
+        # test_not_added() has been written in pytest-style, but the rest of
+        #  the class is pending migration. Defining self.monkeypatch (not the
+        #  typical practice in pure pytest) allows this transitional state.
         self.monkeypatch = pytest.MonkeyPatch()
 
     def check_case_aux_coord_construction(self, climatology=False):
