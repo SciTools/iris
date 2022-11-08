@@ -54,6 +54,12 @@ This document explains the changes made to Iris for this release
    both dim and aux coords of the same type e.g. ``longitude`` and ``grid_longitude``.
    (:issue:`3916`, :pull:`5029`).
 
+#. `@trexfeathers`_ made NetCDF loading more tolerant by enabling skipping of
+   :class:`~iris.coords.DimCoord`\s, :class:`~iris.coords.AuxCoord`\s,
+   :class:`~iris.coords.CellMeasure`\s and
+   :class:`~iris.coords.AncillaryVariable`\s if they cannot be added to a
+   :class:`~iris.cube.Cube` (e.g. due to CF non-compliance). (:pull:`5054`)
+
 
 🐛 Bugs Fixed
 =============
