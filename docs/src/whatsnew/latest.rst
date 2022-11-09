@@ -85,6 +85,9 @@ This document explains the changes made to Iris for this release
    :meth:`~iris.cube.Cube.cell_measure` and :meth:`~iris.cube.Cube.ancillary_variable`.
    (:issue:`4898`, :pull:`4928`)
 
+#. `@stephenworsley`_ fixed a bug which caused derived coordinates to be realised
+   after calling :meth:`iris.cube.Cube.aggregated_by`. (:issue:`3637`, :pull:`4947`)
+
 
 💣 Incompatible Changes
 =======================
