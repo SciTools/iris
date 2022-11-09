@@ -288,7 +288,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     return regrid_info
 
 
-def _curvilinear_to_rectilinear_regrid(
+def _curvilinear_to_rectilinear_regrid_data(
     data,
     dims,
     regrid_info,
@@ -308,7 +308,7 @@ def _curvilinear_to_rectilinear_regrid(
 
     # Calculate the numerator of the weighted mean (M, 1).
     is_masked = ma.isMaskedArray(data)
-    sum_weights = np.ones(data_shape).reshape(-1, grid_size) @ sparse_matrix.T
+    sum_weights = None
     if not is_masked:
         data = data
     else:
@@ -328,6 +328,10 @@ def _curvilinear_to_rectilinear_regrid(
             valid_src_cells = ~mask.reshape(-1, grid_size)
             sum_weights = valid_src_cells @ sparse_matrix.T
         data = r_data
+    if sum_weights is None:
+        sum_weights = (
+            np.ones(data_shape).reshape(-1, grid_size) @ sparse_matrix.T
+        )
     # Work out where output cells are missing all contributions.
     # This allows for where 'rows' contains output cells that have no
     # data because of missing input points.
@@ -355,10 +359,9 @@ def _curvilinear_to_rectilinear_regrid(
     if len(dims) > 2:
         new_data_shape = new_data_shape[: 2 - len(dims)]
         dims = dims[:2]
-    inds = [-2, -1]
 
     result = weighted_mean.reshape(new_data_shape)
-    result = np.moveaxis(result, inds, dims)
+    result = np.moveaxis(result, [-2, -1], dims)
     return result
 
 
@@ -374,14 +377,14 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     dims = src_cube.coord_dims(
         CurvilinearRegridder._get_horizontal_coord(src_cube, "x")
     )
-    result_data = _curvilinear_to_rectilinear_regrid(
+    result_data = _curvilinear_to_rectilinear_regrid_data(
         src_cube.data, dims, regrid_info
     )
     grid_cube = regrid_info[-1]
     tx = grid_cube.coord(axis="x", dim_coords=True)
     ty = grid_cube.coord(axis="y", dim_coords=True)
     regrid_callback = functools.partial(
-        _curvilinear_to_rectilinear_regrid, regrid_info=regrid_info
+        _curvilinear_to_rectilinear_regrid_data, regrid_info=regrid_info
     )
     result = _create_cube(
         result_data, src_cube, dims, (ty.copy(), tx.copy()), 2, regrid_callback
@@ -1055,6 +1058,10 @@ def _create_cube(
 
     result.metadata = copy.deepcopy(src.metadata)
 
+    # Copy across all the coordinates which don't span the grid.
+    # Record a mapping from old coordinate IDs to new coordinates,
+    # for subsequent use in creating updated aux_factories.
+
     coord_mapping = {}
 
     def copy_coords(src_coords, add_method):
@@ -1086,10 +1093,6 @@ def _create_cube(
 
     copy_coords(src.dim_coords, result.add_dim_coord)
     copy_coords(src.aux_coords, result.add_aux_coord)
-
-    # Copy across all the coordinates which don't span the grid.
-    # Record a mapping from old coordinate IDs to new coordinates,
-    # for subsequent use in creating updated aux_factories.
 
     def regrid_reference_surface(
         src_surface_coord,
