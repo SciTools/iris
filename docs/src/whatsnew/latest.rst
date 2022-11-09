@@ -152,9 +152,15 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_, `@TTV-Intrepid`_ and `@trexfeathers`_ added a gallery example for zonal
    means plotted parallel to a cartographic plot. (:pull:`4871`)
+
 #. `@Esadek-MO`_ added a key-terms :ref:`glossary` page into the user guide. (:pull:`4902`)
+
 #. `@pp-mo`_ added a :ref:`code example <ORCA_example>`
    for converting ORCA-gridded data to an unstructured cube. (:pull:`5013`)
+
+#. `@trexfeathers`_ changed the warning header for the **latest** documentation
+   to reference Read the Docs' built-in version switcher, instead of generating
+   its own independent links. (:pull:`5055`)
 
 
 💼 Internal
