@@ -102,6 +102,10 @@ This document explains the changes made to Iris for this release
    We do not expect this to affect typical user workflows but please get in
    touch if you need help. (:pull:`5041`)
 
+#. `@trexfeathers`_ moved ``iris.experimental.animate.animate()`` to
+   :func:`iris.plot.animate`, in recognition of its successful use over several
+   years since introduction. (:pull:`5056`)
+
 
 🚀 Performance Enhancements
 ===========================
