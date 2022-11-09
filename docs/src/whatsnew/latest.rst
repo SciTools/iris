@@ -27,6 +27,14 @@ This document explains the changes made to Iris for this release
 
 #. Welcome to `@ESadek-MO`_ and `@TTV-Intrepid`_  who made their first contributions to Iris 🎉
 
+   .. _try_experimental_stratify:
+
+#. Do you enjoy `python-stratify`_? Did you know that Iris includes a
+   convenience for using `python-stratify`_ with :class:`~iris.cube.Cube`\s?
+   It has been 'experimental' for several years now, without receiving much
+   feedback, so it's **use it or lose it** time: please try out
+   :mod:`iris.experimental.stratify` and let us know what you think!
+
 
 ✨ Features
 ===========
