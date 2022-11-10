@@ -61,7 +61,10 @@ If you wish to run a full clean build you can run::
     make clean
     make html
 
-This is useful for a final test before committing your changes.
+This is useful for a final test before committing your changes. Having built
+the documentation, you can view them in your default browser via::
+
+    make show
 
 .. note:: In order to preserve a clean build for the html, all **warnings**
           have been promoted to be **errors** to ensure they are addressed.
