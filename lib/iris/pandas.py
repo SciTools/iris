@@ -817,37 +817,62 @@ def as_data_frame(
                 )
         return data_frame
 
-    # Checks
-    if not isinstance(cube, iris.cube.Cube):
-        raise TypeError(
-            f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
+    if iris.FUTURE.pandas_ndim:
+        # Checks
+        if not isinstance(cube, iris.cube.Cube):
+            raise TypeError(
+                f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
+            )
+        if copy:
+            data = cube.data.copy()
+        else:
+            data = cube.data
+        if ma.isMaskedArray(data):
+            if not copy:
+                raise ValueError("Masked arrays must always be copied.")
+            data = data.astype("f").filled(np.nan)
+
+        # Extract dim coord information: separate lists for dim names and dim values
+        coord_names, coords = _make_dim_coord_list(cube)
+        # Make base DataFrame
+        index = pandas.MultiIndex.from_product(coords, names=coord_names)
+        data_frame = pandas.DataFrame(
+            data.ravel(), columns=[cube.name()], index=index
         )
-    if copy:
-        data = cube.data.copy()
+
+        if add_aux_coords:
+            data_frame = merge_metadata(_make_aux_coord_list(cube))
+        if add_ancillary_variables:
+            data_frame = merge_metadata(_make_ancillary_variables_list(cube))
+        if add_cell_measures:
+            data_frame = merge_metadata(_make_cell_measures_list(cube))
+
+        if copy:
+            result = data_frame.reorder_levels(coord_names).sort_index()
+        else:
+            data_frame.reorder_levels(coord_names).sort_index(inplace=True)
+            result = data_frame
+
     else:
+        # The legacy behaviour.
         data = cube.data
-    if ma.isMaskedArray(data):
+        if ma.isMaskedArray(data):
+            if not copy:
+                raise ValueError("Masked arrays must always be copied.")
+            data = data.astype("f").filled(np.nan)
+        elif copy:
+            data = data.copy()
+
+        index = columns = None
+        if cube.coords(dimensions=[0]):
+            index = _as_pandas_coord(cube.coord(dimensions=[0]))
+        if cube.coords(dimensions=[1]):
+            columns = _as_pandas_coord(cube.coord(dimensions=[1]))
+
+        data_frame = pandas.DataFrame(data, index, columns)
         if not copy:
-            raise ValueError("Masked arrays must always be copied.")
-        data = data.astype("f").filled(np.nan)
+            _assert_shared(data, data_frame)
 
-    # Extract dim coord information: separate lists for dim names and dim values
-    coord_names, coords = _make_dim_coord_list(cube)
-    # Make base DataFrame
-    index = pandas.MultiIndex.from_product(coords, names=coord_names)
-    data_frame = pandas.DataFrame(
-        data.ravel(), columns=[cube.name()], index=index
-    )
+        result = data_frame
 
-    if add_aux_coords:
-        data_frame = merge_metadata(_make_aux_coord_list(cube))
-    if add_ancillary_variables:
-        data_frame = merge_metadata(_make_ancillary_variables_list(cube))
-    if add_cell_measures:
-        data_frame = merge_metadata(_make_cell_measures_list(cube))
-
-    if copy:
-        return data_frame.reorder_levels(coord_names).sort_index()
-    else:
-        data_frame.reorder_levels(coord_names).sort_index(inplace=True)
-        return data_frame
+    return result
