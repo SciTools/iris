@@ -46,9 +46,14 @@ if pandas is not None:
 @pytest.fixture
 def activate_pandas_ndim():
     iris.FUTURE.pandas_ndim = True
+    yield None
+    iris.FUTURE.pandas_ndim = False
 
 
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:.*as_series has been deprecated.*:iris._deprecation.IrisDeprecation"
+)
 class TestAsSeries(tests.IrisTest):
     """Test conversion of 1D cubes to Pandas using as_series()"""
 
@@ -153,6 +158,9 @@ class TestAsSeries(tests.IrisTest):
 
 
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:You are using legacy 2-dimensional behaviour.*:FutureWarning"
+)
 class TestAsDataFrame(tests.IrisTest):
     """Test conversion of 2D cubes to Pandas using as_data_frame()"""
 
