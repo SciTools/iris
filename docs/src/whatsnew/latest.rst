@@ -155,6 +155,8 @@ This document explains the changes made to Iris for this release
 #. `@Esadek-MO`_ added a key-terms :ref:`glossary` page into the user guide. (:pull:`4902`)
 #. `@pp-mo`_ added a :ref:`code example <ORCA_example>`
    for converting ORCA-gridded data to an unstructured cube. (:pull:`5013`)
+#. `@Esadek-MO`_ added links to relevant Gallery examples within the User Guide
+   to improve understanding. (:pull:`5009`)
 
 
 💼 Internal
