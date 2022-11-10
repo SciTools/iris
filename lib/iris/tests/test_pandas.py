@@ -11,6 +11,7 @@ import iris.tests as tests  # isort:skip
 import copy
 import datetime
 from termios import IXOFF  # noqa: F401
+import warnings
 
 import cf_units
 import cftime
@@ -40,6 +41,11 @@ if pandas is not None:
     from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
     from iris.cube import Cube, CubeList
     import iris.pandas
+
+
+@pytest.fixture
+def activate_pandas_ndim():
+    iris.FUTURE.pandas_ndim = True
 
 
 @skip_pandas
@@ -323,11 +329,11 @@ class TestAsDataFrame(tests.IrisTest):
 
 @skip_pandas
 class TestAsDataFrameNDim(tests.IrisTest):
-    """Test conversion of 2D cubes to Pandas using as_data_frame()"""
+    """Test conversion of n-dimensional cubes to Pandas using as_data_frame()"""
 
     @pytest.fixture(autouse=True)
-    def _activate_pandas_ndim(self):
-        iris.FUTURE.pandas_ndim = True
+    def _activate_pandas_ndim(self, activate_pandas_ndim):
+        pass
 
     def test_no_dim_coords(self):
         cube = Cube(
@@ -869,15 +875,37 @@ class TestDataFrameAsCube(tests.IrisTest):
 
 
 @skip_pandas
-class TestFutureAndDeprecation(tests.IrisTest):
-    def test_deprecation_warning(self):
+class TestFutureAndDeprecation:
+    def test_as_cube_deprecation_warning(self):
         data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         with pytest.warns(
             IrisDeprecation, match="as_cube has been deprecated"
         ):
             _ = iris.pandas.as_cube(data_frame)
 
-    # Tests for FUTURE are expected when as_dataframe() is made n-dimensional.
+    def test_as_series_deprecation_warning(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        with pytest.warns(
+            IrisDeprecation, match="as_series has been deprecated"
+        ):
+            _ = iris.pandas.as_series(cube)
+
+    def test_as_dataframe_future_warning(self):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        with pytest.warns(
+            FutureWarning, match="You are using legacy 2-dimensional behaviour"
+        ):
+            _ = iris.pandas.as_data_frame(cube)
+
+    def test_as_dataframe_no_future_warning(self, activate_pandas_ndim):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", FutureWarning)
+            _ = iris.pandas.as_data_frame(cube)
 
 
 @skip_pandas

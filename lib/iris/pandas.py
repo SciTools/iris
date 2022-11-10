@@ -627,7 +627,7 @@ def as_data_frame(
     add_ancillary_variables=False,
 ):
     """
-    Convert a 2D cube to a Pandas DataFrame.
+    Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
     flattened into a long-style :class:`~pandas.DataFrame`.  Other
@@ -658,6 +658,29 @@ def as_data_frame(
         A :class:`~pandas.DataFrame` with :class:`~iris.cube.Cube` dimensions
         forming a :class:`~pandas.MultiIndex`
 
+    Warnings
+    --------
+    #. This documentation is for the new ``as_data_frame()`` behaviour, which
+       is **currently opt-in** to preserve backwards compatibility. The default
+       legacy behaviour is documented in pre-``v3.4`` documentation (summary:
+       limited to 2-dimensional :class:`~iris.cube.Cube`\\ s, with only the
+       :attr:`~iris.cube.Cube.data` and :attr:`~iris.cube.Cube.dim_coords`
+       being added). The legacy behaviour will be removed in a future version
+       of Iris, so please opt-in to the new behaviour at your earliest
+       convenience, via :class:`iris.Future`:
+
+           >>> iris.FUTURE.pandas_ndim = True
+
+       **Breaking change:** to enable the improvements, the new opt-in
+       behaviour flattens multi-dimensional data into a single
+       :class:`~pandas.DataFrame` column (the legacy behaviour preserves 2
+       dimensions via rows and columns).
+
+       |
+
+    #. Where the :class:`~iris.cube.Cube` contains masked values, these become
+       :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
+
     Notes
     -----
     Dask ``DataFrame``\\s are not supported.
@@ -668,11 +691,6 @@ def as_data_frame(
     'inplace=True` to preserve memory object reference.
 
     :class:`~iris.cube.Cube` data `dtype` is preserved.
-
-    Warnings
-    --------
-    Where the :class:`~iris.cube.Cube` contains masked values, these become
-    :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
 
     Examples
     --------
@@ -854,6 +872,16 @@ def as_data_frame(
             result = data_frame
 
     else:
+        message = (
+            "You are using legacy 2-dimensional behaviour in"
+            "'iris.pandas.as_data_frame()'. This will be removed in a future"
+            "version of Iris. Please opt-in to the improved "
+            "n-dimensional behaviour at your earliest convenience by setting: "
+            "'iris.FUTURE.pandas_ndim = True'. More info is in the "
+            "documentation."
+        )
+        warnings.warn(message, FutureWarning)
+
         # The legacy behaviour.
         data = cube.data
         if ma.isMaskedArray(data):

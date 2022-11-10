@@ -147,21 +147,21 @@ class Future(threading.local):
         To adjust the values simply update the relevant attribute from
         within your code. For example::
 
+            # example_future_flag is a fictional example.
             iris.FUTURE.example_future_flag = False
 
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
-        .. note::
-
-            iris.FUTURE.example_future_flag does not exist. It is provided
-            as an example.
-
-        .. todo::
-
-            Document the ``pandas_ndim`` flag once iris#4669 is merged - can
-            add cross-referencing documentation both here and in
-            iris.pandas.as_dataframe().
+        Parameters
+        ----------
+        datum_support : bool, default=False
+            Opts in to loading coordinate system datum information from NetCDF
+            files into :class:`~iris.coord_systems.CoordSystem`\\ s, wherever
+            this information is present.
+        pandas_ndim : bool, default=False
+            See :func:`iris.pandas.as_data_frame` for details - opts in to the
+            newer n-dimensional behaviour.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -218,13 +218,10 @@ class Future(threading.local):
         statement, the previous state is restored.
 
         For example::
+
+            # example_future_flag is a fictional example.
             with iris.FUTURE.context(example_future_flag=False):
                 # ... code that expects some past behaviour
-
-        .. note::
-
-            iris.FUTURE.example_future_flag does not exist and is
-            provided only as an example.
 
         """
         # Save the current context
