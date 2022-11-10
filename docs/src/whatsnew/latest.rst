@@ -157,6 +157,8 @@ This document explains the changes made to Iris for this release
 
 #. `@pp-mo`_ added a :ref:`code example <ORCA_example>`
    for converting ORCA-gridded data to an unstructured cube. (:pull:`5013`)
+#. `@Esadek-MO`_ added links to relevant Gallery examples within the User Guide
+   to improve understanding. (:pull:`5009`)
 
 #. `@trexfeathers`_ changed the warning header for the **latest** documentation
    to reference Read the Docs' built-in version switcher, instead of generating
