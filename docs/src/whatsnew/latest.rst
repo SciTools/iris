@@ -54,6 +54,9 @@ This document explains the changes made to Iris for this release
    both dim and aux coords of the same type e.g. ``longitude`` and ``grid_longitude``.
    (:issue:`3916`, :pull:`5029`).
 
+#. `@stephenworsley`_ added the ability to regrid derived coordinates with the
+   :obj:`~iris.analysis.PointInCell` regridding scheme. (:pull:`4807`)
+
 
 🐛 Bugs Fixed
 =============
@@ -118,6 +121,10 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ improved the speed of :meth:`iris.cube.Cube.subset` /
    :meth:`iris.coords.Coord.intersect`.
    (:pull:`4955`)
+
+#. `@stephenworsley`_ improved the speed of the :obj:`~iris.analysis.PointInCell`
+   regridding scheme. (:pull:`4807`)
+
 
 🔥 Deprecations
 ===============
