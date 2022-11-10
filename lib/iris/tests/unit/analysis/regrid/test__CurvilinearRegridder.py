@@ -169,7 +169,9 @@ class Test___call__(tests.IrisTest):
             ],
         )
 
-    def test_derived_coords(self):
+
+class Test__derived_coord(tests.IrisTest):
+    def setUp(self):
         src = realistic_4d()[0]
         tgt = realistic_4d()
         new_lon, new_lat = np.meshgrid(
@@ -197,33 +199,57 @@ class Test___call__(tests.IrisTest):
         src.add_aux_coord(lon, [1, 2])
         src_t.add_aux_coord(lat_t, [2, 1])
         src_t.add_aux_coord(lon_t, [2, 1])
-        rg = Regridder(src, tgt)
-        res = rg(src)
+        self.src = src.copy()
+        self.src_t = src_t
+        self.tgt = tgt
+        self.altitude = src.coord("altitude")
+        transposed_src = src.copy()
+        transposed_src.transpose([0, 2, 1])
+        self.altitude_transposed = transposed_src.coord("altitude")
+
+    def test_no_transpose(self):
+        rg = Regridder(self.src, self.tgt)
+        res = rg(self.src)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
+        )
+        assert np.allclose(res.coord("altitude").points, self.altitude.points)
+
+    def test_cube_transposed(self):
+        rg = Regridder(self.src, self.tgt)
+        transposed_cube = self.src.copy()
+        transposed_cube.transpose([0, 2, 1])
+        res = rg(transposed_cube)
 
         assert len(res.aux_factories) == 1 and isinstance(
             res.aux_factories[0], HybridHeightFactory
         )
         assert np.allclose(
-            res.coord("altitude").points, src.coord("altitude").points
-        )
-        src.transpose([0, 2, 1])
-        res = rg(src)
-        assert np.allclose(
-            res.coord("altitude").points, src.coord("altitude").points
+            res.coord("altitude").points, self.altitude_transposed.points
         )
 
-        rg_t = Regridder(src_t, tgt)
-        res_t = rg_t(src_t)
-        assert np.allclose(
-            res_t.coord("altitude").points,
-            np.moveaxis(src_t.coord("altitude").points, 1, 2),
+    def test_coord_transposed(self):
+        rg = Regridder(self.src_t, self.tgt)
+        res = rg(self.src_t)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
         )
-        src_t.transpose([0, 2, 1])
-        res_t = rg_t(src_t)
         assert np.allclose(
-            res_t.coord("altitude").points,
-            np.moveaxis(src_t.coord("altitude").points, 1, 2),
+            res.coord("altitude").points, self.altitude_transposed.points
         )
+
+    def test_both_transposed(self):
+        rg = Regridder(self.src_t, self.tgt)
+        transposed_cube = self.src_t.copy()
+        transposed_cube.transpose([0, 2, 1])
+        res = rg(transposed_cube)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
+        )
+        assert np.allclose(res.coord("altitude").points, self.altitude.points)
 
 
 @tests.skip_data
