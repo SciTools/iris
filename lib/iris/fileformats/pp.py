@@ -767,6 +767,18 @@ def _data_bytes_to_shaped_array(
 
     else:
         # Reform in row-column order
+        actual_length = np.prod(data.shape)
+        if (expected_length := np.prod(data_shape)) != actual_length:
+            if (expected_length < actual_length) and (data.ndim == 1):
+                # known use case where mule adds padding to data payload
+                # for a collapsed field.
+                data = data[:expected_length]
+            else:
+                emsg = (
+                    f"Expected field data word length {expected_length} does "
+                    f"not match actual field data word length {actual_length}."
+                )
+                raise ValueError(emsg)
         data.shape = data_shape
 
     # Mask the array
