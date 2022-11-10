@@ -14,8 +14,8 @@ In all cases **the subset of a valid cube is itself a valid cube**.
 .. seealso::
 
     Relevant gallery examples:
-    :ref:`sphx_glr_generated_gallery_general_plot_polynomial_fit.py` (Slices)
-    :ref:`sphx_glr_generated_gallery_general_plot_anomaly_log_colouring.py` (Extraction)
+        - :ref:`sphx_glr_generated_gallery_general_plot_polynomial_fit.py` (Slices)
+        - :ref:`sphx_glr_generated_gallery_general_plot_anomaly_log_colouring.py` (Extraction)
 
 .. _cube_extraction:
 
