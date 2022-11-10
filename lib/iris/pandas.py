@@ -378,7 +378,10 @@ def as_cubes(
         )
         raise ValueError(message)
 
-    if not pandas_index.is_monotonic:
+    if not (
+        pandas_index.is_monotonic_increasing
+        or pandas_index.is_monotonic_decreasing
+    ):
         # Need monotonic index for use in DimCoord(s).
         # This function doesn't sort_index itself since that breaks the
         #  option to return a data view instead of a copy.
