@@ -165,8 +165,11 @@ broadcasting behaviour::
     >>> print(result.summary(True))
     unknown / (K)                       (time: 240; latitude: 37; longitude: 49)
 
-**Relevant gallery example:**
-:ref:`sphx_glr_generated_gallery_general_plot_anomaly_log_colouring.py` (Anomaly)
+
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_anomaly_log_colouring.py` (Anomaly)
 
 Combining Multiple Phenomena to Form a New One
 ----------------------------------------------

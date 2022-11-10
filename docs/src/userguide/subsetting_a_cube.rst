@@ -10,10 +10,12 @@ However it is often necessary to reduce the dimensionality of a cube down to som
 Iris provides several ways of reducing both the amount of data and/or the number of dimensions in your cube depending on the circumstance.
 In all cases **the subset of a valid cube is itself a valid cube**.
 
-**Relevant gallery examples:**
-:ref:`sphx_glr_generated_gallery_general_plot_polynomial_fit.py` (Slices)
-:ref:`sphx_glr_generated_gallery_general_plot_anomaly_log_colouring.py` (Extraction)
-(
+
+.. seealso::
+
+    Relevant gallery examples:
+    :ref:`sphx_glr_generated_gallery_general_plot_polynomial_fit.py` (Slices)
+    :ref:`sphx_glr_generated_gallery_general_plot_anomaly_log_colouring.py` (Extraction)
 
 .. _cube_extraction:
 
