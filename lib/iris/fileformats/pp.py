@@ -775,8 +775,8 @@ def _data_bytes_to_shaped_array(
                 data = data[:expected_length]
             else:
                 emsg = (
-                    f"Expected field data word length {expected_length} does "
-                    f"not match actual field data word length {actual_length}."
+                    f"PP field data containing {actual_length} words does not "
+                    f"match expected length of {expected_length} words."
                 )
                 raise ValueError(emsg)
         data.shape = data_shape
