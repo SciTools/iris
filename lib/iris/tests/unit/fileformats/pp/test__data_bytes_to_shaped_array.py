@@ -17,8 +17,51 @@ from unittest import mock
 
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris.fileformats.pp as pp
+
+
+@pytest.mark.parametrize(
+    "data_shape,expected_shape",
+    [
+        ((2, 3), (2, 3)),
+        ((2, 3), (3, 2)),
+        ((2, 3), (1, 3)),
+        ((2, 3), (2, 2)),
+        ((2, 3), (3, 3)),
+        ((2, 3), (2, 4)),
+    ],
+)
+def test_data_padding__no_compression(data_shape, expected_shape):
+    data_type = np.float32
+    data = np.empty(data_shape, dtype=data_type)
+
+    # create the field data buffer
+    buffer = io.BytesIO()
+    buffer.write(data)
+    buffer.seek(0)
+    data_bytes = buffer.read()
+
+    lbpack = pp.SplittableInt(0, dict(n1=0, n2=1))
+    boundary_packing = None
+    mdi = -1
+    args = (
+        data_bytes,
+        lbpack,
+        boundary_packing,
+        expected_shape,
+        data_type,
+        mdi,
+    )
+    data_length, expected_length = np.prod(data_shape), np.prod(expected_shape)
+
+    if expected_length <= data_length:
+        result = pp._data_bytes_to_shaped_array(*args)
+        assert result.shape == expected_shape
+    else:
+        with pytest.raises(ValueError):
+            _ = pp._data_bytes_to_shaped_array(*args)
 
 
 class Test__data_bytes_to_shaped_array__lateral_boundary_compression(

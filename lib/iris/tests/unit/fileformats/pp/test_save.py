@@ -21,6 +21,17 @@ from iris.fileformats.pp_save_rules import _lbproc_rules, verify
 import iris.tests.stock as stock
 
 
+def test_grid_and_pole__scalar_dim_longitude():
+    cube = stock.lat_lon_cube()[:, -1:]
+    lon = cube.coord("longitude")
+
+    field = _pp_save_ppfield_values(cube)
+    bdx = 360.0
+    assert field.bdx == bdx
+    assert field.bzx == (lon.points[0] - bdx)
+    assert field.lbnpt == lon.points.size
+
+
 def _pp_save_ppfield_values(cube):
     """
     Emulate saving a cube as PP, and capture the resulting PP field values.
