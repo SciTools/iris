@@ -425,7 +425,7 @@ def _grid_and_pole_rules(cube, pp):
     scalar_lon_coord = scalar_coord(cube, "longitude")
 
     if lon_coord is None and grid_lon_coord is None and scalar_lon_coord:
-        pp.bdx = 360.0
+        pp.bdx = (unit := scalar_lon_coord.units) and unit.modulus or 360.0
         pp.bzx = scalar_lon_coord.points[0] - pp.bdx
         pp.lbnpt = scalar_lon_coord.shape[0]
     elif lon_coord and not is_regular(lon_coord):
