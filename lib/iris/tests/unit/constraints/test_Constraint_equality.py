@@ -6,13 +6,14 @@
 """Unit tests for equality testing of different constraint types."""
 
 from __future__ import absolute_import, division, print_function
+
 from six.moves import filter, input, map, range, zip  # noqa
+
+from iris._constraints import AttributeConstraint, Constraint, NameConstraint
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-from iris._constraints import Constraint, AttributeConstraint, NameConstraint
 
 
 class Test_Constraint__hash__(tests.IrisTest):
