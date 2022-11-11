@@ -33,6 +33,7 @@ import iris.tests.stock as stock
 )
 def test_grid_and_pole__scalar_dim_longitude(unit, modulus):
     cube = stock.lat_lon_cube()[:, -1:]
+    assert cube.ndim == 2
     lon = cube.coord("longitude")
     lon.units = unit
 
