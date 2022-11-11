@@ -59,7 +59,8 @@ def test_data_padding__no_compression(data_shape, expected_shape, data_type):
         result = pp._data_bytes_to_shaped_array(*args)
         assert result.shape == expected_shape
     else:
-        with pytest.raises(ValueError):
+        emsg = r"data containing \d+ words does not match expected length"
+        with pytest.raises(ValueError, match=emsg):
             _ = pp._data_bytes_to_shaped_array(*args)
 
 
