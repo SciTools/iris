@@ -13,6 +13,8 @@ from unittest import mock
 
 import cf_units
 import cftime
+import numpy as np
+import pytest
 
 from iris.coords import CellMethod, DimCoord
 from iris.fileformats._ff_cross_references import STASH_TRANS
@@ -21,12 +23,21 @@ from iris.fileformats.pp_save_rules import _lbproc_rules, verify
 import iris.tests.stock as stock
 
 
-def test_grid_and_pole__scalar_dim_longitude():
+@pytest.mark.parametrize(
+    "unit,modulus",
+    [
+        (cf_units.Unit("radians"), 2 * np.pi),
+        (cf_units.Unit("degrees"), 360.0),
+        (None, 360.0),
+    ],
+)
+def test_grid_and_pole__scalar_dim_longitude(unit, modulus):
     cube = stock.lat_lon_cube()[:, -1:]
     lon = cube.coord("longitude")
+    lon.units = unit
 
     field = _pp_save_ppfield_values(cube)
-    bdx = 360.0
+    bdx = modulus
     assert field.bdx == bdx
     assert field.bzx == (lon.points[0] - bdx)
     assert field.lbnpt == lon.points.size
