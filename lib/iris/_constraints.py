@@ -299,20 +299,9 @@ class _CoordConstraint:
         )
 
     def __eq__(self, other):
-        # Note: the so-called 'coord_name' can in fact also be a coord or defn.
-        # However it is only *used* to select a coord, as "cube(coord_name)"
-        # (see in 'extract', below).
-        # Hence, in comparing actual coords, we must compare only the defns.
-        def _comparer(co):
-            if isinstance(co, iris.coords.Coord):
-                co = co._as_defn()
-            # NOTE: a CoordDefn can anyway only == another one, as it cannot
-            # behave identically to a simple string.
-            return co
-
         eq = (
             type(other) == _CoordConstraint
-            and _comparer(self.coord_name) == _comparer(other.coord_name)
+            and self.coord_name == other.coord_name
             and self._coord_thing == other._coord_thing
         )
         return eq
