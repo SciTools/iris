@@ -906,7 +906,7 @@ STASH_TO_CF = {
     'm01s30i301': CFName(None, 'Heavyside function on pressure levels', '1'),
     'm01s30i302': CFName('virtual_temperature', None, 'K'),
     'm01s30i310': CFName('northward_transformed_eulerian_mean_air_velocity', None, 'm s-1'),
-    'm01s30i311': CFName('northward_transformed_eulerian_mean_air_velocity', None, 'm s-1'),
+    'm01s30i311': CFName('upward_transformed_eulerian_mean_air_velocity', None, 'm s-1'),
     'm01s30i312': CFName('northward_eliassen_palm_flux_in_air', None, 'kg s-2'),
     'm01s30i313': CFName('upward_eliassen_palm_flux_in_air', None, 'kg s-2'),
     'm01s30i314': CFName('tendency_of_eastward_wind_due_to_eliassen_palm_flux_divergence', None, 'm s-2'),

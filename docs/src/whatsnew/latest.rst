@@ -95,6 +95,10 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ fixed a bug which caused derived coordinates to be realised
    after calling :meth:`iris.cube.Cube.aggregated_by`. (:issue:`3637`, :pull:`4947`)
+   
+#. `@rcomer`_ corrected the ``standard_name`` mapping from UM stash code ``m01s30i311``
+   to indicate that this is the upward, rather than northward part of the flow.
+   (:pull:`5060`)
 
 
 💣 Incompatible Changes
