@@ -27,6 +27,14 @@ This document explains the changes made to Iris for this release
 
 #. Welcome to `@ESadek-MO`_ and `@TTV-Intrepid`_  who made their first contributions to Iris 🎉
 
+   .. _try_experimental_stratify:
+
+#. Do you enjoy `python-stratify`_? Did you know that Iris includes a
+   convenience for using `python-stratify`_ with :class:`~iris.cube.Cube`\s?
+   It has been 'experimental' for several years now, without receiving much
+   feedback, so it's **use it or lose it** time: please try out
+   :mod:`iris.experimental.stratify` and let us know what you think!
+
 
 ✨ Features
 ===========
@@ -104,6 +112,10 @@ This document explains the changes made to Iris for this release
    array when requesting :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.data`.
    We do not expect this to affect typical user workflows but please get in
    touch if you need help. (:pull:`5041`)
+
+#. `@trexfeathers`_ moved ``iris.experimental.animate.animate()`` to
+   :func:`iris.plot.animate`, in recognition of its successful use over several
+   years since introduction. (:pull:`5056`)
 
 
 🚀 Performance Enhancements
