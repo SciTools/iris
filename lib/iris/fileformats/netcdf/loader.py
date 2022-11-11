@@ -34,6 +34,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.fileformats.cf
+from iris.fileformats.cf import GLOBAL_NETCDF_ACCESS_LOCK, get_filepath_lock
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -58,7 +59,14 @@ def _actions_engine():
 class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
-    __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
+    __slots__ = (
+        "shape",
+        "dtype",
+        "path",
+        "variable_name",
+        "fill_value",
+        "_file_lock",
+    )
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
         self.shape = shape
@@ -66,20 +74,24 @@ class NetCDFDataProxy:
         self.path = path
         self.variable_name = variable_name
         self.fill_value = fill_value
+        self._file_lock = get_filepath_lock(self.path, already_exists=True)
 
     @property
     def ndim(self):
         return len(self.shape)
 
     def __getitem__(self, keys):
-        dataset = netCDF4.Dataset(self.path)
-        try:
-            variable = dataset.variables[self.variable_name]
-            # Get the NetCDF variable data and slice.
-            var = variable[keys]
-        finally:
-            dataset.close()
-        return np.asanyarray(var)
+        with self._file_lock:
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                dataset = netCDF4.Dataset(self.path)
+                try:
+                    variable = dataset.variables[self.variable_name]
+                    # Get the required section of the NetCDF variable data.
+                    data = variable[keys]
+                finally:
+                    dataset.close()
+        result = np.asanyarray(data)
+        return result
 
     def __repr__(self):
         fmt = (
@@ -541,54 +553,55 @@ def load_cubes(filenames, callback=None, constraints=None):
         else:
             cf = iris.fileformats.cf.CFReader(filename)
 
-        # Process each CF data variable.
-        data_variables = list(cf.cf_group.data_variables.values()) + list(
-            cf.cf_group.promoted.values()
-        )
-        for cf_var in data_variables:
-            if var_callback and not var_callback(cf_var):
-                # Deliver only selected results.
-                continue
+        with cf:
+            # Process each CF data variable.
+            data_variables = list(cf.cf_group.data_variables.values()) + list(
+                cf.cf_group.promoted.values()
+            )
+            for cf_var in data_variables:
+                if var_callback and not var_callback(cf_var):
+                    # Deliver only selected results.
+                    continue
 
-            # cf_var-specific mesh handling, if a mesh is present.
-            # Build the mesh_coords *before* loading the cube - avoids
-            # mesh-related attributes being picked up by
-            # _add_unused_attributes().
-            mesh_name = None
-            mesh = None
-            mesh_coords, mesh_dim = [], None
-            if PARSE_UGRID_ON_LOAD:
-                mesh_name = getattr(cf_var, "mesh", None)
-            if mesh_name is not None:
+                # cf_var-specific mesh handling, if a mesh is present.
+                # Build the mesh_coords *before* loading the cube - avoids
+                # mesh-related attributes being picked up by
+                # _add_unused_attributes().
+                mesh_name = None
+                mesh = None
+                mesh_coords, mesh_dim = [], None
+                if PARSE_UGRID_ON_LOAD:
+                    mesh_name = getattr(cf_var, "mesh", None)
+                if mesh_name is not None:
+                    try:
+                        mesh = meshes[mesh_name]
+                    except KeyError:
+                        message = (
+                            f"File does not contain mesh: '{mesh_name}' - "
+                            f"referenced by variable: '{cf_var.cf_name}' ."
+                        )
+                        logger.debug(message)
+                if mesh is not None:
+                    mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+
+                cube = _load_cube(engine, cf, cf_var, filename)
+
+                # Attach the mesh (if present) to the cube.
+                for mesh_coord in mesh_coords:
+                    cube.add_aux_coord(mesh_coord, mesh_dim)
+
+                # Process any associated formula terms and attach
+                # the corresponding AuxCoordFactory.
                 try:
-                    mesh = meshes[mesh_name]
-                except KeyError:
-                    message = (
-                        f"File does not contain mesh: '{mesh_name}' - "
-                        f"referenced by variable: '{cf_var.cf_name}' ."
-                    )
-                    logger.debug(message)
-            if mesh is not None:
-                mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+                    _load_aux_factory(engine, cube)
+                except ValueError as e:
+                    warnings.warn("{}".format(e))
 
-            cube = _load_cube(engine, cf, cf_var, filename)
+                # Perform any user registered callback function.
+                cube = run_callback(callback, cube, cf_var, filename)
 
-            # Attach the mesh (if present) to the cube.
-            for mesh_coord in mesh_coords:
-                cube.add_aux_coord(mesh_coord, mesh_dim)
+                # Callback mechanism may return None, which must not be yielded
+                if cube is None:
+                    continue
 
-            # Process any associated formula terms and attach
-            # the corresponding AuxCoordFactory.
-            try:
-                _load_aux_factory(engine, cube)
-            except ValueError as e:
-                warnings.warn("{}".format(e))
-
-            # Perform any user registered callback function.
-            cube = run_callback(callback, cube, cf_var, filename)
-
-            # Callback mechanism may return None, which must not be yielded
-            if cube is None:
-                continue
-
-            yield cube
+                yield cube
