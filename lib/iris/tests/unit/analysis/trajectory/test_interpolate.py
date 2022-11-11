@@ -13,6 +13,7 @@ Unit tests for :meth:`iris.analysis.trajectory.interpolate`.
 import iris.tests as tests  # isort:skip
 
 import numpy as np
+import pytest
 
 from iris.analysis.trajectory import interpolate
 from iris.coords import AuxCoord, DimCoord
@@ -38,15 +39,15 @@ class TestFailCases(tests.IrisTest):
             interpolate(cube, sample_point, method="linekar")
 
 
-class TestNearest(tests.IrisTest):
+class TestNearest:
     # Test interpolation with 'nearest' method.
     # This is basically a wrapper to the routine:
     #   'analysis._interpolate_private._nearest_neighbour_indices_ndcoords'.
     # That has its own test, so we don't test the basic calculation
     # exhaustively here.  Instead we check the way it handles the source and
     # result cubes (especially coordinates).
-
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def setup(self):
         cube = iris.tests.stock.simple_3d()
         # Actually, this cube *isn't* terribly realistic, as the lat+lon coords
         # have integer type, which in this case produces some peculiar results.
@@ -70,30 +71,17 @@ class TestNearest(tests.IrisTest):
             ("longitude", [x_val - 17.54]),
         ]
 
-    def test_single_point_same_cube(self):
-        # Check exact result matching for a single point.
-        cube = self.test_cube
-        result = interpolate(cube, self.single_sample_point, method="nearest")
-        # Check that the result is a single trajectory point, exactly equal to
-        # the expected part of the original data.
-        self.assertEqual(result.shape[-1], 1)
-        result = result[..., 0]
-        expected = cube[:, self.single_point_iy, self.single_point_ix]
-        self.assertEqual(result, expected)
-
-    def test_multi_point_same_cube(self):
-        # Check an exact result for multiple points.
-        cube = self.test_cube
+    @pytest.fixture
+    def multi_point_extra_setup(self, setup):
         # Use latitude selection to recreate a whole row of the original cube.
-        sample_points = [
+        self.sample_points = [
             ("longitude", [-180, -90, 0, 90]),
             ("latitude", [0, 0, 0, 0]),
         ]
-        result = interpolate(cube, sample_points, method="nearest")
 
         # The result should be identical to a single latitude section of the
         # original, but with modified coords (latitude has 4 repeated zeros).
-        expected = cube[:, 1, :]
+        expected = self.test_cube[:, 1, :]
         # Result 'longitude' is now an aux coord.
         co_x = expected.coord("longitude")
         expected.remove_coord(co_x)
@@ -104,7 +92,51 @@ class TestNearest(tests.IrisTest):
             [0, 0, 0, 0], standard_name="latitude", units="degrees"
         )
         expected.add_aux_coord(co_y, 1)
-        self.assertEqual(result, expected)
+        self.expected_multipoint_cube = expected
+
+    def test_single_point_same_cube(self):
+        # Check exact result matching for a single point.
+        cube = self.test_cube
+        result = interpolate(cube, self.single_sample_point, method="nearest")
+        # Check that the result is a single trajectory point, exactly equal to
+        # the expected part of the original data.
+        assert result.shape[-1] == 1
+        result = result[..., 0]
+        expected = cube[:, self.single_point_iy, self.single_point_ix]
+        assert result == expected
+
+    @pytest.mark.usefixtures("multi_point_extra_setup")
+    def test_multi_point_same_cube(self):
+        # Check an exact result for multiple points.
+        result = interpolate(
+            self.test_cube, self.sample_points, method="nearest"
+        )
+        assert result == self.expected_multipoint_cube
+
+    @pytest.mark.usefixtures("multi_point_extra_setup")
+    def test_mask_preserved(self):
+        cube = self.test_cube
+        mask = np.zeros_like(cube.data)
+        mask[:, :, 1] = 1
+        cube.data = np.ma.array(cube.data, mask=mask)
+
+        expected = self.expected_multipoint_cube
+        expected.data = np.ma.array(expected.data, mask=mask[:, 0])
+
+        result = interpolate(cube, self.sample_points, method="nearest")
+        assert result == expected
+        assert np.allclose(result.data.mask, expected.data.mask)
+
+    @pytest.mark.usefixtures("multi_point_extra_setup")
+    def test_dtype_preserved(self):
+        cube = self.test_cube
+        cube.data = cube.data.astype(np.int16)
+        expected = self.expected_multipoint_cube
+
+        result = interpolate(cube, self.sample_points, method="nearest")
+        assert result == expected
+        assert np.allclose(result.data, expected.data)
+        assert result.data.dtype == np.int16
 
     def test_aux_coord_noninterpolation_dim(self):
         # Check exact result with an aux-coord mapped to an uninterpolated dim.
@@ -113,10 +145,10 @@ class TestNearest(tests.IrisTest):
 
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="nearest")
-        self.assertEqual(result.shape[-1], 1)
+        assert result.shape[-1] == 1
         result = result[..., 0]
         expected = cube[:, self.single_point_iy, self.single_point_ix]
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_aux_coord_one_interp_dim(self):
         # Check exact result with an aux-coord over one interpolation dims.
@@ -125,10 +157,10 @@ class TestNearest(tests.IrisTest):
 
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="nearest")
-        self.assertEqual(result.shape[-1], 1)
+        assert result.shape[-1] == 1
         result = result[..., 0]
         expected = cube[:, self.single_point_iy, self.single_point_ix]
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_aux_coord_both_interp_dims(self):
         # Check exact result with an aux-coord over both interpolation dims.
@@ -143,10 +175,10 @@ class TestNearest(tests.IrisTest):
 
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="nearest")
-        self.assertEqual(result.shape[-1], 1)
+        assert result.shape[-1] == 1
         result = result[..., 0]
         expected = cube[:, self.single_point_iy, self.single_point_ix]
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_aux_coord_fail_mixed_dims(self):
         # Check behaviour with an aux-coord mapped over both interpolation and
@@ -163,7 +195,7 @@ class TestNearest(tests.IrisTest):
             "Coord aux_0x at one x-y position has the shape.*"
             "instead of being a single point"
         )
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             interpolate(cube, self.single_sample_point, method="nearest")
 
     def test_metadata(self):
@@ -175,10 +207,10 @@ class TestNearest(tests.IrisTest):
         result = interpolate(cube, self.single_sample_point, method="nearest")
         # Check that the result is a single trajectory point, exactly equal to
         # the expected part of the original data.
-        self.assertEqual(result.shape[-1], 1)
+        assert result.shape[-1] == 1
         result = result[..., 0]
         expected = cube[:, self.single_point_iy, self.single_point_ix]
-        self.assertEqual(result, expected)
+        assert result == expected
 
 
 class TestLinear(tests.IrisTest):
