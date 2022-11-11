@@ -45,6 +45,9 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
+from iris.fileformats.cf import (  # , get_filepath_lock
+    GLOBAL_NETCDF_ACCESS_LOCK,
+)
 import iris.io
 import iris.util
 
@@ -459,6 +462,8 @@ def _setncattr(variable, name, attribute):
     Put the given attribute on the given netCDF4 Data type, casting
     attributes as we go to bytes rather than unicode.
 
+    NOTE: this should only be called while GLOBAL_NETCDF_ACCESS_LOCK is acquired
+
     """
     attribute = _bytes_if_ascii(attribute)
     return variable.setncattr(name, attribute)
@@ -469,6 +474,9 @@ class _FillValueMaskCheckAndStoreTarget:
     To be used with da.store. Remembers whether any element was equal to a
     given value and whether it was masked, before passing the chunk to the
     given target.
+
+    NOTE: also ensures that the data writing process aquires the necessary locks to
+    prevent conflict between tasks performing netcdf reads + writes
 
     """
 
@@ -482,7 +490,8 @@ class _FillValueMaskCheckAndStoreTarget:
         if self.fill_value is not None:
             self.contains_value = self.contains_value or self.fill_value in arr
         self.is_masked = self.is_masked or ma.is_masked(arr)
-        self.target[keys] = arr
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            self.target[keys] = arr
 
 
 # NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.ELEMENTS`,
@@ -544,9 +553,10 @@ class Saver:
         self._formula_terms_cache = {}
         #: NetCDF dataset
         try:
-            self._dataset = netCDF4.Dataset(
-                filename, mode="w", format=netcdf_format
-            )
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                self._dataset = netCDF4.Dataset(
+                    filename, mode="w", format=netcdf_format
+                )
         except RuntimeError:
             dir_name = os.path.dirname(filename)
             if not os.path.isdir(dir_name):
@@ -563,9 +573,9 @@ class Saver:
 
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
-
-        self._dataset.sync()
-        self._dataset.close()
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            self._dataset.sync()
+            self._dataset.close()
 
     def write(
         self,
@@ -744,8 +754,9 @@ class Saver:
         # N.B. _add_mesh cannot do this, as we want to put mesh variables
         # before data-variables in the file.
         if cf_mesh_name is not None:
-            _setncattr(cf_var_cube, "mesh", cf_mesh_name)
-            _setncattr(cf_var_cube, "location", cube.location)
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                _setncattr(cf_var_cube, "mesh", cf_mesh_name)
+                _setncattr(cf_var_cube, "location", cube.location)
 
         # Add coordinate variables.
         self._add_dim_coords(cube, cube_dimensions)
@@ -785,7 +796,8 @@ class Saver:
             cf_patch = iris.site_configuration.get("cf_patch")
             if cf_patch is not None:
                 # Perform a CF patch of the dataset.
-                cf_patch(profile, self._dataset, cf_var_cube)
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    cf_patch(profile, self._dataset, cf_var_cube)
             else:
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch"
@@ -835,16 +847,17 @@ class Saver:
             CF global attributes to be updated.
 
         """
-        if attributes is not None:
-            # Handle sequence e.g. [('fruit', 'apple'), ...].
-            if not hasattr(attributes, "keys"):
-                attributes = dict(attributes)
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            if attributes is not None:
+                # Handle sequence e.g. [('fruit', 'apple'), ...].
+                if not hasattr(attributes, "keys"):
+                    attributes = dict(attributes)
 
-            for attr_name in sorted(attributes):
-                _setncattr(self._dataset, attr_name, attributes[attr_name])
+                for attr_name in sorted(attributes):
+                    _setncattr(self._dataset, attr_name, attributes[attr_name])
 
-        for attr_name in sorted(kwargs):
-            _setncattr(self._dataset, attr_name, kwargs[attr_name])
+            for attr_name in sorted(kwargs):
+                _setncattr(self._dataset, attr_name, kwargs[attr_name])
 
     def _create_cf_dimensions(
         self, cube, dimension_names, unlimited_dimensions=None
@@ -880,15 +893,16 @@ class Saver:
                     dim_name = self._get_coord_variable_name(cube, coord)
                     unlimited_dim_names.append(dim_name)
 
-        for dim_name in dimension_names:
-            # NOTE: these dim-names have been chosen by _get_dim_names, and
-            # were already checked+fixed to avoid any name collisions.
-            if dim_name not in self._dataset.dimensions:
-                if dim_name in unlimited_dim_names:
-                    size = None
-                else:
-                    size = self._existing_dim[dim_name]
-                self._dataset.createDimension(dim_name, size)
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            for dim_name in dimension_names:
+                # NOTE: these dim-names have been chosen by _get_dim_names, and
+                # were already checked+fixed to avoid any name collisions.
+                if dim_name not in self._dataset.dimensions:
+                    if dim_name in unlimited_dim_names:
+                        size = None
+                    else:
+                        size = self._existing_dim[dim_name]
+                    self._dataset.createDimension(dim_name, size)
 
     def _add_mesh(self, cube_or_mesh):
         """
@@ -931,7 +945,8 @@ class Saver:
                 cf_mesh_name = self._create_mesh(mesh)
                 self._name_coord_map.append(cf_mesh_name, mesh)
 
-                cf_mesh_var = self._dataset.variables[cf_mesh_name]
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    cf_mesh_var = self._dataset.variables[cf_mesh_name]
 
                 # Get the mesh-element dim names.
                 mesh_dims = self._mesh_dims[mesh]
@@ -956,9 +971,10 @@ class Saver:
                         # Record the coordinates (if any) on the mesh variable.
                         if coord_names:
                             coord_names = " ".join(coord_names)
-                            _setncattr(
-                                cf_mesh_var, coords_file_attr, coord_names
-                            )
+                            with GLOBAL_NETCDF_ACCESS_LOCK:
+                                _setncattr(
+                                    cf_mesh_var, coords_file_attr, coord_names
+                                )
 
                 # Add all the connectivity variables.
                 # pre-fetch the set + ignore "None"s, which are empty slots.
@@ -974,13 +990,14 @@ class Saver:
                     # Construct a trailing dimension name.
                     last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
                     # Create if it does not already exist.
-                    if last_dim not in self._dataset.dimensions:
-                        while last_dim in self._dataset.variables:
-                            # Also avoid collision with variable names.
-                            # See '_get_dim_names' for reason.
-                            last_dim = self._increment_name(last_dim)
-                        length = conn.shape[1 - conn.location_axis]
-                        self._dataset.createDimension(last_dim, length)
+                    with GLOBAL_NETCDF_ACCESS_LOCK:
+                        if last_dim not in self._dataset.dimensions:
+                            while last_dim in self._dataset.variables:
+                                # Also avoid collision with variable names.
+                                # See '_get_dim_names' for reason.
+                                last_dim = self._increment_name(last_dim)
+                            length = conn.shape[1 - conn.location_axis]
+                            self._dataset.createDimension(last_dim, length)
 
                     # Create variable.
                     # NOTE: for connectivities *with missing points*, this will use a
@@ -1005,19 +1022,24 @@ class Saver:
                         fill_value=fill_value,
                     )
                     # Add essential attributes to the Connectivity variable.
-                    cf_conn_var = self._dataset.variables[cf_conn_name]
-                    _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
-                    _setncattr(cf_conn_var, "start_index", conn.start_index)
+                    with GLOBAL_NETCDF_ACCESS_LOCK:
+                        cf_conn_var = self._dataset.variables[cf_conn_name]
+                        _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
+                        _setncattr(
+                            cf_conn_var, "start_index", conn.start_index
+                        )
 
-                    # Record the connectivity on the parent mesh var.
-                    _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
-                    # If the connectivity had the 'alternate' dimension order, add the
-                    # relevant dimension property
-                    if conn.location_axis == 1:
-                        loc_dim_attr = f"{loc_from}_dimension"
-                        # Should only get here once.
-                        assert loc_dim_attr not in cf_mesh_var.ncattrs()
-                        _setncattr(cf_mesh_var, loc_dim_attr, loc_dim_name)
+                        # Record the connectivity on the parent mesh var.
+                        _setncattr(
+                            cf_mesh_var, cf_conn_attr_name, cf_conn_name
+                        )
+                        # If the connectivity had the 'alternate' dimension order, add the
+                        # relevant dimension property
+                        if conn.location_axis == 1:
+                            loc_dim_attr = f"{loc_from}_dimension"
+                            # Should only get here once.
+                            assert loc_dim_attr not in cf_mesh_var.ncattrs()
+                            _setncattr(cf_mesh_var, loc_dim_attr, loc_dim_name)
 
         return cf_mesh_name
 
@@ -1065,7 +1087,10 @@ class Saver:
             # Add CF-netCDF references to the primary data variable.
             if element_names:
                 variable_names = " ".join(sorted(element_names))
-                _setncattr(cf_var_cube, role_attribute_name, variable_names)
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    _setncattr(
+                        cf_var_cube, role_attribute_name, variable_names
+                    )
 
     def _add_aux_coords(self, cube, cf_var_cube, dimension_names):
         """
@@ -1198,7 +1223,8 @@ class Saver:
                 primaries.append(primary_coord)
 
                 cf_name = self._name_coord_map.name(primary_coord)
-                cf_var = self._dataset.variables[cf_name]
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    cf_var = self._dataset.variables[cf_name]
 
                 names = {
                     key: self._name_coord_map.name(coord)
@@ -1209,49 +1235,54 @@ class Saver:
                 )
                 std_name = factory_defn.std_name
 
-                if hasattr(cf_var, "formula_terms"):
-                    if (
-                        cf_var.formula_terms != formula_terms
-                        or cf_var.standard_name != std_name
-                    ):
-                        # TODO: We need to resolve this corner-case where
-                        #  the dimensionless vertical coordinate containing
-                        #  the formula_terms is a dimension coordinate of
-                        #  the associated cube and a new alternatively named
-                        #  dimensionless vertical coordinate is required
-                        #  with new formula_terms and a renamed dimension.
-                        if cf_name in dimension_names:
-                            msg = (
-                                "Unable to create dimensonless vertical "
-                                "coordinate."
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    if hasattr(cf_var, "formula_terms"):
+                        if (
+                            cf_var.formula_terms != formula_terms
+                            or cf_var.standard_name != std_name
+                        ):
+                            # TODO: We need to resolve this corner-case where
+                            #  the dimensionless vertical coordinate containing
+                            #  the formula_terms is a dimension coordinate of
+                            #  the associated cube and a new alternatively named
+                            #  dimensionless vertical coordinate is required
+                            #  with new formula_terms and a renamed dimension.
+                            if cf_name in dimension_names:
+                                msg = (
+                                    "Unable to create dimensonless vertical "
+                                    "coordinate."
+                                )
+                                raise ValueError(msg)
+                            key = (cf_name, std_name, formula_terms)
+                            name = self._formula_terms_cache.get(key)
+                            if name is None:
+                                # Create a new variable
+                                name = self._create_generic_cf_array_var(
+                                    cube, dimension_names, primary_coord
+                                )
+                                cf_var = self._dataset.variables[name]
+                                _setncattr(cf_var, "standard_name", std_name)
+                                _setncattr(cf_var, "axis", "Z")
+                                # Update the formula terms.
+                                ft = formula_terms.split()
+                                ft = [name if t == cf_name else t for t in ft]
+                                _setncattr(
+                                    cf_var, "formula_terms", " ".join(ft)
+                                )
+                                # Update the cache.
+                                self._formula_terms_cache[key] = name
+                            # Update the associated cube variable.
+                            coords = cf_var_cube.coordinates.split()
+                            coords = [
+                                name if c == cf_name else c for c in coords
+                            ]
+                            _setncattr(
+                                cf_var_cube, "coordinates", " ".join(coords)
                             )
-                            raise ValueError(msg)
-                        key = (cf_name, std_name, formula_terms)
-                        name = self._formula_terms_cache.get(key)
-                        if name is None:
-                            # Create a new variable
-                            name = self._create_generic_cf_array_var(
-                                cube, dimension_names, primary_coord
-                            )
-                            cf_var = self._dataset.variables[name]
-                            _setncattr(cf_var, "standard_name", std_name)
-                            _setncattr(cf_var, "axis", "Z")
-                            # Update the formula terms.
-                            ft = formula_terms.split()
-                            ft = [name if t == cf_name else t for t in ft]
-                            _setncattr(cf_var, "formula_terms", " ".join(ft))
-                            # Update the cache.
-                            self._formula_terms_cache[key] = name
-                        # Update the associated cube variable.
-                        coords = cf_var_cube.coordinates.split()
-                        coords = [name if c == cf_name else c for c in coords]
-                        _setncattr(
-                            cf_var_cube, "coordinates", " ".join(coords)
-                        )
-                else:
-                    _setncattr(cf_var, "standard_name", std_name)
-                    _setncattr(cf_var, "axis", "Z")
-                    _setncattr(cf_var, "formula_terms", formula_terms)
+                    else:
+                        _setncattr(cf_var, "standard_name", std_name)
+                        _setncattr(cf_var, "axis", "Z")
+                        _setncattr(cf_var, "formula_terms", formula_terms)
 
     def _get_dim_names(self, cube_or_mesh):
         """
@@ -1393,11 +1424,12 @@ class Saver:
                         # caller (write) will not create any more variables
                         # in between choosing dim names (here), and creating
                         # the new dims (via '_create_cf_dimensions').
-                        while (
-                            dim_name in self._existing_dim
-                            or dim_name in self._dataset.variables
-                        ):
-                            dim_name = self._increment_name(dim_name)
+                        with GLOBAL_NETCDF_ACCESS_LOCK:
+                            while (
+                                dim_name in self._existing_dim
+                                or dim_name in self._dataset.variables
+                            ):
+                                dim_name = self._increment_name(dim_name)
 
                         # Record the new dimension.
                         record_dimension(
@@ -1447,11 +1479,12 @@ class Saver:
                             # NOTE: check against variable names is needed
                             # because of a netcdf bug ... see note in the
                             # mesh dimensions block above.
-                            while (
-                                dim_name in self._existing_dim
-                                or dim_name in self._dataset.variables
-                            ):
-                                dim_name = self._increment_name(dim_name)
+                            with GLOBAL_NETCDF_ACCESS_LOCK:
+                                while (
+                                    dim_name in self._existing_dim
+                                    or dim_name in self._dataset.variables
+                                ):
+                                    dim_name = self._increment_name(dim_name)
 
                     else:
                         # No CF-netCDF coordinates describe this data dimension.
@@ -1462,13 +1495,15 @@ class Saver:
                         # NOTE: check against variable names is needed because
                         # of a netcdf bug ... see note in the mesh dimensions
                         # block above.
-                        while (
-                            dim_name in self._existing_dim
-                            and (
-                                self._existing_dim[dim_name] != cube.shape[dim]
-                            )
-                        ) or dim_name in self._dataset.variables:
-                            dim_name = self._increment_name(dim_name)
+                        with GLOBAL_NETCDF_ACCESS_LOCK:
+                            while (
+                                dim_name in self._existing_dim
+                                and (
+                                    self._existing_dim[dim_name]
+                                    != cube.shape[dim]
+                                )
+                            ) or dim_name in self._dataset.variables:
+                                dim_name = self._increment_name(dim_name)
 
                 # Record the dimension.
                 record_dimension(
@@ -1533,10 +1568,12 @@ class Saver:
     def _ensure_valid_dtype(self, values, src_name, src_object):
         # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
         # so we check if we can store them as int32 instead.
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            file_format = self._dataset.file_format
         if (
             np.issubdtype(values.dtype, np.int64)
             or np.issubdtype(values.dtype, np.unsignedinteger)
-        ) and self._dataset.file_format in (
+        ) and file_format in (
             "NETCDF3_CLASSIC",
             "NETCDF3_64BIT",
             "NETCDF4_CLASSIC",
@@ -1554,9 +1591,10 @@ class Saver:
                     " its values cannot be safely cast to a supported"
                     " integer type."
                 )
-                msg = msg.format(
-                    src_name, src_object, self._dataset.file_format
-                )
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    msg = msg.format(
+                        src_name, src_object, self._dataset.file_format
+                    )
                 raise ValueError(msg)
             values = values.astype(np.int32)
         return values
@@ -1597,23 +1635,27 @@ class Saver:
                 property_name = "bounds"
                 varname_extra = "bnds"
 
-            if bounds_dimension_name not in self._dataset.dimensions:
-                # Create the bounds dimension with the appropriate extent.
-                while bounds_dimension_name in self._dataset.variables:
-                    # Also avoid collision with variable names.
-                    # See '_get_dim_names' for reason.
-                    bounds_dimension_name = self._increment_name(
-                        bounds_dimension_name
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                if bounds_dimension_name not in self._dataset.dimensions:
+                    # Create the bounds dimension with the appropriate extent.
+                    while bounds_dimension_name in self._dataset.variables:
+                        # Also avoid collision with variable names.
+                        # See '_get_dim_names' for reason.
+                        bounds_dimension_name = self._increment_name(
+                            bounds_dimension_name
+                        )
+                    self._dataset.createDimension(
+                        bounds_dimension_name, n_bounds
                     )
-                self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
-            boundsvar_name = "{}_{}".format(cf_name, varname_extra)
-            _setncattr(cf_var, property_name, boundsvar_name)
-            cf_var_bounds = self._dataset.createVariable(
-                boundsvar_name,
-                bounds.dtype.newbyteorder("="),
-                cf_var.dimensions + (bounds_dimension_name,),
-            )
+                boundsvar_name = "{}_{}".format(cf_name, varname_extra)
+                _setncattr(cf_var, property_name, boundsvar_name)
+                cf_var_bounds = self._dataset.createVariable(
+                    boundsvar_name,
+                    bounds.dtype.newbyteorder("="),
+                    cf_var.dimensions + (bounds_dimension_name,),
+                )
+
             self._lazy_stream_data(
                 data=bounds,
                 fill_value=None,
@@ -1746,65 +1788,69 @@ class Saver:
         """
         # First choose a var-name for the mesh variable itself.
         cf_mesh_name = self._get_mesh_variable_name(mesh)
-        # Disambiguate any possible clashes.
-        while cf_mesh_name in self._dataset.variables:
-            cf_mesh_name = self._increment_name(cf_mesh_name)
 
-        # Create the main variable
-        cf_mesh_var = self._dataset.createVariable(
-            cf_mesh_name,
-            np.dtype(np.int32),
-            [],
-        )
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            # Disambiguate any possible clashes.
+            while cf_mesh_name in self._dataset.variables:
+                cf_mesh_name = self._increment_name(cf_mesh_name)
 
-        # Add the basic essential attributes
-        _setncattr(cf_mesh_var, "cf_role", "mesh_topology")
-        _setncattr(
-            cf_mesh_var,
-            "topology_dimension",
-            np.int32(mesh.topology_dimension),
-        )
+            # Create the main variable
+            cf_mesh_var = self._dataset.createVariable(
+                cf_mesh_name,
+                np.dtype(np.int32),
+                [],
+            )
+
+            # Add the basic essential attributes
+            _setncattr(cf_mesh_var, "cf_role", "mesh_topology")
+            _setncattr(
+                cf_mesh_var,
+                "topology_dimension",
+                np.int32(mesh.topology_dimension),
+            )
+
         # Add the usual names + units attributes
         self._set_cf_var_attributes(cf_mesh_var, mesh)
 
         return cf_mesh_name
 
     def _set_cf_var_attributes(self, cf_var, element):
-        # Deal with CF-netCDF units, and add the name+units properties.
-        if isinstance(element, iris.coords.Coord):
-            # Fix "degree" units if needed.
-            units_str = self._cf_coord_standardised_units(element)
-        else:
-            units_str = str(element.units)
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            # Deal with CF-netCDF units, and add the name+units properties.
+            if isinstance(element, iris.coords.Coord):
+                # Fix "degree" units if needed.
+                units_str = self._cf_coord_standardised_units(element)
+            else:
+                units_str = str(element.units)
 
-        if cf_units.as_unit(units_str).is_udunits():
-            _setncattr(cf_var, "units", units_str)
+            if cf_units.as_unit(units_str).is_udunits():
+                _setncattr(cf_var, "units", units_str)
 
-        standard_name = element.standard_name
-        if standard_name is not None:
-            _setncattr(cf_var, "standard_name", standard_name)
+            standard_name = element.standard_name
+            if standard_name is not None:
+                _setncattr(cf_var, "standard_name", standard_name)
 
-        long_name = element.long_name
-        if long_name is not None:
-            _setncattr(cf_var, "long_name", long_name)
+            long_name = element.long_name
+            if long_name is not None:
+                _setncattr(cf_var, "long_name", long_name)
 
-        # Add the CF-netCDF calendar attribute.
-        if element.units.calendar:
-            _setncattr(cf_var, "calendar", str(element.units.calendar))
+            # Add the CF-netCDF calendar attribute.
+            if element.units.calendar:
+                _setncattr(cf_var, "calendar", str(element.units.calendar))
 
-        # Add any other custom coordinate attributes.
-        for name in sorted(element.attributes):
-            value = element.attributes[name]
+            # Add any other custom coordinate attributes.
+            for name in sorted(element.attributes):
+                value = element.attributes[name]
 
-            if name == "STASH":
-                # Adopting provisional Metadata Conventions for representing MO
-                # Scientific Data encoded in NetCDF Format.
-                name = "um_stash_source"
-                value = str(value)
+                if name == "STASH":
+                    # Adopting provisional Metadata Conventions for representing MO
+                    # Scientific Data encoded in NetCDF Format.
+                    name = "um_stash_source"
+                    value = str(value)
 
-            # Don't clobber existing attributes.
-            if not hasattr(cf_var, name):
-                _setncattr(cf_var, name, value)
+                # Don't clobber existing attributes.
+                if not hasattr(cf_var, name):
+                    _setncattr(cf_var, name, value)
 
     def _create_generic_cf_array_var(
         self,
@@ -1861,8 +1907,9 @@ class Saver:
         # Work out the var-name to use.
         # N.B. the only part of this routine that may use a mesh _or_ a cube.
         cf_name = self._get_coord_variable_name(cube_or_mesh, element)
-        while cf_name in self._dataset.variables:
-            cf_name = self._increment_name(cf_name)
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            while cf_name in self._dataset.variables:
+                cf_name = self._increment_name(cf_name)
 
         if element_dims is None:
             # Get the list of file-dimensions (names), to create the variable.
@@ -1883,23 +1930,27 @@ class Saver:
                 string_dimension_depth //= 4
             string_dimension_name = "string%d" % string_dimension_depth
 
-            # Determine whether to create the string length dimension.
-            if string_dimension_name not in self._dataset.dimensions:
-                while string_dimension_name in self._dataset.variables:
-                    # Also avoid collision with variable names.
-                    # See '_get_dim_names' for reason.
-                    string_dimension_name = self._increment_name(
-                        string_dimension_name
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                # Determine whether to create the string length dimension.
+                if string_dimension_name not in self._dataset.dimensions:
+                    while string_dimension_name in self._dataset.variables:
+                        # Also avoid collision with variable names.
+                        # See '_get_dim_names' for reason.
+                        string_dimension_name = self._increment_name(
+                            string_dimension_name
+                        )
+                    self._dataset.createDimension(
+                        string_dimension_name, string_dimension_depth
                     )
-                self._dataset.createDimension(
-                    string_dimension_name, string_dimension_depth
-                )
 
             # Add the string length dimension to the variable dimensions.
             element_dims.append(string_dimension_name)
 
-            # Create the label coordinate variable.
-            cf_var = self._dataset.createVariable(cf_name, "|S1", element_dims)
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                # Create the label coordinate variable.
+                cf_var = self._dataset.createVariable(
+                    cf_name, "|S1", element_dims
+                )
 
             # Convert data from an array of strings into a character array
             # with an extra string-length dimension.
@@ -1943,19 +1994,23 @@ class Saver:
                 # must be the same as its dimension name.
                 cf_name = element_dims[0]
 
-            # Create the CF-netCDF variable.
-            cf_var = self._dataset.createVariable(
-                cf_name,
-                data.dtype.newbyteorder("="),
-                element_dims,
-                fill_value=fill_value,
-            )
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                # Create the CF-netCDF variable.
+                cf_var = self._dataset.createVariable(
+                    cf_name,
+                    data.dtype.newbyteorder("="),
+                    element_dims,
+                    fill_value=fill_value,
+                )
 
-            # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
-            if is_dimcoord:
-                axis = iris.util.guess_coord_axis(element)
-                if axis is not None and axis.lower() in SPATIO_TEMPORAL_AXES:
-                    _setncattr(cf_var, "axis", axis.upper())
+                # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
+                if is_dimcoord:
+                    axis = iris.util.guess_coord_axis(element)
+                    if (
+                        axis is not None
+                        and axis.lower() in SPATIO_TEMPORAL_AXES
+                    ):
+                        _setncattr(cf_var, "axis", axis.upper())
 
             # Create the associated CF-netCDF bounds variable, if any.
             self._create_cf_bounds(element, cf_var, cf_name)
@@ -2043,30 +2098,32 @@ class Saver:
         if cs is not None:
             # Grid var not yet created?
             if cs not in self._coord_systems:
-                while cs.grid_mapping_name in self._dataset.variables:
-                    aname = self._increment_name(cs.grid_mapping_name)
-                    cs.grid_mapping_name = aname
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    while cs.grid_mapping_name in self._dataset.variables:
+                        aname = self._increment_name(cs.grid_mapping_name)
+                        cs.grid_mapping_name = aname
 
-                cf_var_grid = self._dataset.createVariable(
-                    cs.grid_mapping_name, np.int32
-                )
-                _setncattr(
-                    cf_var_grid, "grid_mapping_name", cs.grid_mapping_name
-                )
+                    cf_var_grid = self._dataset.createVariable(
+                        cs.grid_mapping_name, np.int32
+                    )
+                    _setncattr(
+                        cf_var_grid, "grid_mapping_name", cs.grid_mapping_name
+                    )
 
                 def add_ellipsoid(ellipsoid):
-                    cf_var_grid.longitude_of_prime_meridian = (
-                        ellipsoid.longitude_of_prime_meridian
-                    )
-                    semi_major = ellipsoid.semi_major_axis
-                    semi_minor = ellipsoid.semi_minor_axis
-                    if semi_minor == semi_major:
-                        cf_var_grid.earth_radius = semi_major
-                    else:
-                        cf_var_grid.semi_major_axis = semi_major
-                        cf_var_grid.semi_minor_axis = semi_minor
-                    if ellipsoid.datum is not None:
-                        cf_var_grid.horizontal_datum_name = ellipsoid.datum
+                    with GLOBAL_NETCDF_ACCESS_LOCK:
+                        cf_var_grid.longitude_of_prime_meridian = (
+                            ellipsoid.longitude_of_prime_meridian
+                        )
+                        semi_major = ellipsoid.semi_major_axis
+                        semi_minor = ellipsoid.semi_minor_axis
+                        if semi_minor == semi_major:
+                            cf_var_grid.earth_radius = semi_major
+                        else:
+                            cf_var_grid.semi_major_axis = semi_major
+                            cf_var_grid.semi_minor_axis = semi_minor
+                        if ellipsoid.datum is not None:
+                            cf_var_grid.horizontal_datum_name = ellipsoid.datum
 
                 # latlon
                 if isinstance(cs, iris.coord_systems.GeogCS):
@@ -2247,8 +2304,9 @@ class Saver:
 
                 self._coord_systems.append(cs)
 
-            # Refer to grid var
-            _setncattr(cf_var_cube, "grid_mapping", cs.grid_mapping_name)
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                # Refer to grid var
+                _setncattr(cf_var_cube, "grid_mapping", cs.grid_mapping_name)
 
     def _create_cf_data_variable(
         self,
@@ -2331,23 +2389,34 @@ class Saver:
             dtype = data.dtype.newbyteorder("=")
 
         def set_packing_ncattrs(cfvar):
-            """Set netCDF packing attributes."""
+            """
+            Set netCDF packing attributes.
+
+            NOTE: must only be called when GLOBAL_NETCDF_ACCESS_LOCK is acquired
+
+            """
             if packing:
                 if scale_factor:
                     _setncattr(cfvar, "scale_factor", scale_factor)
                 if add_offset:
                     _setncattr(cfvar, "add_offset", add_offset)
 
-        cf_name = self._get_cube_variable_name(cube)
-        while cf_name in self._dataset.variables:
-            cf_name = self._increment_name(cf_name)
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            cf_name = self._get_cube_variable_name(cube)
+            while cf_name in self._dataset.variables:
+                cf_name = self._increment_name(cf_name)
 
-        # Create the cube CF-netCDF data variable with data payload.
-        cf_var = self._dataset.createVariable(
-            cf_name, dtype, dimension_names, fill_value=fill_value, **kwargs
-        )
+            # Create the cube CF-netCDF data variable with data payload.
+            cf_var = self._dataset.createVariable(
+                cf_name,
+                dtype,
+                dimension_names,
+                fill_value=fill_value,
+                **kwargs,
+            )
 
-        set_packing_ncattrs(cf_var)
+            set_packing_ncattrs(cf_var)
+
         self._lazy_stream_data(
             data=data,
             fill_value=fill_value,
@@ -2355,18 +2424,19 @@ class Saver:
             cf_var=cf_var,
         )
 
-        if cube.standard_name:
-            _setncattr(cf_var, "standard_name", cube.standard_name)
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            if cube.standard_name:
+                _setncattr(cf_var, "standard_name", cube.standard_name)
 
-        if cube.long_name:
-            _setncattr(cf_var, "long_name", cube.long_name)
+            if cube.long_name:
+                _setncattr(cf_var, "long_name", cube.long_name)
 
-        if cube.units.is_udunits():
-            _setncattr(cf_var, "units", str(cube.units))
+            if cube.units.is_udunits():
+                _setncattr(cf_var, "units", str(cube.units))
 
-        # Add the CF-netCDF calendar attribute.
-        if cube.units.calendar:
-            _setncattr(cf_var, "calendar", cube.units.calendar)
+            # Add the CF-netCDF calendar attribute.
+            if cube.units.calendar:
+                _setncattr(cf_var, "calendar", cube.units.calendar)
 
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:
@@ -2378,37 +2448,39 @@ class Saver:
         # Add any cube attributes whose keys are in local_keys as
         # CF-netCDF data variable attributes.
         attr_names = set(cube.attributes).intersection(local_keys)
-        for attr_name in sorted(attr_names):
-            # Do not output 'conventions' attribute.
-            if attr_name.lower() == "conventions":
-                continue
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            for attr_name in sorted(attr_names):
+                # Do not output 'conventions' attribute.
+                if attr_name.lower() == "conventions":
+                    continue
 
-            value = cube.attributes[attr_name]
+                value = cube.attributes[attr_name]
 
-            if attr_name == "STASH":
-                # Adopting provisional Metadata Conventions for representing MO
-                # Scientific Data encoded in NetCDF Format.
-                attr_name = "um_stash_source"
-                value = str(value)
+                if attr_name == "STASH":
+                    # Adopting provisional Metadata Conventions for representing MO
+                    # Scientific Data encoded in NetCDF Format.
+                    attr_name = "um_stash_source"
+                    value = str(value)
 
-            if attr_name == "ukmo__process_flags":
-                value = " ".join([x.replace(" ", "_") for x in value])
+                if attr_name == "ukmo__process_flags":
+                    value = " ".join([x.replace(" ", "_") for x in value])
 
-            if attr_name in _CF_GLOBAL_ATTRS:
-                msg = (
-                    "{attr_name!r} is being added as CF data variable "
-                    "attribute, but {attr_name!r} should only be a CF "
-                    "global attribute.".format(attr_name=attr_name)
-                )
-                warnings.warn(msg)
+                if attr_name in _CF_GLOBAL_ATTRS:
+                    msg = (
+                        "{attr_name!r} is being added as CF data variable "
+                        "attribute, but {attr_name!r} should only be a CF "
+                        "global attribute.".format(attr_name=attr_name)
+                    )
+                    warnings.warn(msg)
 
-            _setncattr(cf_var, attr_name, value)
+                _setncattr(cf_var, attr_name, value)
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
 
         if cell_methods:
-            _setncattr(cf_var, "cell_methods", cell_methods)
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                _setncattr(cf_var, "cell_methods", cell_methods)
 
         # Create the CF-netCDF grid mapping.
         self._create_cf_grid_mapping(cube, cf_var)
@@ -2464,7 +2536,8 @@ class Saver:
         else:
 
             def store(data, cf_var, fill_value):
-                cf_var[:] = data
+                with GLOBAL_NETCDF_ACCESS_LOCK:
+                    cf_var[:] = data
                 is_masked = np.ma.is_masked(data)
                 contains_value = fill_value is not None and fill_value in data
                 return is_masked, contains_value

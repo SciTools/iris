@@ -15,9 +15,10 @@ References:
 """
 
 from abc import ABCMeta, abstractmethod
-from collections.abc import Iterable, MutableMapping
+from collections.abc import Iterable, Mapping, MutableMapping
 import os
 import re
+import threading
 import warnings
 
 import netCDF4
@@ -1021,6 +1022,21 @@ class CFGroup(MutableMapping):
 
 
 ################################################################################
+_file_locks: Mapping[str, threading.Lock] = {}
+
+
+def get_filepath_lock(path, already_exists=None):
+    if already_exists is not None:
+        assert already_exists == (path in _file_locks)
+    if path not in _file_locks:
+        _file_locks[path] = threading.RLock()
+    result = _file_locks[path]
+    return result
+
+
+GLOBAL_NETCDF_ACCESS_LOCK = threading.Lock()
+
+
 class CFReader:
     """
     This class allows the contents of a netCDF file to be interpreted according
@@ -1045,28 +1061,49 @@ class CFReader:
 
     def __init__(self, filename, warn=False, monotonic=False):
         self._dataset = None
-        self._filename = os.path.expanduser(filename)
+        filename = os.path.expanduser(filename)
+        filename = os.path.abspath(filename)
+        self._filename = filename
+        self._lock = get_filepath_lock(self._filename)
+        # NOTE: we'd really like to defer this to the start of the related context, but
+        # prior usage requires us to do most of the work within the init call.
+        self._lock.acquire()
 
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
-        self._dataset = netCDF4.Dataset(self._filename, mode="r")
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            self._dataset = netCDF4.Dataset(self._filename, mode="r")
 
-        # Issue load optimisation warning.
-        if warn and self._dataset.file_format in [
-            "NETCDF3_CLASSIC",
-            "NETCDF3_64BIT",
-        ]:
-            warnings.warn(
-                "Optimise CF-netCDF loading by converting data from NetCDF3 "
-                'to NetCDF4 file format using the "nccopy" command.'
-            )
+            # Issue load optimisation warning.
+            if warn and self._dataset.file_format in [
+                "NETCDF3_CLASSIC",
+                "NETCDF3_64BIT",
+            ]:
+                warnings.warn(
+                    "Optimise CF-netCDF loading by converting data from NetCDF3 "
+                    'to NetCDF4 file format using the "nccopy" command.'
+                )
 
-        self._check_monotonic = monotonic
+            self._check_monotonic = monotonic
 
-        self._translate()
-        self._build_cf_groups()
-        self._reset()
+            self._translate()
+            self._build_cf_groups()
+            self._reset()
+
+    def __enter__(self):
+        # Enable use as a context manager
+        # N.B. this **guarantees* closure of the file, when the context is exited.
+        # Note: ideally, the class would not do so much work in the __init__ call, and
+        # would do all that here, after acquiring necessary permissions/locks.
+        # But for legacy reasons, we can't do that.  So **effectively**, the context
+        # (in terms of access control) alreday started, when we created the object.
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # When used as a context-manager, **always** close the file on exit.
+        self._close()
+        self._lock.release()
 
     @property
     def filename(self):
@@ -1294,10 +1331,16 @@ class CFReader:
         for nc_var_name in self._dataset.variables.keys():
             self.cf_group[nc_var_name].cf_attrs_reset()
 
-    def __del__(self):
+    def _close(self):
         # Explicitly close dataset to prevent file remaining open.
         if self._dataset is not None:
-            self._dataset.close()
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                self._dataset.close()
+            self._dataset = None
+
+    def __del__(self):
+        # Be sure to close dataset when CFReader is destroyed / garbage-collected.
+        self._close()
 
 
 def _getncattr(dataset, attr, default=None):
