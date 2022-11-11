@@ -23,18 +23,17 @@ import iris.fileformats.pp as pp
 
 
 @pytest.mark.parametrize(
-    "data_shape,expected_shape",
+    "data_shape,expected_shape,data_type",
     [
-        ((2, 3), (2, 3)),
-        ((2, 3), (3, 2)),
-        ((2, 3), (1, 3)),
-        ((2, 3), (2, 2)),
-        ((2, 3), (3, 3)),
-        ((2, 3), (2, 4)),
+        ((2, 3), (2, 3), np.float32),
+        ((2, 3), (3, 2), np.int32),
+        ((2, 3), (1, 3), np.int16),
+        ((2, 3), (2, 2), np.int8),
+        ((2, 3), (3, 3), np.float32),
+        ((2, 3), (2, 4), np.float32),
     ],
 )
-def test_data_padding__no_compression(data_shape, expected_shape):
-    data_type = np.float32
+def test_data_padding__no_compression(data_shape, expected_shape, data_type):
     data = np.empty(data_shape, dtype=data_type)
 
     # create the field data buffer
