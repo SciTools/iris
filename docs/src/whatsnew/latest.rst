@@ -27,6 +27,14 @@ This document explains the changes made to Iris for this release
 
 #. Welcome to `@ESadek-MO`_ and `@TTV-Intrepid`_  who made their first contributions to Iris 🎉
 
+   .. _try_experimental_stratify:
+
+#. Do you enjoy `python-stratify`_? Did you know that Iris includes a
+   convenience for using `python-stratify`_ with :class:`~iris.cube.Cube`\s?
+   It has been 'experimental' for several years now, without receiving much
+   feedback, so it's **use it or lose it** time: please try out
+   :mod:`iris.experimental.stratify` and let us know what you think!
+
 
 ✨ Features
 ===========
@@ -53,6 +61,9 @@ This document explains the changes made to Iris for this release
    :func:`~iris.analysis.cartography.project` to handle cubes which contain
    both dim and aux coords of the same type e.g. ``longitude`` and ``grid_longitude``.
    (:issue:`3916`, :pull:`5029`).
+
+#. `@stephenworsley`_ added the ability to regrid derived coordinates with the
+   :obj:`~iris.analysis.PointInCell` regridding scheme. (:pull:`4807`)
 
 
 🐛 Bugs Fixed
@@ -87,6 +98,10 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ fixed a bug which caused derived coordinates to be realised
    after calling :meth:`iris.cube.Cube.aggregated_by`. (:issue:`3637`, :pull:`4947`)
+   
+#. `@rcomer`_ corrected the ``standard_name`` mapping from UM stash code ``m01s30i311``
+   to indicate that this is the upward, rather than northward part of the flow.
+   (:pull:`5060`)
 
 
 💣 Incompatible Changes
@@ -101,6 +116,10 @@ This document explains the changes made to Iris for this release
    array when requesting :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.data`.
    We do not expect this to affect typical user workflows but please get in
    touch if you need help. (:pull:`5041`)
+
+#. `@trexfeathers`_ moved ``iris.experimental.animate.animate()`` to
+   :func:`iris.plot.animate`, in recognition of its successful use over several
+   years since introduction. (:pull:`5056`)
 
 
 🚀 Performance Enhancements
@@ -118,6 +137,10 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ improved the speed of :meth:`iris.cube.Cube.subset` /
    :meth:`iris.coords.Coord.intersect`.
    (:pull:`4955`)
+
+#. `@stephenworsley`_ improved the speed of the :obj:`~iris.analysis.PointInCell`
+   regridding scheme. (:pull:`4807`)
+
 
 🔥 Deprecations
 ===============
@@ -157,6 +180,8 @@ This document explains the changes made to Iris for this release
 
 #. `@pp-mo`_ added a :ref:`code example <ORCA_example>`
    for converting ORCA-gridded data to an unstructured cube. (:pull:`5013`)
+#. `@Esadek-MO`_ added links to relevant Gallery examples within the User Guide
+   to improve understanding. (:pull:`5009`)
 
 #. `@trexfeathers`_ changed the warning header for the **latest** documentation
    to reference Read the Docs' built-in version switcher, instead of generating

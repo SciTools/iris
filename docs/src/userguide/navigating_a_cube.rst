@@ -110,6 +110,10 @@ cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute:
 
     print(cube.cell_methods)
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_meteorology_plot_wind_barbs.py`
 
 Accessing Coordinates on the Cube
 ---------------------------------
@@ -176,6 +180,10 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
 
 The coordinate ``my_custom_coordinate`` now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_custom_file_loading.py` (Adding Metadata)
 
 Adding and Removing Metadata to the Cube at Load Time
 -----------------------------------------------------

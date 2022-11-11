@@ -253,6 +253,11 @@ which are described below.
 Using CubeList.concatenate
 ==========================
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_projections_and_annotations.py` (Brief concatenating examples)
+
 The :meth:`CubeList.concatenate <iris.cube.CubeList.concatenate>` method operates on a list
 of cubes and returns a new :class:`~iris.cube.CubeList` containing the cubes
 that have been concatenated.
