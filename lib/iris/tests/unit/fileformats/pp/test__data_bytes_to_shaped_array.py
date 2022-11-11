@@ -23,8 +23,12 @@ import iris.fileformats.pp as pp
 
 
 @pytest.mark.parametrize("data_shape", [(2, 3)])
-@pytest.mark.parametrize("expected_shape", [(2, 3), (3, 2), (1, 3), (2, 2), (3, 3), (2, 4)])
-@pytest.mark.parametrize("data_type", [np.float32, np.int32, np.int16, np.int8])
+@pytest.mark.parametrize(
+    "expected_shape", [(2, 3), (3, 2), (1, 3), (2, 2), (3, 3), (2, 4)]
+)
+@pytest.mark.parametrize(
+    "data_type", [np.float32, np.int32, np.int16, np.int8]
+)
 def test_data_padding__no_compression(data_shape, expected_shape, data_type):
     data = np.empty(data_shape, dtype=data_type)
 
