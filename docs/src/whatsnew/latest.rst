@@ -103,6 +103,10 @@ This document explains the changes made to Iris for this release
    to indicate that this is the upward, rather than northward part of the flow.
    (:pull:`5060`)
 
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) fixed an issue which prevented
+   uncompressed PP fields with additional trailing padded words in the field
+   data to be loaded and saved. (:pull:`5058`)
+
 
 💣 Incompatible Changes
 =======================
