@@ -169,20 +169,25 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 
 def _get_lon_lat_coords(cube):
-    lat_coords = [
-        coord for coord in cube.coords() if "latitude" in coord.name()
-    ]
-    lon_coords = [
-        coord for coord in cube.coords() if "longitude" in coord.name()
-    ]
+    def search_for_coord(coord_iterable, coord_name):
+        return [
+            coord for coord in coord_iterable if coord_name in coord.name()
+        ]
+
+    lat_coords = search_for_coord(
+        cube.dim_coords, "latitude"
+    ) or search_for_coord(cube.coords(), "latitude")
+    lon_coords = search_for_coord(
+        cube.dim_coords, "longitude"
+    ) or search_for_coord(cube.coords(), "longitude")
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
-            "Calling `_get_lon_lat_coords` with multiple lat or lon coords"
+            "Calling `_get_lon_lat_coords` with multiple same-type (i.e. dim/aux) lat or lon coords"
             " is currently disallowed"
         )
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
-    return (lon_coord, lat_coord)
+    return lon_coord, lat_coord
 
 
 def _xy_range(cube, mode=None):
@@ -577,6 +582,11 @@ def project(cube, target_proj, nx=None, ny=None):
     Returns:
         An instance of :class:`iris.cube.Cube` and a list describing the
         extent of the projection.
+
+    .. note::
+
+        If there are both dim and aux latitude-longitude coordinates, only
+        the dim coordinates will be used.
 
     .. note::
 

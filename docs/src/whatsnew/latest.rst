@@ -27,6 +27,14 @@ This document explains the changes made to Iris for this release
 
 #. Welcome to `@ESadek-MO`_ and `@TTV-Intrepid`_  who made their first contributions to Iris 🎉
 
+   .. _try_experimental_stratify:
+
+#. Do you enjoy `python-stratify`_? Did you know that Iris includes a
+   convenience for using `python-stratify`_ with :class:`~iris.cube.Cube`\s?
+   It has been 'experimental' for several years now, without receiving much
+   feedback, so it's **use it or lose it** time: please try out
+   :mod:`iris.experimental.stratify` and let us know what you think!
+
 
 ✨ Features
 ===========
@@ -37,6 +45,25 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ and `Julian Heming`_ added new mappings between CF
    standard names and UK Met Office LBFC codes. (:pull:`4859`)
+
+#. `@pp-mo`_ changed the metadata of a face/edge-type
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord`, to be same as the face/edge
+   coordinate in the mesh from which it takes its ``.points``.  Previously, all MeshCoords
+   took their metadata from the node coord, but only a node-type MeshCoord now does
+   that.  Also, the MeshCoord ``.var_name`` is now that of the underlying coord, whereas
+   previously this was always None.  These changes make MeshCoord more like an ordinary
+   :class:`~iris.coords.AuxCoord`, which avoids some specific known usage problems.
+   (:issue:`4860`, :pull:`5020`)
+
+#. `@Esadek-MO`_ and `@trexfeathers`_ added dim coord
+   prioritisation to ``_get_lon_lat_coords()`` in :mod:`iris.analysis.cartography`.
+   This allows :func:`iris.analysis.cartography.area_weights` and
+   :func:`~iris.analysis.cartography.project` to handle cubes which contain
+   both dim and aux coords of the same type e.g. ``longitude`` and ``grid_longitude``.
+   (:issue:`3916`, :pull:`5029`).
+
+#. `@stephenworsley`_ added the ability to regrid derived coordinates with the
+   :obj:`~iris.analysis.PointInCell` regridding scheme. (:pull:`4807`)
 
 
 🐛 Bugs Fixed
@@ -63,11 +90,40 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed some old redundant code that prevented determining the
    order of time cells. (:issue:`4697`, :pull:`4729`)
 
+#. `@stephenworsley`_ improved the accuracy of the error messages for
+   :meth:`~iris.cube.Cube.coord` when failing to find coordinates in the case where
+   a coordinate is given as the argument. Similarly, improved the error messages for
+   :meth:`~iris.cube.Cube.cell_measure` and :meth:`~iris.cube.Cube.ancillary_variable`.
+   (:issue:`4898`, :pull:`4928`)
+
+#. `@stephenworsley`_ fixed a bug which caused derived coordinates to be realised
+   after calling :meth:`iris.cube.Cube.aggregated_by`. (:issue:`3637`, :pull:`4947`)
+   
+#. `@rcomer`_ corrected the ``standard_name`` mapping from UM stash code ``m01s30i311``
+   to indicate that this is the upward, rather than northward part of the flow.
+   (:pull:`5060`)
+
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) fixed an issue which prevented
+   uncompressed PP fields with additional trailing padded words in the field
+   data to be loaded and saved. (:pull:`5058`)
+
 
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@trexfeathers`_ altered testing to accept new Dask copying behaviour from
+   `dask/dask#9555`_ - copies of a Dask array created using ``da.from_array()``
+   will all ``compute()`` to a shared identical array. So creating a
+   :class:`~iris.cube.Cube` using ``Cube(data=da.from_array(...``, then
+   using :class:`~iris.cube.Cube` :meth:`~iris.cube.Cube.copy`,
+   will produce two :class:`~iris.cube.Cube`\s that both return an identical
+   array when requesting :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.data`.
+   We do not expect this to affect typical user workflows but please get in
+   touch if you need help. (:pull:`5041`)
+
+#. `@trexfeathers`_ moved ``iris.experimental.animate.animate()`` to
+   :func:`iris.plot.animate`, in recognition of its successful use over several
+   years since introduction. (:pull:`5056`)
 
 
 🚀 Performance Enhancements
@@ -81,6 +137,14 @@ This document explains the changes made to Iris for this release
    coordinates. This also affects :meth:`iris.cube.Cube.extract`,
    :meth:`iris.cube.Cube.subset`, and :meth:`iris.coords.Coord.intersect`.
    (:pull:`4969`)
+
+#. `@bouweandela`_ improved the speed of :meth:`iris.cube.Cube.subset` /
+   :meth:`iris.coords.Coord.intersect`.
+   (:pull:`4955`)
+
+#. `@stephenworsley`_ improved the speed of the :obj:`~iris.analysis.PointInCell`
+   regridding scheme. (:pull:`4807`)
+
 
 🔥 Deprecations
 ===============
@@ -107,16 +171,28 @@ This document explains the changes made to Iris for this release
    :mod:`iris.palette` in response to a deprecation warning. Using the new
    Matplotlib API also means a ``matplotlib>=3.5`` pin. (:pull:`4998`)
 
+#. See `💣 Incompatible Changes`_ for notes about `dask/dask#9555`_.
+
 
 📚 Documentation
 ================
 
 #. `@ESadek-MO`_, `@TTV-Intrepid`_ and `@trexfeathers`_ added a gallery example for zonal
    means plotted parallel to a cartographic plot. (:pull:`4871`)
+
 #. `@Esadek-MO`_ added a key-terms :ref:`glossary` page into the user guide. (:pull:`4902`)
+
 #. `@pp-mo`_ added a :ref:`code example <ORCA_example>`
    for converting ORCA-gridded data to an unstructured cube. (:pull:`5013`)
+#. `@Esadek-MO`_ added links to relevant Gallery examples within the User Guide
+   to improve understanding. (:pull:`5009`)
 
+#. `@trexfeathers`_ changed the warning header for the **latest** documentation
+   to reference Read the Docs' built-in version switcher, instead of generating
+   its own independent links. (:pull:`5055`)
+
+#. `@tkknight`_ updated the links for the Iris documentation to v2.4 and
+   earlier to point to the archive of zip files instead. (:pull:`5064`)
 
 💼 Internal
 ===========
@@ -160,3 +236,4 @@ This document explains the changes made to Iris for this release
 .. _pypa/setuptools#1684: https://github.com/pypa/setuptools/issues/1684
 .. _SciTools/cartopy@fcb784d: https://github.com/SciTools/cartopy/commit/fcb784daa65d95ed9a74b02ca292801c02bc4108
 .. _SciTools/cartopy@8860a81: https://github.com/SciTools/cartopy/commit/8860a8186d4dc62478e74c83f3b2b3e8f791372e
+.. _dask/dask#9555: https://github.com/dask/dask/pull/9555
