@@ -191,6 +191,8 @@ This document explains the changes made to Iris for this release
    to reference Read the Docs' built-in version switcher, instead of generating
    its own independent links. (:pull:`5055`)
 
+#. `@tkknight`_ updated the links for the Iris documentation to v2.4 and
+   earlier to point to the archive of zip files instead. (:pull:`5064`)
 
 💼 Internal
 ===========
