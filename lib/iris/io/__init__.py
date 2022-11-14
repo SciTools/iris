@@ -58,9 +58,9 @@ def run_callback(callback, cube, field, filename):
 
         It is possible that this function returns None for certain callbacks,
         the caller of this function should handle this case.
-        
+
     .. note::
-        
+
         This function maintains laziness when called; it does not realise data.
         See more at :doc:`/userguide/real_and_lazy_data`.
 
