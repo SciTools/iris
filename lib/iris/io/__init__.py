@@ -58,6 +58,11 @@ def run_callback(callback, cube, field, filename):
 
         It is possible that this function returns None for certain callbacks,
         the caller of this function should handle this case.
+        
+    .. note::
+        
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -424,6 +429,11 @@ def save(source, target, saver=None, **kwargs):
     >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
     >>> iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
+    Notes
+    ------
+
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     from iris.cube import Cube, CubeList

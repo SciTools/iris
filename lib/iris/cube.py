@@ -234,6 +234,12 @@ class CubeList(list):
     def append(self, cube):
         """
         Append a cube.
+
+        Notes
+        ------
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         self._assert_is_cube(cube)
         super(CubeList, self).append(cube)
@@ -246,18 +252,38 @@ class CubeList(list):
 
         * other_cubes:
            A cubelist or other sequence of cubes.
+
+        Notes
+        ------
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         super(CubeList, self).extend(CubeList(other_cubes))
 
     def insert(self, index, cube):
         """
         Insert a cube before index.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         self._assert_is_cube(cube)
         super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
-        """Return a string of the XML that this list of cubes represents."""
+        """
+        Return a string of the XML that this list of cubes represents.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
+        """
 
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
@@ -291,6 +317,12 @@ class CubeList(list):
         * constraints (:class:`~iris.Constraint` or iterable of constraints):
             A single constraint or an iterable.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         return self._extract_and_merge(self, constraints, strict=False)
 
@@ -303,6 +335,12 @@ class CubeList(list):
 
         * constraint (:class:`~iris.Constraint`):
             The constraint to extract with.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         .. see also::
             :meth:`~iris.cube.CubeList.extract`
@@ -324,6 +362,12 @@ class CubeList(list):
 
         * constraints (iterable of, or single, :class:`~iris.Constraint`):
             The constraints to extract with.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         .. see also::
             :meth:`~iris.cube.CubeList.extract`
@@ -384,6 +428,11 @@ class CubeList(list):
            A string or list of strings of the names of the coordinates
            over which to perform the extraction.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         if isinstance(coord_names, str):
             coord_names = [coord_names]
@@ -426,6 +475,12 @@ class CubeList(list):
             iris.exceptions.MergeError: failed to merge into a single cube.
               Coordinates in cube.dim_coords differ: z.
               Coordinate-to-dimension mapping differs for cube.dim_coords.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         """
         if not self:
@@ -507,6 +562,10 @@ class CubeList(list):
             :func:`iris.util.unify_time_units` to normalise the epochs of the
             time coordinates so that the cubes can be merged.
 
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
         """
         # Register each of our cubes with its appropriate ProtoCube.
         proto_cubes_by_name = {}
@@ -570,6 +629,11 @@ class CubeList(list):
         .. note::
 
             Concatenation cannot occur along an anonymous dimension.
+
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
         """
         from iris._concatenate import concatenate
@@ -709,6 +773,11 @@ class CubeList(list):
 
             Concatenation cannot occur along an anonymous dimension.
 
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         from iris._concatenate import concatenate
 
@@ -749,6 +818,12 @@ class CubeList(list):
     def copy(self):
         """
         Return a CubeList when CubeList.copy() is called.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         if type(self) == CubeList:
             return deepcopy(self)
@@ -1107,7 +1182,11 @@ class Cube(CFVariableMixin):
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
 
-        This operation preserves lazy data.
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         """
         # If the cube has units convert the data.
@@ -1132,7 +1211,10 @@ class Cube(CFVariableMixin):
         self.units = unit
 
     def add_cell_method(self, cell_method):
-        """Add a :class:`~iris.coords.CellMethod` to the Cube."""
+        """
+        Add a :class:`~iris.coords.CellMethod` to the Cube.
+
+        """
         self.cell_methods += (cell_method,)
 
     def add_aux_coord(self, coord, data_dims=None):
@@ -1153,6 +1235,12 @@ class Cube(CFVariableMixin):
 
         Raises a ValueError if a coordinate with identical metadata already
         exists on the cube.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
@@ -1354,6 +1442,12 @@ class Cube(CFVariableMixin):
         exists on the cube or if a coord already exists for the
         given dimension.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
@@ -1433,6 +1527,12 @@ class Cube(CFVariableMixin):
         * coord (string or coord)
             The (name of the) coordinate to remove from the cube.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
         and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
 
@@ -1501,6 +1601,12 @@ class Cube(CFVariableMixin):
         """
         Replace the coordinate whose metadata matches the given coordinate.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         old_coord = self.coord(new_coord)
         dims = self.coord_dims(old_coord)
@@ -1528,6 +1634,12 @@ class Cube(CFVariableMixin):
 
         * coord (string or coord)
             The (name of the) coord to look for.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         """
         name_provided = False
@@ -1789,6 +1901,12 @@ class Cube(CFVariableMixin):
             A list containing zero or more coordinates matching the provided
             criteria.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         coords_and_factories = []
 
@@ -1965,6 +2083,11 @@ class Cube(CFVariableMixin):
         Returns:
             The coordinate that matches the provided criteria.
 
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         coords = self.coords(
             name_or_coord=name_or_coord,
@@ -2023,6 +2146,12 @@ class Cube(CFVariableMixin):
 
         Returns:
             The :class:`iris.coord_systems.CoordSystem` or None.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         """
         if isinstance(spec, str) or spec is None:
@@ -2327,12 +2456,25 @@ class Cube(CFVariableMixin):
         you can perform operations using this method that work equivalently
         on real or lazy data, and will maintain lazy data if present.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         return self._data_manager.core_data()
 
     @property
     def shape(self):
-        """The shape of the data of this cube."""
+        """The shape of the data of this cube.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+        """
         return self._data_manager.shape
 
     @property
@@ -2341,12 +2483,26 @@ class Cube(CFVariableMixin):
         The data type of the values in the data array of this
         :class:`~iris.cube.Cube`.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         return self._data_manager.dtype
 
     @property
     def ndim(self):
-        """The number of dimensions in the data of this cube."""
+        """
+        The number of dimensions in the data of this cube.
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+        """
         return self._data_manager.ndim
 
     def lazy_data(self):
@@ -2385,6 +2541,11 @@ class Cube(CFVariableMixin):
             To obtain the shape of the data without causing it to be loaded,
             use the Cube.shape attribute.
 
+        .. note::
+
+            This function does not maintain laziness when called; it realises data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
         Example::
             >>> fname = iris.sample_data_path('air_temp.pp')
             >>> cube = iris.load_cube(fname, 'air_temperature')
@@ -2402,6 +2563,8 @@ class Cube(CFVariableMixin):
             ...
             >>> print(data.shape)
             (10, 20)
+
+
 
         """
         return self._data_manager.data
@@ -2434,6 +2597,10 @@ class Cube(CFVariableMixin):
             dimension - instead use the :meth:`Cube.coord` method with the
             ``dimensions`` and ``dim_coords`` keyword arguments.
 
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
         """
         return tuple(
             (
@@ -2451,6 +2618,11 @@ class Cube(CFVariableMixin):
         Return a tuple of all the auxiliary coordinates, ordered by
         dimension(s).
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         return tuple(
             (
@@ -2496,6 +2668,11 @@ class Cube(CFVariableMixin):
             Control the *minimum* width of the cube name + units,
             i.e. the indent of the dimension map section.
 
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         from iris._representation.cube_printout import CubePrinter
 
@@ -2646,6 +2823,12 @@ class Cube(CFVariableMixin):
         coordinate. If the coordinate provided applies to the whole cube; the
         whole cube is returned. As such, the operation is not strict.
 
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         if not isinstance(coord, iris.coords.Coord):
             raise ValueError("coord_to_extract must be a valid Coord.")
@@ -2701,6 +2884,12 @@ class Cube(CFVariableMixin):
         Filter the cube by the given constraint using
         :meth:`iris.Constraint.extract` method.
 
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         # Cast the constraint into a proper constraint if it is not so already
         constraint = iris._constraints.as_constraint(constraint)
@@ -2756,6 +2945,11 @@ class Cube(CFVariableMixin):
             will be "rolled" to fit where necessary.  When requesting a
             range that covers the entire modulus, a split cell will
             preferentially be placed at the ``minimum`` end.
+
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
         .. warning::
 
@@ -3151,6 +3345,11 @@ class Cube(CFVariableMixin):
             the order of returned items in the iterator; instead the ordering
             is based on the fastest-changing dimension.
 
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
         """
         # Required to handle a mix between types.
         if _is_single_item(ref_to_slice):
@@ -3207,6 +3406,11 @@ class Cube(CFVariableMixin):
 
             for sub_cube in cube.slices(['longitude', 'latitude']):
                 print(sub_cube)
+
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
         .. seealso:: :meth:`iris.cube.Cube.slices_over`.
 
@@ -3273,6 +3477,11 @@ class Cube(CFVariableMixin):
 
         .. note:: If defined, new_order must span all of the data dimensions.
 
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
         Example usage::
 
             # put the second dimension first, followed by the third dimension,
@@ -3326,6 +3535,11 @@ class Cube(CFVariableMixin):
         """
         Returns a fully valid CubeML string representation of the Cube.
 
+
+        Notes
+        ------
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
         """
         doc = Document()
 
@@ -3515,6 +3729,11 @@ class Cube(CFVariableMixin):
 
         Returns:
             A copy instance of the :class:`Cube`.
+
+        Notes
+        ------
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         """
         memo = {}
@@ -3772,6 +3991,11 @@ class Cube(CFVariableMixin):
 
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
+
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
         """
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
@@ -4001,6 +4225,12 @@ x            -              -
                 Attributes:
                     Conventions                 'CF-1.5'
                     STASH                       m01s00i024
+
+        Notes
+        ------
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
         """
         groupby_coords = []
@@ -4258,6 +4488,11 @@ x            -              -
         .. note::
 
             This operation does not yet have support for lazy evaluation.
+
+        .. note::
+
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
         For example:
 
