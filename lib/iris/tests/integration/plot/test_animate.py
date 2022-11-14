@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test the animation of cubes within iris.
+Integration tests for :func:`iris.plot.animate`.
 
 """
 
@@ -19,7 +19,6 @@ from iris.coord_systems import GeogCS
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
-    import iris.experimental.animate as animate
     import iris.plot as iplt
 
 
@@ -57,7 +56,7 @@ class IntegrationTest(tests.GraphicsTest):
         # the animation.
         cube_iter = self.cube.slices(("latitude", "longitude"))
 
-        ani = animate.animate(cube_iter, iplt.contourf)
+        ani = iplt.animate(cube_iter, iplt.contourf)
 
         # Disconnect the first draw callback to stop the animation.
         ani._fig.canvas.mpl_disconnect(ani._first_draw_id)

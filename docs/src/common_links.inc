@@ -39,6 +39,7 @@
 .. _requirements/ci/: https://github.com/SciTools/iris/tree/main/requirements/ci
 .. _CF-UGRID: https://ugrid-conventions.github.io/ugrid-conventions/
 .. _issues on GitHub: https://github.com/SciTools/iris/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc
+.. _python-stratify: https://github.com/SciTools/python-stratify
 
 
 .. comment
