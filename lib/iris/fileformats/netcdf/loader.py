@@ -211,26 +211,34 @@ def _get_actual_dtype(cf_var):
     return dummy_data.dtype
 
 
-def _get_cf_var_data(cf_var, filename):
-    # Get lazy chunked data out of a cf variable.
-    dtype = _get_actual_dtype(cf_var)
+_NONLAZY_SMALL_AUXCOORDS = True
 
-    # Create cube with deferred data, but no metadata
-    fill_value = getattr(
-        cf_var.cf_data,
-        "_FillValue",
-        netCDF4.default_fillvals[cf_var.dtype.str[1:]],
-    )
-    proxy = NetCDFDataProxy(
-        cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
-    )
-    # Get the chunking specified for the variable : this is either a shape, or
-    # maybe the string "contiguous".
-    chunks = cf_var.cf_data.chunking()
-    # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
-    if chunks == "contiguous":
-        chunks = None
-    return as_lazy_data(proxy, chunks=chunks)
+
+def _get_cf_var_data(cf_var, filename):
+    if _NONLAZY_SMALL_AUXCOORDS and np.prod(cf_var.shape) < 20:
+        result = cf_var[:]
+    else:
+        # Get lazy chunked data out of a cf variable.
+        dtype = _get_actual_dtype(cf_var)
+
+        # Create cube with deferred data, but no metadata
+        fill_value = getattr(
+            cf_var.cf_data,
+            "_FillValue",
+            netCDF4.default_fillvals[cf_var.dtype.str[1:]],
+        )
+        proxy = NetCDFDataProxy(
+            cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
+        )
+        # Get the chunking specified for the variable : this is either a shape, or
+        # maybe the string "contiguous".
+        chunks = cf_var.cf_data.chunking()
+        # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
+        if chunks == "contiguous":
+            chunks = None
+        result = as_lazy_data(proxy, chunks=chunks)
+
+    return result
 
 
 class _OrderedAddableList(list):
