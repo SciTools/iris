@@ -1778,7 +1778,7 @@ To compute the number of *ensemble members* with precipitation exceeding 10
 
 .. seealso:: The :func:`~iris.analysis.PROPORTION` aggregator.
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1808,7 +1808,7 @@ each grid location could be calculated with::
     result = precip_cube.collapsed('time', iris.analysis.MAX_RUN,
                                    function=lambda values: values > 10)
 
-This aggregator handles masked data, which it treats as interrupting a run.
+This aggregator handles masked data, which it treats as interrupting a run, and lazy data.
 
 """
 MAX_RUN.name = lambda: "max_run"
@@ -1826,7 +1826,7 @@ To compute zonal geometric means over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.GMEAN)
 
-This aggregator handles masked data.
+This aggregator handles masked data, but NOT lazy data.
 
 """
 
@@ -1848,7 +1848,7 @@ To compute zonal harmonic mean over the *longitude* axis of a cube::
     The harmonic mean is only valid if all data values are greater
     than zero.
 
-This aggregator handles masked data.
+This aggregator handles masked data, but NOT lazy data.
 
 """
 
@@ -1933,7 +1933,7 @@ To compute zonal minimums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MIN)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1952,7 +1952,7 @@ To compute zonal maximums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MAX)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1978,7 +1978,7 @@ To compute the peak over the *time* axis of a cube::
 
     result = cube.collapsed('time', iris.analysis.PEAK)
 
-This aggregator handles masked data.
+This aggregator handles masked data but NOT lazy data.
 
 """
 
@@ -2084,7 +2084,7 @@ To compute the zonal root mean square over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.RMS)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -2157,7 +2157,7 @@ To compute a weighted rolling sum e.g. to apply a digital filter::
     result = cube.rolling_window('time', iris.analysis.SUM,
                                  len(weights), weights=weights)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -2194,7 +2194,7 @@ To obtain the biased variance::
 
     Lazy operation is supported, via :func:`dask.array.var`.
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -2619,6 +2619,11 @@ def clear_phenomenon_identity(cube):
     Helper function to clear the standard_name, attributes, and
     cell_methods of a cube.
 
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     cube.rename(None)
     cube.attributes.clear()

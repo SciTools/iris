@@ -66,6 +66,10 @@ def wrap_lons(lons, base, period):
         >>> print(wrap_lons(np.array([185, 30, -200, 75]), -180, 360))
         [-175.   30.  160.   75.]
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
@@ -271,6 +275,10 @@ def get_xy_grids(cube):
 
         x, y = get_xy_grids(cube)
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
 
@@ -298,6 +306,11 @@ def get_xy_contiguous_bounded_grids(cube):
     Example::
 
         xs, ys = get_xy_contiguous_bounded_grids(cube)
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -498,6 +511,10 @@ def cosine_latitude_weights(cube):
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         weights = np.sqrt(cosine_latitude_weights(cube))
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # Find all latitude coordinates, we want one and only one.
     lat_coords = [
@@ -1074,6 +1091,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
         The names of the output cubes are those of the inputs, prefixed with
         'transformed\_' (e.g. 'transformed_x_wind').
+
+    .. note::
+
+            This function does not maintain laziness when called; it realises data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
     .. warning::
 
