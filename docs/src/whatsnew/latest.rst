@@ -65,6 +65,14 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ added the ability to regrid derived coordinates with the
    :obj:`~iris.analysis.PointInCell` regridding scheme. (:pull:`4807`)
 
+#. `@trexfeathers`_ made NetCDF loading more tolerant by enabling skipping of
+   :class:`~iris.coords.DimCoord`\s, :class:`~iris.coords.AuxCoord`\s,
+   :class:`~iris.coords.CellMeasure`\s and
+   :class:`~iris.coords.AncillaryVariable`\s if they cannot be added to a
+   :class:`~iris.cube.Cube` (e.g. due to CF non-compliance). This is done via
+   a new error class: :class:`~iris.exceptions.CannotAddError` (subclass of
+   :class:`ValueError`). (:pull:`5054`)
+
 
 🐛 Bugs Fixed
 =============
@@ -98,11 +106,15 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ fixed a bug which caused derived coordinates to be realised
    after calling :meth:`iris.cube.Cube.aggregated_by`. (:issue:`3637`, :pull:`4947`)
-   
+
 #. `@rcomer`_ corrected the ``standard_name`` mapping from UM stash code ``m01s30i311``
    to indicate that this is the upward, rather than northward part of the flow.
    (:pull:`5060`)
 
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) fixed an issue which prevented
+   uncompressed PP fields with additional trailing padded words in the field
+   data to be loaded and saved. (:pull:`5058`)
+   
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) fixed the handling of data when
    regridding with :class:`~iris.analysis.UnstructuredNearest` or calling
    :func:`~iris.analysis.trajectory.interpolate` such that the data type and mask is
@@ -192,6 +204,8 @@ This document explains the changes made to Iris for this release
    to reference Read the Docs' built-in version switcher, instead of generating
    its own independent links. (:pull:`5055`)
 
+#. `@tkknight`_ updated the links for the Iris documentation to v2.4 and
+   earlier to point to the archive of zip files instead. (:pull:`5064`)
 
 💼 Internal
 ===========

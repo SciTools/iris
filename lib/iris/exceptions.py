@@ -174,3 +174,9 @@ class UnitConversionError(IrisError):
     """Raised when Iris is unable to convert a unit."""
 
     pass
+
+
+class CannotAddError(ValueError):
+    """Raised when an object (e.g. coord) cannot be added to a :class:`~iris.cube.Cube`."""
+
+    pass
