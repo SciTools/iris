@@ -216,6 +216,10 @@ def interpolate(cube, sample_points, method=None):
         ('longitude', [-60, -50, -40])]
         interpolated_cube = interpolate(cube, sample_points)
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     from iris.analysis import Linear
 
@@ -443,21 +447,7 @@ def interpolate(cube, sample_points, method=None):
         ]
 
         # Apply the fancy indexing to get all the result data points.
-        source_data = source_data[tuple(fancy_source_indices)]
-
-        # "Fix" problems with missing datapoints producing odd values
-        # when copied from a masked into an unmasked array.
-        # TODO: proper masked data handling.
-        if np.ma.isMaskedArray(source_data):
-            # This is **not** proper mask handling, because we cannot produce a
-            # masked result, but it ensures we use a "filled" version of the
-            # input in this case.
-            source_data = source_data.filled()
-        new_cube.data[:] = source_data
-        # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
-        # because the existing code produces a default dtype from 'np.empty'
-        # instead of preserving the input dtype.
-        # TODO: maybe this should be fixed -- i.e. to preserve input dtype ??
+        new_cube.data = source_data[tuple(fancy_source_indices)]
 
         # Fill in the empty squashed (non derived) coords.
         column_coords = [

@@ -219,6 +219,12 @@ class ScalarCellMeasureSection(Section):
         self.contents = [cm.name() for cm in cell_measures]
 
 
+class ScalarAncillaryVariableSection(Section):
+    def __init__(self, title, ancillary_variables):
+        self.title = title
+        self.contents = [av.name() for av in ancillary_variables]
+
+
 class AttributeSection(Section):
     def __init__(self, title, attributes):
         self.title = title
@@ -274,7 +280,7 @@ class CubeSummary:
 
     """
 
-    def __init__(self, cube, shorten=False, name_padding=35):
+    def __init__(self, cube, name_padding=35):
         self.header = FullHeader(cube, name_padding)
 
         # Cache the derived coords so we can rely on consistent
@@ -314,13 +320,23 @@ class CubeSummary:
             if id(coord) not in scalar_coord_ids
         ]
 
-        # cell measures
-        vector_cell_measures = [
-            cm for cm in cube.cell_measures() if cm.shape != (1,)
-        ]
-
         # Ancillary Variables
-        vector_ancillary_variables = [av for av in cube.ancillary_variables()]
+        vector_ancillary_variables = []
+        scalar_ancillary_variables = []
+        for av, av_dims in cube._ancillary_variables_and_dims:
+            if av_dims:
+                vector_ancillary_variables.append(av)
+            else:
+                scalar_ancillary_variables.append(av)
+
+        # Cell Measures
+        vector_cell_measures = []
+        scalar_cell_measures = []
+        for cm, cm_dims in cube._cell_measures_and_dims:
+            if cm_dims:
+                vector_cell_measures.append(cm)
+            else:
+                scalar_cell_measures.append(cm)
 
         # Sort scalar coordinates by name.
         scalar_coords.sort(key=lambda coord: coord.name())
@@ -334,9 +350,6 @@ class CubeSummary:
         vector_derived_coords.sort(
             key=lambda coord: (cube.coord_dims(coord), coord.name())
         )
-        scalar_cell_measures = [
-            cm for cm in cube.cell_measures() if cm.shape == (1,)
-        ]
 
         self.vector_sections = {}
 
@@ -368,6 +381,11 @@ class CubeSummary:
             ScalarCellMeasureSection,
             "Scalar cell measures:",
             scalar_cell_measures,
+        )
+        add_scalar_section(
+            ScalarAncillaryVariableSection,
+            "Scalar ancillary variables:",
+            scalar_ancillary_variables,
         )
         add_scalar_section(
             CellMethodSection, "Cell methods:", cube.cell_methods

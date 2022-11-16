@@ -16,7 +16,7 @@ import numpy as np
 
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import _load_aux_factory
+from iris.fileformats.netcdf.loader import _load_aux_factory
 
 
 class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):

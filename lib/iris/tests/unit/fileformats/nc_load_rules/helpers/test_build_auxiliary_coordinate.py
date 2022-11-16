@@ -16,8 +16,10 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import numpy as np
+import pytest
 
 from iris.coords import AuxCoord
+from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
 
@@ -280,6 +282,11 @@ class TestCoordConstruction(tests.IrisTest):
             new=get_cf_bounds_var,
         )
 
+        # test_not_added() has been written in pytest-style, but the rest of
+        #  the class is pending migration. Defining self.monkeypatch (not the
+        #  typical practice in pure pytest) allows this transitional state.
+        self.monkeypatch = pytest.MonkeyPatch()
+
     def check_case_aux_coord_construction(self, climatology=False):
         # Test a generic auxiliary coordinate, with or without
         # a climatological coord.
@@ -304,6 +311,19 @@ class TestCoordConstruction(tests.IrisTest):
 
     def test_aux_coord_construction__climatology(self):
         self.check_case_aux_coord_construction(climatology=True)
+
+    def test_not_added(self):
+        # Confirm that the coord will be skipped if a CannotAddError is raised
+        #  when attempting to add.
+        def mock_add_aux_coord(_, __):
+            raise CannotAddError("foo")
+
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine.cube, "add_aux_coord", mock_add_aux_coord)
+            with pytest.warns(match="coordinate not added to Cube: foo"):
+                build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+        assert self.engine.cube_parts["coordinates"] == []
 
 
 if __name__ == "__main__":

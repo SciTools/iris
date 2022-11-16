@@ -53,12 +53,7 @@
 		..., 
 		[1188, 1189, 1190, 1191],
 		[1192, 1193, 1194, 1195],
-		[1196, 1197, 1198, 1199]]" id="81f04efd" long_name="long-name" points="[3100, 3101, 3102, ..., 3197, 3198, 3199]" shape="(100,)" standard_name="longitude" units="Unit('degrees_east')" value_type="int64">
-          <attributes>
-            <attribute name="a" value="1"/>
-            <attribute name="b" value="c"/>
-          </attributes>
-        </meshCoord>
+		[1196, 1197, 1198, 1199]]" id="e0db29d6" points="[3100, 3101, 3102, ..., 3197, 3198, 3199]" shape="(100,)" standard_name="longitude" units="Unit('unknown')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="38fd0305" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
