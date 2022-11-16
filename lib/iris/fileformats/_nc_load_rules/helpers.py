@@ -36,6 +36,8 @@ from iris.fileformats.netcdf.loader import _get_cf_var_data
 import iris.std_names
 import iris.util
 
+# TODO: should un-addable coords / cell measures / etcetera be skipped? iris#5068.
+
 #
 # UD Units Constants (based on Unidata udunits.dat definition file)
 #
