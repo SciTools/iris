@@ -21,11 +21,13 @@ import warnings
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
 import iris.coord_systems
 from iris.coords import CellMethod, DimCoord
 from iris.cube import Cube, CubeList
+import iris.exceptions
 from iris.fileformats.netcdf import (
     CF_CONVENTIONS_VERSION,
     Saver,
@@ -901,6 +903,53 @@ class TestConstrainedLoad(tests.IrisTest):
     def test_netcdf_with_no_constraint(self):
         cubes = iris.load(self.filename)
         self.assertEqual(len(cubes), 3)
+
+
+class TestSkippedCoord:
+    # If a coord/cell measure/etcetera cannot be added to the loaded Cube, a
+    #  Warning is raised and the coord is skipped.
+    # This 'catching' is generic to all CannotAddErrors, but currently the only
+    #  such problem that can exist in a NetCDF file is a mismatch of dimensions
+    #  between phenomenon and coord.
+
+    cdl_core = """
+dimensions:
+    length_scale = 1 ;
+    lat = 3 ;
+variables:
+    float lat(lat) ;
+        lat:standard_name = "latitude" ;
+        lat:units = "degrees_north" ;
+    short lst_unc_sys(length_scale) ;
+        lst_unc_sys:long_name = "uncertainty from large-scale systematic
+        errors" ;
+        lst_unc_sys:units = "kelvin" ;
+        lst_unc_sys:coordinates = "lat" ;
+
+data:
+    lat = 0, 1, 2;
+    """
+
+    @pytest.fixture(autouse=True)
+    def create_nc_file(self, tmp_path):
+        file_name = "dim_mismatch"
+        cdl = f"netcdf {file_name}" + "{\n" + self.cdl_core + "\n}"
+        self.nc_path = (tmp_path / file_name).with_suffix(".nc")
+        ncgen_from_cdl(
+            cdl_str=cdl,
+            cdl_path=None,
+            nc_path=str(self.nc_path),
+        )
+        yield
+        self.nc_path.unlink()
+
+    def test_lat_not_loaded(self):
+        with pytest.warns(
+            match="Missing data dimensions for multi-valued DimCoord"
+        ):
+            cube = iris.load_cube(self.nc_path)
+        with pytest.raises(iris.exceptions.CoordinateNotFoundError):
+            _ = cube.coord("lat")
 
 
 if __name__ == "__main__":
