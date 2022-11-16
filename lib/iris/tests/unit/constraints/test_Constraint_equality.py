@@ -5,15 +5,11 @@
 # licensing details.
 """Unit tests for equality testing of different constraint types."""
 
-from __future__ import absolute_import, division, print_function
-
-from six.moves import filter, input, map, range, zip  # noqa
-
-from iris._constraints import AttributeConstraint, Constraint, NameConstraint
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
+
+from iris._constraints import AttributeConstraint, Constraint, NameConstraint
 
 
 class Test_Constraint__hash__(tests.IrisTest):
@@ -67,38 +63,38 @@ class Test_Constraint__eq__(tests.IrisTest):
         self.assertNotEqual(c1, c2)
 
     def test_coord_names_same(self):
-        c1 = Constraint(coord=3)
-        c2 = Constraint(coord=3)
+        c1 = Constraint(some_coordname=3)
+        c2 = Constraint(some_coordname=3)
         self.assertEqual(c1, c2)
 
     def test_coord_names_differ(self):
-        c1 = Constraint(coord=3)
-        c2 = Constraint(coord2=3)
+        c1 = Constraint(coordname_A=3)
+        c2 = Constraint(coordname_B=3)
         self.assertNotEqual(c1, c2)
 
     def test_coord_values_differ(self):
-        c1 = Constraint(coord=3)
-        c2 = Constraint(coord=4)
+        c1 = Constraint(coordname=3)
+        c2 = Constraint(coordname=4)
         self.assertNotEqual(c1, c2)
 
     def test_coord_orders_differ(self):
         # We *could* maybe ignore Coordinate order, but at present we don't.
-        c1 = Constraint(a=1, b=2)
-        c2 = Constraint(b=2, a=1)
+        c1 = Constraint(coordname_1=1, coordname_2=2)
+        c2 = Constraint(coordname_2=2, coordname_1=1)
         self.assertNotEqual(c1, c2)
 
     def test_coord_values_functions_same(self):
         def func(coord):
             return False
 
-        c1 = Constraint(coord=func)
-        c2 = Constraint(coord=func)
+        c1 = Constraint(coordname=func)
+        c2 = Constraint(coordname=func)
         self.assertEqual(c1, c2)
 
     def test_coord_values_functions_differ(self):
         # Identical functions are not the same.
-        c1 = Constraint(coord=lambda c: True)
-        c2 = Constraint(coord=lambda c: True)
+        c1 = Constraint(coordname=lambda c: True)
+        c2 = Constraint(coordname=lambda c: True)
         self.assertNotEqual(c1, c2)
 
     def test_coord_values_and_keys_same(self):
@@ -236,12 +232,18 @@ class Test_NameConstraint__eq__(tests.IrisTest):
         self.assertNotEqual(c1, c2)
 
 
-class Test___hash__(tests.IrisTest):
+class Test_ConstraintCombination__hash__(tests.IrisTest):
     def test_empty(self):
         c1 = Constraint() & Constraint()
         c2 = Constraint() & Constraint()
         self.assertEqual(hash(c1), hash(c1))
         self.assertNotEqual(hash(c1), hash(c2))
+
+    def test_identical_construction(self):
+        c1, c2 = Constraint(a=1), Constraint(b=1)
+        cc1 = c1 & c2
+        cc2 = c1 & c2
+        self.assertNotEqual(hash(cc1), hash(cc2))
 
 
 class Test_ConstraintCombination__eq__(tests.IrisTest):
@@ -260,6 +262,12 @@ class Test_ConstraintCombination__eq__(tests.IrisTest):
         c1 = Constraint("a") & Constraint(b=1, c=2)
         c2 = Constraint("a") & Constraint(b=1)
         self.assertNotEqual(c1, c2)
+
+    def test_different_component_order(self):
+        c1, c2 = Constraint("a"), Constraint(b=1)
+        cc1 = c1 & c2
+        cc2 = c2 & c1
+        self.assertNotEqual(cc1, cc2)
 
 
 if __name__ == "__main__":
