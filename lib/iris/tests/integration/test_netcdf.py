@@ -944,6 +944,8 @@ data:
         self.nc_path.unlink()
 
     def test_lat_not_loaded(self):
+        # iris#5068 includes discussion of possible retention of the skipped
+        #  coords in the future.
         with pytest.warns(
             match="Missing data dimensions for multi-valued DimCoord"
         ):
