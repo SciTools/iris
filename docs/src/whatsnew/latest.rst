@@ -58,7 +58,9 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.DimCoord`\s, :class:`~iris.coords.AuxCoord`\s,
    :class:`~iris.coords.CellMeasure`\s and
    :class:`~iris.coords.AncillaryVariable`\s if they cannot be added to a
-   :class:`~iris.cube.Cube` (e.g. due to CF non-compliance). (:pull:`5054`)
+   :class:`~iris.cube.Cube` (e.g. due to CF non-compliance). This is done via
+   a new error class: :class:`~iris.exceptions.CannotAddError` (subclass of
+   :class:`ValueError`). (:pull:`5054`)
 
 
 🐛 Bugs Fixed
