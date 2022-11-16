@@ -132,7 +132,7 @@ class TestAsSeries(tests.IrisTest):
         assert cube.data[0] == 99
 
     def test_copy_int64_false(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name="foo")
+        cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int64), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
         assert cube.data[0] == 99
