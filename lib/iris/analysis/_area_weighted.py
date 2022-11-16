@@ -11,7 +11,7 @@ import numpy.ma as ma
 
 from iris._lazy_data import map_complete_blocks
 from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
-from iris.analysis._regrid import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder, _create_cube
 import iris.analysis.cartography
 import iris.coord_systems
 from iris.util import _meshgrid
@@ -1111,18 +1111,32 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     )
 
     # Wrap up the data as a Cube.
-    regrid_callback = RectilinearRegridder._regrid
-    new_cube = RectilinearRegridder._create_cube(
+
+    _regrid_callback = functools.partial(
+        RectilinearRegridder._regrid,
+        src_x_coord=src_x,
+        src_y_coord=src_y,
+        sample_grid_x=meshgrid_x,
+        sample_grid_y=meshgrid_y,
+    )
+    # TODO: investigate if an area weighted callback would be more appropriate.
+    # _regrid_callback = functools.partial(
+    #     _regrid_area_weighted_array,
+    #     weights_info=weights_info,
+    #     index_info=index_info,
+    #     mdtol=mdtol,
+    # )
+
+    def regrid_callback(*args, **kwargs):
+        _data, dims = args
+        return _regrid_callback(_data, *dims, **kwargs)
+
+    new_cube = _create_cube(
         new_data,
         src_cube,
-        src_x_dim,
-        src_y_dim,
-        src_x,
-        src_y,
-        grid_x,
-        grid_y,
-        meshgrid_x,
-        meshgrid_y,
+        [src_x_dim, src_y_dim],
+        [grid_x, grid_y],
+        2,
         regrid_callback,
     )
 
