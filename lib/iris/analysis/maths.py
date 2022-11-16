@@ -115,6 +115,11 @@ def abs(cube, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.abs, cube.dtype, in_place=in_place)
@@ -159,6 +164,11 @@ def intersection_of_cubes(cube, other_cube):
           coords = ["latitude", "longitude"]    # Replace with relevant coords
           intersections = cubes.extract_overlapping(coords)
           cube1, cube2 = (intersections[0], intersections[1])
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     wmsg = (
@@ -243,6 +253,11 @@ def add(cube, other, dim=None, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(
@@ -291,6 +306,11 @@ def subtract(cube, other, dim=None, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -383,6 +403,10 @@ def multiply(cube, other, dim=None, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     _assert_is_cube(cube)
 
@@ -456,6 +480,10 @@ def divide(cube, other, dim=None, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     _assert_is_cube(cube)
 
@@ -519,6 +547,10 @@ def exponentiate(cube, exponent, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(
@@ -567,6 +599,11 @@ def exp(cube, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.exp, cube.dtype, in_place=in_place)
@@ -592,6 +629,11 @@ def log(cube, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -623,6 +665,11 @@ def log2(cube, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.log2, cube.dtype, in_place=in_place)
@@ -648,6 +695,11 @@ def log10(cube, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -702,6 +754,12 @@ def apply_ufunc(
     Example::
 
         cube = apply_ufunc(numpy.sin, cube, in_place=True)
+
+    .. note::
+
+        This function maintains laziness when called; it does not realise data. This is dependent on `ufunc` argument
+        being a numpy operation that is compatible with lazy operation.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 

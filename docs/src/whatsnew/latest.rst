@@ -207,6 +207,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the links for the Iris documentation to v2.4 and
    earlier to point to the archive of zip files instead. (:pull:`5064`)
 
+#. `@Esadek-MO`_ added notes at the bottom of functions to
+   to clarify if the function preserves laziness or not. (:pull:`5066`)
+
 💼 Internal
 ===========
 
