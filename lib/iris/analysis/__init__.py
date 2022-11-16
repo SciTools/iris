@@ -1914,7 +1914,7 @@ To compute zonal medians over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
-This aggregator handles masked data.
+This aggregator handles masked data, but NOT lazy data.
 
 """
 
@@ -2058,7 +2058,7 @@ Similarly, the proportion of *time* precipitation exceeded 10
 
 .. seealso:: The :func:`~iris.analysis.COUNT` aggregator.
 
-This aggregator handles masked data.
+This aggregator handles masked data, but NOT lazy data.
 
 """
 
@@ -2225,6 +2225,11 @@ Additional kwargs associated with the use of this aggregator:
     Specifies the kind of interpolation used, see
     :func:`scipy.interpolate.interp1d` Defaults to "linear", which is
     equivalent to alphap=0.5, betap=0.5 in `iris.analysis.PERCENTILE`
+    
+Notes
+------
+This function does not maintain laziness when called; it realises data.
+See more at :doc:`/userguide/real_and_lazy_data`.
 
 """
 

@@ -618,6 +618,11 @@ def project(cube, target_proj, nx=None, ny=None):
         resulting nearest neighbour values.  If masked, the value in the
         resulting cube is set to 0.
 
+    .. note::
+
+        This function does not maintain laziness when called; it realises data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
     .. warning::
 
         This function uses a nearest neighbour approach rather than any form

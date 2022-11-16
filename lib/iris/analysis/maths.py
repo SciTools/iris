@@ -755,6 +755,12 @@ def apply_ufunc(
 
         cube = apply_ufunc(numpy.sin, cube, in_place=True)
 
+    .. note::
+
+        This function maintains laziness when called; it does not realise data. This is dependent on `ufunc` argument
+        being a numpy operation that is compatible with lazy operation.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
 
     if not isinstance(ufunc, np.ufunc):
