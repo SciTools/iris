@@ -247,16 +247,16 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         def mock_add_dim_coord(_, __):
             raise CannotAddError("foo")
 
-        self.monkeypatch.setattr(
-            self.engine.cube, "add_dim_coord", mock_add_dim_coord
-        )
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine.cube, "add_dim_coord", mock_add_dim_coord)
 
-        self._set_cf_coord_var(np.arange(6))
+            self._set_cf_coord_var(np.arange(6))
 
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            with pytest.warns(match="coordinate not added to Cube: foo"):
-                build_dimension_coordinate(self.engine, self.cf_coord_var)
-            assert self.engine.cube_parts["coordinates"] == []
+            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+                with pytest.warns(match="coordinate not added to Cube: foo"):
+                    build_dimension_coordinate(self.engine, self.cf_coord_var)
+
+        assert self.engine.cube_parts["coordinates"] == []
 
     def test_auxcoord_not_added(self):
         # Confirm that a gracefully-created auxiliary coord will also be
@@ -264,16 +264,16 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         def mock_add_aux_coord(_, __):
             raise CannotAddError("foo")
 
-        self.monkeypatch.setattr(
-            self.engine.cube, "add_aux_coord", mock_add_aux_coord
-        )
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine.cube, "add_aux_coord", mock_add_aux_coord)
 
-        self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
+            self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
 
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            with pytest.warns(match="coordinate not added to Cube: foo"):
-                build_dimension_coordinate(self.engine, self.cf_coord_var)
-            assert self.engine.cube_parts["coordinates"] == []
+            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+                with pytest.warns(match="coordinate not added to Cube: foo"):
+                    build_dimension_coordinate(self.engine, self.cf_coord_var)
+
+        assert self.engine.cube_parts["coordinates"] == []
 
 
 class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):

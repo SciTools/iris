@@ -66,10 +66,9 @@ def test_not_added(monkeypatch, mock_engine, mock_cf_cm_var):
     def mock_add_cell_measure(_, __):
         raise CannotAddError("foo")
 
-    monkeypatch.setattr(
-        mock_engine.cube, "add_cell_measure", mock_add_cell_measure
-    )
+    with monkeypatch.context() as m:
+        m.setattr(mock_engine.cube, "add_cell_measure", mock_add_cell_measure)
+        with pytest.warns(match="cell measure not added to Cube: foo"):
+            build_cell_measures(mock_engine, mock_cf_cm_var)
 
-    with pytest.warns(match="cell measure not added to Cube: foo"):
-        build_cell_measures(mock_engine, mock_cf_cm_var)
     assert mock_engine.cube_parts["cell_measures"] == []

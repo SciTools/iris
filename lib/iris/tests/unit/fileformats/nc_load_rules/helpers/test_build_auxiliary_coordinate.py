@@ -318,12 +318,11 @@ class TestCoordConstruction(tests.IrisTest):
         def mock_add_aux_coord(_, __):
             raise CannotAddError("foo")
 
-        self.monkeypatch.setattr(
-            self.engine.cube, "add_aux_coord", mock_add_aux_coord
-        )
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine.cube, "add_aux_coord", mock_add_aux_coord)
+            with pytest.warns(match="coordinate not added to Cube: foo"):
+                build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
-        with pytest.warns(match="coordinate not added to Cube: foo"):
-            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
         assert self.engine.cube_parts["coordinates"] == []
 
 

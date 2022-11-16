@@ -65,10 +65,13 @@ def test_not_added(monkeypatch, mock_engine, mock_cf_av_var):
     def mock_add_ancillary_variable(_, __):
         raise CannotAddError("foo")
 
-    monkeypatch.setattr(
-        mock_engine.cube, "add_ancillary_variable", mock_add_ancillary_variable
-    )
+    with monkeypatch.context() as m:
+        m.setattr(
+            mock_engine.cube,
+            "add_ancillary_variable",
+            mock_add_ancillary_variable,
+        )
+        with pytest.warns(match="ancillary variable not added to Cube: foo"):
+            build_ancil_var(mock_engine, mock_cf_av_var)
 
-    with pytest.warns(match="ancillary variable not added to Cube: foo"):
-        build_ancil_var(mock_engine, mock_cf_av_var)
     assert mock_engine.cube_parts["ancillary_variables"] == []
