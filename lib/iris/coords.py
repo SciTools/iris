@@ -18,7 +18,6 @@ import operator
 import warnings
 import zlib
 
-import cftime
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -1345,7 +1344,14 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return Cell(point, bound)
 
     def __hash__(self):
-        return super().__hash__()
+        # See __eq__ for the definition of when two cells are equal.
+        if self.bound is None:
+            return hash(self.point)
+        bound = self.bound
+        rbound = bound[::-1]
+        if rbound < bound:
+            bound = rbound
+        return hash((self.point, bound))
 
     def __eq__(self, other):
         """
@@ -1411,16 +1417,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         ):
             raise ValueError("Unexpected operator_method")
 
-        # Prevent silent errors resulting from missing cftime
-        # behaviour.
-        if isinstance(other, cftime.datetime) or (
-            isinstance(self.point, cftime.datetime)
-            and not isinstance(other, iris.time.PartialDateTime)
-        ):
-            raise TypeError(
-                "Cannot determine the order of " "cftime.datetime objects"
-            )
-
         if isinstance(other, Cell):
             # Cell vs Cell comparison for providing a strict sort order
             if self.bound is None:
@@ -1485,19 +1481,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
                 else:
                     me = max(self.bound)
 
-            # Work around to handle cftime.datetime comparison, which
-            # doesn't return NotImplemented on failure in some versions of the
-            # library
-            try:
-                result = operator_method(me, other)
-            except TypeError:
-                rop = {
-                    operator.lt: operator.gt,
-                    operator.gt: operator.lt,
-                    operator.le: operator.ge,
-                    operator.ge: operator.le,
-                }[operator_method]
-                result = rop(other, me)
+            result = operator_method(me, other)
 
         return result
 
@@ -1895,7 +1879,22 @@ class Coord(_DimensionalMetadata):
               ...
 
         """
-        return _CellIterator(self)
+        if self.ndim != 1:
+            raise iris.exceptions.CoordinateMultiDimError(self)
+
+        points = self.points
+        bounds = self.bounds
+        if self.units.is_time_reference():
+            points = self.units.num2date(points)
+            if self.has_bounds():
+                bounds = self.units.num2date(bounds)
+
+        if self.has_bounds():
+            for point, bound in zip(points, bounds):
+                yield Cell(point, bound)
+        else:
+            for point in points:
+                yield Cell(point)
 
     def _sanity_check_bounds(self):
         if self.ndim == 1:
@@ -2382,18 +2381,16 @@ class Coord(_DimensionalMetadata):
             )
             raise ValueError(msg)
 
-        # Cache self.cells for speed. We can also use the index operation on a
-        # list conveniently.
-        self_cells = [cell for cell in self.cells()]
+        # Cache self.cells for speed. We can also use the dict for fast index
+        # lookup.
+        self_cells = {cell: idx for idx, cell in enumerate(self.cells())}
 
         # Maintain a list of indices on self for which cells exist in both self
         # and other.
         self_intersect_indices = []
         for cell in other.cells():
-            try:
-                self_intersect_indices.append(self_cells.index(cell))
-            except ValueError:
-                pass
+            if cell in self_cells:
+                self_intersect_indices.append(self_cells[cell])
 
         if return_indices is False and self_intersect_indices == []:
             raise ValueError(
@@ -3135,22 +3132,6 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
-
-
-# See Coord.cells() for the description/context.
-class _CellIterator(Iterator):
-    def __init__(self, coord):
-        self._coord = coord
-        if coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(coord)
-        self._indices = iter(range(coord.shape[0]))
-
-    def __next__(self):
-        # NB. When self._indices runs out it will raise StopIteration for us.
-        i = next(self._indices)
-        return self._coord.cell(i)
-
-    next = __next__
 
 
 # See ExplicitCoord._group() for the description/context.

@@ -147,6 +147,12 @@ cube_delta(temperature_cube, 'pressure')
 
     .. note:: Missing data support not yet implemented.
 
+    .. note::
+
+            This function does not maintain laziness when called; it realises data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
+
     """
     # handle the case where a user passes a coordinate name
     if isinstance(coord, str):
@@ -250,6 +256,11 @@ def differentiate(cube, coord_to_differentiate):
         and therefore has the same limitations.
 
     .. note:: Spherical differentiation does not occur in this routine.
+
+    .. note::
+
+            This function does not maintain laziness when called; it realises data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     # Get the delta cube in the required differential direction.
@@ -532,6 +543,12 @@ def curl(i_cube, j_cube, k_cube=None):
 
             where phi is longitude, theta is latitude.
 
+    .. note::
+
+            This function does not maintain laziness when called; it realises data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
+
     """
     # Get the vector quantity names.
     # (i.e. ['easterly', 'northerly', 'vertical'])
@@ -740,6 +757,12 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
         >>> spatial_vectors_with_phenom_name(u_wind_cube, v_wind_cube) \
 #doctest: +SKIP
         (['u', 'v', 'w'], 'wind')
+
+    Notes
+    ------
+            This function maintains laziness when called; it does not realise data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
+
 
     """
     directional_names = (

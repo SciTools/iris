@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float64" long_name="Temperature" standard_name="sea_water_potential_temperature" units="degC" var_name="votemper">
+  <cube dtype="float32" long_name="Temperature" standard_name="sea_water_potential_temperature" units="degC" var_name="votemper">
     <attributes>
       <attribute name="Conventions" value="CF-1.1"/>
       <attribute name="DOMAIN_DIM_N001" value="x"/>
@@ -144,6 +144,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data checksum="0x3a8195d5" dtype="float64" shape="(1, 31, 85)"/>
+    <data checksum="0x49d623f6" dtype="float32" mask_checksum="0x117b1ebc" shape="(1, 31, 85)"/>
   </cube>
 </cubes>
