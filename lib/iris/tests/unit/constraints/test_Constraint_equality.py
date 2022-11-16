@@ -68,13 +68,13 @@ class Test_Constraint__eq__(tests.IrisTest):
         self.assertEqual(c1, c2)
 
     def test_coord_names_differ(self):
-        c1 = Constraint(coordname_A=3)
-        c2 = Constraint(coordname_B=3)
+        c1 = Constraint(some_coordname_A=3)
+        c2 = Constraint(some_coordname_B=3)
         self.assertNotEqual(c1, c2)
 
     def test_coord_values_differ(self):
-        c1 = Constraint(coordname=3)
-        c2 = Constraint(coordname=4)
+        c1 = Constraint(some_coordname=3)
+        c2 = Constraint(some_coordname=4)
         self.assertNotEqual(c1, c2)
 
     def test_coord_orders_differ(self):
@@ -87,14 +87,14 @@ class Test_Constraint__eq__(tests.IrisTest):
         def func(coord):
             return False
 
-        c1 = Constraint(coordname=func)
-        c2 = Constraint(coordname=func)
+        c1 = Constraint(some_coordname=func)
+        c2 = Constraint(some_coordname=func)
         self.assertEqual(c1, c2)
 
     def test_coord_values_functions_differ(self):
         # Identical functions are not the same.
-        c1 = Constraint(coordname=lambda c: True)
-        c2 = Constraint(coordname=lambda c: True)
+        c1 = Constraint(some_coordname=lambda c: True)
+        c2 = Constraint(some_coordname=lambda c: True)
         self.assertNotEqual(c1, c2)
 
     def test_coord_values_and_keys_same(self):
