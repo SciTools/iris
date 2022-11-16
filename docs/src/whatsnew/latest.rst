@@ -114,6 +114,11 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) fixed an issue which prevented
    uncompressed PP fields with additional trailing padded words in the field
    data to be loaded and saved. (:pull:`5058`)
+   
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) fixed the handling of data when
+   regridding with :class:`~iris.analysis.UnstructuredNearest` or calling
+   :func:`~iris.analysis.trajectory.interpolate` such that the data type and mask is
+   preserved. (:issue:`4463`, :pull:`5062`)
 
 
 💣 Incompatible Changes
