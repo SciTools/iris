@@ -39,7 +39,8 @@ This document explains the changes made to Iris for this release
    :func:`iris.pandas.as_data_frame`\'s conversion of :class:`~iris.cube.Cube`\s to
    :class:`~pandas.DataFrame`\s. This includes better handling of multiple
    :class:`~iris.cube.Cube` dimensions, auxiliary coordinates and attribute
-   information. **Note:** the improvements are opt-in, via :class:`iris.Future`.
+   information. **Note:** the improvements are opt-in, by setting the
+   :obj:`iris.FUTURE.pandas_ndim` flag (see :class:`iris.Future` for more).
    (:issue:`4526`, :pull:`4669`)
 
 
