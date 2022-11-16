@@ -378,7 +378,10 @@ def as_cubes(
         )
         raise ValueError(message)
 
-    if not pandas_index.is_monotonic:
+    if not (
+        pandas_index.is_monotonic_increasing
+        or pandas_index.is_monotonic_decreasing
+    ):
         # Need monotonic index for use in DimCoord(s).
         # This function doesn't sort_index itself since that breaks the
         #  option to return a data view instead of a copy.
@@ -627,7 +630,7 @@ def as_data_frame(
     add_ancillary_variables=False,
 ):
     """
-    Convert a 2D cube to a Pandas DataFrame.
+    Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
     flattened into a long-style :class:`~pandas.DataFrame`.  Other
@@ -658,6 +661,29 @@ def as_data_frame(
         A :class:`~pandas.DataFrame` with :class:`~iris.cube.Cube` dimensions
         forming a :class:`~pandas.MultiIndex`
 
+    Warnings
+    --------
+    #. This documentation is for the new ``as_data_frame()`` behaviour, which
+       is **currently opt-in** to preserve backwards compatibility. The default
+       legacy behaviour is documented in pre-``v3.4`` documentation (summary:
+       limited to 2-dimensional :class:`~iris.cube.Cube`\\ s, with only the
+       :attr:`~iris.cube.Cube.data` and :attr:`~iris.cube.Cube.dim_coords`
+       being added). The legacy behaviour will be removed in a future version
+       of Iris, so please opt-in to the new behaviour at your earliest
+       convenience, via :class:`iris.Future`:
+
+           >>> iris.FUTURE.pandas_ndim = True
+
+       **Breaking change:** to enable the improvements, the new opt-in
+       behaviour flattens multi-dimensional data into a single
+       :class:`~pandas.DataFrame` column (the legacy behaviour preserves 2
+       dimensions via rows and columns).
+
+       |
+
+    #. Where the :class:`~iris.cube.Cube` contains masked values, these become
+       :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
+
     Notes
     -----
     Dask ``DataFrame``\\s are not supported.
@@ -668,11 +694,6 @@ def as_data_frame(
     'inplace=True` to preserve memory object reference.
 
     :class:`~iris.cube.Cube` data `dtype` is preserved.
-
-    Warnings
-    --------
-    Where the :class:`~iris.cube.Cube` contains masked values, these become
-    :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
 
     Examples
     --------
@@ -817,37 +838,72 @@ def as_data_frame(
                 )
         return data_frame
 
-    # Checks
-    if not isinstance(cube, iris.cube.Cube):
-        raise TypeError(
-            f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
+    if iris.FUTURE.pandas_ndim:
+        # Checks
+        if not isinstance(cube, iris.cube.Cube):
+            raise TypeError(
+                f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
+            )
+        if copy:
+            data = cube.data.copy()
+        else:
+            data = cube.data
+        if ma.isMaskedArray(data):
+            if not copy:
+                raise ValueError("Masked arrays must always be copied.")
+            data = data.astype("f").filled(np.nan)
+
+        # Extract dim coord information: separate lists for dim names and dim values
+        coord_names, coords = _make_dim_coord_list(cube)
+        # Make base DataFrame
+        index = pandas.MultiIndex.from_product(coords, names=coord_names)
+        data_frame = pandas.DataFrame(
+            data.ravel(), columns=[cube.name()], index=index
         )
-    if copy:
-        data = cube.data.copy()
+
+        if add_aux_coords:
+            data_frame = merge_metadata(_make_aux_coord_list(cube))
+        if add_ancillary_variables:
+            data_frame = merge_metadata(_make_ancillary_variables_list(cube))
+        if add_cell_measures:
+            data_frame = merge_metadata(_make_cell_measures_list(cube))
+
+        if copy:
+            result = data_frame.reorder_levels(coord_names).sort_index()
+        else:
+            data_frame.reorder_levels(coord_names).sort_index(inplace=True)
+            result = data_frame
+
     else:
+        message = (
+            "You are using legacy 2-dimensional behaviour in"
+            "'iris.pandas.as_data_frame()'. This will be removed in a future"
+            "version of Iris. Please opt-in to the improved "
+            "n-dimensional behaviour at your earliest convenience by setting: "
+            "'iris.FUTURE.pandas_ndim = True'. More info is in the "
+            "documentation."
+        )
+        warnings.warn(message, FutureWarning)
+
+        # The legacy behaviour.
         data = cube.data
-    if ma.isMaskedArray(data):
+        if ma.isMaskedArray(data):
+            if not copy:
+                raise ValueError("Masked arrays must always be copied.")
+            data = data.astype("f").filled(np.nan)
+        elif copy:
+            data = data.copy()
+
+        index = columns = None
+        if cube.coords(dimensions=[0]):
+            index = _as_pandas_coord(cube.coord(dimensions=[0]))
+        if cube.coords(dimensions=[1]):
+            columns = _as_pandas_coord(cube.coord(dimensions=[1]))
+
+        data_frame = pandas.DataFrame(data, index, columns)
         if not copy:
-            raise ValueError("Masked arrays must always be copied.")
-        data = data.astype("f").filled(np.nan)
+            _assert_shared(data, data_frame)
 
-    # Extract dim coord information: separate lists for dim names and dim values
-    coord_names, coords = _make_dim_coord_list(cube)
-    # Make base DataFrame
-    index = pandas.MultiIndex.from_product(coords, names=coord_names)
-    data_frame = pandas.DataFrame(
-        data.ravel(), columns=[cube.name()], index=index
-    )
+        result = data_frame
 
-    if add_aux_coords:
-        data_frame = merge_metadata(_make_aux_coord_list(cube))
-    if add_ancillary_variables:
-        data_frame = merge_metadata(_make_ancillary_variables_list(cube))
-    if add_cell_measures:
-        data_frame = merge_metadata(_make_cell_measures_list(cube))
-
-    if copy:
-        return data_frame.reorder_levels(coord_names).sort_index()
-    else:
-        data_frame.reorder_levels(coord_names).sort_index(inplace=True)
-        return data_frame
+    return result

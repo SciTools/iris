@@ -88,6 +88,8 @@ Icons made by `FreePik <https://www.freepik.com>`_ from
 `Flaticon <https://www.flaticon.com/>`_
 
 
+.. _iris_support:
+
 Support
 ~~~~~~~
 
@@ -101,7 +103,11 @@ The legacy support resources:
 
 * `Users Google Group <https://groups.google.com/forum/#!forum/scitools-iris>`_
 * `Developers Google Group <https://groups.google.com/forum/#!forum/scitools-iris-dev>`_
-* `Legacy Documentation`_ (Iris 2.4 or earlier)
+* `Legacy Documentation`_ (Iris 2.4 or earlier).  This is an archive of zip
+  files of past documentation.  You can download, unzip and view the
+  documentation locally (index.html).  There may be some incorrect rendering
+  and older javascvript (.js) files may show a warning when uncompressing, in
+  which case we suggest you use a different unzip tool.
 
 
 .. toctree::

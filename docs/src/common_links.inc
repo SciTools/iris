@@ -21,7 +21,7 @@
 .. _isort: https://pycqa.github.io/isort/
 .. _issue: https://github.com/SciTools/iris/issues
 .. _issues: https://github.com/SciTools/iris/issues
-.. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
+.. _legacy documentation: https://github.com/SciTools/scitools.org.uk/tree/master/iris/docs/archive
 .. _matplotlib: https://matplotlib.org/stable/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 .. _nox: https://nox.thea.codes/en/stable/

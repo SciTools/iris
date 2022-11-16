@@ -35,10 +35,12 @@ This document explains the changes made to Iris for this release
    non-existing paths, and added expansion functionality to :func:`~iris.io.save`.
    (:issue:`4772`, :pull:`4913`)
 
-#. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.pandas.as_data_frame`,
-   which provides improved conversion of :class:`~iris.cube.Cube`\s to 
-   :class:`~pandas.DataFrame`\s. This includes better handling of multiple 
-   :class:`~iris.cube.Cube` dimensions, auxiliary coordinates and attribute information.
+#. `@hsteptoe`_ and `@trexfeathers`_ improved
+   :func:`iris.pandas.as_data_frame`\'s conversion of :class:`~iris.cube.Cube`\s to
+   :class:`~pandas.DataFrame`\s. This includes better handling of multiple
+   :class:`~iris.cube.Cube` dimensions, auxiliary coordinates and attribute
+   information. **Note:** the improvements are opt-in, by setting the
+   :obj:`iris.FUTURE.pandas_ndim` flag (see :class:`iris.Future` for more).
    (:issue:`4526`, :pull:`4669`)
 
 
@@ -89,6 +91,8 @@ This document explains the changes made to Iris for this release
 
 #. N/A
 
+#. `@tkknight`_ updated the links for the Iris documentation to v2.4 and
+   earlier to point to the archive of zip files instead. (:pull:`5064`)
 
 💼 Internal
 ===========
