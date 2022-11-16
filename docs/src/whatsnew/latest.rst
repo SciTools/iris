@@ -65,6 +65,14 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ added the ability to regrid derived coordinates with the
    :obj:`~iris.analysis.PointInCell` regridding scheme. (:pull:`4807`)
 
+#. `@trexfeathers`_ made NetCDF loading more tolerant by enabling skipping of
+   :class:`~iris.coords.DimCoord`\s, :class:`~iris.coords.AuxCoord`\s,
+   :class:`~iris.coords.CellMeasure`\s and
+   :class:`~iris.coords.AncillaryVariable`\s if they cannot be added to a
+   :class:`~iris.cube.Cube` (e.g. due to CF non-compliance). This is done via
+   a new error class: :class:`~iris.exceptions.CannotAddError` (subclass of
+   :class:`ValueError`). (:pull:`5054`)
+
 
 🐛 Bugs Fixed
 =============
@@ -98,7 +106,7 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ fixed a bug which caused derived coordinates to be realised
    after calling :meth:`iris.cube.Cube.aggregated_by`. (:issue:`3637`, :pull:`4947`)
-   
+
 #. `@rcomer`_ corrected the ``standard_name`` mapping from UM stash code ``m01s30i311``
    to indicate that this is the upward, rather than northward part of the flow.
    (:pull:`5060`)
