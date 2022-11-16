@@ -2225,7 +2225,7 @@ Additional kwargs associated with the use of this aggregator:
     Specifies the kind of interpolation used, see
     :func:`scipy.interpolate.interp1d` Defaults to "linear", which is
     equivalent to alphap=0.5, betap=0.5 in `iris.analysis.PERCENTILE`
-    
+
 Notes
 ------
 This function does not maintain laziness when called; it realises data.
