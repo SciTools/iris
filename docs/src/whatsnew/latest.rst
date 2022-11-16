@@ -103,6 +103,11 @@ This document explains the changes made to Iris for this release
    to indicate that this is the upward, rather than northward part of the flow.
    (:pull:`5060`)
 
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) fixed the handling of data when
+   regridding with :class:`~iris.analysis.UnstructuredNearest` or calling
+   :func:`~iris.analysis.trajectory.interpolate` such that the data type and mask is
+   preserved. (:issue:`4463`, :pull:`5062`)
+
 
 💣 Incompatible Changes
 =======================
