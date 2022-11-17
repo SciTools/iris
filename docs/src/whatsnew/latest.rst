@@ -25,7 +25,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Welcome to `@ESadek-MO`_ and `@TTV-Intrepid`_  who made their first contributions to Iris 🎉
+#. Welcome to `@ESadek-MO`_, `@TTV-Intrepid`_ and `@hsteptoe`_,  who made their
+   first contributions to Iris 🎉
 
    .. _try_experimental_stratify:
 
@@ -79,6 +80,14 @@ This document explains the changes made to Iris for this release
    be the same identical function, and for &-combinations order is significant,
    i.e.  ``(c1 & c2) != (c2 & c1)``.
    (:issue:`3616`, :pull:`3749`).
+
+#. `@hsteptoe`_ and `@trexfeathers`_ improved
+   :func:`iris.pandas.as_data_frame`\'s conversion of :class:`~iris.cube.Cube`\s to
+   :class:`~pandas.DataFrame`\s. This includes better handling of multiple
+   :class:`~iris.cube.Cube` dimensions, auxiliary coordinates and attribute
+   information. **Note:** the improvements are opt-in, by setting the
+   :obj:`iris.FUTURE.pandas_ndim` flag (see :class:`iris.Future` for more).
+   (:issue:`4526`, :pull:`4909`, :pull:`4669`, :pull:`5059`, :pull:`5074`)
 
 
 🐛 Bugs Fixed
@@ -169,7 +178,10 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) deprecated
+   :func:`iris.pandas.as_series` in favour of the new
+   :func:`iris.pandas.as_data_frame` - see `✨ Features`_ for more details.
+   (:pull:`4669`)
 
 
 🔗 Dependencies
@@ -248,7 +260,7 @@ This document explains the changes made to Iris for this release
 
 .. _@TTV-Intrepid: https://github.com/TTV-Intrepid
 .. _Julian Heming: https://www.metoffice.gov.uk/research/people/julian-heming
-
+.. _@hsteptoe: https://github.com/hsteptoe
 
 
 .. comment
