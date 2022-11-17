@@ -185,7 +185,7 @@ This document explains the changes made to Iris for this release
    (:pull:`4968`)
 
 #. `@trexfeathers`_ introduced the ``netcdf4<1.6.1`` pin to avoid a problem
-   with segfaults. (:pull:`4968`) (:issue:`5016`)
+   with segfaults. (:pull:`4968`, :pull:`5075`, :issue:`5016`)
 
 #. `@trexfeathers`_ updated the Matplotlib colormap registration in
    :mod:`iris.palette` in response to a deprecation warning. Using the new
