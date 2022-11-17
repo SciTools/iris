@@ -121,7 +121,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) fixed an issue which prevented
    uncompressed PP fields with additional trailing padded words in the field
    data to be loaded and saved. (:pull:`5058`)
-   
+
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) fixed the handling of data when
    regridding with :class:`~iris.analysis.UnstructuredNearest` or calling
    :func:`~iris.analysis.trajectory.interpolate` such that the data type and mask is
@@ -184,8 +184,8 @@ This document explains the changes made to Iris for this release
    details.
    (:pull:`4968`)
 
-#. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a problem
-   with segfaults. (:pull:`4968`)
+#. `@trexfeathers`_ introduced the ``netcdf4<1.6.1`` pin to avoid a problem
+   with segfaults. (:pull:`4968`) (:issue:`5016`)
 
 #. `@trexfeathers`_ updated the Matplotlib colormap registration in
    :mod:`iris.palette` in response to a deprecation warning. Using the new
