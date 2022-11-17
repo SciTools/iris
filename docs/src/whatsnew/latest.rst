@@ -74,6 +74,13 @@ This document explains the changes made to Iris for this release
    a new error class: :class:`~iris.exceptions.CannotAddError` (subclass of
    :class:`ValueError`). (:pull:`5054`)
 
+#. `@pp-mo`_ implemented == and != comparisons for :class:`~iris.Constraint` s.
+   A simple constraint is now == to another one constructed in the same way.
+   However, equality is limited for more complex cases :  value-matching functions must
+   be the same identical function, and for &-combinations order is significant,
+   i.e.  ``(c1 & c2) != (c2 & c1)``.
+   (:issue:`3616`, :pull:`3749`).
+
 #. `@hsteptoe`_ and `@trexfeathers`_ improved
    :func:`iris.pandas.as_data_frame`\'s conversion of :class:`~iris.cube.Cube`\s to
    :class:`~pandas.DataFrame`\s. This includes better handling of multiple
@@ -189,8 +196,8 @@ This document explains the changes made to Iris for this release
    details.
    (:pull:`4968`)
 
-#. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a problem
-   with segfaults. (:pull:`4968`)
+#. `@trexfeathers`_ introduced the ``netcdf4<1.6.1`` pin to avoid a problem
+   with segfaults. (:pull:`4968`, :pull:`5075`, :issue:`5016`)
 
 #. `@trexfeathers`_ updated the Matplotlib colormap registration in
    :mod:`iris.palette` in response to a deprecation warning. Using the new
