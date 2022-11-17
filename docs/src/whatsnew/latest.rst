@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Welcome to `@ESadek-MO`_, `@TTV-Intrepid`_ and @`hsteptoe`_,  who made their
+#. Welcome to `@ESadek-MO`_, `@TTV-Intrepid`_ and `@hsteptoe`_,  who made their
    first contributions to Iris 🎉
 
    .. _try_experimental_stratify:
@@ -87,7 +87,7 @@ This document explains the changes made to Iris for this release
    :class:`~iris.cube.Cube` dimensions, auxiliary coordinates and attribute
    information. **Note:** the improvements are opt-in, by setting the
    :obj:`iris.FUTURE.pandas_ndim` flag (see :class:`iris.Future` for more).
-   (:issue:`4526`, :pull:`4669`)
+   (:issue:`4526`, :pull:`4909`, :pull:`4669`, :pull:`5059`, :pull:`5074`)
 
 
 🐛 Bugs Fixed
