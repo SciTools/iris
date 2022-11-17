@@ -73,6 +73,13 @@ This document explains the changes made to Iris for this release
    a new error class: :class:`~iris.exceptions.CannotAddError` (subclass of
    :class:`ValueError`). (:pull:`5054`)
 
+#. `@pp-mo`_ implemented == and != comparisons for :class:`~iris.Constraint` s.
+   A simple constraint is now == to another one constructed in the same way.
+   However, equality is limited for more complex cases :  value-matching functions must
+   be the same identical function, and for &-combinations order is significant,
+   i.e.  ``(c1 & c2) != (c2 & c1)``.
+   (:issue:`3616`, :pull:`3749`).
+
 
 🐛 Bugs Fixed
 =============
