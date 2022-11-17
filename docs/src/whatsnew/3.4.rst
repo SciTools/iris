@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+|iris_version| |build_date| [release candidate]
+***********************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -14,9 +14,21 @@ This document explains the changes made to Iris for this release
    :animate: fade-in
    :open:
 
-   The highlights for this major/minor release of Iris include:
+   The highlights for this minor release of Iris include:
 
-   * N/A
+   * We have **archived older Iris documentation** - everything before
+     ``v3.0.0`` - so older versions will no longer appear in search engines. If
+     you need this older documentation: please see :ref:`iris_support`.
+   * We have added a :ref:`glossary` to the Iris documentation.
+   * We have completed work to make **Pandas interoperability** handle
+     n-dimensional :class:`~iris.cube.Cube`\s.
+   * We have **begun refactoring Iris' regridding**, which has already improved
+     performance and functionality, with more potential in future!
+   * We have made several other significant `🚀 Performance Enhancements`_.
+   * Please note that **Iris cannot currently work with the latest NetCDF4
+     releases**. The pin is set to ``<v1.6.1``, due to incompatibility with
+     Iris' lack of thread safety. We're working hard to make Iris NetCDF
+     loading thread safe as soon as possible.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -226,8 +238,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the links for the Iris documentation to v2.4 and
    earlier to point to the archive of zip files instead. (:pull:`5064`)
 
-#. `@Esadek-MO`_ added notes at the bottom of functions to
-   to clarify if the function preserves laziness or not. (:pull:`5066`)
+#. `@Esadek-MO`_ began adding notes at the bottom of functions to
+   to clarify if the function preserves laziness or not. See :issue:`3292` for
+   the ongoing checklist. (:pull:`5066`)
 
 💼 Internal
 ===========
