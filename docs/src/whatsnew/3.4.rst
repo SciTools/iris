@@ -17,8 +17,9 @@ This document explains the changes made to Iris for this release
    The highlights for this minor release of Iris include:
 
    * We have **archived older Iris documentation** - everything before
-     ``v3.0.0`` - so older versions will no longer appear in search engines. If
-     you need this older documentation: please see :ref:`iris_support`.
+     ``v3.0.0`` - so older versions will soon no longer appear in search
+     engines. If you need this older documentation: please
+     see :ref:`iris_support`.
    * We have added a :ref:`glossary` to the Iris documentation.
    * We have completed work to make **Pandas interoperability** handle
      n-dimensional :class:`~iris.cube.Cube`\s.
