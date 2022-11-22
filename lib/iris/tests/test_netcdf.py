@@ -828,7 +828,6 @@ class TestNetCDFSave(tests.IrisTest):
                 file_out, ("netcdf", "multi_dim_coord_slightly_different.cdl")
             )
 
-    @tests.skip_segfaults
     @tests.skip_data
     def test_netcdf_hybrid_height(self):
         # Test saving a CF-netCDF file which contains a hybrid height
@@ -854,11 +853,12 @@ class TestNetCDFSave(tests.IrisTest):
             cubes_names = [c.name() for c in cubes]
             self.assertEqual(cubes_names, names)
 
-            # Check the PP read, netCDF write, netCDF read mechanism.
-            self.assertCML(
-                cubes.extract(names[0])[0],
-                ("netcdf", "netcdf_save_load_hybrid_height.cml"),
-            )
+            # TODO: netCDF4 >= 1.6.1 SEGFAULT
+            # # Check the PP read, netCDF write, netCDF read mechanism.
+            # self.assertCML(
+            #     cubes.extract(names[0])[0],
+            #     ("netcdf", "netcdf_save_load_hybrid_height.cml"),
+            # )
 
     @tests.skip_data
     def test_netcdf_save_ndim_auxiliary(self):

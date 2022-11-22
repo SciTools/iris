@@ -34,7 +34,9 @@ def main():
         promote_aux_coord_to_dim_coord(cube, "time")
 
     # The cubes can now be concatenated into a single time series.
-    cube = cubes.concatenate_cube()
+    # TODO: netCDF4 >= 1.6.1 SEGFAULT
+    # cube = cubes.concatenate_cube()
+    cube = cubes[0]
 
     # Generate a time series plot of a single point
     plt.figure()

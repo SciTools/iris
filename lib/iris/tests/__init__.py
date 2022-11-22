@@ -41,7 +41,6 @@ import zlib
 
 import numpy as np
 import numpy.ma as ma
-import pytest
 import requests
 
 import iris.config
@@ -1091,9 +1090,6 @@ skip_stratify = unittest.skipIf(
     not STRATIFY_AVAILABLE,
     'Test(s) require "python-stratify", which is not available.',
 )
-
-
-skip_segfaults = pytest.mark.skip("Temporary skip due to segfaults.")
 
 
 def no_warnings(func):

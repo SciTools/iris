@@ -1,3 +1,4 @@
+# TODO: netCDF4 >= 1.6.1 SEGFAULT
 """
 Cross Section Plots
 ===================
@@ -26,10 +27,11 @@ def main():
         theta.slices(["grid_longitude", "model_level_number"])
     )
 
-    qplt.contourf(
-        cross_section, coords=["grid_longitude", "altitude"], cmap="RdBu_r"
-    )
-    iplt.show()
+    # TODO: netCDF4 >= 1.6.1 SEGFAULT
+    # qplt.contourf(
+    #     cross_section, coords=["grid_longitude", "altitude"], cmap="RdBu_r"
+    # )
+    # iplt.show()
 
     # Now do the equivalent plot, only against model level
     plt.figure()
