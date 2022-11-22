@@ -507,12 +507,7 @@ class TestCoordSystem(tests.IrisTest):
                 ("NetCDF", "lambert_azimuthal_equal_area", "euro_air_temp.nc")
             )
         )
-        #
-        # FOR NOW:
-        # reference, but don't bother properly checking.
-        # - this specific load generates warnings, with no further action
-        assert cube is not None
-        # self.assertCML(cube, ("netcdf", "netcdf_laea.cml"))
+        self.assertCML(cube, ("netcdf", "netcdf_laea.cml"))
 
     datum_cf_var_cdl = """
         netcdf output {
