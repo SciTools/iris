@@ -12,9 +12,6 @@ on:
   pull_request:
 
   push:
-    branches:
-      - "main"
-      - "v*x"
     tags:
       - "v*"
     branches-ignore:
@@ -29,6 +26,7 @@ concurrency:
 jobs:
   build:
     name: "build sdist & wheel"
+    if: github.repository == "SciTools/iris"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
