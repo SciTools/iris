@@ -12,6 +12,9 @@ on:
   pull_request:
 
   push:
+    branches:
+      - "main"
+      - "v*x"
     tags:
       - "v*"
     branches-ignore:
