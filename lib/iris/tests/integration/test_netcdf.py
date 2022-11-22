@@ -97,6 +97,7 @@ class TestHybridPressure(tests.IrisTest):
             iris.save(self.cube, filename)
             self.assertCDL(filename)
 
+    @tests.skip_segfaults
     def test_save_load_loop(self):
         # Tests an issue where the variable names in the formula
         # terms changed to the standard_names instead of the variable names
@@ -156,6 +157,7 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         ):
             iris.save(cube, filename)
 
+    @tests.skip_segfaults
     def test_hybrid_height_cubes(self):
         hh1 = stock.simple_4d_with_hybrid_height()
         hh1.attributes["cube"] = "hh1"
@@ -311,6 +313,7 @@ class TestCellMeasures(tests.IrisTest):
         cubes = CubeList([cube1, cube2]).merge()
         self.assertEqual(len(cubes), 2)
 
+    @tests.skip_segfaults
     def test_concatenate_cell_measure_aware(self):
         (cube1,) = iris.load_raw(self.fname)
         cube1 = cube1[:, :, 0, 0]
@@ -323,6 +326,7 @@ class TestCellMeasures(tests.IrisTest):
         self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
         self.assertEqual(len(cubes), 2)
 
+    @tests.skip_segfaults
     def test_concatenate_cell_measure_match(self):
         (cube1,) = iris.load_raw(self.fname)
         cube1 = cube1[:, :, 0, 0]

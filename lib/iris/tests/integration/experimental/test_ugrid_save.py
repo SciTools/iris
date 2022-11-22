@@ -66,6 +66,7 @@ class TestBasicSave(tests.IrisTest):
             reffile_path = refdir_relpath + reffile_name
             self.assertCDL(resave_ncfile_path, reference_filename=reffile_path)
 
+    @tests.skip_segfaults
     def test_example_roundtrips(self):
         # Check that save-and-loadback leaves Iris data unchanged,
         # for data derived from each UGRID example CDL.

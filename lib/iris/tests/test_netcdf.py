@@ -828,6 +828,7 @@ class TestNetCDFSave(tests.IrisTest):
                 file_out, ("netcdf", "multi_dim_coord_slightly_different.cdl")
             )
 
+    @tests.skip_segfaults
     @tests.skip_data
     def test_netcdf_hybrid_height(self):
         # Test saving a CF-netCDF file which contains a hybrid height
