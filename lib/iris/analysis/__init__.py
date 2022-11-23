@@ -41,6 +41,7 @@ import functools
 from functools import wraps
 import warnings
 
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -56,6 +57,7 @@ from iris.analysis._interpolation import (
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
+import iris.util
 
 __all__ = (
     "Aggregator",
@@ -467,7 +469,7 @@ class _Aggregator:
         Kwargs:
 
         * units_func (callable):
-            | *Call signature*: (units)
+            | *Call signature*: (units, \**kwargs)
 
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
@@ -625,7 +627,7 @@ class _Aggregator:
         """
         # Update the units if required.
         if self.units_func is not None:
-            cube.units = self.units_func(cube.units)
+            cube.units = self.units_func(cube.units, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
@@ -693,13 +695,13 @@ class PercentileAggregator(_Aggregator):
     """
 
     def __init__(self, units_func=None, **kwargs):
-        """
+        r"""
         Create a percentile aggregator.
 
         Kwargs:
 
         * units_func (callable):
-            | *Call signature*: (units)
+            | *Call signature*: (units, \**kwargs)
 
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
@@ -934,13 +936,13 @@ class WeightedPercentileAggregator(PercentileAggregator):
     """
 
     def __init__(self, units_func=None, lazy_func=None, **kwargs):
-        """
+        r"""
         Create a weighted percentile aggregator.
 
         Kwargs:
 
         * units_func (callable):
-            | *Call signature*: (units)
+            | *Call signature*: (units, \**kwargs)
 
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
@@ -1170,6 +1172,92 @@ class WeightedAggregator(Aggregator):
             )
 
         return result
+
+
+class Weights(np.ndarray):
+    """Class for handling weights for weighted aggregation.
+
+    Since it inherits from :numpy:`ndarray`, all common methods and properties
+    of this are available.
+
+    Details on subclassing :numpy:`ndarray` are given here:
+    https://numpy.org/doc/stable/user/basics.subclassing.html
+
+    """
+
+    def __new__(cls, weights, cube):
+        """Create class instance.
+
+        Args:
+
+        * weights (Weights, numpy.ndarray, Cube, string):
+            If given as :class:`iris.analysis.Weights`, simply use this. If
+            given as a :class:`numpy.ndarray`, use this directly (assume units
+            of `1`). If given as a :class:`iris.cube.Cube`, use its data and
+            units. If given as a :obj:`str`, assume this is the name of a cell
+            measure from ``cube`` and its data and units.
+        * cube (Cube):
+            Input cube for aggregation. If weights is given as :obj:`str`, try
+            to extract a cell measure with the corresponding name from this
+            cube. Otherwise, this argument is ignored.
+
+        """
+        # Weights is Weights
+        if isinstance(weights, cls):
+            obj = weights
+
+        # Weights is a cube
+        # Note: to avoid circular imports of Cube we use duck typing using the
+        # "hasattr" syntax here
+        elif hasattr(weights, "add_aux_coord"):
+            obj = np.asarray(weights.data).view(cls)
+            obj.units = weights.units
+
+        # Weights is a string
+        elif isinstance(weights, str):
+            cell_measure = cube.cell_measure(weights)
+            if cell_measure.shape != cube.shape:
+                arr = iris.util.broadcast_to_shape(
+                    cell_measure.data,  # fails for dask arrays
+                    cube.shape,
+                    cube.cell_measure_dims(cell_measure),
+                )
+            else:
+                arr = cell_measure.data
+            obj = np.asarray(arr).view(cls)
+            obj.units = cell_measure.units
+
+        # Remaining types (e.g., np.ndarray): try to convert to ndarray.
+        else:
+            obj = np.asarray(weights).view(cls)
+            obj.units = Unit("1")
+
+        return obj
+
+    def __array_finalize__(self, obj):
+        """See https://numpy.org/doc/stable/user/basics.subclassing.html."""
+        if obj is None:
+            return
+        self.units = getattr(obj, "units", Unit("1"))
+
+    @classmethod
+    def update_kwargs(cls, kwargs, cube):
+        """Update ``weights`` keyword argument in-place.
+
+        Args:
+
+        * kwargs (dict):
+            Keyword arguments that will be updated in-place if a ``weights``
+            keyword is present.
+        * cube (Cube):
+            Input cube for aggregation. If weights is given as :obj:`str`, try
+            to extract a cell measure with the corresponding name from this
+            cube. Otherwise, this argument is ignored.
+
+        """
+        if "weights" not in kwargs:
+            return
+        kwargs["weights"] = cls(kwargs["weights"], cube)
 
 
 def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
@@ -1630,6 +1718,16 @@ def _sum(array, **kwargs):
     return rvalue
 
 
+def _sum_units_func(units, **kwargs):
+    """Multiply original units with weight units if possible."""
+    if "weights" not in kwargs:
+        return units
+    weights = kwargs["weights"]
+    if not hasattr(weights, "units"):
+        return units
+    return units * weights.units
+
+
 def _peak(array, **kwargs):
     def column_segments(column):
         nan_indices = np.where(np.isnan(column))[0]
@@ -1745,7 +1843,7 @@ def _peak(array, **kwargs):
 COUNT = Aggregator(
     "count",
     _count,
-    units_func=lambda units: 1,
+    units_func=lambda units, **kwargs: 1,
     lazy_func=_build_dask_mdtol_function(_count),
 )
 """
@@ -1777,7 +1875,7 @@ This aggregator handles masked data and lazy data.
 MAX_RUN = Aggregator(
     None,
     iris._lazy_data.non_lazy(_lazy_max_run),
-    units_func=lambda units: 1,
+    units_func=lambda units, **kwargs: 1,
     lazy_func=_build_dask_mdtol_function(_lazy_max_run),
 )
 """
@@ -2021,7 +2119,11 @@ This aggregator handles masked data and lazy data.
 """
 
 
-PROPORTION = Aggregator("proportion", _proportion, units_func=lambda units: 1)
+PROPORTION = Aggregator(
+    "proportion",
+    _proportion,
+    units_func=lambda units, **kwargs: 1,
+)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 proportion, as a fraction, of :class:`~iris.cube.Cube` data occurrences
@@ -2122,6 +2224,7 @@ This aggregator handles masked data.
 SUM = WeightedAggregator(
     "sum",
     _sum,
+    units_func=_sum_units_func,
     lazy_func=_build_dask_mdtol_function(_sum),
 )
 """
@@ -2159,7 +2262,7 @@ This aggregator handles masked data and lazy data.
 VARIANCE = Aggregator(
     "variance",
     ma.var,
-    units_func=lambda units: units * units,
+    units_func=lambda units, **kwargs: units * units,
     lazy_func=_build_dask_mdtol_function(da.var),
     ddof=1,
 )

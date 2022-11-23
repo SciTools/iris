@@ -28,6 +28,7 @@ from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris._merge
 import iris.analysis
+from iris.analysis import Weights
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
@@ -3802,6 +3803,10 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        Weights.update_kwargs(kwargs, self)
+
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
 
@@ -4032,6 +4037,10 @@ x            -              -
                     STASH                       m01s00i024
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        Weights.update_kwargs(kwargs, self)
+
         groupby_coords = []
         dimension_to_groupby = None
 
@@ -4358,6 +4367,10 @@ x            -               -
             possible windows of size 3 from the original cube.
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        Weights.update_kwargs(kwargs, self)
+
         coord = self._as_list_of_coords(coord)[0]
 
         if getattr(coord, "circular", False):
