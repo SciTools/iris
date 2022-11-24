@@ -60,7 +60,10 @@ def mock_cf_cm_var(monkeypatch):
     return output
 
 
-def test_not_added(monkeypatch, mock_engine, mock_cf_cm_var):
+# TODO: iris#5061 FAIL
+def test_not_added(
+    monkeypatch, no_file_lock_reuse, mock_engine, mock_cf_cm_var
+):
     # Confirm that the cell measure will be skipped if a CannotAddError is
     #  raised when attempting to add.
     def mock_add_cell_measure(_, __):

@@ -15,6 +15,7 @@ import pathlib
 from unittest import mock
 
 import netCDF4
+import pytest
 
 import iris
 import iris.io
@@ -151,6 +152,8 @@ class TestLoadRaw(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
 
 
+# TODO: iris#5061 FAIL
+@pytest.mark.usefixtures("no_file_lock_reuse")
 class TestOPeNDAP(tests.IrisTest):
     def setUp(self):
         self.url = "http://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"

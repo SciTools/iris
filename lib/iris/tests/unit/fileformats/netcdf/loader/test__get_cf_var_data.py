@@ -13,12 +13,15 @@ from unittest import mock
 
 from dask.array import Array as dask_array
 import numpy as np
+import pytest
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
 
 
+# TODO: iris#5061 FAIL
+@pytest.mark.usefixtures("no_file_lock_reuse")
 class Test__get_cf_var_data(tests.IrisTest):
     def setUp(self):
         self.filename = "DUMMY"

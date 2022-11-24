@@ -23,6 +23,9 @@ from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
 
+# TODO: iris#5061 FAIL
+pytestmark = pytest.mark.usefixtures("no_file_lock_reuse")
+
 
 class TestBoundsVertexDim(tests.IrisTest):
     # Lookup for various tests (which change the dimension order).

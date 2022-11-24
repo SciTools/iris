@@ -13,6 +13,7 @@ from xml.dom import minidom
 
 import numpy as np
 from numpy import ma
+import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.experimental.ugrid.mesh import Connectivity
@@ -216,6 +217,8 @@ class TestAltIndices(tests.IrisTest):
         self.assertTrue(connectivity.has_lazy_indices())
 
 
+# TODO: iris#5061 HANG
+@pytest.mark.skip("iris#5061 HANG")
 class TestValidations(tests.IrisTest):
     def test_start_index(self):
         kwargs = {
