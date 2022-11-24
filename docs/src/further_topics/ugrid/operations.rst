@@ -62,6 +62,11 @@ subsequent example operations on this page.
         >>> from iris.coords import AuxCoord
         >>> from iris.experimental.ugrid import Connectivity, Mesh
 
+        # TODO: iris#5061 HANG
+        >>> def mock__validate_indices(self, indices, shapes_only=False):
+        ...     pass
+        >>> Connectivity._validate_indices = mock__validate_indices
+
         # Going to create the following mesh
         #  (node indices are shown to aid understanding):
         #

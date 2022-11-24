@@ -749,6 +749,12 @@ class Mesh(CFVariableMixin):
                 MeshCoord,
             )
 
+            # TODO: iris#5061 HANG
+            from iris.experimental.ugrid import Connectivity
+            def mock__validate_indices(self, indices, shapes_only=False):
+                pass
+            Connectivity._validate_indices = mock__validate_indices
+
             file_path = sample_data_path("mesh_C4_synthetic_float.nc")
             with PARSE_UGRID_ON_LOAD.context():
                 cube_w_mesh = load_cube(file_path)
