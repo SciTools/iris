@@ -56,6 +56,7 @@ from iris.analysis._interpolation import (
 )
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
+from iris.coords import _DimensionalMetadata
 from iris.exceptions import LazyAggregatorError
 import iris.util
 
@@ -1177,8 +1178,8 @@ class WeightedAggregator(Aggregator):
 class Weights(np.ndarray):
     """Class for handling weights for weighted aggregation.
 
-    Since it inherits from :numpy:`ndarray`, all common methods and properties
-    of this are available.
+    This subclasses :numpy:`ndarray`; thus, all methods and properties of
+    :numpy:`ndarray` (e.g., `shape`, `ndim`, `view()`, etc.) are available.
 
     Details on subclassing :numpy:`ndarray` are given here:
     https://numpy.org/doc/stable/user/basics.subclassing.html
@@ -1190,42 +1191,55 @@ class Weights(np.ndarray):
 
         Args:
 
-        * weights (Weights, numpy.ndarray, Cube, string):
+        * weights (Weights, Cube, string, _DimensionalMetadata, array-like):
             If given as :class:`iris.analysis.Weights`, simply use this. If
-            given as a :class:`numpy.ndarray`, use this directly (assume units
-            of `1`). If given as a :class:`iris.cube.Cube`, use its data and
-            units. If given as a :obj:`str`, assume this is the name of a cell
-            measure from ``cube`` and its data and units.
+            given as a :class:`iris.cube.Cube`, use its data and units. If
+            given as a :obj:`str` or :class:`iris.coords._DimensionalMetadata`,
+            assume this is (the name of) a
+            :class:`iris.coords._DimensionalMetadata` object of the cube (i.e.,
+            one of :func:`iris.cube.Cube.coords`,
+            :func:`iris.cube.Cube.cell_measures`, or
+            :func:`iris.cube.Cube.ancillary_variables`). If given as an
+            array-like object, use this directly and assume units of `1`.
         * cube (Cube):
-            Input cube for aggregation. If weights is given as :obj:`str`, try
-            to extract a cell measure with the corresponding name from this
-            cube. Otherwise, this argument is ignored.
+            Input cube for aggregation. If weights is given as :obj:`str` or
+            :class:`iris.coords._DimensionalMetadata`, try to extract the
+            :class:`iris.coords._DimensionalMetadata` object and corresponding
+            dimensional mappings from this cube. Otherwise, this argument is
+            ignored.
 
         """
         # Weights is Weights
+        # --> Simple return this object
         if isinstance(weights, cls):
             obj = weights
 
         # Weights is a cube
         # Note: to avoid circular imports of Cube we use duck typing using the
         # "hasattr" syntax here
+        # --> Extract data and units from cube
         elif hasattr(weights, "add_aux_coord"):
             obj = np.asarray(weights.data).view(cls)
             obj.units = weights.units
 
-        # Weights is a string
-        elif isinstance(weights, str):
-            cell_measure = cube.cell_measure(weights)
-            if cell_measure.shape != cube.shape:
-                arr = iris.util.broadcast_to_shape(
-                    cell_measure.data,  # fails for dask arrays
-                    cube.shape,
-                    cube.cell_measure_dims(cell_measure),
-                )
+        # Weights is a string or _DimensionalMetadata object
+        # --> Extract _DimensionalMetadata object from cube, broadcast it to
+        # correct shape using the corresponding dimensional mapping, and use
+        # its data and units
+        elif isinstance(weights, (str, _DimensionalMetadata)):
+            dim_metadata = cube._dimensional_metadata(weights)
+            if isinstance(dim_metadata, iris.coords.Coord):
+                arr = dim_metadata.points
             else:
-                arr = cell_measure.data
+                arr = dim_metadata.data
+            if dim_metadata.shape != cube.shape:
+                arr = iris.util.broadcast_to_shape(
+                    arr,
+                    cube.shape,
+                    dim_metadata.cube_dims(cube),
+                )
             obj = np.asarray(arr).view(cls)
-            obj.units = cell_measure.units
+            obj.units = dim_metadata.units
 
         # Remaining types (e.g., np.ndarray): try to convert to ndarray.
         else:

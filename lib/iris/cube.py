@@ -4079,11 +4079,18 @@ x            -              -
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
-                weights = iris.util.broadcast_to_shape(
-                    weights,
-                    self.shape,
-                    (dimension_to_groupby,),
+
+                # iris.util.broadcast_to_shape does not preserve Weights type
+                weights_units = weights.units
+                weights = Weights(
+                    iris.util.broadcast_to_shape(
+                        weights,
+                        self.shape,
+                        (dimension_to_groupby,),
+                    ),
+                    self,
                 )
+                weights.units = weights_units
             if weights.shape != self.shape:
                 raise ValueError(
                     f"Weights must either be 1D or have the same shape as the "
@@ -4472,9 +4479,17 @@ x            -               -
                         "as the window."
                     )
                 kwargs = dict(kwargs)
-                kwargs["weights"] = iris.util.broadcast_to_shape(
-                    weights, rolling_window_data.shape, (dimension + 1,)
+
+                # iris.util.broadcast_to_shape does not preserve Weights type
+                weights_units = weights.units
+                weights = Weights(
+                    iris.util.broadcast_to_shape(
+                        weights, rolling_window_data.shape, (dimension + 1,)
+                    ),
+                    self,
                 )
+                weights.units = weights_units
+                kwargs["weights"] = weights
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs
         )
