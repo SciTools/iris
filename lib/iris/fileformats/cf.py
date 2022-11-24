@@ -20,6 +20,7 @@ import os
 import re
 import threading
 from typing import Mapping
+from urllib.parse import urlparse
 import warnings
 
 import netCDF4
@@ -1062,8 +1063,9 @@ class CFReader:
 
     def __init__(self, filename, warn=False, monotonic=False):
         self._dataset = None
-        filename = os.path.expanduser(filename)
-        filename = os.path.abspath(filename)
+        if not urlparse(filename).scheme:
+            filename = os.path.expanduser(filename)
+            filename = os.path.abspath(filename)
         self._filename = filename
         self._lock = get_filepath_lock(self._filename)
         # NOTE: we'd really like to defer this to the start of the related context, but
