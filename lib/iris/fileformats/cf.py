@@ -15,10 +15,11 @@ References:
 """
 
 from abc import ABCMeta, abstractmethod
-from collections.abc import Iterable, Mapping, MutableMapping
+from collections.abc import Iterable, MutableMapping
 import os
 import re
 import threading
+from typing import Mapping
 import warnings
 
 import netCDF4
