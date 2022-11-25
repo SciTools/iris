@@ -2701,7 +2701,7 @@ class Cube(CFVariableMixin):
 
         else:
             if len(self.coord_dims(coord_to_extract)) > 1:
-                msg = "Currently, only 1d coords can be used to subset a cube"
+            msg = "Currently, only 1D coords can be used to subset a cube"
                 raise iris.exceptions.CoordinateMultiDimError(msg)
             # Identify the dimension of the cube which this coordinate
             # references

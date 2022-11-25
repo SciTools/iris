@@ -84,6 +84,7 @@ __all__ = (
     "VARIANCE",
     "WPERCENTILE",
     "WeightedAggregator",
+    "Weights",
     "clear_phenomenon_identity",
     "create_weighted_aggregator_fn",
 )
