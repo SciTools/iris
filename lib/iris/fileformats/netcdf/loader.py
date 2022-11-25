@@ -545,12 +545,14 @@ def load_cubes(filenames, callback=None, constraints=None):
         # Ingest the netCDF file.
         meshes = {}
         if PARSE_UGRID_ON_LOAD:
-            cf = CFUGridReader(filename)
-            meshes = _meshes_from_cf(cf)
+            cf_reader_class = CFUGridReader
         else:
-            cf = iris.fileformats.cf.CFReader(filename)
+            cf_reader_class = iris.fileformats.cf.CFReader
 
-        with cf:
+        with cf_reader_class(filename) as cf:
+            if PARSE_UGRID_ON_LOAD:
+                meshes = _meshes_from_cf(cf)
+
             # Process each CF data variable.
             data_variables = list(cf.cf_group.data_variables.values()) + list(
                 cf.cf_group.promoted.values()

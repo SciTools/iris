@@ -96,8 +96,6 @@ def _meshes_from_cf(cf_reader):
     # Mesh instances are shared between file phenomena.
     # TODO: more sophisticated Mesh sharing between files.
     # TODO: access external Mesh cache?
-    # Using the cf_reader context manager here results in an error:
-    #  `cannot release un-acquired lock`. Not sure why.
     mesh_vars = cf_reader.cf_group.meshes
     meshes = {
         name: _build_mesh(cf_reader, var, cf_reader.filename)
@@ -211,7 +209,8 @@ def load_meshes(uris, var_name=None):
 
     result = {}
     for source in valid_sources:
-        meshes_dict = _meshes_from_cf(CFUGridReader(source))
+        with CFUGridReader(source) as cf_reader:
+            meshes_dict = _meshes_from_cf(cf_reader)
         meshes = list(meshes_dict.values())
         if var_name is not None:
             meshes = list(filter(lambda m: m.var_name == var_name, meshes))
