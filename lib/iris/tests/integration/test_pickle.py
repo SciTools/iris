@@ -9,7 +9,7 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-# import pickle
+import pickle
 
 import iris
 
@@ -18,13 +18,11 @@ class Common:
     def pickle_cube(self, protocol):
         # Ensure that data proxies are pickleable.
         cube = iris.load(self.path)[0]
-        # TODO: iris#5061 FAIL
-        ncube = cube
-        # with self.temp_filename(".pkl") as filename:
-        #     with open(filename, "wb") as f:
-        #         pickle.dump(cube, f, protocol)
-        #     with open(filename, "rb") as f:
-        #         ncube = pickle.load(f)
+        with self.temp_filename(".pkl") as filename:
+            with open(filename, "wb") as f:
+                pickle.dump(cube, f, protocol)
+            with open(filename, "rb") as f:
+                ncube = pickle.load(f)
         self.assertEqual(ncube, cube)
 
     def test_protocol_0(self):

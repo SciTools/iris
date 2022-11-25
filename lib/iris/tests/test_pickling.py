@@ -72,11 +72,9 @@ class TestPickle(tests.IrisTest):
             ("NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc")
         )
         cube = iris.load_cube(filename)
-        # TODO: iris#5061 HANG
-        # # Pickle and unpickle. Do not perform any CML tests
-        # # to avoid side effects.
-        # _, recon_cube = next(self.pickle_then_unpickle(cube))
-        recon_cube = cube
+        # Pickle and unpickle. Do not perform any CML tests
+        # to avoid side effects.
+        _, recon_cube = next(self.pickle_then_unpickle(cube))
         self.assertEqual(recon_cube, cube)
 
     def test_cube_with_deferred_unit_conversion(self):
