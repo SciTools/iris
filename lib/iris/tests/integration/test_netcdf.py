@@ -110,9 +110,8 @@ class TestHybridPressure(tests.IrisTest):
             other_cube = iris.load_cube(
                 other_filename, "air_potential_temperature"
             )
-            # TODO: netCDF4 >= 1.6.1 SEGFAULT
             _ = other_cube
-            # self.assertEqual(cube, other_cube)
+            self.assertEqual(cube, other_cube)
 
 
 @tests.skip_data
@@ -324,11 +323,9 @@ class TestCellMeasures(tests.IrisTest):
         cube2 = cube2[:, :, 0, 0]
         cube2._cell_measures_and_dims[0][0].var_name = "not_areat"
         cube2.coord("time").points = cube2.coord("time").points + 1
-        # TODO: netCDF4 >= 1.6.1 SEGFAULT
-        _ = cm_and_dims
-        # cubes = CubeList([cube1, cube2]).concatenate()
-        # self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
-        # self.assertEqual(len(cubes), 2)
+        cubes = CubeList([cube1, cube2]).concatenate()
+        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
+        self.assertEqual(len(cubes), 2)
 
     def test_concatenate_cell_measure_match(self):
         (cube1,) = iris.load_raw(self.fname)
@@ -337,11 +334,9 @@ class TestCellMeasures(tests.IrisTest):
         (cube2,) = iris.load_raw(self.fname)
         cube2 = cube2[:, :, 0, 0]
         cube2.coord("time").points = cube2.coord("time").points + 1
-        # TODO: netCDF4 >= 1.6.1 SEGFAULT
-        _ = cm_and_dims
-        # cubes = CubeList([cube1, cube2]).concatenate()
-        # self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
-        # self.assertEqual(len(cubes), 1)
+        cubes = CubeList([cube1, cube2]).concatenate()
+        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
+        self.assertEqual(len(cubes), 1)
 
     def test_round_trip(self):
         (cube,) = iris.load(self.fname)

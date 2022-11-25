@@ -118,8 +118,7 @@ class TestBasicSave(tests.IrisTest):
                 orig = orig[keys]
                 reloaded = reloaded[keys]
                 # Resulting cubes, with collapsed mesh, should be IDENTICAL.
-                # TODO: netCDF4 >= 1.6.1 SEGFAULT
-                # self.assertEqual(orig, reloaded)
+                self.assertEqual(orig, reloaded)
 
 
 if __name__ == "__main__":

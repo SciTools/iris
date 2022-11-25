@@ -19,12 +19,7 @@ def gallery_examples():
     """Generator to yield all current gallery examples."""
 
     for example_file in GALLERY_DIR.glob("*/plot*.py"):
-        # TODO: netCDF4 >= 1.6.1 SEGFAULT
-        if example_file.name not in (
-            "plot_cross_section.py",
-            "plot_load_nemo.py",
-        ):
-            yield example_file.stem
+        yield example_file.stem
 
 
 @pytest.mark.filterwarnings("error::iris.IrisDeprecation")

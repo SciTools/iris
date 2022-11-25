@@ -553,6 +553,8 @@ class Saver:
         self._formula_terms_cache = {}
         #: NetCDF dataset
         try:
+            # TODO: iris#5061 - can no longer have more than 1 Saver active
+            #  (happens when saving a CubeList/list).
             with GLOBAL_NETCDF_ACCESS_LOCK:
                 self._dataset = netCDF4.Dataset(
                     filename, mode="w", format=netcdf_format

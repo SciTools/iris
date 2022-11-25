@@ -853,12 +853,11 @@ class TestNetCDFSave(tests.IrisTest):
             cubes_names = [c.name() for c in cubes]
             self.assertEqual(cubes_names, names)
 
-            # TODO: netCDF4 >= 1.6.1 SEGFAULT
-            # # Check the PP read, netCDF write, netCDF read mechanism.
-            # self.assertCML(
-            #     cubes.extract(names[0])[0],
-            #     ("netcdf", "netcdf_save_load_hybrid_height.cml"),
-            # )
+            # Check the PP read, netCDF write, netCDF read mechanism.
+            self.assertCML(
+                cubes.extract(names[0])[0],
+                ("netcdf", "netcdf_save_load_hybrid_height.cml"),
+            )
 
     @tests.skip_data
     def test_netcdf_save_ndim_auxiliary(self):
