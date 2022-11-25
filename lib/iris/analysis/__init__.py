@@ -1197,9 +1197,9 @@ class Weights(np.ndarray):
             given as a :obj:`str` or :class:`iris.coords._DimensionalMetadata`,
             assume this is (the name of) a
             :class:`iris.coords._DimensionalMetadata` object of the cube (i.e.,
-            one of :func:`iris.cube.Cube.coords`,
-            :func:`iris.cube.Cube.cell_measures`, or
-            :func:`iris.cube.Cube.ancillary_variables`). If given as an
+            one of :meth:`iris.cube.Cube.coords`,
+            :meth:`iris.cube.Cube.cell_measures`, or
+            :meth:`iris.cube.Cube.ancillary_variables`). If given as an
             array-like object, use this directly and assume units of `1`.  If
             `units` is given, ignore all units derived above and use the ones
             given by `units`.

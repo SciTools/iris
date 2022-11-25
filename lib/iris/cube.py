@@ -2701,7 +2701,7 @@ class Cube(CFVariableMixin):
 
         else:
             if len(self.coord_dims(coord_to_extract)) > 1:
-                msg = "Currently, only 1D coords can be used to subset a cube"
+                msg = "Currently, only 1d coords can be used to subset a cube"
                 raise iris.exceptions.CoordinateMultiDimError(msg)
             # Identify the dimension of the cube which this coordinate
             # references
@@ -3722,9 +3722,15 @@ class Cube(CFVariableMixin):
         sum :data:`~iris.analysis.SUM`.
 
         Weighted aggregations support an optional *weights* keyword argument.
-        If set, this should be supplied as an array of weights whose shape
-        matches the cube. Values for latitude-longitude area weights may be
-        calculated using :func:`iris.analysis.cartography.area_weights`.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d (for collapsing over a 1d coordinate) or match the
+        shape of the cube. When weights are not given as arrays, units are
+        correctly handled for weighted sums, i.e., the original unit of the
+        cube is multiplied by the units of the weights.  Values for
+        latitude-longitude area weights may be calculated using
+        :func:`iris.analysis.cartography.area_weights`.
 
         Some Iris aggregators support "lazy" evaluation, meaning that
         cubes resulting from this method may represent data arrays which are
@@ -3975,10 +3981,14 @@ class Cube(CFVariableMixin):
         also be supplied. These include :data:`~iris.analysis.MEAN` and
         :data:`~iris.analysis.SUM`.
 
-        Weighted aggregations support an optional *weights* keyword argument. If
-        set, this should be supplied as an array of weights whose shape matches
-        the cube or as 1D array whose length matches the dimension over which is
-        aggregated.
+        Weighted aggregations support an optional *weights* keyword argument.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d or match the shape of the cube. When weights are
+        not given as arrays, units are correctly handled for weighted sums,
+        i.e., the original unit of the cube is multiplied by the units of the
+        weights.
 
         Parameters
         ----------
@@ -4067,7 +4077,7 @@ x            -              -
             groupby_coords.append(coord)
 
         # Check shape of weights. These must either match the shape of the cube
-        # or be 1D (in this case, their length must be equal to the length of the
+        # or be 1d (in this case, their length must be equal to the length of the
         # dimension we are aggregating over).
         weights = kwargs.get("weights")
         return_weights = kwargs.get("returned", False)
@@ -4075,7 +4085,7 @@ x            -              -
             if weights.ndim == 1:
                 if len(weights) != self.shape[dimension_to_groupby]:
                     raise ValueError(
-                        f"1D weights must have the same length as the dimension "
+                        f"1d weights must have the same length as the dimension "
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
@@ -4092,7 +4102,7 @@ x            -              -
                 )
             if weights.shape != self.shape:
                 raise ValueError(
-                    f"Weights must either be 1D or have the same shape as the "
+                    f"Weights must either be 1d or have the same shape as the "
                     f"cube, got shape {weights.shape} for weights, "
                     f"{self.shape} for cube"
                 )
@@ -4304,8 +4314,11 @@ x            -              -
 
         * kwargs:
             Aggregator and aggregation function keyword arguments. The weights
-            argument to the aggregator, if any, should be a 1d array with the
-            same length as the chosen window.
+            argument to the aggregator, if any, should be a 1d array, cube, or
+            (names of) :meth:`~iris.cube.Cube.coords`,
+            :meth:`~iris.cube.Cube.cell_measures`, or
+            :meth:`~iris.cube.Cube.ancillary_variables` with the same length as
+            the chosen window.
 
         Returns:
             :class:`iris.cube.Cube`.
