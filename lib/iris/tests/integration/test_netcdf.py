@@ -110,7 +110,6 @@ class TestHybridPressure(tests.IrisTest):
             other_cube = iris.load_cube(
                 other_filename, "air_potential_temperature"
             )
-            _ = other_cube
             self.assertEqual(cube, other_cube)
 
 
