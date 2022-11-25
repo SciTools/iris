@@ -4081,7 +4081,6 @@ x            -              -
                     )
 
                 # iris.util.broadcast_to_shape does not preserve Weights type
-                weights_units = weights.units
                 weights = Weights(
                     iris.util.broadcast_to_shape(
                         weights,
@@ -4089,8 +4088,8 @@ x            -              -
                         (dimension_to_groupby,),
                     ),
                     self,
+                    units=weights.units,
                 )
-                weights.units = weights_units
             if weights.shape != self.shape:
                 raise ValueError(
                     f"Weights must either be 1D or have the same shape as the "
@@ -4481,15 +4480,13 @@ x            -               -
                 kwargs = dict(kwargs)
 
                 # iris.util.broadcast_to_shape does not preserve Weights type
-                weights_units = weights.units
-                weights = Weights(
+                kwargs["weights"] = Weights(
                     iris.util.broadcast_to_shape(
                         weights, rolling_window_data.shape, (dimension + 1,)
                     ),
                     self,
+                    units=weights.units,
                 )
-                weights.units = weights_units
-                kwargs["weights"] = weights
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs
         )

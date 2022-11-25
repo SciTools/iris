@@ -1186,7 +1186,7 @@ class Weights(np.ndarray):
 
     """
 
-    def __new__(cls, weights, cube):
+    def __new__(cls, weights, cube, units=None):
         """Create class instance.
 
         Args:
@@ -1200,13 +1200,20 @@ class Weights(np.ndarray):
             one of :func:`iris.cube.Cube.coords`,
             :func:`iris.cube.Cube.cell_measures`, or
             :func:`iris.cube.Cube.ancillary_variables`). If given as an
-            array-like object, use this directly and assume units of `1`.
+            array-like object, use this directly and assume units of `1`.  If
+            `units` is given, ignore all units derived above and use the ones
+            given by `units`.
         * cube (Cube):
             Input cube for aggregation. If weights is given as :obj:`str` or
             :class:`iris.coords._DimensionalMetadata`, try to extract the
             :class:`iris.coords._DimensionalMetadata` object and corresponding
             dimensional mappings from this cube. Otherwise, this argument is
             ignored.
+        * units (string, Unit):
+            If ``None``, use units derived from `weights`. Otherwise, overwrite
+            the units derived from `weights` and use `units`. Warning: if
+            `weights` has been given as `Weights` object and `units` is used,
+            this will also overwrite the original instance.
 
         """
         # Weights is Weights
@@ -1245,6 +1252,10 @@ class Weights(np.ndarray):
         else:
             obj = np.asarray(weights).view(cls)
             obj.units = Unit("1")
+
+        # Overwrite units from units argument if necessary
+        if units is not None:
+            obj.units = units
 
         return obj
 
