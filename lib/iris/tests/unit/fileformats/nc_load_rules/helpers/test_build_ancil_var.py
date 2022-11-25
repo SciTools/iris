@@ -59,7 +59,6 @@ def mock_cf_av_var(monkeypatch):
     return output
 
 
-# TODO: iris#5061 FAIL
 def test_not_added(monkeypatch, mock_engine, mock_cf_av_var):
     # Confirm that the ancillary variable will be skipped if a CannotAddError
     #  is raised when attempting to add.

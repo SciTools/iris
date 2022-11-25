@@ -45,9 +45,7 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.cf import (  # , get_filepath_lock
-    GLOBAL_NETCDF_ACCESS_LOCK,
-)
+from iris.fileformats.cf import GLOBAL_NETCDF_ACCESS_LOCK
 import iris.io
 import iris.util
 
@@ -553,8 +551,6 @@ class Saver:
         self._formula_terms_cache = {}
         #: NetCDF dataset
         try:
-            # TODO: iris#5061 - can no longer have more than 1 Saver active
-            #  (happens when saving a CubeList/list).
             with GLOBAL_NETCDF_ACCESS_LOCK:
                 self._dataset = netCDF4.Dataset(
                     filename, mode="w", format=netcdf_format
