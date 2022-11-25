@@ -1237,12 +1237,20 @@ class Saver:
                 )
                 std_name = factory_defn.std_name
 
+                name = None
+                formula_name_difference = False
+                create_new_variable = False
                 with GLOBAL_NETCDF_ACCESS_LOCK:
-                    if hasattr(cf_var, "formula_terms"):
-                        if (
+                    if not hasattr(cf_var, "formula_terms"):
+                        _setncattr(cf_var, "standard_name", std_name)
+                        _setncattr(cf_var, "axis", "Z")
+                        _setncattr(cf_var, "formula_terms", formula_terms)
+                    else:
+                        formula_name_difference = (
                             cf_var.formula_terms != formula_terms
                             or cf_var.standard_name != std_name
-                        ):
+                        )
+                        if formula_name_difference:
                             # TODO: We need to resolve this corner-case where
                             #  the dimensionless vertical coordinate containing
                             #  the formula_terms is a dimension coordinate of
@@ -1257,34 +1265,33 @@ class Saver:
                                 raise ValueError(msg)
                             key = (cf_name, std_name, formula_terms)
                             name = self._formula_terms_cache.get(key)
-                            if name is None:
-                                # Create a new variable
-                                name = self._create_generic_cf_array_var(
-                                    cube, dimension_names, primary_coord
-                                )
-                                cf_var = self._dataset.variables[name]
-                                _setncattr(cf_var, "standard_name", std_name)
-                                _setncattr(cf_var, "axis", "Z")
-                                # Update the formula terms.
-                                ft = formula_terms.split()
-                                ft = [name if t == cf_name else t for t in ft]
-                                _setncattr(
-                                    cf_var, "formula_terms", " ".join(ft)
-                                )
-                                # Update the cache.
-                                self._formula_terms_cache[key] = name
-                            # Update the associated cube variable.
-                            coords = cf_var_cube.coordinates.split()
-                            coords = [
-                                name if c == cf_name else c for c in coords
-                            ]
-                            _setncattr(
-                                cf_var_cube, "coordinates", " ".join(coords)
-                            )
-                    else:
+                            create_new_variable = name is None
+
+                # Need to temporarily release the lock for this step.
+                if create_new_variable:
+                    # Create a new variable
+                    name = self._create_generic_cf_array_var(
+                        cube, dimension_names, primary_coord
+                    )
+                    with GLOBAL_NETCDF_ACCESS_LOCK:
+                        cf_var = self._dataset.variables[name]
                         _setncattr(cf_var, "standard_name", std_name)
                         _setncattr(cf_var, "axis", "Z")
-                        _setncattr(cf_var, "formula_terms", formula_terms)
+                        # Update the formula terms.
+                        ft = formula_terms.split()
+                        ft = [name if t == cf_name else t for t in ft]
+                        _setncattr(cf_var, "formula_terms", " ".join(ft))
+                        # Update the cache.
+                        self._formula_terms_cache[key] = name
+
+                if formula_name_difference:
+                    with GLOBAL_NETCDF_ACCESS_LOCK:
+                        # Update the associated cube variable.
+                        coords = cf_var_cube.coordinates.split()
+                        coords = [name if c == cf_name else c for c in coords]
+                        _setncattr(
+                            cf_var_cube, "coordinates", " ".join(coords)
+                        )
 
     def _get_dim_names(self, cube_or_mesh):
         """

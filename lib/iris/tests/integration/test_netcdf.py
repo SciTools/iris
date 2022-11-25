@@ -164,13 +164,10 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         sa = hh2.coord("surface_altitude")
         sa.points = sa.points * 10
         with self.temp_filename(".nc") as fname:
-            # TODO: iris#5061 HANG
-            # iris.save([hh1, hh2], fname)
-            iris.save([hh1], fname)
+            iris.save([hh1, hh2], fname)
             cubes = iris.load(fname, "air_temperature")
             cubes = sorted(cubes, key=lambda cube: cube.attributes["cube"])
-            # TODO: netCDF4 >= 1.6.1 SEGFAULT
-            # self.assertCML(cubes)
+            self.assertCML(cubes)
 
     def test_hybrid_height_cubes_on_dimension_coordinate(self):
         hh1 = stock.hybrid_height()
