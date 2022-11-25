@@ -1179,10 +1179,11 @@ class WeightedAggregator(Aggregator):
 class Weights(np.ndarray):
     """Class for handling weights for weighted aggregation.
 
-    This subclasses :numpy:`ndarray`; thus, all methods and properties of
-    :numpy:`ndarray` (e.g., `shape`, `ndim`, `view()`, etc.) are available.
+    This subclasses :class:`numpy.ndarray`; thus, all methods and properties of
+    :class:`numpy.ndarray` (e.g., `shape`, `ndim`, `view()`, etc.) are
+    available.
 
-    Details on subclassing :numpy:`ndarray` are given here:
+    Details on subclassing :class:`numpy.ndarray` are given here:
     https://numpy.org/doc/stable/user/basics.subclassing.html
 
     """
