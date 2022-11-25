@@ -320,8 +320,20 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.assertArrayAlmostEqual(cube_collapsed.data, [1.5, 2.5, 3.5])
         self.assertFalse(cube_collapsed.has_lazy_data())
 
+    def test_dim0_lazy_weights_none(self):
+        cube_collapsed = self.cube.collapsed("y", MEAN, weights=None)
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(cube_collapsed.data, [1.5, 2.5, 3.5])
+        self.assertFalse(cube_collapsed.has_lazy_data())
+
     def test_dim1_lazy(self):
         cube_collapsed = self.cube.collapsed("x", MEAN)
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(cube_collapsed.data, [1.0, 4.0])
+        self.assertFalse(cube_collapsed.has_lazy_data())
+
+    def test_dim1_lazy_weights_none(self):
+        cube_collapsed = self.cube.collapsed("x", MEAN, weights=None)
         self.assertTrue(cube_collapsed.has_lazy_data())
         self.assertArrayAlmostEqual(cube_collapsed.data, [1.0, 4.0])
         self.assertFalse(cube_collapsed.has_lazy_data())
@@ -329,6 +341,12 @@ class Test_collapsed__lazy(tests.IrisTest):
     def test_multidims(self):
         # Check that MEAN works with multiple dims.
         cube_collapsed = self.cube.collapsed(("x", "y"), MEAN)
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAllClose(cube_collapsed.data, 2.5)
+
+    def test_multidims_weights_none(self):
+        # Check that MEAN works with multiple dims.
+        cube_collapsed = self.cube.collapsed(("x", "y"), MEAN, weights=None)
         self.assertTrue(cube_collapsed.has_lazy_data())
         self.assertArrayAllClose(cube_collapsed.data, 2.5)
 

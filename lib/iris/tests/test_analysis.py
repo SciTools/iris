@@ -1898,6 +1898,25 @@ class TestWeights(tests.IrisTest):
             units="J",
         )
 
+    def test_update_kwargs_no_weights(self):
+        kwargs = {"test": [1, 2, 3]}
+        iris.analysis.Weights.update_kwargs(kwargs, self.cube)
+        self.assertEqual(kwargs, {"test": [1, 2, 3]})
+
+    def test_update_kwargs_weights_none(self):
+        kwargs = {"test": [1, 2, 3], "weights": None}
+        iris.analysis.Weights.update_kwargs(kwargs, self.cube)
+        self.assertEqual(kwargs, {"test": [1, 2, 3], "weights": None})
+
+    def test_update_kwargs_weights(self):
+        kwargs = {"test": [1, 2, 3], "weights": [1, 2]}
+        iris.analysis.Weights.update_kwargs(kwargs, self.cube)
+        self.assertEqual(len(kwargs), 2)
+        self.assertEqual(kwargs["test"], [1, 2, 3])
+        self.assertTrue(isinstance(kwargs["weights"], iris.analysis.Weights))
+        np.testing.assert_array_equal(kwargs["weights"], [1, 2])
+        self.assertEqual(kwargs["weights"].units, "1")
+
 
 if __name__ == "__main__":
     tests.main()

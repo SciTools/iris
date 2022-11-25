@@ -4077,7 +4077,7 @@ x            -              -
             groupby_coords.append(coord)
 
         # Check shape of weights. These must either match the shape of the cube
-        # or be 1d (in this case, their length must be equal to the length of the
+        # or be 1D (in this case, their length must be equal to the length of the
         # dimension we are aggregating over).
         weights = kwargs.get("weights")
         return_weights = kwargs.get("returned", False)
@@ -4085,7 +4085,7 @@ x            -              -
             if weights.ndim == 1:
                 if len(weights) != self.shape[dimension_to_groupby]:
                     raise ValueError(
-                        f"1d weights must have the same length as the dimension "
+                        f"1D weights must have the same length as the dimension "
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
@@ -4102,7 +4102,7 @@ x            -              -
                 )
             if weights.shape != self.shape:
                 raise ValueError(
-                    f"Weights must either be 1d or have the same shape as the "
+                    f"Weights must either be 1D or have the same shape as the "
                     f"cube, got shape {weights.shape} for weights, "
                     f"{self.shape} for cube"
                 )

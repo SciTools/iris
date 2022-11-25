@@ -1273,8 +1273,8 @@ class Weights(np.ndarray):
         Args:
 
         * kwargs (dict):
-            Keyword arguments that will be updated in-place if a ``weights``
-            keyword is present.
+            Keyword arguments that will be updated in-place if a `weights`
+            keyword is present which is not ``None``.
         * cube (Cube):
             Input cube for aggregation. If weights is given as :obj:`str`, try
             to extract a cell measure with the corresponding name from this
@@ -1282,6 +1282,8 @@ class Weights(np.ndarray):
 
         """
         if "weights" not in kwargs:
+            return
+        if kwargs["weights"] is None:
             return
         kwargs["weights"] = cls(kwargs["weights"], cube)
 

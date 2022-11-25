@@ -413,6 +413,27 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube.data, self.single_rms_expected
         )
 
+    def test_single_weights_none(self):
+        # mean group-by with single coordinate name.
+        aggregateby_cube = self.cube_single.aggregated_by(
+            "height", iris.analysis.MEAN, weights=None
+        )
+        self.assertCML(
+            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
+
+        # mean group-by with single coordinate.
+        aggregateby_cube = self.cube_single.aggregated_by(
+            self.coord_z_single, iris.analysis.MEAN, weights=None
+        )
+        self.assertCML(
+            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
+
+        np.testing.assert_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
+
     def test_weighted_single(self):
         # weighted mean group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by(
