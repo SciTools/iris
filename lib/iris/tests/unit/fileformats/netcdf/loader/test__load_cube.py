@@ -12,14 +12,10 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import numpy as np
-import pytest
 
 from iris.coords import DimCoord
 import iris.fileformats.cf
 from iris.fileformats.netcdf.loader import _load_cube
-
-# TODO: iris#5061 FAIL
-pytestmark = pytest.mark.usefixtures("no_file_lock_reuse")
 
 
 class TestCoordAttributes(tests.IrisTest):

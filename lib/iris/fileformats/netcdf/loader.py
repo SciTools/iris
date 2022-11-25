@@ -34,7 +34,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.cf import GLOBAL_NETCDF_ACCESS_LOCK, get_filepath_lock
+from iris.fileformats.cf import GLOBAL_NETCDF_ACCESS_LOCK
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -65,7 +65,6 @@ class NetCDFDataProxy:
         "path",
         "variable_name",
         "fill_value",
-        "_file_lock",
     )
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
@@ -74,22 +73,20 @@ class NetCDFDataProxy:
         self.path = path
         self.variable_name = variable_name
         self.fill_value = fill_value
-        self._file_lock = get_filepath_lock(self.path, already_exists=True)
 
     @property
     def ndim(self):
         return len(self.shape)
 
     def __getitem__(self, keys):
-        with self._file_lock:
-            with GLOBAL_NETCDF_ACCESS_LOCK:
-                dataset = netCDF4.Dataset(self.path)
-                try:
-                    variable = dataset.variables[self.variable_name]
-                    # Get the required section of the NetCDF variable data.
-                    data = variable[keys]
-                finally:
-                    dataset.close()
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            dataset = netCDF4.Dataset(self.path)
+            try:
+                variable = dataset.variables[self.variable_name]
+                # Get the required section of the NetCDF variable data.
+                data = variable[keys]
+            finally:
+                dataset.close()
         result = np.asanyarray(data)
         return result
 
