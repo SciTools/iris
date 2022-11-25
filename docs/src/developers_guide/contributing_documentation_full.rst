@@ -139,6 +139,9 @@ If there is a particularly troublesome module that breaks the ``make html`` you
 can exclude the module from the API documentation.  Add the entry to the
 ``exclude_modules`` tuple list in the
 ``docs/src/sphinxext/generate_package_rst.py`` file.
+If you want to avoid adding all methods of a parent class to a subclass, you
+can add that class to the ``classes_no_inherited_members`` list at the top of
+the ``docs/src/sphinxext/generate_package_rst.py`` file.
 
 
 .. _contributing.documentation.gallery:

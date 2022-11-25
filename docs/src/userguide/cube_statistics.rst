@@ -141,8 +141,8 @@ These areas can now be passed to the ``collapsed`` method as weights:
             altitude                         -                      x
         Scalar coordinates:
             forecast_reference_time     2009-11-19 04:00:00
-            grid_latitude               1.5145501 degrees, bound=(0.14430022, 2.8848) degrees
-            grid_longitude              358.74948 degrees, bound=(357.494, 360.00497) degrees
+            grid_latitude               1.5145501 degrees, bound=(0.13755022, 2.89155) degrees
+            grid_longitude              358.74948 degrees, bound=(357.48724, 360.01172) degrees
             surface_altitude            399.625 m, bound=(-14.0, 813.25) m
         Cell methods:
             mean                        grid_longitude, grid_latitude
