@@ -14,7 +14,7 @@ Cube Statistics
 Collapsing Entire Data Dimensions
 ---------------------------------
 
-.. testsetup::
+.. testsetup:: collapsing
 
     import iris
     filename = iris.sample_data_path('uk_hires.pp')
@@ -125,7 +125,7 @@ in order to calculate the area of the grid boxes::
 
 These areas can now be passed to the ``collapsed`` method as weights:
 
-.. doctest::
+.. doctest:: collapsing
 
     >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
     >>> print(new_cube)
@@ -161,7 +161,7 @@ In addition to plain arrays, weights can also be given as cubes or (names of)
 This has the advantage of correct unit handling, e.g., for area-weighted sums
 the units of the resulting cube are multiplied by an area unit:
 
-.. doctest::
+.. doctest:: collapsing
 
     >>> from iris.coords import CellMeasure
     >>> cell_areas = CellMeasure(
