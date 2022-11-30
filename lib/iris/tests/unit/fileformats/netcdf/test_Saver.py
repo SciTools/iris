@@ -203,7 +203,7 @@ class Test_write(tests.IrisTest):
 
     def test_zlib(self):
         cube = self._simple_cube(">f4")
-        api = self.patch("iris.fileformats.netcdf.saver.thread_safe")
+        api = self.patch("iris.fileformats.netcdf.saver._thread_safe")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
         with Saver("/dummy/path", "NETCDF4") as saver:

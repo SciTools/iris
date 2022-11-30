@@ -33,7 +33,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.netcdf import thread_safe
+from iris.fileformats.netcdf import _thread_safe
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -78,9 +78,9 @@ class NetCDFDataProxy:
         return len(self.shape)
 
     def __getitem__(self, keys):
-        dataset = thread_safe.Dataset(self.path)
+        dataset = _thread_safe.Dataset(self.path)
         try:
-            variable = thread_safe.VariableContainer(
+            variable = _thread_safe.VariableContainer(
                 dataset.variables[self.variable_name]
             )
             # Get the required section of the NetCDF variable data.
@@ -228,7 +228,7 @@ def _get_cf_var_data(cf_var, filename):
     fill_value = getattr(
         cf_var.cf_data,
         "_FillValue",
-        thread_safe.default_fillvals[cf_var.dtype.str[1:]],
+        _thread_safe.default_fillvals[cf_var.dtype.str[1:]],
     )
     proxy = NetCDFDataProxy(
         cf_var.shape, dtype, filename, cf_var.cf_name, fill_value

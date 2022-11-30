@@ -1,3 +1,14 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+"""
+Module to ensure all calls to the netCDF4 library are thread-safe.
+
+Intention is that no other Iris module should import the netCDF module.
+
+"""
 from functools import wraps
 from types import FunctionType
 
