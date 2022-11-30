@@ -15,7 +15,6 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 """
 import warnings
 
-import netCDF4
 import numpy as np
 
 from iris._lazy_data import as_lazy_data
@@ -34,7 +33,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.cf import GLOBAL_NETCDF_ACCESS_LOCK
+from iris.fileformats.netcdf import thread_safe
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -79,14 +78,15 @@ class NetCDFDataProxy:
         return len(self.shape)
 
     def __getitem__(self, keys):
-        with GLOBAL_NETCDF_ACCESS_LOCK:
-            dataset = netCDF4.Dataset(self.path)
-            try:
-                variable = dataset.variables[self.variable_name]
-                # Get the required section of the NetCDF variable data.
-                data = variable[keys]
-            finally:
-                dataset.close()
+        dataset = thread_safe.Dataset(self.path)
+        try:
+            variable = thread_safe.VariableContainer(
+                dataset.variables[self.variable_name]
+            )
+            # Get the required section of the NetCDF variable data.
+            data = variable[keys]
+        finally:
+            dataset.close()
         result = np.asanyarray(data)
         return result
 
@@ -228,7 +228,7 @@ def _get_cf_var_data(cf_var, filename):
     fill_value = getattr(
         cf_var.cf_data,
         "_FillValue",
-        netCDF4.default_fillvals[cf_var.dtype.str[1:]],
+        thread_safe.default_fillvals[cf_var.dtype.str[1:]],
     )
     proxy = NetCDFDataProxy(
         cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
