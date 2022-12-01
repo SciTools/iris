@@ -78,11 +78,9 @@ class NetCDFDataProxy:
         return len(self.shape)
 
     def __getitem__(self, keys):
-        dataset = _thread_safe.Dataset(self.path)
+        dataset = _thread_safe.DatasetContainer(self.path)
         try:
-            variable = _thread_safe.VariableContainer(
-                dataset.variables[self.variable_name]
-            )
+            variable = dataset.variables[self.variable_name]
             # Get the required section of the NetCDF variable data.
             data = variable[keys]
         finally:

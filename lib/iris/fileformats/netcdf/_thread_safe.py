@@ -9,9 +9,6 @@ Module to ensure all calls to the netCDF4 library are thread-safe.
 Intention is that no other Iris module should import the netCDF module.
 
 """
-from functools import wraps
-from types import FunctionType
-
 import netCDF4
 
 from iris.fileformats.cf import GLOBAL_NETCDF_ACCESS_LOCK
@@ -21,46 +18,39 @@ from iris.fileformats.cf import GLOBAL_NETCDF_ACCESS_LOCK
 default_fillvals = netCDF4.default_fillvals
 
 
-def _use_nc_lock(func):
-    """Acquire GLOBAL_NETCDF_ACCESS_LOCK while calling the function."""
+class ThreadSafeAggregator(object):
+    # Allows easy assertions, without difficulties with isinstance and mocking.
+    THREAD_SAFE_FLAG = True
 
-    @wraps(func)
-    def wrapped(self, *args, **kwargs):
+    def __init__(self, contained):
+        self.__contained = contained
+
+    def __getattr__(self, item):
+        if item == f"_{self.__class__.__name__}__contained":
+            return object.__getattribute__(
+                self, f"_{ThreadSafeAggregator.__name__}__contained"
+            )
+        else:
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                return getattr(self.__contained, item)
+
+    def __setattr__(self, key, value):
+        if key == f"_{ThreadSafeAggregator.__name__}__contained":
+            object.__setattr__(self, key, value)
+        else:
+            with GLOBAL_NETCDF_ACCESS_LOCK:
+                return setattr(self.__contained, key, value)
+
+    def __getitem__(self, item):
         with GLOBAL_NETCDF_ACCESS_LOCK:
-            return func(self, *args, **kwargs)
+            return self.__contained.__getitem__(item)
 
-    return wrapped
-
-
-class NcLockMetaclass(type):
-    """
-    Wraps all methods in the class with _use_nc_lock decorator.
-    """
-
-    def __new__(mcs, name, bases, class_dict):
-        new_class_dict = {}
-        for attr_name, attr in class_dict.items():
-            if isinstance(attr, FunctionType):
-                attr = _use_nc_lock(attr)
-            new_class_dict[attr_name] = attr
-        return type.__new__(mcs, name, bases, new_class_dict)
+    def __setitem__(self, key, value):
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            return self.__contained.__setitem__(key, value)
 
 
-class Dataset(netCDF4.Dataset, metaclass=NcLockMetaclass):
-    """
-    netCDF4.Dataset subclass that always acquires GLOBAL_NETCDF_ACCESS_LOCK.
-
-    Subclassed as closely as possible - all attributes are simply wrapped to
-    first acquire GLOBAL_NETCDF_ACCESS_LOCK.
-    """
-
-    def __init__(self, *args, **kwargs):
-        # TODO: is this the only way to get __init__ wrapped? We lose the
-        #  parent docstring and parameter list!
-        super().__init__(*args, **kwargs)
-
-
-class VariableContainer(object, metaclass=NcLockMetaclass):
+class VariableContainer(ThreadSafeAggregator):
     """
     Accessor for a netCDF4.Variable, always acquiring GLOBAL_NETCDF_ACCESS_LOCK.
 
@@ -69,29 +59,33 @@ class VariableContainer(object, metaclass=NcLockMetaclass):
 
     """
 
-    def __init__(self, var: netCDF4.Variable):
-        # All methods are wrapped with use_nc_lock(), so we need to manually
-        #  release the lock while we call __setattr__.
-        GLOBAL_NETCDF_ACCESS_LOCK.release()
-        self.__var = var
-        GLOBAL_NETCDF_ACCESS_LOCK.acquire()
-
-    def __getattr__(self, item):
-        return getattr(self.__var, item)
-
-    def __setattr__(self, key, value):
-        if key == "_VariableContainer__var":
-            object.__setattr__(self, key, value)
-        else:
-            return setattr(self.__var, key, value)
-
-    def __getitem__(self, item):
-        return self.__var.__getitem__(item)
-
-    def __setitem__(self, key, value):
-        return self.__var.__setitem__(key, value)
-
-    # Please add documented attributes as needed for Iris' code.
+    # Please add any attribute 'wrappers' as needed for Iris' code.
     @property
     def dimensions(self):
-        return self.__var.dimensions
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            return self.__contained.dimensions
+
+    def setncattr(self, *args, **kwargs):
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            return self.__contained.setncattr(*args, **kwargs)
+
+
+class DatasetContainer(ThreadSafeAggregator):
+    @property
+    def variables(self):
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            variables_ = self.__contained.variables
+        return {k: VariableContainer(v) for k, v in variables_.items()}
+
+    def createVariable(self, *args, **kwargs):
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            new_variable = self.__contained.createVariable(*args, **kwargs)
+        result = VariableContainer(new_variable)
+        return result
+
+    def get_variables_by_attributes(self, *args, **kwargs):
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            variables_ = self.__contained.get_variables_by_attributes(
+                *args, **kwargs
+            )
+        return [VariableContainer(v) for v in variables_]

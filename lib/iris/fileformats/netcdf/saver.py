@@ -462,6 +462,7 @@ def _setncattr(variable, name, attribute):
     NOTE: variable needs to be a _thread_safe.VariableContainer.
 
     """
+    assert hasattr(variable, "THREAD_SAFE_FLAG")
     attribute = _bytes_if_ascii(attribute)
     return variable.setncattr(name, attribute)
 
@@ -477,6 +478,7 @@ class _FillValueMaskCheckAndStoreTarget:
     """
 
     def __init__(self, target, fill_value=None):
+        assert hasattr(target, "THREAD_SAFE_FLAG")
         self.target = target
         self.fill_value = fill_value
         self.contains_value = False
@@ -548,7 +550,7 @@ class Saver:
         self._formula_terms_cache = {}
         #: NetCDF dataset
         try:
-            self._dataset = _thread_safe.Dataset(
+            self._dataset = _thread_safe.DatasetContainer(
                 filename, mode="w", format=netcdf_format
             )
         except RuntimeError:
@@ -934,9 +936,7 @@ class Saver:
                 cf_mesh_name = self._create_mesh(mesh)
                 self._name_coord_map.append(cf_mesh_name, mesh)
 
-                cf_mesh_var = _thread_safe.VariableContainer(
-                    self._dataset.variables[cf_mesh_name]
-                )
+                cf_mesh_var = self._dataset.variables[cf_mesh_name]
 
                 # Get the mesh-element dim names.
                 mesh_dims = self._mesh_dims[mesh]
@@ -1010,9 +1010,7 @@ class Saver:
                         fill_value=fill_value,
                     )
                     # Add essential attributes to the Connectivity variable.
-                    cf_conn_var = _thread_safe.VariableContainer(
-                        self._dataset.variables[cf_conn_name]
-                    )
+                    cf_conn_var = self._dataset.variables[cf_conn_name]
                     _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
                     _setncattr(cf_conn_var, "start_index", conn.start_index)
 
@@ -1205,9 +1203,7 @@ class Saver:
                 primaries.append(primary_coord)
 
                 cf_name = self._name_coord_map.name(primary_coord)
-                cf_var = _thread_safe.VariableContainer(
-                    self._dataset.variables[cf_name]
-                )
+                cf_var = self._dataset.variables[cf_name]
 
                 names = {
                     key: self._name_coord_map.name(coord)
@@ -1255,9 +1251,7 @@ class Saver:
                     name = self._create_generic_cf_array_var(
                         cube, dimension_names, primary_coord
                     )
-                    cf_var = _thread_safe.VariableContainer(
-                        self._dataset.variables[name]
-                    )
+                    cf_var = self._dataset.variables[name]
                     _setncattr(cf_var, "standard_name", std_name)
                     _setncattr(cf_var, "axis", "Z")
                     # Update the formula terms.
@@ -1630,12 +1624,10 @@ class Saver:
 
             boundsvar_name = "{}_{}".format(cf_name, varname_extra)
             _setncattr(cf_var, property_name, boundsvar_name)
-            cf_var_bounds = _thread_safe.VariableContainer(
-                self._dataset.createVariable(
-                    boundsvar_name,
-                    bounds.dtype.newbyteorder("="),
-                    cf_var.dimensions + (bounds_dimension_name,),
-                )
+            cf_var_bounds = self._dataset.createVariable(
+                boundsvar_name,
+                bounds.dtype.newbyteorder("="),
+                cf_var.dimensions + (bounds_dimension_name,),
             )
 
             self._lazy_stream_data(
@@ -1776,12 +1768,10 @@ class Saver:
             cf_mesh_name = self._increment_name(cf_mesh_name)
 
         # Create the main variable
-        cf_mesh_var = _thread_safe.VariableContainer(
-            self._dataset.createVariable(
-                cf_mesh_name,
-                np.dtype(np.int32),
-                [],
-            )
+        cf_mesh_var = self._dataset.createVariable(
+            cf_mesh_name,
+            np.dtype(np.int32),
+            [],
         )
 
         # Add the basic essential attributes
@@ -1928,9 +1918,7 @@ class Saver:
             element_dims.append(string_dimension_name)
 
             # Create the label coordinate variable.
-            cf_var = _thread_safe.VariableContainer(
-                self._dataset.createVariable(cf_name, "|S1", element_dims)
-            )
+            cf_var = self._dataset.createVariable(cf_name, "|S1", element_dims)
 
             # Convert data from an array of strings into a character array
             # with an extra string-length dimension.
@@ -1975,13 +1963,11 @@ class Saver:
                 cf_name = element_dims[0]
 
             # Create the CF-netCDF variable.
-            cf_var = _thread_safe.VariableContainer(
-                self._dataset.createVariable(
-                    cf_name,
-                    data.dtype.newbyteorder("="),
-                    element_dims,
-                    fill_value=fill_value,
-                )
+            cf_var = self._dataset.createVariable(
+                cf_name,
+                data.dtype.newbyteorder("="),
+                element_dims,
+                fill_value=fill_value,
             )
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
@@ -2080,10 +2066,8 @@ class Saver:
                     aname = self._increment_name(cs.grid_mapping_name)
                     cs.grid_mapping_name = aname
 
-                cf_var_grid = _thread_safe.VariableContainer(
-                    self._dataset.createVariable(
-                        cs.grid_mapping_name, np.int32
-                    )
+                cf_var_grid = self._dataset.createVariable(
+                    cs.grid_mapping_name, np.int32
                 )
                 _setncattr(
                     cf_var_grid, "grid_mapping_name", cs.grid_mapping_name
@@ -2372,6 +2356,7 @@ class Saver:
             NOTE: cfvar needs to be a _thread_safe.VariableContainer.
 
             """
+            assert hasattr(cfvar, "THREAD_SAFE_FLAG")
             if packing:
                 if scale_factor:
                     _setncattr(cfvar, "scale_factor", scale_factor)
@@ -2383,14 +2368,12 @@ class Saver:
             cf_name = self._increment_name(cf_name)
 
         # Create the cube CF-netCDF data variable with data payload.
-        cf_var = _thread_safe.VariableContainer(
-            self._dataset.createVariable(
-                cf_name,
-                dtype,
-                dimension_names,
-                fill_value=fill_value,
-                **kwargs,
-            )
+        cf_var = self._dataset.createVariable(
+            cf_name,
+            dtype,
+            dimension_names,
+            fill_value=fill_value,
+            **kwargs,
         )
 
         set_packing_ncattrs(cf_var)
