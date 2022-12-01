@@ -646,7 +646,9 @@ class _Common__check_attribute_compliance:
         self.container = mock.Mock(name="container", attributes={})
         self.data_dtype = np.dtype("int32")
 
-        patch = mock.patch("netCDF4.Dataset")
+        patch = mock.patch(
+            "iris.fileformats.netcdf._thread_safe.DatasetContainer"
+        )
         _ = patch.start()
         self.addCleanup(patch.stop)
 

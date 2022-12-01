@@ -18,14 +18,13 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
 import os
 import re
-import threading
 from urllib.parse import urlparse
 import warnings
 
-import netCDF4
 import numpy as np
 import numpy.ma as ma
 
+from iris.fileformats.netcdf import _thread_safe
 import iris.util
 
 #
@@ -1023,7 +1022,6 @@ class CFGroup(MutableMapping):
 
 
 ################################################################################
-GLOBAL_NETCDF_ACCESS_LOCK = threading.Lock()
 
 
 class CFReader:
@@ -1058,24 +1056,23 @@ class CFReader:
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
-        with GLOBAL_NETCDF_ACCESS_LOCK:
-            self._dataset = netCDF4.Dataset(self._filename, mode="r")
+        self._dataset = _thread_safe.DatasetContainer(self._filename, mode="r")
 
-            # Issue load optimisation warning.
-            if warn and self._dataset.file_format in [
-                "NETCDF3_CLASSIC",
-                "NETCDF3_64BIT",
-            ]:
-                warnings.warn(
-                    "Optimise CF-netCDF loading by converting data from NetCDF3 "
-                    'to NetCDF4 file format using the "nccopy" command.'
-                )
+        # Issue load optimisation warning.
+        if warn and self._dataset.file_format in [
+            "NETCDF3_CLASSIC",
+            "NETCDF3_64BIT",
+        ]:
+            warnings.warn(
+                "Optimise CF-netCDF loading by converting data from NetCDF3 "
+                'to NetCDF4 file format using the "nccopy" command.'
+            )
 
-            self._check_monotonic = monotonic
+        self._check_monotonic = monotonic
 
-            self._translate()
-            self._build_cf_groups()
-            self._reset()
+        self._translate()
+        self._build_cf_groups()
+        self._reset()
 
     def __enter__(self):
         # Enable use as a context manager
@@ -1319,8 +1316,7 @@ class CFReader:
     def _close(self):
         # Explicitly close dataset to prevent file remaining open.
         if self._dataset is not None:
-            with GLOBAL_NETCDF_ACCESS_LOCK:
-                self._dataset.close()
+            self._dataset.close()
             self._dataset = None
 
     def __del__(self):

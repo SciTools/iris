@@ -18,7 +18,6 @@ import tempfile
 from unittest import mock
 import warnings
 
-import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
 import pytest
@@ -32,6 +31,7 @@ from iris.fileformats.netcdf import (
     CF_CONVENTIONS_VERSION,
     Saver,
     UnknownCellMethodWarning,
+    _thread_safe,
 )
 import iris.tests.stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
@@ -393,7 +393,7 @@ class TestSelfReferencingVarLoad(tests.IrisTest):
         self.temp_dir_path = os.path.join(
             tempfile.mkdtemp(), "issue_3367_volcello_test_file.nc"
         )
-        dataset = nc.Dataset(self.temp_dir_path, "w")
+        dataset = _thread_safe.DatasetContainer(self.temp_dir_path, "w")
 
         dataset.createDimension("lat", 4)
         dataset.createDimension("lon", 5)

@@ -12,9 +12,9 @@ from typing import Optional
 
 import dask
 from dask import array as da
-import netCDF4
 import numpy as np
 
+from iris.fileformats.netcdf import _thread_safe
 from iris.tests import env_bin_path
 
 NCGEN_PATHSTR = str(env_bin_path("ncgen"))
@@ -100,7 +100,7 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
 
     """
 
-    ds = netCDF4.Dataset(nc_path, "r+")
+    ds = _thread_safe.DatasetContainer(nc_path, "r+")
 
     unlimited_dim_names = [
         dim for dim in ds.dimensions if ds.dimensions[dim].isunlimited()
