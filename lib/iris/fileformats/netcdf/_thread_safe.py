@@ -71,6 +71,11 @@ class VariableContainer(ThreadSafeAggregator):
 
 
 class DatasetContainer(ThreadSafeAggregator):
+    def __init__(self, *args, **kwargs):
+        with GLOBAL_NETCDF_ACCESS_LOCK:
+            ds = netCDF4.Dataset(*args, **kwargs)
+        super().__init__(ds)
+
     @property
     def variables(self):
         with GLOBAL_NETCDF_ACCESS_LOCK:
