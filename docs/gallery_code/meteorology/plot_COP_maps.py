@@ -24,6 +24,7 @@ References
 
 import os.path
 
+import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -149,7 +150,9 @@ def main():
     colors = np.stack([red, green, blue], axis=1)
 
     # Make a wider than normal figure to house two maps side-by-side.
-    fig, ax_array = plt.subplots(1, 2, figsize=(12, 5))
+    fig, ax_array = plt.subplots(
+        1, 2, figsize=(12, 5), subplot_kw=dict(projection=ccrs.PlateCarree())
+    )
 
     # Loop over our scenarios to make a plot for each.
     for ax, experiment, label in zip(
@@ -164,30 +167,15 @@ def main():
         exp_anom_cube = exp_cube - preindustrial
 
         # Plot this anomaly.
-        plt.sca(ax)
         ax.set_title(f"HadGEM2 {label} Scenario", fontsize=10)
         contour_result = iplt.contourf(
-            exp_anom_cube, levels, colors=colors, extend="both"
+            exp_anom_cube, levels, colors=colors, extend="both", axes=ax
         )
-        plt.gca().coastlines()
+        ax.coastlines()
 
-    # Now add a colourbar who's leftmost point is the same as the leftmost
-    # point of the left hand plot and rightmost point is the rightmost
-    # point of the right hand plot.
-
-    # Get the positions of the 2nd plot and the left position of the 1st plot.
-    left, bottom, width, height = ax_array[1].get_position().bounds
-    first_plot_left = ax_array[0].get_position().bounds[0]
-
-    # The width of the colorbar should now be simple.
-    width = left - first_plot_left + width
-
-    # Add axes to the figure, to place the colour bar.
-    colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
-
-    # Add the colour bar.
+    # Now add a colour bar which spans the two plots.
     cbar = plt.colorbar(
-        contour_result, colorbar_axes, orientation="horizontal"
+        contour_result, ax=ax_array, aspect=60, orientation="horizontal"
     )
 
     # Label the colour bar and add ticks.
