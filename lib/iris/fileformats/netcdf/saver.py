@@ -569,6 +569,7 @@ class Saver:
 
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
+
         self._dataset.sync()
         self._dataset.close()
 
@@ -1214,21 +1215,11 @@ class Saver:
                 )
                 std_name = factory_defn.std_name
 
-                name = None
-                formula_name_difference = False
-                create_new_variable = False
-                has_formula_terms = hasattr(cf_var, "formula_terms")
-                if has_formula_terms:
-                    formula_name_difference = (
+                if hasattr(cf_var, "formula_terms"):
+                    if (
                         cf_var.formula_terms != formula_terms
                         or cf_var.standard_name != std_name
-                    )
-                if not has_formula_terms:
-                    _setncattr(cf_var, "standard_name", std_name)
-                    _setncattr(cf_var, "axis", "Z")
-                    _setncattr(cf_var, "formula_terms", formula_terms)
-                else:
-                    if formula_name_difference:
+                    ):
                         # TODO: We need to resolve this corner-case where
                         #  the dimensionless vertical coordinate containing
                         #  the formula_terms is a dimension coordinate of
@@ -1243,29 +1234,30 @@ class Saver:
                             raise ValueError(msg)
                         key = (cf_name, std_name, formula_terms)
                         name = self._formula_terms_cache.get(key)
-                        create_new_variable = name is None
-
-                # Need to temporarily release the lock for this step.
-                if create_new_variable:
-                    # Create a new variable
-                    name = self._create_generic_cf_array_var(
-                        cube, dimension_names, primary_coord
-                    )
-                    cf_var = self._dataset.variables[name]
+                        if name is None:
+                            # Create a new variable
+                            name = self._create_generic_cf_array_var(
+                                cube, dimension_names, primary_coord
+                            )
+                            cf_var = self._dataset.variables[name]
+                            _setncattr(cf_var, "standard_name", std_name)
+                            _setncattr(cf_var, "axis", "Z")
+                            # Update the formula terms.
+                            ft = formula_terms.split()
+                            ft = [name if t == cf_name else t for t in ft]
+                            _setncattr(cf_var, "formula_terms", " ".join(ft))
+                            # Update the cache.
+                            self._formula_terms_cache[key] = name
+                        # Update the associated cube variable.
+                        coords = cf_var_cube.coordinates.split()
+                        coords = [name if c == cf_name else c for c in coords]
+                        _setncattr(
+                            cf_var_cube, "coordinates", " ".join(coords)
+                        )
+                else:
                     _setncattr(cf_var, "standard_name", std_name)
                     _setncattr(cf_var, "axis", "Z")
-                    # Update the formula terms.
-                    ft = formula_terms.split()
-                    ft = [name if t == cf_name else t for t in ft]
-                    _setncattr(cf_var, "formula_terms", " ".join(ft))
-                    # Update the cache.
-                    self._formula_terms_cache[key] = name
-
-                if formula_name_difference:
-                    # Update the associated cube variable.
-                    coords = cf_var_cube.coordinates.split()
-                    coords = [name if c == cf_name else c for c in coords]
-                    _setncattr(cf_var_cube, "coordinates", " ".join(coords))
+                    _setncattr(cf_var, "formula_terms", formula_terms)
 
     def _get_dim_names(self, cube_or_mesh):
         """
@@ -1547,11 +1539,10 @@ class Saver:
     def _ensure_valid_dtype(self, values, src_name, src_object):
         # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
         # so we check if we can store them as int32 instead.
-        file_format = self._dataset.file_format
         if (
             np.issubdtype(values.dtype, np.int64)
             or np.issubdtype(values.dtype, np.unsignedinteger)
-        ) and file_format in (
+        ) and self._dataset.file_format in (
             "NETCDF3_CLASSIC",
             "NETCDF3_64BIT",
             "NETCDF4_CLASSIC",
@@ -1629,7 +1620,6 @@ class Saver:
                 bounds.dtype.newbyteorder("="),
                 cf_var.dimensions + (bounds_dimension_name,),
             )
-
             self._lazy_stream_data(
                 data=bounds,
                 fill_value=None,
@@ -1762,7 +1752,6 @@ class Saver:
         """
         # First choose a var-name for the mesh variable itself.
         cf_mesh_name = self._get_mesh_variable_name(mesh)
-
         # Disambiguate any possible clashes.
         while cf_mesh_name in self._dataset.variables:
             cf_mesh_name = self._increment_name(cf_mesh_name)
@@ -1781,7 +1770,6 @@ class Saver:
             "topology_dimension",
             np.int32(mesh.topology_dimension),
         )
-
         # Add the usual names + units attributes
         self._set_cf_var_attributes(cf_mesh_var, mesh)
 
@@ -1821,8 +1809,7 @@ class Saver:
                 value = str(value)
 
             # Don't clobber existing attributes.
-            has_this_name = hasattr(cf_var, name)
-            if not has_this_name:
+            if not hasattr(cf_var, name):
                 _setncattr(cf_var, name, value)
 
     def _create_generic_cf_array_var(
@@ -2369,15 +2356,10 @@ class Saver:
 
         # Create the cube CF-netCDF data variable with data payload.
         cf_var = self._dataset.createVariable(
-            cf_name,
-            dtype,
-            dimension_names,
-            fill_value=fill_value,
-            **kwargs,
+            cf_name, dtype, dimension_names, fill_value=fill_value, **kwargs
         )
 
         set_packing_ncattrs(cf_var)
-
         self._lazy_stream_data(
             data=data,
             fill_value=fill_value,

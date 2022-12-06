@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
 import os
 import re
-from urllib.parse import urlparse
 import warnings
 
 import numpy as np
@@ -1022,8 +1021,6 @@ class CFGroup(MutableMapping):
 
 
 ################################################################################
-
-
 class CFReader:
     """
     This class allows the contents of a netCDF file to be interpreted according
@@ -1048,10 +1045,7 @@ class CFReader:
 
     def __init__(self, filename, warn=False, monotonic=False):
         self._dataset = None
-        if not urlparse(filename).scheme:
-            filename = os.path.expanduser(filename)
-            filename = os.path.abspath(filename)
-        self._filename = filename
+        self._filename = os.path.expanduser(filename)
 
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()

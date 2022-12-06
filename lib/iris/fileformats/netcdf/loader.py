@@ -58,13 +58,7 @@ def _actions_engine():
 class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
-    __slots__ = (
-        "shape",
-        "dtype",
-        "path",
-        "variable_name",
-        "fill_value",
-    )
+    __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
         self.shape = shape
@@ -81,12 +75,11 @@ class NetCDFDataProxy:
         dataset = _thread_safe.DatasetContainer(self.path)
         try:
             variable = dataset.variables[self.variable_name]
-            # Get the required section of the NetCDF variable data.
-            data = variable[keys]
+            # Get the NetCDF variable data and slice.
+            var = variable[keys]
         finally:
             dataset.close()
-        result = np.asanyarray(data)
-        return result
+        return np.asanyarray(var)
 
     def __repr__(self):
         fmt = (
