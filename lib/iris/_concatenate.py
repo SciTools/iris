@@ -313,7 +313,7 @@ def concatenate(
     check_aux_coords=True,
     check_cell_measures=True,
     check_ancils=True,
-    check_derived_coords=False,
+    check_derived_coords=True,
 ):
     """
     Concatenate the provided cubes over common existing dimensions.
@@ -919,17 +919,17 @@ class _ProtoCube:
             Checks if the points and bounds of auxiliary coordinates of the
             cubes match. This check is not applied to auxiliary coordinates
             that span the dimension the concatenation is occurring along.
-            Defaults to True.
+            Defaults to False.
 
         * check_cell_measures
             Checks if the data of cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension the
-            concatenation is occurring along. Defaults to True.
+            concatenation is occurring along. Defaults to False.
 
         * check_ancils
             Checks if the data of ancillary variables of the cubes match. This
             check is not applied to ancillary variables that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            the concatenation is occurring along. Defaults to False.
 
         * check_derived_coords
             Checks if the points and bounds of derived coordinates of the cubes
@@ -938,7 +938,7 @@ class _ProtoCube:
             differences in scalar coordinates and dimensional coordinates used
             to derive the coordinate are still checked. Checks for auxiliary
             coordinates used to derive the coordinates can be ignored with
-            `check_aux_coords`. Defaults to True.
+            `check_aux_coords`. Defaults to False.
 
         Returns:
             Boolean.
