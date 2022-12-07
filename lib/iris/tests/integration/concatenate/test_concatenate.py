@@ -17,6 +17,7 @@ import cf_units
 import numpy as np
 
 from iris._concatenate import concatenate
+import iris.aux_factory
 import iris.coords
 import iris.cube
 import iris.tests.stock as stock
@@ -185,6 +186,127 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
         result = concatenate([cube_a, cube_b], check_ancils=False)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (4, 2))
+
+
+class Test_cubes_with_derived_coord(tests.IrisTest):
+    def create_cube(self):
+        data = np.arange(4).reshape(2, 2)
+        aux_factories = []
+
+        # DimCoords
+        sigma = iris.coords.DimCoord([0.0, 10.0], var_name="sigma", units="1")
+        t_unit = cf_units.Unit(
+            "hours since 1970-01-01 00:00:00", calendar="standard"
+        )
+        time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
+
+        # AtmosphereSigmaFactory (does not span concatenated dim)
+        ptop = iris.coords.AuxCoord(100.0, var_name="ptop", units="Pa")
+        surface_p = iris.coords.AuxCoord([1.0, 2.0], var_name="ps", units="Pa")
+        aux_factories.append(
+            iris.aux_factory.AtmosphereSigmaFactory(ptop, sigma, surface_p)
+        )
+
+        # HybridHeightFactory (span concatenated dim)
+        delta = iris.coords.AuxCoord(10.0, var_name="delta", units="m")
+        orog = iris.coords.AuxCoord(data, var_name="orog", units="m")
+        aux_factories.append(
+            iris.aux_factory.HybridHeightFactory(delta, sigma, orog)
+        )
+
+        dim_coords_and_dims = [(time, 0), (sigma, 1)]
+        aux_coords_and_dims = [
+            (ptop, ()),
+            (delta, ()),
+            (surface_p, 1),
+            (orog, (0, 1)),
+        ]
+
+        cube = iris.cube.Cube(
+            data,
+            standard_name="air_temperature",
+            units="K",
+            dim_coords_and_dims=dim_coords_and_dims,
+            aux_coords_and_dims=aux_coords_and_dims,
+            aux_factories=aux_factories,
+        )
+        return cube
+
+    def test_equal_derived_coords(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+
+        np.testing.assert_allclose(
+            result[0].coord("air_pressure").points, [100.0, -880.0]
+        )
+        np.testing.assert_allclose(
+            result[0].coord("altitude").points,
+            [[10.0, 20.0], [10.0, 40.0], [10.0, 20.0], [10.0, 40.0]],
+        )
+
+    def test_equal_derived_coords_with_bounds(self):
+        cube_a = self.create_cube()
+        cube_a.coord("sigma").bounds = [[0.0, 5.0], [5.0, 20.0]]
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+
+        np.testing.assert_allclose(
+            result[0].coord("air_pressure").bounds,
+            [[100.0, -395.0], [-390.0, -1860.0]],
+        )
+
+    def test_diff_altitude(self):
+        """Gives one cube since altitude spans concatenation dim."""
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+        cube_b.coord("orog").points = [[0, 0], [0, 0]]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+
+        np.testing.assert_allclose(
+            result[0].coord("altitude").points,
+            [[10.0, 20.0], [10.0, 40.0], [10.0, 10.0], [10.0, 10.0]],
+        )
+
+    def test_diff_air_pressure(self):
+        """Gives two cubes since altitude does not span concatenation dim."""
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+        cube_b.coord("ps").points = [10.0, 20.0]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 2)
+
+    def test_ignore_diff_air_pressure(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+        cube_b.coord("ps").points = [10.0, 20.0]
+
+        result = concatenate(
+            [cube_a, cube_b],
+            check_aux_coords=False,
+            check_derived_coords=False,
+        )
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+
+        np.testing.assert_allclose(
+            result[0].coord("air_pressure").points, [100.0, -880.0]
+        )
 
 
 class Test_anonymous_dims(tests.IrisTest):
