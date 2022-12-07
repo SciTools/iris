@@ -348,7 +348,11 @@ def concatenate(
     * check_derived_coords
         Checks if the points and bounds of derived coordinates of the cubes
         match. This check is not applied to derived coordinates that span the
-        dimension the concatenation is occurring along.  Defaults to True.
+        dimension the concatenation is occurring along. Note that differences
+        in scalar coordinates and dimensional coordinates used to derive the
+        coordinate are still checked. Checks for auxiliary coordinates used to
+        derive the coordinates can be ignored with `check_aux_coords`. Defaults
+        to True.
 
     Returns:
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube`
@@ -611,6 +615,14 @@ class _CubeSignature:
             differences = self._coordinate_differences(other, "av_metadata")
             msgs.append(
                 msg_template.format("Ancillary variables", *differences)
+            )
+        # Check derived coordinates.
+        if self.derived_metadata != other.derived_metadata:
+            differences = self._coordinate_differences(
+                other, "derived_metadata"
+            )
+            msgs.append(
+                msg_template.format("Derived coordinates", *differences)
             )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
@@ -922,8 +934,11 @@ class _ProtoCube:
         * check_derived_coords
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
-            the dimension the concatenation is occurring along.  Defaults to
-            True.
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to True.
 
         Returns:
             Boolean.
@@ -1240,7 +1255,7 @@ class _ProtoCube:
                 # the concatenated cube. We need to check all coordinate types
                 # here (dim coords, aux coords, and scalar coords).
                 new_dependencies = {}
-                for (dep_name, old_dependency) in factory.dependencies.items():
+                for old_dependency in factory.dependencies.values():
                     if old_dependency in old_dim_coords:
                         dep_idx = old_dim_coords.index(old_dependency)
                         new_dependency = new_dim_coords[dep_idx]
@@ -1250,10 +1265,10 @@ class _ProtoCube:
                     else:
                         dep_idx = scalar_coords.index(old_dependency)
                         new_dependency = scalar_coords[dep_idx]
-                    new_dependencies[dep_name] = new_dependency
+                    new_dependencies[id(old_dependency)] = new_dependency
 
                 # Create new factory with the updated dependencies.
-                factory = factory.__class__(**new_dependencies)
+                factory = factory.updated(new_dependencies)
 
             aux_factories.append(factory)
 

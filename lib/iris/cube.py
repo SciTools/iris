@@ -573,8 +573,11 @@ class CubeList(list):
         * check_derived_coords
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
-            the dimension the concatenation is occurring along.  Defaults to
-            True.
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to True.
 
         .. note::
 
@@ -648,8 +651,11 @@ class CubeList(list):
         * check_derived_coords
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
-            the dimension the concatenation is occurring along.  Defaults to
-            True.
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to True.
 
         Returns:
             A new :class:`iris.cube.CubeList` of concatenated
