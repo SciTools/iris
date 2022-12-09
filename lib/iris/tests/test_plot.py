@@ -712,9 +712,8 @@ class CheckForWarningsMetaclass(type):
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestPcolorNoBounds(
-    tests.GraphicsTest_nometa, SliceMixin, metaclass=CheckForWarningsMetaclass
+    tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
@@ -729,9 +728,8 @@ class TestPcolorNoBounds(
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestPcolormeshNoBounds(
-    tests.GraphicsTest_nometa, SliceMixin, metaclass=CheckForWarningsMetaclass
+    tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates

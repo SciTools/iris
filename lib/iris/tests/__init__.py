@@ -16,7 +16,6 @@ The primary class for this module is :class:`IrisTest`.
 import collections
 from collections.abc import Mapping
 import contextlib
-import datetime
 import difflib
 import filecmp
 import functools
@@ -208,7 +207,7 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
     )
 
 
-class IrisTest_nometa(unittest.TestCase):
+class IrisTest(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
     _assertion_counts = collections.defaultdict(int)
@@ -937,78 +936,8 @@ class IrisTest_nometa(unittest.TestCase):
         )
 
 
-# An environment variable controls whether test timings are output.
-#
-# NOTE: to run tests with timing output, nosetests cannot be used.
-# At present, that includes not using "python setup.py test"
-# The typically best way is like this :
-#    $ export IRIS_TEST_TIMINGS=1
-#    $ python -m unittest discover -s iris.tests
-# and commonly adding ...
-#    | grep "TIMING TEST" >iris_test_output.txt
-#
-_PRINT_TEST_TIMINGS = bool(int(os.environ.get("IRIS_TEST_TIMINGS", 0)))
-
-
 def _method_path(meth, cls):
     return ".".join([cls.__module__, cls.__name__, meth.__name__])
-
-
-def _testfunction_timing_decorator(fn, cls):
-    # Function decorator for making a testcase print its execution time.
-    @functools.wraps(fn)
-    def inner(*args, **kwargs):
-        start_time = datetime.datetime.now()
-        try:
-            result = fn(*args, **kwargs)
-        finally:
-            end_time = datetime.datetime.now()
-            elapsed_time = (end_time - start_time).total_seconds()
-            msg = '\n  TEST TIMING -- "{}" took : {:12.6f} sec.'
-            name = _method_path(fn, cls)
-            print(msg.format(name, elapsed_time))
-        return result
-
-    return inner
-
-
-def iristest_timing_decorator(cls):
-    # Class decorator to make all "test_.." functions print execution timings.
-    if _PRINT_TEST_TIMINGS:
-        # NOTE: 'dir' scans *all* class properties, including inherited ones.
-        attr_names = dir(cls)
-        for attr_name in attr_names:
-            attr = getattr(cls, attr_name)
-            if callable(attr) and attr_name.startswith("test"):
-                attr = _testfunction_timing_decorator(attr, cls)
-                setattr(cls, attr_name, attr)
-    return cls
-
-
-class _TestTimingsMetaclass(type):
-    # An alternative metaclass for IrisTest subclasses, which makes
-    # them print execution timings for all the testcases.
-    # This is equivalent to applying the @iristest_timing_decorator to
-    # every test class that inherits from IrisTest.
-    # NOTE: however, it means you *cannot* specify a different metaclass for
-    # your test class inheriting from IrisTest.
-    # See below for how to solve that where needed.
-    def __new__(cls, clsname, base_classes, attrs):
-        result = type.__new__(cls, clsname, base_classes, attrs)
-        if _PRINT_TEST_TIMINGS:
-            result = iristest_timing_decorator(result)
-        return result
-
-
-class IrisTest(IrisTest_nometa, metaclass=_TestTimingsMetaclass):
-    # Derive the 'ordinary' IrisTest from IrisTest_nometa, but add the
-    # metaclass that enables test timings output.
-    # This means that all subclasses also get the timing behaviour.
-    # However, if a different metaclass is *wanted* for an IrisTest subclass,
-    # this would cause a metaclass conflict.
-    # Instead, you can inherit from IrisTest_nometa and apply the
-    # @iristest_timing_decorator explicitly to your new testclass.
-    pass
 
 
 get_data_path = IrisTest.get_data_path
@@ -1016,11 +945,6 @@ get_result_path = IrisTest.get_result_path
 
 
 class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
-    pass
-
-
-class GraphicsTest_nometa(graphics.GraphicsTestMixin, IrisTest_nometa):
-    # Graphicstest without the metaclass providing test timings.
     pass
 
 
