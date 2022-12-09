@@ -76,6 +76,9 @@ This document explains the changes made to Iris for this release
 #. `@fnattino`_ changed the order of ``ncgen`` arguments in the command to
    create NetCDF files for testing  (caused errors on OS X). (:pull:`5105`)
 
+#. `@rcomer`_ removed some old infrastructure that printed test timings.
+   (:pull:`5101`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
