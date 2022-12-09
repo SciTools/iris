@@ -216,9 +216,11 @@ def as_lazy_data(data, chunks=None, asarray=False):
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
+    # NetCDFDataProxy needs Dask to acquire a specific lock before operating.
+    lock = getattr(data, "required_lock", False)
     if not is_lazy_data(data):
         data = da.from_array(
-            data, chunks=chunks, asarray=asarray, meta=np.ndarray
+            data, chunks=chunks, asarray=asarray, meta=np.ndarray, lock=lock
         )
     return data
 

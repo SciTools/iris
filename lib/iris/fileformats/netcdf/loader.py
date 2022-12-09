@@ -44,6 +44,10 @@ DEBUG = False
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
+# An expected part of the public loader API, but includes thread safety
+#  concerns so is housed in _thread_safe.
+NetCDFDataProxy = _thread_safe.NetCDFDataProxy
+
 
 def _actions_engine():
     # Return an 'actions engine', which provides a pyke-rules-like interface to
@@ -53,48 +57,6 @@ def _actions_engine():
 
     engine = nc_actions_engine.Engine()
     return engine
-
-
-class NetCDFDataProxy:
-    """A reference to the data payload of a single NetCDF file variable."""
-
-    __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
-
-    def __init__(self, shape, dtype, path, variable_name, fill_value):
-        self.shape = shape
-        self.dtype = dtype
-        self.path = path
-        self.variable_name = variable_name
-        self.fill_value = fill_value
-
-    @property
-    def ndim(self):
-        return len(self.shape)
-
-    def __getitem__(self, keys):
-        dataset = _thread_safe.DatasetContainer(self.path)
-        try:
-            variable = dataset.variables[self.variable_name]
-            # Get the NetCDF variable data and slice.
-            var = variable[keys]
-        finally:
-            dataset.close()
-        return np.asanyarray(var)
-
-    def __repr__(self):
-        fmt = (
-            "<{self.__class__.__name__} shape={self.shape}"
-            " dtype={self.dtype!r} path={self.path!r}"
-            " variable_name={self.variable_name!r}>"
-        )
-        return fmt.format(self=self)
-
-    def __getstate__(self):
-        return {attr: getattr(self, attr) for attr in self.__slots__}
-
-    def __setstate__(self, state):
-        for key, value in state.items():
-            setattr(self, key, value)
 
 
 def _assert_case_specific_facts(engine, cf, cf_group):
