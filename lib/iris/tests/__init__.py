@@ -936,10 +936,6 @@ class IrisTest(unittest.TestCase):
         )
 
 
-def _method_path(meth, cls):
-    return ".".join([cls.__module__, cls.__name__, meth.__name__])
-
-
 get_data_path = IrisTest.get_data_path
 get_result_path = IrisTest.get_result_path
 
