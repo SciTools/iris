@@ -87,6 +87,8 @@ pattern matching, e.g.::
 
     pytest -v -k plot_coriolis docs/gallery_tests/test_gallery_examples.py
 
+If a gallery test fails, follow the instructions in :ref:`testing.graphics`.
+
 The ``make`` commands shown below can be run in the ``docs`` or ``docs/src``
 directory.
 
@@ -165,13 +167,13 @@ The code for the gallery entries are in ``docs/gallery_code``.
 Each sub directory in this directory is a sub section of the gallery.  The
 respective ``README.rst`` in each folder is included in the gallery output.
 
-For each gallery entry there must be a corresponding test script located in
-``docs/gallery_tests``.
-
 To add an entry to the gallery simple place your python code into the
 appropriate sub directory and name it with a prefix of ``plot_``.  If your
 gallery entry does not fit into any existing sub directories then create a new
-directory and place it in there.
+directory and place it in there.  A test for the gallery entry will be
+automatically generated (see Testing_ for how to run it).  To add a new
+reference image for this test, follow the instructions in
+:ref:`testing.graphics`.
 
 The reStructuredText (rst) output of the gallery is located in
 ``docs/src/generated/gallery``.
