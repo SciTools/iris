@@ -67,7 +67,7 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
 
 
 💼 Internal
