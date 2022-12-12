@@ -10,13 +10,13 @@ Intention is that no other Iris module should import the netCDF module.
 
 """
 from abc import ABC
+from threading import Lock
 import typing
 
-from dask.utils import SerializableLock
 import netCDF4
 import numpy as np
 
-_GLOBAL_NETCDF4_LOCK = SerializableLock()
+_GLOBAL_NETCDF4_LOCK = Lock()
 
 # Doesn't need thread protection, but this allows all netCDF4 refs to be
 #  replaced with thread_safe refs.
