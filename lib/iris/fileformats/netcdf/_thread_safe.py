@@ -297,8 +297,6 @@ class DatasetContainer(GroupContainer):
 class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
-    required_lock = _GLOBAL_NETCDF4_LOCK
-
     __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
@@ -313,17 +311,17 @@ class NetCDFDataProxy:
         return len(self.shape)
 
     def __getitem__(self, keys):
-        # Dask will call this many times during reading, and also provides
-        #  dedicated API for lock acquisition, so we use that instead of using
-        #  a DatasetContainer ( see iris._lazy_data.as_lazy_data() ).
-        assert self.required_lock.locked()
-        dataset = netCDF4.Dataset(self.path)
-        try:
-            variable = dataset.variables[self.variable_name]
-            # Get the NetCDF variable data and slice.
-            var = variable[keys]
-        finally:
-            dataset.close()
+        # Using a DatasetContainer causes problems with invalid ID's and the
+        #  netCDF4 library, presumably because __getitem__ gets called so many
+        #  times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
+        with _GLOBAL_NETCDF4_LOCK:
+            dataset = netCDF4.Dataset(self.path)
+            try:
+                variable = dataset.variables[self.variable_name]
+                # Get the NetCDF variable data and slice.
+                var = variable[keys]
+            finally:
+                dataset.close()
         return np.asanyarray(var)
 
     def __repr__(self):
