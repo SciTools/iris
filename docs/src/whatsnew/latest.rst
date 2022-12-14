@@ -73,14 +73,15 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@fnattino`_ changed the order of ``ncgen`` arguments in the command to
+   create NetCDF files for testing  (caused errors on OS X). (:pull:`5105`)
 
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@fnattino: https://github.com/fnattino
 
 
 .. comment
