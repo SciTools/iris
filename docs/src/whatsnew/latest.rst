@@ -69,6 +69,8 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
 
+#. `@trexfeathers`_ fixed some broken links. (:pull:`5109`)
+
 
 💼 Internal
 ===========
