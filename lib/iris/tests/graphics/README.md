@@ -24,7 +24,7 @@ perceived as it may be a simple pixel shift.
 
 ## Testing Strategy
 
-The `iris.tests.IrisTest_nometa.check_graphic` test routine calls out to
+The `iris.tests.IrisTest.check_graphic` test routine calls out to
 `iris.tests.graphics.check_graphic` which tests against the **acceptable**
 result. It does this using an image **hash** comparison technique which allows
 us to be robust against minor variations based on underlying library updates.
