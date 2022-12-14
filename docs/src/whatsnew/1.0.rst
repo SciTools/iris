@@ -148,7 +148,7 @@ coordinate whose values are derived from the given components.
 
 This facility is utilised by the GRIB2 loader to automatically provide
 the derived "pressure" coordinate for certain data [#f1]_ from the
-`ECMWF <https://www.ecmwf.int/en/about>`_.
+`ECMWF <https://apps.ecmwf.int/>`_.
 
 .. [#f1] Where the level type is either 105 or 119, and where the
          surface pressure has an ECMWF paramId of
