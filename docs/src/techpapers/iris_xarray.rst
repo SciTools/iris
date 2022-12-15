@@ -56,7 +56,7 @@ controls.
 
 Xarray has a level of interoperability with Dask and NumPy that is not
 available with Iris, specifically with regards to `NEP-18`_ and passing
-:class:`xarray.DataArray`\\ s to Dask.
+:class:`xarray.DataArray`\ s to Dask.
 
 NetCDF File Control
 -------------------
@@ -82,7 +82,7 @@ many simple use cases assuming the data are floats. Iris enables more
 sophisticated missing data handling by representing missing values as masks
 (:class:`numpy.ma.MaskedArray` for real data and :class:`dask.array.Array`
 for lazy data) which allows data to be any data type and to include either/both
-a mask and :data:`~numpy.nan`\\ s.
+a mask and :data:`~numpy.nan`\ s.
 
 `cf-xarray`_
 -------------
