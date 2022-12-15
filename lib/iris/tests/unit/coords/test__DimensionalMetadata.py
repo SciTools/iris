@@ -911,11 +911,11 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
         result = self.repr_str_strings(meshco)
         expected = [
             (
-                "<MeshCoord: longitude / (degrees_east)  "
+                "<MeshCoord: longitude / (unknown)  "
                 "mesh(test_mesh) location(face)  "
                 "[...]+bounds  shape(3,)>"
             ),
-            "MeshCoord :  longitude / (degrees_east)",
+            "MeshCoord :  longitude / (unknown)",
             "    mesh: <Mesh: 'test_mesh'>",
             "    location: 'face'",
             "    points: [3100, 3101, 3102]",
@@ -926,10 +926,6 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    shape: (3,)  bounds(3, 4)",
             "    dtype: int64",
             "    standard_name: 'longitude'",
-            "    long_name: 'long-name'",
-            "    attributes:",
-            "        a  1",
-            "        b  'c'",
             "    axis: 'x'",
         ]
         self.assertLines(expected, result)

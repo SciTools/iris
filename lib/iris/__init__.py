@@ -140,22 +140,28 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, datum_support=False):
+    def __init__(self, datum_support=False, pandas_ndim=False):
         """
         A container for run-time options controls.
 
         To adjust the values simply update the relevant attribute from
         within your code. For example::
 
+            # example_future_flag is a fictional example.
             iris.FUTURE.example_future_flag = False
 
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
-        .. note::
-
-            iris.FUTURE.example_future_flag does not exist. It is provided
-            as an example.
+        Parameters
+        ----------
+        datum_support : bool, default=False
+            Opts in to loading coordinate system datum information from NetCDF
+            files into :class:`~iris.coord_systems.CoordSystem`\\ s, wherever
+            this information is present.
+        pandas_ndim : bool, default=False
+            See :func:`iris.pandas.as_data_frame` for details - opts in to the
+            newer n-dimensional behaviour.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -166,13 +172,14 @@ class Future(threading.local):
         #
         # self.__dict__['example_future_flag'] = example_future_flag
         self.__dict__["datum_support"] = datum_support
+        self.__dict__["pandas_ndim"] = pandas_ndim
 
     def __repr__(self):
 
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future(datum_support={})"
-        return msg.format(self.datum_support)
+        msg = "Future(datum_support={}, pandas_ndim={})"
+        return msg.format(self.datum_support, self.pandas_ndim)
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
@@ -211,13 +218,10 @@ class Future(threading.local):
         statement, the previous state is restored.
 
         For example::
+
+            # example_future_flag is a fictional example.
             with iris.FUTURE.context(example_future_flag=False):
                 # ... code that expects some past behaviour
-
-        .. note::
-
-            iris.FUTURE.example_future_flag does not exist and is
-            provided only as an example.
 
         """
         # Save the current context

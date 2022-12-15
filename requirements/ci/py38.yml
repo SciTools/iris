@@ -16,7 +16,7 @@ dependencies:
   - cftime >=1.5
   - dask-core >=2.26
   - matplotlib >=3.5
-  - netcdf4 !=1.6.1
+  - netcdf4 <1.6.1
   - numpy >=1.19
   - python-xxhash
   - pyproj
@@ -49,3 +49,7 @@ dependencies:
   - sphinx-gallery >=0.11.0
   - sphinx-panels
   - pydata-sphinx-theme = 0.8.1
+
+# Temporary minimum pins.
+# See https://github.com/SciTools/iris/pull/5051
+  - graphviz >=6.0.0

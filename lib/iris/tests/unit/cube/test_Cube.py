@@ -1865,12 +1865,14 @@ class Test_copy(tests.IrisTest):
     def _check_copy(self, cube, cube_copy):
         self.assertIsNot(cube_copy, cube)
         self.assertEqual(cube_copy, cube)
-        self.assertIsNot(cube_copy.data, cube.data)
+        self.assertIsNot(cube_copy.core_data(), cube.core_data())
         if ma.isMaskedArray(cube.data):
             self.assertMaskedArrayEqual(cube_copy.data, cube.data)
             if cube.data.mask is not ma.nomask:
                 # "No mask" is a constant : all other cases must be distinct.
-                self.assertIsNot(cube_copy.data.mask, cube.data.mask)
+                self.assertIsNot(
+                    cube_copy.core_data().mask, cube.core_data().mask
+                )
         else:
             self.assertArrayEqual(cube_copy.data, cube.data)
 
@@ -1911,6 +1913,9 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
+        # 2022-11-02: Dask's current behaviour is that the computed array will
+        #  be the same for cube and cube.copy(), even if the Dask arrays are
+        #  different.
         cube = Cube(as_lazy_data(np.array([1, 0])))
         self._check_copy(cube, cube.copy())
 
@@ -2526,6 +2531,25 @@ class Test_remove_metadata(tests.IrisTest):
     def test_fail_remove_ancilliary_variable_by_name(self):
         with self.assertRaises(AncillaryVariableNotFoundError):
             self.cube.remove_ancillary_variable("notname")
+
+
+class TestCoords(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
+        cube.add_dim_coord(x_coord, 1)
+        self.x_coord = x_coord
+        self.cube = cube
+
+    def test_bad_coord(self):
+        bad_coord = self.x_coord.copy()
+        bad_coord.attributes = {"bad": "attribute"}
+        re = (
+            "Expected to find exactly 1 coordinate matching the given "
+            "'x' coordinate's metadata, but found none."
+        )
+        with self.assertRaisesRegex(CoordinateNotFoundError, re):
+            _ = self.cube.coord(bad_coord)
 
 
 class Test__getitem_CellMeasure(tests.IrisTest):
