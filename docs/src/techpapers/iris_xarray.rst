@@ -1,8 +1,8 @@
 .. include:: ../common_links.inc
 
-=====================
+======================
 Iris ❤️ :term:`Xarray`
-=====================
+======================
 
 There is a lot of overlap between Iris and :term:`Xarray`, but some important
 differences too. Below is a summary of the most important differences, so that
@@ -10,22 +10,22 @@ you can be prepared, and to help you choose the best package for your use case.
 
 Regridding
 ----------
-Iris and xarray offer a range of regridding methods - both natively and via
+Iris and Xarray offer a range of regridding methods - both natively and via
 additional packages such as `iris-esmf-regrid`_ and `xESMF`_ - which overlap
 in places
 but tend to cover a different set of use cases (e.g. Iris handles unstructured
 meshes but offers access to fewer ESMF methods). The behaviour of these
-regridders also differ slightly (even between different regridders attached to
+regridders also differs slightly (even between different regridders attached to
 the same package) so the appropriate package to use depends highly on the
 particulars of the use case.
 
 Plotting
 --------
-xarray and Iris have a large overlap of functionality when creating
+Xarray and Iris have a large overlap of functionality when creating
 :term:`Matplotlib` plots and both support the plotting of multidimensional
 coordinates. This means the experience is largely similar using either package.
 
-xarray supports further plotting backends (such as `seaborn`_, `hvPlot`_, etc)
+Xarray supports further plotting backends (such as `seaborn`_, `hvPlot`_, etc)
 and, if a user is already familiar with `pandas`_, the interface should be
 familiar. It also supports some different plot types to Iris, and therefore can
 be used for a wider variety of plots. It also has benefits regarding "out of
@@ -35,8 +35,7 @@ required, knowledge of matplotlib is still required.
 In both cases, :term:`Cartopy` is/can be used. Iris does more work
 automatically for the user here, creating Cartopy
 :class:`~cartopy.mpl.geoaxes.GeoAxes` for latitude and longitude coordinates,
-whereas the user has to do this manually in xarray.
-
+whereas the user has to do this manually in Xarray.
 
 Statistics
 ----------
@@ -57,13 +56,13 @@ controls.
 
 Xarray has a level of interoperability with Dask and NumPy that is not
 available with Iris, specifically with regards to `NEP-18`_ and passing
-``DataArray`` s to Dask.
+:class:`xarray.DataArray`\\ s to Dask.
 
 NetCDF File Control
 -------------------
 (More info: :term:`NetCDF Format`)
 
-Unlike Iris, xarray generally provides full control of major file structures,
+Unlike Iris, Xarray generally provides full control of major file structures,
 i.e. dimensions + variables, including their order in the file.  It mostly
 respects these in a file input, and can reproduce them on output.
 However, attribute handling is not so complete: like Iris, it interprets +
@@ -83,7 +82,7 @@ many simple use cases assuming the data are floats. Iris enables more
 sophisticated missing data handling by representing missing values as masks
 (:class:`numpy.ma.MaskedArray` for real data and :class:`dask.array.Array`
 for lazy data) which allows data to be any data type and to include either/both
-a mask and ``NaN`` s.
+a mask and :data:`~numpy.nan`\\ s.
 
 `cf-xarray`_
 -------------
@@ -97,11 +96,11 @@ to Iris utilities). Iris tends to cover more of and be stricter about CF.
 
 .. seealso::
 
-    * `xarray IO notes on Iris`_
-    * `xarray notes on other NetCDF libraries`_
+    * `Xarray IO notes on Iris`_
+    * `Xarray notes on other NetCDF libraries`_
 
-.. _xarray IO notes on Iris: https://docs.xarray.dev/en/stable/user-guide/io.html#iris
-.. _xarray notes on other NetCDF libraries: https://docs.xarray.dev/en/stable/getting-started-guide/faq.html#what-other-netcdf-related-python-libraries-should-i-know-about
+.. _Xarray IO notes on Iris: https://docs.xarray.dev/en/stable/user-guide/io.html#iris
+.. _Xarray notes on other NetCDF libraries: https://docs.xarray.dev/en/stable/getting-started-guide/faq.html#what-other-netcdf-related-python-libraries-should-i-know-about
 .. _loading keywords: https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html#xarray.open_dataset
 .. _encoding: https://docs.xarray.dev/en/stable/user-guide/io.html#writing-encoded-data
 .. _xESMF: https://github.com/pangeo-data/xESMF/
