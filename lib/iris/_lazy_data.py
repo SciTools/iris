@@ -39,7 +39,7 @@ def is_lazy_data(data):
     """
     Return whether the argument is an Iris 'lazy' data array.
 
-    At present, this means simply a Dask array.
+    At present, this means simply a :class:`dask.array.Array`.
     We determine this by checking for a "compute" property.
 
     """
@@ -67,7 +67,8 @@ def _optimum_chunksize_internals(
     * shape (tuple of int):
         The full array shape of the target data.
     * limit (int):
-        The 'ideal' target chunk size, in bytes.  Default from dask.config.
+        The 'ideal' target chunk size, in bytes.  Default from
+        :mod:`dask.config`.
     * dtype (np.dtype):
         Numpy dtype of target data.
 
@@ -77,7 +78,7 @@ def _optimum_chunksize_internals(
 
     .. note::
         The purpose of this is very similar to
-        `dask.array.core.normalize_chunks`, when called as
+        :func:`dask.array.core.normalize_chunks`, when called as
         `(chunks='auto', shape, dtype=dtype, previous_chunks=chunks, ...)`.
         Except, the operation here is optimised specifically for a 'c-like'
         dimension order, i.e. outer dimensions first, as for netcdf variables.
@@ -174,13 +175,13 @@ def _optimum_chunksize(
 
 def as_lazy_data(data, chunks=None, asarray=False):
     """
-    Convert the input array `data` to a dask array.
+    Convert the input array `data` to a :class:`dask.array.Array`.
 
     Args:
 
     * data (array-like):
         An indexable object with 'shape', 'dtype' and 'ndim' properties.
-        This will be converted to a dask array.
+        This will be converted to a :class:`dask.array.Array`.
 
     Kwargs:
 
@@ -192,7 +193,7 @@ def as_lazy_data(data, chunks=None, asarray=False):
         Set to False (default) to pass passed chunks through unchanged.
 
     Returns:
-        The input array converted to a dask array.
+        The input array converted to a :class:`dask.array.Array`.
 
     .. note::
         The result chunk size is a multiple of 'chunks', if given, up to the
@@ -284,15 +285,16 @@ def multidim_lazy_stack(stack):
     """
     Recursively build a multidimensional stacked dask array.
 
-    This is needed because dask.array.stack only accepts a 1-dimensional list.
+    This is needed because :meth:`dask.array.Array.stack` only accepts a
+    1-dimensional list.
 
     Args:
 
     * stack:
-        An ndarray of dask arrays.
+        An ndarray of :class:`dask.array.Array`.
 
     Returns:
-        The input array converted to a lazy dask array.
+        The input array converted to a lazy :class:`dask.array.Array`.
 
     """
     if stack.ndim == 0:

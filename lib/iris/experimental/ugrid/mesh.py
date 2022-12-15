@@ -131,7 +131,7 @@ class Connectivity(_DimensionalMetadata):
 
         Args:
 
-        * indices (numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array):
+        * indices (:class:`numpy.ndarray` or :class:`numpy.ma.core.MaskedArray` or :class:`dask.array.Array`):
             2D array giving the topological connection relationship between
             :attr:`location` elements and :attr:`connected` elements.
             The :attr:`location_axis` dimension indexes over the
@@ -501,7 +501,7 @@ class Connectivity(_DimensionalMetadata):
         NumPy array or a Dask array.
 
         Returns:
-            numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array
+            :class:`numpy.ndarray` or :class:`numpy.ma.core.MaskedArray` or :class:`dask.array.Array`
 
         """
         return super()._core_values()
