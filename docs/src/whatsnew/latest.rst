@@ -69,6 +69,10 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
 
+#. The **Iris community**, with help from the **Xarray community**, produced
+   the :doc:`/techpapers/iris_xarray` page, highlighting the similarities and
+   differences between the two packages. (:pull:`5025`)
+
 
 💼 Internal
 ===========
