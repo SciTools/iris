@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
 
 
 ✨ Features
