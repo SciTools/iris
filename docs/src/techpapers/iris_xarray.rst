@@ -8,6 +8,23 @@ There is a lot of overlap between Iris and :term:`Xarray`, but some important
 differences too. Below is a summary of the most important differences, so that
 you can be prepared, and to help you choose the best package for your use case.
 
+Overall Experience
+------------------
+
+Iris is the more specialised package, focussed on making it as easy
+as possible to work with meteorological and climatological data. Iris
+is built to natively handle many key concepts, such as the CF conventions,
+coordinate systems and bounded coordinates. Iris offers a smaller toolkit of
+operations compared to Xarray, particularly around API for sophisticated
+computation such as array manipulation and multi-processing.
+
+Xarray's more generic data model and community-driven development give it a
+richer range of operations and broader possible uses. Using Xarray
+specifically for meteorology/climatology may require deeper knowledge
+compared to using Iris, and you may prefer to add Xarray plugins
+such as :ref:`cfxarray` to get the best experience. Advanced users can likely
+achieve better performance with Xarray than with Iris.
+
 Regridding
 ----------
 Iris and Xarray offer a range of regridding methods - both natively and via
@@ -83,6 +100,8 @@ sophisticated missing data handling by representing missing values as masks
 (:class:`numpy.ma.MaskedArray` for real data and :class:`dask.array.Array`
 for lazy data) which allows data to be any data type and to include either/both
 a mask and :data:`~numpy.nan`\ s.
+
+.. _cfxarray:
 
 `cf-xarray`_
 -------------
