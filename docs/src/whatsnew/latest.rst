@@ -69,6 +69,8 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
 
+#. `@jonseddon`_ updated the citation to a more recent version of Iris. (:pull:`5116`)
+
 
 💼 Internal
 ===========
