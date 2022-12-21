@@ -7,27 +7,39 @@
 Unit tests for :func:`iris.fileformats.netcdf.parse_cell_methods`.
 
 """
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
+import pytest
 
 from iris.coords import CellMethod
-from iris.fileformats.netcdf import parse_cell_methods
+from iris.fileformats.netcdf import (
+    UnknownCellMethodWarning,
+    parse_cell_methods,
+)
 
 
-class Test(tests.IrisTest):
+class TestParseCellMethods:
+    def _check_answers(self, test_strings, result):
+        """
+        Compare a list of test strings against a single expected result.
+
+        Done this way so that any failures produce intelligible Pytest messages.
+        """
+        expected_tests_and_results = [
+            (cell_method_str, result) for cell_method_str in test_strings
+        ]
+        actual_tests_and_results = [
+            (cell_method_str, parse_cell_methods(cell_method_str))
+            for cell_method_str in test_strings
+        ]
+        assert actual_tests_and_results == expected_tests_and_results
+
     def test_simple(self):
+        # Some simple testcases which should all have the same result
         cell_method_strings = [
             "time: mean",
             "time : mean",
         ]
         expected = (CellMethod(method="mean", coords="time"),)
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_with_interval(self):
         cell_method_strings = [
@@ -37,9 +49,7 @@ class Test(tests.IrisTest):
         expected = (
             CellMethod(method="variance", coords="time", intervals="1 hr"),
         )
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_multiple_axes(self):
         cell_method_strings = [
@@ -51,9 +61,7 @@ class Test(tests.IrisTest):
         expected = (
             CellMethod(method="standard_deviation", coords=["lat", "lon"]),
         )
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_multiple(self):
         cell_method_strings = [
@@ -66,20 +74,26 @@ class Test(tests.IrisTest):
             CellMethod(method="maximum", coords="time", intervals="1 hr"),
             CellMethod(method="mean", coords="time", intervals="1 day"),
         )
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_comment(self):
         cell_method_strings = [
-            "time: maximum (interval: 1 hr comment: first bit) "
-            "time: mean (interval: 1 day comment: second bit)",
-            "time : maximum (interval: 1 hr comment: first bit) "
-            "time: mean (interval: 1 day comment: second bit)",
-            "time: maximum (interval: 1 hr comment: first bit) "
-            "time : mean (interval: 1 day comment: second bit)",
-            "time : maximum (interval: 1 hr comment: first bit) "
-            "time : mean (interval: 1 day comment: second bit)",
+            (
+                "time: maximum (interval: 1 hr comment: first bit) "
+                "time: mean (interval: 1 day comment: second bit)"
+            ),
+            (
+                "time : maximum (interval: 1 hr comment: first bit) "
+                "time: mean (interval: 1 day comment: second bit)"
+            ),
+            (
+                "time: maximum (interval: 1 hr comment: first bit) "
+                "time : mean (interval: 1 day comment: second bit)"
+            ),
+            (
+                "time : maximum (interval: 1 hr comment: first bit) "
+                "time : mean (interval: 1 day comment: second bit)"
+            ),
         ]
         expected = (
             CellMethod(
@@ -95,9 +109,7 @@ class Test(tests.IrisTest):
                 comments="second bit",
             ),
         )
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_comment_brackets(self):
         cell_method_strings = [
@@ -112,35 +124,43 @@ class Test(tests.IrisTest):
                 comments="18h(day-1)-18h",
             ),
         )
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_comment_bracket_mismatch_warning(self):
         cell_method_strings = [
             "time: minimum within days (comment: 18h day-1)-18h)",
             "time : minimum within days (comment: 18h day-1)-18h)",
         ]
+        expected = (
+            CellMethod(
+                method="minimum within days",
+                coords="time",
+                intervals=None,
+                comments="18h day-1)-18h",
+            ),
+        )
+        msg = (
+            "Cell methods may be incorrectly parsed due to mismatched brackets"
+        )
         for cell_method_str in cell_method_strings:
-            with self.assertWarns(
-                UserWarning,
-                msg="Cell methods may be incorrectly parsed due to mismatched brackets",
-            ):
-                _ = parse_cell_methods(cell_method_str)
+            with pytest.warns(UserWarning, match=msg):
+                self._check_answers(cell_method_strings, expected)
 
     def test_badly_formatted_warning(self):
         cell_method_strings = [
-            # "time: maximum (interval: 1 hr comment: first bit "
-            # "time: mean (interval: 1 day comment: second bit)",
-            "time: (interval: 1 hr comment: first bit) "
-            "time: mean (interval: 1 day comment: second bit)",
-            "time: maximum (interval: 1 hr comment: first bit) "
-            "time: (interval: 1 day comment: second bit)",
+            (
+                "time: (interval: 1 hr comment: first bit) "
+                "time: mean (interval: 1 day comment: second bit)"
+            ),
+            (
+                "time: maximum (interval: 1 hr comment: first bit) "
+                "time: (interval: 1 day comment: second bit)"
+            ),
         ]
-        for cell_method_str in cell_method_strings:
-            with self.assertWarns(
+        for cell_method_str in cell_method_strings[1:]:
+            with pytest.warns(
                 UserWarning,
-                msg=f"Failed to fully parse cell method string: {cell_method_str}",
+                match="Failed to fully parse cell method string: time: ",
             ):
                 _ = parse_cell_methods(cell_method_str)
 
@@ -152,9 +172,7 @@ class Test(tests.IrisTest):
         expected = (
             CellMethod(method="mean where sea_ice over sea", coords="area"),
         )
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_climatology(self):
         cell_method_strings = [
@@ -167,9 +185,7 @@ class Test(tests.IrisTest):
             CellMethod(method="minimum within days", coords="time"),
             CellMethod(method="mean over days", coords="time"),
         )
-        for cell_method_str in cell_method_strings:
-            res = parse_cell_methods(cell_method_str)
-            self.assertEqual(res, expected)
+        self._check_answers(cell_method_strings, expected)
 
     def test_climatology_with_unknown_method(self):
         cell_method_strings = [
@@ -182,15 +198,8 @@ class Test(tests.IrisTest):
             CellMethod(method="min within days", coords="time"),
             CellMethod(method="mean over days", coords="time"),
         )
+        msg = "NetCDF variable contains unknown cell method 'min'"
         for cell_method_str in cell_method_strings:
-            with mock.patch("warnings.warn") as warn:
+            with pytest.warns(UnknownCellMethodWarning, match=msg):
                 res = parse_cell_methods(cell_method_str)
-            self.assertIn(
-                "NetCDF variable contains unknown cell method 'min'",
-                warn.call_args[0][0],
-            )
-            self.assertEqual(res, expected)
-
-
-if __name__ == "__main__":
-    tests.main()
+                assert res == expected
