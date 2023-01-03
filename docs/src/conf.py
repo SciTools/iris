@@ -157,7 +157,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
-    "sphinx_panels",
+    "sphinx_design",
     # TODO: Spelling extension disabled until the dependencies can be included
     # "sphinxcontrib.spelling",
     "sphinx_gallery.gen_gallery",

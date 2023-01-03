@@ -47,7 +47,7 @@ dependencies:
   - sphinxcontrib-napoleon
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
-  - sphinx-panels
+  - sphinx-design
   - pydata-sphinx-theme = 0.8.1
 
 # Temporary minimum pins.
