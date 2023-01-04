@@ -93,10 +93,8 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
             name_start_inds.remove(ind)
 
     # List tuples of indices of starts and ends of the cell methods in the string
-    method_indices = []
-    for ii in range(len(name_start_inds) - 1):
-        method_indices.append((name_start_inds[ii], name_start_inds[ii + 1]))
-    method_indices.append((name_start_inds[-1], len(nc_cell_methods)))
+    name_start_inds.append(len(nc_cell_methods))
+    method_indices = list(zip(name_start_inds[:-1], name_start_inds[1:]))
 
     # Index the string and match against each substring
     nc_cell_methods_matches = []
@@ -137,7 +135,14 @@ def parse_cell_methods(nc_cell_methods):
 
     cell_methods = []
     if nc_cell_methods is not None:
-        for m in _split_cell_methods(nc_cell_methods):
+        splits = _split_cell_methods(nc_cell_methods)
+        if not splits:
+            msg = (
+                f"NetCDF variable cell_methods of {nc_cell_methods!r} "
+                "contains no valid cell methods."
+            )
+            warnings.warn(msg, UserWarning)
+        for m in splits:
             d = m.groupdict()
             method = d[_CM_METHOD]
             method = method.strip()
