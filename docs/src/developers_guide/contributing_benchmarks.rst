@@ -38,8 +38,8 @@ applications.
 * Results for a series of commits can be visualised for an intuitive
   understanding of when and why changes occurred.
 
-    .. image:: asv_example_images/commits.png
-       :width: 300
+  .. image:: asv_example_images/commits.png
+     :width: 300
 
 * Parameterised benchmarks make it easy to visualise:
 

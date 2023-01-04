@@ -54,6 +54,7 @@ The objects created in this example will be used where possible in the
 subsequent example operations on this page.
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -146,6 +147,7 @@ Creating a :class:`~iris.cube.Cube` is unchanged; the
 :class:`~iris.experimental.ugrid.MeshCoord` (see :ref:`ugrid MeshCoords`):
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -207,6 +209,7 @@ has an associated :class:`~iris.experimental.ugrid.Mesh` and automatically
 saves the file in a UGRID-conformant format:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -282,6 +285,7 @@ The :func:`iris.experimental.ugrid.save_mesh` function allows
 associated :class:`~iris.cube.Cube`\s:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -353,6 +357,7 @@ Iris mesh data model, use the
 :const:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD` context manager:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -373,6 +378,7 @@ data - :class:`~iris.Constraint`\s, callbacks, :func:`~iris.load_cube`
 etcetera:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -416,6 +422,7 @@ The :func:`iris.experimental.ugrid.load_mesh` and
 creating any associated :class:`~iris.cube.Cube`\s:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -470,6 +477,7 @@ This first example uses GeoVista to plot the ``face_cube`` that we created
 earlier:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -540,6 +548,7 @@ earlier:
 Here's another example using a global cubed-sphere data set:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -615,6 +624,7 @@ the link between :class:`~iris.cube.Cube` and
 :class:`~iris.experimental.ugrid.Mesh`:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -658,6 +668,7 @@ mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
     Not using doctest here as want to keep GeoVista as optional dependency.
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -785,6 +796,7 @@ with the
     Not using doctest here as want to keep iris-esmf-regrid as optional dependency.
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -881,6 +893,7 @@ regridders can save a lot of time. We can demonstrate the reuse of the
 previously initialised regridder:
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 

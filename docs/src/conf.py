@@ -169,10 +169,7 @@ if skip_api == "1":
     autolog("Skipping the API docs generation (SKIP_API=1)")
 else:
     # better api documentation (custom)
-    extensions.extend(
-        # ["custom_class_autodoc", "custom_data_autodoc", "generate_package_rst"]
-        ["custom_data_autodoc", "generate_package_rst"]
-    )
+    extensions.extend(["custom_data_autodoc", "generate_package_rst"])
 
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/

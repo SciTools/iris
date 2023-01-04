@@ -28,6 +28,7 @@ as the **nodes** when creating the Iris
 :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -116,6 +117,7 @@ as the **nodes** when creating the Iris
 
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -254,6 +256,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
 "flatten" operations, we create a new cube from the flattened data.
 
 .. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
