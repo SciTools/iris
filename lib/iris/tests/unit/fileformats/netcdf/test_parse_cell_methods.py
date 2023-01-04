@@ -7,6 +7,8 @@
 Unit tests for :func:`iris.fileformats.netcdf.parse_cell_methods`.
 
 """
+import warnings
+
 import pytest
 
 from iris.coords import CellMethod
@@ -241,3 +243,28 @@ class TestParseCellMethods:
         with pytest.warns(UserWarning, match=msg):
             result = parse_cell_methods(cm_str)
         assert result == ()
+
+    def test_junk_after__silentlyignores(self):
+        cm_str = "time: mean -?-"
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = parse_cell_methods(cm_str)
+        expected = (CellMethod("mean", ("time",)),)
+        assert result == expected
+
+    def test_junk_before__silentlyignores(self):
+        cm_str = "-?- time: mean"
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = parse_cell_methods(cm_str)
+        expected = (CellMethod("mean", ("time",)),)
+        assert result == expected
+
+    def test_embeddedcolon__silentlyignores(self):
+        cm_str = "time:any: mean"
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = parse_cell_methods(cm_str)
+        # N.B. treats the initial "time:" as plain junk + discards it
+        expected = (CellMethod("mean", ("any",)),)
+        assert result == expected
