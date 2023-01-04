@@ -69,6 +69,10 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
 
+#. `@rcomer`_ linked the :obj:`~iris.analysis.PERCENTILE` aggregator from the
+   :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
+   data. (:pull:`5128`)
+
 
 💼 Internal
 ===========
