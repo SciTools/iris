@@ -17,18 +17,21 @@ from iris.fileformats.netcdf import (
 
 
 class TestParseCellMethods:
-    def _check_answers(self, test_strings, result):
+    def _check_answers(self, test_string_or_strings, result):
         """
         Compare a list of test strings against a single expected result.
 
         Done this way so that any failures produce intelligible Pytest messages.
         """
+        if isinstance(test_string_or_strings, str):
+            test_string_or_strings = [test_string_or_strings]
         expected_tests_and_results = [
-            (cell_method_str, result) for cell_method_str in test_strings
+            (cell_method_str, result)
+            for cell_method_str in test_string_or_strings
         ]
         actual_tests_and_results = [
             (cell_method_str, parse_cell_methods(cell_method_str))
-            for cell_method_str in test_strings
+            for cell_method_str in test_string_or_strings
         ]
         assert actual_tests_and_results == expected_tests_and_results
 
@@ -146,7 +149,7 @@ class TestParseCellMethods:
             with pytest.warns(UserWarning, match=msg):
                 self._check_answers(cell_method_strings, expected)
 
-    def test_badly_formatted_warning(self):
+    def test_badly_formatted__warns(self):
         cell_method_strings = [
             (
                 "time: (interval: 1 hr comment: first bit) "
@@ -187,7 +190,7 @@ class TestParseCellMethods:
         )
         self._check_answers(cell_method_strings, expected)
 
-    def test_climatology_with_unknown_method(self):
+    def test_climatology_with_unknown_method__warns(self):
         cell_method_strings = [
             "time: min within days time: mean over days",
             "time : min within days time: mean over days",
@@ -203,3 +206,38 @@ class TestParseCellMethods:
             with pytest.warns(UnknownCellMethodWarning, match=msg):
                 res = parse_cell_methods(cell_method_str)
                 assert res == expected
+
+    def test_empty__warns(self):
+        cm_str = ""
+        msg = "contains no valid cell methods"
+        with pytest.warns(UserWarning, match=msg):
+            result = parse_cell_methods(cm_str)
+        assert result == ()
+
+    def test_whitespace__warns(self):
+        cm_str = " \t "
+        msg = "contains no valid cell methods"
+        with pytest.warns(UserWarning, match=msg):
+            result = parse_cell_methods(cm_str)
+        assert result == ()
+
+    def test_barename__warns(self):
+        cm_str = "time"
+        msg = "contains no valid cell methods"
+        with pytest.warns(UserWarning, match=msg):
+            result = parse_cell_methods(cm_str)
+        assert result == ()
+
+    def test_missedspace__warns(self):
+        cm_str = "time:mean"
+        msg = "contains no valid cell methods"
+        with pytest.warns(UserWarning, match=msg):
+            result = parse_cell_methods(cm_str)
+        assert result == ()
+
+    def test_random_junk__warns(self):
+        cm_str = "y:12+4#?x:this"
+        msg = "contains no valid cell methods"
+        with pytest.warns(UserWarning, match=msg):
+            result = parse_cell_methods(cm_str)
+        assert result == ()
