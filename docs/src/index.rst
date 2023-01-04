@@ -32,7 +32,7 @@ For more information see :ref:`why_iris`.
             create plots.
 
             +++
-            .. button-ref:: getting_started
+            .. button-ref:: getting_started_index
                 :ref-type: ref
                 :class: btn-outline-info btn-block
 
@@ -64,7 +64,7 @@ For more information see :ref:`why_iris`.
             :class-img-top: w-50 m-auto px-1 py-2
             :shadow: lg
 
-            As a developer you can contribute to Iris.
+            Information on how you can contribute to Iris as a developer.
 
             +++
             .. button-ref:: development_where_to_start
@@ -87,7 +87,7 @@ For more information see :ref:`why_iris`.
             Browse full Iris functionality by module.
 
             +++
-            .. button-ref:: Iris
+            .. button-ref:: iris-api
                 :ref-type: ref
                 :class: btn-outline-info btn-block
 
@@ -104,7 +104,7 @@ For more information see :ref:`why_iris`.
             Find out what has recently changed in Iris.
 
             +++
-            .. button-ref:: getting_started
+            .. button-ref:: iris_whatsnew
                 :ref-type: ref
                 :class: btn-outline-info btn-block
 

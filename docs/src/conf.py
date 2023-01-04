@@ -170,7 +170,8 @@ if skip_api == "1":
 else:
     # better api documentation (custom)
     extensions.extend(
-        ["custom_class_autodoc", "custom_data_autodoc", "generate_package_rst"]
+        # ["custom_class_autodoc", "custom_data_autodoc", "generate_package_rst"]
+        ["custom_data_autodoc", "generate_package_rst"]
     )
 
 # -- panels extension ---------------------------------------------------------
@@ -250,11 +251,11 @@ plot_formats = [
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #"),
-    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #"),
+    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #%s"),
+    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #%s"),
     "discussion": (
         "https://github.com/SciTools/iris/discussions/%s",
-        "Discussion #",
+        "Discussion #%s",
     ),
 }
 
