@@ -87,8 +87,8 @@ For more information see :ref:`why_iris`.
             Browse full Iris functionality by module.
 
             +++
-            .. button-ref:: iris-api
-                :ref-type: ref
+            .. button-ref:: generated/api/iris
+                :ref-type: doc
                 :class: btn-outline-info btn-block
 
                     Iris API
