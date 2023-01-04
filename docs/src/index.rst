@@ -18,6 +18,33 @@ For more information see :ref:`why_iris`.
 ..
     COMMENT: Image alignment: https://getbootstrap.com/docs/4.0/utilities/sizing/
 
+.. todo::
+    The below example grid-item-card should allow for a :class-img-top:
+    but it will not build.  Waiting for a fix ideally from sphinx-design.
+
+    :class-img-top: w-50 m-auto px-1 py-2
+
+
+.. grid:: 3
+
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_shuttle.svg
+        :shadow: lg
+
+        This above image should be nicely scaled and not too big.
+
+        +++
+        .. button-ref:: getting_started_index
+            :ref-type: ref
+            :class: btn-outline-info btn-block
+
+                TEXT BUTTON
+
+
+.. todo:: These cards work ok but they do not align the footer.
+
+
 .. grid:: 3
 
     .. grid-item::
