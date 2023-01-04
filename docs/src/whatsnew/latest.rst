@@ -7,11 +7,12 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: |iris_version| Release Highlights
+   :icon: report
    :animate: fade-in
+   :color: light
+   :class-title: text-center
+   :class-body: bg-light
    :open:
 
    The highlights for this major/minor release of Iris include:
