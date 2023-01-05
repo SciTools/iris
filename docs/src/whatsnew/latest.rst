@@ -68,6 +68,9 @@ This document explains the changes made to Iris for this release
 ================
 
 #. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
+#. `@tkknight`_ unpinned ``pydata-sphinx-theme`` and set the default to use
+   the light version (not dark) while we make the docs dark mode friendly
+   (:pull:`5129`)
 
 #. `@rcomer`_ linked the :obj:`~iris.analysis.PERCENTILE` aggregator from the
    :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
