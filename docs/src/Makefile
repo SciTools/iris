@@ -152,3 +152,4 @@ doctest:
 
 show:
 	@python -c "import webbrowser; webbrowser.open_new_tab('file://$(shell pwd)/$(BUILDDIR)/html/index.html')"
+
