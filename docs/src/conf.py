@@ -324,7 +324,7 @@ html_context = {
     "github_user": "scitools",
     "github_version": "main",
     "doc_path": "docs/src",
-    # default theme.  Also disabled the button in ther html_theme_options.
+    # default theme.  Also disabled the button in the html_theme_options.
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
     "default_mode": "light",
     # custom
