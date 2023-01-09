@@ -76,6 +76,9 @@ This document explains the changes made to Iris for this release
    :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
    data. (:pull:`5128`)
 
+#. `@trexfeathers`_ updated the WSL link to Microsoft's latest documentation,
+   and removed an ECMWF link in the ``v1.0`` What's New that was failing the
+   linkcheck CI. (:pull:`5109`)
 
 💼 Internal
 ===========
