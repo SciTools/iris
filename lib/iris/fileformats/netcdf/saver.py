@@ -459,7 +459,7 @@ def _setncattr(variable, name, attribute):
     Put the given attribute on the given netCDF4 Data type, casting
     attributes as we go to bytes rather than unicode.
 
-    NOTE: variable needs to be a _thread_safe_nc.VariableWrapper.
+    NOTE: variable needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
 
     """
     assert hasattr(variable, "THREAD_SAFE_FLAG")
@@ -473,7 +473,7 @@ class _FillValueMaskCheckAndStoreTarget:
     given value and whether it was masked, before passing the chunk to the
     given target.
 
-    NOTE: target needs to be a _thread_safe_nc.VariableWrapper.
+    NOTE: target needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
 
     """
 
@@ -2340,7 +2340,7 @@ class Saver:
             """
             Set netCDF packing attributes.
 
-            NOTE: cfvar needs to be a _thread_safe_nc.VariableWrapper.
+            NOTE: cfvar needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
 
             """
             assert hasattr(cfvar, "THREAD_SAFE_FLAG")
