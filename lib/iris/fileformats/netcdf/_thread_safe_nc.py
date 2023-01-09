@@ -53,33 +53,31 @@ class _ThreadSafeWrapper(ABC):
             with _GLOBAL_NETCDF4_LOCK:
                 instance = self.CONTAINED_CLASS(*args, **kwargs)
 
-        self.__contained = instance
+        self._contained_instance = instance
 
     def __getattr__(self, item):
-        if item[-11:] == "__contained":
-            # Special behaviour when accessing the __contained instance itself.
-            return ABC.__getattribute__(
-                self, f"{_ThreadSafeWrapper.__name__}__contained"
-            )
+        if item == "_contained_instance":
+            # Special behaviour when accessing the _contained_instance itself.
+            return object.__getattribute__(self, item)
         else:
             with _GLOBAL_NETCDF4_LOCK:
-                return getattr(self.__contained, item)
+                return getattr(self._contained_instance, item)
 
     def __setattr__(self, key, value):
-        if key[-11:] == "__contained":
-            # Special behaviour when accessing the __contained instance itself.
-            ABC.__setattr__(self, key, value)
+        if key == "_contained_instance":
+            # Special behaviour when accessing the _contained_instance itself.
+            object.__setattr__(self, key, value)
         else:
             with _GLOBAL_NETCDF4_LOCK:
-                return setattr(self.__contained, key, value)
+                return setattr(self._contained_instance, key, value)
 
     def __getitem__(self, item):
         with _GLOBAL_NETCDF4_LOCK:
-            return self.__contained.__getitem__(item)
+            return self._contained_instance.__getitem__(item)
 
     def __setitem__(self, key, value):
         with _GLOBAL_NETCDF4_LOCK:
-            return self.__contained.__setitem__(key, value)
+            return self._contained_instance.__setitem__(key, value)
 
 
 class DimensionWrapper(_ThreadSafeWrapper):
@@ -108,7 +106,7 @@ class VariableWrapper(_ThreadSafeWrapper):
         Only defined explicitly in order to get some mocks to work.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            return self.__contained.setncattr(*args, **kwargs)
+            return self._contained_instance.setncattr(*args, **kwargs)
 
     @property
     def dimensions(self) -> typing.List[str]:
@@ -120,7 +118,7 @@ class VariableWrapper(_ThreadSafeWrapper):
         with _GLOBAL_NETCDF4_LOCK:
             # Return value is a list of strings so no need for
             #  DimensionWrapper, unlike self.get_dims().
-            return self.__contained.dimensions
+            return self._contained_instance.dimensions
 
     # All Variable API that returns Dimension(s) is wrapped to instead return
     #  DimensionWrapper(s).
@@ -134,7 +132,7 @@ class VariableWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            dimensions_ = self.__contained.get_dims(*args, **kwargs)
+            dimensions_ = self._contained_instance.get_dims(*args, **kwargs)
         return tuple([DimensionWrapper._from_existing(d) for d in dimensions_])
 
 
@@ -160,7 +158,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            dimensions_ = self.__contained.dimensions
+            dimensions_ = self._contained_instance.dimensions
         return {
             k: DimensionWrapper._from_existing(v)
             for k, v in dimensions_.items()
@@ -175,7 +173,9 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            new_dimension = self.__contained.createDimension(*args, **kwargs)
+            new_dimension = self._contained_instance.createDimension(
+                *args, **kwargs
+            )
         return DimensionWrapper._from_existing(new_dimension)
 
     # All Group API that returns Variable(s) is wrapped to instead return
@@ -191,7 +191,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            variables_ = self.__contained.variables
+            variables_ = self._contained_instance.variables
         return {
             k: VariableWrapper._from_existing(v) for k, v in variables_.items()
         }
@@ -205,7 +205,9 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            new_variable = self.__contained.createVariable(*args, **kwargs)
+            new_variable = self._contained_instance.createVariable(
+                *args, **kwargs
+            )
         return VariableWrapper._from_existing(new_variable)
 
     def get_variables_by_attributes(
@@ -219,7 +221,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            variables_ = self.__contained.get_variables_by_attributes(
+            variables_ = self._contained_instance.get_variables_by_attributes(
                 *args, **kwargs
             )
         return [VariableWrapper._from_existing(v) for v in variables_]
@@ -237,7 +239,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            groups_ = self.__contained.groups
+            groups_ = self._contained_instance.groups
         return {k: GroupWrapper._from_existing(v) for k, v in groups_.items()}
 
     @property
@@ -250,7 +252,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            parent_ = self.__contained.parent
+            parent_ = self._contained_instance.parent
         return GroupWrapper._from_existing(parent_)
 
     def createGroup(self, *args, **kwargs):
@@ -262,7 +264,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            new_group = self.__contained.createGroup(*args, **kwargs)
+            new_group = self._contained_instance.createGroup(*args, **kwargs)
         return GroupWrapper._from_existing(new_group)
 
 
