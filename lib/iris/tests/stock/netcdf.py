@@ -51,7 +51,7 @@ def ncgen_from_cdl(
             f_out.write(cdl_str)
     if cdl_path:
         # Create netcdf from stored CDL file.
-        call_args = [NCGEN_PATHSTR, cdl_path, "-k3", "-o", nc_path]
+        call_args = [NCGEN_PATHSTR, "-k3", "-o", nc_path, cdl_path]
         call_kwargs = {}
     else:
         # No CDL file : pipe 'cdl_str' directly into the ncgen program.
