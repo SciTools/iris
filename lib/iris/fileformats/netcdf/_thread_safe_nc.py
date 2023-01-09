@@ -30,8 +30,9 @@ class _ThreadSafeWrapper(ABC):
     Designed to 'gate keep' all the instance's API calls, but allowing the
     same API as if working directly with the instance itself.
 
-    Using this 'wrapping' pattern because we cannot successfully subclass or
-    monkeypatch netCDF4 classes, as they are only wrappers for the C-layer.
+    Using a contained object instead of inheritance, as we cannot successfully
+    subclass or monkeypatch netCDF4 classes, because they are only wrappers for
+    the C-layer.
     """
 
     CONTAINED_CLASS = NotImplemented
