@@ -133,7 +133,9 @@ class VariableWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            dimensions_ = self._contained_instance.get_dims(*args, **kwargs)
+            dimensions_ = list(
+                self._contained_instance.get_dims(*args, **kwargs)
+            )
         return tuple([DimensionWrapper._from_existing(d) for d in dimensions_])
 
 
@@ -222,8 +224,10 @@ class GroupWrapper(_ThreadSafeWrapper):
         also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            variables_ = self._contained_instance.get_variables_by_attributes(
-                *args, **kwargs
+            variables_ = list(
+                self._contained_instance.get_variables_by_attributes(
+                    *args, **kwargs
+                )
             )
         return [VariableWrapper._from_existing(v) for v in variables_]
 
