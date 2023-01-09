@@ -25,7 +25,7 @@ from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
 from iris.experimental.ugrid.mesh import Connectivity, Mesh
 from iris.experimental.ugrid.save import save_mesh
-from iris.fileformats.netcdf import _thread_safe
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests.stock import realistic_4d
 
 XY_LOCS = ("x", "y")
@@ -259,7 +259,7 @@ def scan_dataset(filepath):
             variable's dims.
 
     """
-    ds = _thread_safe.DatasetContainer(filepath)
+    ds = _thread_safe_nc.DatasetContainer(filepath)
     # dims dict is {name: len}
     dimsdict = {name: dim.size for name, dim in ds.dimensions.items()}
     # vars dict is {name: {attr:val}}
@@ -824,7 +824,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         self.assertNotIn("_FillValue", fn_props)
 
         # For what it's worth, *also* check the actual data array in the file
-        ds = _thread_safe.DatasetContainer(tempfile_path)
+        ds = _thread_safe_nc.DatasetContainer(tempfile_path)
         conn_var = ds.variables[ff_conn_name]
         data = conn_var[:]
         ds.close()

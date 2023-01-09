@@ -12,7 +12,7 @@ import tempfile
 
 import iris
 import iris.coords
-from iris.fileformats.netcdf import _thread_safe
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.pp import STASH
 import iris.tests.pp as pp
 import iris.util
@@ -94,7 +94,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
         for index, cube in enumerate(cubes):
             # Explicitly set a fill-value as a workaround for
             # https://github.com/Unidata/netcdf4-python/issues/725
-            fill_value = _thread_safe.default_fillvals[cube.dtype.str[1:]]
+            fill_value = _thread_safe_nc.default_fillvals[cube.dtype.str[1:]]
 
             file_nc = tempfile.NamedTemporaryFile(
                 suffix=".nc", delete=False

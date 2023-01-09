@@ -31,7 +31,7 @@ from iris.coord_systems import (
 )
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import Saver, _thread_safe
+from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
 
 
@@ -202,7 +202,7 @@ class Test_write(tests.IrisTest):
 
     def test_zlib(self):
         cube = self._simple_cube(">f4")
-        api = self.patch("iris.fileformats.netcdf.saver._thread_safe")
+        api = self.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
         with Saver("/dummy/path", "NETCDF4") as saver:
@@ -248,7 +248,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             self.assertFalse(ds.dimensions["dim0"].isunlimited())
             self.assertFalse(ds.dimensions["dim1"].isunlimited())
             ds.close()
@@ -258,7 +258,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=None)
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             for dim in ds.dimensions.values():
                 self.assertFalse(dim.isunlimited())
             ds.close()
@@ -280,7 +280,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=unlimited_dimensions)
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
@@ -289,7 +289,7 @@ class Test_write(tests.IrisTest):
             coords = [cube.coord(dim) for dim in unlimited_dimensions]
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=coords)
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
@@ -300,7 +300,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             res = ds.getncattr("dimensions")
             ds.close()
             self.assertEqual(res, "something something_else")
@@ -322,7 +322,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             # Confirm that the only dimension is the one denoting the number
             #  of bounds - have successfully saved the 2D bounds array into 1D.
             self.assertEqual(["bnds"], list(ds.dimensions.keys()))
@@ -362,7 +362,7 @@ class Test__create_cf_bounds(tests.IrisTest):
         saver._ensure_valid_dtype.return_value = mock.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype
         )
-        var = mock.MagicMock(spec=_thread_safe.VariableContainer)
+        var = mock.MagicMock(spec=_thread_safe_nc.VariableContainer)
 
         # Make the main call.
         Saver._create_cf_bounds(saver, coord, var, "time")
@@ -403,7 +403,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             self.assertArrayEqual(ds.valid_range, vrange)
             ds.close()
 
@@ -415,7 +415,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             self.assertArrayEqual(ds.valid_min, 1)
             ds.close()
 
@@ -427,7 +427,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             self.assertArrayEqual(ds.valid_max, 2)
             ds.close()
 
@@ -447,7 +447,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             self.assertArrayEqual(
                 ds.variables["longitude"].valid_range, vrange
             )
@@ -461,7 +461,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             self.assertArrayEqual(ds.variables["longitude"].valid_min, 1)
             ds.close()
 
@@ -473,7 +473,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             self.assertArrayEqual(ds.variables["longitude"].valid_max, 2)
             ds.close()
 
@@ -505,7 +505,7 @@ class Test_write_fill_value(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, **kwargs)
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             (var,) = [
                 var
                 for var in ds.variables.values()
@@ -571,7 +571,7 @@ class Test_write_fill_value(tests.IrisTest):
         # Test that a warning is raised if the data contains the default fill
         # value if no fill_value argument is supplied.
         cube = self._make_cube(">f4")
-        cube.data[0, 0] = _thread_safe.default_fillvals["f4"]
+        cube.data[0, 0] = _thread_safe_nc.default_fillvals["f4"]
         with self.assertWarnsRegex(
             UserWarning,
             "contains unmasked data points equal to the fill-value",
@@ -647,7 +647,7 @@ class _Common__check_attribute_compliance:
         self.data_dtype = np.dtype("int32")
 
         patch = mock.patch(
-            "iris.fileformats.netcdf._thread_safe.DatasetContainer"
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer"
         )
         _ = patch.start()
         self.addCleanup(patch.stop)

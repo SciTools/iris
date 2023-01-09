@@ -44,7 +44,7 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _thread_safe
+from iris.fileformats.netcdf import _thread_safe_nc
 import iris.io
 import iris.util
 
@@ -459,7 +459,7 @@ def _setncattr(variable, name, attribute):
     Put the given attribute on the given netCDF4 Data type, casting
     attributes as we go to bytes rather than unicode.
 
-    NOTE: variable needs to be a _thread_safe.VariableContainer.
+    NOTE: variable needs to be a _thread_safe_nc.VariableContainer.
 
     """
     assert hasattr(variable, "THREAD_SAFE_FLAG")
@@ -473,7 +473,7 @@ class _FillValueMaskCheckAndStoreTarget:
     given value and whether it was masked, before passing the chunk to the
     given target.
 
-    NOTE: target needs to be a _thread_safe.VariableContainer.
+    NOTE: target needs to be a _thread_safe_nc.VariableContainer.
 
     """
 
@@ -550,7 +550,7 @@ class Saver:
         self._formula_terms_cache = {}
         #: NetCDF dataset
         try:
-            self._dataset = _thread_safe.DatasetContainer(
+            self._dataset = _thread_safe_nc.DatasetContainer(
                 filename, mode="w", format=netcdf_format
             )
         except RuntimeError:
@@ -2340,7 +2340,7 @@ class Saver:
             """
             Set netCDF packing attributes.
 
-            NOTE: cfvar needs to be a _thread_safe.VariableContainer.
+            NOTE: cfvar needs to be a _thread_safe_nc.VariableContainer.
 
             """
             assert hasattr(cfvar, "THREAD_SAFE_FLAG")
@@ -2490,7 +2490,7 @@ class Saver:
             if fill_value is not None:
                 fill_value_to_check = fill_value
             else:
-                fill_value_to_check = _thread_safe.default_fillvals[
+                fill_value_to_check = _thread_safe_nc.default_fillvals[
                     dtype.str[1:]
                 ]
         else:

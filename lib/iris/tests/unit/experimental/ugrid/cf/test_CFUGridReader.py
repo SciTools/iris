@@ -95,7 +95,7 @@ class Test_build_cf_groups(tests.IrisTest):
         # translations and building first level cf-groups for variables.
         self.patch("iris.experimental.ugrid.cf.CFUGridReader._reset")
         self.patch(
-            "iris.fileformats.netcdf._thread_safe.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
             return_value=self.dataset,
         )
         cf_reader = CFUGridReader("dummy")

@@ -20,7 +20,11 @@ import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION, _thread_safe, save
+from iris.fileformats.netcdf import (
+    CF_CONVENTIONS_VERSION,
+    _thread_safe_nc,
+    save,
+)
 from iris.tests.stock import lat_lon_cube
 from iris.tests.stock.mesh import sample_mesh_cube
 
@@ -37,7 +41,7 @@ class Test_conventions(tests.IrisTest):
         # CF convention.
         with self.temp_filename(".nc") as nc_path:
             save(self.cube, nc_path, "NETCDF4")
-            ds = _thread_safe.DatasetContainer(nc_path)
+            ds = _thread_safe_nc.DatasetContainer(nc_path)
             res = ds.getncattr("Conventions")
             ds.close()
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
@@ -48,7 +52,7 @@ class Test_conventions(tests.IrisTest):
         with mock.patch.object(self.options, "conventions_override", True):
             with self.temp_filename(".nc") as nc_path:
                 save(self.cube, nc_path, "NETCDF4")
-                ds = _thread_safe.DatasetContainer(nc_path)
+                ds = _thread_safe_nc.DatasetContainer(nc_path)
                 res = ds.getncattr("Conventions")
                 ds.close()
         self.assertEqual(res, self.custom_conventions)
@@ -60,7 +64,7 @@ class Test_conventions(tests.IrisTest):
         with mock.patch.object(self.options, "conventions_override", True):
             with self.temp_filename(".nc") as nc_path:
                 save(self.cube, nc_path, "NETCDF4")
-                ds = _thread_safe.DatasetContainer(nc_path)
+                ds = _thread_safe_nc.DatasetContainer(nc_path)
                 res = ds.getncattr("Conventions")
                 ds.close()
         self.assertEqual(res, CF_CONVENTIONS_VERSION)
@@ -75,7 +79,7 @@ class Test_attributes(tests.IrisTest):
 
         with self.temp_filename("foo.nc") as nc_out:
             save([c1, c2], nc_out)
-            ds = _thread_safe.DatasetContainer(nc_out)
+            ds = _thread_safe_nc.DatasetContainer(nc_out)
             res = ds.getncattr("bar")
             ds.close()
         self.assertArrayEqual(res, np.arange(2))
@@ -91,7 +95,7 @@ class Test_attributes(tests.IrisTest):
 
         with self.temp_filename("foo.nc") as nc_out:
             save([c1, c2], nc_out)
-            ds = _thread_safe.DatasetContainer(nc_out)
+            ds = _thread_safe_nc.DatasetContainer(nc_out)
             res = ds.variables["test"].getncattr("name")
             res_1 = ds.variables["test_1"].getncattr("name")
             ds.close()
@@ -104,7 +108,7 @@ class Test_unlimited_dims(tests.IrisTest):
         cube = lat_lon_cube()
         with self.temp_filename("foo.nc") as nc_out:
             save(cube, nc_out)
-            ds = _thread_safe.DatasetContainer(nc_out)
+            ds = _thread_safe_nc.DatasetContainer(nc_out)
             self.assertFalse(ds.dimensions["latitude"].isunlimited())
 
     def test_unlimited_dim_latitude(self):
@@ -112,7 +116,7 @@ class Test_unlimited_dims(tests.IrisTest):
         unlim_dim_name = "latitude"
         with self.temp_filename("foo.nc") as nc_out:
             save(cube, nc_out, unlimited_dimensions=[unlim_dim_name])
-            ds = _thread_safe.DatasetContainer(nc_out)
+            ds = _thread_safe_nc.DatasetContainer(nc_out)
             self.assertTrue(ds.dimensions[unlim_dim_name].isunlimited())
 
 

@@ -16,7 +16,7 @@ from pathlib import Path
 import subprocess
 
 import iris
-from iris.fileformats.netcdf import _thread_safe
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests import system_test
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
@@ -44,7 +44,7 @@ IRIS_REPO_DIRPATH = os.environ.get("IRIS_REPO_DIR", IRIS_INSTALL_DIR)
 
 
 def test_netcdf4_import():
-    """Use of netCDF4 must be via iris.fileformats.netcdf._thread_safe ."""
+    """Use of netCDF4 must be via iris.fileformats.netcdf._thread_safe_nc ."""
     # Please avoid including these phrases in any comments/strings throughout
     #  Iris (e.g. use "from the netCDF4 library" instead) - this allows the
     #  below search to remain quick and simple.
@@ -59,7 +59,7 @@ def test_netcdf4_import():
             files_including_import.append(file_path)
 
     expected = [
-        Path(_thread_safe.__file__),
+        Path(_thread_safe_nc.__file__),
         Path(system_test.__file__),
         Path(__file__),
     ]

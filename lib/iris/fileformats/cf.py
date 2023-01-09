@@ -23,7 +23,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
-from iris.fileformats.netcdf import _thread_safe
+from iris.fileformats.netcdf import _thread_safe_nc
 import iris.util
 
 #
@@ -1050,7 +1050,9 @@ class CFReader:
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
-        self._dataset = _thread_safe.DatasetContainer(self._filename, mode="r")
+        self._dataset = _thread_safe_nc.DatasetContainer(
+            self._filename, mode="r"
+        )
 
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in [

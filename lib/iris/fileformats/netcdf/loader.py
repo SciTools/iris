@@ -33,7 +33,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _thread_safe
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -45,8 +45,8 @@ DEBUG = False
 from . import logger
 
 # An expected part of the public loader API, but includes thread safety
-#  concerns so is housed in _thread_safe.
-NetCDFDataProxy = _thread_safe.NetCDFDataProxy
+#  concerns so is housed in _thread_safe_nc.
+NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
 
 
 def _actions_engine():
@@ -181,7 +181,7 @@ def _get_cf_var_data(cf_var, filename):
     fill_value = getattr(
         cf_var.cf_data,
         "_FillValue",
-        _thread_safe.default_fillvals[cf_var.dtype.str[1:]],
+        _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
     )
     proxy = NetCDFDataProxy(
         cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
