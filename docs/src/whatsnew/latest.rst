@@ -69,8 +69,9 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
 
-#. `@trexfeathers`_ fixed some broken links. (:pull:`5109`)
-
+#. `@trexfeathers`_ updated the WSL link to Microsoft's latest documentation,
+   and removed an ECMWF link in the ``v1.0`` What's New that was failing the
+   linkcheck CI. (:pull:`5109`)
 
 💼 Internal
 ===========
