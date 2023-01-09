@@ -175,6 +175,11 @@ def contour(cube, *args, **kwargs):
 
     See :func:`iris.plot.contour` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -202,6 +207,10 @@ def contourf(cube, *args, **kwargs):
 
     See :func:`iris.plot.contourf` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -230,6 +239,11 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         The width of the lines showing the cell outlines. If None, the default
         width in patch.linewidth in matplotlibrc is used.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = iplt.outline(
         cube, color=color, linewidth=linewidth, coords=coords, axes=axes
@@ -245,6 +259,10 @@ def pcolor(cube, *args, **kwargs):
 
     See :func:`iris.plot.pcolor` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -259,6 +277,11 @@ def pcolormesh(cube, *args, **kwargs):
 
     See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -272,6 +295,11 @@ def points(cube, *args, **kwargs):
     Draws sample point positions on a labelled plot based on the given Cube.
 
     See :func:`iris.plot.points` for details of valid keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -289,6 +317,11 @@ def plot(*args, **kwargs):
     See :func:`iris.plot.plot` for details of valid arguments and
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     axes = kwargs.get("axes")
     result = iplt.plot(*args, **kwargs)
@@ -303,6 +336,11 @@ def scatter(x, y, *args, **kwargs):
 
     See :func:`iris.plot.scatter` for details of valid arguments and
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     axes = kwargs.get("axes")

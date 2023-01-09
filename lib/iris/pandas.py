@@ -160,6 +160,8 @@ def as_cube(
         as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
         as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
+
     """
     message = (
         "iris.pandas.as_cube has been deprecated, and will be removed in a "
@@ -240,6 +242,8 @@ def as_cubes(
     need to be 'melted' before conversion. See the Examples for how.
 
     Dask ``DataFrame``\\s are not supported.
+
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     Examples
     --------
@@ -537,6 +541,10 @@ def as_series(cube, copy=True):
         If you have a large array that cannot be copied,
         make sure it is not masked and use copy=False.
 
+    Notes
+    ------
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
+
     """
     data = cube.data
     if ma.isMaskedArray(data):
@@ -582,6 +590,10 @@ def as_data_frame(cube, copy=True):
         Pandas will sometimes make a copy of the array,
         for example when creating from an int32 array.
         Iris will detect this and raise an exception if copy=False.
+
+    Notes
+    ------
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
     data = cube.data

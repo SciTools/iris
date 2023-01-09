@@ -1112,6 +1112,11 @@ def contour(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.contour` for details of other valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = _draw_2d_from_points("contour", None, cube, *args, **kwargs)
     return result
@@ -1135,6 +1140,11 @@ def contourf(cube, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.contourf` for details of other valid
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -1200,6 +1210,11 @@ def default_projection(cube):
         import matplotlib.pyplot as plt
         ax = plt.ax(projection=default_projection(cube))
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     # XXX logic seems flawed, but it is what map_setup did...
     cs = cube.coord_system("CoordSystem")
@@ -1217,6 +1232,11 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
             Triggers whether the extent should be representative of the cell
             points, or the limits of the cell's bounds.
             The default is iris.coords.POINT_MODE.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     extents = cartography._xy_range(cube, mode)
@@ -1334,6 +1354,11 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = _draw_2d_from_bounds(
         "pcolormesh",
@@ -1376,6 +1401,11 @@ def pcolor(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.pcolor` for details of other valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     kwargs.setdefault("antialiased", True)
     kwargs.setdefault("snap", False)
@@ -1410,6 +1440,11 @@ def pcolormesh(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.pcolormesh` for details of other
     valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = _draw_2d_from_bounds("pcolormesh", cube, *args, **kwargs)
     return result
@@ -1434,6 +1469,11 @@ def points(cube, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.scatter` for details of other valid
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 
@@ -1526,6 +1566,11 @@ def barbs(u_cube, v_cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.barbs` for details of other valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     #
     # TODO: check u + v cubes for compatibility.
@@ -1576,6 +1621,11 @@ def quiver(u_cube, v_cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.quiver` for details of other valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     #
     # TODO: check u + v cubes for compatibility.
@@ -1622,6 +1672,11 @@ def plot(*args, **kwargs):
     See :func:`matplotlib.pyplot.plot` for details of additional valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     if "coords" in kwargs:
         raise TypeError(
@@ -1653,6 +1708,11 @@ def scatter(x, y, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.scatter` for details of additional
     valid keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     # here we are more specific about argument types than generic 1d plotting
@@ -1861,6 +1921,11 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     >>> cube_iter = my_cube.slices(("longitude", "latitude"))
     >>> ani = iplt.animate(cube_iter, qplt.contourf)
     >>> iplt.show()
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     kwargs.setdefault("interval", 100)
