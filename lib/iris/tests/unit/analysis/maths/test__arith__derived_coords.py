@@ -16,9 +16,8 @@ from iris.tests.unit.analysis.maths import (
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestBroadcastingDerived(
-    tests.IrisTest_nometa,
+    tests.IrisTest,
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
 ):
