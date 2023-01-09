@@ -37,7 +37,7 @@ class _ThreadSafeWrapper(ABC):
 
     CONTAINED_CLASS = NotImplemented
 
-    # Allows easy assertions, without difficulties with isinstance and mocking.
+    # Allows easy type checking, avoiding difficulties with isinstance and mocking.
     THREAD_SAFE_FLAG = True
 
     @classmethod
