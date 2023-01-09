@@ -6,7 +6,7 @@
 """
 Module to ensure all calls to the netCDF4 library are thread-safe.
 
-Intention is that no other Iris module should import the netCDF module.
+Intention is that no other Iris module should import the netCDF4 module.
 
 """
 from abc import ABC
