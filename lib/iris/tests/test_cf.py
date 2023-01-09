@@ -62,7 +62,6 @@ class TestCFReader(tests.IrisTest):
         self.cfr = cf.CFReader(filename)
         with self.cfr:
             yield
-        pass
 
     def test_ancillary_variables_pass_0(self):
         self.assertEqual(self.cfr.cf_group.ancillary_variables, {})
@@ -368,7 +367,6 @@ class TestClimatology(tests.IrisTest):
         self.cfr = cf.CFReader(filename)
         with self.cfr:
             yield
-        pass
 
     def test_bounds(self):
         time = self.cfr.cf_group["temp_dmax_tmean_abs"].cf_group.coordinates[
@@ -404,7 +402,6 @@ class TestLabels(tests.IrisTest):
         with self.cfr_start:
             with self.cfr_end:
                 yield
-        pass
 
     def test_label_dim_start(self):
         cf_data_var = self.cfr_start.cf_group["temp_dmax_tmean_abs"]
