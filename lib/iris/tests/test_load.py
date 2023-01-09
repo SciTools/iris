@@ -192,10 +192,10 @@ class TestOPeNDAP(tests.IrisTest):
         filename = tests.get_data_path(
             ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
         )
-        fake_dataset = _thread_safe_nc.DatasetContainer(filename)
+        fake_dataset = _thread_safe_nc.DatasetWrapper(filename)
 
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=fake_dataset,
         ) as dataset_loader:
             next(iris.io.load_http([self.url], callback=None))

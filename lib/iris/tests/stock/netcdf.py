@@ -100,7 +100,7 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
 
     """
 
-    ds = _thread_safe_nc.DatasetContainer(nc_path, "r+")
+    ds = _thread_safe_nc.DatasetWrapper(nc_path, "r+")
 
     unlimited_dim_names = [
         dim for dim in ds.dimensions if ds.dimensions[dim].isunlimited()

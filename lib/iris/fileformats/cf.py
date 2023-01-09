@@ -1050,7 +1050,7 @@ class CFReader:
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
-        self._dataset = _thread_safe_nc.DatasetContainer(
+        self._dataset = _thread_safe_nc.DatasetWrapper(
             self._filename, mode="r"
         )
 

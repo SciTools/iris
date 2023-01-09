@@ -393,7 +393,7 @@ class TestSelfReferencingVarLoad(tests.IrisTest):
         self.temp_dir_path = os.path.join(
             tempfile.mkdtemp(), "issue_3367_volcello_test_file.nc"
         )
-        dataset = _thread_safe_nc.DatasetContainer(self.temp_dir_path, "w")
+        dataset = _thread_safe_nc.DatasetWrapper(self.temp_dir_path, "w")
 
         dataset.createDimension("lat", 4)
         dataset.createDimension("lon", 5)

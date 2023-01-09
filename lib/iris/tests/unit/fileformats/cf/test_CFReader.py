@@ -71,7 +71,7 @@ class Test_translate__global_attributes(tests.IrisTest):
 
     def test_create_global_attributes(self):
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         ):
             global_attrs = CFReader("dummy").cf_group.global_attributes
@@ -149,7 +149,7 @@ class Test_translate__formula_terms(tests.IrisTest):
 
     def test_create_formula_terms(self):
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         ):
             cf_group = CFReader("dummy").cf_group
@@ -254,7 +254,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
 
     def test_associate_formula_terms_with_data_variable(self):
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         ):
             cf_group = CFReader("dummy").cf_group
@@ -306,7 +306,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
 
     def test_promote_reference(self):
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         ):
             cf_group = CFReader("dummy").cf_group
@@ -328,7 +328,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
     def test_formula_terms_ignore(self):
         self.orography.dimensions = ["lat", "wibble"]
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         ), mock.patch("warnings.warn") as warn:
             cf_group = CFReader("dummy").cf_group
@@ -340,7 +340,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
     def test_auxiliary_ignore(self):
         self.x.dimensions = ["lat", "wibble"]
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         ), mock.patch("warnings.warn") as warn:
             cf_group = CFReader("dummy").cf_group
@@ -356,7 +356,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
         self.variables["wibble"] = self.wibble
         self.orography.coordinates = "wibble"
         with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetContainer",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         ), mock.patch("warnings.warn") as warn:
             cf_group = CFReader("dummy").cf_group.promoted
