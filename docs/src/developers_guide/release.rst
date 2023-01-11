@@ -7,7 +7,7 @@ Releases
 
 A release of Iris is a `tag on the SciTools/Iris`_ Github repository.
 
-The summary below is of the main areas that constitute the release.  The final
+The summary below is of the main areas that constitute the release. The final
 section details the :ref:`iris_development_releases_steps` to take.
 
 
@@ -127,7 +127,7 @@ Update PyPI
 
   As part of our Continuous-Integration (CI), the building and publishing of
   PyPI artifacts is now automated by a dedicated GitHub Action.
-  
+
   The following instructions **no longer** require to be performed manually,
   but remain part of the documentation for reference purposes only.
 
@@ -145,7 +145,7 @@ Checkout the appropriate Iris ``<release>`` tag from the appropriate ``<repo>``.
 For example, to checkout tag ``v1.0`` from ``upstream``::
 
     > git fetch upstream --tags
-    > git checkout v1.0 
+    > git checkout v1.0
 
 Build the source distribution and wheel from the Iris root directory::
 
@@ -209,9 +209,9 @@ branch, and then released by tagging ``v1.9.1``.
 
 New features shall not be included in a point release, these are for bug fixes.
 
-``whatsnew`` entries should be added to the existing 
-``docs/src/whatsnew/v1.9.rst`` file in a new ``v1.9.1`` section. A template for 
-this bugfix patches section can be found in the 
+``whatsnew`` entries should be added to the existing
+``docs/src/whatsnew/v1.9.rst`` file in a new ``v1.9.1`` section. A template for
+this bugfix patches section can be found in the
 ``docs/src/whatsnew/latest.rst.template`` file.
 
 A point release does not require a release candidate, but the rest of the
@@ -224,59 +224,9 @@ release process is to be followed, including the merge back of changes into
 Maintainer Steps
 ----------------
 
-These steps assume a release for ``1.9.0`` is to be created.
-
-Release Steps
-~~~~~~~~~~~~~
-
-#. Update the ``whatsnew`` for the release:
-
-   * Use ``git`` to rename ``docs/src/whatsnew/latest.rst`` to the release
-     version file ``v1.9.rst``
-   * Use ``git`` to delete the ``docs/src/whatsnew/latest.rst.template`` file
-   * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
-     Replace this with ``[release candidate]`` for the release candidate and
-     remove this for the actual release.
-     Note that, the Iris version and release date are updated automatically
-     when the documentation is built
-   * Review the file for correctness
-   * Work with the development team to populate the ``Release Highlights``
-     dropdown at the top of the file, which provides extra detail on notable
-     changes
-   * Use ``git`` to add and commit all changes, including removal of
-     ``latest.rst.template``.
-
-#. Update the ``whatsnew`` index ``docs/src/whatsnew/index.rst``
-
-   * Remove the reference to ``latest.rst``
-   * Add a reference to ``v1.9.rst`` to the top of the list
-
-#. Check your changes by building the documentation and reviewing
-#. Once all the above steps are complete, the release is cut, using
-   the :guilabel:`Draft a new release` button on the
-   `Iris release page <https://github.com/SciTools/iris/releases>`_
-   and targeting the release branch if it exists
-#. Create the release feature branch ``v1.9.x`` on `SciTools/iris`_ if it doesn't
-   already exist. For point/bugfix releases use the branch which already exists
-
-
-Post Release Steps
-~~~~~~~~~~~~~~~~~~
-
-#. Check the documentation has built on `Read The Docs`_.  The build is
-   triggered by any commit to ``main``.  Additionally check that the versions
-   available in the pop out menu in the bottom right corner include the new
-   release version.  If it is not present you will need to configure the
-   versions available in the **admin** dashboard in `Read The Docs`_.
-#. Review the `Active Versions`_ for the ``scitools-iris`` project on
-   `Read The Docs`_ to ensure that the appropriate versions are ``Active``
-   and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
-   see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
-#. Merge back to ``main``. This should be done after all releases, including
-   the release candidate, and also after major changes to the release branch.
-#. On main, make a new ``latest.rst`` from ``latest.rst.template`` and update
-   the include statement and the toctree in ``index.rst`` to point at the new
-   ``latest.rst``.
+The step-by-step process is managed by a script at:
+``<Iris repo root>/tools/release_do_nothing.py``, and also available here:
+:doc:`release_do_nothing`
 
 
 .. _SciTools/iris: https://github.com/SciTools/iris
