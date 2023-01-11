@@ -49,7 +49,7 @@ class WhatsNewRsts:
         assert whatsnew_dir.is_dir()
 
         self.latest = whatsnew_dir / "latest.rst"
-        self.release = whatsnew_dir / (release_strings.series + ".rst")
+        self.release = whatsnew_dir / (release_strings.series[1:] + ".rst")
         self.index = whatsnew_dir / "index.rst"
         self.template = self.latest.with_suffix(".rst.template")
 
