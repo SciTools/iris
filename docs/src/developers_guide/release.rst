@@ -7,14 +7,25 @@ Releases
 
 A release of Iris is a `tag on the SciTools/Iris`_ Github repository.
 
-The summary below is of the main areas that constitute the release. The final
-section details the :ref:`iris_development_releases_steps` to take.
+Below is :ref:`iris_development_releases_steps`, followed by some prose on the
+the main areas that constitute the release.
+
+
+.. _iris_development_releases_steps:
+
+How to Create an Iris Release
+-----------------------------
+
+The step-by-step process is managed by a script at:
+``<Iris repo root>/tools/release_do_nothing.py``, and also available here:
+:doc:`release_do_nothing`.
 
 
 .. _release_manager:
 
 Release Manager
 ---------------
+
 A Release Manager will be nominated for each release of Iris. This role involves:
 
 * deciding which features and bug fixes should be included in the release
@@ -27,27 +38,79 @@ The Release Manager will make the release, ensuring that all the steps outlined
 on this page are completed.
 
 
+Versioning
+----------
+
+Iris' version numbers conform to `Semantic Versioning`_ (``MAJOR.MINOR.PATCH``)
+and `PEP 440`_.
+
+Iris uses `setuptools-scm`_ to automatically manage versioning based on Git
+tags. No manual versioning work is required within the files themselves.
+
+
+Release Candidate
+-----------------
+
+Prior to a release, a release candidate tag may be created, marked as a
+pre-release in GitHub, with a tag ending with :literal:`rc` followed by a
+number (0-based), e.g.,:
+
+    :literal:`v1.9.0rc0`
+
+If created, the pre-release shall be available for a minimum of 2 weeks
+prior to the release being cut.  However a 4 week period should be the goal
+to allow user groups to be notified of the existence of the pre-release and
+encouraged to test the functionality.
+
+A pre-release is expected for a major or minor release, but not for a
+patch release.
+
+If new features are required for a release after a release candidate has been
+cut, a new pre-release shall be issued first.
+
+Release candidates are made available as a conda package on the
+`conda-forge Anaconda channel`_ using the `rc_iris`_ label. This is achieved via
+the `conda-forge iris-feedstock`_ following `CFEP-05`_. For further information
+see the `conda-forge User Documentation`_.
+
+
+Patch Releases
+--------------
+
+Patch releases may be implemented to fix problems with previous major or minor
+releases. E.g. ``v1.9.1`` to fix a problem in ``v1.9.0``, both being part of
+the ``v1.9`` series.
+
+New features shall not be included in a patch release, these are for bug fixes.
+
+A patch release does not require a release candidate, but the rest of the
+release process is to be followed.
+
+
 Before Release
 --------------
 
 Deprecations
 ~~~~~~~~~~~~
 
-Ensure that any behaviour which has been deprecated for the correct number of
+Any behaviour which has been deprecated for the correct number of
 previous releases is now finally changed. More detail, including the correct
 number of releases, is in :ref:`iris_development_deprecations`.
 
 Standard Names
 ~~~~~~~~~~~~~~
 
-Update the file ``etc/cf-standard-name-table.xml`` to the latest CF standard names,
+The file ``etc/cf-standard-name-table.xml`` is updated to the latest CF standard names,
 from the `latest CF standard names`_.
 ( This is used during build to automatically generate the sourcefile
 ``lib/iris/std_names.py``. )
 
 
+The Release
+-----------
+
 Release Branch
---------------
+~~~~~~~~~~~~~~
 
 Once the features intended for the release are on ``main``, a release branch
 should be created, in the ``SciTools/iris`` repository.  This will have the name:
@@ -61,67 +124,79 @@ for example:
 This branch shall be used to finalise the release details in preparation for
 the release candidate.
 
-
-Release Candidate
------------------
-
-Prior to a release, a release candidate tag may be created, marked as a
-pre-release in GitHub, with a tag ending with :literal:`rc` followed by a
-number (0-based), e.g.,:
-
-    :literal:`v1.9.0rc0`
-
-If created, the pre-release shall be available for a minimum of two weeks
-prior to the release being cut.  However a 4 week period should be the goal
-to allow user groups to be notified of the existence of the pre-release and
-encouraged to test the functionality.
-
-A pre-release is expected for a major or minor release, but not for a
-point release.
-
-If new features are required for a release after a release candidate has been
-cut, a new pre-release shall be issued first.
-
-Make the release candidate available as a conda package on the
-`conda-forge Anaconda channel`_ using the `rc_iris`_ label. To do this visit
-the `conda-forge iris-feedstock`_ and follow `CFEP-05`_. For further information
-see the `conda-forge User Documentation`_.
-
+Changes for a **patch release** should target to the same release branch as the
+rest of the series. For example, a fix
+for a problem with the ``v1.9.0`` release will be merged into ``v1.9.x`` release
+branch, and then released with the tag ``v1.9.1``.
 
 Documentation
--------------
+~~~~~~~~~~~~~
 
-The documentation should include all of the ``whatsnew`` entries for the release.
-This content should be reviewed and adapted as required.
+The documentation should include a dedicated What's New file for this release
+series (e.g. ``v1.9.rst``), incorporating all of the What's New entries for the release.
+This content should be reviewed and adapted as required, including highlights
+at the top of the What's New document.
 
-Steps to achieve this can be found in the :ref:`iris_development_releases_steps`.
+What's New entries for **patch releases** should be added to the existing file
+for that release series (e.g. ``v1.9.1`` section in the ``v1.9.rst`` file).
 
-
-The Release
------------
-
-The final steps of the release are to ensure that the release date and details
-are correct in the relevant ``whatsnew`` page within the documentation.
-
-There is no need to update the ``iris.__version__``, as this is managed
-automatically by `setuptools-scm`_.
-
-Once all checks are complete, the release is published on GitHub by
-creating a new tag in the ``SciTools/iris`` repository.
+A template for What's New formatting can be found in the
+``docs/src/whatsnew/latest.rst.template`` file.
 
 
-Update conda-forge
-------------------
+Tagging
+~~~~~~~
 
-Once a release is cut on GitHub, update the Iris conda recipe on the
-`conda-forge iris-feedstock`_ for the release. This will build and publish the
+Once all checks are complete, the release is published from the release branch,
+via the GitHub release functionality in the ``SciTools/iris`` repository,
+which simultaneously creates a Git tag for the release.
+
+
+Post Release
+------------
+
+PyPI
+~~~~
+Iris is available on PyPI as ``scitools-iris``.
+
+Iris' Continuous-Integration (CI) includes the automatic building and publishing of
+PyPI artifacts in a dedicated GitHub Action.
+
+Legacy manual instructions are appended to this page for reference purposes
+(:ref:`update_pypi`)
+
+conda-forge
+~~~~~~~~~~~
+
+Iris is available on conda-forge as ``iris``.
+
+This is managed via the the Iris conda recipe on the
+`conda-forge iris-feedstock`_, which is updated after the release is cut on
+GitHub, followed by automatic build and publish of the
 conda package on the `conda-forge Anaconda channel`_.
 
+Announcement
+~~~~~~~~~~~~
+
+Iris uses Twitter (`@scitools_iris`_) to announce new releases, as well as any
+internal message boards that are accessible (e.g. at the UK Met Office).
+Announcements usually include a highlighted feature to hook readers' attention.
+
+
+Merge Back
+~~~~~~~~~~
+
+After any release is published, **including patch releases**, the changes from the
+release branch should be merged back onto the ``SciTools/iris`` ``main`` branch.
+
+
+Appendices
+----------
 
 .. _update_pypi:
 
-Update PyPI
------------
+Updating PyPI Manually
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
 
@@ -185,50 +260,6 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
     For further information on packaging and uploading a project to PyPI, please
     refer to `Generating Distribution Archives`_ and `Packaging Your Project`_.
 
-
-Merge Back
-----------
-
-After the release is published, the changes from the release branch should be merged
-back onto the ``SciTools/iris`` ``main`` branch.
-
-To achieve this, first cut a local branch from the latest ``main`` branch,
-and `git merge` the :literal:`.x` release branch into it. Ensure that the
-``docs/src/whatsnew/index.rst`` and ``docs/src/whatsnew/latest.rst`` are
-correct, before committing these changes and then proposing a pull-request
-on the ``main`` branch of ``SciTools/iris``.
-
-
-Point Releases
---------------
-
-Bug fixes may be implemented and targeted on the :literal:`.x` release branch.
-These should lead to a new point release, and another tag.  For example, a fix
-for a problem with the ``v1.9.0`` release will be merged into ``v1.9.x`` release
-branch, and then released by tagging ``v1.9.1``.
-
-New features shall not be included in a point release, these are for bug fixes.
-
-``whatsnew`` entries should be added to the existing
-``docs/src/whatsnew/v1.9.rst`` file in a new ``v1.9.1`` section. A template for
-this bugfix patches section can be found in the
-``docs/src/whatsnew/latest.rst.template`` file.
-
-A point release does not require a release candidate, but the rest of the
-release process is to be followed, including the merge back of changes into
-``main``.
-
-
-.. _iris_development_releases_steps:
-
-Maintainer Steps
-----------------
-
-The step-by-step process is managed by a script at:
-``<Iris repo root>/tools/release_do_nothing.py``, and also available here:
-:doc:`release_do_nothing`
-
-
 .. _SciTools/iris: https://github.com/SciTools/iris
 .. _tag on the SciTools/Iris: https://github.com/SciTools/iris/releases
 .. _conda-forge Anaconda channel: https://anaconda.org/conda-forge/iris
@@ -240,5 +271,8 @@ The step-by-step process is managed by a script at:
 .. _rc_iris: https://anaconda.org/conda-forge/iris/labels
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project
-.. _latest CF standard names: http://cfconventions.org/standard-names.html
+.. _latest CF standard names: http://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
+.. _Semantic Versioning: https://semver.org/
+.. _PEP 440: https://peps.python.org/pep-0440/
+.. _@scitools_iris: https://twitter.com/scitools_iris
