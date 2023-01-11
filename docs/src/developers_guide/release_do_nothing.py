@@ -633,7 +633,8 @@ def merge_back(release_strings: ReleaseStrings, first_in_series: bool):
 
         message = (
             f"In {rsts.index.absolute()}:\n"
-            f"Replace references to {rsts.release.name} with {rsts.latest.name}"
+            f"Add {rsts.latest.name} to the top of the list of .rst files, "
+            f"and set the top include:: to be {rsts.latest.name} ."
         )
         _wait_for_done(message)
 
