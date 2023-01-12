@@ -28,6 +28,7 @@ valid_release_types = typing.Literal["major", "minor", "patch"]
 
 class ReleaseStrings:
     """An easy way to pass the various flavours of release string between functions."""
+
     def __init__(self, input_tag: str):
         if input_tag.count(".") != 2:
             raise ValueError("Release tag expected to include 2 x '.'")
@@ -43,6 +44,7 @@ class ReleaseStrings:
 
 class WhatsNewRsts:
     """An easy way to pass the paths of various What's New files between functions."""
+
     def __init__(self, release_strings: ReleaseStrings):
         src_dir = Path(__file__).parents[1] / "docs" / "src"
         whatsnew_dir = src_dir / "whatsnew"
@@ -583,7 +585,9 @@ def update_links(release_strings: ReleaseStrings) -> None:
 
 
 # Twitter announcement
-def twitter_announce(release_strings: ReleaseStrings, first_in_series: bool) -> None:
+def twitter_announce(
+    release_strings: ReleaseStrings, first_in_series: bool
+) -> None:
     message = (
         "Announce the release via https://twitter.com/scitools_iris, and any "
         "other appropriate message boards.\n"
@@ -599,7 +603,9 @@ def twitter_announce(release_strings: ReleaseStrings, first_in_series: bool) -> 
 
 
 # Merge back to main
-def merge_back(release_strings: ReleaseStrings, first_in_series: bool, rsts: WhatsNewRsts) -> None:
+def merge_back(
+    release_strings: ReleaseStrings, first_in_series: bool, rsts: WhatsNewRsts
+) -> None:
     _break_print("Branch merge-back ...")
 
     merge_commit = (
