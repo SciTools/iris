@@ -27,6 +27,7 @@ valid_release_types = typing.Literal["major", "minor", "patch"]
 
 
 class ReleaseStrings:
+    """An easy way to pass the various flavours of release string between functions."""
     def __init__(self, input_tag: str):
         if input_tag.count(".") != 2:
             raise ValueError("Release tag expected to include 2 x '.'")
@@ -37,14 +38,13 @@ class ReleaseStrings:
 
         self.series = ".".join(self.tag.split(".")[:2])  # v1.2
         self.branch = self.series + ".x"  # v1.2.x
-        self.branch_local = self.branch + ".updates"  # v1.2.x.updates
-        self.branch_mergeback = self.branch + ".mergeback"  # v1.2.x.mergeback
         self.release = self.tag[1:]  # 1.2.3rc0
 
 
 class WhatsNewRsts:
+    """An easy way to pass the paths of various What's New files between functions."""
     def __init__(self, release_strings: ReleaseStrings):
-        src_dir = Path(__file__).parents[1]
+        src_dir = Path(__file__).parents[1] / "docs" / "src"
         whatsnew_dir = src_dir / "whatsnew"
         assert whatsnew_dir.is_dir()
 
@@ -121,8 +121,14 @@ def check_release_candidate(
     release_type: ReleaseTypes, release_strings: ReleaseStrings
 ) -> bool:
     is_release_candidate = "rc" in release_strings.tag
+
+    message = "Checking tag for release candidate: "
     if is_release_candidate:
-        _break_print("Release candidate detected.")
+        message += "DETECTED\nThis IS a release candidate."
+    else:
+        message += "NOT DETECTED\nThis IS NOT a release candidate."
+    _break_print(message)
+
     if release_type == ReleaseTypes.PATCH and is_release_candidate:
         message = (
             "Release candidates are not expected for PATCH releases. "
@@ -220,16 +226,6 @@ def create_release_branch(
         )
         _wait_for_done(message)
 
-        _delete_local_branch(release_strings.branch_local)
-
-    message = (
-        f"Checkout a local branch from the official {release_strings.branch} branch.\n"
-        "`git fetch upstream;`\n"
-        f"`git checkout upstream/{release_strings.branch} -b "
-        f"{release_strings.branch_local};`"
-    )
-    _wait_for_done(message)
-
 
 # Review What's New
 def finalise_whats_new(
@@ -237,8 +233,18 @@ def finalise_whats_new(
     release_strings: ReleaseStrings,
     is_release_candidate: bool,
     first_in_series: bool,
-) -> None:
+) -> WhatsNewRsts:
     _break_print("What's New finalisation ...")
+
+    working_branch = release_strings.branch + ".updates"
+    _delete_local_branch(working_branch)
+    message = (
+        f"Checkout a local branch from the official {release_strings.branch} branch.\n"
+        "`git fetch upstream;`\n"
+        f"`git checkout upstream/{release_strings.branch} -b "
+        f"{working_branch};`"
+    )
+    _wait_for_done(message)
 
     rsts = WhatsNewRsts(release_strings)
 
@@ -297,16 +303,18 @@ def finalise_whats_new(
     message = (
         "Commit and push all the What's New changes.\n"
         f'`git commit -am "Whats new updates for {release_strings.tag} .";`\n'
-        f"`git push -u origin {release_strings.branch_local};`"
+        f"`git push -u origin {working_branch};`"
     )
     _wait_for_done(message)
 
     message = (
-        f"Follow the Pull Request process to get {release_strings.branch_local} "
+        f"Follow the Pull Request process to get {working_branch} "
         f"merged into upstream/{release_strings.branch} .\n"
         "Make sure the documentation is previewed during this process."
     )
     _wait_for_done(message)
+
+    return rsts
 
 
 def cut_release(
@@ -467,9 +475,9 @@ def update_conda_forge(
 
     if not is_release_candidate:
         message = (
-            "NOTE: after several hours conda-forge automation will create a"
+            "NOTE: after several hours conda-forge automation will create a "
             "Pull Request against conda-forge/iris-feedstock (via the "
-            "regro-cf-autotick-bot). Best to sort it now, manually ..."
+            "regro-cf-autotick-bot). Quicker to sort it now, manually ..."
         )
         _break_print(message)
 
@@ -575,7 +583,7 @@ def update_links(release_strings: ReleaseStrings) -> None:
 
 
 # Twitter announcement
-def twitter_announce(release_strings: ReleaseStrings, first_in_series: bool):
+def twitter_announce(release_strings: ReleaseStrings, first_in_series: bool) -> None:
     message = (
         "Announce the release via https://twitter.com/scitools_iris, and any "
         "other appropriate message boards.\n"
@@ -591,7 +599,7 @@ def twitter_announce(release_strings: ReleaseStrings, first_in_series: bool):
 
 
 # Merge back to main
-def merge_back(release_strings: ReleaseStrings, first_in_series: bool):
+def merge_back(release_strings: ReleaseStrings, first_in_series: bool, rsts: WhatsNewRsts) -> None:
     _break_print("Branch merge-back ...")
 
     merge_commit = (
@@ -602,12 +610,12 @@ def merge_back(release_strings: ReleaseStrings, first_in_series: bool):
     if first_in_series:
         # TODO: automate
 
-        _delete_local_branch(release_strings.branch_mergeback)
-
+        working_branch = release_strings.branch + ".mergeback"
+        _delete_local_branch(working_branch)
         message = (
             "Checkout a local branch from the official ``main`` branch.\n"
             "`git fetch upstream;`\n"
-            f"`git checkout upstream/main -b {release_strings.branch_mergeback};`"
+            f"`git checkout upstream/main -b {working_branch};`"
         )
         _wait_for_done(message)
 
@@ -618,11 +626,9 @@ def merge_back(release_strings: ReleaseStrings, first_in_series: bool):
         )
         _wait_for_done(message)
 
-        rsts = WhatsNewRsts(release_strings)
-
         message = (
             "Recreate the following files, which are present in ``main``, but "
-            f"are currently deleted from {release_strings.branch_mergeback}:\n"
+            f"are currently deleted from {working_branch}:\n"
             f"{rsts.latest.absolute()}\n"
             f"{rsts.template.absolute()}\n"
             "THEN:\n"
@@ -641,13 +647,13 @@ def merge_back(release_strings: ReleaseStrings, first_in_series: bool):
         message = (
             "Commit and push all the What's New changes.\n"
             '`git commit -am "Restore latest Whats New files.";`\n'
-            f"`git push -u origin {release_strings.branch_mergeback};`"
+            f"`git push -u origin {working_branch};`"
         )
         _wait_for_done(message)
 
         message = (
             "Follow the Pull Request process to get "
-            f"{release_strings.branch_mergeback} merged into upstream/main .\n"
+            f"{working_branch} merged into upstream/main .\n"
             "Make sure the documentation is previewed during this process.\n"
             f"{merge_commit}"
         )
@@ -685,7 +691,7 @@ def main():
         release_strings,
         is_first_in_series,
     )
-    finalise_whats_new(
+    whats_new_rsts = finalise_whats_new(
         release_type,
         release_strings,
         is_release_candidate,
@@ -718,7 +724,10 @@ def main():
     merge_back(
         release_strings,
         is_first_in_series,
+        whats_new_rsts,
     )
+
+    _break_print("RELEASE COMPLETE. Congratulations!")
 
 
 if __name__ == "__main__":
