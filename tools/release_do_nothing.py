@@ -425,8 +425,8 @@ def check_rtd(
 def check_pypi(
     release_strings: ReleaseStrings, is_release_candidate: bool
 ) -> str:
-    # TODO: reference manual instructions as fallback.
     _break_print("PyPI checks ...")
+    _break_print("If anything goes wrong, manual steps are in the documentation.")
 
     message = (
         "Confirm that the following URL is correctly populated:\n"
