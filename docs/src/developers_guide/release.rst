@@ -29,10 +29,12 @@ Release Manager
 A Release Manager will be nominated for each release of Iris. This role involves:
 
 * deciding which features and bug fixes should be included in the release
-* managing the project board for the release
+* managing the `GitHub Projects`_ board for the release
 * using :discussion:`GitHub Discussion releases category <categories/releases>`
   for documenting intent and capturing any
   discussion about the release
+* holding a developer retrospective post release, to look for potential
+  future improvements
 
 The Release Manager will make the release, ensuring that all the steps outlined
 on this page are completed.
@@ -276,3 +278,4 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
 .. _Semantic Versioning: https://semver.org/
 .. _PEP 440: https://peps.python.org/pep-0440/
 .. _@scitools_iris: https://twitter.com/scitools_iris
+.. _GitHub Projects: https://github.com/SciTools/iris/projects
