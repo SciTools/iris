@@ -72,6 +72,8 @@ This document explains the changes made to Iris for this release
    the light version (not dark) while we make the docs dark mode friendly
    (:pull:`5129`)
 
+#. `@jonseddon`_ updated the citation to a more recent version of Iris. (:pull:`5116`)
+
 #. `@rcomer`_ linked the :obj:`~iris.analysis.PERCENTILE` aggregator from the
    :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
    data. (:pull:`5128`)
