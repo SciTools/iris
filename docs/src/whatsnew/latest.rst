@@ -82,6 +82,11 @@ This document explains the changes made to Iris for this release
    and removed an ECMWF link in the ``v1.0`` What's New that was failing the
    linkcheck CI. (:pull:`5109`)
 
+#. `@trexfeathers`_ re-wrote the :ref:`iris_development_releases` documentation
+   for clarity, and wrote a step-by-step
+   :doc:`/developers_guide/release_do_nothing` for the release process.
+   (:pull:`5134`)
+
 💼 Internal
 ===========
 
