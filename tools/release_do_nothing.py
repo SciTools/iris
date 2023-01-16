@@ -83,13 +83,11 @@ def _report_problem(message: str):
     sleep(0.5)
 
 
-# Major / Minor / Patch ?
 def get_release_type() -> ReleaseTypes:
     release_type = None
     release_types_str = " ".join(
         [f"{m.name}={m.value}" for m in ReleaseTypes.__members__.values()]
     )
-    # valid_types_list = typing.get_args(valid_release_types)
     message = "What type of release are you preparing?\nhttps://semver.org/"
     while release_type is None:
         input_type = _get_input(message, release_types_str)
@@ -170,7 +168,6 @@ def check_first_in_series(
     return first_in_series
 
 
-# Update standard names
 def update_standard_names(first_in_series: bool) -> None:
     if first_in_series:
         message = (
@@ -183,7 +180,6 @@ def update_standard_names(first_in_series: bool) -> None:
         _wait_for_done(message)
 
 
-# Check deprecations
 def check_deprecations(release_type: ReleaseTypes) -> None:
     if release_type == ReleaseTypes.MAJOR:
         message = (
@@ -229,7 +225,6 @@ def create_release_branch(
         _wait_for_done(message)
 
 
-# Review What's New
 def finalise_whats_new(
     release_type: ReleaseTypes,
     release_strings: ReleaseStrings,
@@ -421,7 +416,6 @@ def check_rtd(
     _wait_for_done(message)
 
 
-# Check PyPI
 def check_pypi(
     release_strings: ReleaseStrings, is_release_candidate: bool
 ) -> str:
@@ -469,7 +463,6 @@ def check_pypi(
     return sha256
 
 
-# Update conda-forge
 def update_conda_forge(
     release_strings: ReleaseStrings, is_release_candidate: bool, sha256: str
 ) -> None:
@@ -584,7 +577,6 @@ def update_links(release_strings: ReleaseStrings) -> None:
     _wait_for_done(message)
 
 
-# Twitter announcement
 def twitter_announce(
     release_strings: ReleaseStrings, first_in_series: bool
 ) -> None:
@@ -619,7 +611,6 @@ def update_citation(
         _wait_for_done(message)
 
 
-# Merge back to main
 def merge_back(
     release_strings: ReleaseStrings, first_in_series: bool, rsts: WhatsNewRsts
 ) -> None:
