@@ -184,6 +184,14 @@ Iris uses Twitter (`@scitools_iris`_) to announce new releases, as well as any
 internal message boards that are accessible (e.g. at the UK Met Office).
 Announcements usually include a highlighted feature to hook readers' attention.
 
+Citation
+~~~~~~~~
+
+``docs/src/userguide/citation.rst`` is updated to include
+the latest [non-release-candidate] version, date and `Zenodo DOI`_
+of the new release. Ideally this would be updated before the release, but
+the DOI for the new version is only available once the release has been
+created in GitHub.
 
 Merge Back
 ~~~~~~~~~~
@@ -279,3 +287,4 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
 .. _PEP 440: https://peps.python.org/pep-0440/
 .. _@scitools_iris: https://twitter.com/scitools_iris
 .. _GitHub Projects: https://github.com/SciTools/iris/projects
+.. _Zenodo DOI: https://doi.org/10.5281/zenodo.595182

@@ -602,6 +602,23 @@ def twitter_announce(
     _wait_for_done(message)
 
 
+def update_citation(
+    release_strings: ReleaseStrings, is_release_candidate: bool
+) -> None:
+    if not is_release_candidate:
+        src_dir = Path(__file__).parents[1] / "docs" / "src"
+        citation_rst = src_dir / "userguide" / "citation.rst"
+        assert citation_rst.is_file()
+        message = (
+            f"Follow the Pull Request process to update {citation_rst.name} "
+            "with the correct dates, DOI and version string for "
+            f"{release_strings.tag}.\n"
+            f"{citation_rst.absolute()}\n\n"
+            f"The PR should target {release_strings.branch} (prior to merge-back)."
+        )
+        _wait_for_done(message)
+
+
 # Merge back to main
 def merge_back(
     release_strings: ReleaseStrings, first_in_series: bool, rsts: WhatsNewRsts
@@ -726,6 +743,10 @@ def main():
     twitter_announce(
         release_strings,
         is_first_in_series,
+    )
+    update_citation(
+        release_strings,
+        is_release_candidate,
     )
     merge_back(
         release_strings,
