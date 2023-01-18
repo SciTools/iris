@@ -82,8 +82,8 @@ This document explains the changes made to Iris for this release
    and removed an ECMWF link in the ``v1.0`` What's New that was failing the
    linkcheck CI. (:pull:`5109`)
 
-#. `@Esadek-MO`_ added notes at the bottom of functions to
-   to clarify if the function preserves laziness or not. (:pull:`5066`)
+#. `@Esadek-MO`_ added notes to function docstings to
+   to clarify if the function preserves laziness or not. (:pull:`5137`)
 
 💼 Internal
 ===========
