@@ -1100,6 +1100,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
             return first_part + remainder[:termination_point] + rider
 
+
 # needs doing
 def format_array(arr):
     """
@@ -1140,7 +1141,7 @@ def format_array(arr):
     return result
 
 
-def new_axis(src_cube, scalar_coord=None, expand_extras=()): #maybe not lazy
+def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     """
     Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
