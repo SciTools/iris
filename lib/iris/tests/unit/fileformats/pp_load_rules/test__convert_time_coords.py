@@ -13,7 +13,7 @@ Unit tests for
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from cf_units import CALENDAR_360_DAY, CALENDAR_STANDARD, Unit
+from cf_units import CALENDAR_360_DAY, CALENDAR_PROLEPTIC_GREGORIAN, Unit
 from cftime import datetime as nc_datetime
 import numpy as np
 
@@ -38,14 +38,24 @@ def _lbcode(value=None, ix=None, iy=None):
     return result
 
 
-_EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_STANDARD)
+_EPOCH_HOURS_UNIT = Unit(
+    "hours since epoch", calendar=CALENDAR_PROLEPTIC_GREGORIAN
+)
 _HOURS_UNIT = Unit("hours")
 
 
 class TestLBTIMx0x_SingleTimepoint(TestField):
     def _check_timepoint(self, lbcode, expect_match=True):
         lbtim = _lbtim(ib=0, ic=1)
-        t1 = nc_datetime(1970, 1, 1, hour=6, minute=0, second=0)
+        t1 = nc_datetime(
+            1970,
+            1,
+            1,
+            hour=6,
+            minute=0,
+            second=0,
+            calendar="proleptic_gregorian",
+        )
         t2 = nc_datetime(
             0, 0, 0, calendar=None, has_year_zero=True
         )  # not used in result
