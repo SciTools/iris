@@ -507,7 +507,9 @@ def _new_coord_and_dims(
         units.is_time_reference()
         and units.calendar == cf_units.CALENDAR_PROLEPTIC_GREGORIAN
     ):
-        units = units.change_calendar(cf_units.CALENDAR_STANDARD)
+        units = cf_units.Unit(
+            "hours since epoch", calendar=cf_units.CALENDAR_STANDARD
+        )
     bounds = lower_and_upper_bounds
     if is_vector_operation:
         dims, points, bounds = _reduce_points_and_bounds(points, bounds)

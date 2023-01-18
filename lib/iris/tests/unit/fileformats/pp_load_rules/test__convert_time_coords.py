@@ -13,7 +13,12 @@ Unit tests for
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from cf_units import CALENDAR_360_DAY, CALENDAR_PROLEPTIC_GREGORIAN, Unit
+from cf_units import (
+    CALENDAR_360_DAY,
+    CALENDAR_PROLEPTIC_GREGORIAN,
+    CALENDAR_STANDARD,
+    Unit,
+)
 from cftime import datetime as nc_datetime
 import numpy as np
 
@@ -38,9 +43,10 @@ def _lbcode(value=None, ix=None, iy=None):
     return result
 
 
-_EPOCH_HOURS_UNIT = Unit(
+_EPOCH_HOURS_UNIT_IN = Unit(
     "hours since epoch", calendar=CALENDAR_PROLEPTIC_GREGORIAN
 )
+_EPOCH_HOURS_UNIT_OUT = Unit("hours since epoch", calendar=CALENDAR_STANDARD)
 _HOURS_UNIT = Unit("hours")
 
 
@@ -63,7 +69,7 @@ class TestLBTIMx0x_SingleTimepoint(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -74,7 +80,7 @@ class TestLBTIMx0x_SingleTimepoint(TestField):
                     DimCoord(
                         24 * 0.25,
                         standard_name="time",
-                        units=_EPOCH_HOURS_UNIT,
+                        units=_EPOCH_HOURS_UNIT_OUT,
                     ),
                     None,
                 )
@@ -104,7 +110,7 @@ class TestLBTIMx1x_Forecast(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -123,7 +129,7 @@ class TestLBTIMx1x_Forecast(TestField):
                     DimCoord(
                         24 * 9.25,
                         standard_name="time",
-                        units=_EPOCH_HOURS_UNIT,
+                        units=_EPOCH_HOURS_UNIT_OUT,
                     ),
                     None,
                 ),
@@ -131,7 +137,7 @@ class TestLBTIMx1x_Forecast(TestField):
                     DimCoord(
                         24 * 8.125,
                         standard_name="forecast_reference_time",
-                        units=_EPOCH_HOURS_UNIT,
+                        units=_EPOCH_HOURS_UNIT_OUT,
                     ),
                     None,
                 ),
@@ -156,7 +162,7 @@ class TestLBTIMx1x_Forecast(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=_lbcode(1),
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=None,
@@ -173,7 +179,7 @@ class TestLBTIMx1x_Forecast(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=_lbcode(1),
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=None,
@@ -194,7 +200,7 @@ class TestLBTIMx2x_TimePeriod(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -205,7 +211,7 @@ class TestLBTIMx2x_TimePeriod(TestField):
                     DimCoord(
                         24 * 9.125 - 2.0,
                         standard_name="forecast_reference_time",
-                        units=_EPOCH_HOURS_UNIT,
+                        units=_EPOCH_HOURS_UNIT_OUT,
                     ),
                     None,
                 ),
@@ -221,7 +227,7 @@ class TestLBTIMx2x_TimePeriod(TestField):
                 (
                     DimCoord(
                         standard_name="time",
-                        units=_EPOCH_HOURS_UNIT,
+                        units=_EPOCH_HOURS_UNIT_OUT,
                         points=[24 * 8.625],
                         bounds=[24 * 8.125, 24 * 9.125],
                     ),
@@ -253,7 +259,7 @@ class TestLBTIMx3x_YearlyAggregation(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -267,7 +273,7 @@ class TestLBTIMx3x_YearlyAggregation(TestField):
                     DimCoord(
                         [t2_hours - lbft],
                         standard_name="forecast_reference_time",
-                        units=_EPOCH_HOURS_UNIT,
+                        units=_EPOCH_HOURS_UNIT_OUT,
                     ),
                     None,
                 ),
@@ -283,7 +289,7 @@ class TestLBTIMx3x_YearlyAggregation(TestField):
                 (
                     DimCoord(
                         standard_name="time",
-                        units=_EPOCH_HOURS_UNIT,
+                        units=_EPOCH_HOURS_UNIT_OUT,
                         points=[t2_hours],
                         bounds=[t1_hours, t2_hours],
                     ),
@@ -314,7 +320,7 @@ class TestLBTIMx2x_ZeroYear(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -332,7 +338,7 @@ class TestLBTIMxxx_Unhandled(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -355,7 +361,7 @@ class TestLBCODE3xx(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -366,7 +372,7 @@ class TestLBCODE3xx(TestField):
                 DimCoord(
                     [t2_hours - lbft],
                     standard_name="forecast_reference_time",
-                    units=_EPOCH_HOURS_UNIT,
+                    units=_EPOCH_HOURS_UNIT_OUT,
                 ),
                 None,
             )
@@ -391,7 +397,7 @@ class TestArrayInputWithLBTIM_0_0_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_OUT,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -400,7 +406,9 @@ class TestArrayInputWithLBTIM_0_0_1(TestField):
 
         # Expected coords.
         time_coord = DimCoord(
-            (24 * 8) + 3 + hours, standard_name="time", units=_EPOCH_HOURS_UNIT
+            (24 * 8) + 3 + hours,
+            standard_name="time",
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [(time_coord, (0,))]
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
@@ -427,7 +435,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -443,12 +451,12 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         time_coord = DimCoord(
             (24 * 8) + 3 + forecast_period_in_hours,
             standard_name="time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         fref_time_coord = DimCoord(
             (24 * 8) + 3,
             standard_name="forecast_reference_time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [
             (fp_coord, (0,)),
@@ -480,7 +488,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -497,12 +505,12 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         time_coord = DimCoord(
             (24 * 8) + 3 + forecast_period_in_hours,
             standard_name="time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         fref_time_coord = DimCoord(
             (24 * 8) + 3,
             standard_name="forecast_reference_time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [
             (fp_coord, (0,)),
@@ -530,7 +538,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -548,13 +556,13 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         )
         points = (years - 1970) * 24 * 365 + (24 * 8) + 12
         time_coord = DimCoord(
-            points, standard_name="time", units=_EPOCH_HOURS_UNIT
+            points, standard_name="time", units=_EPOCH_HOURS_UNIT_OUT
         )
         points = (24 * 8) + hours
         fref_time_coord = DimCoord(
             points,
             standard_name="forecast_reference_time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [
             (fp_coord, (0, 1)),  # Spans dims 0 and 1.
@@ -587,7 +595,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -612,12 +620,12 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
                 for year in years
             ],
             standard_name="time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         fref_time_coord = DimCoord(
             (24 * 8) + 3,
             standard_name="forecast_reference_time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [
             (fp_coord, (0, 1)),
@@ -651,7 +659,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -668,12 +676,12 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         time_coord = DimCoord(
             (24 * 8) + 3 + forecast_period_in_hours,
             standard_name="time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         fref_time_coord = DimCoord(
             (24 * 8) + 3,
             standard_name="forecast_reference_time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [
             (fp_coord, (0,)),
@@ -698,7 +706,7 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -723,14 +731,14 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
         time_coord = AuxCoord(
             points,
             standard_name="time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
             bounds=bounds,
         )
         points = 10 * 24 + 9 - lbft
         fref_time_coord = DimCoord(
             points,
             standard_name="forecast_reference_time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [
             (fp_coord, (0,)),
@@ -755,7 +763,7 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
             lbtim=lbtim,
-            epoch_hours_unit=_EPOCH_HOURS_UNIT,
+            epoch_hours_unit=_EPOCH_HOURS_UNIT_IN,
             t1=t1,
             t2=t2,
             lbft=lbft,
@@ -786,13 +794,13 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
         time_coord = AuxCoord(
             points,
             standard_name="time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
             bounds=bounds,
         )
         fref_time_coord = DimCoord(
             points - lbft,
             standard_name="forecast_reference_time",
-            units=_EPOCH_HOURS_UNIT,
+            units=_EPOCH_HOURS_UNIT_OUT,
         )
         expected = [
             (fp_coord, (0,)),
