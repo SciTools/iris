@@ -42,7 +42,7 @@ Xarray and Iris have a large overlap of functionality when creating
 :term:`Matplotlib` plots and both support the plotting of multidimensional
 coordinates. This means the experience is largely similar using either package.
 
-Xarray supports further plotting backends (such as `seaborn`_, `hvPlot`_, etc)
+Xarray supports further plotting backends through external packages (e.g. Bokeh through `hvPlot`_)
 and, if a user is already familiar with `pandas`_, the interface should be
 familiar. It also supports some different plot types to Iris, and therefore can
 be used for a wider variety of plots. It also has benefits regarding "out of
