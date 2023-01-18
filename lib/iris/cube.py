@@ -1097,7 +1097,9 @@ class Cube(CFVariableMixin):
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
         """
         if self.coords(coord):  # TODO: just fail on duplicate object
-            raise ValueError("Duplicate coordinates are not permitted.")
+            raise iris.exceptions.CannotAddError(
+                "Duplicate coordinates are not permitted."
+            )
         self._add_unique_aux_coord(coord, data_dims)
 
     def _check_multi_dim_metadata(self, metadata, data_dims):
@@ -1117,7 +1119,7 @@ class Cube(CFVariableMixin):
                         len(data_dims), metadata.ndim, metadata.name()
                     )
                 )
-                raise ValueError(msg)
+                raise iris.exceptions.CannotAddError(msg)
             # Check compatibility with the shape of the data
             for i, dim in enumerate(data_dims):
                 if metadata.shape[i] != self.shape[dim]:
@@ -1125,7 +1127,7 @@ class Cube(CFVariableMixin):
                         "Unequal lengths. Cube dimension {} => {};"
                         " metadata {!r} dimension {} => {}."
                     )
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             dim,
                             self.shape[dim],
@@ -1137,7 +1139,7 @@ class Cube(CFVariableMixin):
         elif metadata.shape != (1,):
             msg = "Missing data dimensions for multi-valued {} {!r}"
             msg = msg.format(metadata.__class__.__name__, metadata.name())
-            raise ValueError(msg)
+            raise iris.exceptions.CannotAddError(msg)
         return data_dims
 
     def _add_unique_aux_coord(self, coord, data_dims):
@@ -1151,7 +1153,7 @@ class Cube(CFVariableMixin):
                     "cube {item} of {ownval!r}."
                 )
                 if coord.mesh != mesh:
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             item="mesh",
                             coord=coord,
@@ -1161,7 +1163,7 @@ class Cube(CFVariableMixin):
                     )
                 location = self.location
                 if coord.location != location:
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             item="location",
                             coord=coord,
@@ -1171,7 +1173,7 @@ class Cube(CFVariableMixin):
                     )
                 mesh_dims = (self.mesh_dim(),)
                 if data_dims != mesh_dims:
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             item="mesh dimension",
                             coord=coord,
@@ -1208,7 +1210,9 @@ class Cube(CFVariableMixin):
             ref_coord = aux_factory.dependencies[dependency]
             if ref_coord is not None and ref_coord not in cube_coords:
                 msg = "{} coordinate for factory is not present on cube {}"
-                raise ValueError(msg.format(ref_coord.name(), self.name()))
+                raise iris.exceptions.CannotAddError(
+                    msg.format(ref_coord.name(), self.name())
+                )
         self._aux_factories.append(aux_factory)
 
     def add_cell_measure(self, cell_measure, data_dims=None):
@@ -1228,7 +1232,9 @@ class Cube(CFVariableMixin):
         :meth:`Cube.remove_cell_measure()<iris.cube.Cube.remove_cell_measure>`.
         """
         if self.cell_measures(cell_measure):
-            raise ValueError("Duplicate cell_measures are not permitted.")
+            raise iris.exceptions.CannotAddError(
+                "Duplicate cell_measures are not permitted."
+            )
         data_dims = self._check_multi_dim_metadata(cell_measure, data_dims)
         self._cell_measures_and_dims.append((cell_measure, data_dims))
         self._cell_measures_and_dims.sort(
@@ -1251,7 +1257,9 @@ class Cube(CFVariableMixin):
         """
 
         if self.ancillary_variables(ancillary_variable):
-            raise ValueError("Duplicate ancillary variables not permitted")
+            raise iris.exceptions.CannotAddError(
+                "Duplicate ancillary variables not permitted"
+            )
 
         data_dims = self._check_multi_dim_metadata(
             ancillary_variable, data_dims
@@ -1281,13 +1289,13 @@ class Cube(CFVariableMixin):
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
         """
         if self.coords(dim_coord):
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 "The coordinate already exists on the cube. "
                 "Duplicate coordinates are not permitted."
             )
         # Check dimension is available
         if self.coords(dimensions=data_dim, dim_coords=True):
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 "A dim_coord is already associated with "
                 "dimension %d." % data_dim
             )
@@ -1295,12 +1303,14 @@ class Cube(CFVariableMixin):
 
     def _add_unique_dim_coord(self, dim_coord, data_dim):
         if isinstance(dim_coord, iris.coords.AuxCoord):
-            raise ValueError("The dim_coord may not be an AuxCoord instance.")
+            raise iris.exceptions.CannotAddError(
+                "The dim_coord may not be an AuxCoord instance."
+            )
 
         # Convert data_dim to a single integer
         if isinstance(data_dim, Container):
             if len(data_dim) != 1:
-                raise ValueError(
+                raise iris.exceptions.CannotAddError(
                     "The supplied data dimension must be a" " single number."
                 )
             data_dim = int(list(data_dim)[0])
@@ -1309,7 +1319,7 @@ class Cube(CFVariableMixin):
 
         # Check data_dim value is valid
         if data_dim < 0 or data_dim >= self.ndim:
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 "The cube does not have the specified dimension "
                 "(%d)" % data_dim
             )
@@ -1317,7 +1327,7 @@ class Cube(CFVariableMixin):
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:
             msg = "Unequal lengths. Cube dimension {} => {}; coord {!r} => {}."
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 msg.format(
                     data_dim,
                     self.shape[data_dim],

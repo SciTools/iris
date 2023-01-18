@@ -1914,7 +1914,9 @@ To compute zonal medians over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
-This aggregator handles masked data, but NOT lazy data.
+
+This aggregator handles masked data, but NOT lazy data.  For lazy aggregation,
+please try :obj:`~.PERCENTILE`.
 
 """
 
