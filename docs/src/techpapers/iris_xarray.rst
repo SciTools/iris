@@ -106,6 +106,9 @@ However, attribute handling is not so complete: like Iris, it interprets +
 modifies some recognised aspects, and can add some extra attributes not in the
 input.
 
+.. todo:
+    More detail on dates and fill values (@pp-mo suggestion).
+
 Handling of dates and fill values have some special problems here.
 
 Ultimately, nearly everything wanted in a particular desired result file can
