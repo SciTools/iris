@@ -50,11 +50,10 @@ repos:
         args: [--filter-files]
 
 -   repo: https://github.com/asottile/blacken-docs
-    rev: v1.12.1
+    rev: 1.13.0
     hooks:
     -   id: blacken-docs
         types: [file, rst]
-        additional_dependencies: [black==21.6b0]
 
 -   repo: https://github.com/aio-libs/sort-all
     rev: v1.2.0
