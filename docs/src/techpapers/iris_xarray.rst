@@ -25,6 +25,22 @@ compared to using Iris, and you may prefer to add Xarray plugins
 such as :ref:`cfxarray` to get the best experience. Advanced users can likely
 achieve better performance with Xarray than with Iris.
 
+Conversion
+----------
+There are multiple ways to convert between Iris and Xarray objects.
+
+* Xarray includes the :meth:`~xarray.DataArray.to_iris` and
+  :meth:`~xarray.DataArray.from_iris` methods - detailed in the
+  `Xarray IO notes on Iris`_. Since Iris evolves independently of Xarray, be
+  vigilant for concepts that may be lost during the conversion.
+* Because both packages are closely linked to the :term:`NetCDF Format`, it is
+  feasible to save a NetCDF file using one package then load that file using
+  the other package. This will be lossy in places, as both Iris and Xarray
+  are opinionated on how certain NetCDF concepts relate to their data models.
+* The Iris development team are exploring an improved 'bridge' between the two
+  packages. Follow the conversation on GitHub: `iris#4994`_. This project is
+  expressly intended to be as lossless as possible.
+
 Regridding
 ----------
 Iris and Xarray offer a range of regridding methods - both natively and via
@@ -128,3 +144,4 @@ to Iris utilities). Iris tends to cover more of and be stricter about CF.
 .. _pandas: https://pandas.pydata.org/
 .. _NEP-18: https://numpy.org/neps/nep-0018-array-function-protocol.html
 .. _cf-xarray: https://github.com/xarray-contrib/cf-xarray
+.. _iris#4994: https://github.com/SciTools/iris/issues/4994
