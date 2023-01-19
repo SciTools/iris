@@ -83,13 +83,17 @@ Laziness and Multi-Processing with :term:`Dask`
 Iris and Xarray both support lazy data and out-of-core processing through
 utilisation of Dask.
 
-In general, Xarray exposes Dask and :term:`NumPy` conveniences at the API
-level, whereas Iris takes an opinionated approach with no explicit API
-controls.
+While both Iris and Xarray expose :term:`NumPy` conveniences at the API level
+(e.g. the `ndim()` method), only Xarray exposes Dask conveniences. For example
+:attr:`xarray.DataArray.chunks`, which gives the user direct control
+over the underlying Dask array chunks. The Iris API instead takes control of
+such concepts and user control is only possible by manipulating the underlying
+Dask array directly (accessed via :meth:`iris.cube.Cube.core_data`).
 
-Xarray has a level of interoperability with Dask and NumPy that is not
-available with Iris, specifically with regards to `NEP-18`_ and passing
-:class:`xarray.DataArray`\ s to Dask.
+:class:`xarray.DataArray`\ s comply with `NEP-18`_, allowing NumPy arrays to be
+based on them, and they also include the necessary extra members for Dask
+arrays to be based on them too. Neither of these is currently possible with
+Iris :class:`~iris.cube.Cube`\ s, although an ambition for the future.
 
 NetCDF File Control
 -------------------
