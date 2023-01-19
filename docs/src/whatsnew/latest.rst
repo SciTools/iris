@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
 
 
 ✨ Features
@@ -68,11 +68,23 @@ This document explains the changes made to Iris for this release
 ================
 
 #. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
+#. `@tkknight`_ unpinned ``pydata-sphinx-theme`` and set the default to use
+   the light version (not dark) while we make the docs dark mode friendly
+   (:pull:`5129`)
+
+#. `@jonseddon`_ updated the citation to a more recent version of Iris. (:pull:`5116`)
+
+#. `@rcomer`_ linked the :obj:`~iris.analysis.PERCENTILE` aggregator from the
+   :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
+   data. (:pull:`5128`)
+
+#. `@trexfeathers`_ updated the WSL link to Microsoft's latest documentation,
+   and removed an ECMWF link in the ``v1.0`` What's New that was failing the
+   linkcheck CI. (:pull:`5109`)
 
 #. The **Iris community**, with help from the **Xarray community**, produced
    the :doc:`/techpapers/iris_xarray` page, highlighting the similarities and
    differences between the two packages. (:pull:`5025`)
-
 
 💼 Internal
 ===========

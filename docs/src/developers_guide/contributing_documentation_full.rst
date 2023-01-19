@@ -113,18 +113,6 @@ adding it to the ``linkcheck_ignore`` array that is defined in the
 If this fails check the output for the text **broken** and then correct
 or ignore the url.
 
-.. comment
-    Finally, the spelling in the documentation can be checked automatically via the
-    command::
-
-        make spelling
-
-    The spelling check may pull up many technical abbreviations and acronyms.  This
-    can be managed by using an **allow** list in the form of a file.  This file,
-    or list of files is set in the `conf.py`_ using the string list
-    ``spelling_word_list_filename``.
-
-
 .. note:: In addition to the automated `Iris GitHub Actions`_ build of all the
           documentation build options above, the
           https://readthedocs.org/ service is also used.  The configuration

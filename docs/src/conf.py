@@ -158,8 +158,6 @@ extensions = [
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
     "sphinx_panels",
-    # TODO: Spelling extension disabled until the dependencies can be included
-    # "sphinxcontrib.spelling",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
@@ -192,16 +190,6 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_use_keyword = True
 napoleon_custom_sections = None
-
-# -- spellingextension --------------------------------------------------------
-# See https://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
-spelling_lang = "en_GB"
-# The lines in this file must only use line feeds (no carriage returns).
-spelling_word_list_filename = ["spelling_allow.txt"]
-spelling_show_suggestions = False
-spelling_show_whole_line = False
-spelling_ignore_importable_modules = True
-spelling_ignore_python_builtins = True
 
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
@@ -311,6 +299,9 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
+    # Omitted `theme-switcher` below to disable it
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    "navbar_end": ["navbar-icon-links"],
 }
 
 rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
@@ -322,6 +313,9 @@ html_context = {
     "github_user": "scitools",
     "github_version": "main",
     "doc_path": "docs/src",
+    # default theme.  Also disabled the button in the html_theme_options.
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    "default_mode": "light",
     # custom
     "on_rtd": on_rtd,
     "rtd_version": rtd_version,
@@ -365,8 +359,6 @@ linkcheck_ignore = [
     "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
     "http://www.nationalarchives.gov.uk/doc/open-government-licence",
     "https://www.metoffice.gov.uk/",
-    # TODO: try removing this again in future - was raising an SSLError.
-    "http://www.ecmwf.int/",
 ]
 
 # list of sources to exclude from the build.
