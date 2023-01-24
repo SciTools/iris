@@ -102,7 +102,7 @@ NetCDF File Control
 Unlike Iris, Xarray generally provides full control of major file structures,
 i.e. dimensions + variables, including their order in the file.  It mostly
 respects these in a file input, and can reproduce them on output.
-However, attribute handling is not so complete: like Iris, it interprets +
+However, attribute handling is not so complete: like Iris, it interprets and
 modifies some recognised aspects, and can add some extra attributes not in the
 input.
 

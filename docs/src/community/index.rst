@@ -31,10 +31,10 @@ Interoperability
 ----------------
 
 There's a big choice of Python tools out there! Each one has strengths and
-weaknesses in different areas, so we don't want force a single choice for your
+weaknesses in different areas, so we don't want to force a single choice for your
 whole workflow - we'd much rather make it easy for you to choose the right tool
 for the moment, switching whenever you need. Below are our ongoing efforts at
-smoother interoperation:
+smoother interoperability:
 
 .. not using toctree due to combination of child pages and cross-references.
 
