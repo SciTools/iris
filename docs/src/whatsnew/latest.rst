@@ -82,6 +82,14 @@ This document explains the changes made to Iris for this release
    and removed an ECMWF link in the ``v1.0`` What's New that was failing the
    linkcheck CI. (:pull:`5109`)
 
+#. `@trexfeathers`_ added a new top-level :doc:`/community/index` section,
+   as a one-stop place to find out about getting involved, and how we relate
+   to other projects. (:pull:`5025`)
+
+#. The **Iris community**, with help from the **Xarray community**, produced
+   the :doc:`/community/iris_xarray` page, highlighting the similarities and
+   differences between the two packages. (:pull:`5025`)
+
 💼 Internal
 ===========
 
