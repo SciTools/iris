@@ -397,7 +397,7 @@ def _calendar_rules(cube, pp):
     if time_coord is not None:
         if time_coord.units.calendar == "360_day":
             pp.lbtim.ic = 2
-        elif time_coord.units.calendar == "standard":
+        elif time_coord.units.calendar in ["standard", "proleptic_gregorian"]:
             pp.lbtim.ic = 1
         elif time_coord.units.calendar == "365_day":
             pp.lbtim.ic = 4
