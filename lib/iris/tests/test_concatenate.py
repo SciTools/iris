@@ -16,7 +16,6 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
 import iris.tests.stock as stock
