@@ -101,19 +101,19 @@ class _CoordMetaData(
 
         """
         defn = coord.metadata
-        points_dtype = coord.points.dtype
-        bounds_dtype = coord.bounds.dtype if coord.bounds is not None else None
+        points_dtype = coord.core_points().dtype
+        bounds_dtype = coord.core_bounds().dtype if coord.bounds is not None else None
         kwargs = {}
         # Add scalar flag metadata.
-        kwargs["scalar"] = coord.points.size == 1
+        kwargs["scalar"] = coord.core_points().size == 1
         # Add circular flag metadata for dimensional coordinates.
         if hasattr(coord, "circular"):
             kwargs["circular"] = coord.circular
         if isinstance(coord, iris.coords.DimCoord):
             # Mix the monotonic ordering into the metadata.
-            if coord.points[0] == coord.points[-1]:
+            if coord.core_points()[0] == coord.core_points()[-1]:
                 order = _CONSTANT
-            elif coord.points[-1] > coord.points[0]:
+            elif coord.core_points()[-1] > coord.core_points()[0]:
                 order = _INCREASING
             else:
                 order = _DECREASING
@@ -619,7 +619,7 @@ class _CoordSignature:
 
         """
         # A candidate axis must have non-identical coordinate points.
-        candidate_axis = not array_equal(coord.points, other.points)
+        candidate_axis = not array_equal(coord.core_points(), other.core_points())
 
         if candidate_axis:
             # Ensure both have equal availability of bounds.
@@ -681,7 +681,7 @@ class _CoordSignature:
         self.dim_extents = []
         for coord, order in zip(self.dim_coords, self.dim_order):
             if order == _CONSTANT or order == _INCREASING:
-                points = _Extent(coord.points[0], coord.points[-1])
+                points = _Extent(coord.core_points()[0], coord.core_points()[-1])
                 if coord.bounds is not None:
                     bounds = (
                         _Extent(coord.bounds[0, 0], coord.bounds[-1, 0]),
@@ -691,7 +691,7 @@ class _CoordSignature:
                     bounds = None
             else:
                 # The order must be decreasing ...
-                points = _Extent(coord.points[-1], coord.points[0])
+                points = _Extent(coord.core_points()[-1], coord.core_points()[0])
                 if coord.bounds is not None:
                     bounds = (
                         _Extent(coord.bounds[-1, 0], coord.bounds[0, 0]),
@@ -967,7 +967,7 @@ class _ProtoCube:
                 # Concatenate the points together.
                 dim = dims.index(self.axis)
                 points = [
-                    skton.signature.aux_coords_and_dims[i].coord.points
+                    skton.signature.aux_coords_and_dims[i].coord.core_points()
                     for skton in skeletons
                 ]
                 points = np.concatenate(tuple(points), axis=dim)
@@ -1121,7 +1121,7 @@ class _ProtoCube:
 
         # Concatenate the points together for the nominated dimension.
         points = [
-            skeleton.signature.dim_coords[dim_ind].points
+            skeleton.signature.dim_coords[dim_ind].core_points()
             for skeleton in skeletons
         ]
         points = np.concatenate(tuple(points))

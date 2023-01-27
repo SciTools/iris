@@ -12,9 +12,11 @@ Test the cube concatenate mechanism.
 # before importing anything else.
 import iris.tests as tests  # isort:skip
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_lazy_data
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
 import iris.tests.stock as stock
@@ -228,7 +230,6 @@ def _make_cube_3d(x, y, z, data, aux=None, offset=0):
             cube.add_aux_coord(coord, (0, 1, 2))
 
     return cube
-
 
 def concatenate(cubes, order=None):
     """
@@ -735,6 +736,20 @@ class Test2D(tests.IrisTest):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (6, 2))
         self.assertEqual(result[0], com)
+    
+    def test_concat_lazy_aux_coords(self):
+        cubes = []
+        y = (0, 2)
+        cube = _make_cube((2, 4), y, 2, aux="xy")
+        cubes.append(cube)
+        cubes.append(_make_cube((0, 2), y, 1, aux="xy"))
+        for cube in cubes:
+            cube.data = cube.lazy_data()
+            cube.coord("xy-aux").points = cube.coord("xy-aux").lazy_points()
+        result = concatenate(cubes)
+        assert self.assertTrue(cubes[0].coord("xy-aux").has_lazy_points())
+        assert self.assertTrue(cubes[1].coord("xy-aux").has_lazy_points())
+        assert self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
 
 
 class TestMulti2D(tests.IrisTest):
