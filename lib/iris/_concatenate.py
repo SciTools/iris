@@ -102,7 +102,7 @@ class _CoordMetaData(
         """
         defn = coord.metadata
         points_dtype = coord.core_points().dtype
-        bounds_dtype = coord.core_bounds().dtype if coord.bounds is not None else None
+        bounds_dtype = coord.core_bounds().dtype if coord.core_bounds() is not None else None
         kwargs = {}
         # Add scalar flag metadata.
         kwargs["scalar"] = coord.core_points().size == 1
@@ -623,14 +623,14 @@ class _CoordSignature:
 
         if candidate_axis:
             # Ensure both have equal availability of bounds.
-            result = (coord.bounds is None) == (other.bounds is None)
+            result = (coord.core_bounds() is None) == (other.core_bounds() is None)
         else:
-            if coord.bounds is not None and other.bounds is not None:
+            if coord.core_bounds() is not None and other.core_bounds() is not None:
                 # Ensure equality of bounds.
-                result = array_equal(coord.bounds, other.bounds)
+                result = array_equal(coord.core_bounds(), other.core_bounds())
             else:
                 # Ensure both have equal availability of bounds.
-                result = coord.bounds is None and other.bounds is None
+                result = coord.core_bounds() is None and other.core_bounds() is None
 
         return result, candidate_axis
 
@@ -682,20 +682,20 @@ class _CoordSignature:
         for coord, order in zip(self.dim_coords, self.dim_order):
             if order == _CONSTANT or order == _INCREASING:
                 points = _Extent(coord.core_points()[0], coord.core_points()[-1])
-                if coord.bounds is not None:
+                if coord.core_bounds() is not None:
                     bounds = (
-                        _Extent(coord.bounds[0, 0], coord.bounds[-1, 0]),
-                        _Extent(coord.bounds[0, 1], coord.bounds[-1, 1]),
+                        _Extent(coord.core_bounds()[0, 0], coord.core_bounds()[-1, 0]),
+                        _Extent(coord.core_bounds()[0, 1], coord.core_bounds()[-1, 1]),
                     )
                 else:
                     bounds = None
             else:
                 # The order must be decreasing ...
                 points = _Extent(coord.core_points()[-1], coord.core_points()[0])
-                if coord.bounds is not None:
+                if coord.core_bounds() is not None:
                     bounds = (
-                        _Extent(coord.bounds[-1, 0], coord.bounds[0, 0]),
-                        _Extent(coord.bounds[-1, 1], coord.bounds[0, 1]),
+                        _Extent(coord.core_bounds()[-1, 0], coord.core_bounds()[0, 0]),
+                        _Extent(coord.core_bounds()[-1, 1], coord.core_bounds()[0, 1]),
                     )
                 else:
                     bounds = None
@@ -976,7 +976,7 @@ class _ProtoCube:
                 bnds = None
                 if coord.has_bounds():
                     bnds = [
-                        skton.signature.aux_coords_and_dims[i].coord.bounds
+                        skton.signature.aux_coords_and_dims[i].coord.core_bounds()
                         for skton in skeletons
                     ]
                     bnds = np.concatenate(tuple(bnds), axis=dim)
@@ -1130,7 +1130,7 @@ class _ProtoCube:
         bounds = None
         if self._cube_signature.dim_coords[dim_ind].has_bounds():
             bounds = [
-                skeleton.signature.dim_coords[dim_ind].bounds
+                skeleton.signature.dim_coords[dim_ind].core_bounds()
                 for skeleton in skeletons
             ]
             bounds = np.concatenate(tuple(bounds))
