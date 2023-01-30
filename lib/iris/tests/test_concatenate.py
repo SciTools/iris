@@ -757,7 +757,7 @@ class Test2D(tests.IrisTest):
         self.assertTrue(cubes[1].coord("xy-aux").has_lazy_bounds())
         
         self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
-        self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
+        self.assertTrue(result[0].coord("xy-aux").has_lazy_bounds())
 
 
 class TestMulti2D(tests.IrisTest):
