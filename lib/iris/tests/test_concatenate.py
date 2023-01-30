@@ -16,6 +16,7 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_lazy_data
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
 import iris.tests.stock as stock
@@ -745,10 +746,19 @@ class Test2D(tests.IrisTest):
         for cube in cubes:
             cube.data = cube.lazy_data()
             cube.coord("xy-aux").points = cube.coord("xy-aux").lazy_points()
+            bounds = da.arange(
+                4 * cube.coord("xy-aux").core_points().size).reshape(cube.shape + (4,))
+            cube.coord("xy-aux").bounds = bounds
         result = concatenate(cubes)
-        assert self.assertTrue(cubes[0].coord("xy-aux").has_lazy_points())
-        assert self.assertTrue(cubes[1].coord("xy-aux").has_lazy_points())
-        assert self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
+        
+        self.assertTrue(cubes[0].coord("xy-aux").has_lazy_points())
+        self.assertTrue(cubes[0].coord("xy-aux").has_lazy_bounds())
+        
+        self.assertTrue(cubes[1].coord("xy-aux").has_lazy_points())
+        self.assertTrue(cubes[1].coord("xy-aux").has_lazy_bounds())
+        
+        self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
+        self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
 
 
 class TestMulti2D(tests.IrisTest):
