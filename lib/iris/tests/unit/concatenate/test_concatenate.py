@@ -357,10 +357,13 @@ class TestConcatenate__dask(tests.IrisTest):
         c1 = self.build_lazy_cube([1, 2], aux_coords=True)
         c2 = self.build_lazy_cube([3, 4, 5], aux_coords=True)
         (result, ) = concatenate([c1, c2])
+
         self.assertTrue(c1.coord("aux_coord").has_lazy_points())
         self.assertTrue(c1.coord("aux_coord").has_lazy_bounds())
+
         self.assertTrue(c2.coord("aux_coord").has_lazy_points())
         self.assertTrue(c2.coord("aux_coord").has_lazy_bounds())
+
         self.assertTrue(result.coord("aux_coord").has_lazy_points())
         self.assertTrue(result.coord("aux_coord").has_lazy_bounds())
 
