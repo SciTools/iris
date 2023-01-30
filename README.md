@@ -59,7 +59,8 @@ developer version or the most recent released
 
 <h4 align="center">
   <a href="https://showyourstripes.info/s/globe">
-    <img src="https://raw.githubusercontent.com/bjlittle/geovista-media/2023.01.1/media/readme/showyourstripes.png"
+    <img src="https://raw.githubusercontent.com/ed-hawkins/show-your-stripes/master/2021/GLOBE---1850-2021-MO.png"
+         height="50" width="800"
          alt="#showyourstripes Global 1850-2021"></a>
 </h4>
 
