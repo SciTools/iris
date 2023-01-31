@@ -16,7 +16,7 @@ This document explains the changes made to Iris for this release
 
    The highlights for this major/minor release of Iris include:
 
-   * N/A
+   * We're so proud to fully support `@ed-hawkins`_ and `#ShowYourStripes`_ ❤️
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -90,6 +90,10 @@ This document explains the changes made to Iris for this release
    the :doc:`/community/iris_xarray` page, highlighting the similarities and
    differences between the two packages. (:pull:`5025`)
 
+#. `@bjlittle`_ added a new section to the `README.md`_ to show our support
+   for the outstanding work of `@ed-hawkins`_ et al for `#ShowYourStripes`_.
+   (:pull:`5141`)
+
 💼 Internal
 ===========
 
@@ -105,8 +109,10 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@fnattino: https://github.com/fnattino
-
+.. _@ed-hawkins: https://github.com/ed-hawkins
 
 .. comment
     Whatsnew resources in alphabetical order:
 
+.. _#ShowYourStripes: https://showyourstripes.info/s/globe/
+.. _README.md: https://github.com/SciTools/iris#-----
