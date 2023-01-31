@@ -230,6 +230,7 @@ def _make_cube_3d(x, y, z, data, aux=None, offset=0):
 
     return cube
 
+
 def concatenate(cubes, order=None):
     """
     Explicitly force the contiguous major order of cube data
@@ -735,7 +736,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (6, 2))
         self.assertEqual(result[0], com)
-    
+
     def test_concat_lazy_aux_coords(self):
         cubes = []
         y = (0, 2)
@@ -746,16 +747,17 @@ class Test2D(tests.IrisTest):
             cube.data = cube.lazy_data()
             cube.coord("xy-aux").points = cube.coord("xy-aux").lazy_points()
             bounds = da.arange(
-                4 * cube.coord("xy-aux").core_points().size).reshape(cube.shape + (4,))
+                4 * cube.coord("xy-aux").core_points().size
+            ).reshape(cube.shape + (4,))
             cube.coord("xy-aux").bounds = bounds
         result = concatenate(cubes)
-        
+
         self.assertTrue(cubes[0].coord("xy-aux").has_lazy_points())
         self.assertTrue(cubes[0].coord("xy-aux").has_lazy_bounds())
-        
+
         self.assertTrue(cubes[1].coord("xy-aux").has_lazy_points())
         self.assertTrue(cubes[1].coord("xy-aux").has_lazy_bounds())
-        
+
         self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
         self.assertTrue(result[0].coord("xy-aux").has_lazy_bounds())
 

@@ -337,12 +337,13 @@ class TestConcatenate__dask(tests.IrisTest):
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
         if aux_coords:
-            bounds = np.arange(len(points) * nx * 4).reshape(len(points), nx, 4)
+            bounds = np.arange(len(points) * nx * 4).reshape(
+                len(points), nx, 4
+            )
             bounds = as_lazy_data(bounds)
             aux_coord = iris.coords.AuxCoord(
-                data,
-                var_name="aux_coord",
-                bounds=bounds)
+                data, var_name="aux_coord", bounds=bounds
+            )
             cube.add_aux_coord(aux_coord, (0, 1))
         return cube
 
@@ -352,11 +353,11 @@ class TestConcatenate__dask(tests.IrisTest):
         (cube,) = concatenate([c1, c2])
         self.assertTrue(cube.has_lazy_data())
         self.assertFalse(ma.isMaskedArray(cube.data))
-    
+
     def test_lazy_concatenate_aux_coords(self):
         c1 = self.build_lazy_cube([1, 2], aux_coords=True)
         c2 = self.build_lazy_cube([3, 4, 5], aux_coords=True)
-        (result, ) = concatenate([c1, c2])
+        (result,) = concatenate([c1, c2])
 
         self.assertTrue(c1.coord("aux_coord").has_lazy_points())
         self.assertTrue(c1.coord("aux_coord").has_lazy_bounds())

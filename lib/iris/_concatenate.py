@@ -102,7 +102,11 @@ class _CoordMetaData(
         """
         defn = coord.metadata
         points_dtype = coord.core_points().dtype
-        bounds_dtype = coord.core_bounds().dtype if coord.core_bounds() is not None else None
+        bounds_dtype = (
+            coord.core_bounds().dtype
+            if coord.core_bounds() is not None
+            else None
+        )
         kwargs = {}
         # Add scalar flag metadata.
         kwargs["scalar"] = coord.core_points().size == 1
@@ -619,18 +623,27 @@ class _CoordSignature:
 
         """
         # A candidate axis must have non-identical coordinate points.
-        candidate_axis = not array_equal(coord.core_points(), other.core_points())
+        candidate_axis = not array_equal(
+            coord.core_points(), other.core_points()
+        )
 
         if candidate_axis:
             # Ensure both have equal availability of bounds.
-            result = (coord.core_bounds() is None) == (other.core_bounds() is None)
+            result = (coord.core_bounds() is None) == (
+                other.core_bounds() is None
+            )
         else:
-            if coord.core_bounds() is not None and other.core_bounds() is not None:
+            if (
+                coord.core_bounds() is not None
+                and other.core_bounds() is not None
+            ):
                 # Ensure equality of bounds.
                 result = array_equal(coord.core_bounds(), other.core_bounds())
             else:
                 # Ensure both have equal availability of bounds.
-                result = coord.core_bounds() is None and other.core_bounds() is None
+                result = (
+                    coord.core_bounds() is None and other.core_bounds() is None
+                )
 
         return result, candidate_axis
 
@@ -681,21 +694,37 @@ class _CoordSignature:
         self.dim_extents = []
         for coord, order in zip(self.dim_coords, self.dim_order):
             if order == _CONSTANT or order == _INCREASING:
-                points = _Extent(coord.core_points()[0], coord.core_points()[-1])
+                points = _Extent(
+                    coord.core_points()[0], coord.core_points()[-1]
+                )
                 if coord.core_bounds() is not None:
                     bounds = (
-                        _Extent(coord.core_bounds()[0, 0], coord.core_bounds()[-1, 0]),
-                        _Extent(coord.core_bounds()[0, 1], coord.core_bounds()[-1, 1]),
+                        _Extent(
+                            coord.core_bounds()[0, 0],
+                            coord.core_bounds()[-1, 0],
+                        ),
+                        _Extent(
+                            coord.core_bounds()[0, 1],
+                            coord.core_bounds()[-1, 1],
+                        ),
                     )
                 else:
                     bounds = None
             else:
                 # The order must be decreasing ...
-                points = _Extent(coord.core_points()[-1], coord.core_points()[0])
+                points = _Extent(
+                    coord.core_points()[-1], coord.core_points()[0]
+                )
                 if coord.core_bounds() is not None:
                     bounds = (
-                        _Extent(coord.core_bounds()[-1, 0], coord.core_bounds()[0, 0]),
-                        _Extent(coord.core_bounds()[-1, 1], coord.core_bounds()[0, 1]),
+                        _Extent(
+                            coord.core_bounds()[-1, 0],
+                            coord.core_bounds()[0, 0],
+                        ),
+                        _Extent(
+                            coord.core_bounds()[-1, 1],
+                            coord.core_bounds()[0, 1],
+                        ),
                     )
                 else:
                     bounds = None
@@ -976,7 +1005,9 @@ class _ProtoCube:
                 bnds = None
                 if coord.has_bounds():
                     bnds = [
-                        skton.signature.aux_coords_and_dims[i].coord.core_bounds()
+                        skton.signature.aux_coords_and_dims[
+                            i
+                        ].coord.core_bounds()
                         for skton in skeletons
                     ]
                     bnds = np.concatenate(tuple(bnds), axis=dim)
