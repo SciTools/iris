@@ -91,6 +91,7 @@ All the load functions share very similar arguments:
 
 import contextlib
 import glob
+import importlib
 import itertools
 import os.path
 import pathlib
@@ -470,3 +471,14 @@ def sample_data_path(*path_to_join):
             "appropriate for general file access.".format(target)
         )
     return target
+
+
+def use_plugin(plugin_name):
+    """
+    Convenience function to import a plugin
+
+    This is useful for plugins that are not used directly, but instead do all
+    their setup on import.  In this case, style checkers would not know the
+    significance of the import statement and warn that it is an unused import.
+    """
+    importlib.import_module(f"iris.plugins.{plugin_name}")
