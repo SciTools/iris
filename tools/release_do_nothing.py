@@ -194,8 +194,8 @@ def _delete_local_branch(branch_name: str):
     message = (
         "Before the next step, avoid a name clash by deleting any "
         "existing local branch.\n"
-        f"`git branch -D {branch_name};`\n"
-        f"`git push -d origin {branch_name};`"
+        f"git branch -D {branch_name};\n"
+        f"git push -d origin {branch_name};"
     )
     _wait_for_done(message)
 
@@ -237,9 +237,9 @@ def finalise_whats_new(
     _delete_local_branch(working_branch)
     message = (
         f"Checkout a local branch from the official {release_strings.branch} branch.\n"
-        "`git fetch upstream;`\n"
-        f"`git checkout upstream/{release_strings.branch} -b "
-        f"{working_branch};`"
+        "git fetch upstream;\n"
+        f"git checkout upstream/{release_strings.branch} -b "
+        f"{working_branch};"
     )
     _wait_for_done(message)
 
@@ -249,7 +249,7 @@ def finalise_whats_new(
     if first_in_series:
         message = (
             "'Cut' the What's New for the release.\n"
-            f"`git mv {rsts.latest.absolute()} {rsts.release.absolute()};`"
+            f"git mv {rsts.latest.absolute()} {rsts.release.absolute()};"
         )
         _wait_for_done(message)
 
@@ -293,14 +293,14 @@ def finalise_whats_new(
         # TODO: automate
         message = (
             "Remove the What's New template file.\n"
-            f"`git rm {rsts.template.absolute()};`"
+            f"git rm {rsts.template.absolute()};"
         )
         _wait_for_done(message)
 
     message = (
         "Commit and push all the What's New changes.\n"
-        f'`git commit -am "Whats new updates for {release_strings.tag} .";`\n'
-        f"`git push -u origin {working_branch};`"
+        f'git commit -am "Whats new updates for {release_strings.tag} .";\n'
+        f"git push -u origin {working_branch};"
     )
     _wait_for_done(message)
 
@@ -345,7 +345,7 @@ def cut_release(
         message = (
             "This is a release candidate - include the following instructions "
             "for Conda-installing:\n"
-            "`conda install -c conda-forge/label/rc_iris iris;`"
+            "conda install -c conda-forge/label/rc_iris iris;"
         )
         _wait_for_done(message)
 
@@ -456,7 +456,7 @@ def check_pypi(
 
     message = (
         "Confirm that pip install works as expected:\n"
-        f"`pip install scitools-iris=={release_strings.release};`"
+        f"pip install scitools-iris=={release_strings.release};"
     )
     _wait_for_done(message)
 
@@ -496,8 +496,8 @@ def update_conda_forge(
     # TODO: automate
     message = (
         "Checkout a new branch for the conda-forge changes for this release:\n"
-        "`git fetch upstream;`\n"
-        f"`git checkout upstream/{upstream_branch} -b {release_strings.tag};`\n"
+        "git fetch upstream;\n"
+        f"git checkout upstream/{upstream_branch} -b {release_strings.tag};\n"
     )
     _wait_for_done(message)
 
@@ -516,8 +516,8 @@ def update_conda_forge(
     message = (
         "No other file normally needs changing in iris-feedstock, so push up "
         "the changes to prepare for a Pull Request:\n"
-        f'`git commit -am "Recipe updates for {release_strings.tag} .";`\n'
-        f"`git push -u origin {release_strings.tag};`"
+        f'git commit -am "Recipe updates for {release_strings.tag} .";\n'
+        f"git push -u origin {release_strings.tag};"
     )
     _wait_for_done(message)
 
@@ -549,7 +549,7 @@ def update_conda_forge(
         channel_command = " "
     message = (
         "Confirm that conda install works as expected:\n"
-        f"`conda install{channel_command}iris={release_strings.release};`"
+        f"conda install{channel_command}iris={release_strings.release};"
     )
     _wait_for_done(message)
 
@@ -628,15 +628,15 @@ def merge_back(
         _delete_local_branch(working_branch)
         message = (
             "Checkout a local branch from the official ``main`` branch.\n"
-            "`git fetch upstream;`\n"
-            f"`git checkout upstream/main -b {working_branch};`"
+            "git fetch upstream;\n"
+            f"git checkout upstream/main -b {working_branch};"
         )
         _wait_for_done(message)
 
         message = (
             f"Merge in the commits from {release_strings.branch}.\n"
             f"{merge_commit}\n"
-            f"`git merge upstream/{release_strings.branch} --no-ff;`"
+            f"git merge upstream/{release_strings.branch} --no-ff;"
         )
         _wait_for_done(message)
 
@@ -646,8 +646,8 @@ def merge_back(
             f"{rsts.latest.absolute()}\n"
             f"{rsts.template.absolute()}\n"
             "THEN:\n"
-            f"`git add {rsts.latest.absolute()};`\n"
-            f"`git add {rsts.template.absolute()};`\n"
+            f"git add {rsts.latest.absolute()};\n"
+            f"git add {rsts.template.absolute()};\n"
         )
         _wait_for_done(message)
 
@@ -660,8 +660,8 @@ def merge_back(
 
         message = (
             "Commit and push all the What's New changes.\n"
-            '`git commit -am "Restore latest Whats New files.";`\n'
-            f"`git push -u origin {working_branch};`"
+            'git commit -am "Restore latest Whats New files.";\n'
+            f"git push -u origin {working_branch};"
         )
         _wait_for_done(message)
 
