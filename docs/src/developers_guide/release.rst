@@ -8,7 +8,7 @@ Releases
 A release of Iris is a `tag on the SciTools/Iris`_ Github repository.
 
 Below is :ref:`iris_development_releases_steps`, followed by some prose on the
-the main areas that constitute the release.
+main areas that constitute the release.
 
 
 .. _iris_development_releases_steps:
@@ -16,7 +16,7 @@ the main areas that constitute the release.
 How to Create an Iris Release
 -----------------------------
 
-The step-by-step process is managed by a script at:
+The step-by-step process is walked-through by a script at:
 ``<Iris repo root>/tools/release_do_nothing.py``, and also available here:
 :doc:`release_do_nothing`.
 
@@ -149,9 +149,9 @@ A template for What's New formatting can be found in the
 Tagging
 ~~~~~~~
 
-Once all checks are complete, the release is published from the release branch,
-via the GitHub release functionality in the ``SciTools/iris`` repository,
-which simultaneously creates a Git tag for the release.
+Once all checks are complete, the release is published from the release
+branch - via the GitHub release functionality in the ``SciTools/iris``
+repository - which simultaneously creates a Git tag for the release.
 
 
 Post Release
