@@ -12,6 +12,7 @@ https://blog.danslimmon.com/2019/07/15/do-nothing-scripting-the-key-to-gradual-a
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+import re
 from sys import stderr
 from time import sleep
 import typing
@@ -30,10 +31,15 @@ class ReleaseStrings:
     """An easy way to pass the various flavours of release string between functions."""
 
     def __init__(self, input_tag: str):
-        if input_tag.count(".") != 2:
-            raise ValueError("Release tag expected to include 2 x '.'")
-        elif input_tag[0] != "v":
-            raise ValueError("Release tag expected to begin with 'v'")
+        version_mask = r"v\d+\.\d+\.\d+\D*.*"
+        regex_101 = "https://regex101.com/r/dLVaNH/1"
+        if re.fullmatch(version_mask, input_tag) is None:
+            message = (
+                "Release tag does not match the input mask:\n"
+                f"{version_mask}\n"
+                f"({regex_101})"
+            )
+            raise ValueError(message)
         else:
             self.tag = input_tag  # v1.2.3rc0
 
