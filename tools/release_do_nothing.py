@@ -751,7 +751,7 @@ def main():
         whats_new_rsts,
     )
 
-    _break_print("RELEASE COMPLETE. Congratulations!")
+    _break_print("RELEASE COMPLETE. Congratulations! 🎉")
 
 
 if __name__ == "__main__":
