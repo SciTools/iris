@@ -1,3 +1,5 @@
+.. include:: ../../common_links.inc
+
 .. _ugrid partners:
 
 Iris' Mesh Partner Packages
@@ -97,4 +99,3 @@ Applications
 
 .. _GeoVista: https://github.com/bjlittle/geovista
 .. _PyVista: https://docs.pyvista.org/index.html
-.. _iris-esmf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
