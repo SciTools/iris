@@ -57,6 +57,7 @@
 .. _@DPeterK: https://github.com/DPeterK
 .. _@ESadek-MO: https://github.com/ESadek-MO
 .. _@esc24: https://github.com/esc24
+.. _@HGWright: https://github.com/HGWright
 .. _@jamesp: https://github.com/jamesp
 .. _@jonseddon: https://github.com/jonseddon
 .. _@jvegasbsc: https://github.com/jvegasbsc
