@@ -26,6 +26,7 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_ for making his first contribution to Iris! 🎉
 
 
 ✨ Features
@@ -93,6 +94,8 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added a new section to the `README.md`_ to show our support
    for the outstanding work of `@ed-hawkins`_ et al for `#ShowYourStripes`_.
    (:pull:`5141`)
+
+#. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
 
 💼 Internal
 ===========
