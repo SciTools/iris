@@ -463,7 +463,6 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         )
 
     def test_lazy_nd_points_and_bounds(self):
-
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy)
 
@@ -520,7 +519,6 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             coord.collapsed()
 
     def test_numeric_3_bounds(self):
-
         points = np.array([2.0, 6.0, 4.0])
         bounds = np.array([[1.0, 0.0, 3.0], [5.0, 4.0, 7.0], [3.0, 2.0, 5.0]])
 
@@ -544,7 +542,6 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         )
 
     def test_lazy_3_bounds(self):
-
         points = da.arange(3) * 2.0
         bounds = da.arange(3 * 3).reshape(3, 3)
 

@@ -161,7 +161,6 @@ class TestClipString(tests.IrisTest):
         )
 
     def test_trim_string_with_no_spaces(self):
-
         clip_length = 200
         no_space_string = "a" * 500
 

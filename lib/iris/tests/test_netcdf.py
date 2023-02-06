@@ -313,9 +313,7 @@ class TestNetCDFLoad(tests.IrisTest):
             cube[((0, 8, 4, 2, 14, 12),)][((0, 2, 4, 1),)],
             ("netcdf", "netcdf_deferred_tuple_1.cml"),
         )
-        subcube = cube[((0, 8, 4, 2, 14, 12),)][((0, 2, 4, 1),)][
-            (1, 3),
-        ]
+        subcube = cube[((0, 8, 4, 2, 14, 12),)][((0, 2, 4, 1),)][(1, 3),]
         self.assertCML(subcube, ("netcdf", "netcdf_deferred_tuple_2.cml"))
 
         # Consecutive mixture on same dimension.
@@ -1417,7 +1415,6 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
         }
 
         for bits, descriptions in multiple_map.items():
-
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = descriptions
 

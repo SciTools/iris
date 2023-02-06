@@ -296,7 +296,6 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     # for coordinate groups
     for cube, coords in zip(cubes, all_coords):
         for coord in coords:
-
             # if this coordinate has already been processed, then continue on
             # to the next one
             if id(coord) in processed_coords:

@@ -175,7 +175,6 @@ class Future(threading.local):
         self.__dict__["pandas_ndim"] = pandas_ndim
 
     def __repr__(self):
-
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
         msg = "Future(datum_support={}, pandas_ndim={})"

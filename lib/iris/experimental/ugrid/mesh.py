@@ -3127,9 +3127,7 @@ class MeshCoord(AuxCoord):
             flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
             # Here's the core indexing operation.
             # The comma applies all inds-array values to the *first* dimension.
-            bounds = node_points[
-                flat_inds_safe,
-            ]
+            bounds = node_points[flat_inds_safe,]
             # Fix 'missing' locations, and restore the proper shape.
             bounds = al.ma.masked_array(bounds, missing_inds)
             bounds = bounds.reshape(indices.shape)

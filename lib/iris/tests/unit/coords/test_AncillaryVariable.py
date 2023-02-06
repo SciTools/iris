@@ -68,7 +68,7 @@ class Test__init__(tests.IrisTest, AncillaryVariableTestMixin):
         self.setupTestArrays(masked=True)
 
     def test_lazyness_and_dtype_combinations(self):
-        for (ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
+        for ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
             self,
         ):
             data = ancill_var.core_data()
@@ -225,10 +225,9 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
         # floating dtype.
         # Check that dtypes remain the same in all cases, taking the dtypes
         # directly from the core data as we have no masking).
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
             self
         ):
-
             sub_ancill_var = main_ancill_var[:2, 1]
 
             ancill_var_dtype = main_ancill_var.dtype
@@ -250,10 +249,9 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
         # Index ancillary variables with real+lazy data, and either an int or
         # floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
             self
         ):
-
             sub_ancill_var = main_ancill_var[:2, 1]
 
             msg = (
@@ -277,10 +275,9 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
     def test_real_data_copies(self):
         # Index ancillary variables with real+lazy data.
         # In all cases, check that any real arrays are copied by the indexing.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
             self
         ):
-
             sub_ancill_var = main_ancill_var[:2, 1]
 
             msg = (
@@ -308,10 +305,9 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
         # Copy ancillary variables with real+lazy data, and either an int or
         # floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
             self
         ):
-
             ancill_var_dtype = main_ancill_var.dtype
             copied_ancill_var = main_ancill_var.copy()
 
@@ -338,10 +334,9 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
     def test_realdata_copies(self):
         # Copy ancillary variables with real+lazy data.
         # In all cases, check that any real arrays are copies, not views.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
             self
         ):
-
             copied_ancill_var = main_ancill_var.copy()
 
             msg = (
@@ -520,79 +515,79 @@ class Test___binary_operator__(tests.IrisTest, AncillaryVariableTestMixin):
             self.assertEqualLazyArraysAndDtypes(expected_data, data)
 
     def test_add(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var + 10
             expected_data = orig_data + 10
             self._check(result, expected_data, data_lazyness)
 
     def test_add_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var += 10
             expected_data = orig_data + 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_add(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 + ancill_var
             expected_data = 10 + orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_subtract(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var - 10
             expected_data = orig_data - 10
             self._check(result, expected_data, data_lazyness)
 
     def test_subtract_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var -= 10
             expected_data = orig_data - 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_subtract(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 - ancill_var
             expected_data = 10 - orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_multiply(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var * 10
             expected_data = orig_data * 10
             self._check(result, expected_data, data_lazyness)
 
     def test_multiply_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var *= 10
             expected_data = orig_data * 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_multiply(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 * ancill_var
             expected_data = 10 * orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_divide(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var / 10
             expected_data = orig_data / 10
             self._check(result, expected_data, data_lazyness)
 
     def test_divide_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var /= 10
             expected_data = orig_data / 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_divide(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 / ancill_var
             expected_data = 10 / orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_negative(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = -ancill_var
             expected_data = -orig_data
             self._check(result, expected_data, data_lazyness)

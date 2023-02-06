@@ -2688,7 +2688,6 @@ class Cube(CFVariableMixin):
             coord_to_extract in self.aux_coords
             and len(coord_to_extract.points) == 1
         ):
-
             # Default to returning None
             result = None
 

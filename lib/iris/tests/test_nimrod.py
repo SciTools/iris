@@ -80,7 +80,8 @@ class TestLoad(tests.IrisTest):
     @tests.skip_data
     def test_load_kwarg(self):
         """Tests that the handle_metadata_errors kwarg is effective by setting it to
-        False with a file with known incomplete meta-data (missing ellipsoid)."""
+        False with a file with known incomplete meta-data (missing ellipsoid).
+        """
         datafile = "u1096_ng_ek00_pressure_2km"
         with self.assertRaisesRegex(
             TranslationError,
