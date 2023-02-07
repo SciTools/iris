@@ -268,7 +268,7 @@ class RectilinearInterpolator:
         """
         from iris.analysis.cartography import wrap_lons
 
-        for (circular, modulus, index, dim, offset) in self._circulars:
+        for circular, modulus, index, dim, offset in self._circulars:
             if modulus:
                 # Map all the requested values into the range of the source
                 # data (centred over the centre of the source data to allow

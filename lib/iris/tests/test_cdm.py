@@ -349,7 +349,6 @@ class TestCubeStringRepresentations(IrisDotTest):
         )
 
     def test_cube_summary_cell_methods(self):
-
         cube = self.cube_2d.copy()
 
         # Create a list of values used to create cell methods

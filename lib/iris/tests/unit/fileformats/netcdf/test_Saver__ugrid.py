@@ -1082,7 +1082,6 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             ("dim invalid-name &%!", "dim_invalid_name____"),
         ]
         for given_name, expected_name in dim_names_tests:
-
             mesh = make_mesh(mesh_kwargs={"face_dimension": given_name})
 
             filepath = self.check_save_mesh(mesh)

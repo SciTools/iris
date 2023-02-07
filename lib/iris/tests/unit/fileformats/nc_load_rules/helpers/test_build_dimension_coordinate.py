@@ -229,7 +229,9 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         warning_patch = mock.patch("warnings.warn")
 
         # Asserts must lie within context manager because of deferred loading.
-        with warning_patch, self.deferred_load_patch, self.get_cf_bounds_var_patch:
+        with (
+            warning_patch
+        ), self.deferred_load_patch, self.get_cf_bounds_var_patch:
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.

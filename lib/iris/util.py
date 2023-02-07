@@ -735,7 +735,6 @@ def _build_full_slice_given_keys(keys, ndim):
 
     for i, key in enumerate(keys):
         if key is Ellipsis:
-
             # replace any subsequent Ellipsis objects in keys with
             # slice(None, None) as per Numpy
             keys = keys[:i] + tuple(

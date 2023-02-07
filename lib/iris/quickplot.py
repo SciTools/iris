@@ -45,7 +45,6 @@ def _title(cube_or_coord, with_units):
             or units.is_no_unit()
             or units == cf_units.Unit("1")
         ):
-
             if _use_symbol(units):
                 units = units.symbol
             elif units.is_time_reference():
