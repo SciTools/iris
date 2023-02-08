@@ -478,6 +478,14 @@ def use_plugin(plugin_name):
     """
     Convenience function to import a plugin
 
+    For example::
+
+        use_plugin("my_plugin")
+
+    is equivalent to::
+
+        import iris.plugins.my_plugin
+
     This is useful for plugins that are not used directly, but instead do all
     their setup on import.  In this case, style checkers would not know the
     significance of the import statement and warn that it is an unused import.
