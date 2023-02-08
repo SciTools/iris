@@ -130,6 +130,7 @@ __all__ = [
     "sample_data_path",
     "save",
     "site_configuration",
+    "use_plugin",
 ]
 
 
