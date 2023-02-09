@@ -33,7 +33,7 @@ straightforward: it simply needs to appear as a folder within ``iris/plugins``,
 then can be distributed in the same way as any other package.  An example
 repository layout:
 
-.. code-block:: plain
+.. code-block:: text
 
     + lib
       + iris
