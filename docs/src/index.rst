@@ -137,6 +137,15 @@ The legacy support resources:
 
 
 .. toctree::
+   :caption: Community
+   :maxdepth: 1
+   :name: community_index
+   :hidden:
+
+   Community <community/index>
+
+
+.. toctree::
    :caption: Iris API
    :maxdepth: 1
    :hidden:

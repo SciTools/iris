@@ -16,7 +16,7 @@ This document explains the changes made to Iris for this release
 
    The highlights for this major/minor release of Iris include:
 
-   * N/A
+   * We're so proud to fully support `@ed-hawkins`_ and `#ShowYourStripes`_ ❤️
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -26,6 +26,7 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_ for making his first contribution to Iris! 🎉
 
 
 ✨ Features
@@ -72,6 +73,8 @@ This document explains the changes made to Iris for this release
    the light version (not dark) while we make the docs dark mode friendly
    (:pull:`5129`)
 
+#. `@jonseddon`_ updated the citation to a more recent version of Iris. (:pull:`5116`)
+
 #. `@rcomer`_ linked the :obj:`~iris.analysis.PERCENTILE` aggregator from the
    :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
    data. (:pull:`5128`)
@@ -79,6 +82,20 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ updated the WSL link to Microsoft's latest documentation,
    and removed an ECMWF link in the ``v1.0`` What's New that was failing the
    linkcheck CI. (:pull:`5109`)
+
+#. `@trexfeathers`_ added a new top-level :doc:`/community/index` section,
+   as a one-stop place to find out about getting involved, and how we relate
+   to other projects. (:pull:`5025`)
+
+#. The **Iris community**, with help from the **Xarray community**, produced
+   the :doc:`/community/iris_xarray` page, highlighting the similarities and
+   differences between the two packages. (:pull:`5025`)
+
+#. `@bjlittle`_ added a new section to the `README.md`_ to show our support
+   for the outstanding work of `@ed-hawkins`_ et al for `#ShowYourStripes`_.
+   (:pull:`5141`)
+
+#. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
 
 💼 Internal
 ===========
@@ -95,8 +112,10 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@fnattino: https://github.com/fnattino
-
+.. _@ed-hawkins: https://github.com/ed-hawkins
 
 .. comment
     Whatsnew resources in alphabetical order:
 
+.. _#ShowYourStripes: https://showyourstripes.info/s/globe/
+.. _README.md: https://github.com/SciTools/iris#-----

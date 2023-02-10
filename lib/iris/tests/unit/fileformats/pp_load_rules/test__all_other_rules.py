@@ -211,7 +211,6 @@ class TestCrossSectionalTime(TestField):
 
 
 class TestLBTIMx2x_ZeroYears(TestField):
-
     _spec = [
         "lbtim",
         "lbcode",

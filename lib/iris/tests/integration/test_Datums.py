@@ -23,7 +23,6 @@ class TestDatumTransformation(tests.IrisTest):
         self.start_crs = ccrs.OSGB(False)
 
     def test_transform_points_datum(self):
-
         # Iris version
         wgs84 = GeogCS.from_datum("WGS84")
         iris_cs = LambertConformal(

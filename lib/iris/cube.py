@@ -884,7 +884,8 @@ class Cube(CFVariableMixin):
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
-            ``data`` can be a dask array, a NumPy array, a NumPy array
+            ``data`` can be a :class:`dask.array.Array`, a
+            :class:`numpy.ndarray`, a NumPy array
             subclass (such as :class:`numpy.ma.MaskedArray`), or
             array_like (as described in :func:`numpy.asarray`).
 
@@ -2687,7 +2688,6 @@ class Cube(CFVariableMixin):
             coord_to_extract in self.aux_coords
             and len(coord_to_extract.points) == 1
         ):
-
             # Default to returning None
             result = None
 

@@ -15,11 +15,12 @@ For example::
 
  @manual{Iris,
  author = {{Met Office}},
- title = {Iris: A Python package for analysing and visualising meteorological and oceanographic data sets},
- edition = {v1.2},
- year = {2010 - 2013},
+ title = {Iris: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data },
+ edition = {v3.4},
+ year = {2010 - 2022},
  address = {Exeter, Devon },
- url = {http://scitools.org.uk/}
+ url = {http://scitools.org.uk/},
+ doi = {10.5281/zenodo.7386117}
  }
 
 
@@ -33,7 +34,7 @@ Suggested format::
 
 For example::
 
- Iris. v1.2. 28-Feb-2013. Met Office. UK. https://github.com/SciTools/iris/archive/v1.2.0.tar.gz 01-03-2013
+ Iris. v3.4. 1-Dec-2022. Met Office. UK. https://doi.org/10.5281/zenodo.7386117 22-12-2022
 
 
 ********************
@@ -46,7 +47,7 @@ Suggested format::
 
 For example::
 
- Iris. Met Office. git@github.com:SciTools/iris.git 06-03-2013
+ Iris. Met Office. git@github.com:SciTools/iris.git 22-12-2022
 
 .. _How to cite and describe software: https://software.ac.uk/how-cite-software
 

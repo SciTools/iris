@@ -86,7 +86,6 @@ class TestPPStash(tests.IrisTest):
         )
 
     def test_illegal_stash_str_range(self):
-
         self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), "m??s02i003")
         self.assertNotEqual(iris.fileformats.pp.STASH(0, 2, 3), "m01s02i003")
 
@@ -124,7 +123,7 @@ class TestPPStash(tests.IrisTest):
             ("m01s02003", (1, 2, 3)),
         )
 
-        for (test_value, reference) in test_values:
+        for test_value, reference in test_values:
             msg = "Expected STASH code .* {!r}".format(test_value)
             with self.assertRaisesRegex(ValueError, msg):
                 test_value == iris.fileformats.pp.STASH(*reference)
@@ -137,7 +136,7 @@ class TestPPStash(tests.IrisTest):
             (["m01s02i003"], "m01s02i003"),
         )
 
-        for (test_value, reference) in test_values:
+        for test_value, reference in test_values:
             msg = "Expected STASH code .* {!r}".format(test_value)
             with self.assertRaisesRegex(TypeError, msg):
                 iris.fileformats.pp.STASH.from_msi(test_value) == reference

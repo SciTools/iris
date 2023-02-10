@@ -281,9 +281,7 @@ class TestCFReader(tests.IrisTest):
         didn't exist because opening the dataset had failed.
         """
         with self.temp_filename(suffix=".nc") as fn:
-
             with open(fn, "wb+") as fh:
-
                 fh.write(
                     b"\x89HDF\r\n\x1a\nBroken file with correct signature"
                 )

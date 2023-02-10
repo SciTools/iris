@@ -44,7 +44,6 @@ DUMMY_HEADER = [
 
 
 class DummyPPField(PPField):
-
     HEADER_DEFN = DUMMY_HEADER
     HEADER_DICT = dict(DUMMY_HEADER)
 

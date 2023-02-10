@@ -2846,7 +2846,6 @@ class DimCoord(Coord):
             n_bounds = bounds.shape[-1]
             n_points = bounds.shape[0]
             if n_points > 1:
-
                 directions = set()
                 for b_index in range(n_bounds):
                     monotonic, direction = iris.util.monotonic(

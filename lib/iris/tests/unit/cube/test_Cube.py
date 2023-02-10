@@ -1962,6 +1962,7 @@ class Test_coords__mesh_coords(tests.IrisTest):
         a different order.
 
         """
+
         # Compare (and thus sort) by their *common* metadata.
         def sortkey(item):
             return BaseMetadata.from_metadata(item.metadata)
