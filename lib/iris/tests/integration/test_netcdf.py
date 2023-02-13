@@ -903,6 +903,7 @@ class TestConstrainedLoad(tests.IrisTest):
         cubes = iris.load(self.filename)
         self.assertEqual(len(cubes), 3)
 
+
 class TestSkippedCoord:
     # If a coord/cell measure/etcetera cannot be added to the loaded Cube, a
     #  Warning is raised and the coord is skipped.
