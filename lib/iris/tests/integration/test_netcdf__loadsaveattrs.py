@@ -26,6 +26,7 @@ import pytest
 
 import iris
 import iris.coord_systems
+from iris.cube import Cube
 import iris.fileformats.netcdf
 
 # First define the known controlled attribute names defined by netCDf and CF conventions
@@ -116,9 +117,7 @@ class MixinAttrsTesting:
         ext_name = getattr(self, "testname_extension", "")
         if ext_name:
             basename = basename + "_" + ext_name
-        path_str = (
-            f"{self.tmpdir}/nc_attr__{self.attrname}__{testname}_{basename}.nc"
-        )
+        path_str = f"{self.tmpdir}/{self.__class__.__name__}__test_{testname}-{self.attrname}__{basename}.nc"
         return path_str
 
     @staticmethod
@@ -274,7 +273,7 @@ class TestRoundtrip(MixinAttrsTesting):
     # a name which is *not* recognised in the netCDF or CF conventions.
     #
 
-    def test_01_usertype_single_global(self):
+    def test_01_userstyle_single_global(self):
         self.create_roundtrip_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
             global_value_file1="single-value",
@@ -291,7 +290,7 @@ class TestRoundtrip(MixinAttrsTesting):
             },  # the variable has no such attribute
         )
 
-    def test_02_usertype_single_local(self):
+    def test_02_userstyle_single_local(self):
         # Default behaviour for a general local user-attribute.
         # It results in a "promoted" global attribute.
         self.create_roundtrip_testcase(
@@ -303,7 +302,7 @@ class TestRoundtrip(MixinAttrsTesting):
             # N.B. the output var has NO such attribute
         )
 
-    def test_03_usertype_multiple_different(self):
+    def test_03_userstyle_multiple_different(self):
         # Default behaviour for general user-attributes.
         # The global attribute is lost because there are local ones.
         vars1 = {"f1_v1": "f1v1", "f1_v2": "f2v2"}
@@ -327,7 +326,7 @@ class TestRoundtrip(MixinAttrsTesting):
             var_attr_vals=all_vars_and_attrs,
         )
 
-    def test_04_usertype_matching_promoted(self):
+    def test_04_userstyle_matching_promoted(self):
         # matching local user-attributes are "promoted" to a global one.
         self.create_roundtrip_testcase(
             attr_name="random",
@@ -339,7 +338,7 @@ class TestRoundtrip(MixinAttrsTesting):
             var_attr_vals={"v1": None, "v2": None},
         )
 
-    def test_05_usertype_matching_crossfile_promoted(self):
+    def test_05_userstyle_matching_crossfile_promoted(self):
         # matching user-attributes are promoted, even across input files.
         self.create_roundtrip_testcase(
             attr_name="random",
@@ -352,7 +351,7 @@ class TestRoundtrip(MixinAttrsTesting):
             var_attr_vals={x: None for x in ("v1", "v2", "f2_v1", "f2_v2")},
         )
 
-    def test_06_usertype_nonmatching_remainlocal(self):
+    def test_06_userstyle_nonmatching_remainlocal(self):
         # Non-matching user attributes remain 'local' to the individual variables.
         self.create_roundtrip_testcase(
             attr_name="random",
@@ -627,7 +626,7 @@ class TestLoad(MixinAttrsTesting):
     # a name which is *not* recognised in the netCDF or CF conventions.
     #
 
-    def test_01_usertype_single_global(self):
+    def test_01_userstyle_single_global(self):
         cube1, cube2 = self.create_load_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
             global_value_file1="single-value",
@@ -641,7 +640,7 @@ class TestLoad(MixinAttrsTesting):
         assert cube1.attributes == {"myname": "single-value"}
         assert cube2.attributes == {"myname": "single-value"}
 
-    def test_02_usertype_single_local(self):
+    def test_02_userstyle_single_local(self):
         # Default behaviour for a general local user-attribute.
         # It is attached to only the specific cube.
         cube1, cube2 = self.create_load_testcase(
@@ -651,7 +650,7 @@ class TestLoad(MixinAttrsTesting):
         assert cube1.attributes == {"myname": "single-value"}
         assert cube2.attributes == {}
 
-    def test_03_usertype_multiple_different(self):
+    def test_03_userstyle_multiple_different(self):
         # Default behaviour for differing local user-attributes.
         # The global attribute is simply lost, because there are local ones.
         vars1 = {"f1_v1": "f1v1", "f1_v2": "f1v2"}
@@ -668,7 +667,7 @@ class TestLoad(MixinAttrsTesting):
         assert cube3.attributes == {"random": "x1"}
         assert cube4.attributes == {"random": "x2"}
 
-    def test_04_usertype_multiple_same(self):
+    def test_04_userstyle_multiple_same(self):
         # Nothing special to note in tis case
         # TODO: ??remove??
         cube1, cube2 = self.create_load_testcase(
@@ -818,3 +817,148 @@ class TestLoad(MixinAttrsTesting):
                 expected_result = {}
 
         assert cube.attributes == expected_result
+
+
+class TestSave(MixinAttrsTesting):
+    """
+    Test saving from cube attributes dictionary (various categories) into files.
+
+    """
+
+    def create_save_testcase(self, attr_name, value1, value2=None):
+        """
+        Test attribute saving for cube(s) with given value(s).
+
+        Create cubes(s) and save to temporary file, then return the global and all
+        variable-local attributes of that name (or None-s) from the file.
+        """
+        self.attrname = (
+            attr_name  # Required for common testfile-naming function.
+        )
+        if value2 is None:
+            n_cubes = 1
+            values = [value1]
+        else:
+            n_cubes = 2
+            values = [value1, value2]
+        cube_names = [f"cube_{i_cube}" for i_cube in range(n_cubes)]
+        cubes = [
+            Cube([0], long_name=cube_name, attributes={attr_name: attr_value})
+            for cube_name, attr_value in zip(cube_names, values)
+        ]
+        self.result_filepath = self._testfile_path("result")
+        iris.save(cubes, self.result_filepath)
+        # Get the global+local attribute values directly from the file with netCDF4
+        if attr_name == "STASH":
+            # A special case : the stored name is different
+            attr_name = "um_stash_source"
+        try:
+            ds = netCDF4.Dataset(self.result_filepath)
+            global_result = (
+                ds.getncattr(attr_name) if attr_name in ds.ncattrs() else None
+            )
+            local_results = [
+                (
+                    var.getncattr(attr_name)
+                    if attr_name in var.ncattrs()
+                    else None
+                )
+                for var in ds.variables.values()
+            ]
+        finally:
+            ds.close()
+        return [global_result] + local_results
+
+    def test_01_userstyle__single(self):
+        results = self.create_save_testcase("random", "value-x")
+        # It is stored as a *global* by default.
+        assert results == ["value-x", None]
+
+    def test_02_userstyle__multiple_same(self):
+        results = self.create_save_testcase("random", "value-x", "value-x")
+        # As above.
+        assert results == ["value-x", None, None]
+
+    def test_03_userstyle__multiple_different(self):
+        results = self.create_save_testcase("random", "value-A", "value-B")
+        # Clashing values are stored as locals on the individual variables.
+        assert results == [None, "value-A", "value-B"]
+
+    def test_04_Conventions__single(self):
+        results = self.create_save_testcase("Conventions", "x")
+        # Always discarded + replaced by a single global setting.
+        assert results == ["CF-1.7", None]
+
+    def test_xx_Conventions__multiple_same(self):
+        results = self.create_save_testcase(
+            "Conventions", "same-value", "same-value"
+        )
+        # Always discarded + replaced by a single global setting.
+        assert results == ["CF-1.7", None, None]
+
+    def test_xx_Conventions__multiple_different(self):
+        results = self.create_save_testcase(
+            "Conventions", "value-A", "value-B"
+        )
+        # Always discarded + replaced by a single global setting.
+        assert results == ["CF-1.7", None, None]
+
+    def test_xx_globalstyle__single(self, global_attr):
+        results = self.create_save_testcase(global_attr, "value")
+        # Defaults to global
+        assert results == ["value", None]
+
+    def test_xx_globalstyle__multiple_same(self, global_attr):
+        results = self.create_save_testcase(
+            global_attr, "value-same", "value-same"
+        )
+        assert results == ["value-same", None, None]
+
+    def test_xx_globalstyle__multiple_different(self, global_attr):
+        msg_regexp = (
+            f"'{global_attr}' is being added as CF data variable attribute,"
+            f".* should only be a CF global attribute."
+        )
+        with pytest.warns(UserWarning, match=msg_regexp):
+            results = self.create_save_testcase(
+                global_attr, "value-A", "value-B"
+            )
+        # *Only* stored as locals when there are differing values.
+        assert results == [None, "value-A", "value-B"]
+
+    def test_xx_localstyle__single(self, local_attr):
+        results = self.create_save_testcase(local_attr, "value")
+        # Defaults to local
+        expected_results = [None, "value"]
+        if local_attr == "ukmo__process_flags":
+            # A particular, really weird case
+            expected_results = [None, "v a l u e"]
+        assert results == expected_results
+
+    def test_xx_localstyle__multiple_same(self, local_attr):
+        results = self.create_save_testcase(
+            local_attr, "value-same", "value-same"
+        )
+        # They remain separate + local
+        expected_results = [None, "value-same", "value-same"]
+        if local_attr == "ukmo__process_flags":
+            # A particular, really weird case
+            expected_results = [
+                None,
+                "v a l u e - s a m e",
+                "v a l u e - s a m e",
+            ]
+        assert results == expected_results
+
+    def test_xx_localstyle__multiple_different(self, local_attr):
+        results = self.create_save_testcase(local_attr, "value-A", "value-B")
+        # Different values are treated just the same as matching ones.
+        expected_results = [None, "value-A", "value-B"]
+        if local_attr == "ukmo__process_flags":
+            # A particular, really weird case
+            expected_results = [
+                None,
+                "v a l u e - A",
+                "v a l u e - B",
+            ]
+        assert results == expected_results
