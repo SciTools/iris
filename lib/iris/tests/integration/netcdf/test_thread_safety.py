@@ -11,7 +11,7 @@ These tests are intended to catch non-thread-safe behaviour by producing CI
 produce standard pytest failures, since the tools for 'correctly'
 testing non-thread-safe behaviour are not available at the Python layer.
 Thread safety problems can be either produce errors (like a normal test) OR
-segfaults (test doesn't complete, pytest-xdiff starts a new test runner, the
+segfaults (test doesn't complete, pytest-xdiff starts a new group worker, the
 end exit code is still non-0), and some problems do not occur in every test
 run.
 
