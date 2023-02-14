@@ -38,14 +38,14 @@ from iris.cube import Cube, CubeList
 @pytest.fixture
 def tiny_chunks():
     """Guarantee that Dask will use >1 thread by guaranteeing >1 chunk."""
-    dask.config.set({"array.chunk-size": "1KiB"})
 
     def _check_tiny_loaded_chunks(cube: Cube):
         assert cube.has_lazy_data()
         cube_lazy_data = cube.core_data()
         assert np.product(cube_lazy_data.chunksize) < cube_lazy_data.size
 
-    yield _check_tiny_loaded_chunks
+    with dask.config.set({"array.chunk-size": "1KiB"}):
+        yield _check_tiny_loaded_chunks
 
 
 @pytest.fixture
