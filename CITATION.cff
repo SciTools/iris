@@ -11,3 +11,4 @@ licence: LGPL-3.0
 doi: 10.5281/zenodo.7386117
 url: "http://scitools.org.uk/"
 repository-code: "https://github.com/SciTools/iris"
+type: software
