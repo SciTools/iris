@@ -64,7 +64,7 @@ def get_cubes_from_netcdf():
     yield smaller
 
 
-def test_load(tiny_chunks, get_cubes_from_netcdf):
+def test_realise_data(tiny_chunks, get_cubes_from_netcdf):
     cube = get_cubes_from_netcdf[0]
     tiny_chunks(cube)
     _ = cube.data  # Any problems are expected here.
