@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If Iris played an important part in your research then please add us to your reference list by using one of the references below."
+authors:
+    - name: "Met Office"
+    address: "Exeter, Devon"
+title: "Iris"
+abstract: "A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data"
+version: 3.4
+date-released: 2022-12-01
+licence: LGPL-3.0
+doi: 10.5281/zenodo.7386117
+url: "http://scitools.org.uk/"
+repository-code: "https://github.com/SciTools/iris"
