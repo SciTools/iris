@@ -51,6 +51,7 @@
 .. _@ajdawson: https://github.com/ajdawson
 .. _@bjlittle: https://github.com/bjlittle
 .. _@bouweandela: https://github.com/bouweandela
+.. _@bsherratt: https://github.com/bsherratt
 .. _@corinnebosley: https://github.com/corinnebosley
 .. _@cpelley: https://github.com/cpelley
 .. _@djkirkham: https://github.com/djkirkham

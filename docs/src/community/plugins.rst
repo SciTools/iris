@@ -1,5 +1,7 @@
 .. _namespace package: https://packaging.python.org/en/latest/guides/packaging-namespace-packages/
 
+.. _community_plugins:
+
 Plugins
 =======
 
