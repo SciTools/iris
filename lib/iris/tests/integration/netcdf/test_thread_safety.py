@@ -19,11 +19,6 @@ Token assertions are included after the line that is expected to reveal
 a thread safety problem, as this seems to be good testing practice.
 
 """
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from pathlib import Path
 
 import dask
@@ -33,6 +28,7 @@ import pytest
 
 import iris
 from iris.cube import Cube, CubeList
+from iris.tests import get_data_path
 
 
 @pytest.fixture
@@ -62,7 +58,7 @@ def save_common(tmp_path):
 
 @pytest.fixture
 def get_cubes_from_netcdf():
-    load_dir_path = Path(tests.get_data_path(["NetCDF", "global", "xyt"]))
+    load_dir_path = Path(get_data_path(["NetCDF", "global", "xyt"]))
     loaded = iris.load(load_dir_path.glob("*"))
     smaller = CubeList([c[0, 0] for c in loaded])
     yield smaller
