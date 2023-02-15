@@ -71,6 +71,14 @@ def test_realise_data(tiny_chunks, get_cubes_from_netcdf):
     assert not cube.has_lazy_data()
 
 
+def test_realise_data_multisource(get_cubes_from_netcdf):
+    """Load from multiple sources to force Dask to use multiple threads."""
+    cubes = get_cubes_from_netcdf
+    final_cube = sum(cubes)
+    _ = final_cube.data  # Any problems are expected here.
+    assert not final_cube.has_lazy_data()
+
+
 def test_save(tiny_chunks, save_common):
     cube = Cube(da.ones(1000))
     save_common(cube)  # Any problems are expected here.
@@ -82,20 +90,19 @@ def test_stream(tiny_chunks, get_cubes_from_netcdf, save_common):
     save_common(cube)  # Any problems are expected here.
 
 
-def test_stream_2_sources(get_cubes_from_netcdf, save_common):
-    """Load from 2 sources to force Dask to use multiple threads."""
+def test_stream_multisource(get_cubes_from_netcdf, save_common):
+    """Load from multiple sources to force Dask to use multiple threads."""
     cubes = get_cubes_from_netcdf
-    final_cube = cubes[0] + cubes[1]
+    final_cube = sum(cubes)
     save_common(final_cube)  # Any problems are expected here.
 
 
 def test_comparison(get_cubes_from_netcdf):
     """
-    Comparing two loaded files forces co-realisation.
+    Comparing multiple loaded files forces co-realisation.
 
     See :func:`iris._lazy_data._co_realise_lazy_arrays` .
     """
     cubes = get_cubes_from_netcdf
-    _ = cubes[0] == cubes[1]  # Any problems are expected here.
-    for cube in cubes:
-        assert cube.has_lazy_data()
+    _ = cubes[:-1] == cubes[1:]  # Any problems are expected here.
+    assert all([c.has_lazy_data() for c in cubes])
