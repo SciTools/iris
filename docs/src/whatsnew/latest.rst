@@ -38,7 +38,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@trexfeathers`_ and `@pp-mo`_ made Iris' use of the `netCDF4`_ library
+   thread-safe. (:pull:`5095`)
 
 
 💣 Incompatible Changes

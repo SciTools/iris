@@ -1,3 +1,5 @@
+.. include:: ../common_links.inc
+
 .. _glossary:
 
 Glossary
@@ -125,7 +127,7 @@ Glossary
         of formats.
 
         | **Related:** :term:`CartoPy` **|** :term:`NumPy`
-        | **More information:** `Matplotlib <https://scitools.org.uk/cartopy/docs/latest/>`_
+        | **More information:**  `matplotlib`_
         |
 
    Metadata
@@ -143,9 +145,11 @@ Glossary
         When Iris loads this format, it also especially recognises and interprets data
         encoded according to the :term:`CF Conventions`.
 
+        __ `NetCDF4`_
+
         | **Related:** :term:`Fields File (FF) Format`
          **|** :term:`GRIB Format` **|** :term:`Post Processing (PP) Format`
-        | **More information:** `NetCDF-4 Python Git <https://github.com/Unidata/netcdf4-python>`_
+        | **More information:** `NetCDF-4 Python Git`__
         |
 
    NumPy
