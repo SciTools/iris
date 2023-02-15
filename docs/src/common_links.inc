@@ -44,7 +44,7 @@
 
 
 .. comment
-    Core developers (@github names) in alphabetical order:
+    Core developers and prolific contributors (@github names) in alphabetical order:
 
 .. _@abooton: https://github.com/abooton
 .. _@alastair-gemmell: https://github.com/alastair-gemmell
