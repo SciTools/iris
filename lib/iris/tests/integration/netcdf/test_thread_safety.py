@@ -59,8 +59,8 @@ def save_common(tmp_path):
 @pytest.fixture
 def get_cubes_from_netcdf():
     load_dir_path = Path(get_data_path(["NetCDF", "global", "xyt"]))
-    loaded = iris.load(load_dir_path.glob("*"))
-    smaller = CubeList([c[0, 0] for c in loaded])
+    loaded = iris.load(load_dir_path.glob("*"), "tcco2")
+    smaller = CubeList([c[0] for c in loaded])
     yield smaller
 
 
