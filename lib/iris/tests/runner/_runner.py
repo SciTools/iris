@@ -36,17 +36,12 @@ class TestRunner:
         ("gallery-tests", "e", "Run the gallery code tests."),
         ("default-tests", "d", "Run the default tests."),
         (
-            "coding-tests",
-            "c",
-            "Run the coding standards tests. (These are a "
-            "subset of the default tests.)",
-        ),
-        (
             "num-processors=",
             "p",
             "The number of processors used for running " "the tests.",
         ),
         ("create-missing", "m", "Create missing test result files."),
+        ("coverage", "c", "Enable coverage testing"),
     ]
     boolean_options = [
         "no-data",
@@ -54,8 +49,8 @@ class TestRunner:
         "stop",
         "gallery-tests",
         "default-tests",
-        "coding-tests",
         "create-missing",
+        "coverage",
     ]
 
     def initialize_options(self):
@@ -64,9 +59,9 @@ class TestRunner:
         self.system_tests = False
         self.gallery_tests = False
         self.default_tests = False
-        self.coding_tests = False
         self.num_processors = None
         self.create_missing = False
+        self.coverage = False
 
     def finalize_options(self):
         # These environment variables will be propagated to all the
@@ -84,8 +79,6 @@ class TestRunner:
             tests.append("system")
         if self.default_tests:
             tests.append("default")
-        if self.coding_tests:
-            tests.append("coding")
         if self.gallery_tests:
             tests.append("gallery")
         if not tests:
@@ -109,8 +102,6 @@ class TestRunner:
             tests.append("lib/iris/tests/system_test.py")
         if self.default_tests:
             tests.append("lib/iris/tests")
-        if self.coding_tests:
-            tests.append("lib/iris/tests/test_coding_standards.py")
         if self.gallery_tests:
             import iris.config
 
@@ -135,6 +126,9 @@ class TestRunner:
 
         if self.stop:
             args.append("-x")
+
+        if self.coverage:
+            args.extend(["--cov=lib/iris", "--cov-report=xml"])
 
         result = True
         for test in tests:

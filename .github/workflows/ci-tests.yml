@@ -36,8 +36,12 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.10"]
-        session: ["tests", "doctest", "gallery", "linkcheck"]
+        session: ["doctest", "gallery", "linkcheck"]
         include:
+          - os: "ubuntu-latest"
+            python-version: "3.10"
+            session: "tests"
+            coverage: True
           - os: "ubuntu-latest"
             python-version: "3.9"
             session: "tests"
@@ -132,5 +136,10 @@ jobs:
       - name: "iris ${{ matrix.session }}"
         env:
           PY_VER: ${{ matrix.python-version }}
+          COVERAGE: ${{ matrix.coverage }}
         run: |
           nox --session ${{ matrix.session }} -- --verbose
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        if: ${{ matrix.coverage }}
