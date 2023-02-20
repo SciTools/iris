@@ -80,7 +80,8 @@ def test_realise_data_multisource(get_cubes_from_netcdf):
 
 
 def test_save(tiny_chunks, save_common):
-    cube = Cube(da.ones(1000))
+    cube = Cube(da.ones(10000))
+    tiny_chunks(cube)
     save_common(cube)  # Any problems are expected here.
 
 
