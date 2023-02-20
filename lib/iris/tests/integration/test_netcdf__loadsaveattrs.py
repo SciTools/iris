@@ -221,7 +221,7 @@ class TestRoundtrip(MixinAttrsTesting):
         files and run a save-load roundtrip to produce the output file.
 
         The name of the attribute, and the input and output temporary filepaths are
-        stored on the instance, where "self.check_expected_results()" can get them.
+        stored on the instance, where "self.check_roundtrip_results()" can get them.
 
         """
         self.attrname = attr_name
@@ -594,7 +594,7 @@ class TestLoad(MixinAttrsTesting):
         files and run a save-load roundtrip to produce the output file.
 
         The name of the tested attribute and all the temporary filepaths are stored
-        on the instance, from where "self.check_expected_results()" can get them.
+        on the instance, from where "self.check_load_results()" can get them.
 
         """
         self.attrname = attr_name
