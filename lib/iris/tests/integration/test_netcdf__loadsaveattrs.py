@@ -196,6 +196,13 @@ class TestRoundtrip(MixinAttrsTesting):
     This behaviour should be (almost) unchanged by the adoption of
     split-attribute handling.
 
+    NOTE: the tested combinations in the 'TestLoad' test all match tests here, but not
+    *all* of the tests here are useful there.  To avoid confusion (!) the ones which are
+    paralleled in TestLoad there have the identical test-names.  However, as the tests
+    are all numbered that means there are missing numbers there.
+    The tests are numbered only so it is easier to review the discovered test list
+    (which is sorted).
+
     """
 
     def _roundtrip_load_and_save(
