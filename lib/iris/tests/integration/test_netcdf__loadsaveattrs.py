@@ -382,7 +382,7 @@ class TestRoundtrip(MixinAttrsTesting):
             vars_values_file1="user_set",
         )
         self.check_roundtrip_results(
-            global_attr_value="CF-1.7",  # this is standard output from
+            global_attr_value="CF-1.7",  # standard content from Iris save
             var_attr_vals=None,
         )
 
@@ -394,7 +394,7 @@ class TestRoundtrip(MixinAttrsTesting):
             vars_values_file1="local-setting",
         )
         self.check_roundtrip_results(
-            global_attr_value="CF-1.7",  # this is standard output from
+            global_attr_value="CF-1.7",  # standard content from Iris save
             var_attr_vals=None,
         )
 
