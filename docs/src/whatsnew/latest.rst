@@ -32,7 +32,9 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@bsherratt`_ added support for plugins - see the corresponding
+   :ref:`documentation page<community_plugins>` for further information.
+   (:pull:`5144`)
 
 
 🐛 Bugs Fixed
