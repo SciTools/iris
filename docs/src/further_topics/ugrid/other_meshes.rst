@@ -221,5 +221,140 @@ as the **nodes** when creating the Iris
                     <AuxCoord: longitude / (degrees)  [...]  shape(666328,)>
                     <AuxCoord: latitude / (degrees)  [...]  shape(666328,)>
 
+
+.. _ORCA_example:
+
+`NEMO`_ data on ORCA tripolar grid
+----------------------------------
+..  figure:: images/orca_grid.png
+    :width: 300
+    :alt: Plot of ORCA-gridded data from NEMO.
+
+NEMO can use various grids, but is frequently used with ORCA type grids.
+ORCA grids store global data in 2-dimensional ny * nx arrays.  All cells are
+four-sided.  The grids are based on tri-polar layouts, but X and Y spacings are
+irregular and not given by any defined functional forms.
+
+* arrays (ny, nx) of face-located data variables
+* arrays (ny, nx) of X+Y face centre coordinates
+* arrays (ny, nx, 4) of X+Y face corner coordinates
+  (all faces are quadrilaterals)
+
+For simplicity, we treat each face corner as an independent node, and use a face-node
+connectivity which simply lists the nodes in sequence,
+i.e. [[0, 1, 2, 3], [4, 5, 6, 7], ...].
+
+.. Note::
+    This is the simplest solution, but produces approx 4x more nodes than
+    necessary, since the coordinate bounds contain many duplicate locations.
+    Removing the duplicates is quite easy, but often not necessary.
+
+To make an unstructured cube, the data must be 'flattened' to convert the given X and Y
+dimensions into a single mesh dimension.  Since Iris cubes don't support a "reshape" or
+"flatten" operations, we create a new cube from the flattened data.
+
+.. dropdown:: :opticon:`code`
+
+    .. code-block:: python
+
+        >>> import numpy as np
+        >>> import iris
+        >>> from iris.coords import AuxCoord, CellMeasure
+        >>> from iris.cube import Cube
+        >>> from iris.experimental.ugrid.mesh import Mesh, Connectivity
+
+
+        >>> filepath = iris.sample_data_path('orca2_votemper.nc')
+        >>> cube = iris.load_cube(filepath)
+        >>> print(cube)
+        sea_water_potential_temperature / (degC) (-- : 148; -- : 180)
+            Auxiliary coordinates:
+                latitude                             x         x
+                longitude                            x         x
+            Scalar coordinates:
+                depth                            4.999938 m, bound=(0.0, 10.0) m
+                time                             0001-01-01 12:00:00
+            Cell methods:
+                mean                             time
+            Attributes:
+                Conventions                      'CF-1.5'
+
+
+        >>> co_x =  cube.coord("longitude")
+        >>> co_y = cube.coord("latitude")
+        >>> ny, nx = co_x.shape
+        >>> n_faces = ny * nx
+
+        >>> # Create face coords from flattened face-points
+        >>> face_x_co = AuxCoord(co_x.points.flatten())
+        >>> face_y_co = AuxCoord(co_y.points.flatten())
+        >>> assert face_x_co.shape == (n_faces,)
+        >>> face_x_co.metadata = co_x.metadata
+        >>> face_y_co.metadata = co_y.metadata
+
+        >>> # Create node coordinates from bound points.
+        >>> n_nodes = n_faces * 4
+        >>> node_x_co = AuxCoord(co_x.bounds.flatten())
+        >>> node_y_co = AuxCoord(co_y.bounds.flatten())
+        >>> assert node_x_co.shape == (n_nodes,)
+        >>> node_x_co.metadata = co_x.metadata
+        >>> node_y_co.metadata = co_y.metadata
+
+        >>> # Create a face-node Connectivity matching the order of nodes in the bounds array
+        >>> face_node_inds = np.arange(n_nodes).reshape((n_faces, 4))
+        >>> face_nodes_conn = Connectivity(
+        ...     indices=face_node_inds,
+        ...     cf_role='face_node_connectivity',
+        ...     long_name='face_inds', units='1',
+        ... )
+
+        >>> # Create a mesh object.
+        >>> mesh = Mesh(
+        ...     topology_dimension=2,
+        ...     node_coords_and_axes=[(node_x_co, 'x'), (node_y_co, 'y')],
+        ...     connectivities=face_nodes_conn,
+        ...     face_coords_and_axes=[(face_x_co, 'x'), (face_y_co, 'y')]
+        ... )
+        >>> print(mesh)
+        Mesh : 'unknown'
+            topology_dimension: 2
+            node
+                node_dimension: 'Mesh2d_node'
+                node coordinates
+                    <AuxCoord: longitude / (degrees)  [...]  shape(106560,)>
+                    <AuxCoord: latitude / (degrees)  [...]  shape(106560,)>
+            face
+                face_dimension: 'Mesh2d_face'
+                face_node_connectivity: <Connectivity: face_inds / (1)  [...]  shape(26640, 4)>
+                face coordinates
+                    <AuxCoord: longitude / (degrees)  [...]  shape(26640,)>
+                    <AuxCoord: latitude / (degrees)  [...]  shape(26640,)>
+
+
+        >>> # Create an unstructured version of the input with flattened data
+        >>> meshcube = Cube(cube.core_data().flatten())
+        >>> meshcube.metadata = cube.metadata
+
+        >>> # Attach the mesh by adding the mesh 'face' MeshCoords into the cube
+        >>> mesh_dim = meshcube.ndim - 1
+        >>> for co in mesh.to_MeshCoords('face'):
+        ...     meshcube.add_aux_coord(co, mesh_dim)
+        ...
+
+        >>> print(meshcube)
+        sea_water_potential_temperature / (degC) (-- : 26640)
+            Mesh coordinates:
+                latitude                             x
+                longitude                            x
+            Mesh:
+                name                             unknown
+                location                         face
+            Cell methods:
+                mean                             time
+            Attributes:
+                Conventions                      'CF-1.5'
+
+
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3
 .. _FESOM 1.4: https://fesom.de/models/fesom14/
+.. _NEMO: https://www.nemo-ocean.eu/

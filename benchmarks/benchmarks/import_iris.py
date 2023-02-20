@@ -5,10 +5,30 @@
 # licensing details.
 from importlib import import_module, reload
 
+################
+# Prepare info for reset_colormaps:
+
+# Import and capture colormaps.
+from matplotlib import colormaps  # isort:skip
+
+_COLORMAPS_ORIG = set(colormaps)
+
+# Import iris.palette, which modifies colormaps.
+import iris.palette
+
+# Derive which colormaps have been added by iris.palette.
+_COLORMAPS_MOD = set(colormaps)
+COLORMAPS_EXTRA = _COLORMAPS_MOD - _COLORMAPS_ORIG
+
+# Touch iris.palette to prevent linters complaining.
+_ = iris.palette
+
+################
+
 
 class Iris:
     @staticmethod
-    def _import(module_name):
+    def _import(module_name, reset_colormaps=False):
         """
         Have experimented with adding sleep() commands into the imported
         modules. The results reveal:
@@ -25,6 +45,13 @@ class Iris:
         and the repetitions are therefore no faster than the first run.
         """
         mod = import_module(module_name)
+
+        if reset_colormaps:
+            # Needed because reload() will attempt to register new colormaps a
+            #  second time, which errors by default.
+            for cm_name in COLORMAPS_EXTRA:
+                colormaps.unregister(cm_name)
+
         reload(mod)
 
     def time_iris(self):
@@ -205,7 +232,7 @@ class Iris:
         self._import("iris.iterate")
 
     def time_palette(self):
-        self._import("iris.palette")
+        self._import("iris.palette", reset_colormaps=True)
 
     def time_plot(self):
         self._import("iris.plot")

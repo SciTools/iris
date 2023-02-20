@@ -277,6 +277,11 @@ Post Release Steps
 #. On main, make a new ``latest.rst`` from ``latest.rst.template`` and update
    the include statement and the toctree in ``index.rst`` to point at the new
    ``latest.rst``.
+#. Consider updating ``docs/src/userguide/citation.rst`` on ``main`` to include 
+   the version number, date and `Zenodo DOI <https://doi.org/10.5281/zenodo.595182>`_ 
+   of the new release. Ideally this would be updated before the release, but 
+   the DOI for the new version is only available once the release has been 
+   created in GitHub.
 
 
 .. _SciTools/iris: https://github.com/SciTools/iris

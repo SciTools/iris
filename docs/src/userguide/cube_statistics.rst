@@ -4,6 +4,11 @@
 Cube Statistics
 ===============
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_zonal_means.py` (Collapsing)
+
 .. _cube-statistics-collapsing:
 
 Collapsing Entire Data Dimensions

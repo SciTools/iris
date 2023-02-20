@@ -68,7 +68,7 @@ class Test__optimised_chunks(tests.IrisTest):
             ((11, 2, 1011, 1022), (5, 2, 1011, 1022)),
         ]
         err_fmt = "Result of optimising chunks {} was {}, expected {}"
-        for (shape, expected) in given_shapes_and_resulting_chunks:
+        for shape, expected in given_shapes_and_resulting_chunks:
             chunks = _optimum_chunksize(
                 shape, shape, limit=self.FIXED_CHUNKSIZE_LIMIT
             )
@@ -86,7 +86,7 @@ class Test__optimised_chunks(tests.IrisTest):
             ((3, 300, 200), (117, 300, 1000), (39, 300, 1000)),
         ]
         err_fmt = "Result of optimising shape={};chunks={} was {}, expected {}"
-        for (shape, fullshape, expected) in given_shapes_and_resulting_chunks:
+        for shape, fullshape, expected in given_shapes_and_resulting_chunks:
             chunks = _optimum_chunksize(
                 chunks=shape, shape=fullshape, limit=self.FIXED_CHUNKSIZE_LIMIT
             )

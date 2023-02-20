@@ -53,6 +53,7 @@ class ConnectivityMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
+
         # Perform "strict" combination for "cf_role", "start_index", "location_axis".
         def func(field):
             left = getattr(self, field)
@@ -113,6 +114,7 @@ class ConnectivityMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
+
         # Perform "strict" difference for "cf_role", "start_index", "location_axis".
         def func(field):
             left = getattr(self, field)
@@ -233,6 +235,7 @@ class MeshMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
+
         # Perform "strict" difference for "topology_dimension",
         # "node_dimension", "edge_dimension" and "face_dimension".
         def func(field):
@@ -297,6 +300,7 @@ class MeshCoordMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
+
         # It is actually "strict" : return None except where members are equal.
         def func(field):
             left = getattr(self, field)
@@ -352,6 +356,7 @@ class MeshCoordMetadata(BaseMetadata):
             A list of different metadata member values.
 
         """
+
         # Perform "strict" difference for location / axis.
         def func(field):
             left = getattr(self, field)

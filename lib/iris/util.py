@@ -735,7 +735,6 @@ def _build_full_slice_given_keys(keys, ndim):
 
     for i, key in enumerate(keys):
         if key is Ellipsis:
-
             # replace any subsequent Ellipsis objects in keys with
             # slice(None, None) as per Numpy
             keys = keys[:i] + tuple(
@@ -1815,8 +1814,9 @@ def _mask_array(array, points_to_mask, in_place=False):
 
     If array is lazy then in_place is ignored: _math_op_common will use the
     returned value regardless of in_place, so we do not need to implement it
-    here.  If in_place is True then array must be a np.ma.MaskedArray or dask
-    array (must be a dask array if points_to_mask is lazy).
+    here.  If in_place is True then array must be a
+    :class:`numpy.ma.MaskedArray` or :class:`dask.array.Array`
+    (must be a dask array if points_to_mask is lazy).
 
     """
     # Decide which array library to use.
@@ -1978,7 +1978,7 @@ def is_masked(array):
 
     Parameters
     ----------
-    array : :class:`numpy.Array` or `dask.array.Array`
+    array : :class:`numpy.Array` or :class:`dask.array.Array`
             The array to be checked for masks.
 
     Returns

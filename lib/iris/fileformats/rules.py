@@ -394,7 +394,7 @@ def _load_pairs_from_fields_and_filenames(
             yield (cube, field)
 
     regrid_cache = {}
-    for (cube, factories, field) in results_needing_reference:
+    for cube, factories, field in results_needing_reference:
         _resolve_factory_references(
             cube, factories, concrete_reference_targets, regrid_cache
         )

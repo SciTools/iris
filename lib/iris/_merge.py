@@ -1418,6 +1418,7 @@ class ProtoCube:
             participates in a functional relationship.
 
         """
+
         # Heuristic reordering of coordinate defintion indexes into
         # preferred dimension order.
         def axis_and_name(name):

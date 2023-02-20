@@ -10,6 +10,10 @@ high quality, production ready 1D and 2D plots.
 The functionality of the Matplotlib :py:mod:`~matplotlib.pyplot` module has 
 been extended within Iris to facilitate easy visualisation of a cube's data.
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_zonal_means.py` (Plotting with multiple axes)
 
 ***************************
 Matplotlib's Pyplot Basics
@@ -82,9 +86,9 @@ so ensure that interactive mode is turned off with::
 
         plt.interactive(False)
 
-
-Saving a Plot
-=============
+===============
+ Saving a Plot
+===============
 
 The :py:func:`matplotlib.pyplot.savefig` function is similar to **plt.show()** 
 in that they are both *non-interactive* visualisation modes. 

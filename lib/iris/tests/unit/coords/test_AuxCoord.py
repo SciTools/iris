@@ -370,7 +370,6 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
             points_type_name,
             bounds_type_name,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             sub_coord = main_coord[:2, 1]
 
             coord_dtype = main_coord.dtype
@@ -417,7 +416,6 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
             points_type_name,
             bounds_type_name,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             sub_coord = main_coord[:2, 1]
 
             msg = (
@@ -463,7 +461,6 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
             points_lazyness,
             bounds_lazyness,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             sub_coord = main_coord[:2, 1]
 
             msg = (
@@ -511,7 +508,6 @@ class Test_copy(tests.IrisTest, AuxCoordTestMixin):
             points_lazyness,
             bounds_lazyness,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             coord_dtype = main_coord.dtype
             copied_coord = main_coord.copy()
 
@@ -558,7 +554,6 @@ class Test_copy(tests.IrisTest, AuxCoordTestMixin):
             points_lazyness,
             bounds_lazyness,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             copied_coord = main_coord.copy()
 
             msg = (

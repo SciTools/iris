@@ -969,6 +969,7 @@ class CoordMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
+
         # Perform "strict" combination for "coord_system" and "climatological".
         def func(field):
             left = getattr(self, field)
@@ -1024,6 +1025,7 @@ class CoordMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
+
         # Perform "strict" difference for "coord_system" and "climatological".
         def func(field):
             left = getattr(self, field)

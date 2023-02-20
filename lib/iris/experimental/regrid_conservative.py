@@ -17,13 +17,15 @@ Support for conservative regridding via ESMPy.
 
 """
 
+import functools
+
 import cartopy.crs as ccrs
 import numpy as np
 
 import iris
 from iris._deprecation import warn_deprecated
 from iris.analysis._interpolation import get_xy_dim_coords
-from iris.analysis._regrid import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder, _create_cube
 from iris.util import _meshgrid
 
 wmsg = (
@@ -329,16 +331,23 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
     # Return result as a new cube based on the source.
     # TODO: please tidy this interface !!!
-    return RectilinearRegridder._create_cube(
-        fullcube_data,
-        src=source_cube,
-        x_dim=src_dims_xy[0],
-        y_dim=src_dims_xy[1],
+    _regrid_callback = functools.partial(
+        RectilinearRegridder._regrid,
         src_x_coord=src_coords[0],
         src_y_coord=src_coords[1],
-        grid_x_coord=dst_coords[0],
-        grid_y_coord=dst_coords[1],
         sample_grid_x=sample_grid_x,
         sample_grid_y=sample_grid_y,
-        regrid_callback=RectilinearRegridder._regrid,
+    )
+
+    def regrid_callback(*args, **kwargs):
+        _data, dims = args
+        return _regrid_callback(_data, *dims, **kwargs)
+
+    return _create_cube(
+        fullcube_data,
+        source_cube,
+        [src_dims_xy[0], src_dims_xy[1]],
+        [dst_coords[0], dst_coords[1]],
+        2,
+        regrid_callback,
     )

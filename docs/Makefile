@@ -20,11 +20,6 @@ html-quick:
         echo "make html-quick in $$i..."; \
         (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-quick); done
 
-spelling:
-	@for i in $(SUBDIRS); do \
-        echo "make spelling in $$i..."; \
-        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) spelling); done
-
 all:
 	@for i in $(SUBDIRS); do \
 		echo "make all in $$i..."; \
@@ -54,4 +49,9 @@ linkcheck:
 	@for i in $(SUBDIRS); do \
 		echo "Running linkcheck in $$i..."; \
 		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) linkcheck); done
+
+show:
+	@for i in $(SUBDIRS); do \
+		echo "Running show in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) show); done
 
