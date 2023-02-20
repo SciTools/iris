@@ -616,17 +616,6 @@ class TestLoad(MixinAttrsTesting):
         result_cubes = sorted(result_cubes, key=lambda cube: cube.name())
         return result_cubes
 
-    def check_load_results(self, cubes, *cube_attr_dicts):
-        """
-        Run checks on loaded cubes.
-
-        """
-        # N.B. there is only ever one result-file, but it can contain various variables
-        # which came from different input files.
-        assert len(cubes) == len(cube_attr_dicts)
-        for cube, attrs in zip(cubes, cube_attr_dicts):
-            assert cube.attributes == attrs
-
     #######################################################
     # Tests on "user-style" attributes.
     # This means any arbitrary attribute which a user might have added -- i.e. one with
