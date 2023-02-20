@@ -664,7 +664,7 @@ class TestLoad(MixinAttrsTesting):
         assert cube4.attributes == {"random": "x2"}
 
     def test_04_userstyle_multiple_same(self):
-        # Nothing special to note in tis case
+        # Nothing special to note in this case
         # TODO: ??remove??
         cube1, cube2 = self.create_load_testcase(
             attr_name="random",
@@ -885,32 +885,32 @@ class TestSave(MixinAttrsTesting):
         # Always discarded + replaced by a single global setting.
         assert results == ["CF-1.7", None]
 
-    def test_xx_Conventions__multiple_same(self):
+    def test_05_Conventions__multiple_same(self):
         results = self.create_save_testcase(
             "Conventions", "same-value", "same-value"
         )
         # Always discarded + replaced by a single global setting.
         assert results == ["CF-1.7", None, None]
 
-    def test_xx_Conventions__multiple_different(self):
+    def test_06_Conventions__multiple_different(self):
         results = self.create_save_testcase(
             "Conventions", "value-A", "value-B"
         )
         # Always discarded + replaced by a single global setting.
         assert results == ["CF-1.7", None, None]
 
-    def test_xx_globalstyle__single(self, global_attr):
+    def test_07_globalstyle__single(self, global_attr):
         results = self.create_save_testcase(global_attr, "value")
         # Defaults to global
         assert results == ["value", None]
 
-    def test_xx_globalstyle__multiple_same(self, global_attr):
+    def test_08_globalstyle__multiple_same(self, global_attr):
         results = self.create_save_testcase(
             global_attr, "value-same", "value-same"
         )
         assert results == ["value-same", None, None]
 
-    def test_xx_globalstyle__multiple_different(self, global_attr):
+    def test_09_globalstyle__multiple_different(self, global_attr):
         msg_regexp = (
             f"'{global_attr}' is being added as CF data variable attribute,"
             f".* should only be a CF global attribute."
@@ -922,7 +922,7 @@ class TestSave(MixinAttrsTesting):
         # *Only* stored as locals when there are differing values.
         assert results == [None, "value-A", "value-B"]
 
-    def test_xx_localstyle__single(self, local_attr):
+    def test_10_localstyle__single(self, local_attr):
         results = self.create_save_testcase(local_attr, "value")
         # Defaults to local
         expected_results = [None, "value"]
@@ -931,7 +931,7 @@ class TestSave(MixinAttrsTesting):
             expected_results = [None, "v a l u e"]
         assert results == expected_results
 
-    def test_xx_localstyle__multiple_same(self, local_attr):
+    def test_11_localstyle__multiple_same(self, local_attr):
         results = self.create_save_testcase(
             local_attr, "value-same", "value-same"
         )
@@ -946,7 +946,7 @@ class TestSave(MixinAttrsTesting):
             ]
         assert results == expected_results
 
-    def test_xx_localstyle__multiple_different(self, local_attr):
+    def test_12_localstyle__multiple_different(self, local_attr):
         results = self.create_save_testcase(local_attr, "value-A", "value-B")
         # Different values are treated just the same as matching ones.
         expected_results = [None, "value-A", "value-B"]
