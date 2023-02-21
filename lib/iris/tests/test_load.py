@@ -14,9 +14,8 @@ import iris.tests as tests  # isort:skip
 import pathlib
 from unittest import mock
 
-import netCDF4
-
 import iris
+from iris.fileformats.netcdf import _thread_safe_nc
 import iris.io
 
 
@@ -193,10 +192,11 @@ class TestOPeNDAP(tests.IrisTest):
         filename = tests.get_data_path(
             ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
         )
-        fake_dataset = netCDF4.Dataset(filename)
+        fake_dataset = _thread_safe_nc.DatasetWrapper(filename)
 
         with mock.patch(
-            "netCDF4.Dataset", return_value=fake_dataset
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            return_value=fake_dataset,
         ) as dataset_loader:
             next(iris.io.load_http([self.url], callback=None))
         dataset_loader.assert_called_with(self.url, mode="r")
