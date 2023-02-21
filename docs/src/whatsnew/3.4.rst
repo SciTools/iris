@@ -26,13 +26,27 @@ This document explains the changes made to Iris for this release
    * We have **begun refactoring Iris' regridding**, which has already improved
      performance and functionality, with more potential in future!
    * We have made several other significant `🚀 Performance Enhancements`_.
-   * Please note that **Iris cannot currently work with the latest NetCDF4
-     releases**. The pin is set to ``<v1.6.1``, due to incompatibility with
-     Iris' lack of thread safety. We're working hard to make Iris NetCDF
-     loading thread safe as soon as possible.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
+
+
+v3.4.1 (21 Feb 2023)
+====================
+
+.. dropdown:: :opticon:`alert` v3.4.1 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches in this release of Iris include:
+
+   #. `@trexfeathers`_ and `@pp-mo`_ made Iris' use of the `netCDF4`_ library
+      thread-safe. (:pull:`5095`)
+
+   #. `@trexfeathers`_ and `@pp-mo`_ removed the netCDF4 pin mentioned in
+      `🔗 Dependencies`_ point 3. (:pull:`5095`)
 
 
 📢 Announcements
