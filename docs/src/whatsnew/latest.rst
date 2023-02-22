@@ -109,9 +109,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed some old infrastructure that printed test timings.
    (:pull:`5101`)
 
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) added coverage testing. This can
-   be enabled by setting the environment variable ``COVERAGE=True`` when running
-   the tests with nox, i.e. ``nox --session tests``. (:pull:`4765`)
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) added coverage testing. This
+   can be enabled by using the "--coverage" flag when running the tests with
+   nox i.e. ``nox --session tests -- --coverage``. (:pull:`4765`)
 
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) removed the ``--coding-tests``
    option from Iris' test runner. (:pull:`4765`)
