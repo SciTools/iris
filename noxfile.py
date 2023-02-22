@@ -176,6 +176,8 @@ def tests(session: nox.sessions.Session):
     """
     Perform iris system, integration and unit tests.
 
+    Coverage testing is enabled if the "--coverage" or "-c" flag is used.
+
     Parameters
     ----------
     session: object
@@ -185,13 +187,15 @@ def tests(session: nox.sessions.Session):
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
-    session.run(
+    run_args = [
         "python",
         "-m",
         "iris.tests.runner",
         "--default-tests",
-        "--system-tests",
-    )
+    ]
+    if "-c" in session.posargs or "--coverage" in session.posargs:
+        run_args.append("--coverage")
+    session.run(*run_args)
 
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")

@@ -39,6 +39,7 @@ dependencies:
   - pre-commit
   - psutil
   - pytest
+  - pytest-cov
   - pytest-xdist
   - requests
 
