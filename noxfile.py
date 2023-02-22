@@ -28,7 +28,6 @@ _PY_VERSION_DOCSBUILD = _PY_VERSION_LATEST
 
 #: Cirrus-CI environment variable hook.
 PY_VER = os.environ.get("PY_VER", _PY_VERSIONS_ALL)
-COVERAGE = os.environ.get("COVERAGE", False)
 
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
@@ -177,8 +176,7 @@ def tests(session: nox.sessions.Session):
     """
     Perform iris system, integration and unit tests.
 
-    Coverage testing is enabled if the COVERAGE environment variable is set to
-    True.
+    Coverage testing is enabled if the "--coverage" or "-c" flag is used.
 
     Parameters
     ----------
@@ -195,7 +193,7 @@ def tests(session: nox.sessions.Session):
         "iris.tests.runner",
         "--default-tests",
     ]
-    if COVERAGE:
+    if "-c" in session.posargs or "--coverage" in session.posargs:
         run_args.append("--coverage")
     session.run(*run_args)
 
