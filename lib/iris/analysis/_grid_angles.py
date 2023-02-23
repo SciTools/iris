@@ -449,6 +449,11 @@ def rotate_grid_vectors(
 
             Vector magnitudes will always be the same as the inputs.
 
+    .. note::
+
+        This function does not maintain laziness when called; it realises data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     u_out, v_out = (cube.copy() for cube in (u_cube, v_cube))
     if not grid_angles_cube:

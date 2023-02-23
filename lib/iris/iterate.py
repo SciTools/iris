@@ -58,6 +58,10 @@ def izip(*cubes, **kwargs):
         ...                                                 'grid_longitude']):
         ...    pass
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     if not cubes:
         raise TypeError("Expected one or more cubes.")

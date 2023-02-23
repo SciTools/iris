@@ -994,7 +994,6 @@ def load_NAMEIII_version2(filename):
     # using the next() method. This will come in handy as we wish to
     # progress through the file line by line.
     with open(filename, "r") as file_handle:
-
         # define a dictionary to hold the header metadata about this file
         header = read_header(file_handle)
 
@@ -1005,7 +1004,6 @@ def load_NAMEIII_version2(filename):
         column_headings = {}
         datacol1 = header["Number of preliminary cols"]
         for line in file_handle:
-
             data = [col.strip() for col in line.split(",")][:-1]
 
             # If first column is not zero we have reached the end

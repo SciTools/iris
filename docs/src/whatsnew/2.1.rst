@@ -1,3 +1,5 @@
+.. include:: ../common_links.inc
+
 v2.1 (06 Jun 2018)
 ******************
 
@@ -67,7 +69,7 @@ Incompatible Changes
   as an alternative.
 
 * This release of Iris contains a number of updated metadata translations.
-  See this 
+  See this
   `changelist <https://github.com/SciTools/iris/commit/69597eb3d8501ff16ee3d56aef1f7b8f1c2bb316#diff-1680206bdc5cfaa83e14428f5ba0f848>`_
   for further information.
 
@@ -84,13 +86,15 @@ Internal
   calendar.
 
 * Iris updated its time-handling functionality from the
-  `netcdf4-python <http://unidata.github.io/netcdf4-python/>`_
+  `netcdf4-python`__
   ``netcdftime`` implementation to the standalone module
   `cftime <https://github.com/Unidata/cftime>`_.
   cftime is entirely compatible with netcdftime, but some issues may
   occur where users are constructing their own datetime objects.
   In this situation, simply replacing ``netcdftime.datetime`` with
   ``cftime.datetime`` should be sufficient.
+
+__ `netCDF4`_
 
 * Iris now requires version 2 of Matplotlib, and ``>=1.14`` of NumPy.
   Full requirements can be seen in the `requirements <https://github.com/SciTools/iris/>`_

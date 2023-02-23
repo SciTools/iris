@@ -38,10 +38,17 @@ def simple_cube_w_2d_coords():
 class Test(tests.GraphicsTest):
     def test_2d_coord_bounds_platecarree(self):
         # To avoid a problem with Cartopy smearing the data where the
-        # longitude wraps, we set the central_longitude
+        #  longitude wraps, we set the central_longitude.
+        #  SciTools/cartopy#1421
         cube = simple_cube_w_2d_coords()[0, 0]
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
         qplt.pcolormesh(cube)
+
+        # Cartopy can't reliably set y-limits with curvilinear plotting.
+        #  SciTools/cartopy#2121
+        y_lims = [m(cube.coord("latitude").points) for m in (np.min, np.max)]
+        ax.set_ylim(*y_lims)
+
         ax.coastlines(resolution="110m", color="red")
         self.check_graphic()
 

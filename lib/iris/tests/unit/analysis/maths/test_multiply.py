@@ -21,10 +21,7 @@ from iris.tests.unit.analysis.maths import (
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
-class TestBroadcasting(
-    tests.IrisTest_nometa, CubeArithmeticBroadcastingTestMixin
-):
+class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
         return operator.mul
@@ -34,8 +31,7 @@ class TestBroadcasting(
         return multiply
 
 
-@tests.iristest_timing_decorator
-class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
+class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         return operator.mul
@@ -57,9 +53,8 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
             multiply(cube1, cube2)
 
 
-@tests.iristest_timing_decorator
 class TestMaskedConstant(
-    tests.IrisTest_nometa, CubeArithmeticMaskedConstantTestMixin
+    tests.IrisTest, CubeArithmeticMaskedConstantTestMixin
 ):
     @property
     def data_op(self):

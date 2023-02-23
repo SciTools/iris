@@ -12,9 +12,12 @@ from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
 import os
+from pathlib import Path
 import subprocess
 
 import iris
+from iris.fileformats.netcdf import _thread_safe_nc
+from iris.tests import system_test
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #
@@ -38,6 +41,29 @@ DOCS_DIRS = [
 # Get a dirpath to the git repository : allow setting with an environment
 # variable, so Travis can test for headers in the repo, not the installation.
 IRIS_REPO_DIRPATH = os.environ.get("IRIS_REPO_DIR", IRIS_INSTALL_DIR)
+
+
+def test_netcdf4_import():
+    """Use of netCDF4 must be via iris.fileformats.netcdf._thread_safe_nc ."""
+    # Please avoid including these phrases in any comments/strings throughout
+    #  Iris (e.g. use "from the netCDF4 library" instead) - this allows the
+    #  below search to remain quick and simple.
+    import_strings = ("import netCDF4", "from netCDF4")
+
+    files_including_import = []
+    for file_path in Path(IRIS_DIR).rglob("*.py"):
+        with file_path.open("r") as open_file:
+            file_text = open_file.read()
+
+        if any([i in file_text for i in import_strings]):
+            files_including_import.append(file_path)
+
+    expected = [
+        Path(_thread_safe_nc.__file__),
+        Path(system_test.__file__),
+        Path(__file__),
+    ]
+    assert set(files_including_import) == set(expected)
 
 
 class TestLicenseHeaders(tests.IrisTest):

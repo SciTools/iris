@@ -54,9 +54,8 @@ class MeshLocationsMixin:
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestBroadcastingWithMesh(
-    tests.IrisTest_nometa,
+    tests.IrisTest,
     MeshLocationsMixin,
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
@@ -71,9 +70,8 @@ class TestBroadcastingWithMesh(
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestBroadcastingWithMeshAndDerived(
-    tests.IrisTest_nometa,
+    tests.IrisTest,
     MeshLocationsMixin,
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,

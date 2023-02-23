@@ -169,9 +169,35 @@ class TestCells(tests.IrisTest):
         self.assertTrue(self.e < 2)
 
     def test_cell_cell_cmp(self):
+        self.e = iris.coords.Cell(1)
+        self.f = iris.coords.Cell(1)
+
+        self.assertTrue(self.e == self.f)
+        self.assertEqual(hash(self.e), hash(self.f))
+
+        self.e = iris.coords.Cell(1)
+        self.f = iris.coords.Cell(1, [0, 2])
+
+        self.assertFalse(self.e == self.f)
+        self.assertNotEqual(hash(self.e), hash(self.f))
+
+        self.e = iris.coords.Cell(1, [0, 2])
+        self.f = iris.coords.Cell(1, [0, 2])
+
+        self.assertTrue(self.e == self.f)
+        self.assertEqual(hash(self.e), hash(self.f))
+
+        self.e = iris.coords.Cell(1, [0, 2])
+        self.f = iris.coords.Cell(1, [2, 0])
+
+        self.assertTrue(self.e == self.f)
+        self.assertEqual(hash(self.e), hash(self.f))
+
         self.e = iris.coords.Cell(0.7, [1.1, 1.9])
         self.f = iris.coords.Cell(0.8, [1.1, 1.9])
 
+        self.assertFalse(self.e == self.f)
+        self.assertNotEqual(hash(self.e), hash(self.f))
         self.assertFalse(self.e > self.f)
         self.assertTrue(self.e <= self.f)
         self.assertTrue(self.f >= self.e)

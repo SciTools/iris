@@ -20,8 +20,8 @@
 		..., 
 		[-42.7342, -40.8934, -46.161, -48.912],
 		[-40.8934, -38.4268, -42.6612, -46.161],
-		[-38.4268, -35.2644, -38.4268, -42.6612]]" id="21594c35" long_name="Latitude of mesh nodes." points="[33.4328, 36.1226, 38.2012, ..., -44.791,
-		-42.1583, -38.815]" shape="(864,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+		[-38.4268, -35.2644, -38.4268, -42.6612]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[33.4328, 36.1226, 38.2012, ..., -44.791,
+		-42.1583, -38.815]" shape="(864,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
         <meshCoord bounds="[[-45.0, -37.5, -37.5, -45.0],
@@ -30,8 +30,8 @@
 		..., 
 		[-112.5, -120.0, -126.958, -118.361],
 		[-120.0, -127.5, -135.0, -126.958],
-		[-127.5, -135.0, -142.5, -135.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[-41.3152, -33.8068, -26.296, ..., -119.377,
-		-127.321, -135.0]" shape="(864,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+		[-127.5, -135.0, -142.5, -135.0]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[-41.3152, -33.8068, -26.296, ..., -119.377,
+		-127.321, -135.0]" shape="(864,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord bounds="[[300.0, 300.0],

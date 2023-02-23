@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+"""All unit tests for the :mod:`iris.pandas` module."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -11,6 +12,7 @@ import iris.tests as tests  # isort:skip
 import copy
 import datetime
 from termios import IXOFF  # noqa: F401
+import warnings
 
 import cf_units
 import cftime
@@ -42,7 +44,17 @@ if pandas is not None:
     import iris.pandas
 
 
+@pytest.fixture
+def activate_pandas_ndim():
+    iris.FUTURE.pandas_ndim = True
+    yield None
+    iris.FUTURE.pandas_ndim = False
+
+
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:.*as_series has been deprecated.*:iris._deprecation.IrisDeprecation"
+)
 class TestAsSeries(tests.IrisTest):
     """Test conversion of 1D cubes to Pandas using as_series()"""
 
@@ -121,7 +133,7 @@ class TestAsSeries(tests.IrisTest):
         assert cube.data[0] == 99
 
     def test_copy_int64_false(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name="foo")
+        cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int64), long_name="foo")
         series = iris.pandas.as_series(cube, copy=False)
         series[0] = 99
         assert cube.data[0] == 99
@@ -147,6 +159,9 @@ class TestAsSeries(tests.IrisTest):
 
 
 @skip_pandas
+@pytest.mark.filterwarnings(
+    "ignore:You are using legacy 2-dimensional behaviour.*:FutureWarning"
+)
 class TestAsDataFrame(tests.IrisTest):
     """Test conversion of 2D cubes to Pandas using as_data_frame()"""
 
@@ -319,6 +334,363 @@ class TestAsDataFrame(tests.IrisTest):
         data_frame = iris.pandas.as_data_frame(cube, copy=False)
         data_frame[0][0] = 99
         assert cube.data[0, 0] == 99
+
+
+@skip_pandas
+class TestAsDataFrameNDim(tests.IrisTest):
+    """Test conversion of n-dimensional cubes to Pandas using as_data_frame()"""
+
+    @pytest.fixture(autouse=True)
+    def _activate_pandas_ndim(self, activate_pandas_ndim):
+        pass
+
+    def test_no_dim_coords(self):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        expected_dim0 = np.repeat([0, 1], 5)
+        expected_dim1 = np.tile([0, 1, 2, 3, 4], 2)
+        expected_foo = np.arange(0, 10)
+        data_frame = iris.pandas.as_data_frame(cube)
+        self.assertArrayEqual(data_frame.foo.values, expected_foo)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("dim0"), expected_dim0
+        )
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("dim1"), expected_dim1
+        )
+
+    def test_no_x_coord(self):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        dim0 = DimCoord([10, 11], long_name="bar")
+        cube.add_dim_coord(dim0, 0)
+        expected_bar = np.repeat([10, 11], 5)
+        expected_dim1 = np.tile([0, 1, 2, 3, 4], 2)
+        expected_foo = np.arange(0, 10)
+        data_frame = iris.pandas.as_data_frame(cube)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("bar"), expected_bar
+        )
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("dim1"), expected_dim1
+        )
+
+    def test_no_y_coord(self):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        dim1 = DimCoord([10, 11, 12, 13, 14], long_name="bar")
+        cube.add_dim_coord(dim1, 1)
+        expected_dim0 = np.repeat([0, 1], 5)
+        expected_bar = np.tile([10, 11, 12, 13, 14], 2)
+        expected_foo = np.arange(0, 10)
+        data_frame = iris.pandas.as_data_frame(cube)
+        self.assertArrayEqual(data_frame.foo, expected_foo.data)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("dim0"), expected_dim0
+        )
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("bar"), expected_bar
+        )
+
+    def test_simple1D(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), long_name="foo")
+        dim_coord = DimCoord(
+            [10, 11, 12, 13, 14, 15, 16, 17, 18, 19], long_name="bar"
+        )
+        cube.add_dim_coord(dim_coord, 0)
+        expected_bar = np.arange(10, 20)
+        expected_foo = np.arange(0, 10)
+        data_frame = iris.pandas.as_data_frame(cube)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("bar"), expected_bar
+        )
+
+    def test_simple2D(self):
+        cube2d = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        dim0_coord = DimCoord([15, 16], long_name="milk")
+        dim1_coord = DimCoord([10, 11, 12, 13, 14], long_name="bar")
+        cube2d.add_dim_coord(dim0_coord, 0)
+        cube2d.add_dim_coord(dim1_coord, 1)
+        expected_milk = np.repeat([15, 16], 5)
+        expected_bar = np.tile([10, 11, 12, 13, 14], 2)
+        expected_foo = np.arange(0, 10)
+        data_frame = iris.pandas.as_data_frame(cube2d)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("milk"), expected_milk
+        )
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("bar"), expected_bar
+        )
+
+    def test_simple3D(self):
+        cube3d = Cube(
+            np.array(
+                [
+                    [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
+                    [[10, 11, 12, 13, 14], [15, 16, 17, 18, 19]],
+                    [[20, 21, 22, 23, 24], [25, 26, 27, 28, 29]],
+                ]
+            ),
+            long_name="foo",
+        )
+        dim0_coord = DimCoord([1, 2, 3], long_name="milk")
+        dim1_coord = DimCoord([10, 11], long_name="bar")
+        dim2_coord = DimCoord([20, 21, 22, 23, 24], long_name="kid")
+        cube3d.add_dim_coord(dim0_coord, 0)
+        cube3d.add_dim_coord(dim1_coord, 1)
+        cube3d.add_dim_coord(dim2_coord, 2)
+        expected_milk = np.repeat([1, 2, 3], 10)
+        expected_bar = np.tile(np.repeat([10, 11], 5), 3)
+        expected_kid = np.tile([20, 21, 22, 23, 24], 6)
+        expected_foo = np.arange(0, 30)
+        data_frame = iris.pandas.as_data_frame(cube3d)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("milk"), expected_milk
+        )
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("bar"), expected_bar
+        )
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("kid"), expected_kid
+        )
+
+    def test_copy_false(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        data_frame = iris.pandas.as_data_frame(cube, copy=False)
+        cube.data[2] = 99
+        assert cube.data[2] == data_frame.foo[2]
+
+    def test_copy_true(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        data_frame = iris.pandas.as_data_frame(cube, copy=True)
+        cube.data[2] = 99
+        assert cube.data[2] != data_frame.foo[2]
+
+    def test_time_standard(self):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="ts"
+        )
+        day_offsets = [0, 100.1, 200.2, 300.3, 400.4]
+        time_coord = DimCoord(
+            day_offsets, long_name="time", units="days since 2000-01-01 00:00"
+        )
+        cube.add_dim_coord(time_coord, 1)
+        expected_ts = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expected_time = np.array(
+            [
+                cftime.DatetimeGregorian(
+                    2000, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 4, 10, 2, 24, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 7, 19, 4, 48, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 10, 27, 7, 12, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2001, 2, 4, 9, 36, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 1, 1, 0, 0, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 4, 10, 2, 24, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 7, 19, 4, 48, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2000, 10, 27, 7, 12, 0, 0, has_year_zero=False
+                ),
+                cftime.DatetimeGregorian(
+                    2001, 2, 4, 9, 36, 0, 0, has_year_zero=False
+                ),
+            ],
+            dtype=object,
+        )
+        data_frame = iris.pandas.as_data_frame(cube)
+        self.assertArrayEqual(data_frame.ts, expected_ts)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("time"), expected_time
+        )
+
+    def test_time_360(self):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="ts"
+        )
+        time_unit = cf_units.Unit(
+            "days since 2000-01-01 00:00", calendar=cf_units.CALENDAR_360_DAY
+        )
+        time_coord = DimCoord(
+            [100.1, 200.2], long_name="time", units=time_unit
+        )
+        cube.add_dim_coord(time_coord, 0)
+        expected_time = np.array(
+            [
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 4, 11, 2, 24, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+                cftime.Datetime360Day(
+                    2000, 7, 21, 4, 48, 0, 0, has_year_zero=True
+                ),
+            ],
+            dtype=object,
+        )
+        expected_ts = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        data_frame = iris.pandas.as_data_frame(cube)
+        self.assertArrayEqual(data_frame.ts, expected_ts)
+        self.assertArrayEqual(
+            data_frame.index.get_level_values("time"), expected_time
+        )
+
+    def test_aux_coord(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        dim0_coord = DimCoord([15, 16], long_name="milk")
+        dim1_coord = DimCoord([10, 11], long_name="bar")
+        aux0_coord = AuxCoord(["fiveteen", "sixteen"], long_name="words0")
+        aux1_coord = AuxCoord(["ten", "eleven"], long_name="words1")
+        cube.add_dim_coord(dim0_coord, 0)
+        cube.add_dim_coord(dim1_coord, 1)
+        cube.add_aux_coord(aux0_coord, 0)
+        cube.add_aux_coord(aux1_coord, 1)
+        expected_foo = np.array([0, 1, 5, 6])
+        expected_words0 = np.repeat(["fiveteen", "sixteen"], 2)
+        expected_words1 = np.tile(["ten", "eleven"], 2)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(data_frame.words0, expected_words0)
+        self.assertArrayEqual(data_frame.words1, expected_words1)
+
+    def test_aux_coord2(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        dim0_coord = DimCoord([15, 16], long_name="milk")
+        dim1_coord = DimCoord([10, 11], long_name="bar")
+        aux0_coord = AuxCoord(["fiveteen0", "sixteen0"], long_name="words0")
+        aux1_coord = AuxCoord(["fiveteen1", "sixteen1"], long_name="words1")
+        aux2_coord = AuxCoord(["ten", "eleven"], long_name="words2")
+        cube.add_dim_coord(dim0_coord, 0)
+        cube.add_dim_coord(dim1_coord, 1)
+        # Two aux coords associated with dim0
+        cube.add_aux_coord(aux0_coord, 0)
+        cube.add_aux_coord(aux1_coord, 0)
+        # One aux coords associated with dim1
+        cube.add_aux_coord(aux2_coord, 1)
+        expected_foo = np.array([0, 1, 5, 6])
+        expected_words0 = np.repeat(["fiveteen0", "sixteen0"], 2)
+        expected_words1 = np.repeat(["fiveteen1", "sixteen1"], 2)
+        expected_words2 = np.tile(["ten", "eleven"], 2)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
+        self.assertArrayEqual(data_frame.foo, expected_foo)
+        self.assertArrayEqual(data_frame.words0, expected_words0)
+        self.assertArrayEqual(data_frame.words1, expected_words1)
+        self.assertArrayEqual(data_frame.words2, expected_words2)
+
+    def test_multidim_aux(self):
+        cube = Cube(
+            np.arange(300, 312, 1).reshape([2, 2, 3]),
+            long_name="air_temperature",
+        )
+        dim0_coord = DimCoord([0, 10], long_name="longitude")
+        dim1_coord = DimCoord([25, 35], long_name="latitude")
+        dim2_coord = DimCoord([0, 100, 200], long_name="height")
+        aux0_coord = AuxCoord(
+            [[True, False], [False, False]], long_name="in_region"
+        )
+        cube.add_dim_coord(dim0_coord, 0)
+        cube.add_dim_coord(dim1_coord, 1)
+        cube.add_dim_coord(dim2_coord, 2)
+        cube.add_aux_coord(aux0_coord, data_dims=(0, 1))
+        expected_in_region = np.repeat([True, False, False, False], 3)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
+        self.assertArrayEqual(data_frame.in_region, expected_in_region)
+
+    def test_add_scalar_coord(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        scalar_coord = iris.coords.AuxCoord(
+            1, long_name="scalar_coord", units="no_unit"
+        )
+        cube.add_aux_coord(scalar_coord)
+        expected_scalar_coord = np.repeat(1, 4)
+        data_frame = iris.pandas.as_data_frame(cube, add_aux_coords=True)
+        self.assertArrayEqual(data_frame.scalar_coord, expected_scalar_coord)
+
+    def test_add_ancillary_variable(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        dim0_coord = DimCoord([0, 10], long_name="bar")
+        cube.add_dim_coord(dim0_coord, 0)
+        av = AncillaryVariable([10, 100], long_name="ancil_bar")
+        av2 = AncillaryVariable(
+            [1000], long_name="ancil_bar2"
+        )  # Scalar ancillary variable
+        cube.add_ancillary_variable(av, 0)
+        cube.add_ancillary_variable(av2)
+        expected_ancillary_variable = np.repeat([10, 100], 2)
+        expected_ancillary_variable2 = np.repeat([1000], 4)
+        data_frame = iris.pandas.as_data_frame(
+            cube, add_ancillary_variables=True
+        )
+        self.assertArrayEqual(
+            data_frame.ancil_bar, expected_ancillary_variable
+        )
+        self.assertArrayEqual(
+            data_frame.ancil_bar2, expected_ancillary_variable2
+        )
+
+    def test_add_cell_measures(self):
+        cube = Cube(np.array([[0, 1], [5, 6]]), long_name="foo")
+        dim0_coord = DimCoord([0, 10], long_name="bar")
+        cube.add_dim_coord(dim0_coord, 0)
+        cm = CellMeasure([10, 100], long_name="cell_measure")
+        cm2 = CellMeasure(
+            1e4, long_name="cell_measure2"
+        )  # Scalar cell measure
+        cube.add_cell_measure(cm, 0)
+        cube.add_cell_measure(cm2)
+        expected_cell_measure = np.repeat([10, 100], 2)
+        expected_cell_measure2 = np.repeat(1e4, 4)
+        data_frame = iris.pandas.as_data_frame(cube, add_cell_measures=True)
+        self.assertArrayEqual(data_frame.cell_measure, expected_cell_measure)
+        self.assertArrayEqual(data_frame.cell_measure2, expected_cell_measure2)
+
+    def test_instance_error(self):
+        with pytest.raises(TypeError):
+            _ = iris.pandas.as_data_frame(list())
 
 
 @skip_pandas
@@ -512,15 +884,37 @@ class TestDataFrameAsCube(tests.IrisTest):
 
 
 @skip_pandas
-class TestFutureAndDeprecation(tests.IrisTest):
-    def test_deprecation_warning(self):
+class TestFutureAndDeprecation:
+    def test_as_cube_deprecation_warning(self):
         data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         with pytest.warns(
             IrisDeprecation, match="as_cube has been deprecated"
         ):
             _ = iris.pandas.as_cube(data_frame)
 
-    # Tests for FUTURE are expected when as_dataframe() is made n-dimensional.
+    def test_as_series_deprecation_warning(self):
+        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
+        with pytest.warns(
+            IrisDeprecation, match="as_series has been deprecated"
+        ):
+            _ = iris.pandas.as_series(cube)
+
+    def test_as_dataframe_future_warning(self):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        with pytest.warns(
+            FutureWarning, match="You are using legacy 2-dimensional behaviour"
+        ):
+            _ = iris.pandas.as_data_frame(cube)
+
+    def test_as_dataframe_no_future_warning(self, activate_pandas_ndim):
+        cube = Cube(
+            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"
+        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", FutureWarning)
+            _ = iris.pandas.as_data_frame(cube)
 
 
 @skip_pandas

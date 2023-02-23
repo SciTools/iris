@@ -13,7 +13,6 @@ acquired an extra initial 'engine' argument, purely for consistency with other
 build routines, and which it does not use.
 
 """
-
 import warnings
 
 import cf_units
@@ -36,6 +35,8 @@ from iris.fileformats.netcdf import (
 from iris.fileformats.netcdf.loader import _get_cf_var_data
 import iris.std_names
 import iris.util
+
+# TODO: should un-addable coords / cell measures / etcetera be skipped? iris#5068.
 
 #
 # UD Units Constants (based on Unidata udunits.dat definition file)
@@ -853,6 +854,12 @@ def build_dimension_coordinate(
         cf_coord_var, coord_name, attributes
     )
 
+    coord_skipped_msg = (
+        f"{cf_coord_var.cf_name} coordinate not added to Cube: "
+    )
+    coord_skipped_msg += "{error}"
+    coord_skipped = False
+
     # Create the coordinate.
     try:
         coord = iris.coords.DimCoord(
@@ -869,6 +876,11 @@ def build_dimension_coordinate(
         )
     except ValueError as e_msg:
         # Attempt graceful loading.
+        msg = (
+            "Failed to create {name!r} dimension coordinate: {error}\n"
+            "Gracefully creating {name!r} auxiliary coordinate instead."
+        )
+        warnings.warn(msg.format(name=str(cf_coord_var.cf_name), error=e_msg))
         coord = iris.coords.AuxCoord(
             points_data,
             standard_name=standard_name,
@@ -880,22 +892,26 @@ def build_dimension_coordinate(
             coord_system=coord_system,
             climatological=climatological,
         )
-        cube.add_aux_coord(coord, data_dims)
-        msg = (
-            "Failed to create {name!r} dimension coordinate: {error}\n"
-            "Gracefully creating {name!r} auxiliary coordinate instead."
-        )
-        warnings.warn(msg.format(name=str(cf_coord_var.cf_name), error=e_msg))
+        try:
+            cube.add_aux_coord(coord, data_dims)
+        except iris.exceptions.CannotAddError as e_msg:
+            warnings.warn(coord_skipped_msg.format(error=e_msg))
+            coord_skipped = True
     else:
         # Add the dimension coordinate to the cube.
-        if data_dims:
-            cube.add_dim_coord(coord, data_dims)
-        else:
-            # Scalar coords are placed in the aux_coords container.
-            cube.add_aux_coord(coord, data_dims)
+        try:
+            if data_dims:
+                cube.add_dim_coord(coord, data_dims)
+            else:
+                # Scalar coords are placed in the aux_coords container.
+                cube.add_aux_coord(coord, data_dims)
+        except iris.exceptions.CannotAddError as e_msg:
+            warnings.warn(coord_skipped_msg.format(error=e_msg))
+            coord_skipped = True
 
-    # Update the coordinate to CF-netCDF variable mapping.
-    engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+    if not coord_skipped:
+        # Update the coordinate to CF-netCDF variable mapping.
+        engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
 
 
 ################################################################################
@@ -964,10 +980,14 @@ def build_auxiliary_coordinate(
     )
 
     # Add it to the cube
-    cube.add_aux_coord(coord, data_dims)
-
-    # Make a list with names, stored on the engine, so we can find them all later.
-    engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+    try:
+        cube.add_aux_coord(coord, data_dims)
+    except iris.exceptions.CannotAddError as e_msg:
+        msg = "{name!r} coordinate not added to Cube: {error}"
+        warnings.warn(msg.format(name=str(cf_coord_var.cf_name), error=e_msg))
+    else:
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
 
 
 ################################################################################
@@ -1011,12 +1031,16 @@ def build_cell_measures(engine, cf_cm_var):
     )
 
     # Add it to the cube
-    cube.add_cell_measure(cell_measure, data_dims)
-
-    # Make a list with names, stored on the engine, so we can find them all later.
-    engine.cube_parts["cell_measures"].append(
-        (cell_measure, cf_cm_var.cf_name)
-    )
+    try:
+        cube.add_cell_measure(cell_measure, data_dims)
+    except iris.exceptions.CannotAddError as e_msg:
+        msg = "{name!r} cell measure not added to Cube: {error}"
+        warnings.warn(msg.format(name=str(cf_cm_var.cf_name), error=e_msg))
+    else:
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.cube_parts["cell_measures"].append(
+            (cell_measure, cf_cm_var.cf_name)
+        )
 
 
 ################################################################################
@@ -1056,10 +1080,16 @@ def build_ancil_var(engine, cf_av_var):
     )
 
     # Add it to the cube
-    cube.add_ancillary_variable(av, data_dims)
-
-    # Make a list with names, stored on the engine, so we can find them all later.
-    engine.cube_parts["ancillary_variables"].append((av, cf_av_var.cf_name))
+    try:
+        cube.add_ancillary_variable(av, data_dims)
+    except iris.exceptions.CannotAddError as e_msg:
+        msg = "{name!r} ancillary variable not added to Cube: {error}"
+        warnings.warn(msg.format(name=str(cf_av_var.cf_name), error=e_msg))
+    else:
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.cube_parts["ancillary_variables"].append(
+            (av, cf_av_var.cf_name)
+        )
 
 
 ################################################################################

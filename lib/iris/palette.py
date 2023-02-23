@@ -121,6 +121,11 @@ def cmap_norm(cube):
         Tuple of :class:`matplotlib.colors.LinearSegmentedColormap` and
         :class:`iris.palette.SymmetricNormalize`
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     args, kwargs = _default_cmap_norm((cube,), {})
     return kwargs.get("cmap"), kwargs.get("norm")

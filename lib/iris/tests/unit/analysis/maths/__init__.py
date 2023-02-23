@@ -247,7 +247,7 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
 
     def test_in_place_introduces_mask(self):
         # If second cube is masked, result should also be masked.
-        data1 = np.arange(4, dtype=np.float)
+        data1 = np.arange(4, dtype=float)
         data2 = ma.array([2.0, 2.0, 2.0, 2.0], mask=[1, 1, 0, 0])
         cube1 = Cube(data1)
         cube2 = Cube(data2)
