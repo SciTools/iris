@@ -19,6 +19,9 @@
 <a href="https://results.pre-commit.ci/latest/github/SciTools/iris/main">
 <img src="https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg"
      alt="pre-commit.ci status"></a>
+<a href="https://codecov.io/gh/SciTools/iris">
+<img src="https://codecov.io/gh/SciTools/iris/branch/master/graph/badge.svg?token=0GeICSIF3g"
+     alt="code coverage"></a>
 </p>
 
 <p align="center">
