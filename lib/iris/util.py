@@ -1972,6 +1972,15 @@ def equalise_attributes(cubes):
     return removed
 
 
+def has_mask(array):
+    if is_lazy_data(array):
+        # dask.array.ma arrays have no distinguishing properties from normal
+        #  dask arrays, so must unfortunately realise a small section first.
+        array = as_concrete_data(array.blocks[0])
+
+    return hasattr(array, "mask")
+
+
 def is_masked(array):
     """
     Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
