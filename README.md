@@ -20,7 +20,7 @@
 <img src="https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg"
      alt="pre-commit.ci status"></a>
 <a href="https://codecov.io/gh/SciTools/iris">
-<img src="https://codecov.io/gh/SciTools/iris/branch/master/graph/badge.svg?token=0GeICSIF3g"
+<img src="https://codecov.io/gh/SciTools/iris/branch/main/graph/badge.svg?token=0GeICSIF3g"
      alt="code coverage"></a>
 </p>
 
