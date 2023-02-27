@@ -1073,7 +1073,7 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
             saver = Saver(nc_path, "NETCDF4")
             saver._create_generic_cf_array_var(
                 self.cube, self.names_map, self.cm
-                )
+            )
 
 
 if __name__ == "__main__":
