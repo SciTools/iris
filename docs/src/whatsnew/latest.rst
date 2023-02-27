@@ -46,6 +46,10 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@pp-mo`_ made Iris' use of the `netCDF4`_ library
    thread-safe. (:pull:`5095`)
 
+#. `@ESadek-MO`_ removed check and error raise for saving
+   cubes with masked :class:`iris.coords.CellMeasure`.
+   (:issue:`5147`, :pull:`5181`)
+
 
 💣 Incompatible Changes
 =======================
