@@ -1933,16 +1933,6 @@ class Saver:
             # Check if this is a dim-coord.
             is_dimcoord = cube is not None and element in cube.dim_coords
 
-            if isinstance(element, iris.coords.CellMeasure):
-                # Disallow saving of *masked* cell measures.
-                # NOTE: currently, this is the only functional difference in
-                # variable creation between an ancillary and a cell measure.
-                if iris.util.is_masked(data):
-                    # We can't save masked points properly, as we don't maintain
-                    # a fill_value.  (Load will not record one, either).
-                    msg = "Cell measures with missing data are not supported."
-                    raise ValueError(msg)
-
             if is_dimcoord:
                 # By definition of a CF-netCDF coordinate variable this
                 # coordinate must be 1-D and the name of the CF-netCDF variable
