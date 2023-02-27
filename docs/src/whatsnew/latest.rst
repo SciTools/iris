@@ -37,7 +37,7 @@ This document explains the changes made to Iris for this release
    (:pull:`5144`)
 
 #. `@rcomer`_ enabled lazy evaluation of :obj:`~iris.analysis.RMS` calcuations
-   with weights. (:pull:`5016`)
+   with weights. (:pull:`5017`)
 
 
 🐛 Bugs Fixed
