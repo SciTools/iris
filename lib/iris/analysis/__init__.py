@@ -1583,27 +1583,19 @@ def _lazy_max_run(array, axis=-1, **kwargs):
 
 
 def _rms(array, axis, **kwargs):
-    # XXX due to the current limitations in `da.average` (see below), maintain
-    # an explicit non-lazy aggregation function for now.
-    # Note: retaining this function also means that if weights are passed to
-    # the lazy aggregator, the aggregation will fall back to using this
-    # non-lazy aggregator.
-    rval = np.sqrt(ma.average(np.square(array), axis=axis, **kwargs))
-    if not ma.isMaskedArray(array):
-        rval = np.asarray(rval)
+    rval = np.sqrt(ma.average(array**2, axis=axis, **kwargs))
+
     return rval
 
 
-@_build_dask_mdtol_function
 def _lazy_rms(array, axis, **kwargs):
-    # XXX This should use `da.average` and not `da.mean`, as does the above.
-    # However `da.average` current doesn't handle masked weights correctly
-    # (see https://github.com/dask/dask/issues/3846).
-    # To work around this we use da.mean, which doesn't support weights at
-    # all. Thus trying to use this aggregator with weights will currently
-    # raise an error in dask due to the unexpected keyword `weights`,
-    # rather than silently returning the wrong answer.
-    return da.sqrt(da.mean(array**2, axis=axis, **kwargs))
+    # Note that, since we specifically need the ma version of average to handle
+    # weights correctly with masked data, we cannot rely on NEP13/18 and need
+    # to implement a separate lazy RMS function.
+
+    rval = da.sqrt(da.ma.average(array**2, axis=axis, **kwargs))
+
+    return rval
 
 
 def _sum(array, **kwargs):
@@ -2071,14 +2063,16 @@ An :class:`~iris.analysis.Aggregator` instance that calculates
 the root mean square over a :class:`~iris.cube.Cube`, as computed by
 ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
-Additional kwargs associated with the use of this aggregator:
+Parameters
+----------
 
-* weights (float ndarray):
+weights : array-like, optional
     Weights matching the shape of the cube or the length of the window for
     rolling window operations. The weights are applied to the squares when
     taking the mean.
 
-**For example**:
+Example
+-------
 
 To compute the zonal root mean square over the *longitude* axis of a cube::
 
