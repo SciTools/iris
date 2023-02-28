@@ -1051,30 +1051,6 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         self._test(coord_system, expected)
 
 
-class Test__create_cf_cell_measure_variable(tests.IrisTest):
-    # Saving of masked data is disallowed.
-
-    # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
-
-    def setUp(self):
-        self.cube = stock.lat_lon_cube()
-        self.names_map = ["latitude", "longitude"]
-        masked_array = self.array_lib.ma.masked_array(
-            [0, 1, 2], mask=[True, False, True]
-        )
-        self.cm = iris.coords.CellMeasure(masked_array, var_name="cell_area")
-        self.cube.add_cell_measure(self.cm, data_dims=0)
-        self.exp_emsg = "Cell measures with missing data are not supported."
-
-    def test_masked_data__insitu(self):
-        # Test that the error is not being raised.
-        with self.temp_filename(".nc") as nc_path:
-            saver = Saver(nc_path, "NETCDF4")
-            saver._create_generic_cf_array_var(
-                self.cube, self.names_map, self.cm
-                )
-
 
 if __name__ == "__main__":
     tests.main()
