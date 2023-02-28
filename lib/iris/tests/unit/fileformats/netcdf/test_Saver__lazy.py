@@ -81,6 +81,7 @@ class Test_check_attribute_compliance__exception_handling(
 ):
     pass
 
+
 class TestStreamed(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_2d()

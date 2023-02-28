@@ -1050,5 +1050,6 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         }
         self._test(coord_system, expected)
 
+
 if __name__ == "__main__":
     tests.main()
