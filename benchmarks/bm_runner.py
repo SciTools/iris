@@ -1,7 +1,6 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 import argparse
 from argparse import ArgumentParser
-from typing import List, Tuple
 
 # Common ASV arguments for all run_types except `custom`.
 ASV_HARNESS = (
@@ -9,40 +8,35 @@ ASV_HARNESS = (
     "--show-stderr"
 )
 
-parser = ArgumentParser(
-    description="Run the Iris performance benchmarks (using Airspeed Velocity).",
-)
 
-# TODO: help.
-subparsers = parser.add_subparsers(help="")
-
-
-class SubParserSpec:
-    """Used to make it easier to hold all the necessary info in 1 place."""
+class SubParserGenerator(ABC):
+    """Convenience for holding all the necessary info in 1 place."""
 
     name: str = NotImplemented
     description: str = NotImplemented
-    argument_args: List[Tuple[tuple, dict]] = NotImplemented
+
+    def __init__(self, subparsers: ArgumentParser.add_subparsers):
+        self.subparser: ArgumentParser = subparsers.add_parser(
+            self.name,
+            description=self.description,
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+        self.add_arguments()
+        self.subparser.set_defaults(func=self.func)
+
+    @abstractmethod
+    def add_arguments(self) -> None:
+        """All self.subparser.add_argument() calls."""
+        _ = NotImplemented
 
     @staticmethod
+    @abstractmethod
     def func(args: argparse.Namespace):
         _ = args
         return NotImplemented
 
-    @classmethod
-    def get_subparser(cls):
-        sb = subparsers.add_parser(
-            cls.name,
-            description=cls.description,
-            formatter_class=argparse.RawTextHelpFormatter,
-        )
-        for args, kwargs in cls.argument_args:
-            sb.add_argument(*args, **kwargs)
-        sb.set_defaults(func=cls.func)
-        return sb
 
-
-class OvernightSpec(SubParserSpec):
+class Overnight(SubParserGenerator):
     name = "overnight"
     description = (
         "Benchmarks all commits between the input **first_commit** to ``HEAD``, "
@@ -52,22 +46,20 @@ class OvernightSpec(SubParserSpec):
         "Designed for checking the previous 24 hours' commits, typically in a "
         "scheduled script."
     )
-    argument_args = [
-        (
-            ("first_commit",),
-            dict(
-                type=str,
-                help="The first commit in the benchmarking commit sequence.",
-            ),
+
+    def add_arguments(self) -> None:
+        self.subparser.add_argument(
+            "first_commit",
+            type=str,
+            help="The first commit in the benchmarking commit sequence.",
         )
-    ]
 
     @staticmethod
     def func(args: argparse.Namespace):
         _ = args
 
 
-class BranchSpec(SubParserSpec):
+class Branch(SubParserGenerator):
     name = "branch"
     description = (
         "Performs the same operations as ``overnight``, but always on two commits "
@@ -78,99 +70,77 @@ class BranchSpec(SubParserSpec):
         "**For maximum accuracy, avoid using the machine that is running this "
         "session. Run time could be >1 hour for the full benchmark suite.**"
     )
-    argument_args = [
-        (
-            ("base_branch",),
-            dict(
-                type=str,
-                help="A branch that has the merge-base with ``HEAD`` - ``HEAD`` will be benchmarked against that merge-base.",
-            ),
+
+    def add_arguments(self) -> None:
+        self.subparser.add_argument(
+            "base_branch",
+            type=str,
+            help="A branch that has the merge-base with ``HEAD`` - ``HEAD`` will be benchmarked against that merge-base.",
         )
-    ]
 
     @staticmethod
     def func(args: argparse.Namespace):
         _ = args
 
 
-# ################################
-# # overnight
-#
-# overnight = subparsers.add_parser("overnight")
-# overnight.description = (
-#     "Benchmarks all commits between the input **first_commit** to ``HEAD``, "
-#     "comparing each to its parent for performance shifts. If a commit causes "
-#     "shifts, the output is saved to a file:\n"
-#     "``.asv/performance-shifts/<commit-sha>``\n\n"
-#     "Designed for checking the previous 24 hours' commits, typically in a "
-#     "scheduled script."
-# )
-# overnight.add_argument(
-#     "first_commit",
-#     type=str,
-#     help="The first commit in the benchmarking commit sequence.",
-# )
-#
-#
-# # def func_overnight(args: argparse.Namespace):
-# #     pass
-# #
-# #
-# # overnight.set_defaults(func=func_overnight)
-#
-#
-# ################################
-# # branch
-#
-# branch = subparsers.add_parser("branch")
-# branch.description = (
-#     "Performs the same operations as ``overnight``, but always on two commits "
-#     "only - ``HEAD``, and ``HEAD``'s merge-base with the input "
-#     "**base_branch**. Output from this run is never saved to a file. Designed "
-#     "for testing if the active branch's changes cause performance shifts - "
-#     "anticipating what would be caught by ``overnight`` once merged.\n\n"
-#     "**For maximum accuracy, avoid using the machine that is running this "
-#     "session. Run time could be >1 hour for the full benchmark suite.**"
-# )
-# branch.add_argument(
-#     "base_branch",
-#     type=str,
-#     help="A branch that has the merge-base with ``HEAD`` - ``HEAD`` will be benchmarked against that merge-base.",
-# )
-#
-# cperf = subparsers.add_parser("cperf")
-# cperf.description = (
-#     "Run the on-demand CPerf suite of benchmarks (part of the UK Met Office "
-#     "NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, and publish "
-#     "the results to the input **publish_dir**, within a unique "
-#     "subdirectory for this run."
-# )
-#
-# sperf = subparsers.add_parser("sperf")
-# sperf.description = cperf.description.replace("CPerf", "SPerf")
-#
-# for subparser in [cperf, sperf]:
-#     subparser.add_argument(
-#         "publish_dir",
-#         type=str,
-#         help="HTML results will be published to a sub-dir in this dir.",
-#     )
-#
-# custom = subparsers.add_parser("custom")
-# custom.description = (
-#     "Run the on-demand CPerf suite of benchmarks (part of the UK Met Office "
-#     "NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, and publish "
-#     "the results to the input **publish_dir**, within a unique "
-#     "subdirectory for this run."
-# )
-# custom.add_argument(
-#     "asv_sub_command",
-#     type=str,
-#     help="The ASV command to run.",
-# )
+class CPerf(SubParserGenerator):
+    name = "cperf"
+    description = (
+        "Run the on-demand CPerf suite of benchmarks (part of the UK Met "
+        "Office NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, "
+        "and publish the results to the input **publish_dir**, within a "
+        "unique subdirectory for this run."
+    )
 
-overnight = OvernightSpec.get_subparser()
-branch = BranchSpec.get_subparser()
+    def add_arguments(self) -> None:
+        self.subparser.add_argument(
+            "publish_dir",
+            type=str,
+            help="HTML results will be published to a sub-dir in this dir.",
+        )
 
-args = parser.parse_args()
-exit()
+    @staticmethod
+    def func(args: argparse.Namespace):
+        _ = args
+
+
+class SPerf(CPerf):
+    name = "sperf"
+    description = CPerf.description.replace("CPerf", "SPerf")
+
+
+class Custom(SubParserGenerator):
+    name = "custom"
+    description = (
+        "Run ASV with the input **ASV sub-command**, without any preset "
+        "arguments - must all be supplied by the user. So just like running "
+        "ASV manually, with the convenience of re-using the runners' "
+        "scripted setup steps."
+    )
+
+    def add_arguments(self) -> None:
+        self.subparser.add_argument(
+            "asv_sub_command",
+            type=str,
+            help="The ASV command to run.",
+        )
+
+    @staticmethod
+    def func(args: argparse.Namespace):
+        _ = args
+
+
+def main():
+    parser = ArgumentParser(
+        description="Run the Iris performance benchmarks (using Airspeed Velocity).",
+    )
+    subparsers = parser.add_subparsers()
+
+    for gen in (Overnight, Branch, CPerf, SPerf, Custom):
+        _ = gen(subparsers).subparser
+
+    _ = parser.parse_args()
+
+
+if __name__ == "__main__":
+    main()
