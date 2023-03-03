@@ -25,7 +25,6 @@ import warnings
 import cf_units
 import dask
 import dask.array as da
-from dask.utils import SerializableLock
 import filelock
 import netCDF4
 import numpy as np
@@ -2596,16 +2595,9 @@ class Saver:
         the data of variables initially created empty.
 
         """
-        # Create a lock to satisfy the da.store call.
-        # We need a serialisable lock for scheduling with processes or distributed.
-        # See : https://github.com/dask/distributed/issues/780
-        # However, this does *not* imply safe access for file writing in parallel.
-        # For that, DeferredSaveWrapper uses a filelock as well.
-        lock = SerializableLock()
-
         # Create a single delayed da.store operation to complete the file.
         sources, targets = zip(*self.deferred_writes)
-        result = da.store(sources, targets, compute=False, lock=lock)
+        result = da.store(sources, targets, compute=False)
 
         # Wrap that in an extra operation that follows it by deleting the lockfile.
         @dask.delayed
