@@ -1228,10 +1228,7 @@ class _Weights(np.ndarray):
         # its data and units
         elif isinstance(weights, (str, _DimensionalMetadata)):
             dim_metadata = cube._dimensional_metadata(weights)
-            if isinstance(dim_metadata, iris.coords.Coord):
-                arr = dim_metadata.points
-            else:
-                arr = dim_metadata.data
+            arr = dim_metadata._values
             if dim_metadata.shape != cube.shape:
                 arr = iris.util.broadcast_to_shape(
                     arr,
@@ -1273,11 +1270,8 @@ class _Weights(np.ndarray):
             cube. Otherwise, this argument is ignored.
 
         """
-        if "weights" not in kwargs:
-            return
-        if kwargs["weights"] is None:
-            return
-        kwargs["weights"] = cls(kwargs["weights"], cube)
+        if kwargs.get("weights") is not None:
+            kwargs["weights"] = cls(kwargs["weights"], cube)
 
 
 def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
@@ -1740,12 +1734,14 @@ def _sum(array, **kwargs):
 
 def _sum_units_func(units, **kwargs):
     """Multiply original units with weight units if possible."""
-    if "weights" not in kwargs:
-        return units
-    weights = kwargs["weights"]
-    if not hasattr(weights, "units"):
-        return units
-    return units * weights.units
+    weights = kwargs.get("weights")
+    if weights is None:  # no weights given or weights are None
+        result = units
+    elif hasattr(weights, "units"):  # weights are _Weights
+        result = units * weights.units
+    else:  # weights are regular np.ndarrays
+        result = units
+    return result
 
 
 def _peak(array, **kwargs):
