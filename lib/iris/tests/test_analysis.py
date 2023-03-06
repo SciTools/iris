@@ -1703,7 +1703,7 @@ class TestCreateWeightedAggregatorFn(tests.IrisTest):
         self.assertEqual(kwargs, {"test_kwarg": "test", "weights": "ignored"})
 
 
-class TestWeights(tests.IrisTest):
+class TestWeights:
     @pytest.fixture(autouse=True)
     def setup_test_data(self):
         self.lat = iris.coords.DimCoord(
@@ -1888,21 +1888,12 @@ class TestWeights(tests.IrisTest):
         assert weights.units == "J"
 
     def test_init_with_invalid_obj(self):
-        self.assertRaises(
-            KeyError,
-            iris.analysis._Weights,
-            "invalid_obj",
-            self.cube,
-        )
+        with pytest.raises(KeyError):
+            iris.analysis._Weights("invalid_obj", self.cube)
 
     def test_init_with_invalid_obj_and_units(self):
-        self.assertRaises(
-            KeyError,
-            iris.analysis._Weights,
-            "invalid_obj",
-            self.cube,
-            units="J",
-        )
+        with pytest.raises(KeyError):
+            iris.analysis._Weights("invalid_obj", self.cube, units="J")
 
     def test_update_kwargs_no_weights(self):
         kwargs = {"test": [1, 2, 3]}
@@ -1922,6 +1913,26 @@ class TestWeights(tests.IrisTest):
         assert isinstance(kwargs["weights"], iris.analysis._Weights)
         np.testing.assert_array_equal(kwargs["weights"], [1, 2])
         assert kwargs["weights"].units == "1"
+
+
+CUBE = iris.cube.Cube(0)
+
+
+@pytest.mark.parametrize(
+    "kwargs,expected",
+    [
+        ({}, "s"),
+        ({"test": "m"}, "s"),
+        ({"weights": None}, "s"),
+        ({"weights": [1, 2, 3]}, "s"),
+        ({"weights": iris.analysis._Weights([1], CUBE)}, "s"),
+        ({"weights": iris.analysis._Weights([1], CUBE, units="kg")}, "s kg"),
+    ],
+)
+def test_sum_units_func(kwargs, expected):
+    units = cf_units.Unit("s")
+    result = iris.analysis._sum_units_func(units, **kwargs)
+    assert result == expected
 
 
 if __name__ == "__main__":
