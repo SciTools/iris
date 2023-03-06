@@ -42,7 +42,7 @@ class TestGeoTiffExport(tests.IrisTest):
     def check_tiff(self, cube, header_keys, header_items):
         # Check that the cube saves correctly to TIFF :
         #   * the header contains expected keys and (some) values
-        #   * the data array retrives correctly
+        #   * the data array retrieves correctly
         import iris.experimental.raster
 
         with self.temp_filename(".tif") as temp_filename:

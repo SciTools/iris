@@ -1678,7 +1678,7 @@ def load(filename, read_data=False, little_ended=False):
 
 def _interpret_fields(fields):
     """
-    Turn the fields read with load and FF2PP._extract_field into useable
+    Turn the fields read with load and FF2PP._extract_field into usable
     fields. One of the primary purposes of this function is to either convert
     "deferred bytes" into "deferred arrays" or "loaded bytes" into actual
     numpy arrays (via the _create_field_data) function.

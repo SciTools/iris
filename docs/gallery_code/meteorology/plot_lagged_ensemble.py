@@ -115,7 +115,7 @@ def main():
     # Get the time for the entire plot.
     time = last_time_coord.units.num2date(last_time_coord.bounds[0, 0])
 
-    # Set a global title for the postage stamps with the date formated by
+    # Set a global title for the postage stamps with the date formatted by
     # "monthname year".
     time_string = time.strftime("%B %Y")
     plt.suptitle(f"Surface temperature ensemble forecasts for {time_string}")

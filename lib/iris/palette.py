@@ -57,7 +57,7 @@ def is_brewer(cmap):
 
 def _default_cmap_norm(args, kwargs):
     """
-    This function injects default cmap and norm behavour into the keyword
+    This function injects default cmap and norm behaviour into the keyword
     arguments, based on the cube referenced within the positional arguments.
     """
     cube = None

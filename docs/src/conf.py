@@ -81,7 +81,7 @@ sys.path.append(os.path.abspath("sphinxext"))
 # add some sample files from the developers guide..
 sys.path.append(os.path.abspath(os.path.join("developers_guide")))
 
-# why isnt the iris path added to it is discoverable too?  We dont need to,
+# why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it
 # is added then the travis build will likely fail.
 

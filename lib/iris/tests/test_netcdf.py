@@ -96,7 +96,7 @@ class TestNetCDFLoad(tests.IrisTest):
         cubes = sorted(cubes, key=lambda cube: cube.name())
         self.assertCML(cubes, ("netcdf", "netcdf_global_xyzt_gems.cml"))
 
-        # Check the masked array fill value is propogated through the data
+        # Check the masked array fill value is propagated through the data
         # manager loading.
         lnsp = cubes[1]
         self.assertTrue(ma.isMaskedArray(lnsp.data))
@@ -1029,11 +1029,11 @@ class TestNetCDFSave(tests.IrisTest):
         }
         for k, v in aglobals.items():
             self.cube.attributes[k] = v
-        # Should be overriden.
+        # Should be overridden.
         aover = {"Conventions": "TEST"}
         for k, v in aover.items():
             self.cube.attributes[k] = v
-        # Should be data varible attributes.
+        # Should be data variable attributes.
         avars = {
             "standard_error_multiplier": 23,
             "flag_masks": "a",
@@ -1057,14 +1057,14 @@ class TestNetCDFSave(tests.IrisTest):
                             getattr(ds, gkey), aglobals.get(gkey)
                         )
                     )
-            # Should be overriden.
+            # Should be overridden.
             for okey in aover:
                 if getattr(ds, okey) == aover.get(okey):
                     exceptions.append(
                         "{} != {}".format(getattr(ds, okey), avars.get(okey))
                     )
             dv = ds["temp"]
-            # Should be data varible attributes;
+            # Should be data variable attributes;
             # except STASH -> um_stash_source.
             for vkey in avars:
                 if vkey != "STASH" and (getattr(dv, vkey) != avars.get(vkey)):
@@ -1405,7 +1405,7 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
                 process_flag = cube.attributes["ukmo__process_flags"][0]
                 self.assertEqual(process_flag, process_desc)
 
-        # Test mutiple process flags
+        # Test multiple process flags
         multiple_bit_values = ((128, 64), (4096, 1024), (8192, 1024))
 
         # Maps lbproc value to the process flags that should be created

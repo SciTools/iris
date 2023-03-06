@@ -132,7 +132,7 @@ class Test___call___1D(ThreeDimCube):
     def test_interpolate_bad_coord_name(self):
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
             RectilinearInterpolator(
-                self.cube, ["doesnt exist"], LINEAR, EXTRAPOLATE
+                self.cube, ["doesn't exist"], LINEAR, EXTRAPOLATE
             )
 
     def test_interpolate_data_single(self):

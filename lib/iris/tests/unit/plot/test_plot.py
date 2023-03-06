@@ -72,7 +72,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 class TestTrajectoryWrap(tests.IrisTest):
     """
     Test that a line plot of geographic coordinates wraps around the end of the
-    coordinates rather than plotting accross the map.
+    coordinates rather than plotting across the map.
 
     """
 
