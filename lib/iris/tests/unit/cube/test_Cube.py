@@ -364,7 +364,7 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))
         self.lazydata = as_lazy_data(self.data)
-        # Test cubes wth (same-valued) real and lazy data
+        # Test cubes with (same-valued) real and lazy data
         cube_real = Cube(self.data, units="m")
         for i_dim, name in enumerate(("y", "x")):
             npts = cube_real.shape[i_dim]
@@ -471,21 +471,21 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertEqual(cube_collapsed.units, "kg")
 
     def test_weighted_sum_fullweights_adapt_units_real_y(self):
-        # Check that units are adapated correctly ('m' * '1' = 'm')
+        # Check that units are adapted correctly ('m' * '1' = 'm')
         cube_collapsed = self.cube_real.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
         self.assertEqual(cube_collapsed.units, "m")
 
     def test_weighted_sum_fullweights_adapt_units_lazy_y(self):
-        # Check that units are adapated correctly ('kg' * '1' = 'kg')
+        # Check that units are adapted correctly ('kg' * '1' = 'kg')
         cube_collapsed = self.cube_lazy.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
         self.assertEqual(cube_collapsed.units, "kg")
 
     def test_weighted_sum_1dweights_adapt_units_real_y(self):
-        # Check that units are adapated correctly ('m' * '1' = 'm')
+        # Check that units are adapted correctly ('m' * '1' = 'm')
         # Note: the same test with lazy data fails:
         # https://github.com/SciTools/iris/issues/5083
         cube_collapsed = self.cube_real.collapsed(
@@ -494,7 +494,7 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertEqual(cube_collapsed.units, "m")
 
     def test_weighted_sum_with_unkown_units_real_y(self):
-        # Check that units are adapated correctly ('unknown' * '1' = 'unknown')
+        # Check that units are adapted correctly ('unknown' * '1' = 'unknown')
         # Note: does not need to be adapted in subclasses since 'unknown'
         # multiplied by any unit is 'unknown'
         self.cube_real.units = "unknown"
@@ -506,7 +506,7 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertEqual(cube_collapsed.units, "unknown")
 
     def test_weighted_sum_with_unkown_units_lazy_y(self):
-        # Check that units are adapated correctly ('unknown' * '1' = 'unknown')
+        # Check that units are adapted correctly ('unknown' * '1' = 'unknown')
         # Note: does not need to be adapted in subclasses since 'unknown'
         # multiplied by any unit is 'unknown'
         self.cube_lazy.units = "unknown"
@@ -541,21 +541,21 @@ class Test_collapsed__multidim_weighted_with_cube(
         self.full_weights_x = self.cube_real.copy(self.full_weights_x_original)
 
     def test_weighted_sum_fullweights_adapt_units_real_y(self):
-        # Check that units are adapated correctly ('m' * 'm2' = 'm3')
+        # Check that units are adapted correctly ('m' * 'm2' = 'm3')
         cube_collapsed = self.cube_real.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
         self.assertEqual(cube_collapsed.units, "m3")
 
     def test_weighted_sum_fullweights_adapt_units_lazy_y(self):
-        # Check that units are adapated correctly ('kg' * 'm2' = 'kg m2')
+        # Check that units are adapted correctly ('kg' * 'm2' = 'kg m2')
         cube_collapsed = self.cube_lazy.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
         self.assertEqual(cube_collapsed.units, "kg m2")
 
     def test_weighted_sum_1dweights_adapt_units_real_y(self):
-        # Check that units are adapated correctly ('m' * 'm2' = 'm3')
+        # Check that units are adapted correctly ('m' * 'm2' = 'm3')
         # Note: the same test with lazy data fails:
         # https://github.com/SciTools/iris/issues/5083
         cube_collapsed = self.cube_real.collapsed(
@@ -669,7 +669,7 @@ class Test_collapsed__warning(tests.IrisTest):
             self.assertIn(mock.call(msg.format(coord)), warn.call_args_list)
 
     def _assert_nowarn_collapse_without_weight(self, coords, warn):
-        # Ensure that warning is not rised.
+        # Ensure that warning is not raised.
         msg = "Collapsing spatial coordinate {!r} without weighting"
         for coord in coords:
             self.assertNotIn(mock.call(msg.format(coord)), warn.call_args_list)
@@ -758,7 +758,7 @@ class Test_collapsed_coord_with_3_bounds(tests.IrisTest):
             self.assertIn(mock.call(msg), warn.call_args_list)
 
     def _assert_cube_as_expected(self, cube):
-        """Ensure that cube data and coordiantes are as expected."""
+        """Ensure that cube data and coordinates are as expected."""
         self.assertArrayEqual(cube.data, np.array(3))
 
         lat = cube.coord("latitude")
@@ -1096,7 +1096,7 @@ class Test_slices_over(tests.IrisTest):
             len(self.cube.coord("model_level_number").points)
         )
         self.exp_iter_2d = np.ndindex(6, 70, 1, 1)
-        # Define maximum number of interations for particularly long
+        # Define maximum number of interactions for particularly long
         # (and so time-consuming) iterators.
         self.long_iterator_max = 5
 

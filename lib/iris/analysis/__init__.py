@@ -1275,7 +1275,7 @@ class _Weights(np.ndarray):
 
 
 def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
-    """Return an aggregator function that can explicitely handle weights.
+    """Return an aggregator function that can explicitly handle weights.
 
     Args:
 
@@ -1500,7 +1500,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
         array or float.  Calculated quantile values (set to np.nan wherever sum
         of weights is zero or masked)
     """
-    # Return np.nan if no useable points found
+    # Return np.nan if no usable points found
     if np.isclose(weights.sum(), 0.0) or ma.is_masked(weights.sum()):
         return np.resize(np.array(np.nan), len(quantiles))
     # Sort the data
@@ -1637,7 +1637,7 @@ def _proportion(array, function, axis, **kwargs):
     # Otherwise, it is possible for numpy to return a masked array that has
     # a dtype for its data that is different to the dtype of the fill-value,
     # which can cause issues outside this function.
-    # Reference - tests/unit/analyis/test_PROPORTION.py Test_masked.test_ma
+    # Reference - tests/unit/analysis/test_PROPORTION.py Test_masked.test_ma
     numerator = _count(array, axis=axis, function=function, **kwargs)
     result = ma.asarray(numerator / total_non_masked)
 
@@ -2920,7 +2920,7 @@ class AreaWeighted:
             Both sourge and target cubes must have an XY grid defined by
             separate X and Y dimensions with dimension coordinates.
             All of the XY dimension coordinates must also be bounded, and have
-            the same cooordinate system.
+            the same coordinate system.
 
         """
         if not (0 <= mdtol <= 1):
