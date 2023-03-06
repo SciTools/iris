@@ -39,6 +39,7 @@ from collections import OrderedDict
 from collections.abc import Iterable
 import functools
 from functools import wraps
+from inspect import getfullargspec
 import warnings
 
 from cf_units import Unit
@@ -475,6 +476,8 @@ class _Aggregator:
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
 
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
@@ -482,7 +485,8 @@ class _Aggregator:
             main operation, but should raise an error in unhandled cases.
 
         Additional kwargs::
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         Aggregators are used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
@@ -628,7 +632,11 @@ class _Aggregator:
         """
         # Update the units if required.
         if self.units_func is not None:
-            cube.units = self.units_func(cube.units, **kwargs)
+            argspec = getfullargspec(self.units_func)
+            if argspec.varkw is None:  # old style
+                cube.units = self.units_func(cube.units)
+            else:  # new style (preferred)
+                cube.units = self.units_func(cube.units, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
