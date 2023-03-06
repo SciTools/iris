@@ -17,12 +17,6 @@ exclude_modules = [
 ]
 
 
-# List of classes for which no inherited members are shown
-classes_no_inherited_members = [
-    "iris.analysis.Weights",  # avoid showing all methods of np.ndarray
-]
-
-
 # print to stdout, including the name of the python file
 def autolog(message):
     print("[{}] {}".format(ntpath.basename(__file__), message))
@@ -38,7 +32,7 @@ document_dict = {
     .. autoclass:: {object_name}
         :members:
         :undoc-members:
-        {inherited_members_setting}
+        :inherited-members:
 
 """,
     "function": """
@@ -166,16 +160,10 @@ In this module:
     lines = []
     for element, obj in document_these:
         object_name = import_name + "." + element
-        if object_name in classes_no_inherited_members:
-            inherited_members_setting = ":no-inherited-members:"
-        else:
-            inherited_members_setting = ":inherited-members:"
         obj_content = document_dict[lookup_object_type(obj)].format(
-            inherited_members_setting=inherited_members_setting,
             object_name=object_name,
             object_name_header_line="+" * len(object_name),
             object_docstring=inspect.getdoc(obj),
-
         )
         lines.append(obj_content)
 

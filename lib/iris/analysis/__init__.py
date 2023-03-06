@@ -84,7 +84,6 @@ __all__ = (
     "VARIANCE",
     "WPERCENTILE",
     "WeightedAggregator",
-    "Weights",
     "clear_phenomenon_identity",
     "create_weighted_aggregator_fn",
 )
@@ -1176,7 +1175,7 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-class Weights(np.ndarray):
+class _Weights(np.ndarray):
     """Class for handling weights for weighted aggregation.
 
     This subclasses :class:`numpy.ndarray`; thus, all methods and properties of
@@ -1193,9 +1192,8 @@ class Weights(np.ndarray):
 
         Args:
 
-        * weights (Weights, Cube, string, _DimensionalMetadata, array-like):
-            If given as :class:`iris.analysis.Weights`, simply use this. If
-            given as a :class:`iris.cube.Cube`, use its data and units. If
+        * weights (Cube, string, _DimensionalMetadata, array-like):
+            If given as a :class:`iris.cube.Cube`, use its data and units. If
             given as a :obj:`str` or :class:`iris.coords._DimensionalMetadata`,
             assume this is (the name of) a
             :class:`iris.coords._DimensionalMetadata` object of the cube (i.e.,
@@ -1213,25 +1211,18 @@ class Weights(np.ndarray):
             ignored.
         * units (string, Unit):
             If ``None``, use units derived from `weights`. Otherwise, overwrite
-            the units derived from `weights` and use `units`. Warning: if
-            `weights` has been given as `Weights` object and `units` is used,
-            this will also overwrite the original instance.
+            the units derived from `weights` and use `units`.
 
         """
-        # Weights is Weights
-        # --> Simple return this object
-        if isinstance(weights, cls):
-            obj = weights
-
-        # Weights is a cube
+        # `weights` is a cube
         # Note: to avoid circular imports of Cube we use duck typing using the
         # "hasattr" syntax here
         # --> Extract data and units from cube
-        elif hasattr(weights, "add_aux_coord"):
+        if hasattr(weights, "add_aux_coord"):
             obj = np.asarray(weights.data).view(cls)
             obj.units = weights.units
 
-        # Weights is a string or _DimensionalMetadata object
+        # `weights`` is a string or _DimensionalMetadata object
         # --> Extract _DimensionalMetadata object from cube, broadcast it to
         # correct shape using the corresponding dimensional mapping, and use
         # its data and units

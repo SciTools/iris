@@ -28,7 +28,7 @@ from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris._merge
 import iris.analysis
-from iris.analysis import Weights
+from iris.analysis import _Weights
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
@@ -3728,7 +3728,7 @@ class Cube(CFVariableMixin):
         weights should be 1d (for collapsing over a 1d coordinate) or match the
         shape of the cube. When weights are not given as arrays, units are
         correctly handled for weighted sums, i.e., the original unit of the
-        cube is multiplied by the units of the weights.  Values for
+        cube is multiplied by the units of the weights. Values for
         latitude-longitude area weights may be calculated using
         :func:`iris.analysis.cartography.area_weights`.
 
@@ -3811,7 +3811,7 @@ class Cube(CFVariableMixin):
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        Weights.update_kwargs(kwargs, self)
+        _Weights.update_kwargs(kwargs, self)
 
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
@@ -4049,7 +4049,7 @@ x            -              -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        Weights.update_kwargs(kwargs, self)
+        _Weights.update_kwargs(kwargs, self)
 
         groupby_coords = []
         dimension_to_groupby = None
@@ -4090,8 +4090,8 @@ x            -              -
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
 
-                # iris.util.broadcast_to_shape does not preserve Weights type
-                weights = Weights(
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                weights = _Weights(
                     iris.util.broadcast_to_shape(
                         weights,
                         self.shape,
@@ -4388,7 +4388,7 @@ x            -               -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        Weights.update_kwargs(kwargs, self)
+        _Weights.update_kwargs(kwargs, self)
 
         coord = self._as_list_of_coords(coord)[0]
 
@@ -4492,8 +4492,8 @@ x            -               -
                     )
                 kwargs = dict(kwargs)
 
-                # iris.util.broadcast_to_shape does not preserve Weights type
-                kwargs["weights"] = Weights(
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                kwargs["weights"] = _Weights(
                     iris.util.broadcast_to_shape(
                         weights, rolling_window_data.shape, (dimension + 1,)
                     ),
