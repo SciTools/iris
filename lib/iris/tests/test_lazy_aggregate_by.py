@@ -49,19 +49,14 @@ class TestLazyAggregateByWeightedByCube(TestLazyAggregateBy):
     def setUp(self):
         super().setUp()
 
-        self.weights_single_original = self.weights_single
-        self.weights_multi_original = self.weights_multi
-
         self.weights_single = self.cube_single[:, 0, 0].copy(
-            self.weights_single_original
+            self.weights_single
         )
         self.weights_single.units = "m2"
-        self.weights_multi = self.cube_multi[:, 0, 0].copy(
-            self.weights_multi_original
-        )
+        self.weights_multi = self.cube_multi[:, 0, 0].copy(self.weights_multi)
         self.weights_multi.units = "m2"
 
-    def test_weighted_sum_single(self):
+    def test_str_aggregation_weighted_sum_single(self):
         aggregateby_cube = self.cube_single.aggregated_by(
             "height",
             SUM,
@@ -69,6 +64,7 @@ class TestLazyAggregateByWeightedByCube(TestLazyAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_coord_aggregation_weighted_sum_single(self):
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single,
             SUM,
@@ -76,7 +72,7 @@ class TestLazyAggregateByWeightedByCube(TestLazyAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
-    def test_weighted_sum_multi(self):
+    def test_str_aggregation_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["height", "level"],
             SUM,
@@ -84,6 +80,7 @@ class TestLazyAggregateByWeightedByCube(TestLazyAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_str_aggregation_rev_order_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["level", "height"],
             SUM,
@@ -91,6 +88,7 @@ class TestLazyAggregateByWeightedByCube(TestLazyAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_coord_aggregation_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z1_multi, self.coord_z2_multi],
             SUM,
@@ -98,6 +96,7 @@ class TestLazyAggregateByWeightedByCube(TestLazyAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_coord_aggregation_rev_order_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z2_multi, self.coord_z1_multi],
             SUM,

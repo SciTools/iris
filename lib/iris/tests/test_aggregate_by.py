@@ -1350,28 +1350,24 @@ class TestAggregateBy(tests.IrisTest):
 
 
 # Simply redo the tests of TestAggregateBy with other cubes as weights
-# Note: other weights types are not tested this way here since this would
-# require adding dimensional metadata objects to the cubes, which would change
-# the the CMLs of all resulting cubes
+# Note: other weights types (e.g., coordinates, cell measures, etc.) are not
+# tested this way here since this would require adding dimensional metadata
+# objects to the cubes, which would change the CMLs of all resulting cubes of
+# TestAggregateBy.
 
 
 class TestAggregateByWeightedByCube(TestAggregateBy):
     def setUp(self):
         super().setUp()
 
-        self.weights_single_original = self.weights_single
-        self.weights_multi_original = self.weights_multi
-
         self.weights_single = self.cube_single[:, 0, 0].copy(
-            self.weights_single_original
+            self.weights_single
         )
         self.weights_single.units = "m2"
-        self.weights_multi = self.cube_multi[:, 0, 0].copy(
-            self.weights_multi_original
-        )
+        self.weights_multi = self.cube_multi[:, 0, 0].copy(self.weights_multi)
         self.weights_multi.units = "m2"
 
-    def test_weighted_sum_single(self):
+    def test_str_aggregation_weighted_sum_single(self):
         aggregateby_cube = self.cube_single.aggregated_by(
             "height",
             iris.analysis.SUM,
@@ -1379,6 +1375,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_coord_aggregation_weighted_sum_single(self):
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single,
             iris.analysis.SUM,
@@ -1386,7 +1383,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
-    def test_weighted_sum_multi(self):
+    def test_str_aggregation_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["height", "level"],
             iris.analysis.SUM,
@@ -1394,6 +1391,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_str_aggregation_rev_order_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["level", "height"],
             iris.analysis.SUM,
@@ -1401,6 +1399,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_coord_aggregation_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z1_multi, self.coord_z2_multi],
             iris.analysis.SUM,
@@ -1408,6 +1407,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
         )
         self.assertEqual(aggregateby_cube.units, "kelvin m2")
 
+    def test_coord_aggregation_rev_order_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z2_multi, self.coord_z1_multi],
             iris.analysis.SUM,
