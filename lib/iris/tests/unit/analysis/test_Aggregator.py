@@ -5,19 +5,18 @@
 # licensing details.
 """Unit tests for the :class:`iris.analysis.Aggregator` class instance."""
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from unittest import mock
 
 import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import Aggregator
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
 from iris.cube import Cube
 from iris.exceptions import LazyAggregatorError
-
-import iris.tests as tests  # isort:skip
 
 
 class Test_aggregate(tests.IrisTest):
