@@ -26,7 +26,6 @@ import cf_units
 import dask
 import dask.array as da
 import filelock
-import netCDF4
 import numpy as np
 import numpy.ma as ma
 
@@ -522,7 +521,7 @@ class DeferredSaveWrapper:
         # Now re-open the file for writing + write to the specific file variable.
         dataset = None
         try:
-            dataset = netCDF4.Dataset(self.path, "r+")
+            dataset = _thread_safe_nc.DatasetWrapper(self.path, "r+")
             var = dataset.variables[self.varname]
             var[keys] = array_data
         finally:
