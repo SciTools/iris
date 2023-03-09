@@ -287,9 +287,16 @@ class TestSubplotColorbar(tests.IrisTest):
 @tests.skip_data
 @tests.skip_plot
 class TestPlotHist(tests.GraphicsTest):
-    def test_cube(self):
+    def test_horizontal(self):
         cube = test_plot.simple_cube()[0]
         qplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
+        self.check_graphic()
+
+    def test_vertical(self):
+        cube = test_plot.simple_cube()[0]
+        qplt.hist(
+            cube, bins=np.linspace(287.7, 288.2, 11), orientation="horizontal"
+        )
         self.check_graphic()
 
 

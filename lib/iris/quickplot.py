@@ -334,14 +334,18 @@ def hist(x, *args, **kwargs):
     axes = kwargs.get("axes")
     result = iplt.hist(x, *args, **kwargs)
     title = _title(x, with_units=False)
-    xlabel = _title(x, with_units=True)
+    label = _title(x, with_units=True)
 
     if axes is None:
         axes = plt.gca()
 
+    orientation = kwargs.get("orientation")
+    if orientation == "horizontal":
+        axes.set_ylabel(label)
+    else:
+        axes.set_xlabel(label)
     axes.set_title(title)
-    axes.set_xlabel(xlabel)
-    axes.set_ylabel("Frequency")
+
     return result
 
 

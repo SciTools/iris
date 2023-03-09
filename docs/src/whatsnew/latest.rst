@@ -40,7 +40,7 @@ This document explains the changes made to Iris for this release
    with weights. (:pull:`5017`)
 
 #. `@lbdreyer`_ added :func:`iris.plot.hist` and :func:`iris.quickplot.hist`.
-   (:pull:`5188)
+   (:pull:`5189)
 
 
 🐛 Bugs Fixed

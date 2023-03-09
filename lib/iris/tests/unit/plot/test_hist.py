@@ -32,8 +32,9 @@ class Test:
     def test_simple(self, x):
         with mock.patch("matplotlib.pyplot.hist") as mocker:
             iplt.hist(x(self.data))
-        # mocker.assert_called_once_with does not work with _DimensionalMetadata
-        # objects so we use np.testing array equality checks instead.
+        # mocker.assert_called_once_with is not working as expected with
+        # _DimensionalMetadata objects so we use np.testing array equality
+        # checks instead.
         args, kwargs = mocker.call_args
         assert len(args) == 1
         np.testing.assert_array_equal(args[0], self.data)
