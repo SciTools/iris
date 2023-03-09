@@ -272,7 +272,8 @@ html_sidebars = {
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html
 html_theme_options = {
-    "footer_items": ["copyright", "sphinx-version", "custom_footer"],
+    "footer_start": ["copyright", "sphinx-version"],
+    "footer_end": ["custom_footer"],
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,
