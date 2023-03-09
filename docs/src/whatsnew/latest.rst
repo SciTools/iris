@@ -39,6 +39,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ enabled lazy evaluation of :obj:`~iris.analysis.RMS` calcuations
    with weights. (:pull:`5017`)
 
+#. `@lbdreyer`_ added :func:`iris.plot.hist` and :func:`iris.quickplot.hist`.
+   (:pull:`5188)
+
 
 🐛 Bugs Fixed
 =============
