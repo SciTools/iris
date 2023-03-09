@@ -2533,7 +2533,7 @@ class Saver:
                     target = _FillValueMaskCheckAndStoreTarget(
                         cf_var, fill_value
                     )
-                    da.store([data], [target])
+                    da.store([data], [target], lock=False)
                     return target.is_masked, target.contains_value
 
         else:
@@ -2596,7 +2596,7 @@ class Saver:
         """
         # Create a single delayed da.store operation to complete the file.
         sources, targets = zip(*self.deferred_writes)
-        result = da.store(sources, targets, compute=False)
+        result = da.store(sources, targets, compute=False, lock=False)
 
         # Wrap that in an extra operation that follows it by deleting the lockfile.
         @dask.delayed
@@ -2860,7 +2860,9 @@ def save(
                 raise ValueError(msg)
 
     # Initialise Manager for saving
-    with Saver(filename, netcdf_format, compute=compute) as sman:
+    # N.B. FOR NOW -- we are cheating and making all saves compute=False, as otherwise
+    # non-lazy saves do *not* work with the distributed scheduler.
+    with Saver(filename, netcdf_format, compute=False) as sman:
         # Iterate through the cubelist.
         for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(
@@ -2906,9 +2908,11 @@ def save(
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=conventions)
 
-        if compute:
-            result = None
-        else:
-            result = sman._deferred_save()
+    # For now, not using Saver(compute=True) as it doesn't work with distributed or
+    # process workers (only threaded).
+    result = sman._deferred_save()
+    if compute:
+        result.compute()
+        result = None
 
-        return result
+    return result
