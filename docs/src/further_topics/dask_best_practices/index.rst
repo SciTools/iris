@@ -1,0 +1,230 @@
+.. _dask best practices:
+
+Dask Best Practices
+*******************
+
+This section outlines some of the best practices when using Dask. Some of these practices
+involve improving performance through rechunking, making the best use of multi-processing
+systems and avoiding conflicts between Dask and numpy.
+
+.. warning::
+
+    Here, we have collated advice and a handful of examples that we hope will assist
+    users to make the best start when using Dask. It is *not* a
+    fully comprehensive guide encompassing all best practices.
+
+
+Introduction
+============
+
+`Dask <https://dask.org/>`_ is a powerful tool for speeding up data handling
+via lazy loading and parallel processing. To get the full benefit of using
+Dask, it is important to configure it correctly and supply it with
+appropriately structured data. For example, we may need to "chunk" data arrays
+into smaller pieces to process, read and write it; getting the "chunking" right
+can make a significant different to performance!
+
+To make sure you get the most out of Dask, check the list of sections on the right
+for those that seem relevant to you.
+
+
+.. _numpy_threads:
+
+Numpy Threads
+=============
+
+In certain scenarios numpy will attempt to perform threading using an
+external library - typically OMP, MKL or openBLAS - making use of **every**
+CPU available. This interacts badly with Dask:
+
+* Dask may create multiple instances of numpy, each generating enough
+  threads to use **all** the available CPU's. The resulting sharing of CPU's
+  between threads greatly reduces performance. The more cores there are, the
+  more pronounced this problem is.
+* Numpy will generate enough threads to use all available CPU's even
+  if Dask is deliberately configured to only use a subset of CPU's. The
+  resulting sharing of CPU's between threads greatly reduces performance.
+* `Dask is already designed to parallelise with numpy arrays <https://docs
+  .dask.org/en/latest/array.html>`_, so adding numpy's 'competing' layer of
+  parallelisation could cause unpredictable performance.
+
+Therefore it is best to prevent numpy performing its own parallelisation, `a
+suggestion made in Dask's own documentation <https://docs.dask
+.org/en/stable/array-best-practices.html#avoid-oversubscribing-threads>`_.
+The following commands will ensure this in all scenarios:
+
+in Python...
+
+::
+
+    # Must be run before importing numpy.
+    import os
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
+or in Linux command line...
+
+::
+
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+    export MKL_NUM_THREADS=1
+    export VECLIB_MAXIMUM_THREADS=1
+    export NUMEXPR_NUM_THREADS=1
+
+
+.. _multi-pro_systems:
+
+Dask on Multi-processing systems
+================================
+
+It is natural to use Dask on systems capable of multi-processing, for example
+SPICE within the Met Office, but there are some important factors you must be
+aware of. In particular, you will always need to explicitly control parallel
+operation, both in Dask and likewise in numpy: see sections below.
+
+
+.. _multi-pro_slurm:
+
+CPU Allocation
+--------------
+
+When running on a multi-processing system, unless configured otherwise, Dask will attempt to create
+one parallel 'worker' task for each CPU visible. However, within a Slurm allocation, only *some* of
+these CPUs are actually accessible -- often, and by default, only one. This leads to a serious
+over-commitment unless it is controlled.
+
+So, **whenever Iris is used on a multi-processing system, you must always control the number
+of dask workers to a sensible value**, matching the slurm allocation.  You do
+this with::
+
+    dask.config.set(num_workers=N)
+
+For an example, see :doc:`dask_bags_and_greed`.
+
+Alternatively, when there is only one CPU allocated, it may actually be more
+efficient to use a "synchronous" scheduler instead, with::
+
+    dask.config.set(scheduler='synchronous')
+
+See `Single Thread
+<https://docs.dask.org/en/latest/scheduling.html?highlight=single-threaded#single-thread>`_.
+
+
+.. _multi-pro_numpy:
+
+Numpy Threading
+---------------
+
+Numpy also interrogates the visible number of CPUs to multi-thread its operations.
+The large number of CPU's available in a multi-processing system will thus cause confusion if Numpy
+attempts its own parallelisation, so this must be prevented. Refer back to
+:ref:`numpy_threads` for more detail.
+
+
+Distributed
+-----------
+
+Even though allocations on a multi-processing system are generally restricted to a single node, there
+are still good reasons for using 'dask.distributed' in many cases. See `Single Machine: dask.distributed
+<https://docs.dask.org/en/latest/setup/single-distributed.html>`_ in the Dask documentation.
+
+
+Chunking
+========
+
+Dask breaks down large data arrays into chunks, allowing efficient
+parallelisation by processing several smaller chunks simultaneously. For more
+information, see the documentation on
+`Dask Array <https://docs.dask.org/en/latest/array.html>`_.
+
+Iris provides a basic chunking shape to Dask, attempting to set the shape for
+best performance. The chunking that is used can depend on the file format that
+is being loaded. See below for how chunking is performed for:
+
+  * :ref:`chunking_netcdf`
+  * :ref:`chunking_pp_ff`
+
+It can in some cases be beneficial to re-chunk the arrays in Iris cubes.
+For information on how to do this, see :ref:`dask_rechunking`.
+
+
+.. _chunking_netcdf:
+
+NetCDF Files
+------------
+
+NetCDF files can include their own chunking specification. This is either
+specified when creating the file, or is automatically assigned if one or
+more of the dimensions is `unlimited <https://www.unidata.ucar
+.edu/software/netcdf/docs/unlimited_dims.html>`_.
+Importantly, netCDF chunk shapes are **not optimised for Dask
+performance**.
+
+Chunking can be set independently for any variable in a netcdf file.
+When a netcdf variable uses an unlimited dimension, it is automatically
+chunked: the chunking is the shape of the whole variable, but with '1' instead
+of the length in any unlimited dimensions.
+
+When chunking is specified for netcdf data, Iris will set the dask chunking
+to an integer multiple or fraction of that shape, such that the data size is
+near to but not exceeding the dask array chunk size.
+
+.. Note::
+    Prior to Iris 2.3, Iris would not multiply up a chunksize from a netcdf
+    variable, which could therefore be quite inefficient.
+    Iris 2.2. was thus equally inefficient for some files with unlimited
+    dimensions.  Similarly, **Iris 2.2 can often perform badly with StaGE
+    data**, as this typically has quite small chunks set in the file.
+    Upgrading to Iris 2.3+ can often solve these problems.
+
+
+.. _chunking_pp_ff:
+
+PP and Fieldsfiles
+------------------
+
+PP and Fieldsfiles contain multiple 2D fields of data. When loading PP or
+Fieldsfiles into Iris cubes, the chunking will automatically be set to a chunk
+per field.
+
+For example, if a PP file contains 2D lat-lon fields for each of the
+85 model level numbers, it will load in a cube that looks as follows::
+
+    (model_level_number: 85; latitude: 144; longitude: 192)
+
+The data in this cube will be partitioned with chunks of shape
+:code:`(1, 144, 192)`.
+
+If the file(s) being loaded contain multiple fields, this can lead to an
+excessive amount of chunks which will result in poor performance.
+
+When the default chunking is not appropriate, it is possible to rechunk.
+:doc:`dask_pp_to_netcdf` provides a detailed demonstration of how Dask can optimise
+that process.
+
+
+Examples
+========
+
+We have written some examples of use cases for using Dask, that come with advice and
+explanations for why and how the tasks are performed the way they are.
+
+If you feel you have an example of a Dask best practice that you think may be helpful to others,
+please share them with us by raising a new `discussion on the Iris repository <https://github.com/SciTools/iris
+/discussions/>`_.
+
+  * :doc:`dask_pp_to_netcdf`
+  * :doc:`dask_parallel_loop`
+  * :doc:`dask_bags_and_greed`
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+
+   dask_pp_to_netcdf
+   dask_parallel_loop
+   dask_bags_and_greed

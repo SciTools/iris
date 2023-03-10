@@ -71,6 +71,10 @@ This document explains the changes made to Iris for this release
    to use it.  By default the theme will be based on the users system settings,
    defaulting to ``light`` if no system setting is found.  (:pull:`5299`)
 
+#. `@HGWright`_ added a :doc:`/further_topics/dask_best_practices/index`
+   section into the user guide, containing advice and use cases to help users
+   get the best out of Dask.
+
 
 💼 Internal
 ===========
