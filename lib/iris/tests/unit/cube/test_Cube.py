@@ -493,7 +493,7 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         )
         self.assertEqual(cube_collapsed.units, "m")
 
-    def test_weighted_sum_with_unkown_units_real_y(self):
+    def test_weighted_sum_with_unknown_units_real_y(self):
         # Check that units are adapted correctly ('unknown' * '1' = 'unknown')
         # Note: does not need to be adapted in subclasses since 'unknown'
         # multiplied by any unit is 'unknown'
@@ -505,7 +505,7 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         )
         self.assertEqual(cube_collapsed.units, "unknown")
 
-    def test_weighted_sum_with_unkown_units_lazy_y(self):
+    def test_weighted_sum_with_unknown_units_lazy_y(self):
         # Check that units are adapted correctly ('unknown' * '1' = 'unknown')
         # Note: does not need to be adapted in subclasses since 'unknown'
         # multiplied by any unit is 'unknown'
