@@ -662,7 +662,7 @@ class _Common__check_attribute_compliance:
 
     def check_attribute_compliance_call(self, value):
         self.set_attribute(value)
-        with Saver(mock.Mock(), "NETCDF4") as saver:
+        with Saver("nonexistent test file", "NETCDF4") as saver:
             saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
