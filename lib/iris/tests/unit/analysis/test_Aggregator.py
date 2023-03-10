@@ -15,6 +15,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis import Aggregator
+from iris.cube import Cube
 from iris.exceptions import LazyAggregatorError
 
 
@@ -286,9 +287,29 @@ class Test_update_metadata(tests.IrisTest):
         units_func = mock.Mock(return_value=mock.sentinel.new_units)
         aggregator = Aggregator("", None, units_func)
         cube = mock.Mock(units=mock.sentinel.units)
-        aggregator.update_metadata(cube, [])
-        units_func.assert_called_once_with(mock.sentinel.units)
+        aggregator.update_metadata(cube, [], kw1=1, kw2=2)
+        units_func.assert_called_once_with(mock.sentinel.units, kw1=1, kw2=2)
         self.assertEqual(cube.units, mock.sentinel.new_units)
+
+    def test_units_func_no_kwargs(self):
+        # To ensure backwards-compatibility, Aggregator also supports
+        # units_func that accept the single argument `units`
+        def units_func(units):
+            return units**2
+
+        aggregator = Aggregator("", None, units_func)
+        cube = Cube(0, units="s")
+        aggregator.update_metadata(cube, [], kw1=1, kw2=2)
+        self.assertEqual(cube.units, "s2")
+
+    def test_units_func_kwargs(self):
+        def units_func(units, **kwargs):
+            return units**2
+
+        aggregator = Aggregator("", None, units_func)
+        cube = Cube(0, units="s")
+        aggregator.update_metadata(cube, [], kw1=1, kw2=2)
+        self.assertEqual(cube.units, "s2")
 
 
 class Test_lazy_aggregate(tests.IrisTest):
