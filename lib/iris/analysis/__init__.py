@@ -1258,9 +1258,15 @@ class _Weights(np.ndarray):
         return obj
 
     def __array_finalize__(self, obj):
-        """See https://numpy.org/doc/stable/user/basics.subclassing.html."""
-        if obj is None:
-            return
+        """See https://numpy.org/doc/stable/user/basics.subclassing.html.
+
+        Note
+        ----
+        `obj` cannot be `None` here since ``_Weights.__new__`` does not call
+        ``super().__new__`` explicitly.
+
+        """
+
         self.units = getattr(obj, "units", Unit("1"))
 
     @classmethod
