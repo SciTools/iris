@@ -17,6 +17,7 @@ dependencies:
   - dask-core >=2.26
   - matplotlib >=3.5
   - netcdf4
+  - libnetcdf<4.9
   - numpy >=1.19
   - python-xxhash
   - pyproj
