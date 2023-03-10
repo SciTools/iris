@@ -771,7 +771,7 @@ class Test_check_attribute_compliance__exception_handling(
         self.container.attributes["valid_range"] = [1, 2]
         self.container.attributes["valid_min"] = [1]
         msg = 'Both "valid_range" and "valid_min"'
-        with Saver(mock.Mock(), "NETCDF4") as saver:
+        with Saver("nonexistent test file", "NETCDF4") as saver:
             with self.assertRaisesRegex(ValueError, msg):
                 saver.check_attribute_compliance(
                     self.container, self.data_dtype
