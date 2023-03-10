@@ -52,6 +52,7 @@ import iris.util
 
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
+from ._dask_locks import get_worker_lock
 
 # Avoid warning about unused import.
 # We could use an __all__, but we don't want to maintain one here
@@ -498,6 +499,13 @@ class _FillValueMaskCheckAndStoreTarget:
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
+# Configure use of filelock locks in place of distributed locks.
+# This means the code has to work differently, because they are not serializable and so
+# need to be created at the point of use in each worker, when it calls __setitem__.
+# USE_FILELOCK = True
+USE_FILELOCK = False
+
+
 class DeferredSaveWrapper:
     """
     An object which mimics the data access of a netCDF4.Variable, and can be written to.
@@ -506,18 +514,32 @@ class DeferredSaveWrapper:
     TODO: could be improved with a caching scheme, but this just about works.
     """
 
-    def __init__(self, filepath, cf_var, lockfile_path):
+    def __init__(self, filepath, cf_var):  # , lockfile_path):
         self.path = filepath
         self.varname = cf_var.name
-        self.lockfile_path = lockfile_path
+        if USE_FILELOCK:
+            self._lockfile_path = self.path + ".lock"
+        else:
+            self.lock = get_worker_lock(self.path)
+
+    # def __exit__(self, exc_type, exc_val, exc_tb):
+    #     lock_path = self._lockfile_path
+    #     if os.path.exists(lock_path):
+    #         try:
+    #             os.unlink(lock_path)
+    #         except Exception as e:
+    #             msg = f'Could not remove lockfile "{lock_path}".  Error:\n{e}'
+    #             raise Exception(msg)
 
     def __setitem__(self, keys, array_data):
         # Write to the variable.
         # First acquire a file-specific lock
         # Importantly, in working via the file-system, this is common to all workers,
         # even when using processes or distributed.
-        lock = filelock.FileLock(self.lockfile_path)
-        lock.acquire()
+        if USE_FILELOCK:
+            # This type of lock has to be (re-)created in each worker task.
+            self.lock = filelock.FileLock(self._lockfile_path)
+        self.lock.acquire()
         # Now re-open the file for writing + write to the specific file variable.
         dataset = None
         try:
@@ -527,7 +549,7 @@ class DeferredSaveWrapper:
         finally:
             if dataset:
                 dataset.close()
-            lock.release()
+            self.lock.release()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"
@@ -600,8 +622,9 @@ class Saver:
         self.deferred_writes = []
         #: Target filepath
         self.filepath = os.path.abspath(filename)
-        #: Target lockfile path
-        self._lockfile_path = self.filepath + ".lock"
+        if USE_FILELOCK:
+            #: Target lockfile path
+            self._lockfile_path = self.filepath + ".lock"
         #: NetCDF dataset
         self._dataset = None
         try:
@@ -2515,7 +2538,7 @@ class Saver:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
                     writeable_var_wrapper = DeferredSaveWrapper(
-                        self.filepath, cf_var, self._lockfile_path
+                        self.filepath, cf_var  # , self._lockfile_path
                     )
                     # Add to the list of deferred writes, used in _deferred_save().
                     self.deferred_writes.append((data, writeable_var_wrapper))
@@ -2598,27 +2621,28 @@ class Saver:
             # Create a single delayed da.store operation to complete the file.
             sources, targets = zip(*self.deferred_writes)
             result = da.store(sources, targets, compute=False, lock=False)
-
-            # Wrap that in an extra operation that follows it by deleting the lockfile.
-            @dask.delayed
-            def postsave_remove_lockfile(store_op, lock_path):
-                if os.path.exists(lock_path):
-                    try:
-                        os.unlink(lock_path)
-                    except Exception as e:
-                        msg = f'Could not remove lockfile "{lock_path}".  Error:\n{e}'
-                        raise Exception(msg)
-
-            result = postsave_remove_lockfile(result, self._lockfile_path)
-
         else:
-            # Return a delayed anyway.
+            # Return a delayed anyway, just for usage consistency
             @dask.delayed
             def no_op():
                 return None
 
             result = no_op()
 
+        # # Wrap the result in an extra operation which follows it by deleting any
+        # # remaining lockfile.
+        # @dask.delayed
+        # def postsave_remove_lockfile(store_op, lock_path):
+        #     # Note: the "store_op" argument is unused, but it is included so that
+        #     # dask will _compute_ that, before calling this routine.
+        #     if os.path.exists(lock_path):
+        #         try:
+        #             os.unlink(lock_path)
+        #         except Exception as e:
+        #             msg = f'Could not remove lockfile "{lock_path}".  Error:\n{e}'
+        #             raise Exception(msg)
+        #
+        # result = postsave_remove_lockfile(result, self._lockfile_path)
         return result
 
 
