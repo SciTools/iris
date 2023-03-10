@@ -2594,21 +2594,30 @@ class Saver:
         the data of variables initially created empty.
 
         """
-        # Create a single delayed da.store operation to complete the file.
-        sources, targets = zip(*self.deferred_writes)
-        result = da.store(sources, targets, compute=False, lock=False)
+        if self.deferred_writes:
+            # Create a single delayed da.store operation to complete the file.
+            sources, targets = zip(*self.deferred_writes)
+            result = da.store(sources, targets, compute=False, lock=False)
 
-        # Wrap that in an extra operation that follows it by deleting the lockfile.
-        @dask.delayed
-        def postsave_remove_lockfile(store_op, lock_path):
-            if os.path.exists(lock_path):
-                try:
-                    os.unlink(lock_path)
-                except Exception as e:
-                    msg = f'Could not remove lockfile "{lock_path}".  Error:\n{e}'
-                    raise Exception(msg)
+            # Wrap that in an extra operation that follows it by deleting the lockfile.
+            @dask.delayed
+            def postsave_remove_lockfile(store_op, lock_path):
+                if os.path.exists(lock_path):
+                    try:
+                        os.unlink(lock_path)
+                    except Exception as e:
+                        msg = f'Could not remove lockfile "{lock_path}".  Error:\n{e}'
+                        raise Exception(msg)
 
-        result = postsave_remove_lockfile(result, self._lockfile_path)
+            result = postsave_remove_lockfile(result, self._lockfile_path)
+
+        else:
+            # Return a delayed anyway.
+            @dask.delayed
+            def no_op():
+                return None
+
+            result = no_op()
 
         return result
 
