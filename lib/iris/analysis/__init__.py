@@ -1266,7 +1266,6 @@ class _Weights(np.ndarray):
         ``super().__new__`` explicitly.
 
         """
-
         self.units = getattr(obj, "units", Unit("1"))
 
     @classmethod
