@@ -98,6 +98,21 @@ def test_stream_multisource(get_cubes_from_netcdf, save_common):
     save_common(final_cube)  # Any problems are expected here.
 
 
+def test_stream_multisource__manychunks(
+    tiny_chunks, get_cubes_from_netcdf, save_common
+):
+    """
+    As above, but with many more small chunks.
+
+    As this previously showed additional, sporadic problems which only emerge
+    (statistically) with larger numbers of chunks.
+
+    """
+    cubes = get_cubes_from_netcdf
+    final_cube = sum(cubes)
+    save_common(final_cube)  # Any problems are expected here.
+
+
 def test_comparison(get_cubes_from_netcdf):
     """
     Comparing multiple loaded files forces co-realisation.

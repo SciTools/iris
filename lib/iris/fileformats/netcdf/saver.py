@@ -45,13 +45,12 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
 import iris.util
 
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
-from ._dask_locks import get_worker_lock
 
 # Avoid warning about unused import.
 # We could use an __all__, but we don't want to maintain one here
@@ -498,38 +497,6 @@ class _FillValueMaskCheckAndStoreTarget:
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
-class DeferredSaveWrapper:
-    """
-    An object which mimics the data access of a netCDF4.Variable, and can be written to.
-    It encapsulates the netcdf file and variable which are actually to be written to.
-    This opens the file each time, to enable writing the data chunk, then closes it.
-    TODO: could be improved with a caching scheme, but this just about works.
-    """
-
-    def __init__(self, filepath, cf_var):  # , lockfile_path):
-        self.path = filepath
-        self.varname = cf_var.name
-        self.lock = get_worker_lock(self.path)
-
-    def __setitem__(self, keys, array_data):
-        # Write to the variable.
-        # First acquire a file-specific lock for all workers writing to this file.
-        self.lock.acquire()
-        # Open the file for writing + write to the specific file variable.
-        dataset = None
-        try:
-            dataset = _thread_safe_nc.DatasetWrapper(self.path, "r+")
-            var = dataset.variables[self.varname]
-            var[keys] = array_data
-        finally:
-            if dataset:
-                dataset.close()
-            self.lock.release()
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"
-
-
 class Saver:
     """A manager for saving netcdf files."""
 
@@ -591,12 +558,15 @@ class Saver:
         self._mesh_dims = {}
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
+        #: Target filepath
+        self.filepath = os.path.abspath(filename)
         #: Whether lazy saving.
         self.lazy_saves = not compute
         #: A list of deferred writes for lazy saving : each is a (source, target) pair
         self.deferred_writes = []
-        #: Target filepath
-        self.filepath = os.path.abspath(filename)
+        # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
+        #: A per-file write lock to prevent dask attempting overlapping writes.
+        self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
         #: NetCDF dataset
         self._dataset = None
         try:
@@ -2509,8 +2479,10 @@ class Saver:
                 def store(data, cf_var, fill_value):
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
-                    writeable_var_wrapper = DeferredSaveWrapper(
-                        self.filepath, cf_var  # , self._lockfile_path
+                    writeable_var_wrapper = (
+                        _thread_safe_nc.DeferredSaveWrapper(
+                            self.filepath, cf_var, self.file_write_lock
+                        )
                     )
                     # Add to the list of deferred writes, used in _deferred_save().
                     self.deferred_writes.append((data, writeable_var_wrapper))
@@ -2903,7 +2875,7 @@ def save(
     # process workers (only threaded).
     result = sman._deferred_save()
     if compute:
-        result.compute()
+        result = result.compute()
         result = None
 
     return result
