@@ -39,6 +39,12 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ enabled lazy evaluation of :obj:`~iris.analysis.RMS` calcuations
    with weights. (:pull:`5017`)
 
+#. `@schlunma`_ allowed the usage of cubes, coordinates, cell measures, or
+   ancillary variables as weights for cube aggregations
+   (:meth:`iris.cube.Cube.collapsed`, :meth:`iris.cube.Cube.aggregated_by`, and
+   :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
+   if necessary. (:pull:`5084`)
+
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
    and :func:`iris.quickplot.hist`. (:pull:`5189`)
 
