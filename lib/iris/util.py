@@ -1171,7 +1171,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):
         cube_add_method(new_dm_item, new_dims)
 
     if scalar_coord is not None:
-        scalar_coord = src_cube.coord(scalar_coord)
+        scalar_coord = src_cube.coord(scalar_coord, dim_coords=False)
         if not scalar_coord.shape == (1,):
             emsg = scalar_coord.name() + "is not a scalar coordinate."
             raise ValueError(emsg)
