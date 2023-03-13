@@ -1710,10 +1710,11 @@ def hist(x, *args, **kwargs):
 
     Args:
 
-    * x: :class:`~iris.cube.Cube`, :class:`~iris.coords.Coord`,
-    :class:`~iris.coords.CellMeasure`, or :class:`~iris.coords.AncillaryVariable`
-        A cube, coordinate, cell measure or ancillary variable that will be used
-        as the values that will be used to create the histogram.
+    * x:
+        A :class:`~iris.cube.Cube`, :class:`~iris.coords.Coord`,
+        :class:`~iris.coords.CellMeasure`, or :class:`~iris.coords.AncillaryVariable`
+        that will be used as the values that will be used to create the
+        histogram.
         Note that if a coordinate is given, the points are used, ignoring the
         bounds.
 
