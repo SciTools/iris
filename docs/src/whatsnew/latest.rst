@@ -140,6 +140,7 @@ This document explains the changes made to Iris for this release
 
 .. _@fnattino: https://github.com/fnattino
 .. _@ed-hawkins: https://github.com/ed-hawkins
+.. _@scottrobinson02: https://github.com/scottrobinson02
 
 .. comment
     Whatsnew resources in alphabetical order:
