@@ -56,6 +56,11 @@ This document explains the changes made to Iris for this release
    cubes with masked :class:`iris.coords.CellMeasure`.
    (:issue:`5147`, :pull:`5181`)
 
+#. `@scottrobinson02`_ fixed :class:`iris.util.new_axis` creating an anonymous new
+   dimension, when the scalar coord provided is already a dim coord.
+   (:issue:`4415`, :pull:`5194`)
+
+
 
 💣 Incompatible Changes
 =======================

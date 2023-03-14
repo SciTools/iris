@@ -122,7 +122,7 @@ class Test:
         stock_cube.add_aux_coord(coord)
 
         new_cube = iris.util.new_axis(stock_cube, coord)
-        with pytest.raises(iris.exceptions.CoordinateNotFoundError):
+        with pytest.raises(ValueError, match="is already a dimension coordinate."):
             iris.util.new_axis(new_cube, coord)
 
     def test_promote_non_scalar(self, stock_cube):

@@ -1171,9 +1171,15 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):
         cube_add_method(new_dm_item, new_dims)
 
     if scalar_coord is not None:
-        scalar_coord = src_cube.coord(scalar_coord, dim_coords=False)
+        scalar_coord = src_cube.coord(scalar_coord)
+        try:
+            src_cube.coord(scalar_coord, dim_coords=False)
+        except iris.exceptions.CoordinateNotFoundError:
+            emsg = scalar_coord.name() + " is already a dimension coordinate."
+            raise ValueError(emsg)
+
         if not scalar_coord.shape == (1,):
-            emsg = scalar_coord.name() + "is not a scalar coordinate."
+            emsg = scalar_coord.name() + " is not a scalar coordinate."
             raise ValueError(emsg)
 
     expand_extras = [
