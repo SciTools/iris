@@ -146,7 +146,7 @@ along the y axis.::
     with dask.config.set(scheduler='processes'):
         dask_bag.map(calculate_sounding).compute()
 
-When this was run on a VDI, which has 4 workers, a speedup of ~4x was achieved,
+When this was run on a machine with 4 workers, a speedup of ~4x was achieved,
 as expected.
 
 Note that if using the processes scheduler this is some extra time spent
@@ -154,8 +154,8 @@ serialising the data to pass it between workers. For more information on the
 different schedulers available in Dask, see `Dask Scheduler Overview
 <https://docs.dask.org/en/stable/scheduler-overview.html>`_.
 
-For more speed up, it is possible to run the same code on SPICE where you will
-have access to more CPUs.
+For more speed up, it is possible to run the same code on a multi-processing
+system where you will have access to more CPUs.
 
 In this particular example, we are handling multiple numpy arrays and so we use
 dask bags. If working with a single numpy array, it may be more appropriate to
