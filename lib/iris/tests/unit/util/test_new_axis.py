@@ -116,8 +116,20 @@ class Test:
         ]
         self._assert_cube_notis(result, stock_cube)
 
+    def test_existing_dim_coord(self, stock_cube):
+        # Provide an existing dimensional coordinate
+        coord = iris.coords.DimCoord(1, long_name="dim")
+        stock_cube.add_aux_coord(coord)
+
+        new_cube = iris.util.new_axis(stock_cube, coord)
+        with pytest.raises(
+            ValueError, match="is already a dimension coordinate."
+        ):
+            iris.util.new_axis(new_cube, coord)
+
     def test_promote_non_scalar(self, stock_cube):
         # Provide a dimensional coordinate which is not scalar
+        iris.util.demote_dim_coord_to_aux_coord(stock_cube, "foo")
         with pytest.raises(ValueError, match="is not a scalar coordinate."):
             new_axis(stock_cube, "foo")
 
