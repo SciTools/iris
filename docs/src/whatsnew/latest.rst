@@ -26,7 +26,7 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
-#. Welcome and congratulations to `@HGWright`_ for making his first contribution to Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_ and `@scottrobinson02`_ who made their first contributions to Iris! 🎉
 
 
 ✨ Features
@@ -59,7 +59,6 @@ This document explains the changes made to Iris for this release
 #. `@scottrobinson02`_ fixed :class:`iris.util.new_axis` creating an anonymous new
    dimension, when the scalar coord provided is already a dim coord.
    (:issue:`4415`, :pull:`5194`)
-
 
 
 💣 Incompatible Changes
@@ -118,6 +117,7 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
 
+
 💼 Internal
 ===========
 
@@ -133,6 +133,7 @@ This document explains the changes made to Iris for this release
 
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) removed the ``--coding-tests``
    option from Iris' test runner. (:pull:`4765`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
