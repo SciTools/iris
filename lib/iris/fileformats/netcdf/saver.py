@@ -517,7 +517,7 @@ class Saver:
             If True, the Saver performs normal 'synchronous' data writes, where data
             is streamed directly into file variables during the save operation.
             If False, the file is created as normal, but computation and streaming of
-            any lazy array content is instead deferred to :class:`dask.delayed` objects,
+            any lazy array content is instead deferred to :class:`dask.delayed.Delayed` objects,
             which are held in a list in the saver 'delayed_writes' property.
             The relavant file variables are created empty, and the write can
             subsequently be completed by computing the 'save.deferred_writes'.
