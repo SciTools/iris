@@ -2718,7 +2718,7 @@ def save(
     * compute (bool):
         When False, create the output file but defer writing any lazy array content to
         its variables, such as (lazy) data and aux-coords points and bounds.
-        Instead return a class:`dask.delayed` which, when computed, will compute all
+        Instead return a class:`dask.delayed.Delayed` which, when computed, will compute all
         the lazy content and stream it to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
