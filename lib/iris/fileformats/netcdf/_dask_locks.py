@@ -35,7 +35,7 @@ communication so that the mutally exclude each other.
 It is also *conceivable* that multiple processes could write to the same file in
 parallel, if the operating system supports it.  However, this also requires that the
 libnetcdf C library is built with parallel access option, which is not common.
-With the "ordinary" libnetcdf build, a process which attempts to rpen for writing a file
+With the "ordinary" libnetcdf build, a process which attempts to open for writing a file
 which is _already_ open for writing simply raises an access error.
 In any case, Iris netcdf saver will not support this mode of operation, at present.
 
