@@ -12,20 +12,20 @@ types, i.e. local 'threads' scheduler, local 'processes' or distributed.
 In any case, a "iris.fileformats.netcdf.saver.Saver" object contains a netCDF4.Dataset
 targetting an output file, and creates a Saver.lock object to serialise write-accesses
 to the file from dask tasks :  All dask-task file writes go via a
-"iris.fileformats.netcdf.saver.DeferredSaveWrapper" object, which also contains a link
+"iris.fileformats.netcdf.saver.NetCDFWriteProxy" object, which also contains a link
 to the Saver.lock, and uses it to prevent workers from fouling each other.
-For each chunk written, the DeferredSaveWrapper acquires the common per-file lock;
+For each chunk written, the NetCDFWriteProxy acquires the common per-file lock;
 opens a Dataset on the file; performs a write to the relevant variable; closes the
 Dataset and then releases the lock.
 
 For a threaded scheduler, the Saver.lock is a simple threading.Lock().  The workers
-(threads) execute tasks which contain a DeferredSaveWrapper, as above.  All of those
+(threads) execute tasks which contain a NetCDFWriteProxy, as above.  All of those
 contain the common lock, and this is simply **the same object** for all workers, since
 they share an address space.
 
 For a distributed scheduler, the Saver.lock is a `distributed.Lock()` which is
 identified with the output filepath.  This is distributed to the workers by
-serialising the task function arguments, which will include the DeferredSaveWrapper.
+serialising the task function arguments, which will include the NetCDFWriteProxy.
 A worker behaves like a process, though it may execute on a remote machine.  When a
 distributed.Lock is deserialised to reconstruct the worker task, this creates an object
 that communicates with the scheduler.  These objects behave as a single common lock,

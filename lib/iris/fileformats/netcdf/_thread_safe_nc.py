@@ -342,7 +342,7 @@ class NetCDFDataProxy:
             setattr(self, key, value)
 
 
-class DeferredSaveWrapper:
+class NetCDFWriteProxy:
     """
     The "opposite" of a NetCDFDataProxy : An object mimicking the data access of a
     netCDF4.Variable, but where the data is to be ***written to***.

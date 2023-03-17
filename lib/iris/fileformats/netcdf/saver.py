@@ -517,8 +517,8 @@ class Saver:
             If True, the Saver performs normal 'synchronous' data writes, where data
             is streamed directly into file variables during the save operation.
             If False, the file is created as normal, but computation and streaming of
-            any lazy array content is instead deferred to :class:`dask.delayed.Delayed` objects,
-            which are held in a list in the saver 'delayed_writes' property.
+            any lazy array content is instead deferred to :class:`dask.delayed.Delayed`
+            objects, which are held in a list in the saver 'delayed_writes' property.
             The relavant file variables are created empty, and the write can
             subsequently be completed by computing the 'save.deferred_writes'.
 
@@ -2479,13 +2479,11 @@ class Saver:
                 def store(data, cf_var, fill_value):
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
-                    writeable_var_wrapper = (
-                        _thread_safe_nc.DeferredSaveWrapper(
-                            self.filepath, cf_var, self.file_write_lock
-                        )
+                    write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
+                        self.filepath, cf_var, self.file_write_lock
                     )
                     # Add to the list of deferred writes, used in _deferred_save().
-                    self.deferred_writes.append((data, writeable_var_wrapper))
+                    self.deferred_writes.append((data, write_wrapper))
                     # NOTE: in this case, no checking of fill-value violations so just
                     # return dummy values for this.
                     # TODO: just for now -- can probably make this work later
@@ -2718,8 +2716,8 @@ def save(
     * compute (bool):
         When False, create the output file but defer writing any lazy array content to
         its variables, such as (lazy) data and aux-coords points and bounds.
-        Instead return a class:`dask.delayed.Delayed` which, when computed, will compute all
-        the lazy content and stream it to complete the file.
+        Instead return a class:`dask.delayed.Delayed` which, when computed, will
+        compute all the lazy content and stream it to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
 
