@@ -26,7 +26,7 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
-#. Welcome and congratulations to `@HGWright`_ for making his first contribution to Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_ and `@scottrobinson02`_ who made their first contributions to Iris! 🎉
 
 
 ✨ Features
@@ -45,6 +45,9 @@ This document explains the changes made to Iris for this release
    :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
    if necessary. (:pull:`5084`)
 
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
+   and :func:`iris.quickplot.hist`. (:pull:`5189`)
+
 
 🐛 Bugs Fixed
 =============
@@ -55,6 +58,10 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ removed check and error raise for saving
    cubes with masked :class:`iris.coords.CellMeasure`.
    (:issue:`5147`, :pull:`5181`)
+
+#. `@scottrobinson02`_ fixed :class:`iris.util.new_axis` creating an anonymous new
+   dimension, when the scalar coord provided is already a dim coord.
+   (:issue:`4415`, :pull:`5194`)
 
 
 💣 Incompatible Changes
@@ -113,6 +120,7 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
 
+
 💼 Internal
 ===========
 
@@ -129,12 +137,14 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) removed the ``--coding-tests``
    option from Iris' test runner. (:pull:`4765`)
 
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
 .. _@fnattino: https://github.com/fnattino
 .. _@ed-hawkins: https://github.com/ed-hawkins
+.. _@scottrobinson02: https://github.com/scottrobinson02
 
 .. comment
     Whatsnew resources in alphabetical order:
