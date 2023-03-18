@@ -26,7 +26,6 @@ import cf_units
 import dask
 import dask.array as da
 import numpy as np
-import numpy.ma as ma
 
 from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
@@ -468,39 +467,113 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-class _FillValueMaskCheckAndStoreTarget:
-    """
-    To be used with da.store. Remembers whether any element was equal to a
-    given value and whether it was masked, before passing the chunk to the
-    given target.
-
-    NOTE: target needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
-
-    """
-
-    def __init__(self, target, fill_value=None):
-        assert hasattr(target, "THREAD_SAFE_FLAG")
-        self.target = target
-        self.fill_value = fill_value
-        self.contains_value = False
-        self.is_masked = False
-
-    def __setitem__(self, keys, arr):
-        if self.fill_value is not None:
-            self.contains_value = self.contains_value or self.fill_value in arr
-        self.is_masked = self.is_masked or ma.is_masked(arr)
-        self.target[keys] = arr
-
-
 # NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
+_FillvalueCheckInfo = collections.namedtuple(
+    "_FillvalueCheckInfo", ["user_value", "check_value", "dtype", "varname"]
+)
+
+
+def _PRINT_DEBUG(*args):
+    _DO_DEBUG = True
+    # _DO_DEBUG = False
+    if _DO_DEBUG:
+        print(*args)
+
+
+def _data_fillvalue_check(arraylib, data, check_value):
+    """
+    Check whether an array is masked, and whether it contains a fill-value.
+
+    Parameters
+    ----------
+    arraylib : module
+        Either numpy or dask.array : When dask, results are lazy computations.
+    data : array-like
+        Array to check (numpy or dask)
+    check_value : number or None
+        If not None, fill-value to check for existence in the array.
+        If None, do not do value-in-array check
+
+    Returns
+    -------
+        is_masked : bool
+            True if array has any masked points.
+        contains_value : bool
+            True if array contains check_value.
+            Always False if check_value is None.
+
+    """
+    is_masked = arraylib.any(arraylib.ma.getmaskarray(data))
+    if check_value is None:
+        contains_value = False
+    else:
+        contains_value = arraylib.any(data == check_value)
+    return is_masked, contains_value
+
+
+def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
+    """
+    From the given information, work out whether there was a possible or actual
+    fill-value collision, and if so construct a warning.
+
+    Parameters
+    ----------
+    fill_info : dict
+        A dictinonary containing the context of the fill-value check
+    is_masked : bool
+        whether the data arary was masked
+    contains_fill_value : bool
+        whether the data array contained the fill-value
+    warn : bool
+        if True, also issue any resulting warning immediately.
+
+    Returns
+    -------
+        None or :class:`Warning`
+        If not None, indicates a known or possible problem with filling
+
+    """
+    varname = fill_info.varname
+    user_value = fill_info.user_value
+    check_value = fill_info.check_value
+    is_byte_data = fill_info.dtype.itemsize == 1
+    result = None
+    if is_byte_data and is_masked and user_value is None:
+        _PRINT_DEBUG(f'Data check "{varname}" : masked byte warning')
+        result = UserWarning(
+            f"CF var '{varname}' contains byte data with masked points, but "
+            "no fill_value keyword was given. As saved, these "
+            "points will read back as valid values. To save as "
+            "masked byte data, `_FillValue` needs to be explicitly "
+            "set. For Cube data this can be done via the 'fill_value' "
+            "keyword during saving, otherwise use ncedit/equivalent."
+        )
+    elif contains_fill_value:
+        _PRINT_DEBUG(f'Data check "{varname}" : contains-fill warning')
+        result = UserWarning(
+            f"CF var '{varname}' contains unmasked data points equal to the "
+            f"fill-value, {check_value}. As saved, these points will read back "
+            "as missing data. To save these as normal values, "
+            "`_FillValue` needs to be set to not equal any valid data "
+            "points. For Cube data this can be done via the 'fill_value' "
+            "keyword during saving, otherwise use ncedit/equivalent."
+        )
+    else:
+        _PRINT_DEBUG(f'Data check "{varname}" : all-values-ok')
+
+    if warn and result is not None:
+        warnings.warn(result)
+    return result
+
+
 class Saver:
     """A manager for saving netcdf files."""
 
-    def __init__(self, filename, netcdf_format, compute=True):
+    def __init__(self, filename, netcdf_format):
         """
         A manager for saving netcdf files.
 
@@ -512,15 +585,6 @@ class Saver:
         * netcdf_format (string):
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
-
-        * compute (bool):
-            If True, the Saver performs normal 'synchronous' data writes, where data
-            is streamed directly into file variables during the save operation.
-            If False, the file is created as normal, but computation and streaming of
-            any lazy array content is instead deferred to :class:`dask.delayed.Delayed`
-            objects, which are held in a list in the saver 'delayed_writes' property.
-            The relavant file variables are created empty, and the write can
-            subsequently be completed by computing the 'save.deferred_writes'.
 
         Returns:
             None.
@@ -560,8 +624,6 @@ class Saver:
         self._formula_terms_cache = {}
         #: Target filepath
         self.filepath = os.path.abspath(filename)
-        #: Whether lazy saving.
-        self.lazy_saves = not compute
         #: A list of deferred writes for lazy saving : each is a (source, target) pair
         self.deferred_writes = []
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
@@ -2473,44 +2535,8 @@ class Saver:
             #  contains just 1 row, so the cf_var is 1D.
             data = data.squeeze(axis=0)
 
-        if is_lazy_data(data):
-            if self.lazy_saves:
-                # deferred lazy streaming
-                def store(data, cf_var, fill_value):
-                    # Create a data-writeable object that we can stream into, which
-                    # encapsulates the file to be opened + variable to be written.
-                    write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
-                        self.filepath, cf_var, self.file_write_lock
-                    )
-                    # Add to the list of deferred writes, used in _deferred_save().
-                    self.deferred_writes.append((data, write_wrapper))
-                    # NOTE: in this case, no checking of fill-value violations so just
-                    # return dummy values for this.
-                    # TODO: just for now -- can probably make this work later
-                    is_masked, contains_value = False, False
-                    return is_masked, contains_value
-
-            else:
-                # Immediate streaming store : check mask+fill as we go.
-                def store(data, cf_var, fill_value):
-                    # Store lazy data and check whether it is masked and contains
-                    # the fill value
-                    target = _FillValueMaskCheckAndStoreTarget(
-                        cf_var, fill_value
-                    )
-                    da.store([data], [target], lock=False)
-                    return target.is_masked, target.contains_value
-
-        else:
-            # Real data is always written directly, i.e. not via lazy save.
-            def store(data, cf_var, fill_value):
-                cf_var[:] = data
-                is_masked = np.ma.is_masked(data)
-                contains_value = fill_value is not None and fill_value in data
-                return is_masked, contains_value
-
+        # Decide whether we are checking for fill-value collisions.
         dtype = cf_var.dtype
-
         # fill_warn allows us to skip warning if packing attributes have been
         #  specified. It would require much more complex operations to work out
         #  what the values and fill_value _would_ be in such a case.
@@ -2518,56 +2544,116 @@ class Saver:
             if fill_value is not None:
                 fill_value_to_check = fill_value
             else:
+                # Retain 'fill_value == None', to show that no specific value was given.
+                # But set 'fill_value_to_check' to a calculated value
                 fill_value_to_check = _thread_safe_nc.default_fillvals[
                     dtype.str[1:]
                 ]
         else:
+            # A None means we will NOT check for collisions.
             fill_value_to_check = None
+
+        fill_info = _FillvalueCheckInfo(
+            user_value=fill_value,
+            check_value=fill_value_to_check,
+            dtype=dtype,
+            varname=cf_var.name,
+        )
+
+        doing_delayed_save = is_lazy_data(data)
+        if doing_delayed_save:
+            # save lazy data with a delayed operation.  For now, we just record the
+            # necessary information -- a single, complete delayed action is constructed
+            # later by a call to _delayed_save().
+            def store(data, cf_var, fill_value):
+                # Create a data-writeable object that we can stream into, which
+                # encapsulates the file to be opened + variable to be written.
+                write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
+                    self.filepath, cf_var, self.file_write_lock
+                )
+                # Add to the list of deferred writes, used in _delayed_save().
+                self.deferred_writes.append((data, write_wrapper, fill_info))
+                # In this case, fill-value checking is done later. But return 2 dummy
+                # values, to be consistent with the non-streamed "store" signature.
+                is_masked, contains_value = False, False
+                return is_masked, contains_value
+
+        else:
+            # Real data is always written directly, i.e. not via lazy save.
+            # We also check it immediately for any fill-value problems.
+            def store(data, cf_var, fill_value):
+                cf_var[:] = data
+                return _data_fillvalue_check(np, data, fill_value)
 
         # Store the data and check if it is masked and contains the fill value.
         is_masked, contains_fill_value = store(
             data, cf_var, fill_value_to_check
         )
-
-        if dtype.itemsize == 1 and fill_value is None:
-            if is_masked:
-                msg = (
-                    "CF var '{}' contains byte data with masked points, but "
-                    "no fill_value keyword was given. As saved, these "
-                    "points will read back as valid values. To save as "
-                    "masked byte data, `_FillValue` needs to be explicitly "
-                    "set. For Cube data this can be done via the 'fill_value' "
-                    "keyword during saving, otherwise use ncedit/equivalent."
-                )
-                warnings.warn(msg.format(cf_var.name))
-        elif contains_fill_value:
-            msg = (
-                "CF var '{}' contains unmasked data points equal to the "
-                "fill-value, {}. As saved, these points will read back "
-                "as missing data. To save these as normal values, "
-                "`_FillValue` needs to be set to not equal any valid data "
-                "points. For Cube data this can be done via the 'fill_value' "
-                "keyword during saving, otherwise use ncedit/equivalent."
+        if doing_delayed_save:
+            _PRINT_DEBUG(
+                f'Data check "{fill_info.varname}" : NO CHECK YET (delayed)'
             )
-            warnings.warn(msg.format(cf_var.name, fill_value))
+        else:
+            # Issue a fill-value warning immediately, if appropriate.
+            _fillvalue_report(
+                fill_info, is_masked, contains_fill_value, warn=True
+            )
 
-    def _deferred_save(self):
+    def _delayed_save(self):
         """
         Create a 'delayed' to trigger file completion for lazy saves.
 
         This contains all the deferred writes, which complete the file by filling out
-        the data of variables initially created empty.
+        the data of variables initially created empty, and also the checks for
+        potential fill-value collisions.
 
         """
         if self.deferred_writes:
             # Create a single delayed da.store operation to complete the file.
-            sources, targets = zip(*self.deferred_writes)
-            result = da.store(sources, targets, compute=False, lock=False)
+            sources, targets, fill_infos = zip(*self.deferred_writes)
+            store_op = da.store(sources, targets, compute=False, lock=False)
+
+            # Construct a delayed fill-check operation for each (lazy) source array.
+            delayed_fillvalue_checks = [
+                # NB with arraylib=dask.array, this routine does lazy array computation
+                _data_fillvalue_check(da, source, fillinfo.check_value)
+                for source, fillinfo in zip(sources, fill_infos)
+            ]
+
+            # Return a single delayed object which completes the delayed saves and
+            # returns a list of any fill-value warnings.
+            @dask.delayed
+            def compute_and_return_warnings(store_op, fv_infos, fv_checks):
+                # Note: we don't actually *do* anything with the store_op, but
+                # including it here ensures that dask will compute it (thus performing
+                # all the delayed saves), before calling this function.
+                results = []
+                # Pair each fill_check result (is_masked, contains_value) with its
+                # fillinfo and construct a suitable Warning if needed.
+                for fillinfo, (is_masked, contains_value) in zip(
+                    fv_infos, fv_checks
+                ):
+                    fv_warning = _fillvalue_report(
+                        fill_info=fillinfo,
+                        is_masked=is_masked,
+                        contains_fill_value=contains_value,
+                    )
+                    if fv_warning is not None:
+                        # Collect the warnings and return them.
+                        results.append(fv_warning)
+                return results
+
+            result = compute_and_return_warnings(
+                store_op,
+                fv_infos=fill_infos,
+                fv_checks=delayed_fillvalue_checks,
+            )
+
         else:
-            # Return a delayed anyway, just for usage consistency.
+            # Return a delayed, which returns an empty list, for usage consistency.
             @dask.delayed
             def no_op():
-                return None
+                return []
 
             result = no_op()
 
@@ -2720,9 +2806,12 @@ def save(
         compute all the lazy content and stream it to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
+        Note: when computed, the returned class:`dask.delayed.Delayed` object returns
+        a list of :class:`Warning` :  These are any warnings that _would_ have been
+        issued in the save call, if compute had been True.
 
     Returns:
-        None.
+        A list of :class:`Warning`.
 
     .. note::
 
@@ -2823,7 +2912,7 @@ def save(
     # Initialise Manager for saving
     # N.B. FOR NOW -- we are cheating and making all saves compute=False, as otherwise
     # non-lazy saves do *not* work with the distributed scheduler.
-    with Saver(filename, netcdf_format, compute=False) as sman:
+    with Saver(filename, netcdf_format) as sman:
         # Iterate through the cubelist.
         for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(
@@ -2869,11 +2958,14 @@ def save(
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=conventions)
 
-    # For now, not using Saver(compute=True) as it doesn't work with distributed or
-    # process workers (only threaded).
-    result = sman._deferred_save()
+    result = sman._delayed_save()
     if compute:
-        result = result.compute()
+        # Complete the saves now, and handle any delayed warnings that occurred
+        result_warnings = result.compute()
+        # Issue any delayed warnings from the compute.
+        for delayed_warning in result_warnings:
+            warnings.warn(delayed_warning)
+
         result = None
 
     return result
