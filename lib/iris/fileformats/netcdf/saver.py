@@ -594,16 +594,17 @@ class Saver:
             which source data was lazy.  These writes can be completed later, see
             :meth:`delayed_completion`.
 
-        Returns:
-            None.
+        Returns
+        -------
+        None
 
-        For example::
-
-            # Initialise Manager for saving
-            with Saver(filename, netcdf_format) as sman:
-                # Iterate through the cubelist.
-                for cube in cubes:
-                    sman.write(cube)
+        For example
+        -----------
+        # Initialise Manager for saving
+        with Saver(filename, netcdf_format) as sman:
+            # Iterate through the cubelist.
+            for cube in cubes:
+                sman.write(cube)
 
         """
         if netcdf_format not in [
