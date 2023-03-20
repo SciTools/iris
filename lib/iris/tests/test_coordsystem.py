@@ -316,8 +316,8 @@ class Test_GeogCS_mutation(tests.IrisTest):
         # CRS changes
         cs = GeogCS(6543210, 6500000)
         _ = cs.as_cartopy_crs()
-        self.assertTrue("_globe" in cs.__dict__)
-        self.assertTrue("_crs" in cs.__dict__)
+        self.assertIn("_globe", cs.__dict__)
+        self.assertIn("_crs", cs.__dict__)
         self.assertEqual(cs.semi_major_axis, 6543210)
         cs.datum = "OSGB 1936"
         self.assertEqual(cs.as_cartopy_crs().datum, "OSGB 1936")

@@ -365,16 +365,16 @@ class TestSplittableInt(tests.IrisTest):
         self.assertEqual(t, 400033)
         self.assertNotEqual(t, 33)
 
-        self.assertTrue(t >= 400033)
+        self.assertGreaterEqual(t, 400033)
         self.assertFalse(t >= 400034)
 
-        self.assertTrue(t <= 400033)
+        self.assertLessEqual(t, 400033)
         self.assertFalse(t <= 400032)
 
-        self.assertTrue(t > 400032)
+        self.assertGreater(t, 400032)
         self.assertFalse(t > 400034)
 
-        self.assertTrue(t < 400034)
+        self.assertLess(t, 400034)
         self.assertFalse(t < 400032)
 
     def test_name_mapping(self):

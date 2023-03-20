@@ -166,12 +166,12 @@ class Test_coord_system(tests.IrisTest):
             result = field.coord_system()
         if not rotated:
             # It should return a standard unrotated CS.
-            self.assertTrue(mock_cs_mod.GeogCS.call_count == 1)
+            self.assertEqual(mock_cs_mod.GeogCS.call_count, 1)
             self.assertEqual(result, mock_cs_mod.GeogCS())
         else:
             # It should return a rotated CS with the correct makeup.
-            self.assertTrue(mock_cs_mod.GeogCS.call_count == 1)
-            self.assertTrue(mock_cs_mod.RotatedGeogCS.call_count == 1)
+            self.assertEqual(mock_cs_mod.GeogCS.call_count, 1)
+            self.assertEqual(mock_cs_mod.RotatedGeogCS.call_count, 1)
             self.assertEqual(result, mock_cs_mod.RotatedGeogCS())
             self.assertEqual(
                 mock_cs_mod.RotatedGeogCS.call_args_list[0],

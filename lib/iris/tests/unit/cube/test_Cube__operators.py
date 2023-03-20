@@ -154,7 +154,7 @@ class Test_lazy_maths__scalar_cube(tests.IrisTest):
     def check_common(self, c1, c2, math_op):
         cube = math_op(c1, c2)
         data = cube.data
-        self.assertTrue(isinstance(data, np.ndarray))
+        self.assertIsInstance(data, np.ndarray)
         self.assertEqual(data.shape, ())
 
     def test_add_scalar__int(self):

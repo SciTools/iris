@@ -661,8 +661,9 @@ class TestNetCDFSave(tests.IrisTest):
             # Test NETCDF4_64BIT file format saving.
             iris.save(cube, file_out, netcdf_format="NETCDF3_64BIT")
             ds = _thread_safe_nc.DatasetWrapper(file_out)
-            self.assertTrue(
-                ds.file_format in ["NETCDF3_64BIT", "NETCDF3_64BIT_OFFSET"],
+            self.assertIn(
+                ds.file_format,
+                ["NETCDF3_64BIT", "NETCDF3_64BIT_OFFSET"],
                 "Failed to save as NETCDF3_64BIT format",
             )
             ds.close()
@@ -1374,11 +1375,11 @@ class TestCFStandardName(tests.IrisTest):
 
     def test_std_name_lookup_pass(self):
         # Test performing a CF standard name look-up hit.
-        self.assertTrue("time" in iris.std_names.STD_NAMES)
+        self.assertIn("time", iris.std_names.STD_NAMES)
 
     def test_std_name_lookup_fail(self):
         # Test performing a CF standard name look-up miss.
-        self.assertFalse("phenomenon_time" in iris.std_names.STD_NAMES)
+        self.assertNotIn("phenomenon_time", iris.std_names.STD_NAMES)
 
 
 @tests.skip_data
@@ -1398,8 +1399,9 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
                 cube = iris.load_cube(temp_filename)
 
                 # Check correct number and type of flags
-                self.assertTrue(
-                    len(cube.attributes["ukmo__process_flags"]) == 1,
+                self.assertEqual(
+                    len(cube.attributes["ukmo__process_flags"]),
+                    1,
                     "Mismatch in number of process flags.",
                 )
                 process_flag = cube.attributes["ukmo__process_flags"][0]
@@ -1427,8 +1429,9 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
 
                 # Check correct number and type of flags
                 process_flags = cube.attributes["ukmo__process_flags"]
-                self.assertTrue(
-                    len(process_flags) == len(bits),
+                self.assertEqual(
+                    len(process_flags),
+                    len(bits),
                     "Mismatch in " "number of process flags.",
                 )
                 self.assertEqual(set(process_flags), set(descriptions))

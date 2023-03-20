@@ -106,8 +106,9 @@ class TestClipString(tests.IrisTest):
         )
 
         # Also test the rider was added
-        self.assertTrue(
-            self.rider in result,
+        self.assertIn(
+            self.rider,
+            result,
             "Rider was not added to the string when it should have been.",
         )
 
@@ -125,8 +126,9 @@ class TestClipString(tests.IrisTest):
         )
 
         # Also test that no rider was added on the end if the string was not clipped
-        self.assertFalse(
-            self.rider in result,
+        self.assertNotIn(
+            self.rider,
+            result,
             "Rider was adding to the string when it should not have been.",
         )
 

@@ -219,7 +219,7 @@ class TestBasicMaths(tests.IrisTest):
         a = self.cube
 
         b = iris.analysis.maths.add(a, self.cube, in_place=True)
-        self.assertTrue(b is a)
+        self.assertIs(b, a)
         self.assertCML(a, ("analysis", "addition_in_place.cml"))
 
     def test_addition_in_place_coord(self):
@@ -227,7 +227,7 @@ class TestBasicMaths(tests.IrisTest):
 
         # scalar is promoted to a coordinate internally
         b = iris.analysis.maths.add(a, 1000, in_place=True)
-        self.assertTrue(b is a)
+        self.assertIs(b, a)
         self.assertCML(a, ("analysis", "addition_in_place_coord.cml"))
 
     def test_addition_different_attributes(self):

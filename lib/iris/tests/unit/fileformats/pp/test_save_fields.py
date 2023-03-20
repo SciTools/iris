@@ -34,16 +34,16 @@ class TestSaveFields(tests.IrisTest):
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], "foo.pp")
-        self.assertTrue(mock.call("foo.pp", "wb") in m.mock_calls)
-        self.assertTrue(mock.call().write("saved") in m.mock_calls)
+        self.assertIn(mock.call("foo.pp", "wb"), m.mock_calls)
+        self.assertIn(mock.call().write("saved"), m.mock_calls)
 
     def test_save_append(self):
         open_func = "builtins.open"
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], "foo.pp", append=True)
-        self.assertTrue(mock.call("foo.pp", "ab") in m.mock_calls)
-        self.assertTrue(mock.call().write("saved") in m.mock_calls)
+        self.assertIn(mock.call("foo.pp", "ab"), m.mock_calls)
+        self.assertIn(mock.call().write("saved"), m.mock_calls)
 
 
 if __name__ == "__main__":

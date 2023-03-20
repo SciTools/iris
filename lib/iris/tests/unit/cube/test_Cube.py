@@ -214,7 +214,7 @@ class Test_extract(tests.IrisTest):
         constraint = iris.Constraint(name="a2")
         cube = Cube(1, long_name="a1")
         res = cube.extract(constraint)
-        self.assertIs(res, None)
+        self.assertIsNone(res)
 
     def test_scalar_cube_coord_match(self):
         # Ensure that extract is able to extract a scalar cube according to
@@ -234,7 +234,7 @@ class Test_extract(tests.IrisTest):
         coord = iris.coords.AuxCoord(0, long_name="scalar_coord")
         cube.add_aux_coord(coord, None)
         res = cube.extract(constraint)
-        self.assertIs(res, None)
+        self.assertIsNone(res)
 
     def test_1d_cube_exists(self):
         # Ensure that extract is able to extract from a 1d cube.
@@ -248,7 +248,7 @@ class Test_extract(tests.IrisTest):
         constraint = iris.Constraint(name="a2")
         cube = Cube([1], long_name="a1")
         res = cube.extract(constraint)
-        self.assertIs(res, None)
+        self.assertIsNone(res)
 
 
 class Test_xml(tests.IrisTest):
@@ -3019,7 +3019,7 @@ class Test__eq__data(tests.IrisTest):
     def test_data_float_eq(self):
         cube1 = Cube([1.0])
         cube2 = Cube([1.0])
-        self.assertTrue(cube1 == cube2)
+        self.assertEqual(cube1, cube2)
 
     def test_data_float_eqtol(self):
         val1 = np.array(1.0, dtype=np.float32)
@@ -3029,35 +3029,35 @@ class Test__eq__data(tests.IrisTest):
         cube1 = Cube([val1])
         cube2 = Cube([val2])
         self.assertNotEqual(val1, val2)
-        self.assertTrue(cube1 == cube2)
+        self.assertEqual(cube1, cube2)
 
     def test_data_float_not_eq(self):
         val1 = 1.0
         val2 = 1.0 + 1.0e-4
         cube1 = Cube([1.0, val1])
         cube2 = Cube([1.0, val2])
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     def test_data_int_eq(self):
         cube1 = Cube([1, 2, 3])
         cube2 = Cube([1, 2, 3])
-        self.assertTrue(cube1 == cube2)
+        self.assertEqual(cube1, cube2)
 
     def test_data_int_not_eq(self):
         cube1 = Cube([1, 2, 3])
         cube2 = Cube([1, 2, 0])
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     # NOTE: since numpy v1.18, boolean array subtract is deprecated.
     def test_data_bool_eq(self):
         cube1 = Cube([True, False])
         cube2 = Cube([True, False])
-        self.assertTrue(cube1 == cube2)
+        self.assertEqual(cube1, cube2)
 
     def test_data_bool_not_eq(self):
         cube1 = Cube([True, False])
         cube2 = Cube([True, True])
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
 
 class Test__eq__meta(tests.IrisTest):
@@ -3066,7 +3066,7 @@ class Test__eq__meta(tests.IrisTest):
         cube2 = Cube([0, 1])
         avr = AncillaryVariable([2, 3], long_name="foo")
         cube2.add_ancillary_variable(avr, 0)
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     def test_ancillary_reorder(self):
         cube1 = Cube([0, 1])
@@ -3079,7 +3079,7 @@ class Test__eq__meta(tests.IrisTest):
         cube1.add_ancillary_variable(avr2, 0)
         cube2.add_ancillary_variable(avr2, 0)
         cube2.add_ancillary_variable(avr1, 0)
-        self.assertTrue(cube1 == cube2)
+        self.assertEqual(cube1, cube2)
 
     def test_ancillary_diff_data(self):
         cube1 = Cube([0, 1])
@@ -3088,14 +3088,14 @@ class Test__eq__meta(tests.IrisTest):
         avr2 = AncillaryVariable([4, 5], long_name="foo")
         cube1.add_ancillary_variable(avr1, 0)
         cube2.add_ancillary_variable(avr2, 0)
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     def test_cell_measure_fail(self):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
         cms = CellMeasure([2, 3], long_name="foo")
         cube2.add_cell_measure(cms, 0)
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     def test_cell_measure_reorder(self):
         cube1 = Cube([0, 1])
@@ -3108,7 +3108,7 @@ class Test__eq__meta(tests.IrisTest):
         cube1.add_cell_measure(cms2, 0)
         cube2.add_cell_measure(cms2, 0)
         cube2.add_cell_measure(cms1, 0)
-        self.assertTrue(cube1 == cube2)
+        self.assertEqual(cube1, cube2)
 
     def test_cell_measure_diff_data(self):
         cube1 = Cube([0, 1])
@@ -3117,14 +3117,14 @@ class Test__eq__meta(tests.IrisTest):
         cms2 = CellMeasure([4, 5], long_name="foo")
         cube1.add_cell_measure(cms1, 0)
         cube2.add_cell_measure(cms2, 0)
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     def test_cell_method_fail(self):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
         cmth = CellMethod("mean", "time", "6hr")
         cube2.add_cell_method(cmth)
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     # Unlike cell measures, cell methods are order sensitive.
     def test_cell_method_reorder_fail(self):
@@ -3138,7 +3138,7 @@ class Test__eq__meta(tests.IrisTest):
         cube1.add_cell_method(cmth2)
         cube2.add_cell_method(cmth2)
         cube2.add_cell_method(cmth1)
-        self.assertFalse(cube1 == cube2)
+        self.assertNotEqual(cube1, cube2)
 
     def test_cell_method_correct_order(self):
         cube1 = Cube([0, 1])
@@ -3151,7 +3151,7 @@ class Test__eq__meta(tests.IrisTest):
         cube1.add_cell_method(cmth2)
         cube2.add_cell_method(cmth1)
         cube2.add_cell_method(cmth2)
-        self.assertTrue(cube1 == cube2)
+        self.assertEqual(cube1, cube2)
 
 
 @pytest.fixture

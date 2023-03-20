@@ -327,7 +327,7 @@ class Test_aggregated_by(tests.IrisTest):
             "simple_agg", self.mock_weighted_agg, returned=True
         )
 
-        self.assertTrue(isinstance(output, tuple))
+        self.assertIsInstance(output, tuple)
         self.assertEqual(len(output), 2)
         self.assertEqual(output[0].shape, (2, 11))
         self.assertEqual(output[1].shape, (2, 11))
@@ -526,11 +526,11 @@ class Test_aggregated_by__lazy(tests.IrisTest):
 
         self.assertTrue(self.cube.has_lazy_data())
 
-        self.assertTrue(isinstance(output, tuple))
+        self.assertIsInstance(output, tuple)
         self.assertEqual(len(output), 2)
 
         cube = output[0]
-        self.assertTrue(isinstance(cube, Cube))
+        self.assertIsInstance(cube, Cube)
         self.assertTrue(cube.has_lazy_data())
         self.assertEqual(cube.shape, (2, 11))
         row_0 = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]

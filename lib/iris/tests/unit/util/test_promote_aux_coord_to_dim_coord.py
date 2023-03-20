@@ -29,7 +29,7 @@ class Test(tests.IrisTest):
         cube_a = stock.hybrid_height()
         cube_b = cube_a.copy()
         promote_aux_coord_to_dim_coord(cube_b, "model_level_number")
-        self.assertTrue(cube_a.coord("level_height") in cube_b.aux_coords)
+        self.assertIn(cube_a.coord("level_height"), cube_b.aux_coords)
 
     @tests.skip_data
     def test_argument_is_coord_instance(self):

@@ -32,12 +32,12 @@ class TestCoordSlicing(tests.IrisTest):
         a = self.lat
         b = a.copy()
         self.assertEqual(a, b)
-        self.assertFalse(a is b)
+        self.assertIsNot(a, b)
 
         a = self.lat
         b = a[:]
         self.assertEqual(a, b)
-        self.assertFalse(a is b)
+        self.assertIsNot(a, b)
 
     def test_slice_multiple_indices(self):
         aux_lat = iris.coords.AuxCoord.from_coord(self.lat)

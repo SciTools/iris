@@ -45,7 +45,7 @@ class Test(tests.IrisTest):
         cube_a = stock.hybrid_height()
         cube_b = cube_a.copy()
         demote_dim_coord_to_aux_coord(cube_b, "level_height")
-        self.assertTrue(cube_a.coord("level_height") in cube_b.aux_coords)
+        self.assertIn(cube_a.coord("level_height"), cube_b.aux_coords)
 
     def test_coord_of_that_name_does_not_exist(self):
         cube_a = stock.simple_2d_w_multidim_and_scalars()

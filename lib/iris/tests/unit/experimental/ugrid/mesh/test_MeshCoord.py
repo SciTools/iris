@@ -495,7 +495,7 @@ class Test_cube_containment(tests.IrisTest):
         # The resulting coord is an AuxCoord instead of a MeshCoord, but the
         # values match.
         co2 = cube2.coord(meshcoord.name())
-        self.assertFalse(isinstance(co2, MeshCoord))
+        self.assertNotIsInstance(co2, MeshCoord)
         self.assertIsInstance(co2, AuxCoord)
         self.assertArrayAllClose(co2.points, meshcoord.points[:1])
         self.assertArrayAllClose(co2.bounds, meshcoord.bounds[:1])

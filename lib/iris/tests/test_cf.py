@@ -35,21 +35,21 @@ class TestCaching(tests.IrisTest):
         # cf_var.
         # NB. Can't use hasattr() because that triggers the attribute
         # to be created!
-        self.assertTrue("coordinates" not in cf_var.__dict__)
+        self.assertNotIn("coordinates", cf_var.__dict__)
         _ = cf_var.coordinates
         self.assertEqual(nc_var.ncattrs.call_count, 1)
-        self.assertTrue("coordinates" in cf_var.__dict__)
+        self.assertIn("coordinates", cf_var.__dict__)
 
         # Trying again results in no change.
         _ = cf_var.coordinates
         self.assertEqual(nc_var.ncattrs.call_count, 1)
-        self.assertTrue("coordinates" in cf_var.__dict__)
+        self.assertIn("coordinates", cf_var.__dict__)
 
         # Trying another attribute results in just a new attribute.
-        self.assertTrue("standard_name" not in cf_var.__dict__)
+        self.assertNotIn("standard_name", cf_var.__dict__)
         _ = cf_var.standard_name
         self.assertEqual(nc_var.ncattrs.call_count, 1)
-        self.assertTrue("standard_name" in cf_var.__dict__)
+        self.assertIn("standard_name", cf_var.__dict__)
 
 
 @tests.skip_data

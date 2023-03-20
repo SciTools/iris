@@ -1279,7 +1279,7 @@ class TestAggregateBy(tests.IrisTest):
             returned=True,
             weights=self.weights_single,
         )
-        self.assertTrue(isinstance(aggregateby_output, tuple))
+        self.assertIsInstance(aggregateby_output, tuple)
 
         aggregateby_cube = aggregateby_output[0]
         self.assertCML(
@@ -1309,7 +1309,7 @@ class TestAggregateBy(tests.IrisTest):
             returned=True,
             weights=self.weights_multi,
         )
-        self.assertTrue(isinstance(aggregateby_output, tuple))
+        self.assertIsInstance(aggregateby_output, tuple)
 
         aggregateby_cube = aggregateby_output[0]
         self.assertCML(

@@ -87,40 +87,40 @@ class TestCells(tests.IrisTest):
 
     def test_in(self):
         c = iris.coords.Cell(4, None)
-        self.assertFalse(c in [3, 5])
-        self.assertTrue(c in [3, 4])
+        self.assertNotIn(c, [3, 5])
+        self.assertIn(c, [3, 4])
 
         c = iris.coords.Cell(4, [4, 5])
-        self.assertFalse(c in [3, 6])
-        self.assertTrue(c in [3, 4])
-        self.assertTrue(c in [3, 5])
+        self.assertNotIn(c, [3, 6])
+        self.assertIn(c, [3, 4])
+        self.assertIn(c, [3, 5])
 
         c = iris.coords.Cell(4, [4, 5])
         c1 = iris.coords.Cell(5, [4, 5])
         c2 = iris.coords.Cell(4, [3, 6])
 
-        self.assertTrue(c in [3, c])
-        self.assertFalse(c in [3, c1])
-        self.assertFalse(c in [3, c2])
+        self.assertIn(c, [3, c])
+        self.assertNotIn(c, [3, c1])
+        self.assertNotIn(c, [3, c2])
 
     def test_coord_equality(self):
         self.d = iris.coords.Cell(1.9, None)
-        self.assertTrue(self.d == 1.9)
-        self.assertFalse(self.d == [1.5, 1.9])
-        self.assertFalse(self.d != 1.9)
-        self.assertTrue(self.d >= 1.9)
-        self.assertTrue(self.d <= 1.9)
+        self.assertEqual(self.d, 1.9)
+        self.assertNotEqual(self.d, [1.5, 1.9])
+        self.assertEqual(self.d, 1.9)
+        self.assertGreaterEqual(self.d, 1.9)
+        self.assertLessEqual(self.d, 1.9)
         self.assertFalse(self.d > 1.9)
         self.assertFalse(self.d < 1.9)
-        self.assertFalse(self.d in [1.5, 3.5])
-        self.assertTrue(self.d in [1.5, 1.9])
+        self.assertNotIn(self.d, [1.5, 3.5])
+        self.assertIn(self.d, [1.5, 1.9])
 
-        self.assertTrue(self.d != 1)
-        self.assertFalse(self.d == 1)
+        self.assertNotEqual(self.d, 1)
+        self.assertNotEqual(self.d, 1)
         self.assertFalse(self.d >= 2)
         self.assertFalse(self.d <= 1)
-        self.assertTrue(self.d > 1)
-        self.assertTrue(self.d < 2)
+        self.assertGreater(self.d, 1)
+        self.assertLess(self.d, 2)
 
         # Ensure the Cell's operators return NotImplemented.
         class Terry:
@@ -152,72 +152,72 @@ class TestCells(tests.IrisTest):
 
     def test_coord_bounds_cmp(self):
         self.e = iris.coords.Cell(0.7, [1.1, 1.9])
-        self.assertTrue(self.e == 1.6)
-        self.assertFalse(self.e != 1.6)
-        self.assertTrue(self.e >= 1.9)
-        self.assertTrue(self.e <= 1.9)
+        self.assertEqual(self.e, 1.6)
+        self.assertEqual(self.e, 1.6)
+        self.assertGreaterEqual(self.e, 1.9)
+        self.assertLessEqual(self.e, 1.9)
         self.assertFalse(self.e > 1.9)
         self.assertFalse(self.e < 1.9)
 
-        self.assertFalse(self.e in [1.0, 3.5])
-        self.assertTrue(self.e in [1.5, 1.9])
-        self.assertTrue(self.e != 1)
-        self.assertFalse(self.e == 1)
+        self.assertNotIn(self.e, [1.0, 3.5])
+        self.assertIn(self.e, [1.5, 1.9])
+        self.assertNotEqual(self.e, 1)
+        self.assertNotEqual(self.e, 1)
         self.assertFalse(self.e >= 2)
         self.assertFalse(self.e <= 1)
-        self.assertTrue(self.e > 1)
-        self.assertTrue(self.e < 2)
+        self.assertGreater(self.e, 1)
+        self.assertLess(self.e, 2)
 
     def test_cell_cell_cmp(self):
         self.e = iris.coords.Cell(1)
         self.f = iris.coords.Cell(1)
 
-        self.assertTrue(self.e == self.f)
+        self.assertEqual(self.e, self.f)
         self.assertEqual(hash(self.e), hash(self.f))
 
         self.e = iris.coords.Cell(1)
         self.f = iris.coords.Cell(1, [0, 2])
 
-        self.assertFalse(self.e == self.f)
+        self.assertNotEqual(self.e, self.f)
         self.assertNotEqual(hash(self.e), hash(self.f))
 
         self.e = iris.coords.Cell(1, [0, 2])
         self.f = iris.coords.Cell(1, [0, 2])
 
-        self.assertTrue(self.e == self.f)
+        self.assertEqual(self.e, self.f)
         self.assertEqual(hash(self.e), hash(self.f))
 
         self.e = iris.coords.Cell(1, [0, 2])
         self.f = iris.coords.Cell(1, [2, 0])
 
-        self.assertTrue(self.e == self.f)
+        self.assertEqual(self.e, self.f)
         self.assertEqual(hash(self.e), hash(self.f))
 
         self.e = iris.coords.Cell(0.7, [1.1, 1.9])
         self.f = iris.coords.Cell(0.8, [1.1, 1.9])
 
-        self.assertFalse(self.e == self.f)
+        self.assertNotEqual(self.e, self.f)
         self.assertNotEqual(hash(self.e), hash(self.f))
         self.assertFalse(self.e > self.f)
-        self.assertTrue(self.e <= self.f)
-        self.assertTrue(self.f >= self.e)
+        self.assertLessEqual(self.e, self.f)
+        self.assertGreaterEqual(self.f, self.e)
         self.assertFalse(self.f < self.e)
 
         self.e = iris.coords.Cell(0.9, [2, 2.1])
         self.f = iris.coords.Cell(0.8, [1.1, 1.9])
 
-        self.assertTrue(self.e > self.f)
+        self.assertGreater(self.e, self.f)
         self.assertFalse(self.e <= self.f)
         self.assertFalse(self.f >= self.e)
-        self.assertTrue(self.f < self.e)
+        self.assertLess(self.f, self.e)
 
     def test_cmp_contig(self):
         # Test cells that share an edge
         a = iris.coords.Cell(point=1054440.0, bound=(1054080.0, 1054800.0))
         b = iris.coords.Cell(point=1055160.0, bound=(1054800.0, 1055520.0))
-        self.assertTrue(a < b)
-        self.assertTrue(a <= b)
-        self.assertFalse(a == b)
+        self.assertLess(a, b)
+        self.assertLessEqual(a, b)
+        self.assertNotEqual(a, b)
         self.assertFalse(a >= b)
         self.assertFalse(a > b)
 

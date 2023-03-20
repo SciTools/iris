@@ -63,18 +63,18 @@ class Test___eq__(tests.IrisTest):
     def test_real_with_real_failure(self):
         dm1 = DataManager(self.real_array)
         dm2 = DataManager(np.ones(self.shape))
-        self.assertFalse(dm1 == dm2)
+        self.assertNotEqual(dm1, dm2)
 
     def test_real_with_real__dtype_failure(self):
         dm1 = DataManager(self.real_array)
         dm2 = DataManager(self.real_array.astype(int))
-        self.assertFalse(dm1 == dm2)
+        self.assertNotEqual(dm1, dm2)
 
     def test_real_with_lazy_failure(self):
         dm1 = DataManager(self.real_array)
         dm2 = DataManager(as_lazy_data(self.real_array))
-        self.assertFalse(dm1 == dm2)
-        self.assertFalse(dm2 == dm1)
+        self.assertNotEqual(dm1, dm2)
+        self.assertNotEqual(dm2, dm1)
 
     def test_lazy_with_lazy(self):
         dm1 = DataManager(as_lazy_data(self.real_array))
@@ -84,16 +84,16 @@ class Test___eq__(tests.IrisTest):
     def test_lazy_with_lazy_failure(self):
         dm1 = DataManager(as_lazy_data(self.real_array))
         dm2 = DataManager(as_lazy_data(self.real_array) * 10)
-        self.assertFalse(dm1 == dm2)
+        self.assertNotEqual(dm1, dm2)
 
     def test_lazy_with_lazy__dtype_failure(self):
         dm1 = DataManager(as_lazy_data(self.real_array))
         dm2 = DataManager(as_lazy_data(self.real_array).astype(int))
-        self.assertFalse(dm1 == dm2)
+        self.assertNotEqual(dm1, dm2)
 
     def test_non_DataManager_failure(self):
         dm = DataManager(np.array(0))
-        self.assertFalse(dm == 0)
+        self.assertNotEqual(dm, 0)
 
 
 class Test___ne__(tests.IrisTest):
@@ -110,7 +110,7 @@ class Test___ne__(tests.IrisTest):
     def test_real_with_real_failure(self):
         dm1 = DataManager(self.real_array)
         dm2 = DataManager(self.real_array.copy())
-        self.assertFalse(dm1 != dm2)
+        self.assertEqual(dm1, dm2)
 
     def test_real_with_real__dtype(self):
         dm1 = DataManager(self.real_array)
@@ -131,7 +131,7 @@ class Test___ne__(tests.IrisTest):
     def test_lazy_with_lazy_failure(self):
         dm1 = DataManager(as_lazy_data(self.real_array))
         dm2 = DataManager(as_lazy_data(self.real_array))
-        self.assertFalse(dm1 != dm2)
+        self.assertEqual(dm1, dm2)
 
     def test_lazy_with_lazy__dtype(self):
         dm1 = DataManager(as_lazy_data(self.real_array))

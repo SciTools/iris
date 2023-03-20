@@ -156,14 +156,14 @@ class TestZonalMean_global(tests.IrisTest):
 
         # Ensure data remains unchanged.
         # (the same along each column)
-        self.assertTrue(
+        self.assertLess(
             np.array(
                 [
                     (res.data[:, 0] - res.data[:, i]).max()
                     for i in range(1, res.shape[1])
                 ]
-            ).max()
-            < 1e-10
+            ).max(),
+            1e-10,
         )
         self.assertArrayAlmostEqual(res.data[:, 0], self.src.data.reshape(-1))
 

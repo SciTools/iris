@@ -60,3 +60,9 @@ repos:
     hooks:
     -   id: sort-all
         types: [file, python]
+
+-   repo: https://github.com/isidentical/teyit
+    rev: 0.4.3
+    hooks:
+    -   id: teyit
+        types: [file, python]

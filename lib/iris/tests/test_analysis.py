@@ -1359,8 +1359,8 @@ class TestLatitudeWeightGeneration(tests.IrisTest):
         )
         cube.add_dim_coord(lat_coord, 0)
         weights = iris.analysis.cartography.cosine_latitude_weights(cube)
-        self.assertTrue(weights.max() <= 1)
-        self.assertTrue(weights.min() >= 0)
+        self.assertLessEqual(weights.max(), 1)
+        self.assertGreaterEqual(weights.min(), 0)
 
     def test_cosine_latitude_weights_0d(self):
         # 0d latitude dimension (scalar coordinate)

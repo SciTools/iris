@@ -226,12 +226,12 @@ class Test___eq__(tests.IrisTest, _Test_operator):
     def test_cftime_equal(self):
         pdt = PartialDateTime(month=3, second=2)
         other = cftime.datetime(year=2013, month=3, day=20, second=2)
-        self.assertTrue(pdt == other)
+        self.assertEqual(pdt, other)
 
     def test_cftime_not_equal(self):
         pdt = PartialDateTime(month=3, second=2)
         other = cftime.datetime(year=2013, month=4, day=20, second=2)
-        self.assertFalse(pdt == other)
+        self.assertNotEqual(pdt, other)
 
 
 class Test___ne__(tests.IrisTest, _Test_operator):
@@ -248,7 +248,7 @@ class Test___gt__(tests.IrisTest, _Test_operator):
     def test_cftime_greater(self):
         pdt = PartialDateTime(month=3, microsecond=2)
         other = cftime.datetime(year=2013, month=2, day=20, second=3)
-        self.assertTrue(pdt > other)
+        self.assertGreater(pdt, other)
 
     def test_cftime_not_greater(self):
         pdt = PartialDateTime(month=3, microsecond=2)

@@ -389,7 +389,7 @@ class Test___setitem__(tests.IrisTest):
         self.lenient.__dict__[client] = None
         self.lenient[client] = True
         self.assertTrue(self.lenient.__dict__[client])
-        self.assertFalse(isinstance(self.lenient.__dict__[client], Iterable))
+        self.assertNotIsInstance(self.lenient.__dict__[client], Iterable)
 
     def test_callable_in_value_bool(self):
         def client():
@@ -399,8 +399,8 @@ class Test___setitem__(tests.IrisTest):
         self.lenient.__dict__[qualname_client] = None
         self.lenient[client] = True
         self.assertTrue(self.lenient.__dict__[qualname_client])
-        self.assertFalse(
-            isinstance(self.lenient.__dict__[qualname_client], Iterable)
+        self.assertNotIsInstance(
+            self.lenient.__dict__[qualname_client], Iterable
         )
 
     def test_in_value_iterable(self):
@@ -709,7 +709,7 @@ class Test_register_service(tests.IrisTest):
         self.assertNotIn(service, self.lenient.__dict__)
         self.lenient.register_service(service)
         self.assertIn(service, self.lenient.__dict__)
-        self.assertFalse(isinstance(self.lenient.__dict__[service], Iterable))
+        self.assertNotIsInstance(self.lenient.__dict__[service], Iterable)
         self.assertTrue(self.lenient.__dict__[service])
 
     def test_callable(self):
@@ -720,8 +720,8 @@ class Test_register_service(tests.IrisTest):
         self.assertNotIn(qualname_service, self.lenient.__dict__)
         self.lenient.register_service(service)
         self.assertIn(qualname_service, self.lenient.__dict__)
-        self.assertFalse(
-            isinstance(self.lenient.__dict__[qualname_service], Iterable)
+        self.assertNotIsInstance(
+            self.lenient.__dict__[qualname_service], Iterable
         )
         self.assertTrue(self.lenient.__dict__[qualname_service])
 

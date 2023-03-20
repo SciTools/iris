@@ -486,7 +486,7 @@ class Test___call___lazy(tests.IrisTest):
         result = self.lazy_regridder(self.lazy_cube)
         self.assertTrue(result.has_lazy_data())
         expected = self.regridder(self.cube)
-        self.assertTrue(result == expected)
+        self.assertEqual(result, expected)
 
 
 class Test___call____invalid_types(tests.IrisTest):

@@ -632,7 +632,7 @@ class TestDimSelection(tests.IrisTest):
         )
         self.assertIsInstance(cube.coord("a"), AuxCoord)
         self.assertIsInstance(cube.coord("b"), DimCoord)
-        self.assertTrue(cube.coord("b") in cube.dim_coords)
+        self.assertIn(cube.coord("b"), cube.dim_coords)
 
     def test_string_b_with_aux(self):
         templates = ((0, "a"), (1, "b"), (2, "c"), (3, "d"))
@@ -642,7 +642,7 @@ class TestDimSelection(tests.IrisTest):
             cube, ("merge", "string_b_with_aux.cml"), checksum=False
         )
         self.assertIsInstance(cube.coord("a"), DimCoord)
-        self.assertTrue(cube.coord("a") in cube.dim_coords)
+        self.assertIn(cube.coord("a"), cube.dim_coords)
         self.assertIsInstance(cube.coord("b"), AuxCoord)
 
     def test_string_a_with_dim(self):
@@ -654,7 +654,7 @@ class TestDimSelection(tests.IrisTest):
         )
         self.assertIsInstance(cube.coord("a"), AuxCoord)
         self.assertIsInstance(cube.coord("b"), DimCoord)
-        self.assertTrue(cube.coord("b") in cube.dim_coords)
+        self.assertIn(cube.coord("b"), cube.dim_coords)
 
     def test_string_b_with_dim(self):
         templates = ((0, "a"), (1, "b"), (2, "c"), (3, "d"))
@@ -664,7 +664,7 @@ class TestDimSelection(tests.IrisTest):
             cube, ("merge", "string_b_with_dim.cml"), checksum=False
         )
         self.assertIsInstance(cube.coord("a"), DimCoord)
-        self.assertTrue(cube.coord("a") in cube.dim_coords)
+        self.assertIn(cube.coord("a"), cube.dim_coords)
         self.assertIsInstance(cube.coord("b"), AuxCoord)
 
     def test_string_a_b(self):
@@ -681,9 +681,9 @@ class TestDimSelection(tests.IrisTest):
         cube = iris.cube.CubeList(cubes).merge()[0]
         self.assertCML(cube, ("merge", "a_aux_b_aux.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), DimCoord)
-        self.assertTrue(cube.coord("a") in cube.dim_coords)
+        self.assertIn(cube.coord("a"), cube.dim_coords)
         self.assertIsInstance(cube.coord("b"), DimCoord)
-        self.assertTrue(cube.coord("b") in cube.aux_coords)
+        self.assertIn(cube.coord("b"), cube.aux_coords)
 
     def test_a_aux_b_dim(self):
         templates = ((0, 10), (1, 11), (2, 12), (3, 13))
@@ -691,9 +691,9 @@ class TestDimSelection(tests.IrisTest):
         cube = iris.cube.CubeList(cubes).merge()[0]
         self.assertCML(cube, ("merge", "a_aux_b_dim.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), DimCoord)
-        self.assertTrue(cube.coord("a") in cube.aux_coords)
+        self.assertIn(cube.coord("a"), cube.aux_coords)
         self.assertIsInstance(cube.coord("b"), DimCoord)
-        self.assertTrue(cube.coord("b") in cube.dim_coords)
+        self.assertIn(cube.coord("b"), cube.dim_coords)
 
     def test_a_dim_b_aux(self):
         templates = ((0, 10), (1, 11), (2, 12), (3, 13))
@@ -701,9 +701,9 @@ class TestDimSelection(tests.IrisTest):
         cube = iris.cube.CubeList(cubes).merge()[0]
         self.assertCML(cube, ("merge", "a_dim_b_aux.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), DimCoord)
-        self.assertTrue(cube.coord("a") in cube.dim_coords)
+        self.assertIn(cube.coord("a"), cube.dim_coords)
         self.assertIsInstance(cube.coord("b"), DimCoord)
-        self.assertTrue(cube.coord("b") in cube.aux_coords)
+        self.assertIn(cube.coord("b"), cube.aux_coords)
 
     def test_a_dim_b_dim(self):
         templates = ((0, 10), (1, 11), (2, 12), (3, 13))
@@ -713,9 +713,9 @@ class TestDimSelection(tests.IrisTest):
         cube = iris.cube.CubeList(cubes).merge()[0]
         self.assertCML(cube, ("merge", "a_dim_b_dim.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), DimCoord)
-        self.assertTrue(cube.coord("a") in cube.dim_coords)
+        self.assertIn(cube.coord("a"), cube.dim_coords)
         self.assertIsInstance(cube.coord("b"), DimCoord)
-        self.assertTrue(cube.coord("b") in cube.aux_coords)
+        self.assertIn(cube.coord("b"), cube.aux_coords)
 
 
 class TestTimeTripleMerging(tests.IrisTest):
