@@ -205,10 +205,10 @@ class Test_write(tests.IrisTest):
         api = self.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
-        with Saver("/dummy/path", "NETCDF4") as saver:
+        # NOTE: use compute=False as otherwise it gets in a pickle trying to construct
+        # a fill-value report on a non-compliant variable in a non-file (!)
+        with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
             saver.write(cube, zlib=True)
-            # must simulate a dataset which is CLOSED, for the check in Saver.__exit__
-            saver._dataset._isopen = 0
         dataset = api.DatasetWrapper.return_value
         create_var_call = mock.call(
             "air_pressure_anomaly",
