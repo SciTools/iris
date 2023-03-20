@@ -598,13 +598,12 @@ class Saver:
         -------
         None
 
-        For example
-        -----------
-        # Initialise Manager for saving
-        with Saver(filename, netcdf_format) as sman:
-            # Iterate through the cubelist.
-            for cube in cubes:
-                sman.write(cube)
+        Example
+        -------
+        >>> with Saver(filename, netcdf_format) as sman:
+        >>>     # Iterate through the cubelist.
+        >>>     for cube in cubes:
+        >>>         sman.write(cube)
 
         """
         if netcdf_format not in [
