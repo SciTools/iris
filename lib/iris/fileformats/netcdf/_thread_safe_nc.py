@@ -372,9 +372,12 @@ class NetCDFWriteProxy:
                 var = dataset.variables[self.varname]
                 var[keys] = array_data
             finally:
-                if dataset:
-                    dataset.close()
-                self.lock.release()
+                try:
+                    if dataset:
+                        dataset.close()
+                finally:
+                    # *ALWAYS* let go !
+                    self.lock.release()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"
