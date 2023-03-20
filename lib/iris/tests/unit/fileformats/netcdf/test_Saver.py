@@ -207,6 +207,8 @@ class Test_write(tests.IrisTest):
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
         with Saver("/dummy/path", "NETCDF4") as saver:
             saver.write(cube, zlib=True)
+            # must simulate a dataset which is CLOSED, for the check in Saver.__exit__
+            saver._dataset._isopen = 0
         dataset = api.DatasetWrapper.return_value
         create_var_call = mock.call(
             "air_pressure_anomaly",
@@ -646,8 +648,11 @@ class _Common__check_attribute_compliance:
         self.container = mock.Mock(name="container", attributes={})
         self.data_dtype = np.dtype("int32")
 
+        # We need to create mock datasets which look like they are closed.
+        dataset_class = mock.Mock(return_value=mock.Mock(_isopen=0))
         patch = mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper"
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            dataset_class,
         )
         _ = patch.start()
         self.addCleanup(patch.stop)
