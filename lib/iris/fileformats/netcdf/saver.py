@@ -478,8 +478,8 @@ _FillvalueCheckInfo = collections.namedtuple(
 
 
 def _PRINT_DEBUG(*args):
-    _DO_DEBUG = True
-    # _DO_DEBUG = False
+    # _DO_DEBUG = True
+    _DO_DEBUG = False
     if _DO_DEBUG:
         print(*args)
 
