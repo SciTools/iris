@@ -600,10 +600,13 @@ class Saver:
 
         Example
         -------
-        >>> with Saver(filename, netcdf_format) as sman:
-        >>>     # Iterate through the cubelist.
-        >>>     for cube in cubes:
-        >>>         sman.write(cube)
+        >>> import iris
+        >>> from iris.fileformats.netcdf.saver import Saver
+        >>> cubes = iris.load(iris.sample_data_path('atlantic_profiles.nc'))
+        >>> with Saver("tmp.nc", "NETCDF4") as sman:
+        ...     # Iterate through the cubelist.
+        ...     for cube in cubes:
+        ...         sman.write(cube)
 
         """
         if netcdf_format not in [
