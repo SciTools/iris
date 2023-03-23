@@ -3,15 +3,18 @@
 Dask Best Practices
 *******************
 
-This section outlines some of the best practices when using Dask. Some of these practices
-involve improving performance through rechunking, making the best use of multi-processing
-systems and avoiding conflicts between Dask and numpy.
+This section outlines some of the best practices when using Dask with IRIS. Some of these
+practices involve improving performance through rechunking, making the best use of
+computing clusters and avoiding parallelisation conflicts between Dask and numpy.
 
-.. warning::
 
-    Here, we have collated advice and a handful of examples that we hope will assist
-    users to make the best start when using Dask. It is *not* a
-    fully comprehensive guide encompassing all best practices.
+.. note::
+
+    Here, we have collated advice and a handful of examples, from the topics most
+    relevant when using Dask with IRIS, that we hope will assist users to make
+    the best start when using Dask. It is *not* a fully comprehensive guide
+    encompassing all best practices. You can find more general dask information in the
+    `official Dask Documentation <https://docs/dask.org/en/stable/>`_.
 
 
 Introduction
@@ -23,9 +26,6 @@ Dask, it is important to configure it correctly and supply it with
 appropriately structured data. For example, we may need to "chunk" data arrays
 into smaller pieces to process, read and write it; getting the "chunking" right
 can make a significant different to performance!
-
-To make sure you get the most out of Dask, check the list of sections on the right
-for those that seem relevant to you.
 
 
 .. _numpy_threads:
@@ -78,13 +78,12 @@ or in Linux command line...
 
 .. _multi-pro_systems:
 
-Dask on Multi-processing systems
-================================
+Dask on Computing Clusters
+==========================
 
-It is natural to use Dask on systems capable of multi-processing, for example
-SPICE within the Met Office, but there are some important factors you must be
+Dask is well suited for use on computing clusters, but there are some important factors you must be
 aware of. In particular, you will always need to explicitly control parallel
-operation, both in Dask and likewise in numpy: see sections below.
+operation, both in Dask and likewise in numpy.
 
 
 .. _multi-pro_slurm:
@@ -92,12 +91,12 @@ operation, both in Dask and likewise in numpy: see sections below.
 CPU Allocation
 --------------
 
-When running on a multi-processing system, unless configured otherwise, Dask will attempt to create
-one parallel 'worker' task for each CPU visible. However, within a Slurm allocation, only *some* of
+When running on a computing cluster, unless configured otherwise, Dask will attempt to create
+one parallel 'worker' task for each CPU. However, within a Slurm allocation, only *some* of
 these CPUs are actually accessible -- often, and by default, only one. This leads to a serious
 over-commitment unless it is controlled.
 
-So, **whenever Iris is used on a multi-processing system, you must always control the number
+So, **whenever Iris is used on a computing cluster, you must always control the number
 of dask workers to a sensible value**, matching the slurm allocation.  You do
 this with::
 
@@ -110,7 +109,7 @@ efficient to use a "synchronous" scheduler instead, with::
 
     dask.config.set(scheduler='synchronous')
 
-See `Single Thread
+See the Dask documentation on `Single thread synchronous scheduler
 <https://docs.dask.org/en/latest/scheduling.html?highlight=single-threaded#single-thread>`_.
 
 
@@ -120,7 +119,7 @@ Numpy Threading
 ---------------
 
 Numpy also interrogates the visible number of CPUs to multi-thread its operations.
-The large number of CPU's available in a multi-processing system will thus cause confusion if Numpy
+The large number of CPU's available in a computing cluster will thus cause confusion if Numpy
 attempts its own parallelisation, so this must be prevented. Refer back to
 :ref:`numpy_threads` for more detail.
 
@@ -128,7 +127,7 @@ attempts its own parallelisation, so this must be prevented. Refer back to
 Distributed
 -----------
 
-Even though allocations on a multi-processing system are generally restricted to a single node, there
+Even though allocations on a computing cluster are generally restricted to a single node, there
 are still good reasons for using 'dask.distributed' in many cases. See `Single Machine: dask.distributed
 <https://docs.dask.org/en/latest/setup/single-distributed.html>`_ in the Dask documentation.
 
@@ -172,14 +171,6 @@ of the length in any unlimited dimensions.
 When chunking is specified for netcdf data, Iris will set the dask chunking
 to an integer multiple or fraction of that shape, such that the data size is
 near to but not exceeding the dask array chunk size.
-
-.. Note::
-    Prior to Iris 2.3, Iris would not multiply up a chunksize from a netcdf
-    variable, which could therefore be quite inefficient.
-    Iris 2.2. was thus equally inefficient for some files with unlimited
-    dimensions.  Similarly, **Iris 2.2 can often perform badly with StaGE
-    data**, as this typically has quite small chunks set in the file.
-    Upgrading to Iris 2.3+ can often solve these problems.
 
 
 .. _chunking_pp_ff:

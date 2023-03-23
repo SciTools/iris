@@ -73,7 +73,7 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ added a :doc:`/further_topics/dask_best_practices/index`
    section into the user guide, containing advice and use cases to help users
-   get the best out of Dask.
+   get the best out of Dask with IRIS.
 
 
 💼 Internal

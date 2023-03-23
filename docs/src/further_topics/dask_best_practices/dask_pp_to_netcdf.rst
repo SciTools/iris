@@ -5,7 +5,7 @@
 
 Here is an example of how dask objects can be tuned for better performance.
 
-1.1 The problem - Slow Saving
+1.1 The Problem - Slow Saving
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We have ~300 PP files which we load as follows:
 
@@ -14,7 +14,7 @@ We have ~300 PP files which we load as follows:
     import iris
     import glob
 
-    files = glob.glob("/pp_files/*.pp")
+    files = glob.glob("pp_files/*.pp")
     cube = iris.load_cube(files, "mass_fraction_of_ozone_in_air")
 
 Note that loading here may also be parallelised in a similar manner as
@@ -68,7 +68,7 @@ We may inspect the cube's lazy data before saving:
     # We can access the cubes Dask array
     lazy_data = cube.lazy_data()
     # We can find the shape of the chunks
-    # note that the chunksize of a Dask array is the shape of the chunk
+    # Note that the chunksize of a Dask array is the shape of the chunk
     # as a tuple.
     print(lazy_data.chunksize)
 
@@ -76,7 +76,7 @@ Doing so, we find that the chunks currently have the shape::
 
 (1, 1, 144, 192)
 
-This is significantly smaller than the `size which dask recomends
+This is significantly smaller than the `size which Dask recommends
 <https://docs.dask.org/en/latest/array-chunks.html>`_. Bear in mind that the
 ideal chunk size depends on the platform you are running on (for this example,
 the code is being run on a desktop with 8 CPU's). In this case, we have 23460

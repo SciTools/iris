@@ -54,12 +54,13 @@ to break the task down in an efficient manner - the function that is mapped
 across the bag should only load a single file, and the bag itself can
 iterate through the list of files. Here's the restructured script::
 
-    import dask
-    import dask.bag as db
-    import iris
     import glob
     import multiprocessing
     import os
+
+    import dask
+    import dask.bag as db
+    import iris
 
     def callback(cube, field, fname):
         if field.sections[5]['bitsPerValue'] == 0:
@@ -76,9 +77,11 @@ iterate through the list of files. Here's the restructured script::
 
     # Determine the number of processors visible ..
     cpu_count = multiprocessing.cpu_count()
+
     # .. or as given by slurm allocation.
     if 'SLURM_NTASKS' in os.environ:
         cpu_count = os.environ['SLURM_NTASKS']
+
     # Do not exceed the number of CPU's available, leaving 1 for the system.
     num_workers = cpu_count - 1
     print('Using {} workers from {} CPUs...'.format(num_workers, cpu_count))
@@ -94,11 +97,11 @@ available to have one per file. See this benchmarking:
 +---------------+-----------------------+---------------+---------------+
 | Machine       | CPU's Available       | CPU's Used    | Time Taken    |
 +===============+=======================+===============+===============+
-| vld173        | 4                     | 3             | 4m 05s        |
+| A             | 4                     | 3             | 4m 05s        |
 |               |                       +---------------+---------------+
 |               |                       | 4             | 3m 22s        |
 +---------------+-----------------------+---------------+---------------+
-| eld299        | 8                     | 1             | 9m 10s        |
+| B             | 8                     | 1             | 9m 10s        |
 |               |                       +---------------+---------------+
 |               |                       | 7             | 2m 35s        |
 |               |                       +---------------+---------------+
@@ -202,7 +205,7 @@ about this in :ref:`numpy_threads`.
     os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
     os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
-Second, if we are using a multi-processing system then SLURM must also be configured to prevent it
+Lastly, if you are using SLURM on the computing cluster then SLURM must be configured to prevent it
 optimising the number of cores necessary for the job. See the SLURM commands
 below, to be added before running the python script. It's important that
 ``ntasks`` matches the number of CPU's specified in the python script. You

@@ -83,7 +83,7 @@ Results below:
     :width: 1000
     :align: center
 
-As we can see above, it spends most of the time in the call to ::
+As we can see above, (looking at the highlighted section of the red bar) it spends most of the time in the call to ::
 
     S.get_parcel(parcel_def)
 
