@@ -29,7 +29,7 @@ is merged.  Before submitting a pull request please consider this list.
 #. **Check all modified and new source files conform to the required**
    :ref:`code_formatting`.
 
-#. **Check all new dependencies added to the** `requirements/ci/`_ **yaml
+#. **Check all new dependencies added to the** `requirements`_ **yaml
    files.**  If dependencies have been added then new nox testing lockfiles
    should be generated too, see :ref:`gha_test_env`.
 

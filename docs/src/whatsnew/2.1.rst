@@ -97,5 +97,5 @@ Internal
 __ `netCDF4`_
 
 * Iris now requires version 2 of Matplotlib, and ``>=1.14`` of NumPy.
-  Full requirements can be seen in the `requirements <https://github.com/SciTools/iris/>`_
+  Full requirements can be seen in the `requirements`_
   directory of the Iris' the source.
