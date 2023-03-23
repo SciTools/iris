@@ -25,6 +25,7 @@ import warnings
 import cf_units
 import dask
 import dask.array as da
+from dask.delayed import Delayed
 import numpy as np
 
 from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
@@ -635,9 +636,11 @@ class Saver:
         self._formula_terms_cache = {}
         #: Target filepath
         self.filepath = os.path.abspath(filename)
-        #: A list of deferred writes for lazy saving : each is a (source, target) pair
-        self.deferred_writes = []
-        #: Whether to complete deferred saves on exit (and raise associated warnings).
+        #: A list of delayed writes for lazy saving
+        self.delayed_writes = (
+            []
+        )  # a list of triples (source, target, fill-info)
+        #: Whether to complete delayed saves on exit (and raise associated warnings).
         self.compute = compute
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
         #: A per-file write lock to prevent dask attempting overlapping writes.
@@ -2586,8 +2589,8 @@ class Saver:
                 write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
                     self.filepath, cf_var, self.file_write_lock
                 )
-                # Add to the list of deferred writes, used in delayed_completion().
-                self.deferred_writes.append((data, write_wrapper, fill_info))
+                # Add to the list of delayed writes, used in delayed_completion().
+                self.delayed_writes.append((data, write_wrapper, fill_info))
                 # In this case, fill-value checking is done later. But return 2 dummy
                 # values, to be consistent with the non-streamed "store" signature.
                 is_masked, contains_value = False, False
@@ -2614,21 +2617,28 @@ class Saver:
                 fill_info, is_masked, contains_fill_value, warn=True
             )
 
-    def delayed_completion(self):
+    def delayed_completion(self) -> Delayed:
         """
-        Create a 'delayed' to trigger file completion for lazy saves.
+        Create a :class:'Delayed' to trigger file completion for delayed saves.
 
-        This contains all the deferred writes, which complete the file by filling out
+        This contains all the delayed writes, which complete the file by filling out
         the data of variables initially created empty, and also the checks for
         potential fill-value collisions.
+        When computed, it returns a list of any warnings which were generated in the
+        save operation.
 
-        NOTE: the dataset *must* be closed (saver has exited its context) before the
-        result is computed.
+        Returns
+        -------
+        completion : :class:`Delayed`
 
+        Notes
+        -----
+        The dataset *must* be closed (saver has exited its context) before the
+        result can be computed, otherwise computation will hang (never return).
         """
-        if self.deferred_writes:
+        if self.delayed_writes:
             # Create a single delayed da.store operation to complete the file.
-            sources, targets, fill_infos = zip(*self.deferred_writes)
+            sources, targets, fill_infos = zip(*self.delayed_writes)
             store_op = da.store(sources, targets, compute=False, lock=False)
 
             # Construct a delayed fill-check operation for each (lazy) source array.
@@ -2677,21 +2687,21 @@ class Saver:
 
         return result
 
-    def complete(self, issue_warnings=True):
+    def complete(self, issue_warnings=True) -> List[Warning]:
         """
-        Complete file by computing any deferred variable saves.
+        Complete file by computing any delayed variable saves.
 
         This requires that the Saver has closed the dataset (exited its context).
 
         Parameters
         ----------
         issue_warnings : bool, default = True
-            If true, issue all return values via :func:`warnings.warn`.
+            If true, issue all the resulting warnings with :func:`warnings.warn`.
 
         Returns
         -------
         warnings : list of Warning
-            Any warnings that were raised by writing deferred data.
+            Any warnings that were raised while writing delayed data.
 
         """
         if self._dataset._isopen:
@@ -2852,14 +2862,14 @@ def save(
         this argument will be applied to each cube separately.
 
     * compute (bool):
-        When False, create the output file but defer writing any lazy array content to
-        its variables, such as (lazy) data and aux-coords points and bounds.
-        Instead return a class:`dask.delayed.Delayed` which, when computed, will
-        compute all the lazy content and stream it to complete the file.
+        When False, create the output file but don't write any lazy array content to
+        its variables, such as lazy cube data or aux-coord points and bounds.
+        Instead return a class:`Delayed` which, when computed, will stream all the lazy
+        content with :meth:`dask.store`, to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
-        Note: when computed, the returned class:`dask.delayed.Delayed` object returns
-        a list of :class:`Warning` :  These are any warnings that _would_ have been
+        Note: when computed, the returned class:`Delayed` object returns
+        a list of :class:`Warning` :  These are any warnings which _would_ have been
         issued in the save call, if compute had been True.
 
     Returns:
@@ -2964,7 +2974,7 @@ def save(
     # Initialise Manager for saving
     # N.B. make the Saver compute=False, as we want control over creation of the
     # delayed-completion object.
-    with Saver(filename, netcdf_format, compute=False) as sman:
+    with Saver(filename, netcdf_format, compute=compute) as sman:
         # Iterate through the cubelist.
         for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(
@@ -3011,12 +3021,10 @@ def save(
         sman.update_global_attributes(Conventions=conventions)
 
     if compute:
-        # Complete the file now
-        # N.B. this issues any delayed warnings.
-        sman.complete()
+        # No more to do, since we used Saver(compute=True).
         result = None
     else:
-        # Returned a delayed completion object.
+        # Return a delayed completion object.
         result = sman.delayed_completion()
 
     return result
