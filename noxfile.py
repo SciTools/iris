@@ -188,13 +188,13 @@ def tests(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
     run_args = [
-        "python",
-        "-m",
-        "iris.tests.runner",
-        "--default-tests",
+        "pytest",
+        "-n",
+        "auto",
+        "lib/iris/tests",
     ]
     if "-c" in session.posargs or "--coverage" in session.posargs:
-        run_args.append("--coverage")
+        run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
     session.run(*run_args)
 
 
@@ -241,10 +241,10 @@ def gallery(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
     session.run(
-        "python",
-        "-m",
-        "iris.tests.runner",
-        "--gallery-tests",
+        "pytest",
+        "-n",
+        "auto",
+        "docs/gallery_tests",
     )
 
 

@@ -137,6 +137,9 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) removed the ``--coding-tests``
    option from Iris' test runner. (:pull:`4765`)
 
+#. `@lbdreyer`_ removed the Iris TestRunner. Tests are now run via nox or
+   pytest. (:pull:`5205`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
