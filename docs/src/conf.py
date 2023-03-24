@@ -122,7 +122,7 @@ def _dotv(version):
 
 # Automate the discovery of the python versions tested with CI.
 python_support = sorted(
-    [fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")]
+    [fname.stem for fname in Path(".").glob("../../requirements/py*.yml")]
 )
 
 if not python_support:
@@ -272,7 +272,8 @@ html_sidebars = {
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html
 html_theme_options = {
-    "footer_items": ["copyright", "sphinx-version", "custom_footer"],
+    "footer_start": ["copyright", "sphinx-version"],
+    "footer_end": ["custom_footer"],
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,

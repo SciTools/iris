@@ -19,7 +19,7 @@ build:
       - git stash pop
 
 conda:
-  environment: requirements/ci/readthedocs.yml
+  environment: requirements/readthedocs.yml
 
 sphinx:
   configuration: docs/src/conf.py

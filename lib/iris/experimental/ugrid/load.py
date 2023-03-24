@@ -209,7 +209,8 @@ def load_meshes(uris, var_name=None):
 
     result = {}
     for source in valid_sources:
-        meshes_dict = _meshes_from_cf(CFUGridReader(source))
+        with CFUGridReader(source) as cf_reader:
+            meshes_dict = _meshes_from_cf(cf_reader)
         meshes = list(meshes_dict.values())
         if var_name is not None:
             meshes = list(filter(lambda m: m.var_name == var_name, meshes))

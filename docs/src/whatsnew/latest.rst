@@ -26,7 +26,7 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
-#. Welcome and congratulations to `@HGWright`_ for making his first contribution to Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_ and `@scottrobinson02`_ who made their first contributions to Iris! 🎉
 
 
 ✨ Features
@@ -36,11 +36,32 @@ This document explains the changes made to Iris for this release
    :ref:`documentation page<community_plugins>` for further information.
    (:pull:`5144`)
 
+#. `@rcomer`_ enabled lazy evaluation of :obj:`~iris.analysis.RMS` calcuations
+   with weights. (:pull:`5017`)
+
+#. `@schlunma`_ allowed the usage of cubes, coordinates, cell measures, or
+   ancillary variables as weights for cube aggregations
+   (:meth:`iris.cube.Cube.collapsed`, :meth:`iris.cube.Cube.aggregated_by`, and
+   :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
+   if necessary. (:pull:`5084`)
+
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
+   and :func:`iris.quickplot.hist`. (:pull:`5189`)
+
 
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@trexfeathers`_ and `@pp-mo`_ made Iris' use of the `netCDF4`_ library
+   thread-safe. (:pull:`5095`)
+
+#. `@ESadek-MO`_ removed check and error raise for saving
+   cubes with masked :class:`iris.coords.CellMeasure`.
+   (:issue:`5147`, :pull:`5181`)
+
+#. `@scottrobinson02`_ fixed :class:`iris.util.new_axis` creating an anonymous new
+   dimension, when the scalar coord provided is already a dim coord.
+   (:issue:`4415`, :pull:`5194`)
 
 
 💣 Incompatible Changes
@@ -99,6 +120,7 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
 
+
 💼 Internal
 ===========
 
@@ -108,6 +130,16 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed some old infrastructure that printed test timings.
    (:pull:`5101`)
 
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) added coverage testing. This
+   can be enabled by using the "--coverage" flag when running the tests with
+   nox i.e. ``nox --session tests -- --coverage``. (:pull:`4765`)
+
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) removed the ``--coding-tests``
+   option from Iris' test runner. (:pull:`4765`)
+
+#. `@lbdreyer`_ removed the Iris TestRunner. Tests are now run via nox or
+   pytest. (:pull:`5205`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -115,6 +147,7 @@ This document explains the changes made to Iris for this release
 
 .. _@fnattino: https://github.com/fnattino
 .. _@ed-hawkins: https://github.com/ed-hawkins
+.. _@scottrobinson02: https://github.com/scottrobinson02
 
 .. comment
     Whatsnew resources in alphabetical order:
