@@ -1,12 +1,137 @@
 from abc import ABC, abstractmethod
 import argparse
 from argparse import ArgumentParser
+from datetime import datetime
+from os import environ
+from pathlib import Path
+import re
+import subprocess
+from tempfile import NamedTemporaryFile
+from typing import Literal
+
+from pkg_resources import parse_version
+
+# The threshold beyond which shifts are 'notable'. See `asv compare`` docs
+#  for more.
+COMPARE_FACTOR = 1.2
+
 
 # Common ASV arguments for all run_types except `custom`.
 ASV_HARNESS = (
     "asv run {posargs} --attribute rounds=4 --interleave-rounds --strict "
     "--show-stderr"
 )
+
+
+def prep_data_gen_env():
+    # TODO: docstring
+
+    # TODO: read version from noxfile, since that is what supports everything.
+    root_dir = Path(__file__).parents[1]
+    conf_path = Path(__file__).parent / "asv.conf.json"
+    conf_content = conf_path.read_text()
+    python_search = re.search("(?<=PY_VER=)(.*?)(?=\snox)", conf_content)
+    assert len(python_search.groups()) == 1
+    python_version = python_search.group(0)
+    # Check it works.
+    _ = parse_version(python_version)
+
+    # req_dir = root_dir / "requirements"
+    # python_versions = []
+    # for req_file in req_dir.glob("py*.yml"):
+    #     content = req_file.read_text()
+    #     python_string = re.search("(?<=- python =)(.*)(?=\n)", content)
+    #     if python_string and len(python_string.groups()) == 1:
+    #         version_parsed = parse_version(python_string.group(0))
+    #         python_versions.append(version_parsed)
+    # assert len(python_versions) > 0
+    # latest_python = sorted(python_versions)[-1]
+
+    data_gen_var = "DATA_GEN_PYTHON"
+    if data_gen_var in environ:
+        print("Using existing data generation environment.")
+    else:
+        print("Setting up the data generation environment...")
+        # Get Nox to build an environment for the `tests` session, but don't
+        #  run the session. Will re-use a cached environment if appropriate.
+        subprocess.run(
+            [
+                "nox",
+                f"--noxfile={root_dir / 'noxfile.py'}",
+                "--session=tests",
+                "--install-only",
+                f"--python={python_version}",
+            ]
+        )
+        # Find the environment built above, set it to be the data generation
+        #  environment.
+        data_gen_python = next(
+            (root_dir / ".nox").rglob(f"tests*/bin/python{python_version}")
+        ).resolve()
+        environ[data_gen_var] = str(data_gen_python)
+
+        mule_dir = data_gen_python.parents[1] / "resources" / "mule"
+        if not mule_dir.is_dir():
+            print("Installing Mule into data generation environment...")
+            subprocess.run(
+                [
+                    "git",
+                    "clone",
+                    "https://github.com/metomi/mule.git",
+                    str(mule_dir),
+                ]
+            )
+        subprocess.run(
+            [
+                str(data_gen_python),
+                "-m",
+                "pip",
+                "install",
+                str(mule_dir / "mule"),
+            ]
+        )
+
+        print("Data generation environment ready.")
+
+
+def setup_common():
+    prep_data_gen_env()
+
+    print("Setting up ASV...")
+    subprocess.run(["asv", "machine", "--yes"])
+
+    print("Setup complete.")
+
+
+def asv_compare(*commits: str, overnight_mode: bool = False):
+    """Run through a list of commits comparing each one to the next."""
+    commits = [commit[:8] for commit in commits]
+    shifts_dir = Path(".asv") / "performance-shifts"
+    for i in range(len(commits) - 1):
+        before = commits[i]
+        after = commits[i + 1]
+        asv_command = (
+            f"asv compare {before} {after} --factor={COMPARE_FACTOR} --split"
+        )
+        subprocess.run(asv_command.split(" "))
+
+        if overnight_mode:
+            # Record performance shifts.
+            # Run the command again but limited to only showing performance
+            #  shifts.
+            shifts = subprocess.run(
+                [*asv_command.split(" "), "--only-changed"],
+                capture_output=True,
+                text=True,
+            ).stdout
+            if shifts:
+                # Write the shifts report to a file.
+                # Dir is used by .github/workflows/benchmarks.yml,
+                #  but not cached - intended to be discarded after run.
+                shifts_dir.mkdir(exist_ok=True, parents=True)
+                shifts_path = (shifts_dir / after).with_suffix(".txt")
+                with shifts_path.open("w") as shifts_file:
+                    shifts_file.write(shifts)
 
 
 class SubParserGenerator(ABC):
@@ -22,6 +147,11 @@ class SubParserGenerator(ABC):
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self.add_arguments()
+        self.subparser.add_argument(
+            "asv_args",
+            nargs=argparse.REMAINDER,
+            help="Any number of arguments to pass down to ASV.",
+        )
         self.subparser.set_defaults(func=self.func)
 
     @abstractmethod
@@ -56,7 +186,19 @@ class Overnight(SubParserGenerator):
 
     @staticmethod
     def func(args: argparse.Namespace):
-        _ = args
+        setup_common()
+
+        commit_range = f"{args.first_commit}^^.."
+        asv_command = ASV_HARNESS.format(posargs=commit_range)
+        subprocess.run(*asv_command.split(" "), *args.asv_args)
+
+        # git rev-list --first-parent is the command ASV uses.
+        git_command = f"git rev-list --first-parent {commit_range}"
+        commit_string = subprocess.run(
+            git_command.split(" "), capture_output=True, text=True
+        ).stdout
+        commit_list = commit_string.rstrip().split("\n")
+        asv_compare(*reversed(commit_list), overnight_mode=True)
 
 
 class Branch(SubParserGenerator):
@@ -80,13 +222,26 @@ class Branch(SubParserGenerator):
 
     @staticmethod
     def func(args: argparse.Namespace):
-        _ = args
+        setup_common()
+
+        git_command = f"git merge-base HEAD {args.base_branch}"
+        merge_base = subprocess.run(
+            git_command.split(" "), capture_output=True, text=True
+        ).stdout[:8]
+
+        with NamedTemporaryFile("w") as hashfile:
+            hashfile.writelines([merge_base, "\n", "HEAD"])
+            hashfile.flush()
+            commit_range = f"HASHFILE:{hashfile.name}"
+            asv_command = ASV_HARNESS.format(posargs=commit_range)
+            subprocess.run([*asv_command.split(" "), *args.asv_args])
+
+        asv_compare(merge_base, "HEAD")
 
 
-class CPerf(SubParserGenerator):
-    name = "cperf"
+class CSPerf(SubParserGenerator, ABC):
     description = (
-        "Run the on-demand CPerf suite of benchmarks (part of the UK Met "
+        "Run the on-demand {} suite of benchmarks (part of the UK Met "
         "Office NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, "
         "and publish the results to the input **publish_dir**, within a "
         "unique subdirectory for this run."
@@ -100,13 +255,61 @@ class CPerf(SubParserGenerator):
         )
 
     @staticmethod
+    def csperf(args: argparse.Namespace, run_type: Literal["cperf", "sperf"]):
+        setup_common()
+
+        if not args.publish_dir.is_dir():
+            message = f"Input 'publish directory' is not a directory: {args.publish_dir}"
+            raise NotADirectoryError(message)
+        publish_subdir = (
+            args.publish_dir
+            / f"{run_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        )
+        publish_subdir.mkdir()
+
+        # Activate on demand benchmarks (C/SPerf are deactivated for
+        #  'standard' runs).
+        environ["ON_DEMAND_BENCHMARKS"] = "True"
+        commit_range = "upstream/main^!"
+
+        asv_command = (
+            ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
+        )
+        # C/SPerf benchmarks are much bigger than the CI ones:
+        # Don't fail the whole run if memory blows on 1 benchmark.
+        asv_command = asv_command.replace(" --strict", "")
+        # Only do a single round.
+        asv_command = re.sub(r"rounds=\d", "rounds=1", asv_command)
+        subprocess.run([*asv_command.split(" "), *args.asv_args])
+
+        asv_command = f"asv publish {commit_range} --html-dir={publish_subdir}"
+        subprocess.run(asv_command.split(" "))
+
+        # Print completion message.
+        location = Path().cwd() / ".asv"
+        print(
+            f'New ASV results for "{run_type}".\n'
+            f'See "{publish_subdir}",'
+            f'\n  or JSON files under "{location / "results"}".'
+        )
+
+
+class CPerf(CSPerf):
+    name = "cperf"
+    description = CSPerf.description.format("CPerf")
+
+    @staticmethod
     def func(args: argparse.Namespace):
-        _ = args
+        super().csperf(args, "cperf")
 
 
-class SPerf(CPerf):
+class SPerf(CSPerf):
     name = "sperf"
-    description = CPerf.description.replace("CPerf", "SPerf")
+    description = CSPerf.description.format("SPerf")
+
+    @staticmethod
+    def func(args: argparse.Namespace):
+        super().csperf(args, "sperf")
 
 
 class Custom(SubParserGenerator):
@@ -127,10 +330,20 @@ class Custom(SubParserGenerator):
 
     @staticmethod
     def func(args: argparse.Namespace):
-        _ = args
+        setup_common()
+        subprocess.run(["asv", args.asv_sub_command, *args.asv_args])
 
 
 def main():
+    try:
+        import asv
+    except ImportError as exc:
+        message = (
+            "No Airspeed Velocity (ASV) install detected. Benchmarks can only "
+            "be run in an environment including ASV."
+        )
+        raise Exception(message) from exc
+
     parser = ArgumentParser(
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
     )
@@ -139,7 +352,9 @@ def main():
     for gen in (Overnight, Branch, CPerf, SPerf, Custom):
         _ = gen(subparsers).subparser
 
-    _ = parser.parse_args()
+    parsed = parser.parse_args()
+    parsed.func(parsed)
+    pass
 
 
 if __name__ == "__main__":

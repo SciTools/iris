@@ -20,7 +20,8 @@ from nox.logger import logger
 nox.options.reuse_existing_virtualenvs = True
 
 #: Python versions we can run sessions under
-_PY_VERSIONS_ALL = ["3.8"]
+# Keep aligned with requirements/, .github/workflows, benchmarks/asv.conf.json .
+_PY_VERSIONS_ALL = ["3.8", "3.9", "3.10"]
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
 #: One specific python version for docs builds

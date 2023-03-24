@@ -33,6 +33,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      # Keep Pythons aligned with requirements/, noxfile.py, benchmarks/asv.conf.json .
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.10"]
