@@ -21,7 +21,7 @@ As a sounding is calculated for each column, this means there are 1536x1536
 individual calculations.
 
 In Python, it is common practice to vectorize the calculation of for loops.
-Vectorising is done by using numpy to operate on the whole array at once rather
+Vectorising is done by using NumPy to operate on the whole array at once rather
 than a single element at a time. Unfortunately, not all operations are
 vectorisable, including the calculation in this example, and so we look to
 other methods to improve the performance.
@@ -39,7 +39,7 @@ We start out by loading cubes of pressure, temperature, dewpoint temperature and
     dewpoint = iris.load_cube('a.dewp.19981109.pp')
     height = iris.load_cube('a.height.19981109.pp')
 
-We set up the numpy arrays we will be filling with the output data::
+We set up the NumPy arrays we will be filling with the output data::
 
     output_arrays = [np.zeros(pressure.shape[0]) for _ in range(6)]
     cape, cin, lcl, lfc, el, tpw = output_data

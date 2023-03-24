@@ -42,7 +42,7 @@ as follows:
          Cell methods:
               mean: time (1 hour)
 
-The cube is then immediately saved as a NetCDF file.
+The cube is then immediately saved as a netCDF file.
 
 .. code-block:: python
 
@@ -79,7 +79,7 @@ Doing so, we find that the chunks currently have the shape::
 This is significantly smaller than the `size which Dask recommends
 <https://docs.dask.org/en/latest/array-chunks.html>`_. Bear in mind that the
 ideal chunk size depends on the platform you are running on (for this example,
-the code is being run on a desktop with 8 CPU's). In this case, we have 23460
+the code is being run on a desktop with 8 CPUs). In this case, we have 23460
 small chunks. We can reduce the number of chunks by rechunking before saving:
 
 .. code-block:: python

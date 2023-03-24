@@ -3,15 +3,15 @@
 Dask Best Practices
 *******************
 
-This section outlines some of the best practices when using Dask with IRIS. Some of these
+This section outlines some of the best practices when using Dask with Iris. These
 practices involve improving performance through rechunking, making the best use of
-computing clusters and avoiding parallelisation conflicts between Dask and numpy.
+computing clusters and avoiding parallelisation conflicts between Dask and NumPy.
 
 
 .. note::
 
     Here, we have collated advice and a handful of examples, from the topics most
-    relevant when using Dask with IRIS, that we hope will assist users to make
+    relevant when using Dask with Iris, that we hope will assist users to make
     the best start when using Dask. It is *not* a fully comprehensive guide
     encompassing all best practices. You can find more general dask information in the
     `official Dask Documentation <https://docs/dask.org/en/stable/>`_.
@@ -30,25 +30,25 @@ can make a significant different to performance!
 
 .. _numpy_threads:
 
-Numpy Threads
+NumPy Threads
 =============
 
-In certain scenarios numpy will attempt to perform threading using an
+In certain scenarios NumPy will attempt to perform threading using an
 external library - typically OMP, MKL or openBLAS - making use of **every**
 CPU available. This interacts badly with Dask:
 
-* Dask may create multiple instances of numpy, each generating enough
-  threads to use **all** the available CPU's. The resulting sharing of CPU's
+* Dask may create multiple instances of NumPy, each generating enough
+  threads to use **all** the available CPUs. The resulting sharing of CPUs
   between threads greatly reduces performance. The more cores there are, the
   more pronounced this problem is.
-* Numpy will generate enough threads to use all available CPU's even
-  if Dask is deliberately configured to only use a subset of CPU's. The
-  resulting sharing of CPU's between threads greatly reduces performance.
-* `Dask is already designed to parallelise with numpy arrays <https://docs
-  .dask.org/en/latest/array.html>`_, so adding numpy's 'competing' layer of
+* NumPy will generate enough threads to use all available CPUs even
+  if Dask is deliberately configured to only use a subset of CPUs. The
+  resulting sharing of CPUs between threads greatly reduces performance.
+* `Dask is already designed to parallelise with NumPy arrays <https://docs
+  .dask.org/en/latest/array.html>`_, so adding NumPy's 'competing' layer of
   parallelisation could cause unpredictable performance.
 
-Therefore it is best to prevent numpy performing its own parallelisation, `a
+Therefore it is best to prevent NumPy performing its own parallelisation, `a
 suggestion made in Dask's own documentation <https://docs.dask
 .org/en/stable/array-best-practices.html#avoid-oversubscribing-threads>`_.
 The following commands will ensure this in all scenarios:
@@ -57,7 +57,7 @@ in Python...
 
 ::
 
-    # Must be run before importing numpy.
+    # Must be run before importing NumPy.
     import os
     os.environ["OMP_NUM_THREADS"] = "1"
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -83,7 +83,7 @@ Dask on Computing Clusters
 
 Dask is well suited for use on computing clusters, but there are some important factors you must be
 aware of. In particular, you will always need to explicitly control parallel
-operation, both in Dask and likewise in numpy.
+operation, both in Dask and likewise in NumPy.
 
 
 .. _multi-pro_slurm:
@@ -92,7 +92,7 @@ CPU Allocation
 --------------
 
 When running on a computing cluster, unless configured otherwise, Dask will attempt to create
-one parallel 'worker' task for each CPU. However, within a Slurm allocation, only *some* of
+one parallel 'worker' task for each CPU. However, when using a job scheduler such as Slurm, only *some* of
 these CPUs are actually accessible -- often, and by default, only one. This leads to a serious
 over-commitment unless it is controlled.
 
@@ -115,11 +115,11 @@ See the Dask documentation on `Single thread synchronous scheduler
 
 .. _multi-pro_numpy:
 
-Numpy Threading
+NumPy Threading
 ---------------
 
-Numpy also interrogates the visible number of CPUs to multi-thread its operations.
-The large number of CPU's available in a computing cluster will thus cause confusion if Numpy
+NumPy also interrogates the visible number of CPUs to multi-thread its operations.
+The large number of CPUs available in a computing cluster will thus cause confusion if NumPy
 attempts its own parallelisation, so this must be prevented. Refer back to
 :ref:`numpy_threads` for more detail.
 
@@ -163,12 +163,12 @@ more of the dimensions is `unlimited <https://www.unidata.ucar
 Importantly, netCDF chunk shapes are **not optimised for Dask
 performance**.
 
-Chunking can be set independently for any variable in a netcdf file.
-When a netcdf variable uses an unlimited dimension, it is automatically
+Chunking can be set independently for any variable in a netCDF file.
+When a netCDF variable uses an unlimited dimension, it is automatically
 chunked: the chunking is the shape of the whole variable, but with '1' instead
 of the length in any unlimited dimensions.
 
-When chunking is specified for netcdf data, Iris will set the dask chunking
+When chunking is specified for netCDF data, Iris will set the dask chunking
 to an integer multiple or fraction of that shape, such that the data size is
 near to but not exceeding the dask array chunk size.
 

@@ -79,10 +79,11 @@ iterate through the list of files. Here's the restructured script::
     cpu_count = multiprocessing.cpu_count()
 
     # .. or as given by slurm allocation.
+    # Only relevant when using Slurm for job scheduling
     if 'SLURM_NTASKS' in os.environ:
         cpu_count = os.environ['SLURM_NTASKS']
 
-    # Do not exceed the number of CPU's available, leaving 1 for the system.
+    # Do not exceed the number of CPUs available, leaving 1 for the system.
     num_workers = cpu_count - 1
     print('Using {} workers from {} CPUs...'.format(num_workers, cpu_count))
 
@@ -91,11 +92,11 @@ iterate through the list of files. Here's the restructured script::
         bag = db.from_sequence(fpaths).map(func)
         cubes = iris.cube.CubeList(bag.compute()).merge()
 
-This achieves approximately a 10-fold improvement if enough CPU's are
+This achieves approximately a 10-fold improvement if enough CPUs are
 available to have one per file. See this benchmarking:
 
 +---------------+-----------------------+---------------+---------------+
-| Machine       | CPU's Available       | CPU's Used    | Time Taken    |
+| Machine       | CPUs Available       | CPUs Used    | Time Taken    |
 +===============+=======================+===============+===============+
 | A             | 4                     | 3             | 4m 05s        |
 |               |                       +---------------+---------------+
@@ -135,7 +136,7 @@ GRIB messages to filter out cubes with certain unwanted properties.
 Even with parallelisation, we are still limited by the time it takes to run
 a single instance of a function. This is going to become much more important
 when running 7000 files instead of 11, since there will be nowhere near
-enough CPU's even on a large multi-processing system, meaning each CPU will be running many instances
+enough CPUs even on a large multi-processing system, meaning each CPU will be running many instances
 of the function. **Parallelisation can only go so far to solving speed issues** --
 it's effectively the 'brute force' method.
 
@@ -164,8 +165,11 @@ the GRIB file to a cube::
 
     fpaths = list(glob.glob('/scratch/frcz/ICING/GFS_DATA/20190416/*t18z*f???'))
     cpu_count = multiprocessing.cpu_count()
+
+    # Only relevant when using Slurm for job scheduling
     if 'SLURM_NTASKS' in os.environ:
         cpu_count = os.environ['SLURM_NTASKS']
+
     num_workers = cpu_count - 1
 
     print('Using {} workers from {} CPUs...'.format(num_workers, cpu_count))
@@ -177,7 +181,7 @@ This achieves a significant performance improvement - more than twice as
 fast as the previous benchmarks:
 
 +---------------+-----------------------+---------------+---------------+-----------+
-| Machine       | CPU's Available       | CPU's Used    | Previous Time | New Time  |
+| Machine       | CPUs Available       | CPUs Used    | Previous Time | New Time  |
 +===============+=======================+===============+===============+===========+
 | Example       | 8                     | 7             | 2m 35s        | 1m 05s    |
 |               |                       +---------------+---------------+-----------+
@@ -191,7 +195,7 @@ files. The main gains we can achieve are by making sure it is **only Dask**
 that manages multi-processing - if multi-processing is coming from more
 than one place there are predictable clashes.
 
-First, Numpy must be prevented from performing it's own multi-processing by
+First, NumPy must be prevented from performing it's own multi-processing by
 adding the following **before** ``import numpy`` is called. You can read more
 about this in :ref:`numpy_threads`.
 
@@ -208,7 +212,7 @@ about this in :ref:`numpy_threads`.
 Lastly, if you are using SLURM on the computing cluster then SLURM must be configured to prevent it
 optimising the number of cores necessary for the job. See the SLURM commands
 below, to be added before running the python script. It's important that
-``ntasks`` matches the number of CPU's specified in the python script. You
+``ntasks`` matches the number of CPUs specified in the python script. You
 can read more about these points in :ref:`multi-pro_slurm`.
 
 ::
