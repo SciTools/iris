@@ -1621,10 +1621,7 @@ class Saver:
                 cf_var.dimensions + (bounds_dimension_name,),
             )
             self._lazy_stream_data(
-                data=bounds,
-                fill_value=None,
-                fill_warn=True,
-                cf_var=cf_var_bounds,
+                data=bounds, cf_var=cf_var_bounds, fill_value=None
             )
 
     def _get_cube_variable_name(self, cube):
@@ -1957,9 +1954,7 @@ class Saver:
             self._create_cf_bounds(element, cf_var, cf_name)
 
         # Add the data to the CF-netCDF variable.
-        self._lazy_stream_data(
-            data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-        )
+        self._lazy_stream_data(data=data, cf_var=cf_var, fill_value=fill_value)
 
         # Add names + units
         self._set_cf_var_attributes(cf_var, element)
@@ -2352,9 +2347,9 @@ class Saver:
         set_packing_ncattrs(cf_var)
         self._lazy_stream_data(
             data=data,
+            cf_var=cf_var,
             fill_value=fill_value,
             fill_warn=(not packing),
-            cf_var=cf_var,
         )
 
         if cube.standard_name:
@@ -2445,7 +2440,7 @@ class Saver:
         return "{}_{}".format(varname, num)
 
     @staticmethod
-    def _lazy_stream_data(data, fill_value, fill_warn, cf_var):
+    def _lazy_stream_data(data, cf_var, fill_value, fill_warn=True):
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
             # Reduce dimensionality where the data array has an extra dimension
