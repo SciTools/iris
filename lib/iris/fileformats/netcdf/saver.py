@@ -322,8 +322,8 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
 
     Parameters
     ----------
-    fill_info : dict
-        A dictinonary containing the context of the fill-value check
+    fill_info : _FillvalueCheckInfo
+        A named-tuple containing the context of the fill-value check
     is_masked : bool
         whether the data arary was masked
     contains_fill_value : bool
