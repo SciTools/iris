@@ -1,15 +1,18 @@
+"""
+Argparse conveniences for executing common types of benchmark runs.
+"""
+
 from abc import ABC, abstractmethod
 import argparse
 from argparse import ArgumentParser
 from datetime import datetime
+from importlib import import_module
 from os import environ
 from pathlib import Path
 import re
 import subprocess
 from tempfile import NamedTemporaryFile
 from typing import Literal
-
-from pkg_resources import parse_version
 
 # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
 #  for more.
@@ -23,15 +26,29 @@ ASV_HARNESS = (
 )
 
 
-def prep_data_gen_env():
-    # TODO: docstring
+def _check_requirements(package: str) -> None:
+    try:
+        import_module(package)
+    except ImportError as exc:
+        message = (
+            f"No {package} install detected. Benchmarks can only "
+            f"be run in an environment including {package}."
+        )
+        raise Exception(message) from exc
 
+
+def _prep_data_gen_env() -> None:
+    """
+    Create/access a separate, unchanging environment for generating test data.
+    """
+
+    root_dir = Path(__file__).parents[1]
     python_version = "3.10"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         print("Using existing data generation environment.")
     else:
-        print("Setting up the data generation environment...")
+        print("Setting up the data generation environment ...")
         # Get Nox to build an environment for the `tests` session, but don't
         #  run the session. Will re-use a cached environment if appropriate.
         subprocess.run(
@@ -50,9 +67,9 @@ def prep_data_gen_env():
         ).resolve()
         environ[data_gen_var] = str(data_gen_python)
 
+        print("Installing Mule into data generation environment ...")
         mule_dir = data_gen_python.parents[1] / "resources" / "mule"
         if not mule_dir.is_dir():
-            print("Installing Mule into data generation environment...")
             subprocess.run(
                 [
                     "git",
@@ -74,16 +91,16 @@ def prep_data_gen_env():
         print("Data generation environment ready.")
 
 
-def setup_common():
-    prep_data_gen_env()
+def _setup_common() -> None:
+    _prep_data_gen_env()
 
-    print("Setting up ASV...")
+    print("Setting up ASV ...")
     subprocess.run(["asv", "machine", "--yes"])
 
     print("Setup complete.")
 
 
-def asv_compare(*commits: str, overnight_mode: bool = False):
+def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
     """Run through a list of commits comparing each one to the next."""
     commits = [commit[:8] for commit in commits]
     shifts_dir = Path(".asv") / "performance-shifts"
@@ -114,13 +131,13 @@ def asv_compare(*commits: str, overnight_mode: bool = False):
                     shifts_file.write(shifts)
 
 
-class SubParserGenerator(ABC):
-    """Convenience for holding all the necessary info in 1 place."""
+class _SubParserGenerator(ABC):
+    """Convenience for holding all the necessary argparse info in 1 place."""
 
     name: str = NotImplemented
     description: str = NotImplemented
 
-    def __init__(self, subparsers: ArgumentParser.add_subparsers):
+    def __init__(self, subparsers: ArgumentParser.add_subparsers) -> None:
         self.subparser: ArgumentParser = subparsers.add_parser(
             self.name,
             description=self.description,
@@ -142,11 +159,17 @@ class SubParserGenerator(ABC):
     @staticmethod
     @abstractmethod
     def func(args: argparse.Namespace):
+        """
+        The function to return when the subparser is parsed.
+
+        `func` is then called, performing the user's selected sub-command.
+
+        """
         _ = args
         return NotImplemented
 
 
-class Overnight(SubParserGenerator):
+class Overnight(_SubParserGenerator):
     name = "overnight"
     description = (
         "Benchmarks all commits between the input **first_commit** to ``HEAD``, "
@@ -165,12 +188,12 @@ class Overnight(SubParserGenerator):
         )
 
     @staticmethod
-    def func(args: argparse.Namespace):
-        setup_common()
+    def func(args: argparse.Namespace) -> None:
+        _setup_common()
 
         commit_range = f"{args.first_commit}^^.."
         asv_command = ASV_HARNESS.format(posargs=commit_range)
-        subprocess.run(*asv_command.split(" "), *args.asv_args)
+        subprocess.run([*asv_command.split(" "), *args.asv_args])
 
         # git rev-list --first-parent is the command ASV uses.
         git_command = f"git rev-list --first-parent {commit_range}"
@@ -178,10 +201,10 @@ class Overnight(SubParserGenerator):
             git_command.split(" "), capture_output=True, text=True
         ).stdout
         commit_list = commit_string.rstrip().split("\n")
-        asv_compare(*reversed(commit_list), overnight_mode=True)
+        _asv_compare(*reversed(commit_list), overnight_mode=True)
 
 
-class Branch(SubParserGenerator):
+class Branch(_SubParserGenerator):
     name = "branch"
     description = (
         "Performs the same operations as ``overnight``, but always on two commits "
@@ -201,8 +224,8 @@ class Branch(SubParserGenerator):
         )
 
     @staticmethod
-    def func(args: argparse.Namespace):
-        setup_common()
+    def func(args: argparse.Namespace) -> None:
+        _setup_common()
 
         git_command = f"git merge-base HEAD {args.base_branch}"
         merge_base = subprocess.run(
@@ -216,10 +239,12 @@ class Branch(SubParserGenerator):
             asv_command = ASV_HARNESS.format(posargs=commit_range)
             subprocess.run([*asv_command.split(" "), *args.asv_args])
 
-        asv_compare(merge_base, "HEAD")
+        _asv_compare(merge_base, "HEAD")
 
 
-class CSPerf(SubParserGenerator, ABC):
+class _CSPerf(_SubParserGenerator, ABC):
+    """Common code used by both CPerf and SPerf."""
+
     description = (
         "Run the on-demand {} suite of benchmarks (part of the UK Met "
         "Office NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, "
@@ -235,14 +260,19 @@ class CSPerf(SubParserGenerator, ABC):
         )
 
     @staticmethod
-    def csperf(args: argparse.Namespace, run_type: Literal["cperf", "sperf"]):
-        setup_common()
+    def csperf(
+        args: argparse.Namespace, run_type: Literal["cperf", "sperf"]
+    ) -> None:
+        _setup_common()
 
-        if not args.publish_dir.is_dir():
-            message = f"Input 'publish directory' is not a directory: {args.publish_dir}"
+        publish_dir = Path(args.publish_dir)
+        if not publish_dir.is_dir():
+            message = (
+                f"Input 'publish directory' is not a directory: {publish_dir}"
+            )
             raise NotADirectoryError(message)
         publish_subdir = (
-            args.publish_dir
+            publish_dir
             / f"{run_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )
         publish_subdir.mkdir()
@@ -274,30 +304,30 @@ class CSPerf(SubParserGenerator, ABC):
         )
 
 
-class CPerf(CSPerf):
+class CPerf(_CSPerf):
     name = "cperf"
-    description = CSPerf.description.format("CPerf")
+    description = _CSPerf.description.format("CPerf")
 
     @staticmethod
-    def func(args: argparse.Namespace):
-        super().csperf(args, "cperf")
+    def func(args: argparse.Namespace) -> None:
+        _CSPerf.csperf(args, "cperf")
 
 
-class SPerf(CSPerf):
+class SPerf(_CSPerf):
     name = "sperf"
-    description = CSPerf.description.format("SPerf")
+    description = _CSPerf.description.format("SPerf")
 
     @staticmethod
-    def func(args: argparse.Namespace):
-        super().csperf(args, "sperf")
+    def func(args: argparse.Namespace) -> None:
+        _CSPerf.csperf(args, "sperf")
 
 
-class Custom(SubParserGenerator):
+class Custom(_SubParserGenerator):
     name = "custom"
     description = (
         "Run ASV with the input **ASV sub-command**, without any preset "
         "arguments - must all be supplied by the user. So just like running "
-        "ASV manually, with the convenience of re-using the runners' "
+        "ASV manually, with the convenience of re-using the runner's "
         "scripted setup steps."
     )
 
@@ -309,23 +339,18 @@ class Custom(SubParserGenerator):
         )
 
     @staticmethod
-    def func(args: argparse.Namespace):
-        setup_common()
+    def func(args: argparse.Namespace) -> None:
+        _setup_common()
         subprocess.run(["asv", args.asv_sub_command, *args.asv_args])
 
 
 def main():
-    try:
-        import asv
-    except ImportError as exc:
-        message = (
-            "No Airspeed Velocity (ASV) install detected. Benchmarks can only "
-            "be run in an environment including ASV."
-        )
-        raise Exception(message) from exc
+    _check_requirements("asv")
+    _check_requirements("nox")
 
     parser = ArgumentParser(
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
+        epilog="More help is available within each sub-command.",
     )
     subparsers = parser.add_subparsers()
 
