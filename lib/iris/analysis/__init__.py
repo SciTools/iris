@@ -3142,15 +3142,16 @@ def lift_empty_masks(decorated_func):
     """
     Temporarily convert input arrays/Cubes to use non-masked arrays if all masks are ``False``.
 
-    .. todo: Sphinx domains
-
-    Provided because working on non-masked NumPy/Dask arrays can significantly
-    improve performance. Any ``args`` or ``kwargs`` of `decorated_func` that
-    are arrays or Cubes, and have all-``False`` masks, are converted; Cubes are
-    modified in-place. After `decorated_func` has fun, all returned arrays
-    and Cubes, together any modified input Cubes
-    (see above), are converted to use masked arrays with the original ``False``
-    mask re-applied.
+    Provided because working on non-masked :obj:`~numpy.typing.ArrayLike`\\s
+    (e.g. :class:`numpy.ndarray` / :class:`dask.array.Array`)
+    can significantly improve performance. Any ``args`` or ``kwargs`` of
+    `decorated_func` that are :obj:`~numpy.typing.ArrayLike`\\s or
+    :class:`~iris.cube.Cube`\\s, and have all-``False`` masks, are converted;
+    :class:`~iris.cube.Cube`\\s are modified in-place. After `decorated_func`
+    has run, all returned :obj:`~numpy.typing.ArrayLike`\\s and
+    :class:`~iris.cube.Cube`\\s, together any modified input
+    :class:`~iris.cube.Cube`\\s (see above), are converted to use masked
+    arrays with the original ``False`` mask re-applied.
 
     Parameters
     ----------
@@ -3169,17 +3170,19 @@ def lift_empty_masks(decorated_func):
     --------
     Be careful what callables this is applied to. If any input objects have an
     all-``False`` mask, **all** returned non-masked objects will be converted
-    to have an all-``False`` mask. The callable may also assign arrays/Cubes
+    to have an all-``False`` mask. And if the callable assigns
+    :obj:`~numpy.typing.ArrayLike`\\s/:class:`~iris.cube.Cube`\\s
     in a way that can't be detected (e.g. modifying a global object, or
-    returning a dict), leaving a mask permanently 'lifted'.
+    returning a dict), those masks will be permanently 'lifted'.
 
     Notes
     -----
-    Two types of ``False`` mask may exist - a scalar np.ma.nomask, or a
-    full array of ``False`` values. The type detected in ``args`` and
-    ``kwargs`` is the type that is applied after `decorated_func` has run.
-    No conversion will take place if a mixture of mask types is present, since
-    it is not possible to know what type to apply afterwards.
+    Two types of ``False`` mask may exist - a scalar :obj:`numpy.ma.nomask`,
+    or a full :obj:`~numpy.typing.ArrayLike` of ``False`` values. The type
+    detected in ``args`` and ``kwargs`` is the type that is applied after
+    `decorated_func` has run. No conversion will take place if a mixture of
+    mask types is present, since it is not possible to know what type to apply
+    afterwards.
 
     """
     from iris.cube import Cube, CubeList
@@ -3220,17 +3223,17 @@ def lift_empty_masks(decorated_func):
     def get_mask_type(array_or_cube):
         data = get_data(array_or_cube)
         if data is not None and iris._lazy_data.is_lazy_data(data):
-            # Take a sample to check the mask - dask.array.ma arrays have no
-            #  distinguishing properties.
-            # TODO: this copies lines from has_mask(). Could this be somehow
-            #  refactored to be more D.R.Y.?
-            data = iris._lazy_data.as_concrete_data(data.blocks[0])
+            # Take a sample to check the mask - dask.array.ma arrays have
+            #  no distinguishing properties.
+            sample = iris._lazy_data.as_concrete_data(data.blocks[0])
+        else:
+            sample = data
 
-        if data is not None and hasattr(data, "mask"):
+        if data is not None and hasattr(sample, "mask"):
             if is_masked(data):
                 mask_type = MaskTypes.SOME_TRUE
             else:
-                if data.mask is ma.nomask:
+                if sample.mask is ma.nomask:
                     mask_type = MaskTypes.SCALAR_FALSE
                 else:
                     mask_type = MaskTypes.ARRAY_FALSE
@@ -3292,8 +3295,6 @@ def lift_empty_masks(decorated_func):
         if lift_count != 0:
             uniform_false_mtype = mask_types_false[0]
             if all([mt == uniform_false_mtype for mt in mask_types_false]):
-                # TODO: else raise a warning?
-
                 masks_lifted = True
 
                 for ix, arg in enumerate(args):
@@ -3302,6 +3303,13 @@ def lift_empty_masks(decorated_func):
                 for key, kwarg in kwargs.items():
                     if mask_types_kwargs[key] == uniform_false_mtype:
                         kwargs[key] = lift_mask(kwarg, cube_store)
+            else:
+                message = (
+                    "Inconsistent false-mask-types; no masks will be lifted "
+                    f"during {decorated_func.__name__} - performance may be "
+                    "sub-optimal."
+                )
+                warnings.warn(message)
 
         result = decorated_func(*args, **kwargs)
 
