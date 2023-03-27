@@ -277,13 +277,6 @@ _FillvalueCheckInfo = collections.namedtuple(
 )
 
 
-def _PRINT_DEBUG(*args):
-    # _DO_DEBUG = True
-    _DO_DEBUG = False
-    if _DO_DEBUG:
-        print(*args)
-
-
 def _data_fillvalue_check(arraylib, data, check_value):
     """
     Check whether an array is masked, and whether it contains a fill-value.
@@ -343,7 +336,6 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     is_byte_data = fill_info.dtype.itemsize == 1
     result = None
     if is_byte_data and is_masked and user_value is None:
-        _PRINT_DEBUG(f'Data check "{varname}" : masked byte warning')
         result = UserWarning(
             f"CF var '{varname}' contains byte data with masked points, but "
             "no fill_value keyword was given. As saved, these "
@@ -353,7 +345,6 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
             "keyword during saving, otherwise use ncedit/equivalent."
         )
     elif contains_fill_value:
-        _PRINT_DEBUG(f'Data check "{varname}" : contains-fill warning')
         result = UserWarning(
             f"CF var '{varname}' contains unmasked data points equal to the "
             f"fill-value, {check_value}. As saved, these points will read back "
@@ -362,8 +353,6 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
             "points. For Cube data this can be done via the 'fill_value' "
             "keyword during saving, otherwise use ncedit/equivalent."
         )
-    else:
-        _PRINT_DEBUG(f'Data check "{varname}" : all-values-ok')
 
     if warn and result is not None:
         warnings.warn(result)
@@ -2406,11 +2395,8 @@ class Saver:
         is_masked, contains_fill_value = store(
             data, cf_var, fill_value_to_check
         )
-        if doing_delayed_save:
-            _PRINT_DEBUG(
-                f'Data check "{fill_info.varname}" : NO CHECK YET (delayed)'
-            )
-        else:
+
+        if not doing_delayed_save:
             # Issue a fill-value warning immediately, if appropriate.
             _fillvalue_report(
                 fill_info, is_masked, contains_fill_value, warn=True
