@@ -92,6 +92,9 @@ def _prep_data_gen_env() -> None:
 
 
 def _setup_common() -> None:
+    _check_requirements("asv")
+    _check_requirements("nox")
+
     _prep_data_gen_env()
 
     print("Setting up ASV ...")
@@ -345,9 +348,6 @@ class Custom(_SubParserGenerator):
 
 
 def main():
-    _check_requirements("asv")
-    _check_requirements("nox")
-
     parser = ArgumentParser(
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
         epilog="More help is available within each sub-command.",

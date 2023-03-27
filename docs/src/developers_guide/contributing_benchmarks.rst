@@ -23,7 +23,7 @@ previous day** to check if any commit has introduced performance shifts.
 Detected shifts are reported in a new Iris GitHub issue.
 
 If a pull request author/reviewer suspects their changes may cause performance
-shifts, a convenience is available (currently via Nox) to replicate the
+shifts, a convenience script is available to replicate the
 overnight benchmark run but comparing the current ``HEAD`` with a requested
 branch (e.g. ``upstream/main``). Read more in `benchmarks/README.md`_.
 
