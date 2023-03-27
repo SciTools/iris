@@ -19,6 +19,15 @@ The benchmark runner ([bm_runner.py](./bm_runner.py)) provides conveniences for
 common benchmark setup and run tasks, including replicating the automated 
 overnight run locally. See `python bm_runner.py --help` for detail.
 
+A significant portion of benchmark run time is environment management. Run-time
+can be reduced by placing the benchmark environment on the same file system as
+your
+[Conda package cache](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html#specify-pkg-directories).
+The benchmark environment location is controlled via `delegated_env_commands`
+and `delegated_env_parent` in [asv.conf.json](asv.conf.json); either 
+temporarily reconfigure these, or move your whole repo to the desired file 
+system.
+
 ### Environment variables
 
 * `OVERRIDE_TEST_DATA_REPOSITORY` - required - some benchmarks use
