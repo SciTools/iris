@@ -174,25 +174,35 @@ def _get_actual_dtype(cf_var):
 
 
 def _get_cf_var_data(cf_var, filename):
-    # Get lazy chunked data out of a cf variable.
-    dtype = _get_actual_dtype(cf_var)
+    if hasattr(cf_var, "_in_memory_data"):
+        # The variable is not an actual netCDF4 file variable, but an emulating
+        # object with an attached data array (either numpy or dask), which can be
+        # returned immediately as-is.  This is used as a hook to translate data to/from
+        # netcdf data container objects in other packages, such as xarray.
+        # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
+        result = cf_var._in_memory_data
+    else:
+        # Get lazy chunked data out of a cf variable.
+        dtype = _get_actual_dtype(cf_var)
 
-    # Create cube with deferred data, but no metadata
-    fill_value = getattr(
-        cf_var.cf_data,
-        "_FillValue",
-        _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
-    )
-    proxy = NetCDFDataProxy(
-        cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
-    )
-    # Get the chunking specified for the variable : this is either a shape, or
-    # maybe the string "contiguous".
-    chunks = cf_var.cf_data.chunking()
-    # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
-    if chunks == "contiguous":
-        chunks = None
-    return as_lazy_data(proxy, chunks=chunks)
+        # Create cube with deferred data, but no metadata
+        fill_value = getattr(
+            cf_var.cf_data,
+            "_FillValue",
+            _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
+        )
+        proxy = NetCDFDataProxy(
+            cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
+        )
+        # Get the chunking specified for the variable : this is either a shape, or
+        # maybe the string "contiguous".
+        chunks = cf_var.cf_data.chunking()
+        # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
+        if chunks == "contiguous":
+            chunks = None
+        result = as_lazy_data(proxy, chunks=chunks)
+
+    return result
 
 
 class _OrderedAddableList(list):
