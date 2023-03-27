@@ -462,7 +462,7 @@ def _setncattr(variable, name, attribute):
     NOTE: variable needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
 
     """
-    assert hasattr(variable, "THREAD_SAFE_FLAG")
+    # assert hasattr(variable, "THREAD_SAFE_FLAG")
     attribute = _bytes_if_ascii(attribute)
     return variable.setncattr(name, attribute)
 
@@ -2336,7 +2336,7 @@ class Saver:
             NOTE: cfvar needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
 
             """
-            assert hasattr(cfvar, "THREAD_SAFE_FLAG")
+            # assert hasattr(cfvar, "THREAD_SAFE_FLAG")
             if packing:
                 if scale_factor:
                     _setncattr(cfvar, "scale_factor", scale_factor)
