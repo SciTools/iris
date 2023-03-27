@@ -25,8 +25,6 @@ jobs:
       # Lets us manually bump the cache to rebuild
       ENV_CACHE_BUILD: "0"
       TEST_DATA_CACHE_BUILD: "2"
-      # Keep aligned with requirements/, noxfile.py, benchmarks/asv.conf.json .
-      PY_VER: 3.10
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it

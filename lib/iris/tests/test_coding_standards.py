@@ -14,6 +14,7 @@ from glob import glob
 import os
 from pathlib import Path
 import subprocess
+from typing import List, Tuple
 
 import iris
 from iris.fileformats.netcdf import _thread_safe_nc
@@ -52,8 +53,7 @@ def test_netcdf4_import():
 
     files_including_import = []
     for file_path in Path(IRIS_DIR).rglob("*.py"):
-        with file_path.open("r") as open_file:
-            file_text = open_file.read()
+        file_text = file_path.read_text()
 
         if any([i in file_text for i in import_strings]):
             files_including_import.append(file_path)
@@ -64,6 +64,73 @@ def test_netcdf4_import():
         Path(__file__),
     ]
     assert set(files_including_import) == set(expected)
+
+
+def test_python_versions():
+    """
+    This test is designed to fail whenever Iris' supported Python versions are
+    updated, insisting that versions are updated EVERYWHERE in-sync.
+    """
+    latest_supported = "3.10"
+    all_supported = ["3.8", "3.9", latest_supported]
+
+    root_dir = Path(__file__).parents[3]
+    workflows_dir = root_dir / ".github" / "workflows"
+    benchmarks_dir = root_dir / "benchmarks"
+
+    # Places that are checked:
+    setup_cfg_file = root_dir / "setup.cfg"
+    requirements_dir = root_dir / "requirements"
+    nox_file = root_dir / "noxfile.py"
+    ci_wheels_file = workflows_dir / "ci-wheels.yml"
+    ci_tests_file = workflows_dir / "ci-tests.yml"
+    asv_config_file = benchmarks_dir / "asv.conf.json"
+    benchmark_runner_file = benchmarks_dir / "bm_runner.py"
+
+    text_searches: List[Tuple[Path, str]] = [
+        (
+            setup_cfg_file,
+            "\n    ".join(
+                [
+                    "Programming Language :: Python :: " + ver
+                    for ver in all_supported
+                ]
+            ),
+        ),
+        (
+            nox_file,
+            "_PY_VERSIONS_ALL = ["
+            + ", ".join([f'"{ver}"' for ver in all_supported]),
+        ),
+        (
+            ci_wheels_file,
+            "python-version: ["
+            + ", ".join([f'"{ver}"' for ver in all_supported]),
+        ),
+        (
+            ci_tests_file,
+            (
+                f'python-version: ["{latest_supported}"]\n'
+                f'{" " * 8}session: ["doctest", "gallery", "linkcheck"]'
+            ),
+        ),
+        (asv_config_file, f"PY_VER={latest_supported}"),
+        (benchmark_runner_file, f'python_version = "{latest_supported}"'),
+    ]
+
+    for ver in all_supported:
+        req_yaml = requirements_dir / f"py{ver.replace('.', '')}.yml"
+        text_searches.append((req_yaml, f"- python ={ver}"))
+
+        text_searches.append(
+            (
+                ci_tests_file,
+                f'python-version: "{ver}"\n{" " * 12}session: "tests"',
+            )
+        )
+
+    for path, search in text_searches:
+        assert search in path.read_text()
 
 
 class TestLicenseHeaders(tests.IrisTest):

@@ -26,27 +26,7 @@ ASV_HARNESS = (
 def prep_data_gen_env():
     # TODO: docstring
 
-    # TODO: read version from noxfile, since that is what supports everything.
-    root_dir = Path(__file__).parents[1]
-    conf_path = Path(__file__).parent / "asv.conf.json"
-    conf_content = conf_path.read_text()
-    python_search = re.search("(?<=PY_VER=)(.*?)(?=\snox)", conf_content)
-    assert len(python_search.groups()) == 1
-    python_version = python_search.group(0)
-    # Check it works.
-    _ = parse_version(python_version)
-
-    # req_dir = root_dir / "requirements"
-    # python_versions = []
-    # for req_file in req_dir.glob("py*.yml"):
-    #     content = req_file.read_text()
-    #     python_string = re.search("(?<=- python =)(.*)(?=\n)", content)
-    #     if python_string and len(python_string.groups()) == 1:
-    #         version_parsed = parse_version(python_string.group(0))
-    #         python_versions.append(version_parsed)
-    # assert len(python_versions) > 0
-    # latest_python = sorted(python_versions)[-1]
-
+    python_version = "3.10"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         print("Using existing data generation environment.")
