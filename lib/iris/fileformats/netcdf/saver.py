@@ -1629,10 +1629,7 @@ class Saver:
                 cf_var.dimensions + (bounds_dimension_name,),
             )
             self._lazy_stream_data(
-                data=bounds,
-                fill_value=None,
-                fill_warn=True,
-                cf_var=cf_var_bounds,
+                data=bounds, cf_var=cf_var_bounds, fill_value=None
             )
 
     def _get_cube_variable_name(self, cube):
@@ -1965,9 +1962,7 @@ class Saver:
             self._create_cf_bounds(element, cf_var, cf_name)
 
         # Add the data to the CF-netCDF variable.
-        self._lazy_stream_data(
-            data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-        )
+        self._lazy_stream_data(data=data, cf_var=cf_var, fill_value=fill_value)
 
         # Add names + units
         self._set_cf_var_attributes(cf_var, element)
@@ -2360,9 +2355,9 @@ class Saver:
         set_packing_ncattrs(cf_var)
         self._lazy_stream_data(
             data=data,
+            cf_var=cf_var,
             fill_value=fill_value,
             fill_warn=(not packing),
-            cf_var=cf_var,
         )
 
         if cube.standard_name:
@@ -2453,7 +2448,7 @@ class Saver:
         return "{}_{}".format(varname, num)
 
     @staticmethod
-    def _lazy_stream_data(data, fill_value, fill_warn, cf_var):
+    def _lazy_stream_data(data, cf_var, fill_value, fill_warn=True):
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
             # Reduce dimensionality where the data array has an extra dimension
@@ -2462,64 +2457,79 @@ class Saver:
             #  contains just 1 row, so the cf_var is 1D.
             data = data.squeeze(axis=0)
 
-        if is_lazy_data(data):
-
-            def store(data, cf_var, fill_value):
-                # Store lazy data and check whether it is masked and contains
-                # the fill value
-                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
-                da.store([data], [target])
-                return target.is_masked, target.contains_value
-
+        if hasattr(cf_var, "_in_memory_data"):
+            # The variable is not an actual netCDF4 file variable, but an emulating
+            # object with an attached data array (either numpy or dask), which should be
+            # copied immediately to the target.  This is used as a hook to translate
+            # data to/from netcdf data container objects in other packages, such as
+            # xarray.
+            # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
+            # N.B. also, in this case there is no need for fill-value checking as the
+            # data is not being translated to an in-file representation.
+            cf_var._in_memory_data = data
         else:
+            if is_lazy_data(data):
 
-            def store(data, cf_var, fill_value):
-                cf_var[:] = data
-                is_masked = np.ma.is_masked(data)
-                contains_value = fill_value is not None and fill_value in data
-                return is_masked, contains_value
+                def store(data, cf_var, fill_value):
+                    # Store lazy data and check whether it is masked and contains
+                    # the fill value
+                    target = _FillValueMaskCheckAndStoreTarget(
+                        cf_var, fill_value
+                    )
+                    da.store([data], [target])
+                    return target.is_masked, target.contains_value
 
-        dtype = cf_var.dtype
-
-        # fill_warn allows us to skip warning if packing attributes have been
-        #  specified. It would require much more complex operations to work out
-        #  what the values and fill_value _would_ be in such a case.
-        if fill_warn:
-            if fill_value is not None:
-                fill_value_to_check = fill_value
             else:
-                fill_value_to_check = _thread_safe_nc.default_fillvals[
-                    dtype.str[1:]
-                ]
-        else:
-            fill_value_to_check = None
 
-        # Store the data and check if it is masked and contains the fill value.
-        is_masked, contains_fill_value = store(
-            data, cf_var, fill_value_to_check
-        )
+                def store(data, cf_var, fill_value):
+                    cf_var[:] = data
+                    is_masked = np.ma.is_masked(data)
+                    contains_value = (
+                        fill_value is not None and fill_value in data
+                    )
+                    return is_masked, contains_value
 
-        if dtype.itemsize == 1 and fill_value is None:
-            if is_masked:
+            dtype = cf_var.dtype
+
+            # fill_warn allows us to skip warning if packing attributes have been
+            #  specified. It would require much more complex operations to work out
+            #  what the values and fill_value _would_ be in such a case.
+            if fill_warn:
+                if fill_value is not None:
+                    fill_value_to_check = fill_value
+                else:
+                    fill_value_to_check = _thread_safe_nc.default_fillvals[
+                        dtype.str[1:]
+                    ]
+            else:
+                fill_value_to_check = None
+
+            # Store the data and check if it is masked and contains the fill value.
+            is_masked, contains_fill_value = store(
+                data, cf_var, fill_value_to_check
+            )
+
+            if dtype.itemsize == 1 and fill_value is None:
+                if is_masked:
+                    msg = (
+                        "CF var '{}' contains byte data with masked points, but "
+                        "no fill_value keyword was given. As saved, these "
+                        "points will read back as valid values. To save as "
+                        "masked byte data, `_FillValue` needs to be explicitly "
+                        "set. For Cube data this can be done via the 'fill_value' "
+                        "keyword during saving, otherwise use ncedit/equivalent."
+                    )
+                    warnings.warn(msg.format(cf_var.name))
+            elif contains_fill_value:
                 msg = (
-                    "CF var '{}' contains byte data with masked points, but "
-                    "no fill_value keyword was given. As saved, these "
-                    "points will read back as valid values. To save as "
-                    "masked byte data, `_FillValue` needs to be explicitly "
-                    "set. For Cube data this can be done via the 'fill_value' "
+                    "CF var '{}' contains unmasked data points equal to the "
+                    "fill-value, {}. As saved, these points will read back "
+                    "as missing data. To save these as normal values, "
+                    "`_FillValue` needs to be set to not equal any valid data "
+                    "points. For Cube data this can be done via the 'fill_value' "
                     "keyword during saving, otherwise use ncedit/equivalent."
                 )
-                warnings.warn(msg.format(cf_var.name))
-        elif contains_fill_value:
-            msg = (
-                "CF var '{}' contains unmasked data points equal to the "
-                "fill-value, {}. As saved, these points will read back "
-                "as missing data. To save these as normal values, "
-                "`_FillValue` needs to be set to not equal any valid data "
-                "points. For Cube data this can be done via the 'fill_value' "
-                "keyword during saving, otherwise use ncedit/equivalent."
-            )
-            warnings.warn(msg.format(cf_var.name, fill_value))
+                warnings.warn(msg.format(cf_var.name, fill_value))
 
 
 def save(
