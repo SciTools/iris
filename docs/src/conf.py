@@ -122,7 +122,7 @@ def _dotv(version):
 
 # Automate the discovery of the python versions tested with CI.
 python_support = sorted(
-    [fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")]
+    [fname.stem for fname in Path(".").glob("../../requirements/py*.yml")]
 )
 
 if not python_support:

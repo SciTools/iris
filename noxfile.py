@@ -41,7 +41,7 @@ ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
 def session_lockfile(session: nox.sessions.Session) -> Path:
     """Return the path of the session lockfile."""
     return Path(
-        f"requirements/ci/nox.lock/py{session.python.replace('.', '')}-linux-64.lock"
+        f"requirements/locks/py{session.python.replace('.', '')}-linux-64.lock"
     )
 
 
@@ -188,13 +188,13 @@ def tests(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
     run_args = [
-        "python",
-        "-m",
-        "iris.tests.runner",
-        "--default-tests",
+        "pytest",
+        "-n",
+        "auto",
+        "lib/iris/tests",
     ]
     if "-c" in session.posargs or "--coverage" in session.posargs:
-        run_args.append("--coverage")
+        run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
     session.run(*run_args)
 
 
@@ -241,10 +241,10 @@ def gallery(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
     session.run(
-        "python",
-        "-m",
-        "iris.tests.runner",
-        "--gallery-tests",
+        "pytest",
+        "-n",
+        "auto",
+        "docs/gallery_tests",
     )
 
 
