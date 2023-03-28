@@ -372,10 +372,24 @@ class Test_compute_usage:
     @staticmethod
     @pytest.fixture
     def mock_saver_creation():
-        mock_saver = mock.MagicMock(spec=Saver, name="<Saver>")
+        # A mock for a Saver object.
+        mock_saver = mock.MagicMock(spec=Saver)
+        # make an __enter__ call return the object itself (as the real Saver does).
         mock_saver.__enter__ = mock.Mock(return_value=mock_saver)
+        # A mock for the Saver() constructor call.
         mock_new_saver_call = mock.Mock(return_value=mock_saver)
-        with mock.patch.object(Saver, "__new__", mock_new_saver_call):
+
+        # Replace the whole Saver class with a simple function, which thereby emulates
+        # the constructor call.  This avoids complications due to the fact that Mock
+        # patching does not work in the usual way for __init__ and __new__ methods.
+        def mock_saver_class_create(*args, **kwargs):
+            return mock_new_saver_call(*args, **kwargs)
+
+        # Patch the Saver() creation to return our mock Saver object.
+        with mock.patch(
+            "iris.fileformats.netcdf.saver.Saver", mock_saver_class_create
+        ):
+            # Return mocks for both constructor call, and Saver object.
             yield mock_new_saver_call, mock_saver
 
     # A fixture to provide some mock args for 'Saver' creation.
@@ -384,13 +398,15 @@ class Test_compute_usage:
     def mock_saver_args():
         from collections import namedtuple
 
+        # A special object for the cube, since cube.attributes must be indexable
+        mock_cube = mock.MagicMock()
         args = namedtuple(
             "saver_args", ["cube", "filename", "format", "compute"]
         )(
-            cube=mock.Mock(spec=Cube, attributes={}),
+            cube=mock_cube,
             filename=mock.sentinel.filepath,
             format=mock.sentinel.netcdf4,
-            compute=mock.Mock(),
+            compute=mock.sentinel.compute,
         )
         return args
 
@@ -399,7 +415,7 @@ class Test_compute_usage:
         mock_saver_new, mock_saver = mock_saver_creation
         args = mock_saver_args
         save(
-            cube=[args.cube],
+            cube=args.cube,
             filename=args.filename,
             netcdf_format=args.format,
             compute=args.compute,
@@ -407,7 +423,7 @@ class Test_compute_usage:
         # Check the Saver create call it made, in particular that the compute arg is
         # passed in.
         mock_saver_new.assert_called_once_with(
-            Saver, args.filename, args.format, compute=args.compute
+            args.filename, args.format, compute=args.compute
         )
 
     def test_compute_true(self, mock_saver_creation, mock_saver_args):
@@ -415,7 +431,7 @@ class Test_compute_usage:
         mock_saver_new, mock_saver = mock_saver_creation
         args = mock_saver_args
         result = save(
-            cube=[args.cube],
+            cube=args.cube,
             filename=args.filename,
             netcdf_format=args.format,
             compute=True,
@@ -432,7 +448,7 @@ class Test_compute_usage:
         mock_saver_new, mock_saver = mock_saver_creation
         args = mock_saver_args
         result = save(
-            cube=[args.cube],
+            cube=args.cube,
             filename=args.filename,
             netcdf_format=args.format,
             compute=False,
