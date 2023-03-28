@@ -4,17 +4,13 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for the `iris.fileformats.netcdf.save` function."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import mock
 
 import numpy as np
+import pytest
 
 import iris
 from iris.coords import AuxCoord, DimCoord
@@ -22,11 +18,16 @@ from iris.cube import Cube, CubeList
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.fileformats.netcdf import (
     CF_CONVENTIONS_VERSION,
+    Saver,
     _thread_safe_nc,
     save,
 )
 from iris.tests.stock import lat_lon_cube
 from iris.tests.stock.mesh import sample_mesh_cube
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
 
 
 class Test_conventions(tests.IrisTest):
@@ -357,6 +358,89 @@ class Test_HdfSaveBug(tests.IrisTest):
         cube_1 = Cube([0], long_name="cube_1", var_name="Mesh_2d_face_N_nodes")
         # Test save + loadback
         self._check_save_and_reload([cube_1, cube_2])
+
+
+class Test_compute_usage:
+    """
+    Test the operation  of the save function 'compute' keyword.
+
+    In actual use, this keyword controls 'delayed saving'.  That is tested elsewhere,
+    in testing the 'Saver' class itself.
+    """
+
+    # A fixture to mock out Saver object creation in a 'save' call.
+    @staticmethod
+    @pytest.fixture
+    def mock_saver_creation():
+        mock_saver = mock.MagicMock(spec=Saver, name="<Saver>")
+        mock_saver.__enter__ = mock.Mock(return_value=mock_saver)
+        mock_new_saver_call = mock.Mock(return_value=mock_saver)
+        with mock.patch.object(Saver, "__new__", mock_new_saver_call):
+            yield mock_new_saver_call, mock_saver
+
+    # A fixture to provide some mock args for 'Saver' creation.
+    @staticmethod
+    @pytest.fixture
+    def mock_saver_args():
+        from collections import namedtuple
+
+        args = namedtuple(
+            "saver_args", ["cube", "filename", "format", "compute"]
+        )(
+            cube=mock.Mock(spec=Cube, attributes={}),
+            filename=mock.sentinel.filepath,
+            format=mock.sentinel.netcdf4,
+            compute=mock.Mock(),
+        )
+        return args
+
+    def test_saver_creation(self, mock_saver_creation, mock_saver_args):
+        # Check that 'save' creates a Saver, passing the 'compute' keyword.
+        mock_saver_new, mock_saver = mock_saver_creation
+        args = mock_saver_args
+        save(
+            cube=[args.cube],
+            filename=args.filename,
+            netcdf_format=args.format,
+            compute=args.compute,
+        )
+        # Check the Saver create call it made, in particular that the compute arg is
+        # passed in.
+        mock_saver_new.assert_called_once_with(
+            Saver, args.filename, args.format, compute=args.compute
+        )
+
+    def test_compute_true(self, mock_saver_creation, mock_saver_args):
+        # Check operation when compute=True.
+        mock_saver_new, mock_saver = mock_saver_creation
+        args = mock_saver_args
+        result = save(
+            cube=[args.cube],
+            filename=args.filename,
+            netcdf_format=args.format,
+            compute=True,
+        )
+        # It should NOT have called 'delayed_completion'
+        assert mock_saver.delayed_completion.call_count == 0
+        # Result should be None
+        assert result is None
+
+    def test_compute_false_result_delayed(
+        self, mock_saver_creation, mock_saver_args
+    ):
+        # Check operation when compute=False.
+        mock_saver_new, mock_saver = mock_saver_creation
+        args = mock_saver_args
+        result = save(
+            cube=[args.cube],
+            filename=args.filename,
+            netcdf_format=args.format,
+            compute=False,
+        )
+        # It should have called 'delayed_completion' ..
+        assert mock_saver.delayed_completion.call_count == 1
+        # .. and should return the result of that.
+        assert result is mock_saver.delayed_completion.return_value
 
 
 if __name__ == "__main__":

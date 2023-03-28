@@ -2437,9 +2437,9 @@ class Saver:
             # returns a list of any fill-value warnings.
             @dask.delayed
             def compute_and_return_warnings(store_op, fv_infos, fv_checks):
-                # Note: we don't actually *do* anything with the store_op, but
-                # including it here ensures that dask will compute it (thus performing
-                # all the delayed saves), before calling this function.
+                # Note: we don't actually *do* anything with the 'store_op' argument,
+                # but including it here ensures that dask will compute it (thus
+                # performing all the delayed saves), before calling this function.
                 results = []
                 # Pair each fill_check result (is_masked, contains_value) with its
                 # fillinfo and construct a suitable Warning if needed.
