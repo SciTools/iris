@@ -10,14 +10,14 @@ Test the hybrid vertical coordinate representations.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 import iris
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 import iris.tests.stock
 
 
@@ -50,6 +50,11 @@ class TestRealistic4d(tests.GraphicsTest):
         # Make sure the derived 'altitude' coordinate survived the indexing.
         _ = cube.coord("altitude")
         self.assertCML(cube, ("derived", "column.cml"))
+
+    def test_removing_derived_coord(self):
+        cube = self.cube
+        cube.remove_coord("altitude")
+        self.assertCML(cube, ("derived", "removed_derived_coord.cml"))
 
     def test_removing_sigma(self):
         # Check the cube remains OK when sigma is removed.

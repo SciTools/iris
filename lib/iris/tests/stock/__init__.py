@@ -4,27 +4,28 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-A collection of routines which create standard Cubes for test purposes.
+A collection of routines which create standard Cubes/files for test purposes.
 
 """
+import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 import os.path
 
+from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
-from cf_units import Unit
-from iris.cube import Cube
 import iris.aux_factory
+from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coords import DimCoord, AuxCoord, CellMethod
-import iris.tests as tests
-from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.cube import Cube
+
 from ._stock_2d_latlons import (  # noqa
-    sample_2d_latlons,
     make_bounds_discontiguous_at_point,
+    sample_2d_latlons,
 )
 
 
@@ -721,12 +722,6 @@ def realistic_4d_w_missing_data():
     return cube
 
 
-def global_grib2():
-    path = tests.get_data_path(("GRIB", "global_t", "global.grib2"))
-    cube = iris.load_cube(path)
-    return cube
-
-
 def ocean_sigma_z():
     """
     Return a sample cube with an
@@ -834,8 +829,8 @@ def climatology_3d():
         units="days since 1970-01-01 00:00:00-00",
         climatological=True,
     )
-    lon_dim = DimCoord(lon, standard_name="longitude")
-    lat_dim = DimCoord(lat, standard_name="latitude")
+    lon_dim = DimCoord(lon, standard_name="longitude", units="degrees")
+    lat_dim = DimCoord(lat, standard_name="latitude", units="degrees")
 
     data_shape = (len(time_points), len(lat), len(lon))
     values = np.zeros(shape=data_shape, dtype=np.int8)

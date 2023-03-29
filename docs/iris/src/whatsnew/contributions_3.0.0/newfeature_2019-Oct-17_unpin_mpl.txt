@@ -1,2 +1,0 @@
-* Supporting Iris for both Python2 and Python3 resulted in pinning our dependency on matplotlib at v2.x. 
-  Now that Python2 support has been dropped, Iris is free to use the latest version of matplotlib.

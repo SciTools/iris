@@ -7,17 +7,17 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._data_manager import DataManager
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris._data_manager import DataManager
 import iris.tests.stock
 
 
@@ -247,7 +247,7 @@ class TestAuxCoordCreation(tests.IrisTest):
             "AuxCoord("
             "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
             " standard_name=None,"
-            " units=Unit('1'),"
+            " units=Unit('unknown'),"
             " attributes={'monty': 'python'})"
         )
         self.assertEqual(result, str(b))
@@ -337,7 +337,7 @@ class TestDimCoordCreation(tests.IrisTest):
             "DimCoord("
             "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
             " standard_name=None,"
-            " units=Unit('1'),"
+            " units=Unit('unknown'),"
             " attributes={'monty': 'python'})"
         )
         self.assertEqual(result, str(b))
@@ -944,11 +944,11 @@ class TestCoordCompatibility(tests.IrisTest):
         r.circular = False
         self.assertTrue(r.is_compatible(self.dim_coord))
 
-    def test_defn(self):
-        coord_defn = self.aux_coord._as_defn()
-        self.assertTrue(self.aux_coord.is_compatible(coord_defn))
-        coord_defn = self.dim_coord._as_defn()
-        self.assertTrue(self.dim_coord.is_compatible(coord_defn))
+    def test_metadata(self):
+        metadata = self.aux_coord.metadata
+        self.assertTrue(self.aux_coord.is_compatible(metadata))
+        metadata = self.dim_coord.metadata
+        self.assertTrue(self.dim_coord.is_compatible(metadata))
 
     def test_is_ignore(self):
         r = self.aux_coord.copy()

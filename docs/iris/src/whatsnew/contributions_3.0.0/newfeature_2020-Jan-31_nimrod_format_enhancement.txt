@@ -1,3 +1,0 @@
-* The :class:`~iris.fileformats.nimrod` provides richer meta-data translation
-when loading Nimrod-format data into cubes. This covers most known operational
-use-cases.

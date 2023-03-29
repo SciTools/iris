@@ -12,22 +12,24 @@ from collections import namedtuple
 import copy
 import warnings
 
+import cartopy.crs as ccrs
+import cartopy.img_transform
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
-import cartopy.img_transform
-import cartopy.crs as ccrs
-import iris.analysis
-import iris.coords
 import iris.coord_systems
+import iris.coords
 import iris.exceptions
 from iris.util import _meshgrid
+
 from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
 __all__ = [
+    "DistanceDifferential",
+    "PartialDifferential",
     "area_weights",
     "cosine_latitude_weights",
     "get_xy_contiguous_bounded_grids",
@@ -39,8 +41,6 @@ __all__ = [
     "rotate_winds",
     "unrotate_pole",
     "wrap_lons",
-    "DistanceDifferential",
-    "PartialDifferential",
 ]
 
 # This value is used as a fall-back if the cube does not define the earth
@@ -70,7 +70,7 @@ def wrap_lons(lons, base, period):
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
     lons = lons.astype(np.float64)
-    return ((lons - base + period * 2) % period) + base
+    return ((lons - base) % period) + base
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
@@ -598,6 +598,12 @@ def project(cube, target_proj, nx=None, ny=None):
         cell in the resulting cube. Consequently it may have an adverse effect
         on the statistics of the data e.g. the mean and standard deviation
         will not be preserved.
+
+    .. warning::
+
+        If the target projection is non-rectangular, e.g. Robinson, the target
+        grid may include points outside the boundary of the projection. The
+        latitude/longitude of such points may be unpredictable.
 
     """
     try:

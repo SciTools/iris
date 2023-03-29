@@ -9,7 +9,7 @@ Test cube indexing, slicing, and extracting, and also the dot graphs.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import collections
 import os
@@ -1022,14 +1022,6 @@ class TestCubeAPI(TestCube2d):
                 (),
             )
         with self.assertRaises(TypeError):
-            self.t.metadata = {
-                "standard_name": "air_pressure",
-                "long_name": "foo",
-                "var_name": "bar",
-                "units": "",
-                "attributes": {"random": "12"},
-            }
-        with self.assertRaises(TypeError):
 
             class Metadata:
                 pass
@@ -1143,7 +1135,7 @@ class TestDataManagerIndexing(TestCube2d):
         self.assertFalse(cube.has_lazy_data())
 
     def test_slices(self):
-        lat_cube = next(self.cube.slices(["grid_latitude",]))
+        lat_cube = next(self.cube.slices(["grid_latitude"]))
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
 
@@ -1467,7 +1459,7 @@ class TestConversionToCoordList(tests.IrisTest):
 
         # List of string and unicode
         self.assertEqual(
-            len(cube._as_list_of_coords(["grid_longitude", "grid_latitude"],)),
+            len(cube._as_list_of_coords(["grid_longitude", "grid_latitude"])),
             2,
         )
 

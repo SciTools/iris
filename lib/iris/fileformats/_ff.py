@@ -15,8 +15,8 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats._ff_cross_references import STASH_TRANS
-from . import pp
 
+from . import pp
 
 IMDI = -32768
 
@@ -42,23 +42,23 @@ UM_FIXED_LENGTH_HEADER = [
     ("model_version", (12,)),
     ("obs_file_type", (14,)),
     ("last_fieldop_type", (15,)),
-    ("first_validity_time", (21, 22, 23, 24, 25, 26, 27,)),
-    ("last_validity_time", (28, 29, 30, 31, 32, 33, 34,)),
-    ("misc_validity_time", (35, 36, 37, 38, 39, 40, 41,)),
-    ("integer_constants", (100, 101,)),
-    ("real_constants", (105, 106,)),
-    ("level_dependent_constants", (110, 111, 112,)),
-    ("row_dependent_constants", (115, 116, 117,)),
-    ("column_dependent_constants", (120, 121, 122,)),
-    ("fields_of_constants", (125, 126, 127,)),
-    ("extra_constants", (130, 131,)),
-    ("temp_historyfile", (135, 136,)),
-    ("compressed_field_index1", (140, 141,)),
-    ("compressed_field_index2", (142, 143,)),
-    ("compressed_field_index3", (144, 145,)),
-    ("lookup_table", (150, 151, 152,)),
+    ("first_validity_time", (21, 22, 23, 24, 25, 26, 27)),
+    ("last_validity_time", (28, 29, 30, 31, 32, 33, 34)),
+    ("misc_validity_time", (35, 36, 37, 38, 39, 40, 41)),
+    ("integer_constants", (100, 101)),
+    ("real_constants", (105, 106)),
+    ("level_dependent_constants", (110, 111, 112)),
+    ("row_dependent_constants", (115, 116, 117)),
+    ("column_dependent_constants", (120, 121, 122)),
+    ("fields_of_constants", (125, 126, 127)),
+    ("extra_constants", (130, 131)),
+    ("temp_historyfile", (135, 136)),
+    ("compressed_field_index1", (140, 141)),
+    ("compressed_field_index2", (142, 143)),
+    ("compressed_field_index3", (144, 145)),
+    ("lookup_table", (150, 151, 152)),
     ("total_prognostic_fields", (153,)),
-    ("data", (160, 161, 162,)),
+    ("data", (160, 161, 162)),
 ]
 
 # Offset value to convert from UM_FIXED_LENGTH_HEADER positions to
@@ -329,7 +329,7 @@ class FFHeader:
         # Read the FF header data
         with open(filename, "rb") as ff_file:
             # typically 64-bit words (aka. int64 or ">i8")
-            header_data = np.fromfile(
+            header_data = _parse_binary_stream(
                 ff_file,
                 dtype=">i{0}".format(word_depth),
                 count=FF_HEADER_DEPTH,
@@ -351,19 +351,19 @@ class FFHeader:
                         ff_file.seek((addr[0] - 1) * word_depth, os.SEEK_SET)
                         if len(addr) == 2:
                             if elem == "integer_constants":
-                                res = np.fromfile(
+                                res = _parse_binary_stream(
                                     ff_file,
                                     dtype=">i{0}".format(word_depth),
                                     count=addr[1],
                                 )
                             else:
-                                res = np.fromfile(
+                                res = _parse_binary_stream(
                                     ff_file,
                                     dtype=">f{0}".format(word_depth),
                                     count=addr[1],
                                 )
                         elif len(addr) == 3:
-                            res = np.fromfile(
+                            res = _parse_binary_stream(
                                 ff_file,
                                 dtype=">f{0}".format(word_depth),
                                 count=addr[1] * addr[2],
@@ -691,7 +691,7 @@ class FF2PP:
                 ff_file_seek(table_offset, os.SEEK_SET)
 
                 # Read the current PP header entry from the FF LOOKUP table.
-                header_longs = np.fromfile(
+                header_longs = _parse_binary_stream(
                     ff_file,
                     dtype=">i{0}".format(self._word_depth),
                     count=pp.NUM_LONG_HEADERS,
@@ -700,7 +700,7 @@ class FF2PP:
                 if header_longs[0] == _FF_LOOKUP_TABLE_TERMINATE:
                     # There are no more FF LOOKUP table entries to read.
                     break
-                header_floats = np.fromfile(
+                header_floats = _parse_binary_stream(
                     ff_file,
                     dtype=">f{0}".format(self._word_depth),
                     count=pp.NUM_FLOAT_HEADERS,
@@ -810,6 +810,40 @@ class FF2PP:
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())
+
+
+def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
+    """
+    Replacement :func:`numpy.fromfile` due to python3 performance issues.
+
+    Args:
+
+    * file_like - Standard python file_like object.
+
+    Kwargs:
+
+    * dtype  - Data type to be parsed out, used to work out bytes read in.
+
+    * count - The number of values required to be generated from the parsing.
+        The default is -1, which will read the entire contexts of the file_like
+        object and generate as many values as possible.
+
+    """
+
+    # There are a wide range of types supported, we just need to know the byte
+    # size of the object, so we just make sure we've go an instance of a
+    # np.dtype
+    if not isinstance(dtype, np.dtype):
+        dtype = np.dtype(dtype)
+
+    # Allocate bytearray for the file to be read into, allowing the numpy array
+    # to be writable.
+    _buffer = bytearray(count * dtype.itemsize)
+    file_like.readinto(_buffer)
+
+    # Let numpy do the heavy lifting once we've sorted the file reading.
+    array = np.frombuffer(_buffer, dtype=dtype, count=-1)
+    return array
 
 
 def load_cubes(filenames, callback, constraints=None):

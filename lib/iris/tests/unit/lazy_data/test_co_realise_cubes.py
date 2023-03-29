@@ -7,14 +7,12 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
+from iris._lazy_data import as_lazy_data, co_realise_cubes
 from iris.cube import Cube
-from iris._lazy_data import as_lazy_data
-
-from iris._lazy_data import co_realise_cubes
 
 
 class ArrayAccessCounter:
@@ -71,12 +69,12 @@ class Test_co_realise_cubes(tests.IrisTest):
         cube_e = Cube(derived_e)
         co_realise_cubes(cube_a, cube_b, cube_c, cube_d, cube_e)
         # Though used more than once, the source data should only get fetched
-        # twice by dask. Once when dask performs an initial data access with
-        # no data payload to ascertain the metadata associated with the
-        # dask.array (this access is specific to dask 2+, see
-        # dask.array.utils.meta_from_array), and again when the whole data is
-        # accessed.
-        self.assertEqual(wrapped_array.access_count, 2)
+        # once by dask, when the whole data is accessed.
+        # This also ensures that dask does *not* perform an initial data
+        # access with no data payload to ascertain the metadata associated with
+        # the dask.array (this access is specific to dask 2+,
+        # see dask.array.utils.meta_from_array).
+        self.assertEqual(wrapped_array.access_count, 1)
 
 
 if __name__ == "__main__":

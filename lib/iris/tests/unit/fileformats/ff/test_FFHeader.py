@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import collections
 from unittest import mock
@@ -15,7 +15,6 @@ from unittest import mock
 import numpy as np
 
 from iris.fileformats._ff import FFHeader
-
 
 MyGrid = collections.namedtuple("MyGrid", "column row real horiz_grid_type")
 

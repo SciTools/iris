@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
@@ -15,15 +15,14 @@ import cf_units
 import cftime
 import numpy as np
 
-from iris.fileformats.um._fast_load import (
-    _convert_collation as convert_collation,
-)
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.fileformats.pp
 import iris.fileformats.rules
-
+from iris.fileformats.um._fast_load import (
+    _convert_collation as convert_collation,
+)
 
 COORD_SYSTEM = iris.coord_systems.GeogCS(6371229.0)
 LATITUDE = iris.coords.DimCoord(
@@ -335,6 +334,7 @@ class Test(tests.IrisTest):
             points,
             long_name="soil_model_level_number",
             attributes={"positive": "down"},
+            units="1",
         )
         coords_and_dims = [(LONGITUDE, 2), (LATITUDE, 1), (level, (0,))]
         self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
@@ -416,6 +416,7 @@ class Test(tests.IrisTest):
                     [1, 2, 3],
                     "model_level_number",
                     attributes={"positive": "up"},
+                    units="1",
                 ),
                 (0,),
             ),
@@ -437,6 +438,7 @@ class Test(tests.IrisTest):
                     [0.9994, 0.9979, 0.9957],
                     long_name="sigma",
                     bounds=[[1, 0.9989], [0.9989, 0.9970], [0.9970, 0.9944]],
+                    units="1",
                 ),
                 (0,),
             ),

@@ -9,23 +9,24 @@ Test the cube merging mechanism.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from collections.abc import Iterable
 import datetime
 import itertools
+
 import numpy as np
 import numpy.ma as ma
 
 import iris
 from iris._lazy_data import as_lazy_data
+from iris.coords import AuxCoord, DimCoord
 import iris.cube
-from iris.coords import DimCoord, AuxCoord
 import iris.exceptions
 import iris.tests.stock
 
 
-class TestMixin:
+class MergeMixin:
     """
     Mix-in class for attributes & utilities common to these test cases.
 
@@ -55,7 +56,7 @@ class TestMixin:
 
 
 @tests.skip_data
-class TestSingleCube(tests.IrisTest, TestMixin):
+class TestSingleCube(tests.IrisTest, MergeMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(("PP", "globClim1", "theta.pp"))
         self._num_cubes = 1
@@ -63,7 +64,7 @@ class TestSingleCube(tests.IrisTest, TestMixin):
 
 
 @tests.skip_data
-class TestMultiCube(tests.IrisTest, TestMixin):
+class TestMultiCube(tests.IrisTest, MergeMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(
             ("PP", "globClim1", "dec_subset.pp")
@@ -468,7 +469,7 @@ class TestCombination(tests.IrisTest):
         )
 
         for name, value in zip(["a", "b", "c", "d"], [a, b, c, d]):
-            dtype = np.str if isinstance(value, str) else np.float32
+            dtype = np.str_ if isinstance(value, str) else np.float32
             cube.add_aux_coord(
                 AuxCoord(
                     np.array([value], dtype=dtype), long_name=name, units="1"
@@ -613,7 +614,7 @@ class TestDimSelection(tests.IrisTest):
         )
 
         for name, value, dim in zip(["a", "b"], [a, b], [a_dim, b_dim]):
-            dtype = np.str if isinstance(value, str) else np.float32
+            dtype = np.str_ if isinstance(value, str) else np.float32
             ctype = DimCoord if dim else AuxCoord
             coord = ctype(
                 np.array([value], dtype=dtype), long_name=name, units="1"
@@ -1038,11 +1039,11 @@ class TestCubeMergeWithAncils(tests.IrisTest):
         cube.add_aux_coord(iris.coords.DimCoord(y, long_name="y"))
         if cm:
             cube.add_cell_measure(
-                iris.coords.CellMeasure([1, 1], long_name="foo"), 0,
+                iris.coords.CellMeasure([1, 1], long_name="foo"), 0
             )
         if av:
             cube.add_ancillary_variable(
-                iris.coords.AncillaryVariable([1, 1], long_name="bar"), 0,
+                iris.coords.AncillaryVariable([1, 1], long_name="bar"), 0
             )
         return cube
 

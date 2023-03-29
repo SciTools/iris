@@ -13,11 +13,11 @@
         <dimCoord circular="True" id="c15a8e5b" long_name="longitude" points="[0.0, 1.0, 2.0, ..., 357.0, 358.0, 359.0]" shape="(360,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="93a9a76c" long_name="model_level_number" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+        <dimCoord id="4bb21cba" long_name="model_level_number" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
 		15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
 		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
 		39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
-		51, 52, 53, 54, 55, 56, 57, 58, 59, 60]" shape="(60,)" units="Unit('1')" value_type="int32" var_name="levelist"/>
+		51, 52, 53, 54, 55, 56, 57, 58, 59, 60]" shape="(60,)" units="Unit('unknown')" value_type="int32" var_name="levelist"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="90e644bf" long_name="time" points="[931344]" shape="(1,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='gregorian')" value_type="int32" var_name="time"/>
@@ -39,11 +39,11 @@
         <dimCoord circular="True" id="c15a8e5b" long_name="longitude" points="[0.0, 1.0, 2.0, ..., 357.0, 358.0, 359.0]" shape="(360,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="93a9a76c" long_name="model_level_number" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+        <dimCoord id="4bb21cba" long_name="model_level_number" points="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
 		15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
 		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
 		39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
-		51, 52, 53, 54, 55, 56, 57, 58, 59, 60]" shape="(60,)" units="Unit('1')" value_type="int32" var_name="levelist"/>
+		51, 52, 53, 54, 55, 56, 57, 58, 59, 60]" shape="(60,)" units="Unit('unknown')" value_type="int32" var_name="levelist"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="90e644bf" long_name="time" points="[931344]" shape="(1,)" standard_name="time" units="Unit('hours since 1900-01-01 00:00:0.0', calendar='gregorian')" value_type="int32" var_name="time"/>

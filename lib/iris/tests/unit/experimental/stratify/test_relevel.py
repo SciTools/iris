@@ -10,7 +10,7 @@ Unit tests for the :func:`iris.experimental.stratify.relevel` function.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from functools import partial
 
@@ -22,6 +22,7 @@ import iris.tests.stock as stock
 
 try:
     import stratify
+
     from iris.experimental.stratify import relevel
 except ImportError:
     stratify = None
@@ -79,7 +80,10 @@ class Test(tests.IrisTest):
 
     def test_coord_input(self):
         source = AuxCoord(self.src_levels.data)
-        source.metadata = self.src_levels.metadata
+        metadata = self.src_levels.metadata._asdict()
+        metadata["coord_system"] = None
+        metadata["climatological"] = None
+        source.metadata = metadata
 
         for axis in self.axes:
             result = relevel(self.cube, source, [0, 12, 13], axis=axis)

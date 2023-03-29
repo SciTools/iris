@@ -1,17 +1,17 @@
 air_temperature / (K)               (latitude: 73; longitude: 96)
-     Dimension coordinates:
-          latitude                           x              -
-          longitude                          -              x
-     Scalar coordinates:
-          forecast_period: 6477.0 hours
-          forecast_reference_time: 1998-03-06 03:00:00
-          pressure: 1000.0 hPa
-          time: 1998-12-01 00:00:00
-     Attributes:
-          STASH: m01s16i203
-          source: Data from Met Office Unified Model
-     Cell methods:
-          mean: longitude (6 minutes, This is a test comment), latitude (12 minutes)
-          average: longitude (6 minutes, This is another test comment), latitude (15 minutes, This is another comment)
-          average: longitude, latitude
-          percentile: longitude (6 minutes, This is another test comment)
+    Dimension coordinates:
+        latitude                             x              -
+        longitude                            -              x
+    Scalar coordinates:
+        forecast_period             6477.0 hours
+        forecast_reference_time     1998-03-06 03:00:00
+        pressure                    1000.0 hPa
+        time                        1998-12-01 00:00:00
+    Cell methods:
+        mean                        longitude (6 minutes, This is a test comment), latitude (12 minutes)
+        average                     longitude (6 minutes, This is another test comment), latitude (15 minutes, This is another comment)
+        average                     longitude, latitude
+        percentile                  longitude (6 minutes, This is another test comment)
+    Attributes:
+        STASH                       m01s16i203
+        source                      Data from Met Office Unified Model

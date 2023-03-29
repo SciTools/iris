@@ -9,15 +9,13 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 """
 
 from collections import defaultdict, namedtuple
-from copy import deepcopy
 
 import dask.array as da
 import numpy as np
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal
-
+from iris.util import array_equal, guess_coord_axis
 
 #
 # TODO:
@@ -69,7 +67,7 @@ class _CoordMetaData(
     Args:
 
     * defn:
-        The :class:`iris.coords.CoordDefn` metadata that represents a
+        The :class:`iris.common.CoordMetadata` metadata that represents a
         coordinate.
 
     * dims:
@@ -86,7 +84,7 @@ class _CoordMetaData(
 
     """
 
-    def __new__(cls, coord, dims):
+    def __new__(mcs, coord, dims):
         """
         Create a new :class:`_CoordMetaData` instance.
 
@@ -102,7 +100,7 @@ class _CoordMetaData(
             The new class instance.
 
         """
-        defn = coord._as_defn()
+        defn = coord.metadata
         points_dtype = coord.points.dtype
         bounds_dtype = coord.bounds.dtype if coord.bounds is not None else None
         kwargs = {}
@@ -121,7 +119,7 @@ class _CoordMetaData(
                 order = _DECREASING
             kwargs["order"] = order
         metadata = super().__new__(
-            cls, defn, dims, points_dtype, bounds_dtype, kwargs
+            mcs, defn, dims, points_dtype, bounds_dtype, kwargs
         )
         return metadata
 
@@ -162,7 +160,7 @@ class _CoordMetaData(
         return self.defn.name()
 
 
-class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"],)):
+class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
     """
     Container for the metadata that defines a cell measure or ancillary
     variable.
@@ -195,7 +193,7 @@ class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"],)):
             The new class instance.
 
         """
-        defn = ancil._as_defn()
+        defn = ancil.metadata
         metadata = super().__new__(cls, defn, dims)
         return metadata
 
@@ -404,11 +402,11 @@ class _CubeSignature:
         axes = dict(T=0, Z=1, Y=2, X=3)
 
         # Coordinate sort function - by guessed coordinate axis, then
-        # by coordinate definition, then by dimensions, in ascending order.
+        # by coordinate name, then by dimensions, in ascending order.
         def key_func(coord):
             return (
                 axes.get(guess_coord_axis(coord), len(axes) + 1),
-                coord._as_defn(),
+                coord.name(),
                 cube.coord_dims(coord),
             )
 
@@ -423,7 +421,7 @@ class _CubeSignature:
                 self.scalar_coords.append(coord)
 
         def meta_key_func(dm):
-            return (dm._as_defn(), dm.cube_dims(cube))
+            return (dm.metadata, dm.cube_dims(cube))
 
         for cm in sorted(cube.cell_measures(), key=meta_key_func):
             dims = cube.cell_measure_dims(cm)
@@ -439,7 +437,7 @@ class _CubeSignature:
             av_and_dims = _CoordAndDims(av, tuple(dims))
             self.ancillary_variables_and_dims.append(av_and_dims)
 
-    def _coordinate_differences(self, other, attr):
+    def _coordinate_differences(self, other, attr, reason="metadata"):
         """
         Determine the names of the coordinates that differ between `self` and
         `other` for a coordinate attribute on a _CubeSignature.
@@ -453,12 +451,16 @@ class _CubeSignature:
             The _CubeSignature attribute within which differences exist
             between `self` and `other`.
 
+        * reason (string):
+            The reason to give for mismatch (function is normally, but not
+            always, testing metadata)
+
         Returns:
-            Tuple of a descriptive error message and the names of coordinates
+            Tuple of a descriptive error message and the names of attributes
             that differ between `self` and `other`.
 
         """
-        # Set up {name: coord_metadata} dictionaries.
+        # Set up {name: attribute} dictionaries.
         self_dict = {x.name(): x for x in getattr(self, attr)}
         other_dict = {x.name(): x for x in getattr(other, attr)}
         if len(self_dict) == 0:
@@ -468,7 +470,7 @@ class _CubeSignature:
         self_names = sorted(self_dict.keys())
         other_names = sorted(other_dict.keys())
 
-        # Compare coord metadata.
+        # Compare coord attributes.
         if len(self_names) != len(other_names) or self_names != other_names:
             result = ("", ", ".join(self_names), ", ".join(other_names))
         else:
@@ -478,7 +480,7 @@ class _CubeSignature:
                 if self_value != other_value:
                     diff_names.append(self_key)
             result = (
-                " metadata",
+                " " + reason,
                 ", ".join(diff_names),
                 ", ".join(diff_names),
             )
@@ -544,7 +546,9 @@ class _CubeSignature:
             )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
-            differences = self._coordinate_differences(other, "scalar_coords")
+            differences = self._coordinate_differences(
+                other, "scalar_coords", reason="values or metadata"
+            )
             msgs.append(
                 msg_template.format("Scalar coordinates", *differences)
             )
@@ -991,6 +995,9 @@ class _ProtoCube:
                             points, bounds=bnds, **kwargs
                         )
                     except ValueError:
+                        # Ensure to remove the "circular" kwarg, which may be
+                        # present in the defn of a DimCoord being demoted.
+                        _ = kwargs.pop("circular", None)
                         coord = iris.coords.AuxCoord(
                             points, bounds=bnds, **kwargs
                         )

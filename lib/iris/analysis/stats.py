@@ -10,6 +10,7 @@ Statistical operations between cubes.
 
 import numpy as np
 import numpy.ma as ma
+
 import iris
 from iris.util import broadcast_to_shape
 
@@ -64,7 +65,7 @@ def pearsonr(
         correlation at each time/altitude point.
 
     Reference:
-        http://www.statsoft.com/textbook/glosp.html#Pearson%20Correlation
+        https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
     This operation is non-lazy.
 

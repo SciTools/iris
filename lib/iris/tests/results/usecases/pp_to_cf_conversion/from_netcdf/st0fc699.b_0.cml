@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" units="1" var_name="m02s00i___">
+  <cube dtype="float32" units="unknown" var_name="m02s00i___">
     <attributes>
       <attribute name="Conventions" value="CF-1.7"/>
       <attribute name="STASH" value="m02s00i???"/>

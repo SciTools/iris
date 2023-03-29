@@ -1,4 +1,0 @@
-"""
-Oceanography visualisation examples
-===================================
-"""

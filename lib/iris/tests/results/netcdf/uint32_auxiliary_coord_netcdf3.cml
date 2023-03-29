@@ -6,7 +6,7 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="78a0dfe8" long_name="x" points="[1, 2]" shape="(2,)" units="Unit('1')" value_type="int32" var_name="x"/>
+        <auxCoord id="df8e91b1" long_name="x" points="[1, 2]" shape="(2,)" units="Unit('unknown')" value_type="int32" var_name="x"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -15,12 +15,11 @@ The original class is the baseclass of this, now renamed 'BasicFieldCollation'.
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
 import iris
-
 from iris.tests.integration.fast_load.test_fast_load import Mixin_FieldTest
 
 

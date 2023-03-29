@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import collections
 from unittest import mock
@@ -17,11 +17,10 @@ import dask.array as da
 import numpy as np
 
 import iris
+from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
-from iris.coords import DimCoord, AuxCoord, Coord
 from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
-
 
 Pair = collections.namedtuple("Pair", "points bounds")
 
@@ -1008,6 +1007,17 @@ class TestClimatology(tests.IrisTest):
             climatological=True,
         )
         coord.bounds = None
+        self.assertFalse(coord.climatological)
+
+    def test_change_units(self):
+        coord = AuxCoord(
+            points=[0, 1],
+            bounds=[[0, 1], [1, 2]],
+            units="days since 1970-01-01",
+            climatological=True,
+        )
+        self.assertTrue(coord.climatological)
+        coord.units = "K"
         self.assertFalse(coord.climatological)
 
 

@@ -11,7 +11,7 @@
         <dimCoord bounds="[[-15, 45]]" id="b0d35dcf" long_name="foo" points="[15.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="3d9231d0" long_name="percentile_over_foo" points="[25]" shape="(1,)" units="Unit('1')" value_type="int64"/>
+        <dimCoord id="f5bc1733" long_name="percentile_over_foo" points="[25]" shape="(1,)" units="Unit('percent')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -1,36 +1,13 @@
-How to contribute
-=================
+# Contributing to Iris
 
-We want Iris to be driven by the community - your contributions are
-invaluable to us! This page lists the guidelines for contributors which
-will help ease the process of getting your hard work accepted into Iris,
-and shared back to the world.
+Want to contribute to Iris? But don't know where to start 🤔
 
-Getting started
----------------
+We recommend that you first checkout our advice to [First Time Contributors](https://github.com/SciTools/iris/issues/4133),
+which has some solid suggestions on where to begin.
 
-1. If you've not already got one, sign up for a
-   [GitHub account](https://github.com/signup/free).
-1. Fork the Iris repository, create your new fix/feature branch, and
-   start commiting code.
- - Our
-   [development guide](https://scitools.org.uk/iris/docs/latest/developers_guide/index.html)
-   has more detail.
-1. Make sure you've added appropriate tests, and that *all* the tests
-   pass.
+Otherwise, head over to our [Developers Guide on Getting Involved](https://scitools-iris.readthedocs.io/en/stable/developers_guide/contributing_getting_involved.html)
+for all the information you need to start on your Iris development journey.
 
+Still need help or advice?
 
-Submitting changes
-------------------
-
-1. Read and sign the Contributor Licence Agreement (CLA).
- - See our [governance page](http://scitools.org.uk/governance.html)
-   for the CLA and what to do with it.
-1. Push your branch to your fork of Iris.
-1. Submit your pull request.
-1. Chillax.
-
-
-If in doubt, please
-[contact us](https://groups.google.com/forum/?fromgroups=#!forum/scitools-iris)
-on our Google Group, and we'll be happy to help you.
+Then join us over on our [Iris GitHub Discussions](https://github.com/SciTools/iris/discussions). We'd love to hear from you!

@@ -1,6 +1,0 @@
-* Added support for the `black <https://black.readthedocs.io/en/stable/>`_ code formatter.
-  This is now automatically checked on GitHub PRs, replacing the older, unittest-based
-  "iris.tests.test_coding_standards.TestCodeFormat".
-  Black provides automatic code format correction for most IDEs.
-  See the new developer guide section on this :
-  https://scitools-docs.github.io/iris/master/developers_guide/code_format.html.

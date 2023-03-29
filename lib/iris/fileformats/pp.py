@@ -18,27 +18,25 @@ import struct
 import warnings
 
 import cf_units
-import numpy as np
-import numpy.ma as ma
 import cftime
-
 import dask
 import dask.array as da
+import numpy as np
+import numpy.ma as ma
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
-import iris.fileformats.pp_load_rules
-from iris.fileformats.pp_save_rules import verify
+import iris.coord_systems
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
-from iris.fileformats._pp_lbproc_pairs import (  # noqa
-    LBPROC_PAIRS,
+from iris.fileformats._pp_lbproc_pairs import (  # noqa: F401
     LBPROC_MAP as lbproc_map,
 )
+from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
+import iris.fileformats.pp_load_rules
+from iris.fileformats.pp_save_rules import verify
 import iris.fileformats.rules
-import iris.coord_systems
-from iris.util import _array_slice_ifempty
 
 try:
     import mo_pack
@@ -47,16 +45,16 @@ except ImportError:
 
 
 __all__ = [
-    "load",
-    "save",
-    "load_cubes",
-    "PPField",
-    "as_fields",
-    "load_pairs_from_fields",
-    "save_pairs_from_cube",
-    "save_fields",
-    "STASH",
     "EARTH_RADIUS",
+    "PPField",
+    "STASH",
+    "as_fields",
+    "load",
+    "load_cubes",
+    "load_pairs_from_fields",
+    "save",
+    "save_fields",
+    "save_pairs_from_cube",
 ]
 
 
@@ -105,10 +103,10 @@ UM_HEADER_2 = [
     ("lbproj", (31,)),
     ("lbtyp", (32,)),
     ("lblev", (33,)),
-    ("lbrsvd", (34, 35, 36, 37,)),
+    ("lbrsvd", (34, 35, 36, 37)),
     ("lbsrce", (38,)),
-    ("lbuser", (39, 40, 41, 42, 43, 44, 45,)),
-    ("brsvd", (46, 47, 48, 49,)),
+    ("lbuser", (39, 40, 41, 42, 43, 44, 45)),
+    ("brsvd", (46, 47, 48, 49)),
     ("bdatum", (50,)),
     ("bacc", (51,)),
     ("blev", (52,)),
@@ -163,10 +161,10 @@ UM_HEADER_3 = [
     ("lbproj", (31,)),
     ("lbtyp", (32,)),
     ("lblev", (33,)),
-    ("lbrsvd", (34, 35, 36, 37,)),
+    ("lbrsvd", (34, 35, 36, 37)),
     ("lbsrce", (38,)),
-    ("lbuser", (39, 40, 41, 42, 43, 44, 45,)),
-    ("brsvd", (46, 47, 48, 49,)),
+    ("lbuser", (39, 40, 41, 42, 43, 44, 45)),
+    ("brsvd", (46, 47, 48, 49)),
     ("bdatum", (50,)),
     ("bacc", (51,)),
     ("blev", (52,)),
@@ -594,23 +592,18 @@ class PPDataProxy:
         return len(self.shape)
 
     def __getitem__(self, keys):
-        # Check for 'empty' slicings, in which case don't fetch the data.
-        # Because, since Dask v2, 'dask.array.from_array' performs an empty
-        # slicing and we must not fetch the data at that time.
-        result = _array_slice_ifempty(keys, self.shape, self.dtype)
-        if result is None:
-            with open(self.path, "rb") as pp_file:
-                pp_file.seek(self.offset, os.SEEK_SET)
-                data_bytes = pp_file.read(self.data_len)
-                data = _data_bytes_to_shaped_array(
-                    data_bytes,
-                    self.lbpack,
-                    self.boundary_packing,
-                    self.shape,
-                    self.src_dtype,
-                    self.mdi,
-                )
-            result = data.__getitem__(keys)
+        with open(self.path, "rb") as pp_file:
+            pp_file.seek(self.offset, os.SEEK_SET)
+            data_bytes = pp_file.read(self.data_len)
+            data = _data_bytes_to_shaped_array(
+                data_bytes,
+                self.lbpack,
+                self.boundary_packing,
+                self.shape,
+                self.src_dtype,
+                self.mdi,
+            )
+        result = data.__getitem__(keys)
 
         return np.asanyarray(result, dtype=self.dtype)
 
@@ -752,7 +745,7 @@ def _data_bytes_to_shaped_array(
             # However, we still mask any MDI values in the array (below).
             pass
         else:
-            land_mask = mask.data.astype(np.bool)
+            land_mask = mask.data.astype(np.bool_)
             sea_mask = ~land_mask
             new_data = np.ma.masked_all(land_mask.shape)
             new_data.fill_value = mdi
@@ -1482,8 +1475,18 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t1"):
+            has_year_zero = self.lbyr == 0
+            calendar = (
+                None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
+            )
             self._t1 = cftime.datetime(
-                self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin
+                self.lbyr,
+                self.lbmon,
+                self.lbdat,
+                self.lbhr,
+                self.lbmin,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t1
 
@@ -1506,8 +1509,18 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t2"):
+            has_year_zero = self.lbyrd == 0
+            calendar = (
+                None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
+            )
             self._t2 = cftime.datetime(
-                self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind
+                self.lbyrd,
+                self.lbmond,
+                self.lbdatd,
+                self.lbhrd,
+                self.lbmind,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t2
 
@@ -1543,6 +1556,10 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t1"):
+            has_year_zero = self.lbyr == 0
+            calendar = (
+                None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
+            )
             self._t1 = cftime.datetime(
                 self.lbyr,
                 self.lbmon,
@@ -1550,6 +1567,8 @@ class PPField3(PPField):
                 self.lbhr,
                 self.lbmin,
                 self.lbsec,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t1
 
@@ -1572,6 +1591,10 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t2"):
+            has_year_zero = self.lbyrd == 0
+            calendar = (
+                None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
+            )
             self._t2 = cftime.datetime(
                 self.lbyrd,
                 self.lbmond,
@@ -1579,6 +1602,8 @@ class PPField3(PPField):
                 self.lbhrd,
                 self.lbmind,
                 self.lbsecd,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t2
 

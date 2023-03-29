@@ -11,7 +11,7 @@ Unit tests for the
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
@@ -113,6 +113,15 @@ class Test___init__(tests.IrisTest):
         self.assertIsNone(factory.coord_system)
         self.assertEqual(factory.attributes, {})
 
+    def test_promote_sigma_units_unknown_to_dimensionless(self):
+        sigma = mock.Mock(units=cf_units.Unit("unknown"), nbounds=0)
+        factory = HybridPressureFactory(
+            delta=self.delta,
+            sigma=sigma,
+            surface_air_pressure=self.surface_air_pressure,
+        )
+        self.assertEqual("1", factory.dependencies["sigma"].units)
+
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
@@ -144,7 +153,9 @@ class Test_make_coord(tests.IrisTest):
         self.delta = iris.coords.DimCoord(
             [0.0, 1.0, 2.0], long_name="level_pressure", units="Pa"
         )
-        self.sigma = iris.coords.DimCoord([1.0, 0.9, 0.8], long_name="sigma")
+        self.sigma = iris.coords.DimCoord(
+            [1.0, 0.9, 0.8], long_name="sigma", units="1"
+        )
         self.surface_air_pressure = iris.coords.AuxCoord(
             np.arange(4).reshape(2, 2), "surface_air_pressure", units="Pa"
         )

@@ -10,20 +10,19 @@ Unit tests for :class:`iris.analysis._interpolation.RectilinearInterpolator`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import datetime
 
-from iris._lazy_data import as_lazy_data
 import numpy as np
 
 import iris
+from iris._lazy_data import as_lazy_data
+from iris.analysis._interpolation import RectilinearInterpolator
 import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.tests.stock as stock
-from iris.analysis._interpolation import RectilinearInterpolator
-
 
 LINEAR = "linear"
 NEAREST = "nearest"
@@ -34,9 +33,15 @@ EXTRAPOLATE = "extrapolate"
 class ThreeDimCube(tests.IrisTest):
     def setUp(self):
         cube = stock.simple_3d_w_multidim_coords()
-        cube.add_aux_coord(iris.coords.DimCoord(np.arange(2), "height"), 0)
-        cube.add_dim_coord(iris.coords.DimCoord(np.arange(3), "latitude"), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(np.arange(4), "longitude"), 2)
+        cube.add_aux_coord(
+            iris.coords.DimCoord(np.arange(2), "height", units="1"), 0
+        )
+        cube.add_dim_coord(
+            iris.coords.DimCoord(np.arange(3), "latitude", units="1"), 1
+        )
+        cube.add_dim_coord(
+            iris.coords.DimCoord(np.arange(4), "longitude", units="1"), 2
+        )
         self.data = np.arange(24).reshape(2, 3, 4).astype(np.float32)
         cube.data = self.data
         self.cube = cube

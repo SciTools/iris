@@ -21,7 +21,7 @@ class TestRunner:
 
     description = (
         "Run tests under nose and multiprocessor for performance. "
-        "Default behaviour is to run all non-example tests. "
+        "Default behaviour is to run all non-gallery tests. "
         "Specifying one or more test flags will run *only* those "
         "tests."
     )
@@ -34,7 +34,7 @@ class TestRunner:
         ),
         ("stop", "x", "Stop running tests after the first error or failure."),
         ("system-tests", "s", "Run the limited subset of system tests."),
-        ("example-tests", "e", "Run the example code tests."),
+        ("gallery-tests", "e", "Run the gallery code tests."),
         ("default-tests", "d", "Run the default tests."),
         (
             "coding-tests",
@@ -53,7 +53,7 @@ class TestRunner:
         "no-data",
         "system-tests",
         "stop",
-        "example-tests",
+        "gallery-tests",
         "default-tests",
         "coding-tests",
         "create-missing",
@@ -63,7 +63,7 @@ class TestRunner:
         self.no_data = False
         self.stop = False
         self.system_tests = False
-        self.example_tests = False
+        self.gallery_tests = False
         self.default_tests = False
         self.coding_tests = False
         self.num_processors = None
@@ -87,8 +87,8 @@ class TestRunner:
             tests.append("default")
         if self.coding_tests:
             tests.append("coding")
-        if self.example_tests:
-            tests.append("example")
+        if self.gallery_tests:
+            tests.append("gallery")
         if not tests:
             tests.append("default")
         print("Running test suite(s): {}".format(", ".join(tests)))
@@ -114,19 +114,19 @@ class TestRunner:
             tests.append("iris.tests")
         if self.coding_tests:
             tests.append("iris.tests.test_coding_standards")
-        if self.example_tests:
+        if self.gallery_tests:
             import iris.config
 
-            default_doc_path = os.path.join(sys.path[0], "docs", "iris")
+            default_doc_path = os.path.join(sys.path[0], "docs")
             doc_path = iris.config.get_option(
                 "Resources", "doc_dir", default=default_doc_path
             )
-            example_path = os.path.join(doc_path, "example_tests")
-            if os.path.exists(example_path):
-                tests.append(example_path)
+            gallery_path = os.path.join(doc_path, "gallery_tests")
+            if os.path.exists(gallery_path):
+                tests.append(gallery_path)
             else:
                 print(
-                    "WARNING: Example path %s does not exist." % (example_path)
+                    "WARNING: Gallery path %s does not exist." % (gallery_path)
                 )
         if not tests:
             tests.append("iris.tests")
@@ -143,10 +143,7 @@ class TestRunner:
             regexp_pat,
             "--process-timeout=180",
         ]
-        try:
-            import gribapi  # noqa
-        except ImportError:
-            args.append("--exclude=^grib$")
+
         if self.stop:
             args.append("--stop")
 

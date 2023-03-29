@@ -13,9 +13,7 @@ import math
 
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
-
 import numpy as np
-
 
 __all__ = ("CLOUD_COVER",)
 

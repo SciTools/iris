@@ -1,5 +1,0 @@
-* Statistical operations :meth:`iris.cube.Cube.collapsed`,
-  :meth:`iris.cube.Cube.aggregated_by` and :meth:`iris.cube.Cube.rolling_window`
-  previously removed every :class:`iris.coord.CellMeasure` attached to the cube.
-  Now, a :class:`iris.coord.CellMeasure` will only be removed if it is associated
-  with an axis over which the statistic is being run.

@@ -5,14 +5,10 @@
 # licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 
 import cartopy.crs as ccrs
-
-import iris.cube
-import iris.coords
-import iris.tests.stock
 
 from iris.coord_systems import (
     GeogCS,
@@ -21,6 +17,9 @@ from iris.coord_systems import (
     Stereographic,
     TransverseMercator,
 )
+import iris.coords
+import iris.cube
+import iris.tests.stock
 
 
 def osgb():
@@ -432,12 +431,12 @@ class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
 
 class Test_LambertConformal(tests.GraphicsTest):
     def test_fail_secant_latitudes_none(self):
-        emsg = "one or two secant latitudes required"
+        emsg = "secant latitudes"
         with self.assertRaisesRegex(ValueError, emsg):
             LambertConformal(secant_latitudes=())
 
     def test_fail_secant_latitudes_excessive(self):
-        emsg = "one or two secant latitudes required"
+        emsg = "secant latitudes"
         with self.assertRaisesRegex(ValueError, emsg):
             LambertConformal(secant_latitudes=(1, 2, 3))
 

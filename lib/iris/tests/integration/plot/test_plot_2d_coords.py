@@ -10,7 +10,7 @@ Test plots with two dimensional coordinates.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -18,9 +18,8 @@ import numpy as np
 
 import iris
 from iris.analysis.cartography import unrotate_pole
-from iris.cube import Cube
 from iris.coords import AuxCoord
-
+from iris.cube import Cube
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
@@ -43,14 +42,14 @@ class Test(tests.GraphicsTest):
         cube = simple_cube_w_2d_coords()[0, 0]
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
         qplt.pcolormesh(cube)
-        ax.coastlines(color="red")
+        ax.coastlines(resolution="110m", color="red")
         self.check_graphic()
 
     def test_2d_coord_bounds_northpolarstereo(self):
         cube = simple_cube_w_2d_coords()[0, 0]
         ax = plt.axes(projection=ccrs.NorthPolarStereo())
         qplt.pcolormesh(cube)
-        ax.coastlines(color="red")
+        ax.coastlines(resolution="110m", color="red")
         self.check_graphic()
 
 
@@ -71,7 +70,7 @@ class Test2dContour(tests.GraphicsTest):
         cube.add_aux_coord(co_x, (0, 1))
         ax = plt.axes(projection=ccrs.PlateCarree())
         qplt.contourf(cube)
-        ax.coastlines(color="red")
+        ax.coastlines(resolution="110m", color="red")
         ax.gridlines(draw_labels=True)
         ax.set_extent((0, 180, 0, 90))
         self.check_graphic()

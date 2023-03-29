@@ -6,11 +6,12 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
+
+import unittest
 
 import numpy as np
 import numpy.ma as ma
-import unittest
 
 import iris
 import iris.analysis
@@ -89,7 +90,9 @@ class TestAggregateBy(tests.IrisTest):
         )
 
         model_level = iris.coords.DimCoord(
-            np.arange(z_points.size), standard_name="model_level_number"
+            np.arange(z_points.size),
+            standard_name="model_level_number",
+            units="1",
         )
 
         self.cube_single.add_aux_coord(self.coord_z_single, 0)
@@ -124,7 +127,9 @@ class TestAggregateBy(tests.IrisTest):
         )
 
         model_level = iris.coords.DimCoord(
-            np.arange(z1_points.size), standard_name="model_level_number"
+            np.arange(z1_points.size),
+            standard_name="model_level_number",
+            units="1",
         )
 
         self.cube_multi.add_aux_coord(self.coord_z1_multi, 0)

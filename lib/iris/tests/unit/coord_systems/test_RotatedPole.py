@@ -7,12 +7,13 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
 import cartopy
 import cartopy.crs as ccrs
+
 from iris.coord_systems import RotatedGeogCS
 
 
@@ -61,6 +62,23 @@ class Test_init(tests.IrisTest):
                 sorted(accrsp.proj4_init.split(" +")),
                 sorted(expected.proj4_init.split(" +")),
             )
+
+    def _check_crs_default(self, crs):
+        # Check for property defaults when no kwargs options are set.
+        # NOTE: except ellipsoid, which is done elsewhere.
+        self.assertEqualAndKind(crs.north_pole_grid_longitude, 0.0)
+
+    def test_optional_args_missing(self):
+        # Check that unused 'north_pole_grid_longitude' defaults to 0.0.
+        crs = RotatedGeogCS(self.pole_lon, self.pole_lat)
+        self._check_crs_default(crs)
+
+    def test_optional_args_None(self):
+        # Check that 'north_pole_grid_longitude=None' defaults to 0.0.
+        crs = RotatedGeogCS(
+            self.pole_lon, self.pole_lat, north_pole_grid_longitude=None
+        )
+        self._check_crs_default(crs)
 
 
 if __name__ == "__main__":

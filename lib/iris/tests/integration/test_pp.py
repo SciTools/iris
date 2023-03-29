@@ -7,21 +7,22 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-import numpy as np
 import os
 from unittest import mock
 
 from cf_units import Unit
+import numpy as np
+
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
+from iris.exceptions import IgnoreCubeException
 import iris.fileformats.pp
+from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
-from iris.exceptions import IgnoreCubeException
-from iris.fileformats.pp import load_pairs_from_fields
 import iris.util
 
 
@@ -299,7 +300,7 @@ class TestVertical(tests.IrisTest):
         delta_lower, delta, delta_upper = 150, 200, 250
 
         cube = Cube(np.zeros((ny, nx)), "air_temperature")
-        level_coord = AuxCoord(0, "model_level_number")
+        level_coord = AuxCoord(0, "model_level_number", units="1")
         cube.add_aux_coord(level_coord)
         delta_coord = AuxCoord(
             delta,
@@ -308,7 +309,10 @@ class TestVertical(tests.IrisTest):
             units="m",
         )
         sigma_coord = AuxCoord(
-            sigma, bounds=[[sigma_lower, sigma_upper]], long_name="mavis"
+            sigma,
+            bounds=[[sigma_lower, sigma_upper]],
+            long_name="mavis",
+            units="1",
         )
         surface_altitude_coord = AuxCoord(
             np.zeros((ny, nx)), "surface_altitude", units="m"
@@ -343,7 +347,7 @@ class TestVertical(tests.IrisTest):
         delta_lower, delta, delta_upper = 0.15, 0.2, 0.25
 
         cube = Cube(np.zeros((ny, nx)), "air_temperature")
-        level_coord = AuxCoord(0, "model_level_number")
+        level_coord = AuxCoord(0, "model_level_number", units="1")
         cube.add_aux_coord(level_coord)
         delta_coord = AuxCoord(
             delta,
@@ -352,7 +356,10 @@ class TestVertical(tests.IrisTest):
             units="Pa",
         )
         sigma_coord = AuxCoord(
-            sigma, bounds=[[sigma_lower, sigma_upper]], long_name="mavis"
+            sigma,
+            bounds=[[sigma_lower, sigma_upper]],
+            long_name="mavis",
+            units="1",
         )
         surface_air_pressure_coord = AuxCoord(
             np.zeros((ny, nx)), "surface_air_pressure", units="Pa"
@@ -408,7 +415,7 @@ class TestVertical(tests.IrisTest):
             "Unable to create instance of HybridHeightFactory. "
             "The source data contains no field(s) for 'orography'."
         )
-        warn.assert_called_once_with(msg)
+        warn.assert_called_with(msg)
 
         # Check the data cube is set up to use hybrid height.
         self._test_coord(

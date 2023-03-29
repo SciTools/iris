@@ -9,18 +9,17 @@ Test the file saving mechanism.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+from io import StringIO
 import os
 import unittest
 
 import iris
 import iris.cube
-import iris.util
-import iris.fileformats.pp as pp
 import iris.fileformats.dot as dot
-
-from io import StringIO
+import iris.fileformats.pp as pp
+import iris.util
 
 # Make a test skip decorator, for when DOT not available
 skip_dotpng = unittest.skipIf(
@@ -33,7 +32,7 @@ CHKSUM_ERR = "Mismatch between checksum of iris.save and {}.save."
 
 
 def save_by_filename(filename1, filename2, cube, saver_fn, iosaver=None):
-    """ Saves a cube to two different filenames using iris.save and the save method of the object representing the file type directly"""
+    """Saves a cube to two different filenames using iris.save and the save method of the object representing the file type directly"""
     # Save from object direct
     saver_fn(cube, filename1)
 
@@ -46,7 +45,7 @@ def save_by_filename(filename1, filename2, cube, saver_fn, iosaver=None):
 def save_by_filehandle(
     filehandle1, filehandle2, cube, fn_saver, binary_mode=True
 ):
-    """ Saves a cube to two different filehandles using iris.save and the save method of the object representing the file type directly"""
+    """Saves a cube to two different filehandles using iris.save and the save method of the object representing the file type directly"""
     mode = "wb" if binary_mode else "w"
 
     # Save from object direct
@@ -60,7 +59,7 @@ def save_by_filehandle(
 
 @tests.skip_data
 class TestSaveMethods(tests.IrisTest):
-    """ Base class for file saving tests. Loads data and creates/deletes tempfiles"""
+    """Base class for file saving tests. Loads data and creates/deletes tempfiles"""
 
     def setUp(self):
         self.cube1 = iris.load_cube(

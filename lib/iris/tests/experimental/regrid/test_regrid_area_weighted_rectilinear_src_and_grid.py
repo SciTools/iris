@@ -10,18 +10,19 @@ Test area weighted regridding.
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import copy
 import random
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
+import iris.analysis._interpolation
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted,
 )
-import iris.analysis._interpolation
 import iris.tests.stock
 
 RESULT_DIR = (
@@ -456,7 +457,14 @@ class TestAreaWeightedRegrid(tests.IrisTest):
             indices = tuple([slice(i, i + 10), slice(j, j + 10)])
             dest = src[indices]
             res = regrid_area_weighted(src, dest)
-            self.assertTrue(res, src[indices])
+            self.assertEqual(res, src[indices])
+
+    def test_lazy_nop(self):
+        src = self.realistic_cube[:2, :3, :10, :10]
+        src.data = da.asarray(src.data, chunks=((1, 1), (2, 1), (10,), (10,)))
+        res = regrid_area_weighted(src, src)
+        self.assertTrue(res.has_lazy_data())
+        self.assertEqual(res, src)
 
     def test_cross_section(self):
         # Slice to get a cross section.

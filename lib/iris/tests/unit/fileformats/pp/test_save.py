@@ -5,16 +5,16 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
-import cftime
-import cf_units
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.coords import DimCoord, CellMethod
+import cf_units
+import cftime
+
+from iris.coords import CellMethod, DimCoord
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 from iris.fileformats.pp_save_rules import _lbproc_rules, verify
@@ -240,7 +240,7 @@ class TestTimeMean(tests.IrisTest):
 
     def test_t2_no_time_mean(self):
         cube = _get_single_time_cube(set_time_mean=False)
-        expected = cftime.datetime(0, 0, 0)
+        expected = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
         with mock.patch(
             "iris.fileformats.pp.PPField3", autospec=True
@@ -324,10 +324,10 @@ def _get_single_time_cube(set_time_mean=False):
     cube.remove_coord("time")
     cube.remove_coord("forecast_period")
     tc = DimCoord(
-        points=[15,],
+        points=[15],
         standard_name="time",
         units=cf_units.Unit("days since epoch", calendar="360_day"),
-        bounds=[[0, 30],],
+        bounds=[[0, 30]],
     )
     cube.add_dim_coord(tc, 0)
     if set_time_mean:

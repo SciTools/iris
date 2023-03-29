@@ -6,7 +6,7 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import copy
 import datetime
@@ -16,7 +16,6 @@ import cf_units
 import cftime
 import matplotlib.units
 import numpy as np
-
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.

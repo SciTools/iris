@@ -7,18 +7,18 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
 from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.aux_factory import HybridHeightFactory
-from iris.coord_systems import GeogCS, OSGB
+from iris.coord_systems import OSGB, GeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
-
 
 RESULT_DIR = ("analysis", "regrid")
 
@@ -265,7 +265,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
     def test_default_ndarray(self):
         # NaN           -> NaN
         # Extrapolated  -> NaN
-        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data = np.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
@@ -277,7 +277,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> Masked
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
@@ -292,7 +292,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> N/A
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
@@ -306,7 +306,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> N/A
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         # Make sure the mask has been expanded
         data.mask = False
         data[0, 0] = np.nan
@@ -321,7 +321,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
     def test_method_ndarray(self):
         # NaN           -> NaN
         # Extrapolated  -> linear
-        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data = np.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "extrapolate")
@@ -333,7 +333,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> linear
         # Masked        -> Masked
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
@@ -347,7 +347,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
     def test_nan_ndarray(self):
         # NaN           -> NaN
         # Extrapolated  -> NaN
-        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data = np.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "nan")
@@ -359,7 +359,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> NaN
         # Masked        -> Masked
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
@@ -372,7 +372,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
 
     def test_error_ndarray(self):
         # Values irrelevant - the function raises an error.
-        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data = np.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             with self.assertRaisesRegex(ValueError, "out of bounds"):
@@ -380,7 +380,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
 
     def test_error_maskedarray(self):
         # Values irrelevant - the function raises an error.
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
@@ -391,7 +391,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked (this is different from all the other
         #                          modes)
-        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data = np.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "mask")
@@ -405,7 +405,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> Masked
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
@@ -419,7 +419,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
     def test_nanmask_ndarray(self):
         # NaN           -> NaN
         # Extrapolated  -> NaN
-        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data = np.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "nanmask")
@@ -431,7 +431,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         # NaN           -> NaN
         # Extrapolated  -> Masked
         # Masked        -> Masked
-        data = ma.arange(12, dtype=np.float).reshape(3, 4)
+        data = ma.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
@@ -443,7 +443,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
             self.assertMaskedArrayEqual(result, expected)
 
     def test_invalid(self):
-        data = np.arange(12, dtype=np.float).reshape(3, 4)
+        data = np.arange(12, dtype=np.float64).reshape(3, 4)
         emsg = "Invalid extrapolation mode"
         for method in self.methods:
             with self.assertRaisesRegex(ValueError, emsg):
@@ -469,6 +469,24 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
                     test_dtype: test_dtype for test_dtype in self.test_dtypes
                 }
             self.assertEqual(result_dtypes, expected_types_mapping)
+
+
+class Test___call___lazy(tests.IrisTest):
+    def setUp(self):
+        self.cube = lat_lon_cube()
+        # Regridder method and extrapolation-mode.
+        self.args = ("linear", "mask")
+        self.regridder = Regridder(self.cube, self.cube, *self.args)
+        self.lazy_cube = self.cube.copy(da.asarray(self.cube.data))
+        self.lazy_regridder = Regridder(
+            self.lazy_cube, self.lazy_cube, *self.args
+        )
+
+    def test_lazy_regrid(self):
+        result = self.lazy_regridder(self.lazy_cube)
+        self.assertTrue(result.has_lazy_data())
+        expected = self.regridder(self.cube)
+        self.assertTrue(result == expected)
 
 
 class Test___call____invalid_types(tests.IrisTest):
@@ -1230,6 +1248,9 @@ class Test___call____NOP(tests.IrisTest):
         # The destination grid points are exactly the same as the
         # src grid points.
         self.src = realistic_4d()[:5, :2, ::40, ::30]
+        self.lazy_src = self.src.copy(
+            da.asarray(self.src.data, chunks=(1, 2) + self.src.shape[2:])
+        )
         self.grid = self.src.copy()
 
     def test_nop__linear(self):
@@ -1242,6 +1263,16 @@ class Test___call____NOP(tests.IrisTest):
         result = regridder(self.src)
         self.assertEqual(result, self.src)
 
+    def test_nop__linear_lazy(self):
+        regridder = Regridder(self.lazy_src, self.grid, "linear", "mask")
+        result = regridder(self.lazy_src)
+        self.assertEqual(result, self.lazy_src)
+
+    def test_nop__nearest_lazy(self):
+        regridder = Regridder(self.lazy_src, self.grid, "nearest", "mask")
+        result = regridder(self.lazy_src)
+        self.assertEqual(result, self.lazy_src)
+
 
 @tests.skip_data
 class Test___call____circular(tests.IrisTest):
@@ -1253,7 +1284,7 @@ class Test___call____circular(tests.IrisTest):
             units="m",
             attributes={"positive": "up"},
         )
-        sigma = AuxCoord(1, long_name="sigma")
+        sigma = AuxCoord(1, long_name="sigma", units="1")
         surface_altitude = AuxCoord(
             (src.data - src.data.min()) * 50, "surface_altitude", units="m"
         )

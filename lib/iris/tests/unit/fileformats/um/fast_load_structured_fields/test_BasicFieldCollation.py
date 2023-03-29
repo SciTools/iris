@@ -11,16 +11,16 @@ Unit tests for the class
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris._lazy_data import as_lazy_data
 from cftime import datetime
 import numpy as np
 
+from iris._lazy_data import as_lazy_data
+import iris.fileformats.pp
 from iris.fileformats.um._fast_load_structured_fields import (
     BasicFieldCollation,
 )
-import iris.fileformats.pp
 
 
 class Test___init__(tests.IrisTest):
@@ -222,7 +222,7 @@ class Test__time_comparable_int(tests.IrisTest):
             for test_tuple in test_date_tuples
         ]
         # Check all values are distinct.
-        self.assertEqual(len(test_date_ints), len(set(test_date_ints),))
+        self.assertEqual(len(test_date_ints), len(set(test_date_ints)))
         # Check all values are in order.
         self.assertEqual(test_date_ints, sorted(test_date_ints))
 

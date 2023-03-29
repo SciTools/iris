@@ -6,7 +6,7 @@
 
 # import iris.tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 from fnmatch import fnmatch
@@ -15,7 +15,6 @@ import os
 import subprocess
 
 import iris
-
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #
@@ -102,17 +101,15 @@ class TestLicenseHeaders(tests.IrisTest):
     def test_license_headers(self):
         exclude_patterns = (
             "setup.py",
+            "noxfile.py",
             "build/*",
             "dist/*",
-            "docs/iris/example_code/*/*.py",
-            "docs/iris/src/developers_guide/documenting/*.py",
-            "docs/iris/src/sphinxext/gen_gallery.py",
-            "docs/iris/src/userguide/plotting_examples/*.py",
-            "docs/iris/src/userguide/regridding_plots/*.py",
-            "docs/iris/src/developers_guide/gitwash_dumper.py",
-            "docs/iris/build/*",
+            "docs/gallery_code/*/*.py",
+            "docs/src/developers_guide/documenting/*.py",
+            "docs/src/userguide/plotting_examples/*.py",
+            "docs/src/userguide/regridding_plots/*.py",
+            "docs/src/_build/*",
             "lib/iris/analysis/_scipy_interpolate.py",
-            "lib/iris/fileformats/_pyke_rules/*",
         )
 
         try:

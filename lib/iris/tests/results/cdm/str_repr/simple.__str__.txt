@@ -1,6 +1,6 @@
-thingness                                                                                 (foo: 11)
-     Dimension coordinates:
-          foo                                                                                 x
-     Auxiliary coordinates:
-          This is a really, really, really, really long long_name that must be clipped...     x
-          This is a short long_name                                                           x
+thingness / (1)                                                                         (foo: 11)
+    Dimension coordinates:
+        foo                                                                                 x
+    Auxiliary coordinates:
+        This is a really, really, really, really long long_name that must be clipped...     x
+        This is a short long_name                                                           x

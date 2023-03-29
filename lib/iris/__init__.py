@@ -91,13 +91,10 @@ import itertools
 import os.path
 import threading
 
-import iris.config
-import iris.cube
 import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
-import iris.fileformats
+import iris.config
 import iris.io
-
 
 try:
     import iris_sample_data
@@ -106,23 +103,23 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = "3.0.dev0"
+__version__ = "3.2.dev0"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
+    "AttributeConstraint",
+    "Constraint",
+    "FUTURE",
+    "Future",
+    "IrisDeprecation",
+    "NameConstraint",
     "load",
     "load_cube",
     "load_cubes",
     "load_raw",
-    "save",
-    "Constraint",
-    "AttributeConstraint",
-    "NameConstraint",
     "sample_data_path",
+    "save",
     "site_configuration",
-    "Future",
-    "FUTURE",
-    "IrisDeprecation",
 ]
 
 
@@ -266,9 +263,11 @@ def _generate_cubes(uris, callback, constraints):
 
 
 def _load_collection(uris, constraints=None, callback=None):
+    from iris.cube import _CubeFilterCollection
+
     try:
         cubes = _generate_cubes(uris, callback, constraints)
-        result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
+        result = _CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(
             "The file appears empty or incomplete: {!r}".format(str(e))

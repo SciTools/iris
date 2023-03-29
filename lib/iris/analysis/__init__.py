@@ -27,11 +27,11 @@ in that dimension.
 The gallery contains several interesting worked examples of how an
 :class:`~iris.analysis.Aggregator` may be used, including:
 
- * :ref:`Meteorology-COP_1d_plot`
- * :ref:`General-SOI_filtering`
- * :ref:`Meteorology-hovmoller`
- * :ref:`Meteorology-lagged_ensemble`
- * :ref:`General-custom_aggregation`
+ * :ref:`sphx_glr_generated_gallery_meteorology_plot_COP_1d.py`
+ * :ref:`sphx_glr_generated_gallery_general_plot_SOI_filtering.py`
+ * :ref:`sphx_glr_generated_gallery_meteorology_plot_hovmoller.py`
+ * :ref:`sphx_glr_generated_gallery_meteorology_plot_lagged_ensemble.py`
+ * :ref:`sphx_glr_generated_gallery_general_plot_custom_aggregation.py`
 
 """
 
@@ -45,40 +45,40 @@ import numpy.ma as ma
 import scipy.interpolate
 import scipy.stats.mstats
 
+import iris._lazy_data
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (
     EXTRAPOLATION_MODES,
     RectilinearInterpolator,
 )
-from iris.analysis._regrid import RectilinearRegridder, CurvilinearRegridder
+from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
-import iris._lazy_data
 
 __all__ = (
+    "Aggregator",
+    "AreaWeighted",
     "COUNT",
     "GMEAN",
     "HMEAN",
+    "Linear",
     "MAX",
     "MEAN",
     "MEDIAN",
     "MIN",
+    "Nearest",
     "PEAK",
     "PERCENTILE",
     "PROPORTION",
+    "PointInCell",
     "RMS",
     "STD_DEV",
     "SUM",
+    "UnstructuredNearest",
     "VARIANCE",
     "WPERCENTILE",
-    "Aggregator",
     "WeightedAggregator",
     "clear_phenomenon_identity",
-    "Linear",
-    "AreaWeighted",
-    "Nearest",
-    "UnstructuredNearest",
-    "PointInCell",
 )
 
 
@@ -319,7 +319,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
                         eq = (
                             other_coord is coord
                             or other_coord.name() == coord.name()
-                            and other_coord._as_defn() == coord._as_defn()
+                            and other_coord.metadata == coord.metadata
                         )
                         if eq:
                             coord_to_add_to_group = other_coord
@@ -487,7 +487,8 @@ class _Aggregator:
         A variety of ready-made aggregators are provided in this module, such
         as :data:`~iris.analysis.MEAN` and :data:`~iris.analysis.MAX`.  Custom
         aggregators can also be created for special purposes, see
-        :ref:`General-custom_aggregation` for a worked example.
+        :ref:`sphx_glr_generated_gallery_general_plot_custom_aggregation.py`
+        for a worked example.
 
         """
         #: Cube cell method string.
@@ -604,7 +605,7 @@ class _Aggregator:
 
         Kwargs:
 
-        * This function is intended to be used in conjuction with aggregate()
+        * This function is intended to be used in conjunction with aggregate()
           and should be passed the same keywords (for example, the "ddof"
           keyword for a standard deviation aggregator).
 
@@ -802,7 +803,9 @@ class PercentileAggregator(_Aggregator):
         # order cube.
         for point in points:
             cube = collapsed_cube.copy()
-            coord = iris.coords.AuxCoord(point, long_name=coord_name)
+            coord = iris.coords.AuxCoord(
+                point, long_name=coord_name, units="percent"
+            )
             cube.add_aux_coord(coord)
             cubes.append(cube)
 
@@ -980,7 +983,7 @@ class Aggregator(_Aggregator):
 
         Kwargs:
 
-        * This function is intended to be used in conjuction with aggregate()
+        * This function is intended to be used in conjunction with aggregate()
           and should be passed the same keywords (for example, the "ddof"
           keyword for a standard deviation aggregator).
 
@@ -1451,7 +1454,7 @@ def _peak(array, **kwargs):
     slices[-1] = endslice
     slices = tuple(slices)  # Numpy>=1.16 : index with tuple, *not* list.
 
-    if isinstance(array.dtype, np.float):
+    if isinstance(array.dtype, np.float64):
         data = array[slices]
     else:
         # Cast non-float data type.
@@ -2437,6 +2440,10 @@ class Linear:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Supports lazy regridding. Any
+        `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+        in horizontal dimensions will be combined before regridding.
+
         Args:
 
         * src_grid:
@@ -2510,6 +2517,10 @@ class AreaWeighted:
         regridding a cube. There are, however, some situations when
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
+
+        Supports lazy regridding. Any
+        `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+        in horizontal dimensions will be combined before regridding.
 
         Args:
 
@@ -2627,6 +2638,10 @@ class Nearest:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Supports lazy regridding. Any
+        `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+        in horizontal dimensions will be combined before regridding.
+
         Args:
 
         * src_grid:
@@ -2713,6 +2728,8 @@ class UnstructuredNearest:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Does not support lazy regridding.
+
         Args:
 
         * src_cube:
@@ -2787,6 +2804,8 @@ class PointInCell:
         regridding a cube. There are, however, some situations when
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
+
+        Does not support lazy regridding.
 
         Args:
 

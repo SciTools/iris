@@ -10,7 +10,10 @@ import warnings
 
 import numpy as np
 import numpy.ma as ma
+from scipy.sparse import csc_matrix
+from scipy.sparse import diags as sparse_diags
 
+from iris._lazy_data import map_complete_blocks
 from iris.analysis._interpolation import (
     EXTRAPOLATION_MODES,
     extend_circular_coord_and_data,
@@ -18,10 +21,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-import iris.cube
 from iris.util import _meshgrid
-
-from scipy.sparse import csc_matrix, diags as sparse_diags
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):
@@ -296,6 +296,8 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     Perform the prepared regrid calculation on a single 2d cube.
 
     """
+    from iris.cube import Cube
+
     sparse_matrix, sum_weights, rows, grid_cube = regrid_info
 
     # Calculate the numerator of the weighted mean (M, 1).
@@ -352,7 +354,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     (tx_dim,) = grid_cube.coord_dims(tx)
     (ty_dim,) = grid_cube.coord_dims(ty)
     dim_coords_and_dims = list(zip((ty.copy(), tx.copy()), (ty_dim, tx_dim)))
-    cube = iris.cube.Cube(
+    cube = Cube(
         weighted_mean.reshape(grid_cube.shape),
         dim_coords_and_dims=dim_coords_and_dims,
     )
@@ -392,10 +394,12 @@ class CurvilinearRegridder:
             If unspecified, equal weighting is assumed.
 
         """
+        from iris.cube import Cube
+
         # Validity checks.
-        if not isinstance(src_grid_cube, iris.cube.Cube):
+        if not isinstance(src_grid_cube, Cube):
             raise TypeError("'src_grid_cube' must be a Cube")
-        if not isinstance(target_grid_cube, iris.cube.Cube):
+        if not isinstance(target_grid_cube, Cube):
             raise TypeError("'target_grid_cube' must be a Cube")
         # Snapshot the state of the cubes to ensure that the regridder
         # is impervious to external changes to the original source cubes.
@@ -426,8 +430,7 @@ class CurvilinearRegridder:
         if len(coords) != 1:
             raise ValueError(
                 "Cube {!r} must contain a single 1D {} "
-                "coordinate.".format(cube.name()),
-                axis,
+                "coordinate.".format(cube.name(), axis)
             )
         return coords[0]
 
@@ -438,6 +441,9 @@ class CurvilinearRegridder:
 
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`_CurvilinearRegridder`.
+
+        If the source cube has lazy data, it will be realized before
+        regridding and the returned cube will also have realized data.
 
         Args:
 
@@ -451,8 +457,10 @@ class CurvilinearRegridder:
             point-in-cell regridding.
 
         """
+        from iris.cube import Cube, CubeList
+
         # Validity checks.
-        if not isinstance(src, iris.cube.Cube):
+        if not isinstance(src, Cube):
             raise TypeError("'src' must be a Cube")
 
         gx = self._get_horizontal_coord(self._src_cube, "x")
@@ -473,15 +481,19 @@ class CurvilinearRegridder:
         # though that is not a terribly efficient method ...
         # TODO: create a template result cube and paste data slices into it,
         # which would be more efficient.
-        result_slices = iris.cube.CubeList([])
+        result_slices = CubeList([])
         for slice_cube in src.slices(sx):
             if self._regrid_info is None:
                 # Calculate the basic regrid info just once.
-                self._regrid_info = _regrid_weighted_curvilinear_to_rectilinear__prepare(
-                    slice_cube, self.weights, self._target_cube
+                self._regrid_info = (
+                    _regrid_weighted_curvilinear_to_rectilinear__prepare(
+                        slice_cube, self.weights, self._target_cube
+                    )
                 )
-            slice_result = _regrid_weighted_curvilinear_to_rectilinear__perform(
-                slice_cube, self._regrid_info
+            slice_result = (
+                _regrid_weighted_curvilinear_to_rectilinear__perform(
+                    slice_cube, self._regrid_info
+                )
             )
             result_slices.append(slice_result)
         result = result_slices.merge_cube()
@@ -526,10 +538,12 @@ class RectilinearRegridder:
                 set to NaN.
 
         """
+        from iris.cube import Cube
+
         # Validity checks.
-        if not isinstance(src_grid_cube, iris.cube.Cube):
+        if not isinstance(src_grid_cube, Cube):
             raise TypeError("'src_grid_cube' must be a Cube")
-        if not isinstance(tgt_grid_cube, iris.cube.Cube):
+        if not isinstance(tgt_grid_cube, Cube):
             raise TypeError("'tgt_grid_cube' must be a Cube")
         # Snapshot the state of the cubes to ensure that the regridder
         # is impervious to external changes to the original source cubes.
@@ -689,7 +703,7 @@ class RectilinearRegridder:
 
         if ma.isMaskedArray(src_data):
             data = ma.empty(shape, dtype=dtype)
-            data.mask = np.zeros(data.shape, dtype=np.bool)
+            data.mask = np.zeros(data.shape, dtype=np.bool_)
         else:
             data = np.empty(shape, dtype=dtype)
 
@@ -865,12 +879,14 @@ class RectilinearRegridder:
             The new, regridded Cube.
 
         """
+        from iris.cube import Cube
+
         #
         # XXX: At the moment requires to be a static method as used by
         # experimental regrid_area_weighted_rectilinear_src_and_grid
         #
         # Create a result cube with the appropriate metadata
-        result = iris.cube.Cube(data)
+        result = Cube(data)
         result.metadata = copy.deepcopy(src.metadata)
 
         # Copy across all the coordinates which don't span the grid.
@@ -953,12 +969,14 @@ class RectilinearRegridder:
         return result
 
     def _check_units(self, coord):
+        from iris.coord_systems import GeogCS, RotatedGeogCS
+
         if coord.coord_system is None:
             # No restriction on units.
             pass
         elif isinstance(
             coord.coord_system,
-            (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS),
+            (GeogCS, RotatedGeogCS),
         ):
             # Units for lat-lon or rotated pole must be 'degrees'. Note
             # that 'degrees_east' etc. are equal to 'degrees'.
@@ -985,6 +1003,9 @@ class RectilinearRegridder:
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`RectilinearRegridder`.
 
+        If the source cube has lazy data, the returned cube will also
+        have lazy data.
+
         Args:
 
         * src:
@@ -996,9 +1017,17 @@ class RectilinearRegridder:
             this cube will be converted to values on the new grid using
             either nearest-neighbour or linear interpolation.
 
+        .. note::
+
+            If the source cube has lazy data,
+            `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+            in the horizontal dimensions will be combined before regridding.
+
         """
+        from iris.cube import Cube
+
         # Validity checks.
-        if not isinstance(src, iris.cube.Cube):
+        if not isinstance(src, Cube):
             raise TypeError("'src' must be a Cube")
         if get_xy_dim_coords(src) != self._src_grid:
             raise ValueError(
@@ -1041,16 +1070,22 @@ class RectilinearRegridder:
         # Compute the interpolated data values.
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
-        data = self._regrid(
-            src.data,
-            x_dim,
-            y_dim,
-            src_x_coord,
-            src_y_coord,
-            sample_grid_x,
-            sample_grid_y,
-            self._method,
-            self._extrapolation_mode,
+
+        # Define regrid function
+        regrid = functools.partial(
+            self._regrid,
+            x_dim=x_dim,
+            y_dim=y_dim,
+            src_x_coord=src_x_coord,
+            src_y_coord=src_y_coord,
+            sample_grid_x=sample_grid_x,
+            sample_grid_y=sample_grid_y,
+            method=self._method,
+            extrapolation_mode=self._extrapolation_mode,
+        )
+
+        data = map_complete_blocks(
+            src, regrid, (y_dim, x_dim), sample_grid_x.shape
         )
 
         # Wrap up the data as a Cube.

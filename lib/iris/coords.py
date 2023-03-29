@@ -12,25 +12,30 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Iterator
 import copy
-from functools import wraps
 from itertools import chain, zip_longest
 import operator
 import warnings
 import zlib
 
 import cftime
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
-import iris.aux_factory
+from iris.common import (
+    AncillaryVariableMetadata,
+    BaseMetadata,
+    CellMeasureMetadata,
+    CFVariableMixin,
+    CoordMetadata,
+    DimCoordMetadata,
+    metadata_manager_factory,
+)
 import iris.exceptions
 import iris.time
 import iris.util
-
-from iris._cube_coord_common import CFVariableMixin
-from iris.util import points_step
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
@@ -59,7 +64,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="no-unit",
+        units=None,
         attributes=None,
     ):
         """
@@ -91,6 +96,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # bounds-related getter/setter properties, and no bounds keywords in
         # its __init__ or __copy__ methods.  The only bounds-related behaviour
         # it provides is a 'has_bounds()' method, which always returns False.
+
+        # Configure the metadata manager.
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = metadata_manager_factory(BaseMetadata)
 
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
@@ -160,7 +169,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         * values
             An array of values for the new dimensional metadata object.
-            This may be a different shape to the orginal values array being
+            This may be a different shape to the original values array being
             copied.
 
         """
@@ -340,9 +349,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # If the other object has a means of getting its definition, then do
         # the  comparison, otherwise return a NotImplemented to let Python try
         # to resolve the operator elsewhere.
-        if hasattr(other, "_as_defn"):
+        if hasattr(other, "metadata"):
             # metadata comparison
-            eq = self._as_defn() == other._as_defn()
+            eq = self.metadata == other.metadata
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
@@ -366,17 +375,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if result is not NotImplemented:
             result = not result
         return result
-
-    def _as_defn(self):
-        defn = _DMDefn(
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-        )
-
-        return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
     # NOTE: Violates "objects which compare equal must have the same hash".
@@ -406,28 +404,15 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
 
-        if isinstance(other, _DimensionalMetadata) or not isinstance(
-            other, (int, float, np.number)
-        ):
-
-            def typename(obj):
-                if isinstance(obj, Coord):
-                    result = "Coord"
-                else:
-                    # We don't really expect this, but do something anyway.
-                    result = self.__class__.__name__
-                return result
-
-            emsg = "{selftype} {operator} {othertype}".format(
-                selftype=typename(self),
-                operator=self._MODE_SYMBOL[mode_constant],
-                othertype=typename(other),
+        if isinstance(other, _DimensionalMetadata):
+            emsg = (
+                f"{self.__class__.__name__} "
+                f"{self._MODE_SYMBOL[mode_constant]} "
+                f"{other.__class__.__name__}"
             )
             raise iris.exceptions.NotYetImplementedError(emsg)
 
-        else:
-            # 'Other' is an array type : adjust points, and bounds if any.
-            result = NotImplemented
+        if isinstance(other, (int, float, np.number)):
 
             def op(values):
                 if mode_constant == self._MODE_ADD:
@@ -444,8 +429,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
             new_values = op(self._values_dm.core_data())
             result = self.copy(new_values)
+
             if self.has_bounds():
                 result.bounds = op(self._bounds_dm.core_data())
+        else:
+            # must return NotImplemented to ensure invocation of any
+            # associated reflected operator on the "other" operand
+            # see https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types
+            result = NotImplemented
 
         return result
 
@@ -464,8 +455,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def __truediv__(self, other):
         return self.__binary_operator__(other, self._MODE_DIV)
 
-    def __radd__(self, other):
-        return self + other
+    __radd__ = __add__
 
     def __rsub__(self, other):
         return (-self) + other
@@ -476,8 +466,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def __rtruediv__(self, other):
         return self.__binary_operator__(other, self._MODE_RDIV)
 
-    def __rmul__(self, other):
-        return self * other
+    __rmul__ = __mul__
 
     def __neg__(self):
         values = -self._core_values()
@@ -580,7 +569,20 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.shape
 
     def xml_element(self, doc):
-        """Return a DOM element describing this metadata."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`_DimensionalMetadata`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`_DimensionalMetadata`.
+
+        """
         # Create the XML element as the camelCaseEquivalent of the
         # class name.
         element_name = type(self).__name__
@@ -625,6 +627,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
+        # TODO: replace with isinstance(self, Connectivity) once Connectivity
+        # is re-integrated here (currently in experimental.ugrid).
+        elif hasattr(self, "indices"):
+            values_term = "indices"
         else:
             values_term = "data"
         element.setAttribute(values_term, self._xml_array_repr(self._values))
@@ -688,7 +694,7 @@ class AncillaryVariable(_DimensionalMetadata):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="no-unit",
+        units=None,
         attributes=None,
     ):
         """
@@ -714,6 +720,12 @@ class AncillaryVariable(_DimensionalMetadata):
             A dictionary containing other cf and user-defined attributes.
 
         """
+        # Configure the metadata manager.
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = metadata_manager_factory(
+                AncillaryVariableMetadata
+            )
+
         super().__init__(
             values=data,
             standard_name=standard_name,
@@ -788,11 +800,10 @@ class CellMeasure(AncillaryVariable):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         attributes=None,
         measure=None,
     ):
-
         """
         Constructs a single cell measure.
 
@@ -821,6 +832,9 @@ class CellMeasure(AncillaryVariable):
             'area' and 'volume'. The default is 'area'.
 
         """
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(CellMeasureMetadata)
+
         super().__init__(
             data=data,
             standard_name=standard_name,
@@ -838,14 +852,14 @@ class CellMeasure(AncillaryVariable):
 
     @property
     def measure(self):
-        return self._measure
+        return self._metadata_manager.measure
 
     @measure.setter
     def measure(self, measure):
         if measure not in ["area", "volume"]:
             emsg = f"measure must be 'area' or 'volume', got {measure!r}"
             raise ValueError(emsg)
-        self._measure = measure
+        self._metadata_manager.measure = measure
 
     def __str__(self):
         result = repr(self)
@@ -864,17 +878,6 @@ class CellMeasure(AncillaryVariable):
         )
         return result
 
-    def _as_defn(self):
-        defn = CellMeasureDefn(
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.measure,
-        )
-        return defn
-
     def cube_dims(self, cube):
         """
         Return the cube dimensions of this CellMeasure.
@@ -885,6 +888,20 @@ class CellMeasure(AncillaryVariable):
         return cube.cell_measure_dims(self)
 
     def xml_element(self, doc):
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`CellMeasure`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`CellMeasure`.
+
+        """
         # Create the XML element as the camelCaseEquivalent of the
         # class name
         element = super().xml_element(doc=doc)
@@ -893,160 +910,6 @@ class CellMeasure(AncillaryVariable):
         element.setAttribute("measure", self.measure)
 
         return element
-
-
-class CoordDefn(
-    namedtuple(
-        "CoordDefn",
-        [
-            "standard_name",
-            "long_name",
-            "var_name",
-            "units",
-            "attributes",
-            "coord_system",
-            "climatological",
-        ],
-    )
-):
-    """
-    Criterion for identifying a specific type of :class:`DimCoord` or
-    :class:`AuxCoord` based on its metadata.
-
-    """
-
-    __slots__ = ()
-
-    def name(self, default="unknown"):
-        """
-        Returns a human-readable name.
-
-        First it tries self.standard_name, then it tries the 'long_name'
-        attribute, then the 'var_name' attribute, before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        """
-        return self.standard_name or self.long_name or self.var_name or default
-
-    def __lt__(self, other):
-        if not isinstance(other, CoordDefn):
-            return NotImplemented
-
-        def _sort_key(defn):
-            # Emulate Python 2 behaviour with None
-            return (
-                defn.standard_name is not None,
-                defn.standard_name,
-                defn.long_name is not None,
-                defn.long_name,
-                defn.var_name is not None,
-                defn.var_name,
-                defn.units is not None,
-                defn.units,
-                defn.coord_system is not None,
-                defn.coord_system,
-            )
-
-        return _sort_key(self) < _sort_key(other)
-
-
-class CellMeasureDefn(
-    namedtuple(
-        "CellMeasureDefn",
-        [
-            "standard_name",
-            "long_name",
-            "var_name",
-            "units",
-            "attributes",
-            "measure",
-        ],
-    )
-):
-    """
-    Criterion for identifying a specific type of :class:`CellMeasure`
-    based on its metadata.
-
-    """
-
-    __slots__ = ()
-
-    def name(self, default="unknown"):
-        """
-        Returns a human-readable name.
-
-        First it tries self.standard_name, then it tries the 'long_name'
-        attribute, then the 'var_name' attribute, before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        """
-        return self.standard_name or self.long_name or self.var_name or default
-
-    def __lt__(self, other):
-        if not isinstance(other, CellMeasureDefn):
-            return NotImplemented
-
-        def _sort_key(defn):
-            # Emulate Python 2 behaviour with None
-            return (
-                defn.standard_name is not None,
-                defn.standard_name,
-                defn.long_name is not None,
-                defn.long_name,
-                defn.var_name is not None,
-                defn.var_name,
-                defn.units is not None,
-                defn.units,
-                defn.measure is not None,
-                defn.measure,
-            )
-
-        return _sort_key(self) < _sort_key(other)
-
-
-class _DMDefn(
-    namedtuple(
-        "DMDefn",
-        ["standard_name", "long_name", "var_name", "units", "attributes",],
-    )
-):
-    """
-    Criterion for identifying a specific type of :class:`_DimensionalMetadata`
-    based on its metadata.
-
-    """
-
-    __slots__ = ()
-
-    def name(self, default="unknown"):
-        """
-        Returns a human-readable name.
-
-        First it tries self.standard_name, then it tries the 'long_name'
-        attribute, then the 'var_name' attribute, before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        """
-        return self.standard_name or self.long_name or self.var_name or default
-
-    def __lt__(self, other):
-        if not isinstance(other, _DMDefn):
-            return NotImplemented
-
-        def _sort_key(defn):
-            # Emulate Python 2 behaviour with None
-            return (
-                defn.standard_name is not None,
-                defn.standard_name,
-                defn.long_name is not None,
-                defn.long_name,
-                defn.var_name is not None,
-                defn.var_name,
-                defn.units is not None,
-                defn.units,
-            )
-
-        return _sort_key(self) < _sort_key(other)
 
 
 class CoordExtent(
@@ -1282,6 +1145,13 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
+
+        if (isinstance(other, list) and len(other) == 1) or (
+            isinstance(other, np.ndarray) and other.shape == (1,)
+        ):
+            other = other[0]
+        if isinstance(other, np.ndarray) and other.shape == ():
+            other = float(other)
         if not (
             isinstance(other, (int, float, np.number, Cell))
             or hasattr(other, "timetuple")
@@ -1429,7 +1299,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
 
 class Coord(_DimensionalMetadata):
     """
-    Superclass for coordinates.
+    Abstract base class for coordinates.
 
     """
 
@@ -1440,21 +1310,20 @@ class Coord(_DimensionalMetadata):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         bounds=None,
         attributes=None,
         coord_system=None,
         climatological=False,
     ):
-
         """
-        Constructs a single coordinate.
+        Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
 
         Args:
 
         * points:
-            The values (or value in the case of a scalar coordinate) of the
-            coordinate for each cell.
+            The values (or value in the case of a scalar coordinate) for each
+            cell of the coordinate.
 
         Kwargs:
 
@@ -1470,17 +1339,17 @@ class Coord(_DimensionalMetadata):
         * bounds
             An array of values describing the bounds of each cell. Given n
             bounds for each cell, the shape of the bounds array should be
-            points.shape + (n,). For example, a 1d coordinate with 100 points
+            points.shape + (n,). For example, a 1D coordinate with 100 points
             and two bounds per cell would have a bounds array of shape
             (100, 2)
             Note if the data is a climatology, `climatological`
             should be set.
         * attributes
-            A dictionary containing other cf and user-defined attributes.
+            A dictionary containing other CF and user-defined attributes.
         * coord_system
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
-            e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
+            e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
         * climatological (bool):
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a
@@ -1490,7 +1359,12 @@ class Coord(_DimensionalMetadata):
             Will set to True when a climatological time axis is loaded
             from NetCDF.
             Always False if no bounds exist.
+
         """
+        # Configure the metadata manager.
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = metadata_manager_factory(CoordMetadata)
+
         super().__init__(
             values=points,
             standard_name=standard_name,
@@ -1554,6 +1428,7 @@ class Coord(_DimensionalMetadata):
             "units": coord.units,
             "attributes": coord.attributes,
             "coord_system": copy.deepcopy(coord.coord_system),
+            "climatological": coord.climatological,
         }
         if issubclass(cls, DimCoord):
             # DimCoord introduces an extra constructor keyword.
@@ -1589,7 +1464,7 @@ class Coord(_DimensionalMetadata):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
-            self._climatological = False
+            self.climatological = False
         else:
             bounds = self._sanitise_array(bounds, 2)
             if self.shape != bounds.shape[:-1]:
@@ -1606,6 +1481,15 @@ class Coord(_DimensionalMetadata):
                 self._bounds_dm.data = bounds
 
     @property
+    def coord_system(self):
+        """The coordinate-system of the coordinate."""
+        return self._metadata_manager.coord_system
+
+    @coord_system.setter
+    def coord_system(self, value):
+        self._metadata_manager.coord_system = value
+
+    @property
     def climatological(self):
         """
         A boolean that controls whether the coordinate is a climatological
@@ -1615,8 +1499,13 @@ class Coord(_DimensionalMetadata):
         Always reads as False if there are no bounds.
         On set, the input value is cast to a boolean, exceptions raised
         if units are not time units or if there are no bounds.
+
         """
-        return self._climatological if self.has_bounds() else False
+        if not self.has_bounds():
+            self._metadata_manager.climatological = False
+        if not self.units.is_time_reference():
+            self._metadata_manager.climatological = False
+        return self._metadata_manager.climatological
 
     @climatological.setter
     def climatological(self, value):
@@ -1634,7 +1523,7 @@ class Coord(_DimensionalMetadata):
                 emsg = "Cannot set climatological coordinate, no bounds exist."
                 raise ValueError(emsg)
 
-        self._climatological = value
+        self._metadata_manager.climatological = value
 
     def lazy_points(self):
         """
@@ -1721,18 +1610,6 @@ class Coord(_DimensionalMetadata):
         if self.climatological:
             result += ", climatological={}".format(self.climatological)
         return result
-
-    def _as_defn(self):
-        defn = CoordDefn(
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.coord_system,
-            self.climatological,
-        )
-        return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
     # NOTE: Violates "objects which compare equal must have the same hash".
@@ -1986,8 +1863,9 @@ class Coord(_DimensionalMetadata):
         Args:
 
         * other:
-            An instance of :class:`iris.coords.Coord` or
-            :class:`iris.coords.CoordDefn`.
+            An instance of :class:`iris.coords.Coord`,
+            :class:`iris.common.CoordMetadata` or
+            :class:`iris.common.DimCoordMetadata`.
         * ignore:
            A single attribute key or iterable of attribute keys to ignore when
            comparing the coordinates. Default is None. To ignore all
@@ -2062,7 +1940,6 @@ class Coord(_DimensionalMetadata):
 
         Replaces the points & bounds with a simple bounded region.
         """
-        import dask.array as da
 
         # Ensure dims_to_collapse is a tuple to be able to pass
         # through to numpy
@@ -2377,14 +2254,25 @@ class Coord(_DimensionalMetadata):
         return result_index
 
     def xml_element(self, doc):
-        """Return a DOM element describing this Coord."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`Coord`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`DimCoord`.
+
+        """
         # Create the XML element as the camelCaseEquivalent of the
         # class name
         element = super().xml_element(doc=doc)
 
-        element.setAttribute("points", self._xml_array_repr(self.points))
-
-        # Add bounds handling
+        # Add bounds, points are handled by the parent class.
         if self.has_bounds():
             element.setAttribute("bounds", self._xml_array_repr(self.bounds))
 
@@ -2398,7 +2286,8 @@ class Coord(_DimensionalMetadata):
 
 class DimCoord(Coord):
     """
-    A coordinate that is 1D, numeric, and strictly monotonic.
+    A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
+    permitted in a :class:`DimCoord`.
 
     """
 
@@ -2411,10 +2300,11 @@ class DimCoord(Coord):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         attributes=None,
         coord_system=None,
         circular=False,
+        climatological=False,
         with_bounds=False,
     ):
         """
@@ -2422,7 +2312,7 @@ class DimCoord(Coord):
         optionally bounds.
 
         The majority of the arguments are defined as for
-        :meth:`Coord.__init__`, but those which differ are defined below.
+        :class:`Coord`, but those which differ are defined below.
 
         Args:
 
@@ -2442,7 +2332,7 @@ class DimCoord(Coord):
 
         """
         points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = points_step(points)
+        _, regular = iris.util.points_step(points)
         if not regular:
             points = (zeroth + step) + step * np.arange(
                 count, dtype=np.float64
@@ -2466,6 +2356,7 @@ class DimCoord(Coord):
             attributes=attributes,
             coord_system=coord_system,
             circular=circular,
+            climatological=climatological,
         )
 
     def __init__(
@@ -2474,7 +2365,7 @@ class DimCoord(Coord):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         bounds=None,
         attributes=None,
         coord_system=None,
@@ -2482,10 +2373,62 @@ class DimCoord(Coord):
         climatological=False,
     ):
         """
-        Create a 1D, numeric, and strictly monotonic :class:`Coord` with
-        read-only points and bounds.
+        Create a 1D, numeric, and strictly monotonic coordinate with **immutable** points and bounds.
+
+        Missing values are not permitted.
+
+        Args:
+
+        * points:
+            1D numpy array-like of values (or single value in the case of a
+            scalar coordinate) for each cell of the coordinate.  The values
+            must be strictly monotonic and masked values are not allowed.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of the coordinate.
+        * long_name:
+            Descriptive name of the coordinate.
+        * var_name:
+            The netCDF variable name for the coordinate.
+        * units:
+            The :class:`~cf_units.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
+        * bounds:
+            An array of values describing the bounds of each cell. Given n
+            bounds and m cells, the shape of the bounds array should be
+            (m, n). For each bound, the values must be strictly monotonic along
+            the cells, and the direction of monotonicity must be consistent
+            across the bounds.  For example, a DimCoord with 100 points and two
+            bounds per cell would have a bounds array of shape (100, 2), and
+            the slices ``bounds[:, 0]`` and ``bounds[:, 1]`` would be monotonic
+            in the same direction.  Masked values are not allowed.
+            Note if the data is a climatology, `climatological`
+            should be set.
+        * attributes:
+            A dictionary containing other CF and user-defined attributes.
+        * coord_system:
+            A :class:`~iris.coord_systems.CoordSystem` representing the
+            coordinate system of the coordinate,
+            e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
+        * circular (bool):
+            Whether the coordinate wraps by the :attr:`~iris.coords.DimCoord.units.modulus`
+            i.e., the longitude coordinate wraps around the full great circle.
+        * climatological (bool):
+            When True: the coordinate is a NetCDF climatological time axis.
+            When True: saving in NetCDF will give the coordinate variable a
+            'climatology' attribute and will create a boundary variable called
+            '<coordinate-name>_climatology' in place of a standard bounds
+            attribute and bounds variable.
+            Will set to True when a climatological time axis is loaded
+            from NetCDF.
+            Always False if no bounds exist.
 
         """
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(DimCoordMetadata)
+
         super().__init__(
             points,
             standard_name=standard_name,
@@ -2499,7 +2442,7 @@ class DimCoord(Coord):
         )
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
-        self.circular = bool(circular)
+        self.circular = circular
 
     def __deepcopy__(self, memo):
         """
@@ -2515,6 +2458,14 @@ class DimCoord(Coord):
             new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
 
+    @property
+    def circular(self):
+        return self._metadata_manager.circular
+
+    @circular.setter
+    def circular(self, circular):
+        self._metadata_manager.circular = bool(circular)
+
     def copy(self, points=None, bounds=None):
         new_coord = super().copy(points=points, bounds=bounds)
         # Make the arrays read-only.
@@ -2524,13 +2475,13 @@ class DimCoord(Coord):
         return new_coord
 
     def __eq__(self, other):
-        # TODO investigate equality of AuxCoord and DimCoord if circular is
-        # False.
         result = NotImplemented
         if isinstance(other, DimCoord):
-            result = (
-                Coord.__eq__(self, other) and self.circular == other.circular
-            )
+            # The "circular" member participates in DimCoord to DimCoord
+            # equivalence. We require to do this explicitly here
+            # as the "circular" member does NOT participate in
+            # DimCoordMetadata to DimCoordMetadata equivalence.
+            result = self.circular == other.circular and super().__eq__(other)
         return result
 
     # The __ne__ operator from Coord implements the not __eq__ method.
@@ -2700,7 +2651,20 @@ class DimCoord(Coord):
         return True
 
     def xml_element(self, doc):
-        """Return DOM element describing this :class:`iris.coords.DimCoord`."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`DimCoord`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`DimCoord`.
+
+        """
         element = super().xml_element(doc)
         if self.circular:
             element.setAttribute("circular", str(self.circular))
@@ -2711,15 +2675,54 @@ class AuxCoord(Coord):
     """
     A CF auxiliary coordinate.
 
-    .. note::
-
-        There are currently no specific properties of :class:`AuxCoord`,
-        everything is inherited from :class:`Coord`.
-
     """
 
-    @wraps(Coord.__init__, assigned=("__doc__",), updated=())
     def __init__(self, *args, **kwargs):
+        """
+        Create a coordinate with **mutable** points and bounds.
+
+        Args:
+
+        * points:
+            The values (or value in the case of a scalar coordinate) for each
+            cell of the coordinate.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of the coordinate.
+        * long_name:
+            Descriptive name of the coordinate.
+        * var_name:
+            The netCDF variable name for the coordinate.
+        * units
+            The :class:`~cf_units.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
+        * bounds
+            An array of values describing the bounds of each cell. Given n
+            bounds for each cell, the shape of the bounds array should be
+            points.shape + (n,). For example, a 1D coordinate with 100 points
+            and two bounds per cell would have a bounds array of shape
+            (100, 2)
+            Note if the data is a climatology, `climatological`
+            should be set.
+        * attributes
+            A dictionary containing other CF and user-defined attributes.
+        * coord_system
+            A :class:`~iris.coord_systems.CoordSystem` representing the
+            coordinate system of the coordinate,
+            e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
+        * climatological (bool):
+            When True: the coordinate is a NetCDF climatological time axis.
+            When True: saving in NetCDF will give the coordinate variable a
+            'climatology' attribute and will create a boundary variable called
+            '<coordinate-name>_climatology' in place of a standard bounds
+            attribute and bounds variable.
+            Will set to True when a climatological time axis is loaded
+            from NetCDF.
+            Always False if no bounds exist.
+
+        """
         super().__init__(*args, **kwargs)
 
     # Logically, :class:`Coord` is an abstract class and all actual coords must
@@ -2779,19 +2782,20 @@ class CellMethod(iris.util._OrderedHashable):
                 "'method' must be a string - got a '%s'" % type(method)
             )
 
-        default_name = CFVariableMixin._DEFAULT_NAME
+        default_name = BaseMetadata.DEFAULT_NAME
         _coords = []
+
         if coords is None:
             pass
         elif isinstance(coords, Coord):
             _coords.append(coords.name(token=True))
         elif isinstance(coords, str):
-            _coords.append(CFVariableMixin.token(coords) or default_name)
+            _coords.append(BaseMetadata.token(coords) or default_name)
         else:
             normalise = (
                 lambda coord: coord.name(token=True)
                 if isinstance(coord, Coord)
-                else CFVariableMixin.token(coord) or default_name
+                else BaseMetadata.token(coord) or default_name
             )
             _coords.extend([normalise(coord) for coord in coords])
 
@@ -2840,7 +2844,17 @@ class CellMethod(iris.util._OrderedHashable):
 
     def xml_element(self, doc):
         """
-        Return a dom element describing itself
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`CellMethod`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`CellMethod`.
 
         """
         cellMethod_xml_element = doc.createElement("cellMethod")

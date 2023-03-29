@@ -7,13 +7,11 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris._lazy_data import as_lazy_data, is_lazy_data
-
-from iris._lazy_data import lazy_elementwise
+from iris._lazy_data import as_lazy_data, is_lazy_data, lazy_elementwise
 
 
 def _test_elementwise_op(array):
@@ -44,7 +42,7 @@ class Test_lazy_elementwise(tests.IrisTest):
         lazy_array = as_lazy_data(concrete_array)
         wrapped = lazy_elementwise(lazy_array, _test_elementwise_op)
         self.assertTrue(is_lazy_data(wrapped))
-        self.assertEqual(wrapped.dtype, np.int)
+        self.assertEqual(wrapped.dtype, np.int_)
         self.assertEqual(wrapped.compute().dtype, wrapped.dtype)
 
 

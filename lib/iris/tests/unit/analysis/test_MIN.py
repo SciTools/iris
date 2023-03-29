@@ -7,15 +7,15 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
 
-from iris.analysis import MIN
-from iris.cube import Cube
-from iris.coords import DimCoord
 from iris._lazy_data import as_lazy_data, is_lazy_data
+from iris.analysis import MIN
+from iris.coords import DimCoord
+from iris.cube import Cube
 
 
 class Test_basics(tests.IrisTest):

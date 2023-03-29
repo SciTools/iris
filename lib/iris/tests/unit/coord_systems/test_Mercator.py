@@ -7,9 +7,10 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
+
 from iris.coord_systems import GeogCS, Mercator
 
 
@@ -31,6 +32,34 @@ class Test_Mercator__basics(tests.IrisTest):
             "standard_parallel=0.0)"
         )
         self.assertEqual(expected, repr(self.tm))
+
+
+class Test_init_defaults(tests.IrisTest):
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = Mercator(
+            longitude_of_projection_origin=27, standard_parallel=157.4
+        )
+        self.assertEqualAndKind(crs.longitude_of_projection_origin, 27.0)
+        self.assertEqualAndKind(crs.standard_parallel, 157.4)
+
+    def _check_crs_defaults(self, crs):
+        # Check for property defaults when no kwargs options were set.
+        # NOTE: except ellipsoid, which is done elsewhere.
+        self.assertEqualAndKind(crs.longitude_of_projection_origin, 0.0)
+        self.assertEqualAndKind(crs.standard_parallel, 0.0)
+
+    def test_no_optional_args(self):
+        # Check expected defaults with no optional args.
+        crs = Mercator()
+        self._check_crs_defaults(crs)
+
+    def test_optional_args_None(self):
+        # Check expected defaults with optional args=None.
+        crs = Mercator(
+            longitude_of_projection_origin=None, standard_parallel=None
+        )
+        self._check_crs_defaults(crs)
 
 
 class Test_Mercator__as_cartopy_crs(tests.IrisTest):

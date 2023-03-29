@@ -7,20 +7,19 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris.tests.unit.coords import CoordTestMixin, lazyness_string
-
-from cf_units import Unit
+from iris._lazy_data import as_lazy_data
 from iris.coords import AncillaryVariable
 from iris.cube import Cube
-from iris._lazy_data import as_lazy_data
+from iris.tests.unit.coords import CoordTestMixin, lazyness_string
 
 
 def data_all_dtypes_and_lazynesses(self):
@@ -440,9 +439,7 @@ class Test__str__(tests.IrisTest):
             "long_name='height of detector', var_name='height', "
             "attributes={'notes': 'Measured from sea level'})"
         )
-        self.assertEqual(
-            expected, ancillary_var.__str__(),
-        )
+        self.assertEqual(expected, ancillary_var.__str__())
 
     def test_time_values(self):
         ancillary_var = AncillaryVariable(
@@ -456,9 +453,7 @@ class Test__str__(tests.IrisTest):
             "standard_name=None, calendar='gregorian', "
             "long_name='time of previous valid detection')"
         )
-        self.assertEqual(
-            expected, ancillary_var.__str__(),
-        )
+        self.assertEqual(expected, ancillary_var.__str__())
 
 
 class Test__repr__(tests.IrisTest):
@@ -477,9 +472,7 @@ class Test__repr__(tests.IrisTest):
             "long_name='height of detector', var_name='height', "
             "attributes={'notes': 'Measured from sea level'})"
         )
-        self.assertEqual(
-            expected, ancillary_var.__repr__(),
-        )
+        self.assertEqual(expected, ancillary_var.__repr__())
 
     def test_time_values(self):
         ancillary_var = AncillaryVariable(

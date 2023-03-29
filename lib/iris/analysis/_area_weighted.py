@@ -4,11 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import numpy as np
-
 from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
-import iris
-import iris.experimental.regrid as eregrid
 
 
 class AreaWeightedRegridder:
@@ -44,9 +40,13 @@ class AreaWeightedRegridder:
             Both source and target cubes must have an XY grid defined by
             separate X and Y dimensions with dimension coordinates.
             All of the XY dimension coordinates must also be bounded, and have
-            the same cooordinate system.
+            the same coordinate system.
 
         """
+        from iris.experimental.regrid import (
+            _regrid_area_weighted_rectilinear_src_and_grid__prepare,
+        )
+
         # Snapshot the state of the source cube to ensure that the regridder is
         # impervious to external changes to the original cubes.
         self._src_grid = snapshot_grid(src_grid_cube)
@@ -58,7 +58,7 @@ class AreaWeightedRegridder:
         self._mdtol = mdtol
 
         # Store regridding information
-        _regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
+        _regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_grid_cube, target_grid_cube
         )
         (
@@ -71,6 +71,7 @@ class AreaWeightedRegridder:
             self.meshgrid_x,
             self.meshgrid_y,
             self.weights_info,
+            self.index_info,
         ) = _regrid_info
 
     def __call__(self, cube):
@@ -80,6 +81,9 @@ class AreaWeightedRegridder:
 
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`AreaWeightedRegridder`.
+
+        If the source cube has lazy data, the returned cube will also
+        have lazy data.
 
         Args:
 
@@ -92,7 +96,17 @@ class AreaWeightedRegridder:
             this cube will be converted to values on the new grid using
             area-weighted regridding.
 
+        .. note::
+
+            If the source cube has lazy data,
+            `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+            in the horizontal dimensions will be combined before regridding.
+
         """
+        from iris.experimental.regrid import (
+            _regrid_area_weighted_rectilinear_src_and_grid__perform,
+        )
+
         src_x, src_y = get_xy_dim_coords(cube)
         if (src_x, src_y) != self._src_grid:
             raise ValueError(
@@ -111,7 +125,8 @@ class AreaWeightedRegridder:
             self.meshgrid_x,
             self.meshgrid_y,
             self.weights_info,
+            self.index_info,
         )
-        return eregrid._regrid_area_weighted_rectilinear_src_and_grid__perform(
+        return _regrid_area_weighted_rectilinear_src_and_grid__perform(
             cube, _regrid_info, mdtol=self._mdtol
         )

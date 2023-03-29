@@ -1,4 +1,0 @@
-* A :class:`iris.coords.CellMeasure` requires a string ``measure`` attribute to be defined, which can only have a value
-  of ``area`` or ``volume``. Previously, the ``measure`` was provided as a keyword argument to
-  :class:`~iris.coords.CellMeasure` with an default value of ``None``, which caused a ``TypeError`` when no
-  ``measure`` was provided. The default value of ``area`` is now used.

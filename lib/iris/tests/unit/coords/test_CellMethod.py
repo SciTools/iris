@@ -9,10 +9,10 @@ Unit tests for the :class:`iris.coords.CellMethod`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris._cube_coord_common import CFVariableMixin
-from iris.coords import CellMethod, AuxCoord
+from iris.common import BaseMetadata
+from iris.coords import AuxCoord, CellMethod
 
 
 class Test(tests.IrisTest):
@@ -21,7 +21,7 @@ class Test(tests.IrisTest):
 
     def _check(self, token, coord, default=False):
         result = CellMethod(self.method, coords=coord)
-        token = token if not default else CFVariableMixin._DEFAULT_NAME
+        token = token if not default else BaseMetadata.DEFAULT_NAME
         expected = "{}: {}".format(self.method, token)
         self.assertEqual(str(result), expected)
 
@@ -54,7 +54,7 @@ class Test(tests.IrisTest):
     def test_coord_stash(self):
         token = "stash"
         coord = AuxCoord(1, attributes=dict(STASH=token))
-        self._check(token, coord)
+        self._check(token, coord, default=True)
 
     def test_coord_stash_default(self):
         token = "_stash"  # includes leading underscore
@@ -84,7 +84,7 @@ class Test(tests.IrisTest):
         token = "air temperature"  # includes space
         coord = AuxCoord(1, long_name=token)
         result = CellMethod(self.method, coords=[coord, token])
-        expected = "{}: unknown, unknown".format(self.method, token, token)
+        expected = "{}: unknown, unknown".format(self.method)
         self.assertEqual(str(result), expected)
 
 

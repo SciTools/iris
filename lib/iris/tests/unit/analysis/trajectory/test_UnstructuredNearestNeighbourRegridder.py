@@ -11,15 +11,15 @@ Unit tests for
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
 from iris.analysis.trajectory import (
     UnstructuredNearestNeigbourRegridder as unn_gridder,
 )
-from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
 
 

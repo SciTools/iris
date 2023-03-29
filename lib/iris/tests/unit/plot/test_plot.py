@@ -7,20 +7,21 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.tests.unit.plot import TestGraphicStringCoord
-import iris.coords as coords
 import iris.coord_systems as ics
+import iris.coords as coords
+from iris.tests.unit.plot import TestGraphicStringCoord
 
 if tests.MPL_AVAILABLE:
-    import iris.plot as iplt
-    import matplotlib.pyplot as plt
-    from matplotlib.path import Path
-    import cartopy.mpl.geoaxes
     import cartopy.crs as ccrs
+    import cartopy.mpl.geoaxes
+    from matplotlib.path import Path
+    import matplotlib.pyplot as plt
+
+    import iris.plot as iplt
 
 
 @tests.skip_plot

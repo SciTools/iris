@@ -11,13 +11,13 @@ using :func:`iris.util.unify_time_units`.
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cf_units
 import numpy as np
 
-import iris.coords
 from iris._concatenate import concatenate
+import iris.coords
 import iris.cube
 import iris.tests.stock as stock
 from iris.util import unify_time_units

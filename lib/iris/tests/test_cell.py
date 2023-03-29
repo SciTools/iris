@@ -5,7 +5,7 @@
 # licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
@@ -130,7 +130,7 @@ class TestCells(tests.IrisTest):
         self.assertEqual(self.d.__ne__(Terry()), NotImplemented)
 
     def test_numpy_int_equality(self):
-        dtypes = (np.int, np.int16, np.int32, np.int64)
+        dtypes = (np.int_, np.int16, np.int32, np.int64)
         for dtype in dtypes:
             val = dtype(3)
             cell = iris.coords.Cell(val, None)
@@ -138,7 +138,7 @@ class TestCells(tests.IrisTest):
 
     def test_numpy_float_equality(self):
         dtypes = (
-            np.float,
+            np.float_,
             np.float16,
             np.float32,
             np.float64,

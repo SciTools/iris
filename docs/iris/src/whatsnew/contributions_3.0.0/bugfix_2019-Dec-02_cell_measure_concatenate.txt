@@ -1,2 +1,0 @@
-* Concatenating cubes along an axis shared by cell measures would cause concatenation to inappropriately fail.
-  These cell measures are now concatenated together in the resulting cube.

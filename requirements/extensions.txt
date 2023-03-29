@@ -1,9 +1,0 @@
-# Iris extensions (i.e. key tools that depend on Iris)
-# ----------------------------------------------------
-
-# Note: pip can handle the circularity of these extensions, but conda will
-# struggle. To install these extensions, ensure iris[core] has been installed
-# first.
-
-iris-grib  #conda:
-gdal
