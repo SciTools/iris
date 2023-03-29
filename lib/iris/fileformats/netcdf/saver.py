@@ -425,7 +425,7 @@ class Saver:
         #: Target filepath
         self.filepath = os.path.abspath(filename)
         #: A list of delayed writes for lazy saving
-        self.delayed_writes = (
+        self._delayed_writes = (
             []
         )  # a list of triples (source, target, fill-info)
         #: Whether to complete delayed saves on exit (and raise associated warnings).
@@ -2384,7 +2384,7 @@ class Saver:
                     self.filepath, cf_var, self.file_write_lock
                 )
                 # Add to the list of delayed writes, used in delayed_completion().
-                self.delayed_writes.append((data, write_wrapper, fill_info))
+                self._delayed_writes.append((data, write_wrapper, fill_info))
                 # In this case, fill-value checking is done later. But return 2 dummy
                 # values, to be consistent with the non-streamed "store" signature.
                 is_masked, contains_value = False, False
@@ -2427,9 +2427,9 @@ class Saver:
         The dataset *must* be closed (saver has exited its context) before the
         result can be computed, otherwise computation will hang (never return).
         """
-        if self.delayed_writes:
+        if self._delayed_writes:
             # Create a single delayed da.store operation to complete the file.
-            sources, targets, fill_infos = zip(*self.delayed_writes)
+            sources, targets, fill_infos = zip(*self._delayed_writes)
             store_op = da.store(sources, targets, compute=False, lock=False)
 
             # Construct a delayed fill-check operation for each (lazy) source array.
