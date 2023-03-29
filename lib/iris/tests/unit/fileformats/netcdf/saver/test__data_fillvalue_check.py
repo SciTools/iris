@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for `iris.fileformats.netcdf.saver._data_fillvalue_check`.
+Unit tests for :func:`iris.fileformats.netcdf.saver._data_fillvalue_check`.
 
 Repurposed from
 `iris.tests.unit.fileformats.netcdf.test__FillValueMaskCheckAndStoreTarget.py`,

@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.save` function."""
+"""Unit tests for the :func:`iris.fileformats.netcdf.save` function."""
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp

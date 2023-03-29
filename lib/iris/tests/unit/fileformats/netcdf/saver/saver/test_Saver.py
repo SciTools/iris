@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.Saver` class."""
+"""Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
