@@ -2355,6 +2355,12 @@ class Saver:
                 fill_value_to_check = _thread_safe_nc.default_fillvals[
                     dtype.str[1:]
                 ]
+            # Cast the check-value to the correct dtype.
+            # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
+            # does not have a compatible type.  This causes a deprecation warning at
+            # numpy 1.24, *and* was preventing correct fill-value checking of character
+            # data, since they are actually bytes (dtype 'S1').
+            fill_value_to_check = np.array(fill_value_to_check, dtype=dtype)
         else:
             # A None means we will NOT check for collisions.
             fill_value_to_check = None

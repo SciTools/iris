@@ -205,6 +205,10 @@ class Test_write(tests.IrisTest):
         api = self.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
+        # Mock the apparent dtype of mocked variables, to avoid an error.
+        ref = api.DatasetWrapper.return_value
+        ref = ref.createVariable.return_value
+        ref.dtype = np.dtype(np.float32)
         # NOTE: use compute=False as otherwise it gets in a pickle trying to construct
         # a fill-value report on a non-compliant variable in a non-file (!)
         with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
