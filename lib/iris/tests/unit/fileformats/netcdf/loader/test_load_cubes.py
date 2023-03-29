@@ -25,7 +25,8 @@ import numpy as np
 from iris.coords import AncillaryVariable, CellMeasure
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.mesh import MeshCoord
-from iris.fileformats.netcdf import load_cubes, logger
+from iris.fileformats.netcdf import logger
+from iris.fileformats.netcdf.loader import load_cubes
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
