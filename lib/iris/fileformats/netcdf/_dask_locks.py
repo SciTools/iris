@@ -10,13 +10,15 @@ This matter is complicated by needing different solutions for different dask sch
 types, i.e. local 'threads' scheduler, local 'processes' or distributed.
 
 In any case, a "iris.fileformats.netcdf.saver.Saver" object contains a netCDF4.Dataset
-targetting an output file, and creates a Saver.lock object to serialise write-accesses
-to the file from dask tasks :  All dask-task file writes go via a
+targetting an output file, and creates a Saver.file_write_lock object to serialise
+write-accesses to the file from dask tasks :  All dask-task file writes go via a
 "iris.fileformats.netcdf.saver.NetCDFWriteProxy" object, which also contains a link
-to the Saver.lock, and uses it to prevent workers from fouling each other.
+to the Saver.file_write_lock, and uses it to prevent workers from fouling each other.
+
 For each chunk written, the NetCDFWriteProxy acquires the common per-file lock;
 opens a Dataset on the file; performs a write to the relevant variable; closes the
-Dataset and then releases the lock.
+Dataset and then releases the lock.  This process is obviously very similar to what the
+NetCDFDataProxy does for reading lazy chunks.
 
 For a threaded scheduler, the Saver.lock is a simple threading.Lock().  The workers
 (threads) execute tasks which contain a NetCDFWriteProxy, as above.  All of those
@@ -30,7 +32,7 @@ A worker behaves like a process, though it may execute on a remote machine.  Whe
 distributed.Lock is deserialised to reconstruct the worker task, this creates an object
 that communicates with the scheduler.  These objects behave as a single common lock,
 as they all have the same string 'identity', so the scheduler implements inter-process
-communication so that the mutally exclude each other.
+communication so that they can mutally exclude each other.
 
 It is also *conceivable* that multiple processes could write to the same file in
 parallel, if the operating system supports it.  However, this also requires that the
