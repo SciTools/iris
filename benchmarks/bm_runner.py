@@ -144,11 +144,13 @@ class _SubParserGenerator(ABC):
 
     name: str = NotImplemented
     description: str = NotImplemented
+    epilog: str = NotImplemented
 
     def __init__(self, subparsers: ArgumentParser.add_subparsers) -> None:
         self.subparser: ArgumentParser = subparsers.add_parser(
             self.name,
             description=self.description,
+            epilog=self.epilog,
             formatter_class=argparse.RawTextHelpFormatter,
         )
         self.add_arguments()
@@ -187,6 +189,10 @@ class Overnight(_SubParserGenerator):
         "Designed for checking the previous 24 hours' commits, typically in a "
         "scheduled script."
     )
+    epilog = (
+        "e.g. python bm_runner.py overnight a1b23d4\n"
+        "e.g. python bm_runner.py overnight a1b23d4 --bench=regridding"
+    )
 
     def add_arguments(self) -> None:
         self.subparser.add_argument(
@@ -223,6 +229,10 @@ class Branch(_SubParserGenerator):
         "**For maximum accuracy, avoid using the machine that is running this "
         "session. Run time could be >1 hour for the full benchmark suite.**"
     )
+    epilog = (
+        "e.g. python bm_runner.py branch upstream/main\n"
+        "e.g. python bm_runner.py branch upstream/main --bench=regridding"
+    )
 
     def add_arguments(self) -> None:
         self.subparser.add_argument(
@@ -258,6 +268,10 @@ class _CSPerf(_SubParserGenerator, ABC):
         "Office NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, "
         "and publish the results to the input **publish_dir**, within a "
         "unique subdirectory for this run."
+    )
+    epilog = (
+        "e.g. python bm_runner.py {0} my_publish_dir\n"
+        "e.g. python bm_runner.py {0} my_publish_dir --bench=regridding"
     )
 
     def add_arguments(self) -> None:
@@ -315,6 +329,7 @@ class _CSPerf(_SubParserGenerator, ABC):
 class CPerf(_CSPerf):
     name = "cperf"
     description = _CSPerf.description.format("CPerf")
+    epilog = _CSPerf.epilog.format("cperf")
 
     @staticmethod
     def func(args: argparse.Namespace) -> None:
@@ -324,6 +339,7 @@ class CPerf(_CSPerf):
 class SPerf(_CSPerf):
     name = "sperf"
     description = _CSPerf.description.format("SPerf")
+    epilog = _CSPerf.epilog.format("sperf")
 
     @staticmethod
     def func(args: argparse.Namespace) -> None:
@@ -338,6 +354,7 @@ class Custom(_SubParserGenerator):
         "ASV manually, with the convenience of re-using the runner's "
         "scripted setup steps."
     )
+    epilog = "e.g. python bm_runner.py custom continuous a1b23d4 HEAD --quick"
 
     def add_arguments(self) -> None:
         self.subparser.add_argument(
