@@ -357,7 +357,7 @@ def main():
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
         epilog="More help is available within each sub-command.",
     )
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(required=True)
 
     for gen in (Overnight, Branch, CPerf, SPerf, Custom):
         _ = gen(subparsers).subparser
