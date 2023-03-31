@@ -26,7 +26,8 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
-#. Welcome and congratulations to `@HGWright`_ and `@scottrobinson02`_ who made their first contributions to Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_, `@scottrobinson02`_ and
+   `@agriyakhetarpal`_ who made their first contributions to Iris! 🎉
 
 
 ✨ Features
@@ -45,7 +46,7 @@ This document explains the changes made to Iris for this release
    :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
    if necessary. (:pull:`5084`)
 
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist`
    and :func:`iris.quickplot.hist`. (:pull:`5189`)
 
 
@@ -140,6 +141,12 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ removed the Iris TestRunner. Tests are now run via nox or
    pytest. (:pull:`5205`)
 
+#. `@agriyakhetarpal`_ prevented the GitHub action for publishing releases to
+   PyPI from running in forks. (:pull:`5220`)
+
+#. `@trexfeathers`_ moved the benchmark runner conveniences from ``noxfile.py``
+   to a dedicated ``benchmarks/bm_runner.py``. (:pull:`5215`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -148,6 +155,7 @@ This document explains the changes made to Iris for this release
 .. _@fnattino: https://github.com/fnattino
 .. _@ed-hawkins: https://github.com/ed-hawkins
 .. _@scottrobinson02: https://github.com/scottrobinson02
+.. _@agriyakhetarpal: https://github.com/agriyakhetarpal
 
 .. comment
     Whatsnew resources in alphabetical order:
