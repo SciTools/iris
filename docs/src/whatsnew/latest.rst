@@ -49,6 +49,10 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist`
    and :func:`iris.quickplot.hist`. (:pull:`5189`)
 
+#. `@tinyendian`_ edited :func:`~iris.analysis.cartography.rotate_winds` to
+   enable lazy computation of rotated wind vector components (:issue:`4934`,
+   :pull:`4972`)
+
 
 🐛 Bugs Fixed
 =============
@@ -156,6 +160,8 @@ This document explains the changes made to Iris for this release
 .. _@ed-hawkins: https://github.com/ed-hawkins
 .. _@scottrobinson02: https://github.com/scottrobinson02
 .. _@agriyakhetarpal: https://github.com/agriyakhetarpal
+.. _@tinyendian: https://github.com/tinyendian
+
 
 .. comment
     Whatsnew resources in alphabetical order:
