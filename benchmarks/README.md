@@ -15,9 +15,20 @@ shifts in performance being flagged in a new GitHub issue.
 installed, as well as Nox (see
 [Benchmark environments](#benchmark-environments)).
 
-[Iris' noxfile](../noxfile.py) includes a `benchmarks` session that provides
-conveniences for setting up before benchmarking, and can also replicate the
-automated overnight run locally. See the session docstring for detail.
+The benchmark runner ([bm_runner.py](./bm_runner.py)) provides conveniences for
+common benchmark setup and run tasks, including replicating the automated 
+overnight run locally. See `python bm_runner.py --help` for detail.
+
+A significant portion of benchmark run time is environment management. Run-time
+can be reduced by placing the benchmark environment on the same file system as
+your
+[Conda package cache](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html#specify-pkg-directories),
+if it is not already. You can achieve this by either:
+
+- Temporarily reconfiguring `delegated_env_commands` and `delegated_env_parent` 
+  in [asv.conf.json](asv.conf.json) to reference a location on the same file
+  system as the Conda package cache.
+- Moving your Iris repo to the same file system as the Conda package cache.
 
 ### Environment variables
 
@@ -26,8 +37,8 @@ automated overnight run locally. See the session docstring for detail.
 benchmark scripts.
 * `DATA_GEN_PYTHON` - required - path to a Python executable that can be
 used to generate benchmark test objects/files; see
-[Data generation](#data-generation). The Nox session sets this automatically,
-but will defer to any value already set in the shell.
+[Data generation](#data-generation). The benchmark runner sets this 
+automatically, but will defer to any value already set in the shell.
 * `BENCHMARK_DATA` - optional - path to a directory for benchmark synthetic
 test data, which the benchmark scripts will create if it doesn't already
 exist. Defaults to `<root>/benchmarks/.data/` if not set. Note that some of
@@ -36,7 +47,7 @@ plan accordingly.
 * `ON_DEMAND_BENCHMARKS` - optional - when set (to any value): benchmarks
 decorated with `@on_demand_benchmark` are included in the ASV run. Usually
 coupled with the ASV `--bench` argument to only run the benchmark(s) of
-interest. Is set during the Nox `cperf` and `sperf` sessions.
+interest. Is set during the benchmark runner `cperf` and `sperf` sub-commands.
 
 ## Writing benchmarks
 

@@ -46,7 +46,7 @@ This document explains the changes made to Iris for this release
    :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
    if necessary. (:pull:`5084`)
 
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist`
    and :func:`iris.quickplot.hist`. (:pull:`5189`)
 
 
@@ -143,6 +143,9 @@ This document explains the changes made to Iris for this release
 
 #. `@agriyakhetarpal`_ prevented the GitHub action for publishing releases to
    PyPI from running in forks. (:pull:`5220`)
+
+#. `@trexfeathers`_ moved the benchmark runner conveniences from ``noxfile.py``
+   to a dedicated ``benchmarks/bm_runner.py``. (:pull:`5215`)
 
 
 .. comment
