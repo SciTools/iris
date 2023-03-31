@@ -12,9 +12,9 @@ from typing import Optional
 
 import dask
 from dask import array as da
-import netCDF4
 import numpy as np
 
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests import env_bin_path
 
 NCGEN_PATHSTR = str(env_bin_path("ncgen"))
@@ -51,7 +51,7 @@ def ncgen_from_cdl(
             f_out.write(cdl_str)
     if cdl_path:
         # Create netcdf from stored CDL file.
-        call_args = [NCGEN_PATHSTR, cdl_path, "-k3", "-o", nc_path]
+        call_args = [NCGEN_PATHSTR, "-k3", "-o", nc_path, cdl_path]
         call_kwargs = {}
     else:
         # No CDL file : pipe 'cdl_str' directly into the ncgen program.
@@ -100,7 +100,7 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
 
     """
 
-    ds = netCDF4.Dataset(nc_path, "r+")
+    ds = _thread_safe_nc.DatasetWrapper(nc_path, "r+")
 
     unlimited_dim_names = [
         dim for dim in ds.dimensions if ds.dimensions[dim].isunlimited()

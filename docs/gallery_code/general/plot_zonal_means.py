@@ -16,7 +16,6 @@ import iris.quickplot as qplt
 
 
 def main():
-
     # Loads air_temp.pp and "collapses" longitude into a single, average value.
     fname = iris.sample_data_path("air_temp.pp")
     temperature = iris.load_cube(fname)

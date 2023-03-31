@@ -18,7 +18,7 @@ Set up and Configure a Github Account
 If you don't have a github account, go to the github page, and make one.
 
 You then need to configure your account to allow write access, see
-the `generating sss keys for GitHub`_ help on `github help`_.
+the `generating ssh keys for GitHub`_ help on `github help`_.
 
 
 Create Your own Forked Copy of Iris

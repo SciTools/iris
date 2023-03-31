@@ -15,6 +15,7 @@ import os.path
 import re
 
 import cf_units
+from matplotlib import colormaps as mpl_colormaps
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
 import numpy as np
@@ -119,6 +120,11 @@ def cmap_norm(cube):
     Returns:
         Tuple of :class:`matplotlib.colors.LinearSegmentedColormap` and
         :class:`iris.palette.SymmetricNormalize`
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     args, kwargs = _default_cmap_norm((cube,), {})
@@ -337,7 +343,7 @@ def _load_palette():
             )
 
         # Register the color map for use.
-        mpl_cm.register_cmap(cmap=cmap)
+        mpl_colormaps.register(cmap)
 
 
 # Ensure to load the color map palettes.

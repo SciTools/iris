@@ -28,6 +28,7 @@ from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris._merge
 import iris.analysis
+from iris.analysis import _Weights
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
@@ -184,6 +185,12 @@ class CubeList(list):
                 "as it is not a Cube."
             )
             raise ValueError(msg)
+
+    def _repr_html_(self):
+        from iris.experimental.representation import CubeListRepresentation
+
+        representer = CubeListRepresentation(self)
+        return representer.repr_html()
 
     # TODO #370 Which operators need overloads?
 
@@ -878,7 +885,8 @@ class Cube(CFVariableMixin):
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
-            ``data`` can be a dask array, a NumPy array, a NumPy array
+            ``data`` can be a :class:`dask.array.Array`, a
+            :class:`numpy.ndarray`, a NumPy array
             subclass (such as :class:`numpy.ma.MaskedArray`), or
             array_like (as described in :func:`numpy.asarray`).
 
@@ -1152,7 +1160,9 @@ class Cube(CFVariableMixin):
 
         """
         if self.coords(coord):  # TODO: just fail on duplicate object
-            raise ValueError("Duplicate coordinates are not permitted.")
+            raise iris.exceptions.CannotAddError(
+                "Duplicate coordinates are not permitted."
+            )
         self._add_unique_aux_coord(coord, data_dims)
 
     def _check_multi_dim_metadata(self, metadata, data_dims):
@@ -1172,7 +1182,7 @@ class Cube(CFVariableMixin):
                         len(data_dims), metadata.ndim, metadata.name()
                     )
                 )
-                raise ValueError(msg)
+                raise iris.exceptions.CannotAddError(msg)
             # Check compatibility with the shape of the data
             for i, dim in enumerate(data_dims):
                 if metadata.shape[i] != self.shape[dim]:
@@ -1180,7 +1190,7 @@ class Cube(CFVariableMixin):
                         "Unequal lengths. Cube dimension {} => {};"
                         " metadata {!r} dimension {} => {}."
                     )
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             dim,
                             self.shape[dim],
@@ -1192,7 +1202,7 @@ class Cube(CFVariableMixin):
         elif metadata.shape != (1,):
             msg = "Missing data dimensions for multi-valued {} {!r}"
             msg = msg.format(metadata.__class__.__name__, metadata.name())
-            raise ValueError(msg)
+            raise iris.exceptions.CannotAddError(msg)
         return data_dims
 
     def _add_unique_aux_coord(self, coord, data_dims):
@@ -1206,7 +1216,7 @@ class Cube(CFVariableMixin):
                     "cube {item} of {ownval!r}."
                 )
                 if coord.mesh != mesh:
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             item="mesh",
                             coord=coord,
@@ -1216,7 +1226,7 @@ class Cube(CFVariableMixin):
                     )
                 location = self.location
                 if coord.location != location:
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             item="location",
                             coord=coord,
@@ -1226,7 +1236,7 @@ class Cube(CFVariableMixin):
                     )
                 mesh_dims = (self.mesh_dim(),)
                 if data_dims != mesh_dims:
-                    raise ValueError(
+                    raise iris.exceptions.CannotAddError(
                         msg.format(
                             item="mesh dimension",
                             coord=coord,
@@ -1266,7 +1276,9 @@ class Cube(CFVariableMixin):
             ref_coord = aux_factory.dependencies[dependency]
             if ref_coord is not None and ref_coord not in cube_coords:
                 msg = "{} coordinate for factory is not present on cube {}"
-                raise ValueError(msg.format(ref_coord.name(), self.name()))
+                raise iris.exceptions.CannotAddError(
+                    msg.format(ref_coord.name(), self.name())
+                )
         self._aux_factories.append(aux_factory)
 
     def add_cell_measure(self, cell_measure, data_dims=None):
@@ -1293,7 +1305,9 @@ class Cube(CFVariableMixin):
 
         """
         if self.cell_measures(cell_measure):
-            raise ValueError("Duplicate cell_measures are not permitted.")
+            raise iris.exceptions.CannotAddError(
+                "Duplicate cell_measures are not permitted."
+            )
         data_dims = self._check_multi_dim_metadata(cell_measure, data_dims)
         self._cell_measures_and_dims.append((cell_measure, data_dims))
         self._cell_measures_and_dims.sort(
@@ -1321,7 +1335,9 @@ class Cube(CFVariableMixin):
         """
 
         if self.ancillary_variables(ancillary_variable):
-            raise ValueError("Duplicate ancillary variables not permitted")
+            raise iris.exceptions.CannotAddError(
+                "Duplicate ancillary variables not permitted"
+            )
 
         data_dims = self._check_multi_dim_metadata(
             ancillary_variable, data_dims
@@ -1352,13 +1368,13 @@ class Cube(CFVariableMixin):
 
         """
         if self.coords(dim_coord):
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 "The coordinate already exists on the cube. "
                 "Duplicate coordinates are not permitted."
             )
         # Check dimension is available
         if self.coords(dimensions=data_dim, dim_coords=True):
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 "A dim_coord is already associated with "
                 "dimension %d." % data_dim
             )
@@ -1366,12 +1382,14 @@ class Cube(CFVariableMixin):
 
     def _add_unique_dim_coord(self, dim_coord, data_dim):
         if isinstance(dim_coord, iris.coords.AuxCoord):
-            raise ValueError("The dim_coord may not be an AuxCoord instance.")
+            raise iris.exceptions.CannotAddError(
+                "The dim_coord may not be an AuxCoord instance."
+            )
 
         # Convert data_dim to a single integer
         if isinstance(data_dim, Container):
             if len(data_dim) != 1:
-                raise ValueError(
+                raise iris.exceptions.CannotAddError(
                     "The supplied data dimension must be a" " single number."
                 )
             data_dim = int(list(data_dim)[0])
@@ -1380,7 +1398,7 @@ class Cube(CFVariableMixin):
 
         # Check data_dim value is valid
         if data_dim < 0 or data_dim >= self.ndim:
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 "The cube does not have the specified dimension "
                 "(%d)" % data_dim
             )
@@ -1388,7 +1406,7 @@ class Cube(CFVariableMixin):
         # Check compatibility with the shape of the data
         if dim_coord.shape[0] != self.shape[data_dim]:
             msg = "Unequal lengths. Cube dimension {} => {}; coord {!r} => {}."
-            raise ValueError(
+            raise iris.exceptions.CannotAddError(
                 msg.format(
                     data_dim,
                     self.shape[data_dim],
@@ -1984,6 +2002,12 @@ class Cube(CFVariableMixin):
             if name_or_coord is not None:
                 if not isinstance(name_or_coord, str):
                     _name = name_or_coord.name()
+                    emsg = (
+                        "Expected to find exactly 1 coordinate matching the given "
+                        f"{_name!r} coordinate's metadata, but found none."
+                    )
+                    raise iris.exceptions.CoordinateNotFoundError(emsg)
+
             bad_name = _name or standard_name or long_name or ""
             emsg = (
                 f"Expected to find exactly 1 {bad_name!r} coordinate, "
@@ -2188,9 +2212,15 @@ class Cube(CFVariableMixin):
                 bad_name = (
                     name_or_cell_measure and name_or_cell_measure.name()
                 ) or ""
+                if name_or_cell_measure is not None:
+                    emsg = (
+                        "Expected to find exactly 1 cell measure matching the given "
+                        f"{bad_name!r} cell measure's metadata, but found none."
+                    )
+                    raise iris.exceptions.CellMeasureNotFoundError(emsg)
             msg = (
-                "Expected to find exactly 1 %s cell_measure, but found "
-                "none." % bad_name
+                f"Expected to find exactly 1 {bad_name!r} cell measure, "
+                "but found none."
             )
             raise iris.exceptions.CellMeasureNotFoundError(msg)
 
@@ -2275,9 +2305,16 @@ class Cube(CFVariableMixin):
                     name_or_ancillary_variable
                     and name_or_ancillary_variable.name()
                 ) or ""
+                if name_or_ancillary_variable is not None:
+                    emsg = (
+                        "Expected to find exactly 1 ancillary_variable matching the "
+                        f"given {bad_name!r} ancillary_variable's metadata, but found "
+                        "none."
+                    )
+                    raise iris.exceptions.AncillaryVariableNotFoundError(emsg)
             msg = (
-                "Expected to find exactly 1 {!s} ancillary_variable, but "
-                "found none.".format(bad_name)
+                f"Expected to find exactly 1 {bad_name!r} ancillary_variable, "
+                "but found none."
             )
             raise iris.exceptions.AncillaryVariableNotFoundError(msg)
 
@@ -2293,10 +2330,23 @@ class Cube(CFVariableMixin):
         return self._metadata_manager.cell_methods
 
     @cell_methods.setter
-    def cell_methods(self, cell_methods):
-        self._metadata_manager.cell_methods = (
-            tuple(cell_methods) if cell_methods else tuple()
-        )
+    def cell_methods(self, cell_methods: Iterable):
+        if not cell_methods:
+            # For backwards compatibility: Empty or null value is equivalent to ().
+            cell_methods = ()
+        else:
+            # Can supply any iterable, which is converted (copied) to a tuple.
+            cell_methods = tuple(cell_methods)
+            for cell_method in cell_methods:
+                # All contents should be CellMethods.  Requiring class membership is
+                # somewhat non-Pythonic, but simple, and not a problem for now.
+                if not isinstance(cell_method, iris.coords.CellMethod):
+                    msg = (
+                        f"Cube.cell_methods assigned value includes {cell_method}, "
+                        "which is not an iris.coords.CellMethod."
+                    )
+                    raise ValueError(msg)
+        self._metadata_manager.cell_methods = cell_methods
 
     def core_data(self):
         """
@@ -2639,7 +2689,6 @@ class Cube(CFVariableMixin):
             coord_to_extract in self.aux_coords
             and len(coord_to_extract.points) == 1
         ):
-
             # Default to returning None
             result = None
 
@@ -3673,9 +3722,15 @@ class Cube(CFVariableMixin):
         sum :data:`~iris.analysis.SUM`.
 
         Weighted aggregations support an optional *weights* keyword argument.
-        If set, this should be supplied as an array of weights whose shape
-        matches the cube. Values for latitude-longitude area weights may be
-        calculated using :func:`iris.analysis.cartography.area_weights`.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d (for collapsing over a 1d coordinate) or match the
+        shape of the cube. When weights are not given as arrays, units are
+        correctly handled for weighted sums, i.e., the original unit of the
+        cube is multiplied by the units of the weights. Values for
+        latitude-longitude area weights may be calculated using
+        :func:`iris.analysis.cartography.area_weights`.
 
         Some Iris aggregators support "lazy" evaluation, meaning that
         cubes resulting from this method may represent data arrays which are
@@ -3754,6 +3809,10 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
 
@@ -3922,10 +3981,14 @@ class Cube(CFVariableMixin):
         also be supplied. These include :data:`~iris.analysis.MEAN` and
         :data:`~iris.analysis.SUM`.
 
-        Weighted aggregations support an optional *weights* keyword argument. If
-        set, this should be supplied as an array of weights whose shape matches
-        the cube or as 1D array whose length matches the dimension over which is
-        aggregated.
+        Weighted aggregations support an optional *weights* keyword argument.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d or match the shape of the cube. When weights are
+        not given as arrays, units are correctly handled for weighted sums,
+        i.e., the original unit of the cube is multiplied by the units of the
+        weights.
 
         Parameters
         ----------
@@ -3984,6 +4047,10 @@ x            -              -
                     STASH                       m01s00i024
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         groupby_coords = []
         dimension_to_groupby = None
 
@@ -4022,10 +4089,16 @@ x            -              -
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
-                weights = iris.util.broadcast_to_shape(
-                    weights,
-                    self.shape,
-                    (dimension_to_groupby,),
+
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                weights = _Weights(
+                    iris.util.broadcast_to_shape(
+                        weights,
+                        self.shape,
+                        (dimension_to_groupby,),
+                    ),
+                    self,
+                    units=weights.units,
                 )
             if weights.shape != self.shape:
                 raise ValueError(
@@ -4038,8 +4111,9 @@ x            -              -
         # coordinate dimension.
         shared_coords = list(
             filter(
-                lambda coord_: coord_ not in groupby_coords,
-                self.coords(contains_dimension=dimension_to_groupby),
+                lambda coord_: coord_ not in groupby_coords
+                and dimension_to_groupby in self.coord_dims(coord_),
+                self.dim_coords + self.aux_coords,
             )
         )
 
@@ -4070,6 +4144,11 @@ x            -              -
         aggregateby_cube = aggregateby_cube[key]
         for coord in groupby_coords + shared_coords:
             aggregateby_cube.remove_coord(coord)
+
+        coord_mapping = {}
+        for coord in aggregateby_cube.coords():
+            orig_id = id(self.coord(coord))
+            coord_mapping[orig_id] = coord
 
         # Determine the group-by cube data shape.
         data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
@@ -4199,6 +4278,11 @@ x            -              -
                 aggregateby_cube.add_aux_coord(
                     new_coord, self.coord_dims(lookup_coord)
                 )
+            coord_mapping[id(self.coord(lookup_coord))] = new_coord
+
+        aggregateby_cube._aux_factories = []
+        for factory in self.aux_factories:
+            aggregateby_cube.add_aux_factory(factory.updated(coord_mapping))
 
         # Attach the aggregate-by data into the aggregate-by cube.
         if aggregateby_weights is None:
@@ -4230,8 +4314,11 @@ x            -              -
 
         * kwargs:
             Aggregator and aggregation function keyword arguments. The weights
-            argument to the aggregator, if any, should be a 1d array with the
-            same length as the chosen window.
+            argument to the aggregator, if any, should be a 1d array, cube, or
+            (names of) :meth:`~iris.cube.Cube.coords`,
+            :meth:`~iris.cube.Cube.cell_measures`, or
+            :meth:`~iris.cube.Cube.ancillary_variables` with the same length as
+            the chosen window.
 
         Returns:
             :class:`iris.cube.Cube`.
@@ -4299,6 +4386,10 @@ x            -               -
             possible windows of size 3 from the original cube.
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         coord = self._as_list_of_coords(coord)[0]
 
         if getattr(coord, "circular", False):
@@ -4400,8 +4491,14 @@ x            -               -
                         "as the window."
                     )
                 kwargs = dict(kwargs)
-                kwargs["weights"] = iris.util.broadcast_to_shape(
-                    weights, rolling_window_data.shape, (dimension + 1,)
+
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                kwargs["weights"] = _Weights(
+                    iris.util.broadcast_to_shape(
+                        weights, rolling_window_data.shape, (dimension + 1,)
+                    ),
+                    self,
+                    units=weights.units,
                 )
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs

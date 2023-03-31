@@ -48,18 +48,18 @@ GitHub Actions Test Environment
 -------------------------------
 
 The CI test environments for our GHA is determined from the requirement files
-in ``requirements/ci/pyXX.yml``.  These are conda environment files list the top-level
+in ``requirements/pyXX.yml``.  These are conda environment files list the top-level
 package dependencies for running and testing Iris.
 
 For reproducible test results, these environments are resolved for all their dependencies
-and stored as conda lock files in the ``requirements/ci/nox.lock`` directory.  The test environments
+and stored as conda lock files in the ``requirements/locks`` directory.  The test environments
 will not resolve the dependencies each time, instead they will use the lock files to reproduce the
 exact same environment each time.
 
 **If you have updated the requirement YAML files with new dependencies, you will need to
 generate new lock files.** To do this, run the command::
 
-   python tools/update_lockfiles.py -o requirements/ci/nox.lock requirements/ci/py*.yml
+   python tools/update_lockfiles.py -o requirements/locks requirements/py*.yml
 
 or simply::
 
@@ -76,7 +76,7 @@ and add the changed lockfiles to your pull request.
 
 New lockfiles are generated automatically each week to ensure that Iris continues to be
 tested against the latest available version of its dependencies.
-Each week the yaml files in ``requirements/ci`` are resolved by a GitHub Action.
+Each week the yaml files in ``requirements`` are resolved by a GitHub Action.
 If the resolved environment has changed, a pull request is created with the new lock files.
 The CI test suite will run on this pull request. If the tests fail, a developer
 will need to create a new branch based off the ``auto-update-lockfiles`` branch 

@@ -122,7 +122,7 @@ def _dotv(version):
 
 # Automate the discovery of the python versions tested with CI.
 python_support = sorted(
-    [fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")]
+    [fname.stem for fname in Path(".").glob("../../requirements/py*.yml")]
 )
 
 if not python_support:
@@ -158,8 +158,6 @@ extensions = [
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
     "sphinx_panels",
-    # TODO: Spelling extension disabled until the dependencies can be included
-    # "sphinxcontrib.spelling",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
@@ -193,16 +191,6 @@ napoleon_use_rtype = True
 napoleon_use_keyword = True
 napoleon_custom_sections = None
 
-# -- spellingextension --------------------------------------------------------
-# See https://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
-spelling_lang = "en_GB"
-# The lines in this file must only use line feeds (no carriage returns).
-spelling_word_list_filename = ["spelling_allow.txt"]
-spelling_show_suggestions = False
-spelling_show_whole_line = False
-spelling_ignore_importable_modules = True
-spelling_ignore_python_builtins = True
-
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
 copybutton_prompt_text = r">>> |\.\.\. "
@@ -235,6 +223,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
+    "dask": ("https://docs.dask.org/en/stable/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -283,7 +272,8 @@ html_sidebars = {
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html
 html_theme_options = {
-    "footer_items": ["copyright", "sphinx-version", "custom_footer"],
+    "footer_start": ["copyright", "sphinx-version"],
+    "footer_end": ["custom_footer"],
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,
@@ -310,6 +300,9 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
+    # Omitted `theme-switcher` below to disable it
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    "navbar_end": ["navbar-icon-links"],
 }
 
 rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
@@ -321,6 +314,9 @@ html_context = {
     "github_user": "scitools",
     "github_version": "main",
     "doc_path": "docs/src",
+    # default theme.  Also disabled the button in the html_theme_options.
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    "default_mode": "light",
     # custom
     "on_rtd": on_rtd,
     "rtd_version": rtd_version,

@@ -712,9 +712,8 @@ class CheckForWarningsMetaclass(type):
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestPcolorNoBounds(
-    tests.GraphicsTest_nometa, SliceMixin, metaclass=CheckForWarningsMetaclass
+    tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
@@ -729,9 +728,8 @@ class TestPcolorNoBounds(
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestPcolormeshNoBounds(
-    tests.GraphicsTest_nometa, SliceMixin, metaclass=CheckForWarningsMetaclass
+    tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates
@@ -1001,6 +999,15 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
             units="1",
         )
         self.draw("contourf", cube, coords=["grid_latitude", x])
+
+
+@tests.skip_data
+@tests.skip_plot
+class TestPlotHist(tests.GraphicsTest):
+    def test_cube(self):
+        cube = simple_cube()[0]
+        iplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
+        self.check_graphic()
 
 
 @tests.skip_data

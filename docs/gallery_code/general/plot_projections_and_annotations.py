@@ -26,7 +26,6 @@ crs_latlon = ccrs.PlateCarree()
 
 
 def make_plot(projection_name, projection_crs):
-
     # Create a matplotlib Figure.
     plt.figure()
 

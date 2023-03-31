@@ -625,7 +625,7 @@ class PPDataProxy:
     def __setstate__(self, state):
         # Because we have __slots__, this is needed to support Pickle.load()
         # (Use setattr, as there is no object dictionary.)
-        for (key, value) in state:
+        for key, value in state:
             setattr(self, key, value)
 
     def __eq__(self, other):
@@ -767,6 +767,18 @@ def _data_bytes_to_shaped_array(
 
     else:
         # Reform in row-column order
+        actual_length = np.prod(data.shape)
+        if (expected_length := np.prod(data_shape)) != actual_length:
+            if (expected_length < actual_length) and (data.ndim == 1):
+                # known use case where mule adds padding to data payload
+                # for a collapsed field.
+                data = data[:expected_length]
+            else:
+                emsg = (
+                    f"PP field data containing {actual_length} words does not "
+                    f"match expected length of {expected_length} words."
+                )
+                raise ValueError(emsg)
         data.shape = data_shape
 
     # Mask the array
@@ -2017,10 +2029,8 @@ def _convert_constraints(constraints):
         res = True
         if field.stash not in _STASH_ALLOW:
             if pp_constraints.get("stash"):
-
                 res = False
                 for call_func in pp_constraints["stash"]:
-
                     if call_func(str(field.stash)):
                         res = True
                         break

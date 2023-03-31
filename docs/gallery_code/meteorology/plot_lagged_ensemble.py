@@ -86,7 +86,6 @@ def main():
 
     # Iterate over all possible latitude longitude slices.
     for cube in last_timestep.slices(["latitude", "longitude"]):
-
         # Get the ensemble member number from the ensemble coordinate.
         ens_member = cube.coord("realization").points[0]
 
