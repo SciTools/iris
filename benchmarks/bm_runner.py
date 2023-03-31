@@ -364,7 +364,6 @@ def main():
 
     parsed = parser.parse_args()
     parsed.func(parsed)
-    pass
 
 
 if __name__ == "__main__":
