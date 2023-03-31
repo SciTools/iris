@@ -272,42 +272,6 @@ class CellMethodSection(Section):
             content = "{}: {}".format(index, value)
             self.contents.append(content)
 
-#class CellMethodSection(Section):
- #   def __init__(self, title, cell_methods):
-  #      self.title = title
-   #     self.names = []
-    #    self.values = []
-     #   self.contents = []
-      #  for method in cell_methods:
-       #     index = str(cell_methods.index(method))
-        #    value = ""
-         ##   for coord_name in method.coord_name:
-           #     value = value + coord_name + ": "
-            #value = value + method.method
-            #print(value)
-#            if len(method.intervals) > 0:
- #               value = value + " ("
-  #              for interval in method.intervals:
-   #                 value = value + "interval: " + interval + " "
-    #            if len(method.comments) > 0:
-     #               for comment in method.comments:
-      #                  value = value + "comment: " + comment + " "
-       ##         value = value + ")"
-         #       value = value.replace(" )", ")")
-          #  elif len(method.comments) > 0:
-           #     value = value + " ("
-            #    for comment in method.comments:
-             #       value = value + comment + " "
-              #  value = value + ")"
-               # value = value.replace(" )", ")")
-            # Re#move "method: " from the front of the string, leaving the value.
-#            value = value
- #           self.names.append(index)
-  #          self.values.append(value)
-   #         content = "{}: {}".format(index, value)
-    #        #print(content)
-     #       self.contents.append(content)
-#
 
 class CubeSummary:
     """
