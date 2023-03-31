@@ -86,7 +86,7 @@ we can pass the coordinate name and the aggregation definition to the
             model_level_number          10, bound=(1, 19)
             sigma                       0.92292976, bound=(0.8458596, 1.0)
         Cell methods:
-            mean                        model_level_number
+            0                           model_level_number: mean
         Attributes:
             STASH                       m01s00i004
             source                      'Data from Met Office Unified Model'
@@ -145,7 +145,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
             grid_longitude              358.74948 degrees, bound=(357.48724, 360.01172) degrees
             surface_altitude            399.625 m, bound=(-14.0, 813.25) m
         Cell methods:
-            mean                        grid_longitude, grid_latitude
+            0                           grid_longitude: grid_latitude: mean
         Attributes:
             STASH                       m01s00i004
             source                      'Data from Met Office Unified Model'
@@ -193,7 +193,7 @@ the units of the resulting cube are multiplied by an area unit:
             grid_longitude              358.74948 degrees, bound=(357.48724, 360.01172) degrees
             surface_altitude            399.625 m, bound=(-14.0, 813.25) m
         Cell methods:
-            sum                         grid_longitude, grid_latitude
+            0                           grid_longitude: grid_latitude: sum
         Attributes:
             STASH                       m01s00i004
             source                      'Data from Met Office Unified Model'
@@ -276,7 +276,7 @@ Printing this cube now shows that two extra coordinates exist on the cube:
         Scalar coordinates:
             forecast_period             0 hours
         Cell methods:
-            mean                        month, year
+            0                           month: year: mean
         Attributes:
             Conventions                 'CF-1.5'
             STASH                       m01s00i024
@@ -418,8 +418,8 @@ The following example shows a weighted sum (notice the change of the units):
         Scalar coordinates:
             forecast_period             0 hours
         Cell methods:
-            mean                        month, year
-            sum                         clim_season
+            0                           month: year: mean
+            1                           clim_season: sum
         Attributes:
             Conventions                 'CF-1.5'
             STASH                       m01s00i024
