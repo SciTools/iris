@@ -151,6 +151,10 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ moved the benchmark runner conveniences from ``noxfile.py``
    to a dedicated ``benchmarks/bm_runner.py``. (:pull:`5215`)
 
+#. `@bjlittle`_ follow-up to :pull:`4972`, enforced ``dask>=2022.09.0`` minimum
+   pin for first use of `dask.array.ma.empty_like`_ and replaced `@tinyendian`_
+   workaround. (:pull:`5225`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -168,3 +172,4 @@ This document explains the changes made to Iris for this release
 
 .. _#ShowYourStripes: https://showyourstripes.info/s/globe/
 .. _README.md: https://github.com/SciTools/iris#-----
+.. _dask.array.ma.empty_like: https://docs.dask.org/en/stable/generated/dask.array.ma.empty_like.html
