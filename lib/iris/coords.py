@@ -3080,10 +3080,14 @@ class CellMethod(iris.util._OrderedHashable):
         # Group related coord names intervals and comments together
         coord_string = " ".join([f"{coord}:" for coord in self.coord_names])
         method_string = f"{str(self.method)}"
-        interval_string = " ".join([f"interval: {interval}" for interval in self.intervals])
+        interval_string = " ".join(
+            [f"interval: {interval}" for interval in self.intervals]
+        )
 
         if interval_string:
-            comment_string = "".join([f" comment: {comment}" for comment in self.comments])
+            comment_string = "".join(
+                [f" comment: {comment}" for comment in self.comments]
+            )
             cm_summary = f"{coord_string} {method_string}: ({interval_string}{comment_string})"
         elif len(self.comments) > 0:
             comment_string = " ".join([comment for comment in self.comments])

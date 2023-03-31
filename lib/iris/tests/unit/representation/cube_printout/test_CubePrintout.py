@@ -535,11 +535,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
         rep = cube_replines(cube)
         # Note: not alphabetical -- provided order is significant
         expected = [
-            'name / (1)                          (-- : 1)',
-            '    Cell methods:',
-            '        0                           area: stdev',
-            '        1                           y: time: mean: (interval: 10m'
-            ' interval: 3min comment: vertical comment: =duration)',
+            "name / (1)                          (-- : 1)",
+            "    Cell methods:",
+            "        0                           area: stdev",
+            "        1                           y: time: mean: (interval: 10m"
+            " interval: 3min comment: vertical comment: =duration)",
         ]
         self.assertEqual(expected, rep)
 
