@@ -22,11 +22,13 @@ overnight run locally. See `python bm_runner.py --help` for detail.
 A significant portion of benchmark run time is environment management. Run-time
 can be reduced by placing the benchmark environment on the same file system as
 your
-[Conda package cache](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html#specify-pkg-directories).
-The benchmark environment location is controlled via `delegated_env_commands`
-and `delegated_env_parent` in [asv.conf.json](asv.conf.json); either 
-temporarily reconfigure these, or move your whole repo to the desired file 
-system.
+[Conda package cache](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html#specify-pkg-directories),
+if it is not already. You can achieve this by either:
+
+- Temporarily reconfiguring `delegated_env_commands` and `delegated_env_parent` 
+  in [asv.conf.json](asv.conf.json) to reference a location on the same file
+  system as the Conda package cache.
+- Moving your Iris repo to the same file system as the Conda package cache.
 
 ### Environment variables
 
