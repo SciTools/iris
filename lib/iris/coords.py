@@ -13,7 +13,7 @@ from collections import namedtuple
 from collections.abc import Container, Iterator
 import copy
 from functools import lru_cache
-from itertools import chain, zip_longest
+from itertools import zip_longest
 import operator
 import warnings
 import zlib
