@@ -60,7 +60,7 @@ def _prep_data_gen_env() -> None:
     """
 
     root_dir = BENCHMARKS_DIR.parent
-    python_version = "3.10"
+    python_version = "3.11"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         print("Using existing data generation environment.")
