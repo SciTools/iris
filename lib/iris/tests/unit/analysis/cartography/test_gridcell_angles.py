@@ -94,7 +94,6 @@ class TestGridcellAngles(tests.IrisTest):
         atol_degrees=0.005,
         cellsize_degrees=1.0,
     ):
-
         cube = _2d_multicells_testcube(cellsize_degrees=cellsize_degrees)
 
         # Calculate gridcell angles at each point.

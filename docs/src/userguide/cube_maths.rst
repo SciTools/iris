@@ -5,8 +5,8 @@ Cube Maths
 ==========
 
 
-The section :doc:`navigating_a_cube` highlighted that 
-every cube has a data attribute; 
+The section :doc:`navigating_a_cube` highlighted that
+every cube has a data attribute;
 this attribute can then be manipulated directly::
 
    cube.data -= 273.15
@@ -37,7 +37,7 @@ Let's load some air temperature which runs from 1860 to 2100::
     filename = iris.sample_data_path('E1_north_america.nc')
     air_temp = iris.load_cube(filename, 'air_temperature')
 
-We can now get the first and last time slices using indexing 
+We can now get the first and last time slices using indexing
 (see :ref:`cube_indexing` for a reminder)::
 
     t_first = air_temp[0, :, :]
@@ -50,8 +50,8 @@ We can now get the first and last time slices using indexing
     t_first = air_temp[0, :, :]
     t_last = air_temp[-1, :, :]
 
-And finally we can subtract the two. 
-The result is a cube of the same size as the original two time slices, 
+And finally we can subtract the two.
+The result is a cube of the same size as the original two time slices,
 but with the data representing their difference:
 
     >>> print(t_last - t_first)
@@ -70,8 +70,8 @@ but with the data representing their difference:
 
 .. note::
 
-    Notice that the coordinates "time" and "forecast_period" have been removed 
-    from the resultant cube; 
+    Notice that the coordinates "time" and "forecast_period" have been removed
+    from the resultant cube;
     this is because these coordinates differed between the two input cubes.
 
 
@@ -174,15 +174,15 @@ broadcasting behaviour::
 Combining Multiple Phenomena to Form a New One
 ----------------------------------------------
 
-Combining cubes of potential-temperature and pressure we can calculate 
+Combining cubes of potential-temperature and pressure we can calculate
 the associated temperature using the equation:
 
 .. math::
-   
+
     T = \theta (\frac{p}{p_0}) ^ {(287.05 / 1005)}
 
-Where :math:`p` is pressure, :math:`\theta` is potential temperature, 
-:math:`p_0` is the potential temperature reference pressure 
+Where :math:`p` is pressure, :math:`\theta` is potential temperature,
+:math:`p_0` is the potential temperature reference pressure
 and :math:`T` is temperature.
 
 First, let's load pressure and potential temperature cubes::
@@ -191,7 +191,7 @@ First, let's load pressure and potential temperature cubes::
     phenomenon_names = ['air_potential_temperature', 'air_pressure']
     pot_temperature, pressure = iris.load_cubes(filename, phenomenon_names)
 
-In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which 
+In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which
 represents the standard reference pressure of 1000 hPa::
 
     import iris.coords
@@ -205,7 +205,7 @@ the :meth:`iris.coords.Coord.convert_units` method::
 
     p0.convert_units(pressure.units)
 
-Now we can combine all of this information to calculate the air temperature 
+Now we can combine all of this information to calculate the air temperature
 using the equation above::
 
     temperature = pot_temperature * ( (pressure / p0) ** (287.05 / 1005) )
@@ -219,12 +219,12 @@ The result could now be plotted using the guidance provided in the
 
 .. only:: html
 
-    A very similar example to this can be found in 
+    A very similar example to this can be found in
     :ref:`sphx_glr_generated_gallery_meteorology_plot_deriving_phenomena.py`.
 
 .. only:: latex
 
-    A very similar example to this can be found in the examples section, 
+    A very similar example to this can be found in the examples section,
     with the title "Deriving Exner Pressure and Air Temperature".
 
 .. _cube_maths_combining_units:
@@ -249,7 +249,7 @@ unit (if ``a`` had units ``'m2'`` then ``a ** 0.5`` would result in a cube
 with units ``'m'``).
 
 Iris inherits units from `cf_units <https://scitools.org.uk/cf-units/docs/latest/>`_
-which in turn inherits from `UDUNITS <https://www.unidata.ucar.edu/software/udunits/udunits-current/udunits2.html>`_.
+which in turn inherits from `UDUNITS <https://docs.unidata.ucar.edu/udunits/current/>`_.
 As well as the units UDUNITS provides, cf units also provides the units
 ``'no-unit'`` and ``'unknown'``. A unit of ``'no-unit'`` means that the
 associated data is not suitable for describing with a unit, cf units

@@ -1003,6 +1003,15 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
 
 @tests.skip_data
 @tests.skip_plot
+class TestPlotHist(tests.GraphicsTest):
+    def test_cube(self):
+        cube = simple_cube()[0]
+        iplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
+        self.check_graphic()
+
+
+@tests.skip_data
+@tests.skip_plot
 class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
     def setUp(self):
         super().setUp()

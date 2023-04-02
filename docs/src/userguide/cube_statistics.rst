@@ -14,7 +14,7 @@ Cube Statistics
 Collapsing Entire Data Dimensions
 ---------------------------------
 
-.. testsetup::
+.. testsetup:: collapsing
 
     import iris
     filename = iris.sample_data_path('uk_hires.pp')
@@ -125,7 +125,7 @@ in order to calculate the area of the grid boxes::
 
 These areas can now be passed to the ``collapsed`` method as weights:
 
-.. doctest::
+.. doctest:: collapsing
 
     >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
     >>> print(new_cube)
@@ -141,8 +141,8 @@ These areas can now be passed to the ``collapsed`` method as weights:
             altitude                         -                      x
         Scalar coordinates:
             forecast_reference_time     2009-11-19 04:00:00
-            grid_latitude               1.5145501 degrees, bound=(0.14430022, 2.8848) degrees
-            grid_longitude              358.74948 degrees, bound=(357.494, 360.00497) degrees
+            grid_latitude               1.5145501 degrees, bound=(0.13755022, 2.89155) degrees
+            grid_longitude              358.74948 degrees, bound=(357.48724, 360.01172) degrees
             surface_altitude            399.625 m, bound=(-14.0, 813.25) m
         Cell methods:
             mean                        grid_longitude, grid_latitude
@@ -154,6 +154,50 @@ These areas can now be passed to the ``collapsed`` method as weights:
 Several examples of area averaging exist in the gallery which may be of interest,
 including an example on taking a :ref:`global area-weighted mean
 <sphx_glr_generated_gallery_meteorology_plot_COP_1d.py>`.
+
+In addition to plain arrays, weights can also be given as cubes or (names of)
+:meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`, or
+:meth:`~iris.cube.Cube.ancillary_variables`.
+This has the advantage of correct unit handling, e.g., for area-weighted sums
+the units of the resulting cube are multiplied by an area unit:
+
+.. doctest:: collapsing
+
+    >>> from iris.coords import CellMeasure
+    >>> cell_areas = CellMeasure(
+    ...     grid_areas,
+    ...     standard_name='cell_area',
+    ...     units='m2',
+    ...     measure='area',
+    ... )
+    >>> cube.add_cell_measure(cell_areas, (0, 1, 2, 3))
+    >>> area_weighted_sum = cube.collapsed(
+    ...     ['grid_longitude', 'grid_latitude'],
+    ...     iris.analysis.SUM,
+    ...     weights='cell_area'
+    ... )
+    >>> print(area_weighted_sum)
+    air_potential_temperature / (m2.K)  (time: 3; model_level_number: 7)
+        Dimension coordinates:
+            time                             x                      -
+            model_level_number               -                      x
+        Auxiliary coordinates:
+            forecast_period                  x                      -
+            level_height                     -                      x
+            sigma                            -                      x
+        Derived coordinates:
+            altitude                         -                      x
+        Scalar coordinates:
+            forecast_reference_time     2009-11-19 04:00:00
+            grid_latitude               1.5145501 degrees, bound=(0.13755022, 2.89155) degrees
+            grid_longitude              358.74948 degrees, bound=(357.48724, 360.01172) degrees
+            surface_altitude            399.625 m, bound=(-14.0, 813.25) m
+        Cell methods:
+            sum                         grid_longitude, grid_latitude
+        Attributes:
+            STASH                       m01s00i004
+            source                      'Data from Met Office Unified Model'
+            um_version                  '7.3'
 
 .. _cube-statistics-aggregated-by:
 
@@ -338,3 +382,44 @@ from jja-2006 to jja-2010:
     mam 2010
     jja 2010
 
+Moreover, :meth:`Cube.aggregated_by <iris.cube.Cube.aggregated_by>` supports
+weighted aggregation.
+For example, this is helpful for an aggregation over a monthly time
+coordinate that consists of months with different numbers of days.
+Similar to :meth:`Cube.collapsed <iris.cube.Cube.collapsed>`, weights can be
+given as arrays, cubes, or as (names of) :meth:`~iris.cube.Cube.coords`,
+:meth:`~iris.cube.Cube.cell_measures`, or
+:meth:`~iris.cube.Cube.ancillary_variables`.
+When weights are not given as arrays, units are correctly handled for weighted
+sums, i.e., the original unit of the cube is multiplied by the units of the
+weights.
+The following example shows a weighted sum (notice the change of the units):
+
+.. doctest:: aggregation
+
+    >>> from iris.coords import AncillaryVariable
+    >>> time_weights = AncillaryVariable(
+    ...     cube.coord("time").bounds[:, 1] - cube.coord("time").bounds[:, 0],
+    ...     long_name="Time Weights",
+    ...     units="hours",
+    ... )
+    >>> cube.add_ancillary_variable(time_weights, 0)
+    >>> seasonal_sum = cube.aggregated_by("clim_season", iris.analysis.SUM, weights="Time Weights")
+    >>> print(seasonal_sum)
+    surface_temperature / (3600 s.K)    (-- : 4; latitude: 18; longitude: 432)
+        Dimension coordinates:
+            latitude                        -            x              -
+            longitude                       -            -              x
+        Auxiliary coordinates:
+            clim_season                     x            -              -
+            forecast_reference_time         x            -              -
+            season_year                     x            -              -
+            time                            x            -              -
+        Scalar coordinates:
+            forecast_period             0 hours
+        Cell methods:
+            mean                        month, year
+            sum                         clim_season
+        Attributes:
+            Conventions                 'CF-1.5'
+            STASH                       m01s00i024

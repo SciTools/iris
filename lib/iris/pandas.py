@@ -240,7 +240,7 @@ def as_cubes(
     A :class:`~pandas.DataFrame` using columns as a second data dimension will
     need to be 'melted' before conversion. See the Examples for how.
 
-    Dask ``DataFrame``\\s are not supported.
+    :class:`dask.dataframe.DataFrame`\\ s are not supported.
 
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
@@ -694,7 +694,7 @@ def as_data_frame(
 
     Notes
     -----
-    Dask ``DataFrame``\\s are not supported.
+    :class:`dask.dataframe.DataFrame`\\ s are not supported.
 
     A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default.
     Use the :meth:`~pandas.DataFrame.reset_index` to return a

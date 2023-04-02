@@ -15,6 +15,8 @@ import contextlib
 import io
 from unittest import mock
 
+import pytest
+
 import iris
 import iris.fileformats.cf as cf
 
@@ -52,11 +54,14 @@ class TestCaching(tests.IrisTest):
 
 @tests.skip_data
 class TestCFReader(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def set_up(self):
         filename = tests.get_data_path(
             ("NetCDF", "rotated", "xyt", "small_rotPole_precipitation.nc")
         )
         self.cfr = cf.CFReader(filename)
+        with self.cfr:
+            yield
 
     def test_ancillary_variables_pass_0(self):
         self.assertEqual(self.cfr.cf_group.ancillary_variables, {})
@@ -276,9 +281,7 @@ class TestCFReader(tests.IrisTest):
         didn't exist because opening the dataset had failed.
         """
         with self.temp_filename(suffix=".nc") as fn:
-
             with open(fn, "wb+") as fh:
-
                 fh.write(
                     b"\x89HDF\r\n\x1a\nBroken file with correct signature"
                 )
@@ -350,7 +353,8 @@ class TestLoad(tests.IrisTest):
 
 @tests.skip_data
 class TestClimatology(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def set_up(self):
         filename = tests.get_data_path(
             (
                 "NetCDF",
@@ -359,6 +363,8 @@ class TestClimatology(tests.IrisTest):
             )
         )
         self.cfr = cf.CFReader(filename)
+        with self.cfr:
+            yield
 
     def test_bounds(self):
         time = self.cfr.cf_group["temp_dmax_tmean_abs"].cf_group.coordinates[
@@ -375,7 +381,8 @@ class TestClimatology(tests.IrisTest):
 
 @tests.skip_data
 class TestLabels(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def set_up(self):
         filename = tests.get_data_path(
             (
                 "NetCDF",
@@ -389,6 +396,10 @@ class TestLabels(tests.IrisTest):
             ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
         )
         self.cfr_end = cf.CFReader(filename)
+
+        with self.cfr_start:
+            with self.cfr_end:
+                yield
 
     def test_label_dim_start(self):
         cf_data_var = self.cfr_start.cf_group["temp_dmax_tmean_abs"]

@@ -625,7 +625,7 @@ class PPDataProxy:
     def __setstate__(self, state):
         # Because we have __slots__, this is needed to support Pickle.load()
         # (Use setattr, as there is no object dictionary.)
-        for (key, value) in state:
+        for key, value in state:
             setattr(self, key, value)
 
     def __eq__(self, other):
@@ -2029,10 +2029,8 @@ def _convert_constraints(constraints):
         res = True
         if field.stash not in _STASH_ALLOW:
             if pp_constraints.get("stash"):
-
                 res = False
                 for call_func in pp_constraints["stash"]:
-
                     if call_func(str(field.stash)):
                         res = True
                         break

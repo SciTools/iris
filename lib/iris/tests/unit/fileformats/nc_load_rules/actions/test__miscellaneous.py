@@ -127,7 +127,6 @@ class Test__labels_cellmeasures_ancils(Mixin__nc_load_actions, tests.IrisTest):
         include_cellmeasure=False,
         include_ancil=False,
     ):
-
         phenom_extra_attrs_string = ""
         extra_vars_string = ""
 

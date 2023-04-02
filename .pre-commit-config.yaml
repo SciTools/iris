@@ -29,7 +29,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.1.0
     hooks:
     -   id: black
         pass_filenames: false
@@ -43,18 +43,17 @@ repos:
         args: [--config=./setup.cfg]
 
 -   repo: https://github.com/pycqa/isort
-    rev: 5.11.4
+    rev: 5.12.0
     hooks:
     -   id: isort
         types: [file, python]
         args: [--filter-files]
 
 -   repo: https://github.com/asottile/blacken-docs
-    rev: v1.12.1
+    rev: 1.13.0
     hooks:
     -   id: blacken-docs
         types: [file, rst]
-        additional_dependencies: [black==21.6b0]
 
 -   repo: https://github.com/aio-libs/sort-all
     rev: v1.2.0

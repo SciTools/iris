@@ -779,7 +779,6 @@ def _build_full_slice_given_keys(keys, ndim):
 
     for i, key in enumerate(keys):
         if key is Ellipsis:
-
             # replace any subsequent Ellipsis objects in keys with
             # slice(None, None) as per Numpy
             keys = keys[:i] + tuple(
@@ -1218,8 +1217,14 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
 
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
+        try:
+            src_cube.coord(scalar_coord, dim_coords=False)
+        except iris.exceptions.CoordinateNotFoundError:
+            emsg = scalar_coord.name() + " is already a dimension coordinate."
+            raise ValueError(emsg)
+
         if not scalar_coord.shape == (1,):
-            emsg = scalar_coord.name() + "is not a scalar coordinate."
+            emsg = scalar_coord.name() + " is not a scalar coordinate."
             raise ValueError(emsg)
 
     expand_extras = [
@@ -1909,8 +1914,9 @@ def _mask_array(array, points_to_mask, in_place=False):
 
     If array is lazy then in_place is ignored: _math_op_common will use the
     returned value regardless of in_place, so we do not need to implement it
-    here.  If in_place is True then array must be a np.ma.MaskedArray or dask
-    array (must be a dask array if points_to_mask is lazy).
+    here.  If in_place is True then array must be a
+    :class:`numpy.ma.MaskedArray` or :class:`dask.array.Array`
+    (must be a dask array if points_to_mask is lazy).
 
     """
     # Decide which array library to use.
@@ -2081,7 +2087,7 @@ def is_masked(array):
 
     Parameters
     ----------
-    array : :class:`numpy.Array` or `dask.array.Array`
+    array : :class:`numpy.Array` or :class:`dask.array.Array`
             The array to be checked for masks.
 
     Returns

@@ -85,7 +85,6 @@ class Trajectory:
         cur_seg = segments[cur_seg_i]
         len_accum = cur_seg.length
         for p in range(self.sample_count):
-
             # calculate the sample position along our total length
             sample_at_len = p * sample_step
 

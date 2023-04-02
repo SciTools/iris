@@ -19,7 +19,6 @@ import stat
 import tempfile
 from unittest import mock
 
-import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
 
@@ -29,6 +28,7 @@ import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.tests.stock as stock
@@ -81,7 +81,7 @@ class TestNetCDFLoad(tests.IrisTest):
                 ("NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc")
             )
             shutil.copyfile(src, filename)
-            dataset = nc.Dataset(filename, mode="a")
+            dataset = _thread_safe_nc.DatasetWrapper(filename, mode="a")
             dataset.renameVariable("time_bnds", "foo")
             dataset.close()
             _ = iris.load_cube(filename, "eastward_wind")
@@ -204,7 +204,7 @@ class TestNetCDFLoad(tests.IrisTest):
                 ("NetCDF", "transverse_mercator", "tmean_1910_1910.nc")
             )
             shutil.copyfile(src, filename)
-            dataset = nc.Dataset(filename, mode="a")
+            dataset = _thread_safe_nc.DatasetWrapper(filename, mode="a")
             dataset.renameVariable("climatology_bounds", "foo")
             dataset.close()
             _ = iris.load_cube(filename, "Mean temperature")
@@ -313,9 +313,7 @@ class TestNetCDFLoad(tests.IrisTest):
             cube[((0, 8, 4, 2, 14, 12),)][((0, 2, 4, 1),)],
             ("netcdf", "netcdf_deferred_tuple_1.cml"),
         )
-        subcube = cube[((0, 8, 4, 2, 14, 12),)][((0, 2, 4, 1),)][
-            (1, 3),
-        ]
+        subcube = cube[((0, 8, 4, 2, 14, 12),)][((0, 2, 4, 1),)][(1, 3),]
         self.assertCML(subcube, ("netcdf", "netcdf_deferred_tuple_2.cml"))
 
         # Consecutive mixture on same dimension.
@@ -634,7 +632,7 @@ class TestNetCDFSave(tests.IrisTest):
         with self.temp_filename(suffix=".nc") as file_out:
             # Test default NETCDF4 file format saving.
             iris.save(cube, file_out)
-            ds = nc.Dataset(file_out)
+            ds = _thread_safe_nc.DatasetWrapper(file_out)
             self.assertEqual(
                 ds.file_format, "NETCDF4", "Failed to save as NETCDF4 format"
             )
@@ -642,7 +640,7 @@ class TestNetCDFSave(tests.IrisTest):
 
             # Test NETCDF4_CLASSIC file format saving.
             iris.save(cube, file_out, netcdf_format="NETCDF4_CLASSIC")
-            ds = nc.Dataset(file_out)
+            ds = _thread_safe_nc.DatasetWrapper(file_out)
             self.assertEqual(
                 ds.file_format,
                 "NETCDF4_CLASSIC",
@@ -652,7 +650,7 @@ class TestNetCDFSave(tests.IrisTest):
 
             # Test NETCDF3_CLASSIC file format saving.
             iris.save(cube, file_out, netcdf_format="NETCDF3_CLASSIC")
-            ds = nc.Dataset(file_out)
+            ds = _thread_safe_nc.DatasetWrapper(file_out)
             self.assertEqual(
                 ds.file_format,
                 "NETCDF3_CLASSIC",
@@ -662,7 +660,7 @@ class TestNetCDFSave(tests.IrisTest):
 
             # Test NETCDF4_64BIT file format saving.
             iris.save(cube, file_out, netcdf_format="NETCDF3_64BIT")
-            ds = nc.Dataset(file_out)
+            ds = _thread_safe_nc.DatasetWrapper(file_out)
             self.assertTrue(
                 ds.file_format in ["NETCDF3_64BIT", "NETCDF3_64BIT_OFFSET"],
                 "Failed to save as NETCDF3_64BIT format",
@@ -1049,7 +1047,7 @@ class TestNetCDFSave(tests.IrisTest):
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(self.cube, filename)
             # Load the dataset.
-            ds = nc.Dataset(filename, "r")
+            ds = _thread_safe_nc.DatasetWrapper(filename, "r")
             exceptions = []
             # Should be global attributes.
             for gkey in aglobals:
@@ -1213,7 +1211,7 @@ class TestNetCDFSave__ancillaries(tests.IrisTest):
             self.assertCDL(filename)
 
             # Also check that only one, shared ancillary variable was written.
-            ds = nc.Dataset(filename)
+            ds = _thread_safe_nc.DatasetWrapper(filename)
             self.assertIn("air_potential_temperature", ds.variables)
             self.assertIn("alternate_data", ds.variables)
             self.assertEqual(
@@ -1417,7 +1415,6 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
         }
 
         for bits, descriptions in multiple_map.items():
-
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = descriptions
 

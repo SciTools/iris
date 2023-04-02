@@ -190,7 +190,7 @@ class TestDataMergeCombos(tests.IrisTest):
         )
 
     def test__ndarray_ndarray(self):
-        for (lazy0, lazy1) in self.lazy_combos:
+        for lazy0, lazy1 in self.lazy_combos:
             cubes = iris.cube.CubeList()
             cubes.append(self._make_cube(0, dtype=self.dtype, lazy=lazy0))
             cubes.append(self._make_cube(1, dtype=self.dtype, lazy=lazy1))

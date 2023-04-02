@@ -18,7 +18,6 @@ from pathlib import Path
 import shutil
 import tempfile
 
-import netCDF4 as nc
 import numpy as np
 
 from iris import save
@@ -26,6 +25,7 @@ from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
 from iris.experimental.ugrid.mesh import Connectivity, Mesh
 from iris.experimental.ugrid.save import save_mesh
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests.stock import realistic_4d
 
 XY_LOCS = ("x", "y")
@@ -259,7 +259,7 @@ def scan_dataset(filepath):
             variable's dims.
 
     """
-    ds = nc.Dataset(filepath)
+    ds = _thread_safe_nc.DatasetWrapper(filepath)
     # dims dict is {name: len}
     dimsdict = {name: dim.size for name, dim in ds.dimensions.items()}
     # vars dict is {name: {attr:val}}
@@ -824,7 +824,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         self.assertNotIn("_FillValue", fn_props)
 
         # For what it's worth, *also* check the actual data array in the file
-        ds = nc.Dataset(tempfile_path)
+        ds = _thread_safe_nc.DatasetWrapper(tempfile_path)
         conn_var = ds.variables[ff_conn_name]
         data = conn_var[:]
         ds.close()
@@ -1082,7 +1082,6 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             ("dim invalid-name &%!", "dim_invalid_name____"),
         ]
         for given_name, expected_name in dim_names_tests:
-
             mesh = make_mesh(mesh_kwargs={"face_dimension": given_name})
 
             filepath = self.check_save_mesh(mesh)

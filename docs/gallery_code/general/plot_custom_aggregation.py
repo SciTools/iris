@@ -72,7 +72,7 @@ def main():
 
     # Make an aggregator from the user function.
     SPELL_COUNT = Aggregator(
-        "spell_count", count_spells, units_func=lambda units: 1
+        "spell_count", count_spells, units_func=lambda units, **kwargs: 1
     )
 
     # Define the parameters of the test.
