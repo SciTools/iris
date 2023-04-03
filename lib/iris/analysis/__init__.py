@@ -2459,7 +2459,7 @@ class _Groupby:
             raise ValueError("Group-by coordinates have different lengths.")
         self._groupby_coords.append(coord)
 
-    def _add_shared_coord(self, coord, dim):
+    def _add_shared_coord(self, coord: iris.coords.Coord, dim: int) -> None:
         if coord.shape[dim] != self._stop and self._stop is not None:
             raise ValueError("Shared coordinates have different lengths.")
         self._shared_coords.append((coord, dim))
