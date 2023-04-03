@@ -13,6 +13,7 @@ import cartopy.crs as ccrs
 import numpy as np
 
 import iris
+from iris.util import lift_empty_masks
 
 
 def _3d_xyz_from_latlon(lon, lat):
@@ -135,6 +136,7 @@ def _angle(p, q, r):
     return np.rad2deg(psi)
 
 
+@lift_empty_masks
 def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
     """
     Calculate gridcell orientations for an arbitrary 2-dimensional grid.
@@ -401,6 +403,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
     return result
 
 
+@lift_empty_masks
 def rotate_grid_vectors(
     u_cube, v_cube, grid_angles_cube=None, grid_angles_kwargs=None
 ):

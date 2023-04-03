@@ -37,7 +37,6 @@ The gallery contains several interesting worked examples of how an
 
 from collections import OrderedDict
 from collections.abc import Iterable
-from enum import Enum
 import functools
 from functools import wraps
 import warnings
@@ -57,7 +56,7 @@ from iris.analysis._interpolation import (
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
-from iris.util import has_mask, is_masked
+from iris.util import lift_empty_masks
 
 __all__ = (
     "Aggregator",
@@ -85,7 +84,6 @@ __all__ = (
     "WeightedAggregator",
     "clear_phenomenon_identity",
     "create_weighted_aggregator_fn",
-    "lift_empty_masks",
 )
 
 
@@ -1229,6 +1227,7 @@ def _build_dask_mdtol_function(dask_stats_function):
 
     """
 
+    @lift_empty_masks
     @wraps(dask_stats_function)
     def inner_stat(array, axis=-1, mdtol=None, **kwargs):
         # Call the statistic to get the basic result (missing-data tolerant).
@@ -1293,6 +1292,7 @@ def _axis_to_single_trailing(stats_function):
     return inner_stat
 
 
+@lift_empty_masks
 def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
     """
     Calculate percentiles along the trailing axis of a 1D or 2D array.
@@ -1378,6 +1378,7 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
     return result
 
 
+@lift_empty_masks
 def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
     """
     Compute the weighted quantile of a 1D numpy array.
@@ -1423,6 +1424,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
     return result
 
 
+@lift_empty_masks
 def _weighted_percentile(
     data, axis, weights, percent, returned=False, **kwargs
 ):
@@ -1501,6 +1503,7 @@ def _weighted_percentile(
         return result
 
 
+@lift_empty_masks
 def _count(array, **kwargs):
     """
     Counts the number of points along the axis that satisfy the condition
@@ -1545,6 +1548,7 @@ def _proportion(array, function, axis, **kwargs):
     return result
 
 
+@lift_empty_masks
 def _lazy_max_run(array, axis=-1, **kwargs):
     """
     Lazily perform the calculation of maximum run lengths along the given axis
@@ -1585,6 +1589,7 @@ def _lazy_max_run(array, axis=-1, **kwargs):
     return result
 
 
+@lift_empty_masks
 def _rms(array, axis, **kwargs):
     # XXX due to the current limitations in `da.average` (see below), maintain
     # an explicit non-lazy aggregation function for now.
@@ -1597,6 +1602,7 @@ def _rms(array, axis, **kwargs):
     return rval
 
 
+@lift_empty_masks
 @_build_dask_mdtol_function
 def _lazy_rms(array, axis, **kwargs):
     # XXX This should use `da.average` and not `da.mean`, as does the above.
@@ -1609,6 +1615,7 @@ def _lazy_rms(array, axis, **kwargs):
     return da.sqrt(da.mean(array**2, axis=axis, **kwargs))
 
 
+@lift_empty_masks
 def _sum(array, **kwargs):
     """
     Weighted or scaled sum.  Uses Dask's support for NEP13/18 to work as either
@@ -1641,6 +1648,7 @@ def _sum(array, **kwargs):
     return rvalue
 
 
+@lift_empty_masks
 def _peak(array, **kwargs):
     def column_segments(column):
         nan_indices = np.where(np.isnan(column))[0]
@@ -1816,7 +1824,9 @@ This aggregator handles masked data, which it treats as interrupting a run, and 
 MAX_RUN.name = lambda: "max_run"
 
 
-GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)
+GMEAN = Aggregator(
+    "geometric_mean", lift_empty_masks(scipy.stats.mstats.gmean)
+)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 geometric mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1833,7 +1843,7 @@ This aggregator handles masked data, but NOT lazy data.
 """
 
 
-HMEAN = Aggregator("harmonic_mean", scipy.stats.mstats.hmean)
+HMEAN = Aggregator("harmonic_mean", lift_empty_masks(scipy.stats.mstats.hmean))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 harmonic mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1904,7 +1914,7 @@ This aggregator handles masked data.
 """
 
 
-MEDIAN = Aggregator("median", ma.median)
+MEDIAN = Aggregator("median", lift_empty_masks(ma.median))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the median over a :class:`~iris.cube.Cube`, as computed by
@@ -3136,200 +3146,3 @@ class PointInCell:
 
         """
         return CurvilinearRegridder(src_grid, target_grid, self.weights)
-
-
-def lift_empty_masks(decorated_func):
-    """
-    Temporarily convert input arrays/Cubes to use non-masked arrays if all masks are ``False``.
-
-    Provided because working on non-masked :obj:`~numpy.typing.ArrayLike`\\s
-    (e.g. :class:`numpy.ndarray` / :class:`dask.array.Array`)
-    can significantly improve performance. Any ``args`` or ``kwargs`` of
-    `decorated_func` that are :obj:`~numpy.typing.ArrayLike`\\s or
-    :class:`~iris.cube.Cube`\\s, and have all-``False`` masks, are converted;
-    :class:`~iris.cube.Cube`\\s are modified in-place. After `decorated_func`
-    has run, all returned :obj:`~numpy.typing.ArrayLike`\\s and
-    :class:`~iris.cube.Cube`\\s, together any modified input
-    :class:`~iris.cube.Cube`\\s (see above), are converted to use masked
-    arrays with the original ``False`` mask re-applied.
-
-    Parameters
-    ----------
-    decorated_func: callable
-        The callable object to be wrapped/decorated.
-
-    Returns
-    -------
-    Closure wrapped callable object.
-
-    Warns
-    -----
-    If a mixture of False-mask-types is present (see Notes).
-
-    Warnings
-    --------
-    Be careful what callables this is applied to. If any input objects have an
-    all-``False`` mask, **all** returned non-masked objects will be converted
-    to have an all-``False`` mask. And if the callable assigns
-    :obj:`~numpy.typing.ArrayLike`\\s/:class:`~iris.cube.Cube`\\s
-    in a way that can't be detected (e.g. modifying a global object, or
-    returning a dict), those masks will be permanently 'lifted'.
-
-    Notes
-    -----
-    Two types of ``False`` mask may exist - a scalar :obj:`numpy.ma.nomask`,
-    or a full :obj:`~numpy.typing.ArrayLike` of ``False`` values. The type
-    detected in ``args`` and ``kwargs`` is the type that is applied after
-    `decorated_func` has run. No conversion will take place if a mixture of
-    mask types is present, since it is not possible to know what type to apply
-    afterwards.
-
-    """
-    from iris.cube import Cube, CubeList
-
-    class MaskTypes(Enum):
-        # Non-array object.
-        NOT_APPLICABLE = 0
-        # Some points actually masked.
-        SOME_TRUE = 1
-        # Mask is an array, all values False.
-        ARRAY_FALSE = 2
-        # Mask is a single value of False (np.ma.nomask).
-        SCALAR_FALSE = 3
-
-    false_mask_types = (MaskTypes.ARRAY_FALSE, MaskTypes.SCALAR_FALSE)
-
-    def is_cube(array_or_cube):
-        return isinstance(array_or_cube, Cube)
-
-    def get_data(array_or_cube):
-        if is_cube(array_or_cube):
-            result = array_or_cube.core_data()
-        elif hasattr(array_or_cube, "__array__"):
-            # Generic check for NumPy, Dask and masked arrays.
-            result = array_or_cube
-        else:
-            result = None
-
-        return result
-
-    def get_array_lib(data):
-        if iris._lazy_data.is_lazy_data(data):
-            array_lib = da
-        else:
-            array_lib = np
-        return array_lib
-
-    def get_mask_type(array_or_cube):
-        data = get_data(array_or_cube)
-        if data is not None and iris._lazy_data.is_lazy_data(data):
-            # Take a sample to check the mask - dask.array.ma arrays have
-            #  no distinguishing properties.
-            sample = iris._lazy_data.as_concrete_data(data.blocks[0])
-        else:
-            sample = data
-
-        if data is not None and hasattr(sample, "mask"):
-            if is_masked(data):
-                mask_type = MaskTypes.SOME_TRUE
-            else:
-                if sample.mask is ma.nomask:
-                    mask_type = MaskTypes.SCALAR_FALSE
-                else:
-                    mask_type = MaskTypes.ARRAY_FALSE
-        else:
-            mask_type = MaskTypes.NOT_APPLICABLE
-
-        return mask_type
-
-    def lift_mask(array_or_cube, cube_store):
-        # Upstream checks should guarantee this is a masked array.
-        data_masked = get_data(array_or_cube)
-        array_lib = get_array_lib(data_masked)
-        data_lifted = array_lib.ma.getdata(data_masked)
-
-        if is_cube(array_or_cube):
-            cube_store.append(array_or_cube)
-            array_or_cube.data = data_lifted
-        else:
-            array_or_cube = data_lifted
-
-        return array_or_cube
-
-    def re_apply_mask(array_or_cube, mask_type):
-        data = get_data(array_or_cube)
-        array_lib = get_array_lib(data)
-
-        if data is not None and not has_mask(data):
-            if mask_type == MaskTypes.SCALAR_FALSE:
-                mask = np.ma.nomask
-            elif mask_type == MaskTypes.ARRAY_FALSE:
-                mask = array_lib.full(data.shape, False)
-            else:
-                raise NotImplementedError
-
-            data_masked = array_lib.ma.masked_array(data, mask=mask)
-
-            if is_cube(array_or_cube):
-                array_or_cube.data = data_masked
-            else:
-                array_or_cube = data_masked
-
-        return array_or_cube
-
-    def _wrapper(*args, **kwargs):
-        # Will need to modify items in args, so can't be a tuple.
-        args = list(args)
-        mask_types_args = [get_mask_type(a) for a in args]
-        mask_types_kwargs = {k: get_mask_type(v) for k, v in kwargs.items()}
-
-        mask_types_all = mask_types_args + list(mask_types_kwargs.values())
-        mask_types_false = [
-            mt for mt in mask_types_all if mt in false_mask_types
-        ]
-
-        cube_store = CubeList()
-
-        masks_lifted = False
-        lift_count = len(mask_types_false)
-        if lift_count != 0:
-            uniform_false_mtype = mask_types_false[0]
-            if all([mt == uniform_false_mtype for mt in mask_types_false]):
-                masks_lifted = True
-
-                for ix, arg in enumerate(args):
-                    if mask_types_args[ix] == uniform_false_mtype:
-                        args[ix] = lift_mask(arg, cube_store)
-                for key, kwarg in kwargs.items():
-                    if mask_types_kwargs[key] == uniform_false_mtype:
-                        kwargs[key] = lift_mask(kwarg, cube_store)
-            else:
-                message = (
-                    "Inconsistent false-mask-types; no masks will be lifted "
-                    f"during {decorated_func.__name__} - performance may be "
-                    "sub-optimal."
-                )
-                warnings.warn(message)
-
-        result = decorated_func(*args, **kwargs)
-
-        if masks_lifted:
-            for cube in cube_store:
-                # Restore modified input cubes in-place, since we can't guarantee
-                #  they will all be within the result object.
-                _ = re_apply_mask(cube, uniform_false_mtype)
-
-            # Apply mask to any returned un-masked arrays or Cubes.
-            if not isinstance(result, Iterable):
-                final_result = re_apply_mask(result, uniform_false_mtype)
-            else:
-                final_result = [
-                    re_apply_mask(r, uniform_false_mtype) for r in result
-                ]
-
-        else:
-            final_result = result
-
-        return final_result
-
-    return _wrapper

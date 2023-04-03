@@ -419,3 +419,21 @@ def map_complete_blocks(src, func, dims, out_sizes):
         out_chunks[dim] = size
 
     return data.map_blocks(func, chunks=out_chunks, dtype=src.dtype)
+
+
+def sample(array):
+    """
+    Realise and return the smallest possible section of a lazy array.
+
+    Intended for checking masks and fill values - dask.array.ma arrays have no
+    distinguishing properties from normal dask arrays, so must unfortunately
+    realise a small section first.
+    """
+    assert is_lazy_data(array)
+
+    if array.shape == tuple():
+        to_concrete = array
+    else:
+        to_concrete = array.blocks[0]
+
+    return as_concrete_data(to_concrete)

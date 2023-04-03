@@ -81,6 +81,7 @@ def extend_circular_coord_and_data(coord, data, coord_dim):
     return points, data
 
 
+@iris.util.lift_empty_masks
 def extend_circular_data(data, coord_dim):
     coord_slice_in_cube = [slice(None)] * data.ndim
     coord_slice_in_cube[coord_dim] = slice(0, 1)
@@ -179,6 +180,8 @@ class RectilinearInterpolator:
     linear interpolation over one or more orthogonal dimensions.
 
     """
+
+    # TODO: consider refactoring to allow use of @iris.util.lift_empty_masks.
 
     def __init__(self, src_cube, coords, method, extrapolation_mode):
         """

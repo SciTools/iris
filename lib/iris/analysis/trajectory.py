@@ -15,6 +15,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 import iris.coords
+from iris.util import lift_empty_masks
 
 
 class _Segment:
@@ -189,6 +190,7 @@ class Trajectory:
         return interpolated_cube
 
 
+@lift_empty_masks
 def interpolate(cube, sample_points, method=None):
     """
     Extract a sub-cube at the given n-dimensional points.

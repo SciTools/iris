@@ -7,15 +7,19 @@
 Miscellaneous utility functions.
 
 """
-
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
+from enum import Enum
 import functools
 import inspect
+from numbers import Number
 import os
 import os.path
 import sys
 import tempfile
+import typing
+from typing import Tuple
+from warnings import warn
 
 import cf_units
 from dask import array as da
@@ -23,7 +27,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import as_concrete_data, is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data, sample
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
@@ -1973,10 +1977,24 @@ def equalise_attributes(cubes):
 
 
 def has_mask(array):
+    """
+    Check whether `array` has a ``mask`` attribute; also works for :class:`dask.array.Array`\\s.
+
+    Parameters
+    ----------
+    array : :class:`numpy.Array` or :class:`dask.array.Array`
+            The array to be checked for masks.
+
+    Returns
+    -------
+    bool
+        Whether or not the `array` has a ``mask`` attribute.
+
+    """
     if is_lazy_data(array):
-        # dask.array.ma arrays have no distinguishing properties from normal
-        #  dask arrays, so must unfortunately realise a small section first.
-        array = as_concrete_data(array.blocks[0])
+        # Take a sample to check the mask - dask.array.ma arrays have
+        #  no distinguishing properties.
+        array = sample(array)
 
     return hasattr(array, "mask")
 
@@ -2028,3 +2046,285 @@ def _strip_metadata_from_dims(cube, dims):
             reduced_cube.remove_cell_measure(cm)
 
     return reduced_cube
+
+
+class _LiftEmptyMasks:
+    """All docstring should be in _LiftEmptyMasks.decorator - public facing."""
+
+    class MaskTypes(Enum):
+        # Non-array object.
+        NOT_APPLICABLE = 0
+        # Some points actually masked.
+        SOME_TRUE = 1
+        # Mask is an array, all values False.
+        ARRAY_FALSE = 2
+        # Mask is a single value of False (np.ma.nomask).
+        SCALAR_FALSE = 3
+
+    false_mask_types = (MaskTypes.ARRAY_FALSE, MaskTypes.SCALAR_FALSE)
+
+    class InputsAddress(typing.NamedTuple):
+        """
+        Agnostic way of recording locations in both self.func_args and
+        self.func_kwargs
+        """
+
+        in_kwargs: bool
+        index_or_key: typing.Hashable or int
+
+    @staticmethod
+    def is_cube(array_or_cube):
+        from iris.cube import Cube
+
+        return isinstance(array_or_cube, Cube)
+
+    @staticmethod
+    def get_array_lib(data):
+        if iris._lazy_data.is_lazy_data(data):
+            array_lib = da
+        else:
+            array_lib = np
+        return array_lib
+
+    @classmethod
+    def get_data(cls, array_or_cube):
+        if cls.is_cube(array_or_cube):
+            result = array_or_cube.core_data()
+        elif hasattr(array_or_cube, "__array__"):
+            # Generic check for NumPy, Dask and masked arrays.
+            result = array_or_cube
+        else:
+            result = None
+
+        return result
+
+    @classmethod
+    def get_mask_info(cls, array_or_cube) -> Tuple[MaskTypes, Number]:
+        data = cls.get_data(array_or_cube)
+        if data is not None and iris._lazy_data.is_lazy_data(data):
+            # Take a sample to check the mask - dask.array.ma arrays have
+            #  no distinguishing properties.
+            sample = iris._lazy_data.sample(data)
+        else:
+            sample = data
+
+        if data is not None and hasattr(sample, "mask"):
+            if is_masked(data):
+                mask_type = cls.MaskTypes.SOME_TRUE
+            else:
+                if sample.mask is ma.nomask:
+                    mask_type = cls.MaskTypes.SCALAR_FALSE
+                else:
+                    mask_type = cls.MaskTypes.ARRAY_FALSE
+        else:
+            mask_type = cls.MaskTypes.NOT_APPLICABLE
+
+        fill_value = getattr(sample, "fill_value", None)
+
+        return mask_type, fill_value
+
+    def __init__(self, func_name: str, *func_args, **func_kwargs):
+        from iris.cube import CubeList
+
+        InputsAddress = self.__class__.InputsAddress
+
+        # Will need to modify items in args, so can't be a tuple.
+        self.func_args = list(func_args)
+        self.func_kwargs = func_kwargs
+
+        self.cube_store = CubeList()
+        self.lift_addresses: typing.List[InputsAddress] = []
+
+        all_addresses: typing.List[InputsAddress] = [
+            *[InputsAddress(False, i) for i in range(len(self.func_args))],
+            *[InputsAddress(True, k) for k in self.func_kwargs.keys()],
+        ]
+
+        def abandon(warn_phrase: str):
+            self.lift_addresses = []
+            self.cube_store = CubeList()
+            warn_message_template = (
+                "Inconsistent {}; no masks will be lifted "
+                f"during {func_name.__name__} - performance may be "
+                "sub-optimal."
+            )
+            warn(warn_message_template.format(warn_phrase))
+
+        for address in all_addresses:
+            func_input = self.inputs_get_set(address)
+            mask_type, fill_value = self.get_mask_info(func_input)
+            if mask_type in self.false_mask_types:
+                if len(self.lift_addresses) == 0:
+                    self.uniform_false_mtype = mask_type
+                    self.uniform_fill_value = fill_value
+
+                if mask_type != self.uniform_false_mtype:
+                    abandon("false mask types")
+                    break
+                elif fill_value != self.uniform_fill_value:
+                    abandon("fill_values")
+                    break
+                else:
+                    self.lift_addresses.append(address)
+
+    def inputs_get_set(self, address: InputsAddress, new_value=None):
+        """
+        Agnostic way of getting and setting items in both self.func_args and
+        self.func_kwargs.
+        """
+        if address.in_kwargs:
+            lookup = self.func_kwargs
+        else:
+            lookup = self.func_args
+
+        if new_value is not None:
+            lookup[address.index_or_key] = new_value
+            result = new_value
+        else:
+            result = lookup[address.index_or_key]
+
+        return result
+
+    def lift_masks(self):
+        for address in self.lift_addresses:
+            array_or_cube = self.inputs_get_set(address)
+
+            # Upstream checks should guarantee this is a masked array.
+            data_masked = self.get_data(array_or_cube)
+            array_lib = self.get_array_lib(data_masked)
+            data_lifted = array_lib.ma.getdata(data_masked)
+
+            if self.is_cube(array_or_cube):
+                self.cube_store.append(array_or_cube)
+                array_or_cube.data = data_lifted
+            else:
+                array_or_cube = data_lifted
+
+            self.inputs_get_set(address, new_value=array_or_cube)
+
+    def re_apply_mask(self, array_or_cube):
+        data = self.get_data(array_or_cube)
+        array_lib = self.get_array_lib(data)
+
+        if data is not None and not has_mask(data):
+            if self.uniform_false_mtype == self.MaskTypes.SCALAR_FALSE:
+                mask = np.ma.nomask
+            elif self.uniform_false_mtype == self.MaskTypes.ARRAY_FALSE:
+                mask = array_lib.full(data.shape, False)
+            else:
+                raise NotImplementedError
+
+            data_masked = array_lib.ma.masked_array(
+                data, mask=mask, fill_value=self.uniform_fill_value
+            )
+
+            if self.is_cube(array_or_cube):
+                array_or_cube.data = data_masked
+            else:
+                array_or_cube = data_masked
+
+        return array_or_cube
+
+    def re_apply_masks(self, func_output):
+        """Apply mask to any returned un-masked arrays or Cubes."""
+        tuple_returned = isinstance(func_output, tuple)
+
+        if len(self.lift_addresses) > 0:
+            maskee = func_output
+            if not tuple_returned:
+                maskee = [func_output]
+
+            re_masked = [self.re_apply_mask(o) for o in maskee]
+            if tuple_returned:
+                result = tuple(re_masked)
+            else:
+                result = re_masked[0]
+
+        else:
+            result = func_output
+
+        return result
+
+    def restore_cube_masks(self):
+        """
+        Restore modified input cubes in-place, since we can't guarantee
+        they will all be within the result object.
+        """
+        for cube in self.cube_store:
+            self.re_apply_mask(cube)
+
+    @classmethod
+    def decorator(cls, decorated_func):
+        """
+        Temporarily convert input arrays/Cubes to use non-masked arrays if
+        all masks are ``False``.
+
+        Provided because working on non-masked
+        :obj:`~numpy.typing.ArrayLike`\\s
+        (e.g. :class:`numpy.ndarray` / :class:`dask.array.Array`)
+        can significantly improve performance. Any ``args`` or ``kwargs`` of
+        `decorated_func` that are :obj:`~numpy.typing.ArrayLike`\\s or
+        :class:`~iris.cube.Cube`\\s, and have all-``False`` masks,
+        are converted;
+        :class:`~iris.cube.Cube`\\s are modified in-place. After
+        `decorated_func`
+        has run, all returned :obj:`~numpy.typing.ArrayLike`\\s and
+        :class:`~iris.cube.Cube`\\s, together any modified input
+        :class:`~iris.cube.Cube`\\s (see above), are converted to use masked
+        arrays with the original ``False`` mask re-applied.
+
+        Parameters
+        ----------
+        decorated_func: callable
+            The callable object to be wrapped/decorated.
+
+        Returns
+        -------
+        Closure wrapped callable object.
+
+        Warns
+        -----
+        If inconsistent of False-mask-types or fill_values are present (see Notes).
+
+        Warnings
+        --------
+        Be careful what callables this is applied to. If any input objects
+        have an
+        all-``False`` mask, **all** returned non-masked objects will be
+        converted
+        to have an all-``False`` mask. And if the callable assigns
+        :obj:`~numpy.typing.ArrayLike`\\s/:class:`~iris.cube.Cube`\\s
+        in a way that can't be detected (e.g. modifying a global object, or
+        returning a dict), those masks will be permanently 'lifted'.
+
+        Notes
+        -----
+        It is not possible to map specific properties from the inputs of
+        `decorated_func` to its outputs - could be one-to-many,
+        many-to-one, or many-to-many. Therefore, mask-lifting will only
+        take place if all the :obj:`~numpy.typing.ArrayLike`\\s and
+        :class:`~iris.cube.Cube`\\s have uniform ``fill_values`` and
+        ``False``-mask-types (2 types may exist - a scalar
+        :obj:`numpy.ma.nomask`, or a full :obj:`~numpy.typing.ArrayLike` of
+        ``False`` values). The uniform properties detected in ``args`` and
+        ``kwargs`` are those that are applied after `decorated_func` has run.
+
+        """
+
+        # TODO: decorate iris.analysis, iris.plot, iris.util
+        def _wrapper(*args, **kwargs):
+            mask_lifter = _LiftEmptyMasks(
+                decorated_func.__name__, *args, **kwargs
+            )
+            mask_lifter.lift_masks()
+            result = decorated_func(
+                *mask_lifter.func_args, **mask_lifter.func_kwargs
+            )
+            mask_lifter.restore_cube_masks()
+            return mask_lifter.re_apply_masks(result)
+
+        return _wrapper
+
+
+# Give the decorator a nice public name.
+lift_empty_masks = _LiftEmptyMasks.decorator

@@ -21,7 +21,7 @@ import numpy.ma as ma
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris.util import _meshgrid
+from iris.util import _meshgrid, lift_empty_masks
 
 from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
@@ -570,6 +570,7 @@ def cosine_latitude_weights(cube):
     return broad_weights
 
 
+@lift_empty_masks
 def project(cube, target_proj, nx=None, ny=None):
     """
     Nearest neighbour regrid to a specified target projection.
@@ -1053,6 +1054,7 @@ def _transform_distance_vectors_tolerance_mask(
     return mask
 
 
+@lift_empty_masks
 def rotate_winds(u_cube, v_cube, target_cs):
     r"""
     Transform wind vectors to a different coordinate system.

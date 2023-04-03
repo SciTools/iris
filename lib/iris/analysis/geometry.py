@@ -17,6 +17,7 @@ import numpy as np
 from shapely.geometry import Polygon
 
 import iris.exceptions
+from iris.util import lift_empty_masks
 
 
 def _extract_relevant_cube_slice(cube, geometry):
@@ -137,6 +138,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         return subcube, x_coord, y_coord, bnds_ix
 
 
+@lift_empty_masks
 def geometry_area_weights(cube, geometry, normalize=False):
     """
     Returns the array of weights corresponding to the area of overlap between
