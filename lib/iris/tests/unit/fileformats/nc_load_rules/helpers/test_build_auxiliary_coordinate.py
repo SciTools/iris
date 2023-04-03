@@ -179,11 +179,6 @@ class TestDtype(tests.IrisTest):
             cube_parts=dict(coordinates=[]),
         )
 
-        # self.deferred_load_patch = mock.patch(
-        #     "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
-        #     new=patched__getitem__,
-        # )
-
     @contextlib.contextmanager
     def deferred_load_patch(self):
         def patched__getitem__(proxy_self, keys):
@@ -191,16 +186,16 @@ class TestDtype(tests.IrisTest):
                 return self.cf_coord_var[keys]
             raise RuntimeError()
 
-        # Fix for deferred load, and prevent loading small variables as real arrays.
-        with (
-            mock.patch(
-                "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
-                new=patched__getitem__,
-            ),
-            # While loading, "turn off" loading small variables as real data.
-            mock.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0),
+        # Fix for deferred load, *AND* avoid loading small variable data in real arrays.
+        with mock.patch(
+            "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
+            new=patched__getitem__,
         ):
-            yield
+            # While loading, "turn off" loading small variables as real data.
+            with mock.patch(
+                "iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0
+            ):
+                yield
 
     def test_scale_factor_add_offset_int(self):
         self.cf_coord_var.scale_factor = 3
