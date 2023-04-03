@@ -60,6 +60,7 @@ class TestCoordAttributes(tests.IrisTest):
             cf_name="DUMMY_VAR",
             cf_group=coords,
             shape=shape,
+            size=np.prod(shape),
         )
         return cf, cf_var
 
@@ -139,6 +140,7 @@ class TestCubeAttributes(tests.IrisTest):
             cf_group=mock.Mock(),
             cf_attrs_unused=cf_attrs_unused,
             shape=shape,
+            size=np.prod(shape),
         )
         return cf_var
 

@@ -13,6 +13,7 @@ from itertools import repeat
 import os.path
 import shutil
 import tempfile
+from unittest import mock
 import warnings
 
 import numpy as np
@@ -34,7 +35,11 @@ class TestLazySave(tests.IrisTest):
         fpath = tests.get_data_path(
             ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
         )
-        acube = iris.load_cube(fpath, "air_temperature")
+        # While loading, "turn off" loading small variables as real data.
+        with mock.patch(
+            "iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0
+        ):
+            acube = iris.load_cube(fpath, "air_temperature")
         self.assertTrue(acube.has_lazy_data())
         # Also check a coord with lazy points + bounds.
         self.assertTrue(acube.coord("forecast_period").has_lazy_points())
