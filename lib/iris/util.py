@@ -2318,17 +2318,29 @@ class _LiftEmptyMasks:
         """
 
         # TODO: decorate iris.analysis, iris.plot, iris.util
+        @functools.wraps(decorated_func)
         def _wrapper(*args, **kwargs):
             mask_lifter = _LiftEmptyMasks(
                 decorated_func.__name__, *args, **kwargs
             )
             mask_lifter.lift_masks()
-            result = decorated_func(
-                *mask_lifter.func_args, **mask_lifter.func_kwargs
-            )
-            mask_lifter.restore_cube_masks()
+            try:
+                result = decorated_func(
+                    *mask_lifter.func_args, **mask_lifter.func_kwargs
+                )
+            finally:
+                mask_lifter.restore_cube_masks()
             return mask_lifter.re_apply_masks(result)
 
+        # TODO: get the indentation right with this.
+        extra_doc = """
+            .. note::
+
+                Uses :obj:`iris.util.lift_empty_masks`
+
+            """
+        if _wrapper.__doc__:
+            _wrapper.__doc__ += extra_doc
         return _wrapper
 
 
