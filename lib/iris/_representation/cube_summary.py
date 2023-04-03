@@ -264,10 +264,9 @@ class CellMethodSection(Section):
         self.names = []
         self.values = []
         self.contents = []
-        for method in cell_methods:
-            index = str(cell_methods.index(method))
+        for index, method in enumerate(cell_methods):
             value = str(method)
-            self.names.append(index)
+            self.names.append(str(index))
             self.values.append(value)
             content = "{}: {}".format(index, value)
             self.contents.append(content)

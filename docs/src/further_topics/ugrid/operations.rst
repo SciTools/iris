@@ -566,7 +566,7 @@ Here's another example using a global cubed-sphere data set:
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                0                           time: mean: (interval: 300 s)
+                0                           time: mean (interval: 300 s)
                 1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
@@ -815,7 +815,7 @@ with the
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                0                           time: mean: (interval: 300 s)
+                0                           time: mean (interval: 300 s)
                 1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
@@ -851,7 +851,7 @@ with the
             Auxiliary coordinates:
                 time                            x            -               -
             Cell methods:
-                0                           time: mean: (interval: 300 s)
+                0                           time: mean (interval: 300 s)
                 1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
@@ -894,7 +894,7 @@ previously initialised regridder:
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                0                           time: mean: (interval: 300 s)
+                0                           time: mean (interval: 300 s)
                 1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
@@ -917,7 +917,7 @@ previously initialised regridder:
             Auxiliary coordinates:
                 time                            x            -               -
             Cell methods:
-                0                           time: mean: (interval: 300 s)
+                0                           time: mean (interval: 300 s)
                 1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID

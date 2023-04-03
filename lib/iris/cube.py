@@ -4349,7 +4349,7 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    0                           time: mean: (interval: 1 hour)
+                    0                           time: mean (interval: 1 hour)
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
@@ -4374,7 +4374,7 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    0                           time: mean: (interval: 1 hour)
+                    0                           time: mean (interval: 1 hour)
                     1                           time: mean
                 Attributes:
                     STASH                       m01s00i024
