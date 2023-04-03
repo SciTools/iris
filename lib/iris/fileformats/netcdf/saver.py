@@ -24,7 +24,6 @@ import warnings
 
 import cf_units
 import dask.array as da
-import netCDF4
 import numpy as np
 import numpy.ma as ma
 
@@ -45,6 +44,7 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
+from iris.fileformats.netcdf import _thread_safe_nc
 import iris.io
 import iris.util
 
@@ -459,7 +459,10 @@ def _setncattr(variable, name, attribute):
     Put the given attribute on the given netCDF4 Data type, casting
     attributes as we go to bytes rather than unicode.
 
+    NOTE: variable needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
+
     """
+    assert hasattr(variable, "THREAD_SAFE_FLAG")
     attribute = _bytes_if_ascii(attribute)
     return variable.setncattr(name, attribute)
 
@@ -470,9 +473,12 @@ class _FillValueMaskCheckAndStoreTarget:
     given value and whether it was masked, before passing the chunk to the
     given target.
 
+    NOTE: target needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
+
     """
 
     def __init__(self, target, fill_value=None):
+        assert hasattr(target, "THREAD_SAFE_FLAG")
         self.target = target
         self.fill_value = fill_value
         self.contains_value = False
@@ -544,7 +550,7 @@ class Saver:
         self._formula_terms_cache = {}
         #: NetCDF dataset
         try:
-            self._dataset = netCDF4.Dataset(
+            self._dataset = _thread_safe_nc.DatasetWrapper(
                 filename, mode="w", format=netcdf_format
             )
         except RuntimeError:
@@ -1927,16 +1933,6 @@ class Saver:
             # Check if this is a dim-coord.
             is_dimcoord = cube is not None and element in cube.dim_coords
 
-            if isinstance(element, iris.coords.CellMeasure):
-                # Disallow saving of *masked* cell measures.
-                # NOTE: currently, this is the only functional difference in
-                # variable creation between an ancillary and a cell measure.
-                if iris.util.is_masked(data):
-                    # We can't save masked points properly, as we don't maintain
-                    # a fill_value.  (Load will not record one, either).
-                    msg = "Cell measures with missing data are not supported."
-                    raise ValueError(msg)
-
             if is_dimcoord:
                 # By definition of a CF-netCDF coordinate variable this
                 # coordinate must be 1-D and the name of the CF-netCDF variable
@@ -2331,7 +2327,13 @@ class Saver:
             dtype = data.dtype.newbyteorder("=")
 
         def set_packing_ncattrs(cfvar):
-            """Set netCDF packing attributes."""
+            """
+            Set netCDF packing attributes.
+
+            NOTE: cfvar needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
+
+            """
+            assert hasattr(cfvar, "THREAD_SAFE_FLAG")
             if packing:
                 if scale_factor:
                     _setncattr(cfvar, "scale_factor", scale_factor)
@@ -2478,7 +2480,9 @@ class Saver:
             if fill_value is not None:
                 fill_value_to_check = fill_value
             else:
-                fill_value_to_check = netCDF4.default_fillvals[dtype.str[1:]]
+                fill_value_to_check = _thread_safe_nc.default_fillvals[
+                    dtype.str[1:]
+                ]
         else:
             fill_value_to_check = None
 

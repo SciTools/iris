@@ -134,8 +134,9 @@ class FormatAgent:
                 value = value[:50] + "..."
             printable_values[key] = value
         msg = (
-            "No format specification could be found for the given buffer."
-            " File element cache:\n {}".format(printable_values)
+            "No format specification could be found for the given buffer. "
+            "Perhaps a plugin is missing or has not been loaded. "
+            "File element cache:\n {}".format(printable_values)
         )
         raise ValueError(msg)
 

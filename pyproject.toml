@@ -46,3 +46,19 @@ verbose = "False"
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = "lib/iris"
+
+[tool.coverage.run]
+branch = true
+source = [
+    "lib/iris",
+]
+omit = [
+    "lib/iris/tests/*",
+    "lib/iris/etc/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:"
+]

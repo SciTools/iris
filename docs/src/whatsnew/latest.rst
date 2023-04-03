@@ -26,19 +26,47 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
-#. Welcome and congratulations to `@HGWright`_ for making his first contribution to Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_, `@scottrobinson02`_ and
+   `@agriyakhetarpal`_ who made their first contributions to Iris! 🎉
 
 
 ✨ Features
 ===========
 
-#. N/A
+#. `@bsherratt`_ added support for plugins - see the corresponding
+   :ref:`documentation page<community_plugins>` for further information.
+   (:pull:`5144`)
+
+#. `@rcomer`_ enabled lazy evaluation of :obj:`~iris.analysis.RMS` calcuations
+   with weights. (:pull:`5017`)
+
+#. `@schlunma`_ allowed the usage of cubes, coordinates, cell measures, or
+   ancillary variables as weights for cube aggregations
+   (:meth:`iris.cube.Cube.collapsed`, :meth:`iris.cube.Cube.aggregated_by`, and
+   :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
+   if necessary. (:pull:`5084`)
+
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist`
+   and :func:`iris.quickplot.hist`. (:pull:`5189`)
+
+#. `@tinyendian`_ edited :func:`~iris.analysis.cartography.rotate_winds` to
+   enable lazy computation of rotated wind vector components (:issue:`4934`,
+   :pull:`4972`)
 
 
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@trexfeathers`_ and `@pp-mo`_ made Iris' use of the `netCDF4`_ library
+   thread-safe. (:pull:`5095`)
+
+#. `@ESadek-MO`_ removed check and error raise for saving
+   cubes with masked :class:`iris.coords.CellMeasure`.
+   (:issue:`5147`, :pull:`5181`)
+
+#. `@scottrobinson02`_ fixed :class:`iris.util.new_axis` creating an anonymous new
+   dimension, when the scalar coord provided is already a dim coord.
+   (:issue:`4415`, :pull:`5194`)
 
 
 💣 Incompatible Changes
@@ -97,6 +125,7 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
 
+
 💼 Internal
 ===========
 
@@ -106,6 +135,26 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed some old infrastructure that printed test timings.
    (:pull:`5101`)
 
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) added coverage testing. This
+   can be enabled by using the "--coverage" flag when running the tests with
+   nox i.e. ``nox --session tests -- --coverage``. (:pull:`4765`)
+
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) removed the ``--coding-tests``
+   option from Iris' test runner. (:pull:`4765`)
+
+#. `@lbdreyer`_ removed the Iris TestRunner. Tests are now run via nox or
+   pytest. (:pull:`5205`)
+
+#. `@agriyakhetarpal`_ prevented the GitHub action for publishing releases to
+   PyPI from running in forks. (:pull:`5220`)
+
+#. `@trexfeathers`_ moved the benchmark runner conveniences from ``noxfile.py``
+   to a dedicated ``benchmarks/bm_runner.py``. (:pull:`5215`)
+
+#. `@bjlittle`_ follow-up to :pull:`4972`, enforced ``dask>=2022.09.0`` minimum
+   pin for first use of `dask.array.ma.empty_like`_ and replaced `@tinyendian`_
+   workaround. (:pull:`5225`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -113,9 +162,14 @@ This document explains the changes made to Iris for this release
 
 .. _@fnattino: https://github.com/fnattino
 .. _@ed-hawkins: https://github.com/ed-hawkins
+.. _@scottrobinson02: https://github.com/scottrobinson02
+.. _@agriyakhetarpal: https://github.com/agriyakhetarpal
+.. _@tinyendian: https://github.com/tinyendian
+
 
 .. comment
     Whatsnew resources in alphabetical order:
 
 .. _#ShowYourStripes: https://showyourstripes.info/s/globe/
 .. _README.md: https://github.com/SciTools/iris#-----
+.. _dask.array.ma.empty_like: https://docs.dask.org/en/stable/generated/dask.array.ma.empty_like.html

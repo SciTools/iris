@@ -15,7 +15,6 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 """
 import warnings
 
-import netCDF4
 import numpy as np
 
 from iris._lazy_data import as_lazy_data
@@ -34,6 +33,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.fileformats.cf
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -44,6 +44,10 @@ DEBUG = False
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
+# An expected part of the public loader API, but includes thread safety
+#  concerns so is housed in _thread_safe_nc.
+NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
+
 
 def _actions_engine():
     # Return an 'actions engine', which provides a pyke-rules-like interface to
@@ -53,48 +57,6 @@ def _actions_engine():
 
     engine = nc_actions_engine.Engine()
     return engine
-
-
-class NetCDFDataProxy:
-    """A reference to the data payload of a single NetCDF file variable."""
-
-    __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
-
-    def __init__(self, shape, dtype, path, variable_name, fill_value):
-        self.shape = shape
-        self.dtype = dtype
-        self.path = path
-        self.variable_name = variable_name
-        self.fill_value = fill_value
-
-    @property
-    def ndim(self):
-        return len(self.shape)
-
-    def __getitem__(self, keys):
-        dataset = netCDF4.Dataset(self.path)
-        try:
-            variable = dataset.variables[self.variable_name]
-            # Get the NetCDF variable data and slice.
-            var = variable[keys]
-        finally:
-            dataset.close()
-        return np.asanyarray(var)
-
-    def __repr__(self):
-        fmt = (
-            "<{self.__class__.__name__} shape={self.shape}"
-            " dtype={self.dtype!r} path={self.path!r}"
-            " variable_name={self.variable_name!r}>"
-        )
-        return fmt.format(self=self)
-
-    def __getstate__(self):
-        return {attr: getattr(self, attr) for attr in self.__slots__}
-
-    def __setstate__(self, state):
-        for key, value in state.items():
-            setattr(self, key, value)
 
 
 def _assert_case_specific_facts(engine, cf, cf_group):
@@ -219,7 +181,7 @@ def _get_cf_var_data(cf_var, filename):
     fill_value = getattr(
         cf_var.cf_data,
         "_FillValue",
-        netCDF4.default_fillvals[cf_var.dtype.str[1:]],
+        _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
     )
     proxy = NetCDFDataProxy(
         cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
@@ -536,59 +498,62 @@ def load_cubes(filenames, callback=None, constraints=None):
         # Ingest the netCDF file.
         meshes = {}
         if PARSE_UGRID_ON_LOAD:
-            cf = CFUGridReader(filename)
-            meshes = _meshes_from_cf(cf)
+            cf_reader_class = CFUGridReader
         else:
-            cf = iris.fileformats.cf.CFReader(filename)
+            cf_reader_class = iris.fileformats.cf.CFReader
 
-        # Process each CF data variable.
-        data_variables = list(cf.cf_group.data_variables.values()) + list(
-            cf.cf_group.promoted.values()
-        )
-        for cf_var in data_variables:
-            if var_callback and not var_callback(cf_var):
-                # Deliver only selected results.
-                continue
-
-            # cf_var-specific mesh handling, if a mesh is present.
-            # Build the mesh_coords *before* loading the cube - avoids
-            # mesh-related attributes being picked up by
-            # _add_unused_attributes().
-            mesh_name = None
-            mesh = None
-            mesh_coords, mesh_dim = [], None
+        with cf_reader_class(filename) as cf:
             if PARSE_UGRID_ON_LOAD:
-                mesh_name = getattr(cf_var, "mesh", None)
-            if mesh_name is not None:
+                meshes = _meshes_from_cf(cf)
+
+            # Process each CF data variable.
+            data_variables = list(cf.cf_group.data_variables.values()) + list(
+                cf.cf_group.promoted.values()
+            )
+            for cf_var in data_variables:
+                if var_callback and not var_callback(cf_var):
+                    # Deliver only selected results.
+                    continue
+
+                # cf_var-specific mesh handling, if a mesh is present.
+                # Build the mesh_coords *before* loading the cube - avoids
+                # mesh-related attributes being picked up by
+                # _add_unused_attributes().
+                mesh_name = None
+                mesh = None
+                mesh_coords, mesh_dim = [], None
+                if PARSE_UGRID_ON_LOAD:
+                    mesh_name = getattr(cf_var, "mesh", None)
+                if mesh_name is not None:
+                    try:
+                        mesh = meshes[mesh_name]
+                    except KeyError:
+                        message = (
+                            f"File does not contain mesh: '{mesh_name}' - "
+                            f"referenced by variable: '{cf_var.cf_name}' ."
+                        )
+                        logger.debug(message)
+                if mesh is not None:
+                    mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+
+                cube = _load_cube(engine, cf, cf_var, filename)
+
+                # Attach the mesh (if present) to the cube.
+                for mesh_coord in mesh_coords:
+                    cube.add_aux_coord(mesh_coord, mesh_dim)
+
+                # Process any associated formula terms and attach
+                # the corresponding AuxCoordFactory.
                 try:
-                    mesh = meshes[mesh_name]
-                except KeyError:
-                    message = (
-                        f"File does not contain mesh: '{mesh_name}' - "
-                        f"referenced by variable: '{cf_var.cf_name}' ."
-                    )
-                    logger.debug(message)
-            if mesh is not None:
-                mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+                    _load_aux_factory(engine, cube)
+                except ValueError as e:
+                    warnings.warn("{}".format(e))
 
-            cube = _load_cube(engine, cf, cf_var, filename)
+                # Perform any user registered callback function.
+                cube = run_callback(callback, cube, cf_var, filename)
 
-            # Attach the mesh (if present) to the cube.
-            for mesh_coord in mesh_coords:
-                cube.add_aux_coord(mesh_coord, mesh_dim)
+                # Callback mechanism may return None, which must not be yielded
+                if cube is None:
+                    continue
 
-            # Process any associated formula terms and attach
-            # the corresponding AuxCoordFactory.
-            try:
-                _load_aux_factory(engine, cube)
-            except ValueError as e:
-                warnings.warn("{}".format(e))
-
-            # Perform any user registered callback function.
-            cube = run_callback(callback, cube, cf_var, filename)
-
-            # Callback mechanism may return None, which must not be yielded
-            if cube is None:
-                continue
-
-            yield cube
+                yield cube

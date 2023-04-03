@@ -28,6 +28,7 @@ from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris._merge
 import iris.analysis
+from iris.analysis import _Weights
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
@@ -3721,9 +3722,15 @@ class Cube(CFVariableMixin):
         sum :data:`~iris.analysis.SUM`.
 
         Weighted aggregations support an optional *weights* keyword argument.
-        If set, this should be supplied as an array of weights whose shape
-        matches the cube. Values for latitude-longitude area weights may be
-        calculated using :func:`iris.analysis.cartography.area_weights`.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d (for collapsing over a 1d coordinate) or match the
+        shape of the cube. When weights are not given as arrays, units are
+        correctly handled for weighted sums, i.e., the original unit of the
+        cube is multiplied by the units of the weights. Values for
+        latitude-longitude area weights may be calculated using
+        :func:`iris.analysis.cartography.area_weights`.
 
         Some Iris aggregators support "lazy" evaluation, meaning that
         cubes resulting from this method may represent data arrays which are
@@ -3802,6 +3809,10 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
 
@@ -3970,10 +3981,14 @@ class Cube(CFVariableMixin):
         also be supplied. These include :data:`~iris.analysis.MEAN` and
         :data:`~iris.analysis.SUM`.
 
-        Weighted aggregations support an optional *weights* keyword argument. If
-        set, this should be supplied as an array of weights whose shape matches
-        the cube or as 1D array whose length matches the dimension over which is
-        aggregated.
+        Weighted aggregations support an optional *weights* keyword argument.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d or match the shape of the cube. When weights are
+        not given as arrays, units are correctly handled for weighted sums,
+        i.e., the original unit of the cube is multiplied by the units of the
+        weights.
 
         Parameters
         ----------
@@ -4032,6 +4047,10 @@ x            -              -
                     STASH                       m01s00i024
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         groupby_coords = []
         dimension_to_groupby = None
 
@@ -4070,10 +4089,16 @@ x            -              -
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
-                weights = iris.util.broadcast_to_shape(
-                    weights,
-                    self.shape,
-                    (dimension_to_groupby,),
+
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                weights = _Weights(
+                    iris.util.broadcast_to_shape(
+                        weights,
+                        self.shape,
+                        (dimension_to_groupby,),
+                    ),
+                    self,
+                    units=weights.units,
                 )
             if weights.shape != self.shape:
                 raise ValueError(
@@ -4289,8 +4314,11 @@ x            -              -
 
         * kwargs:
             Aggregator and aggregation function keyword arguments. The weights
-            argument to the aggregator, if any, should be a 1d array with the
-            same length as the chosen window.
+            argument to the aggregator, if any, should be a 1d array, cube, or
+            (names of) :meth:`~iris.cube.Cube.coords`,
+            :meth:`~iris.cube.Cube.cell_measures`, or
+            :meth:`~iris.cube.Cube.ancillary_variables` with the same length as
+            the chosen window.
 
         Returns:
             :class:`iris.cube.Cube`.
@@ -4358,6 +4386,10 @@ x            -               -
             possible windows of size 3 from the original cube.
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         coord = self._as_list_of_coords(coord)[0]
 
         if getattr(coord, "circular", False):
@@ -4459,8 +4491,14 @@ x            -               -
                         "as the window."
                     )
                 kwargs = dict(kwargs)
-                kwargs["weights"] = iris.util.broadcast_to_shape(
-                    weights, rolling_window_data.shape, (dimension + 1,)
+
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                kwargs["weights"] = _Weights(
+                    iris.util.broadcast_to_shape(
+                        weights, rolling_window_data.shape, (dimension + 1,)
+                    ),
+                    self,
+                    units=weights.units,
                 )
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs

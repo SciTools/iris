@@ -46,3 +46,13 @@ smoother interoperability:
    :hidden:
 
    iris_xarray
+
+Plugins
+-------
+
+Iris can be extended with **plugins**!  See below for further information:
+
+.. toctree::
+   :maxdepth: 2
+
+   plugins

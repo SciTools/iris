@@ -324,5 +324,30 @@ def fill_between(x, y1, y2, *args, **kwargs):
     return result
 
 
+def hist(x, *args, **kwargs):
+    """
+    Compute and plot a labelled histogram.
+
+    See :func:`iris.plot.hist` for details of valid arguments and
+    keyword arguments.
+    """
+    axes = kwargs.get("axes")
+    result = iplt.hist(x, *args, **kwargs)
+    title = _title(x, with_units=False)
+    label = _title(x, with_units=True)
+
+    if axes is None:
+        axes = plt.gca()
+
+    orientation = kwargs.get("orientation")
+    if orientation == "horizontal":
+        axes.set_ylabel(label)
+    else:
+        axes.set_xlabel(label)
+    axes.set_title(title)
+
+    return result
+
+
 # Provide a convenience show method from pyplot.
 show = plt.show

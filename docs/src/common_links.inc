@@ -30,27 +30,29 @@
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
-.. _readthedocs.yml: https://github.com/SciTools/iris/blob/main/requirements/ci/readthedocs.yml
+.. _readthedocs.yml: https://github.com/SciTools/iris/blob/main/requirements/readthedocs.yml
 .. _SciTools: https://github.com/SciTools
 .. _scitools-iris: https://pypi.org/project/scitools-iris/
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _using git: https://docs.github.com/en/github/using-git
-.. _requirements/ci/: https://github.com/SciTools/iris/tree/main/requirements/ci
+.. _requirements: https://github.com/SciTools/iris/tree/main/requirements
 .. _CF-UGRID: https://ugrid-conventions.github.io/ugrid-conventions/
 .. _issues on GitHub: https://github.com/SciTools/iris/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc
 .. _python-stratify: https://github.com/SciTools/python-stratify
 .. _iris-esmf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
+.. _netCDF4: https://github.com/Unidata/netcdf4-python
 
 
 .. comment
-    Core developers (@github names) in alphabetical order:
+    Core developers and prolific contributors (@github names) in alphabetical order:
 
 .. _@abooton: https://github.com/abooton
 .. _@alastair-gemmell: https://github.com/alastair-gemmell
 .. _@ajdawson: https://github.com/ajdawson
 .. _@bjlittle: https://github.com/bjlittle
 .. _@bouweandela: https://github.com/bouweandela
+.. _@bsherratt: https://github.com/bsherratt
 .. _@corinnebosley: https://github.com/corinnebosley
 .. _@cpelley: https://github.com/cpelley
 .. _@djkirkham: https://github.com/djkirkham
