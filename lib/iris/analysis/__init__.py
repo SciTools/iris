@@ -2546,7 +2546,7 @@ class _Groupby:
 
     def __repr__(self) -> str:
         groupby_coords = [coord.name() for coord in self._groupby_coords]
-        shared_coords = [item[0].name() for item in self._shared_coords]
+        shared_coords = [coord.name() for coord, _ in self._shared_coords]
         return (
             f"{self.__class__.__name__}({groupby_coords!r}"
             f", shared_coords={shared_coords!r})"
