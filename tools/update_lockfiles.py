@@ -8,7 +8,7 @@ A command line utility for generating conda-lock files for the environments
 that nox uses for testing each different supported version of python.
 Typical usage:
 
-    python tools/update_lockfiles.py -o requirements/ci/nox.lock requirements/ci/py*.yml
+    python tools/update_lockfiles.py -o requirements/locks requirements/py*.yml
 
 
 """

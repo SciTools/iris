@@ -511,5 +511,62 @@ class TestNonEarthPlanet(tests.IrisTest):
         rotate_winds(u, v, other_cs)
 
 
+class TestLazyRotateWinds(tests.IrisTest):
+    def _compare_lazy_rotate_winds(self, masked):
+        # Compute wind rotation with lazy data and compare results
+
+        # Choose target coord system that will (not) lead to masked results
+        if masked:
+            coord_sys = iris.coord_systems.OSGB()
+        else:
+            coord_sys = iris.coord_systems.GeogCS(6371229)
+
+        u, v = uv_cubes()
+
+        # Create deep copy of the cubes with rechunked lazy data to check if
+        # input data is modified, and if Dask metadata is preserved
+        u_lazy = u.copy(data=u.copy().lazy_data().rechunk([2, 1]))
+        v_lazy = v.copy(data=v.copy().lazy_data().rechunk([1, 2]))
+
+        ut_ref, vt_ref = rotate_winds(u, v, coord_sys)
+        self.assertFalse(ut_ref.has_lazy_data())
+        self.assertFalse(vt_ref.has_lazy_data())
+        # Ensure that choice of target coordinates leads to (no) masking
+        self.assertTrue(ma.isMaskedArray(ut_ref.data) == masked)
+
+        # Results are lazy if at least one component is lazy
+        ut, vt = rotate_winds(u_lazy, v, coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertTrue(ut.core_data().chunksize == (2, 1))
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        ut, vt = rotate_winds(u, v_lazy, coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertTrue(vt.core_data().chunksize == (1, 2))
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        ut, vt = rotate_winds(u_lazy, v_lazy, coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertTrue(ut.core_data().chunksize == (2, 1))
+        self.assertTrue(vt.core_data().chunksize == (1, 2))
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        # Ensure that input data has not been modified
+        self.assertArrayAllClose(u.data, u_lazy.data, rtol=1e-5)
+        self.assertArrayAllClose(v.data, v_lazy.data, rtol=1e-5)
+
+    def test_lazy_rotate_winds_masked(self):
+        self._compare_lazy_rotate_winds(True)
+
+    def test_lazy_rotate_winds_notmasked(self):
+        self._compare_lazy_rotate_winds(False)
+
+
 if __name__ == "__main__":
     tests.main()

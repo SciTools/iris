@@ -413,6 +413,30 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube.data, self.single_rms_expected
         )
 
+    def test_str_aggregation_single_weights_none(self):
+        # mean group-by with single coordinate name.
+        aggregateby_cube = self.cube_single.aggregated_by(
+            "height", iris.analysis.MEAN, weights=None
+        )
+        self.assertCML(
+            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
+        np.testing.assert_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
+
+    def test_coord_aggregation_single_weights_none(self):
+        # mean group-by with single coordinate.
+        aggregateby_cube = self.cube_single.aggregated_by(
+            self.coord_z_single, iris.analysis.MEAN, weights=None
+        )
+        self.assertCML(
+            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
+        np.testing.assert_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
+
     def test_weighted_single(self):
         # weighted mean group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by(
@@ -1326,6 +1350,154 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MAX,
             weights=self.weights_single,
         )
+
+
+# Simply redo the tests of TestAggregateBy with other cubes as weights
+# Note: other weights types (e.g., coordinates, cell measures, etc.) are not
+# tested this way here since this would require adding dimensional metadata
+# objects to the cubes, which would change the CMLs of all resulting cubes of
+# TestAggregateBy.
+
+
+class TestAggregateByWeightedByCube(TestAggregateBy):
+    def setUp(self):
+        super().setUp()
+
+        self.weights_single = self.cube_single[:, 0, 0].copy(
+            self.weights_single
+        )
+        self.weights_single.units = "m2"
+        self.weights_multi = self.cube_multi[:, 0, 0].copy(self.weights_multi)
+        self.weights_multi.units = "m2"
+
+    def test_str_aggregation_weighted_sum_single(self):
+        aggregateby_cube = self.cube_single.aggregated_by(
+            "height",
+            iris.analysis.SUM,
+            weights=self.weights_single,
+        )
+        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+
+    def test_coord_aggregation_weighted_sum_single(self):
+        aggregateby_cube = self.cube_single.aggregated_by(
+            self.coord_z_single,
+            iris.analysis.SUM,
+            weights=self.weights_single,
+        )
+        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+
+    def test_str_aggregation_weighted_sum_multi(self):
+        aggregateby_cube = self.cube_multi.aggregated_by(
+            ["height", "level"],
+            iris.analysis.SUM,
+            weights=self.weights_multi,
+        )
+        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+
+    def test_str_aggregation_rev_order_weighted_sum_multi(self):
+        aggregateby_cube = self.cube_multi.aggregated_by(
+            ["level", "height"],
+            iris.analysis.SUM,
+            weights=self.weights_multi,
+        )
+        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+
+    def test_coord_aggregation_weighted_sum_multi(self):
+        aggregateby_cube = self.cube_multi.aggregated_by(
+            [self.coord_z1_multi, self.coord_z2_multi],
+            iris.analysis.SUM,
+            weights=self.weights_multi,
+        )
+        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+
+    def test_coord_aggregation_rev_order_weighted_sum_multi(self):
+        aggregateby_cube = self.cube_multi.aggregated_by(
+            [self.coord_z2_multi, self.coord_z1_multi],
+            iris.analysis.SUM,
+            weights=self.weights_multi,
+        )
+        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+
+
+class TestAggregateByWeightedByObj(tests.IrisTest):
+    def setUp(self):
+        self.dim_coord = iris.coords.DimCoord(
+            [0, 1, 2], standard_name="latitude", units="degrees"
+        )
+        self.aux_coord = iris.coords.AuxCoord(
+            [0, 1, 1], long_name="auxcoord", units="kg"
+        )
+        self.cell_measure = iris.coords.CellMeasure(
+            [0, 0, 0], standard_name="cell_area", units="m2"
+        )
+        self.ancillary_variable = iris.coords.AncillaryVariable(
+            [1, 1, 1], var_name="ancvar", units="kg"
+        )
+        self.cube = iris.cube.Cube(
+            [1, 2, 3],
+            standard_name="air_temperature",
+            units="K",
+            dim_coords_and_dims=[(self.dim_coord, 0)],
+            aux_coords_and_dims=[(self.aux_coord, 0)],
+            cell_measures_and_dims=[(self.cell_measure, 0)],
+            ancillary_variables_and_dims=[(self.ancillary_variable, 0)],
+        )
+
+    def test_weighting_with_str_dim_coord(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights="latitude"
+        )
+        np.testing.assert_array_equal(res_cube.data, [0, 8])
+        self.assertEqual(res_cube.units, "K degrees")
+
+    def test_weighting_with_str_aux_coord(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights="auxcoord"
+        )
+        np.testing.assert_array_equal(res_cube.data, [0, 5])
+        self.assertEqual(res_cube.units, "K kg")
+
+    def test_weighting_with_str_cell_measure(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights="cell_area"
+        )
+        np.testing.assert_array_equal(res_cube.data, [0, 0])
+        self.assertEqual(res_cube.units, "K m2")
+
+    def test_weighting_with_str_ancillary_variable(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights="ancvar"
+        )
+        np.testing.assert_array_equal(res_cube.data, [1, 5])
+        self.assertEqual(res_cube.units, "K kg")
+
+    def test_weighting_with_dim_coord(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights=self.dim_coord
+        )
+        np.testing.assert_array_equal(res_cube.data, [0, 8])
+        self.assertEqual(res_cube.units, "K degrees")
+
+    def test_weighting_with_aux_coord(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights=self.aux_coord
+        )
+        np.testing.assert_array_equal(res_cube.data, [0, 5])
+        self.assertEqual(res_cube.units, "K kg")
+
+    def test_weighting_with_cell_measure(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights=self.cell_measure
+        )
+        np.testing.assert_array_equal(res_cube.data, [0, 0])
+        self.assertEqual(res_cube.units, "K m2")
+
+    def test_weighting_with_ancillary_variable(self):
+        res_cube = self.cube.aggregated_by(
+            "auxcoord", iris.analysis.SUM, weights=self.ancillary_variable
+        )
+        np.testing.assert_array_equal(res_cube.data, [1, 5])
+        self.assertEqual(res_cube.units, "K kg")
 
 
 if __name__ == "__main__":

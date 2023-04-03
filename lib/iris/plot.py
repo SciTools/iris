@@ -1704,6 +1704,36 @@ def fill_between(x, y1, y2, *args, **kwargs):
     )
 
 
+def hist(x, *args, **kwargs):
+    """
+    Compute and plot a histogram.
+
+    Args:
+
+    * x:
+        A :class:`~iris.cube.Cube`, :class:`~iris.coords.Coord`,
+        :class:`~iris.coords.CellMeasure`, or :class:`~iris.coords.AncillaryVariable`
+        that will be used as the values that will be used to create the
+        histogram.
+        Note that if a coordinate is given, the points are used, ignoring the
+        bounds.
+
+    See :func:`matplotlib.pyplot.hist` for details of additional valid
+    keyword arguments.
+
+    """
+    if isinstance(x, iris.cube.Cube):
+        data = x.data
+    elif isinstance(x, iris.coords._DimensionalMetadata):
+        data = x._values
+    else:
+        raise TypeError(
+            "x must be a cube, coordinate, cell measure or "
+            "ancillary variable."
+        )
+    return plt.hist(data, *args, **kwargs)
+
+
 # Provide convenience show method from pyplot
 show = plt.show
 
