@@ -2151,7 +2151,7 @@ class _LiftEmptyMasks:
             self.cube_store = CubeList()
             warn_message_template = (
                 "Inconsistent {}; no masks will be lifted "
-                f"during {func_name.__name__} - performance may be "
+                f"during {func_name} - performance may be "
                 "sub-optimal."
             )
             warn(warn_message_template.format(warn_phrase))
