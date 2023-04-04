@@ -2297,14 +2297,19 @@ class _LiftEmptyMasks:
 
         Warnings
         --------
-        Be careful what callables this is applied to. If any input objects
-        have an
-        all-``False`` mask, **all** returned non-masked objects will be
-        converted
-        to have an all-``False`` mask post-run. And if the callable assigns
-        :obj:`~numpy.typing.ArrayLike`\\s/:class:`~iris.cube.Cube`\\s
-        in a way that can't be detected (e.g. modifying a global object, or
-        returning a dict), those masks will be permanently 'lifted'.
+        Be careful what callables this is applied to:
+
+        If any input objects have an all-``False`` mask, **all** returned
+        non-masked objects will be converted to have an all-``False`` mask
+        post-run.
+
+        Mask re-application is designed for `decorated_func` to return any
+        :obj:`~numpy.typing.ArrayLike`\\s/:class:`~iris.cube.Cube`\\s as
+        a single object or a tuple of objects. Anything output in a
+        different format (e.g. contained in a returned dict) will not have a
+        mask re-applied. Anything that `decorated_func` assigns to global
+        objects / class variables / etcetera will also not have a mask
+        re-applied.
 
         Notes
         -----
