@@ -165,8 +165,8 @@ This document explains the changes made to Iris for this release
    workaround. (:pull:`5225`)
 
 #. `@HGWright`_, `@bjlittle`_ and `@trexfeathers`_ removed the legacy pin for
-   numpy array printing and replaced the test results files to match the not
-   printing output (:pull:`5235`)
+   ``numpy`` array printing and replaced the test results files to match default
+   ``numpy`` output. (:pull:`5235`)
 
 
 .. comment
