@@ -2110,6 +2110,9 @@ class _LiftEmptyMasks:
             mask_type, fill_value = self.get_mask_info(func_input)
             if mask_type in self.false_mask_types:
                 if len(self.lift_addresses) == 0:
+                    # This is the first input that will have its mask lifted,
+                    #  so we don't yet have the uniform mask properties and
+                    #  therefore set them here.
                     self.uniform_false_mtype = mask_type
                     self.uniform_fill_value = fill_value
 
