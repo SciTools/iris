@@ -2278,9 +2278,9 @@ class _LiftEmptyMasks:
         :class:`~iris.cube.Cube`\\s are modified in-place. After
         `decorated_func`
         has run, all returned :obj:`~numpy.typing.ArrayLike`\\s and
-        :class:`~iris.cube.Cube`\\s, together any modified input
+        :class:`~iris.cube.Cube`\\s, together with any modified input
         :class:`~iris.cube.Cube`\\s (see above), are converted to use masked
-        arrays with the original ``False`` mask re-applied.
+        arrays with the original all-``False`` mask re-applied.
 
         Parameters
         ----------
@@ -2301,7 +2301,7 @@ class _LiftEmptyMasks:
         have an
         all-``False`` mask, **all** returned non-masked objects will be
         converted
-        to have an all-``False`` mask. And if the callable assigns
+        to have an all-``False`` mask post-run. And if the callable assigns
         :obj:`~numpy.typing.ArrayLike`\\s/:class:`~iris.cube.Cube`\\s
         in a way that can't be detected (e.g. modifying a global object, or
         returning a dict), those masks will be permanently 'lifted'.
@@ -2315,8 +2315,9 @@ class _LiftEmptyMasks:
         :class:`~iris.cube.Cube`\\s have uniform ``fill_values`` and
         ``False``-mask-types (2 types may exist - a scalar
         :obj:`numpy.ma.nomask`, or a full :obj:`~numpy.typing.ArrayLike` of
-        ``False`` values). The uniform properties detected in ``args`` and
-        ``kwargs`` are those that are applied after `decorated_func` has run.
+        ``False`` values). The uniform mask properties detected in ``args`` and
+        ``kwargs`` are used in any masks re-applied after `decorated_func` has
+        run.
 
         """
 
