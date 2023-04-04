@@ -2183,7 +2183,7 @@ class _LiftEmptyMasks:
 
         return array_or_cube
 
-    def re_apply_masks(self, func_output):
+    def re_apply_masks_to_output(self, func_output):
         """Apply mask to any returned un-masked arrays or Cubes."""
         tuple_returned = isinstance(func_output, tuple)
 
@@ -2203,7 +2203,7 @@ class _LiftEmptyMasks:
 
         return result
 
-    def restore_cube_masks(self):
+    def restore_input_cube_masks(self):
         """
         Restore modified input cubes in-place, since we can't guarantee
         they will all be within the result object.
@@ -2333,8 +2333,8 @@ class _LiftEmptyMasks:
                     *mask_lifter.func_args, **mask_lifter.func_kwargs
                 )
             finally:
-                mask_lifter.restore_cube_masks()
-            return mask_lifter.re_apply_masks(result)
+                mask_lifter.restore_input_cube_masks()
+            return mask_lifter.re_apply_masks_to_output(result)
 
         # TODO: get the indentation right with this.
         extra_doc = """
