@@ -2078,57 +2078,6 @@ class _LiftEmptyMasks:
         in_kwargs: bool
         index_or_key: typing.Hashable or int
 
-    @staticmethod
-    def is_cube(array_or_cube):
-        from iris.cube import Cube
-
-        return isinstance(array_or_cube, Cube)
-
-    @staticmethod
-    def get_array_lib(data):
-        if iris._lazy_data.is_lazy_data(data):
-            array_lib = da
-        else:
-            array_lib = np
-        return array_lib
-
-    @classmethod
-    def get_data(cls, array_or_cube):
-        if cls.is_cube(array_or_cube):
-            result = array_or_cube.core_data()
-        elif hasattr(array_or_cube, "__array__"):
-            # Generic check for NumPy, Dask and masked arrays.
-            result = array_or_cube
-        else:
-            result = None
-
-        return result
-
-    @classmethod
-    def get_mask_info(cls, array_or_cube) -> Tuple[MaskTypes, Number]:
-        data = cls.get_data(array_or_cube)
-        if data is not None and iris._lazy_data.is_lazy_data(data):
-            # Take a sample to check the mask - dask.array.ma arrays have
-            #  no distinguishing properties.
-            sample = iris._lazy_data.sample(data)
-        else:
-            sample = data
-
-        if data is not None and hasattr(sample, "mask"):
-            if is_masked(data):
-                mask_type = cls.MaskTypes.SOME_TRUE
-            else:
-                if sample.mask is ma.nomask:
-                    mask_type = cls.MaskTypes.SCALAR_FALSE
-                else:
-                    mask_type = cls.MaskTypes.ARRAY_FALSE
-        else:
-            mask_type = cls.MaskTypes.NOT_APPLICABLE
-
-        fill_value = getattr(sample, "fill_value", None)
-
-        return mask_type, fill_value
-
     def __init__(self, func_name: str, *func_args, **func_kwargs):
         from iris.cube import CubeList
 
@@ -2260,7 +2209,58 @@ class _LiftEmptyMasks:
             self.re_apply_mask(cube)
 
     @classmethod
-    def decorator(cls, decorated_func):
+    def get_data(cls, array_or_cube):
+        if cls.is_cube(array_or_cube):
+            result = array_or_cube.core_data()
+        elif hasattr(array_or_cube, "__array__"):
+            # Generic check for NumPy, Dask and masked arrays.
+            result = array_or_cube
+        else:
+            result = None
+
+        return result
+
+    @classmethod
+    def get_mask_info(cls, array_or_cube) -> Tuple[MaskTypes, Number]:
+        data = cls.get_data(array_or_cube)
+        if data is not None and iris._lazy_data.is_lazy_data(data):
+            # Take a sample to check the mask - dask.array.ma arrays have
+            #  no distinguishing properties.
+            sample = iris._lazy_data.sample(data)
+        else:
+            sample = data
+
+        if data is not None and hasattr(sample, "mask"):
+            if is_masked(data):
+                mask_type = cls.MaskTypes.SOME_TRUE
+            else:
+                if sample.mask is ma.nomask:
+                    mask_type = cls.MaskTypes.SCALAR_FALSE
+                else:
+                    mask_type = cls.MaskTypes.ARRAY_FALSE
+        else:
+            mask_type = cls.MaskTypes.NOT_APPLICABLE
+
+        fill_value = getattr(sample, "fill_value", None)
+
+        return mask_type, fill_value
+
+    @staticmethod
+    def is_cube(array_or_cube):
+        from iris.cube import Cube
+
+        return isinstance(array_or_cube, Cube)
+
+    @staticmethod
+    def get_array_lib(data):
+        if iris._lazy_data.is_lazy_data(data):
+            array_lib = da
+        else:
+            array_lib = np
+        return array_lib
+
+    @staticmethod
+    def decorator(decorated_func):
         """
         Temporarily convert input arrays/Cubes to use non-masked arrays if
         all masks are ``False``.
