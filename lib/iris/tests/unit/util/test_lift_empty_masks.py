@@ -196,6 +196,11 @@ class TestReturned:
     def returner_single(arg):
         return arg + 1
 
+    @staticmethod
+    @lift_empty_masks
+    def returns_scalar(array):
+        return np.max(array)
+
     @pytest.mark.parametrize(
         "with_mask, some_masked, scalar_mask",
         (
@@ -310,6 +315,11 @@ class TestReturned:
         outputs = self.returner(arg)
         for output in outputs:
             self.compare_masks(output, arg)
+
+    def test_scalar_not_re_masked(self):
+        arg = make_masked(some_masked=False)
+        output = self.returns_scalar(arg)
+        assert not has_mask(output)
 
 
 class TestCubesRestored:
