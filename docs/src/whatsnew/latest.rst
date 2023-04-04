@@ -164,6 +164,10 @@ This document explains the changes made to Iris for this release
    pin for first use of `dask.array.ma.empty_like`_ and replaced `@tinyendian`_
    workaround. (:pull:`5225`)
 
+#. `@HGWright`_, `@bjlittle`_ and `@trexfeathers`_ removed the legacy pin for
+   numpy array printing and replaced the test results files to match the not
+   printing output (:pull:`5235`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
