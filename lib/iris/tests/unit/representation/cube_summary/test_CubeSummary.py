@@ -206,7 +206,7 @@ class Test_CubeSummary(tests.IrisTest):
 
         rep = CubeSummary(cube)
         cell_method_section = rep.scalar_sections["Cell methods:"]
-        expected_contents = ["mean: x, y", "mean: x"]
+        expected_contents = ["0: x: y: mean", "1: x: mean"]
         self.assertEqual(cell_method_section.contents, expected_contents)
 
     def test_scalar_cube(self):

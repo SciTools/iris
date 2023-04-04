@@ -26,7 +26,8 @@ This document explains the changes made to Iris for this release
 ================
 
 #. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
-#. Welcome and congratulations to `@HGWright`_ and `@scottrobinson02`_ who made their first contributions to Iris! 🎉
+#. Welcome and congratulations to `@HGWright`_, `@scottrobinson02`_ and
+   `@agriyakhetarpal`_ who made their first contributions to Iris! 🎉
 
 
 ✨ Features
@@ -45,8 +46,12 @@ This document explains the changes made to Iris for this release
    :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
    if necessary. (:pull:`5084`)
 
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist`
    and :func:`iris.quickplot.hist`. (:pull:`5189`)
+
+#. `@tinyendian`_ edited :func:`~iris.analysis.cartography.rotate_winds` to
+   enable lazy computation of rotated wind vector components (:issue:`4934`,
+   :pull:`4972`)
 
 #. `@pp-mo`_ supported delayed saving of lazy data, when writing to the netCDF file
    format.  See : :ref:`delayed netCDF saves <delayed_netcdf_save>`.
@@ -144,6 +149,16 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ removed the Iris TestRunner. Tests are now run via nox or
    pytest. (:pull:`5205`)
 
+#. `@agriyakhetarpal`_ prevented the GitHub action for publishing releases to
+   PyPI from running in forks. (:pull:`5220`)
+
+#. `@trexfeathers`_ moved the benchmark runner conveniences from ``noxfile.py``
+   to a dedicated ``benchmarks/bm_runner.py``. (:pull:`5215`)
+
+#. `@bjlittle`_ follow-up to :pull:`4972`, enforced ``dask>=2022.09.0`` minimum
+   pin for first use of `dask.array.ma.empty_like`_ and replaced `@tinyendian`_
+   workaround. (:pull:`5225`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -152,9 +167,13 @@ This document explains the changes made to Iris for this release
 .. _@fnattino: https://github.com/fnattino
 .. _@ed-hawkins: https://github.com/ed-hawkins
 .. _@scottrobinson02: https://github.com/scottrobinson02
+.. _@agriyakhetarpal: https://github.com/agriyakhetarpal
+.. _@tinyendian: https://github.com/tinyendian
+
 
 .. comment
     Whatsnew resources in alphabetical order:
 
 .. _#ShowYourStripes: https://showyourstripes.info/s/globe/
 .. _README.md: https://github.com/SciTools/iris#-----
+.. _dask.array.ma.empty_like: https://docs.dask.org/en/stable/generated/dask.array.ma.empty_like.html

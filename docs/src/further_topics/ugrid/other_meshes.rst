@@ -44,8 +44,8 @@ as the **nodes** when creating the Iris
                 latitude                         -        x
                 longitude                        -        x
             Cell methods:
-                mean where sea              area
-                mean                        time
+                0                           area: mean where sea
+                1                           time: mean
             Attributes:
                 grid                        'FESOM 1.4 (unstructured grid in the horizontal with 126859 wet nodes;...
                 ...
@@ -77,8 +77,8 @@ as the **nodes** when creating the Iris
                 latitude                         -        x
                 longitude                        -        x
             Cell methods:
-                mean where sea              area
-                mean                        time
+                0                           area: mean where sea
+                1                           time: mean
             Attributes:
                 grid                        'FESOM 1.4 (unstructured grid in the horizontal with 126859 wet nodes;...
                 ...
@@ -275,7 +275,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
                 depth                            4.999938 m, bound=(0.0, 10.0) m
                 time                             0001-01-01 12:00:00
             Cell methods:
-                mean                             time
+                0                                time: mean
             Attributes:
                 Conventions                      'CF-1.5'
 
@@ -350,7 +350,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
                 name                             unknown
                 location                         face
             Cell methods:
-                mean                             time
+                0                                time: mean
             Attributes:
                 Conventions                      'CF-1.5'
 

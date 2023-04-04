@@ -14,7 +14,7 @@ dependencies:
   - cartopy >=0.21
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2.26
+  - dask-core >=2022.9.0
   - matplotlib >=3.5
   - netcdf4
   - libnetcdf<4.9

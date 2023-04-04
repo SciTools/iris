@@ -566,8 +566,8 @@ Here's another example using a global cubed-sphere data set:
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -687,7 +687,7 @@ mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
             Auxiliary coordinates:
                 time                                        x        -
             Cell methods:
-                point                                   time
+                0                                       time: point
             Attributes:
                 Conventions                             UGRID
                 description                             Created by xios
@@ -744,7 +744,7 @@ mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
             Auxiliary coordinates:
                 time                                        x        -
             Cell methods:
-                point                                   time
+                0                                       time: point
             Attributes:
                 Conventions                             UGRID
                 description                             Created by xios
@@ -815,8 +815,8 @@ with the
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -851,8 +851,8 @@ with the
             Auxiliary coordinates:
                 time                            x            -               -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -894,8 +894,8 @@ previously initialised regridder:
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -917,8 +917,8 @@ previously initialised regridder:
             Auxiliary coordinates:
                 time                            x            -               -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
