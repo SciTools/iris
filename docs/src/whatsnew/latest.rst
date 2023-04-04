@@ -79,8 +79,9 @@ This document explains the changes made to Iris for this release
 ===========================
 
 #. `@pp-mo`_ changed the netCDF loader to fetch data immediately from small netCDF
-   variables, instead of creating a dask array.
-   This saves both time and memory. (:pull:`5229`)
+   variables, instead of creating a dask array: This saves both time and memory.
+   Note that some cubes, coordinates etc loaded from netCDF will now have real data
+   where previously it was lazy.  (:pull:`5229`)
 
 
 🔥 Deprecations
