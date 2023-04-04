@@ -5,7 +5,9 @@
 .. testsetup:: *
 
     import dask.array as da
+    from dask.array import Delayed
     import iris
+    from iris.cube import Cubelist
     import numpy as np
 
 
@@ -228,10 +230,42 @@ coordinates' lazy points and bounds:
 Dask Processing Options
 -----------------------
 
-Iris uses dask to provide lazy data arrays for both Iris cubes and coordinates,
-and for computing deferred operations on lazy arrays.
+Iris uses `Dask <https://docs.dask.org/en/stable/`_ to provide lazy data arrays for
+both Iris cubes and coordinates, and for computing deferred operations on lazy arrays.
 
 Dask provides processing options to control how deferred operations on lazy arrays
 are computed. This is provided via the ``dask.set_options`` interface. See the
 `dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
 for more information on setting dask processing options.
+
+
+.. _delayed_netcdf_save:
+
+Delayed netCDF Saving
+---------------------
+When saving data to netCDF files, it is possible to _delay_ writing lazy content to the
+output file, to be performed by  `Dask <https://docs.dask.org/en/stable/`_  later,
+allowing parallel operation.
+
+This works in the following way :
+    1. the :meth:`iris.save` call has a added keyword ``compute=False``.
+       This is currently _only_ available when saving to netCDF, so is documented in
+       the netCDF file format API.  See : :func:`iris.fileformats.netcdf.save`.
+    1. the call creates the output file, but does not fill in variables' data, where
+       the data is a lazy array in the Iris object.  Instead, these variables are
+       initially created "empty".
+    1. the :meth:`~iris.save` call returns a ``result`` which is a dask
+       :class:`Delayed` object.
+    1. the save can be completed later by calling ``result.compute()``, or by passing it
+       to the :func:`dask.compute` call.
+
+The benefit of this, is that costly data transfer operations can be performed in
+parallel with writes to other data files.  Also, where array results may be calculated
+from some of the same lazy input data, these can be computed in parallel efficiently by
+Dask (i.e. without re-calculating), similar to what :meth:`Cubelist.realise_data` can
+do.
+
+.. note::
+    This feature does **not** enable parallel writes to the _same_ netCDF output file.
+    That can only be done on certain operating systems, with a specially configured
+    build of the netCDF C library, and is not supported by Iris at present.

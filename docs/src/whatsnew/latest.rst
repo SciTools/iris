@@ -48,6 +48,10 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
    and :func:`iris.quickplot.hist`. (:pull:`5189`)
 
+#. `@pp-mo`_ supported delayed saving of lazy data, when writing to the netCDF file
+   format.  See : :ref:`delayed netCDF saves <delayed_netcdf_save>`.
+   (:pull:`5191`)
+
 
 🐛 Bugs Fixed
 =============
