@@ -7,76 +7,78 @@
     <coords>
       <coord datadims="[1, 2, 3]">
         <auxCoord bounds="[[[[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]],
+  [[nan, nan],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]],
+  [[nan, nan],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]]],
+  [[nan, nan],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]]],
 
 
-		[[[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]],
+ [[[nan, nan],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]],
+  [[nan, nan],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]],
+  [[nan, nan],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [nan, nan],
-		  [nan, nan]]]]" id="9041e969" points="[[[nan, nan, nan, nan],
-		 [nan, nan, nan, nan],
-		 [nan, nan, nan, nan],
-		 [nan, nan, nan, nan]],
+  [[nan, nan],
+   [nan, nan],
+   [nan, nan],
+   [nan, nan]]]]" id="9041e969" points="[[[nan, nan, nan, nan],
+  [nan, nan, nan, nan],
+  [nan, nan, nan, nan],
+  [nan, nan, nan, nan]],
 
-		[[nan, nan, nan, nan],
-		 [nan, nan, nan, nan],
-		 [nan, nan, nan, nan],
-		 [nan, nan, nan, nan]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
+ [[nan, nan, nan, nan],
+  [nan, nan, nan, nan],
+  [nan, nan, nan, nan],
+  [nan, nan, nan, nan]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord>
-        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="77a50eb5" points="[52.377, 52.3946666667, 52.4123333333, 52.43]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="77a50eb5" points="[52.377     , 52.39466667, 52.41233333,
+ 52.43      ]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[0.0, 13.3333],
-		[13.3333, 33.3333]]" id="fb105c19" long_name="level_height" points="[5.0, 21.6667]" shape="(2,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[[ 0.      , 13.333332],
+ [13.333332, 33.333332]]" id="fb105c19" long_name="level_height" points="[ 5.      , 21.666664]" shape="(2,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[3]">
-        <dimCoord id="f913a8b3" points="[-3.3, -3.26666666667, -3.23333333333, -3.2]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="f913a8b3" points="[-3.3       , -3.26666667, -3.23333333,
+ -3.2       ]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -88,18 +90,19 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[1.0, 0.998464],
-		[0.998464, 0.996162]]" id="a5c170db" long_name="sigma" points="[0.999424, 0.997504]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[[1.        , 0.99846387],
+ [0.99846387, 0.9961619 ]]" id="a5c170db" long_name="sigma" points="[0.9994238, 0.9975044]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2, 3]">
         <auxCoord id="b15e3a2e" points="[[nan, nan, nan, nan],
-		[nan, nan, nan, nan],
-		[nan, nan, nan, nan],
-		[nan, nan, nan, nan]]" shape="(4, 4)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+ [nan, nan, nan, nan],
+ [nan, nan, nan, nan],
+ [nan, nan, nan, nan]]" shape="(4, 4)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[347921.166667, 347921.333333, 347921.5,
-		347921.666667, 347921.833333]" shape="(5,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[347921.16666667, 347921.33333333,
+ 347921.5       , 347921.66666666,
+ 347921.83333333]" shape="(5,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

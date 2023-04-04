@@ -8,7 +8,7 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="dab47bb1" long_name="latitude" points="[90.0, 87.75]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
+        <dimCoord id="dab47bb1" long_name="latitude" points="[90.  , 87.75]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="c15a8e5b" long_name="longitude" points="[1.125, 3.375]" shape="(2,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>

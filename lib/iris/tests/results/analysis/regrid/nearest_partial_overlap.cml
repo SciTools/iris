@@ -6,77 +6,78 @@
     </attributes>
     <coords>
       <coord datadims="[1, 2, 3]">
-        <auxCoord bounds="[[[[nan, nan],
-		  [nan, nan],
-		  [374.808, 387.565],
-		  [328.8, 341.628]],
+        <auxCoord bounds="[[[[      nan,       nan],
+   [      nan,       nan],
+   [374.8078 , 387.5654 ],
+   [328.79987, 341.62814]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [289.584, 302.472],
-		  [424.168, 436.85]],
+  [[      nan,       nan],
+   [      nan,       nan],
+   [289.5839 , 302.4724 ],
+   [424.16788, 436.84964]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [289.584, 302.472],
-		  [424.168, 436.85]],
+  [[      nan,       nan],
+   [      nan,       nan],
+   [289.5839 , 302.4724 ],
+   [424.16788, 436.84964]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [394.2, 406.928],
-		  [259.792, 272.726]]],
+  [[      nan,       nan],
+   [      nan,       nan],
+   [394.19986, 406.92767],
+   [259.79196, 272.72623]]],
 
 
-		[[[nan, nan],
-		  [nan, nan],
-		  [387.565, 406.703],
-		  [341.628, 360.871]],
+ [[[      nan,       nan],
+   [      nan,       nan],
+   [387.5654 , 406.70258],
+   [341.62814, 360.87125]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [302.472, 321.806],
-		  [436.85, 455.873]],
+  [[      nan,       nan],
+   [      nan,       nan],
+   [302.4724 , 321.8058 ],
+   [436.84964, 455.8732 ]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [302.472, 321.806],
-		  [436.85, 455.873]],
+  [[      nan,       nan],
+   [      nan,       nan],
+   [302.4724 , 321.8058 ],
+   [436.84964, 455.8732 ]],
 
-		 [[nan, nan],
-		  [nan, nan],
-		  [406.928, 426.02],
-		  [272.726, 292.128]]]]" id="9041e969" points="[[[nan, nan, 379.592, 333.61],
-		 [nan, nan, 294.417, 428.923],
-		 [nan, nan, 294.417, 428.923],
-		 [nan, nan, 398.973, 264.642]],
+  [[      nan,       nan],
+   [      nan,       nan],
+   [406.92767, 426.0202 ],
+   [272.72623, 292.1282 ]]]]" id="9041e969" points="[[[      nan,       nan, 379.59183, 333.6104 ],
+  [      nan,       nan, 294.41702, 428.92346],
+  [      nan,       nan, 294.41702, 428.92346],
+  [      nan,       nan, 398.97272, 264.64227]],
 
-		[[nan, nan, 395.539, 349.646],
-		 [nan, nan, 310.528, 444.776],
-		 [nan, nan, 310.528, 444.776],
-		 [nan, nan, 414.883, 280.81]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
+ [[      nan,       nan, 395.5391 , 349.64597],
+  [      nan,       nan, 310.52786, 444.776  ],
+  [      nan,       nan, 310.52786, 444.776  ],
+  [      nan,       nan, 414.88275, 280.81027]]]" shape="(2, 4, 4)" standard_name="altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord>
-        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="77a50eb5" points="[52.377, 52.3946666667, 52.4123333333, 52.43]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="77a50eb5" points="[52.377     , 52.39466667, 52.41233333,
+ 52.43      ]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[0.0, 13.3333],
-		[13.3333, 33.3333]]" id="fb105c19" long_name="level_height" points="[5.0, 21.6667]" shape="(2,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[[ 0.      , 13.333332],
+ [13.333332, 33.333332]]" id="fb105c19" long_name="level_height" points="[ 5.      , 21.666664]" shape="(2,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[3]">
-        <dimCoord id="f913a8b3" points="[-3.3, -3.22, -3.14, -3.06]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord id="f913a8b3" points="[-3.3 , -3.22, -3.14, -3.06]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
@@ -88,18 +89,19 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[1.0, 0.998464],
-		[0.998464, 0.996162]]" id="a5c170db" long_name="sigma" points="[0.999424, 0.997504]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[[1.        , 0.99846387],
+ [0.99846387, 0.9961619 ]]" id="a5c170db" long_name="sigma" points="[0.9994238, 0.9975044]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="b15e3a2e" points="[[nan, nan, 374.808, 328.8],
-		[nan, nan, 289.584, 424.168],
-		[nan, nan, 289.584, 424.168],
-		[nan, nan, 394.2, 259.792]]" shape="(4, 4)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+        <auxCoord id="b15e3a2e" points="[[      nan,       nan, 374.8078 , 328.79987],
+ [      nan,       nan, 289.5839 , 424.16788],
+ [      nan,       nan, 289.5839 , 424.16788],
+ [      nan,       nan, 394.19986, 259.79196]]" shape="(4, 4)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[347921.166667, 347921.333333, 347921.5,
-		347921.666667, 347921.833333]" shape="(5,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[347921.16666667, 347921.33333333,
+ 347921.5       , 347921.66666666,
+ 347921.83333333]" shape="(5,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

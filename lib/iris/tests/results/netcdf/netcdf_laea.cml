@@ -8,62 +8,68 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="1d45e087" points="[6477.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
+        <dimCoord id="1d45e087" points="[6477.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[246987.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64" var_name="forecast_reference_time"/>
+        <dimCoord id="9c8bdf81" points="[246987.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64" var_name="forecast_reference_time"/>
       </coord>
       <coord>
-        <dimCoord id="6eef7051" long_name="pressure" points="[1000.0]" shape="(1,)" units="Unit('hPa')" value_type="float32" var_name="pressure"/>
+        <dimCoord id="6eef7051" long_name="pressure" points="[1000.]" shape="(1,)" units="Unit('hPa')" value_type="float32" var_name="pressure"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[430357.142857, 869642.857143],
-		[869642.857143, 1308928.57143],
-		[1308928.57143, 1748214.28571],
-		[1748214.28571, 2187500.0],
-		[2187500.0, 2626785.71429],
-		[2626785.71429, 3066071.42857],
-		[3066071.42857, 3505357.14286],
-		[3505357.14286, 3944642.85714],
-		[3944642.85714, 4383928.57143],
-		[4383928.57143, 4823214.28571],
-		[4823214.28571, 5262500.0],
-		[5262500.0, 5701785.71429],
-		[5701785.71429, 6141071.42857],
-		[6141071.42857, 6580357.14286],
-		[6580357.14286, 7019642.85714]]" id="b71cdf0e" points="[650000.0, 1089285.71429, 1528571.42857,
-		1967857.14286, 2407142.85714, 2846428.57143,
-		3285714.28571, 3725000.0, 4164285.71429,
-		4603571.42857, 5042857.14286, 5482142.85714,
-		5921428.57143, 6360714.28571, 6800000.0]" shape="(15,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="projection_x_coordinate">
+        <dimCoord bounds="[[ 430357.14285714,  869642.85714286],
+ [ 869642.85714286, 1308928.57142857],
+ [1308928.57142857, 1748214.28571429],
+ [1748214.28571429, 2187500.        ],
+ [2187500.        , 2626785.71428571],
+ [2626785.71428571, 3066071.42857143],
+ [3066071.42857143, 3505357.14285714],
+ [3505357.14285714, 3944642.85714286],
+ [3944642.85714286, 4383928.57142857],
+ [4383928.57142857, 4823214.28571429],
+ [4823214.28571429, 5262500.        ],
+ [5262500.        , 5701785.71428571],
+ [5701785.71428571, 6141071.42857143],
+ [6141071.42857143, 6580357.14285714],
+ [6580357.14285714, 7019642.85714286]]" id="b71cdf0e" points="[ 650000.        , 1089285.71428571,
+ 1528571.42857143, 1967857.14285714,
+ 2407142.85714286, 2846428.57142857,
+ 3285714.28571429, 3725000.        ,
+ 4164285.71428571, 4603571.42857143,
+ 5042857.14285714, 5482142.85714286,
+ 5921428.57142857, 6360714.28571429,
+ 6800000.        ]" shape="(15,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="projection_x_coordinate">
           <lambertAzimuthalEqualArea ellipsoid="None" false_easting="4321000.0" false_northing="3210000.0" latitude_of_projection_origin="52.0" longitude_of_projection_origin="10.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[414285.714286, 785714.285714],
-		[785714.285714, 1157142.85714],
-		[1157142.85714, 1528571.42857],
-		[1528571.42857, 1900000.0],
-		[1900000.0, 2271428.57143],
-		[2271428.57143, 2642857.14286],
-		[2642857.14286, 3014285.71429],
-		[3014285.71429, 3385714.28571],
-		[3385714.28571, 3757142.85714],
-		[3757142.85714, 4128571.42857],
-		[4128571.42857, 4500000.0],
-		[4500000.0, 4871428.57143],
-		[4871428.57143, 5242857.14286],
-		[5242857.14286, 5614285.71429],
-		[5614285.71429, 5985714.28571]]" id="f1f8b7cb" points="[600000.0, 971428.571429, 1342857.14286,
-		1714285.71429, 2085714.28571, 2457142.85714,
-		2828571.42857, 3200000.0, 3571428.57143,
-		3942857.14286, 4314285.71429, 4685714.28571,
-		5057142.85714, 5428571.42857, 5800000.0]" shape="(15,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="projection_y_coordinate">
+        <dimCoord bounds="[[ 414285.71428571,  785714.28571429],
+ [ 785714.28571429, 1157142.85714286],
+ [1157142.85714286, 1528571.42857143],
+ [1528571.42857143, 1900000.        ],
+ [1900000.        , 2271428.57142857],
+ [2271428.57142857, 2642857.14285714],
+ [2642857.14285714, 3014285.71428571],
+ [3014285.71428571, 3385714.28571429],
+ [3385714.28571429, 3757142.85714286],
+ [3757142.85714286, 4128571.42857143],
+ [4128571.42857143, 4500000.        ],
+ [4500000.        , 4871428.57142857],
+ [4871428.57142857, 5242857.14285714],
+ [5242857.14285714, 5614285.71428571],
+ [5614285.71428571, 5985714.28571429]]" id="f1f8b7cb" points="[ 600000.        ,  971428.57142857,
+ 1342857.14285714, 1714285.71428571,
+ 2085714.28571429, 2457142.85714286,
+ 2828571.42857143, 3200000.        ,
+ 3571428.57142857, 3942857.14285714,
+ 4314285.71428571, 4685714.28571429,
+ 5057142.85714286, 5428571.42857143,
+ 5800000.        ]" shape="(15,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="projection_y_coordinate">
           <lambertAzimuthalEqualArea ellipsoid="None" false_easting="4321000.0" false_northing="3210000.0" latitude_of_projection_origin="52.0" longitude_of_projection_origin="10.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="cb784457" points="[253464.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64" var_name="time"/>
+        <dimCoord id="cb784457" points="[253464.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>
