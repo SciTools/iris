@@ -378,10 +378,10 @@ class Saver:
         compute : bool, default=True
             If True, delayed variable saves will be completed on exit from the Saver
             context (after first closing the target file), equivalent to
-            saver.complete().
-            If False, file is created and closed without filling in the variables for
-            which source data was lazy.  These writes can be completed later, see
-            :meth:`delayed_completion`.
+            :meth:`complete()`.
+            If False, the file is created and closed without writing the data of
+            variables for which the source data was lazy.  These writes can be
+            completed later, see :meth:`delayed_completion`.
 
         Returns
         -------
@@ -2410,7 +2410,8 @@ class Saver:
 
     def delayed_completion(self) -> Delayed:
         """
-        Create a :class:'Delayed' to trigger file completion for delayed saves.
+        Create and return a :class:`dask.delayed.Delayed` to perform file completion
+        for delayed saves.
 
         This contains all the delayed writes, which complete the file by filling out
         the data of variables initially created empty, and also the checks for
@@ -2420,7 +2421,7 @@ class Saver:
 
         Returns
         -------
-        completion : :class:`Delayed`
+        completion : :class:`dask.delayed.Delayed`
 
         Notes
         -----
@@ -2655,13 +2656,18 @@ def save(
     * compute (bool):
         When False, create the output file but don't write any lazy array content to
         its variables, such as lazy cube data or aux-coord points and bounds.
-        Instead return a class:`Delayed` which, when computed, will stream all the lazy
-        content with :meth:`dask.store`, to complete the file.
+
+        Instead return a :class:`dask.delayed.Delayed` which, when computed, will
+        stream all the lazy content via :meth:`dask.store`, to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
-        Note: when computed, the returned class:`Delayed` object returns
-        a list of :class:`Warning` :  These are any warnings which _would_ have been
-        issued in the save call, if compute had been True.
+
+        Default is ``True``, meaning complete the file immediately, and return ``None``.
+
+        .. Note::
+            when computed, the returned :class:`dask.delayed.Delayed` object returns
+            a list of :class:`Warning` :  These are any warnings which *would* have
+            been issued in the save call, if compute had been True.
 
     Returns:
         A list of :class:`Warning`.

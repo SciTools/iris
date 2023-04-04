@@ -46,7 +46,7 @@ This document explains the changes made to Iris for this release
    :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
    if necessary. (:pull:`5084`)
 
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist`
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
    and :func:`iris.quickplot.hist`. (:pull:`5189`)
 
 #. `@tinyendian`_ edited :func:`~iris.analysis.cartography.rotate_winds` to
