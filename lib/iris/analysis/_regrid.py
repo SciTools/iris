@@ -913,6 +913,8 @@ class RectilinearRegridder:
 
         """
         # TODO: consider refactoring to allow use of @iris.util.lift_empty_masks.
+        #  Correct behaviour appears to currently depend on receiving a masked
+        #   array/Cube in certain cases.
         from iris.cube import Cube
 
         # Validity checks.
