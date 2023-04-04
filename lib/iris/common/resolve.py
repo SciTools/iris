@@ -144,7 +144,7 @@ class Resolve:
                 forecast_reference_time     1859-09-01 06:00:00
                 height                      1.5 m
             Cell methods:
-                mean                        time (6 hour)
+                0                           time: mean (interval: 6 hour)
             Attributes:
                 Conventions                 'CF-1.5'
                 Model scenario              'A1B'
@@ -162,7 +162,7 @@ class Resolve:
                 height                      1.5 m
                 time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
             Cell methods:
-                mean                        time (6 hour)
+                0                           time: mean (interval: 6 hour)
             Attributes:
                 Conventions                 'CF-1.5'
                 Model scenario              'E1'
@@ -185,7 +185,7 @@ class Resolve:
                 forecast_reference_time     1859-09-01 06:00:00
                 height                      1.5 m
             Cell methods:
-                mean                        time (6 hour)
+                0                           time: mean (interval: 6 hour)
             Attributes:
                 Conventions                 'CF-1.5'
                 STASH                       m01s03i236
@@ -2542,7 +2542,7 @@ class Resolve:
                     forecast_reference_time     1859-09-01 06:00:00
                     height                      1.5 m
                 Cell methods:
-                    mean                        time (6 hour)
+                    0                           time: mean (interval: 6 hour)
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'A1B'
@@ -2559,7 +2559,7 @@ class Resolve:
                     height                      1.5 m
                     time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
                 Cell methods:
-                    mean                        time (6 hour)
+                    0                           time: mean (interval: 6 hour)
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'E1'
@@ -2610,7 +2610,7 @@ class Resolve:
                     forecast_reference_time     1859-09-01 06:00:00
                     height                      1.5 m
                 Cell methods:
-                    mean                        time (6 hour)
+                    0                           time: mean (interval: 6 hour)
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'A1B'
@@ -2627,7 +2627,7 @@ class Resolve:
                     height                      1.5 m
                     time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
                 Cell methods:
-                    mean                        time (6 hour)
+                    0                           time: mean (interval: 6 hour)
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'E1'
