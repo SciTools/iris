@@ -6,7 +6,7 @@
         <dimCoord id="61a1c174" long_name="x" points="[0.5, 1.5, 2.5, 3.5]" shape="(4,)" units="Unit('count')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="bc3718f1" long_name="y" points="[0.0, 1.0, 2.0, 3.0, 4.0]" shape="(5,)" units="Unit('count')" value_type="float32"/>
+        <dimCoord id="bc3718f1" long_name="y" points="[0., 1., 2., 3., 4.]" shape="(5,)" units="Unit('count')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

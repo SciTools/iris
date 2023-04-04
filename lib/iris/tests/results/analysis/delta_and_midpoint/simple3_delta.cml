@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<auxCoord bounds="[[90.0, 90.0],
-		[90.0, 90.0],
-		[90.0, 90.0],
-		[90.0, 90.0]]" id="ebe2592f" long_name="change_in_foo" points="[90.0, 90.0, 90.0, 90.0]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>
+<auxCoord bounds="[[90., 90.],
+ [90., 90.],
+ [90., 90.],
+ [90., 90.]]" id="ebe2592f" long_name="change_in_foo" points="[90., 90., 90., 90.]" shape="(4,)" units="Unit('degrees')" value_type="float32"/>

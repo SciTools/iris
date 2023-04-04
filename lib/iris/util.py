@@ -1067,30 +1067,14 @@ def format_array(arr):
 
     """
 
-    summary_threshold = 85
-    summary_insert = "..." if arr.size > summary_threshold else ""
-    edge_items = 3
-    ffunc = str
     max_line_len = 50
 
-    # Format the array with version 1.13 legacy behaviour
-    with np.printoptions(legacy="1.13"):
-        # Use this (private) routine for more control.
-        formatArray = np.core.arrayprint._formatArray
-        # N.B. the 'legacy' arg had different forms in different numpy versions
-        # -- fetch the required form from the internal options dict
-        format_options_legacy = np.core.arrayprint._format_options["legacy"]
-
-        result = formatArray(
-            arr,
-            ffunc,
-            max_line_len,
-            next_line_prefix="\t\t",
-            separator=", ",
-            edge_items=edge_items,
-            summary_insert=summary_insert,
-            legacy=format_options_legacy,
-        )
+    result = np.array2string(
+        arr,
+        max_line_len,
+        separator=", ",
+        threshold=85,
+    )
 
     return result
 

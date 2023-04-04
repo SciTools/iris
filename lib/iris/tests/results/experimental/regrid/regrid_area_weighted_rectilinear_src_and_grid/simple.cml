@@ -3,17 +3,17 @@
   <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord bounds="[[-1.0, 0.0],
-		[0.0, 1.0],
-		[1.0, 2.0]]" id="77a50eb5" points="[-1, 0, 1]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
+        <dimCoord bounds="[[-1.,  0.],
+ [ 0.,  1.],
+ [ 1.,  2.]]" id="77a50eb5" points="[-1,  0,  1]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-1.0, 0.0],
-		[0.0, 1.0],
-		[1.0, 2.0],
-		[2.0, 3.0]]" id="f913a8b3" points="[-1, 0, 1, 2]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
+        <dimCoord bounds="[[-1.,  0.],
+ [ 0.,  1.],
+ [ 1.,  2.],
+ [ 2.,  3.]]" id="f913a8b3" points="[-1,  0,  1,  2]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
