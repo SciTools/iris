@@ -78,7 +78,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@pp-mo`_ changed the netCDF loader to fetch data immediately from small netCDF
+   variables, instead of creating a dask array.
+   This saves both time and memory. (:pull:`5229`)
 
 
 🔥 Deprecations
