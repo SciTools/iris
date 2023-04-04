@@ -3,20 +3,20 @@
   <cube dtype="int32" units="unknown">
     <coords>
       <coord>
-        <dimCoord id="f78ece3e" points="[2.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('weeks since 2013-05-07', calendar='standard')" value_type="float64"/>
+        <dimCoord id="f78ece3e" points="[2.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('weeks since 2013-05-07', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="77a50eb5" points="[-1, 0, 1]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
+        <dimCoord id="77a50eb5" points="[-1,  0,  1]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="f913a8b3" points="[-1, 0, 1, 2]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
+        <dimCoord id="f913a8b3" points="[-1,  0,  1,  2]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[10.916667, 11.0]]" id="3bb6f5c3" points="[10.958333]" shape="(1,)" standard_name="time" units="Unit('days since 2013-05-10 12:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[[10.916667, 11.      ]]" id="3bb6f5c3" points="[10.958333]" shape="(1,)" standard_name="time" units="Unit('days since 2013-05-10 12:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

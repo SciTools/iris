@@ -3,15 +3,15 @@
   <cube dtype="float64" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord bounds="[[-0.99999, 0.5],
-		[0.5, 1.99999]]" id="77a50eb5" points="[-0.249995, 1.249995]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[-0.99999,  0.5    ],
+ [ 0.5    ,  1.99999]]" id="77a50eb5" points="[-0.249995,  1.249995]" shape="(2,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-0.99999, 0.333336666667],
-		[0.333336666667, 1.66666333333],
-		[1.66666333333, 2.99999]]" id="f913a8b3" points="[-0.333326666667, 1.0, 2.33332666667]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[-0.99999   ,  0.33333667],
+ [ 0.33333667,  1.66666333],
+ [ 1.66666333,  2.99999   ]]" id="f913a8b3" points="[-0.33332667,  1.        ,  2.33332667]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

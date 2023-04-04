@@ -3,28 +3,28 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-0.5, 0.5],
-		[0.5, 1.5],
-		[1.5, 2.5],
-		[2.5, 3.5],
-		[3.5, 4.5],
-		[4.5, 5.5]]" id="78a0dfe8" long_name="x" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]" shape="(6,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[[-0.5,  0.5],
+ [ 0.5,  1.5],
+ [ 1.5,  2.5],
+ [ 2.5,  3.5],
+ [ 3.5,  4.5],
+ [ 4.5,  5.5]]" id="78a0dfe8" long_name="x" points="[0., 1., 2., 3., 4., 5.]" shape="(6,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[1.0, 101.0, 7.0, 107.0, 4.0, 104.0],
-		[201.0, 301.0, 207.0, 307.0, 204.0, 304.0],
-		[6.0, 106.0, 2.0, 102.0, 8.0, 108.0],
-		[206.0, 306.0, 202.0, 302.0, 208.0, 308.0],
-		[5.0, 105.0, 9.0, 109.0, 3.0, 103.0],
-		[205.0, 305.0, 209.0, 309.0, 203.0, 303.0]]" shape="(6, 6)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  1., 101.,   7., 107.,   4., 104.],
+ [201., 301., 207., 307., 204., 304.],
+ [  6., 106.,   2., 102.,   8., 108.],
+ [206., 306., 202., 302., 208., 308.],
+ [  5., 105.,   9., 109.,   3., 103.],
+ [205., 305., 209., 309., 203., 303.]]" shape="(6, 6)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[-0.5, 0.5],
-		[0.5, 1.5],
-		[1.5, 2.5],
-		[2.5, 3.5],
-		[3.5, 4.5],
-		[4.5, 5.5]]" id="6fdbcbab" long_name="y" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]" shape="(6,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[[-0.5,  0.5],
+ [ 0.5,  1.5],
+ [ 1.5,  2.5],
+ [ 2.5,  3.5],
+ [ 3.5,  4.5],
+ [ 4.5,  5.5]]" id="6fdbcbab" long_name="y" points="[0., 1., 2., 3., 4., 5.]" shape="(6,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

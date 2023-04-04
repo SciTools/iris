@@ -10,7 +10,7 @@
       </coord>
       <coord datadims="[0, 1]">
         <auxCoord id="bc1dc451" points="[[0, 1, 2],
-		[3, 4, 5]]" shape="(2, 3)" standard_name="time" units="Unit('1')" value_type="int32"/>
+ [3, 4, 5]]" shape="(2, 3)" standard_name="time" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[3]">
         <dimCoord id="78a0dfe8" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>

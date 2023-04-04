@@ -11,20 +11,20 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="b40ecfd3" points="[10800, 31546800]" shape="(2,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord id="b40ecfd3" points="[   10800, 31546800]" shape="(2,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
         <dimCoord id="201cc2ba" points="[1278050400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[-238000.0, -236000.0, -234000.0, ..., 852000.0,
-		854000.0, 856000.0]" shape="(548,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="784eb7ff" points="[-238000.02, -236000.02, -234000.02, ...,
+  852000.  ,  854000.  ,  856000.  ]" shape="(548,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[-184000.0, -182000.0, -180000.0, ..., 1.218e+06,
-		1.22e+06, 1.222e+06]" shape="(704,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="1c8167bb" points="[-184000., -182000., -180000., ..., 1218000.,
+ 1220000., 1222000.]" shape="(704,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>

@@ -6,12 +6,12 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="5ae9804c" points="[0.0, 12.5, 25.0, 37.5, 50.0]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="projection_x_coordinate">
+        <dimCoord id="5ae9804c" points="[ 0. , 12.5, 25. , 37.5, 50. ]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="projection_x_coordinate">
           <mercator ellipsoid="None" false_easting="0.0" false_northing="0.0" longitude_of_projection_origin="0.0" scale_factor_at_projection_origin="1.2" standard_parallel="None"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="502d5aa1" points="[0.0, 12.5, 25.0, 37.5, 50.0]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="projection_y_coordinate">
+        <dimCoord id="502d5aa1" points="[ 0. , 12.5, 25. , 37.5, 50. ]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="projection_y_coordinate">
           <mercator ellipsoid="None" false_easting="0.0" false_northing="0.0" longitude_of_projection_origin="0.0" scale_factor_at_projection_origin="1.2" standard_parallel="None"/>
         </dimCoord>
       </coord>

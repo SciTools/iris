@@ -7,37 +7,63 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="1d45e087" points="[6477.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord id="1d45e087" points="[6477.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[246987.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[246987.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="77a50eb5" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
-		70.0, 67.5, 65.0, 62.5, 60.0, 57.5, 55.0, 52.5,
-		50.0, 47.5, 45.0, 42.5, 40.0, 37.5, 35.0, 32.5,
-		30.0, 27.5, 25.0, 22.5, 20.0, 17.5, 15.0, 12.5,
-		10.0, 7.50002, 5.00002, 2.50002, 3.05176e-05,
-		-2.49997, -4.99997, -7.49997, -9.99997, -12.5,
-		-15.0, -17.5, -20.0, -22.5, -25.0, -27.5, -30.0,
-		-32.5, -35.0, -37.5, -40.0, -42.5, -45.0, -47.5,
-		-50.0, -52.5, -54.9999, -57.4999, -59.9999,
-		-62.4999, -64.9999, -67.4999, -69.9999,
-		-72.4999, -74.9999, -77.4999, -79.9999,
-		-82.4999, -84.9999, -87.4999, -89.9999]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="77a50eb5" points="[ 8.99999847e+01,  8.74999847e+01,
+  8.49999847e+01,  8.24999847e+01,
+  7.99999924e+01,  7.74999924e+01,
+  7.49999924e+01,  7.24999924e+01,
+  6.99999924e+01,  6.75000000e+01,
+  6.50000000e+01,  6.25000000e+01,
+  6.00000000e+01,  5.75000000e+01,
+  5.50000000e+01,  5.25000038e+01,
+  5.00000038e+01,  4.75000038e+01,
+  4.50000076e+01,  4.25000076e+01,
+  4.00000076e+01,  3.75000114e+01,
+  3.50000114e+01,  3.25000114e+01,
+  3.00000153e+01,  2.75000153e+01,
+  2.50000153e+01,  2.25000153e+01,
+  2.00000153e+01,  1.75000229e+01,
+  1.50000229e+01,  1.25000229e+01,
+  1.00000229e+01,  7.50002289e+00,
+  5.00002289e+00,  2.50002289e+00,
+  3.05175781e-05, -2.49996948e+00,
+ -4.99996948e+00, -7.49996948e+00,
+ -9.99996948e+00, -1.24999695e+01,
+ -1.49999619e+01, -1.74999619e+01,
+ -1.99999619e+01, -2.24999619e+01,
+ -2.49999619e+01, -2.74999619e+01,
+ -2.99999542e+01, -3.24999542e+01,
+ -3.49999542e+01, -3.74999542e+01,
+ -3.99999542e+01, -4.24999542e+01,
+ -4.49999542e+01, -4.74999542e+01,
+ -4.99999542e+01, -5.24999542e+01,
+ -5.49999390e+01, -5.74999390e+01,
+ -5.99999390e+01, -6.24999390e+01,
+ -6.49999390e+01, -6.74999390e+01,
+ -6.99999390e+01, -7.24999390e+01,
+ -7.49999390e+01, -7.74999390e+01,
+ -7.99999390e+01, -8.24999390e+01,
+ -8.49999390e+01, -8.74999237e+01,
+ -8.99999237e+01]" shape="(73,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="f913a8b3" points="[0.0, 3.75, 7.5, ..., 348.75, 352.5, 356.25]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="f913a8b3" points="[  0.      ,   3.749999,   7.499998, ...,
+ 348.7499  , 352.4999  , 356.2499  ]" shape="(96,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="6eef7051" long_name="pressure" points="[1000.0]" shape="(1,)" units="Unit('hPa')" value_type="float32"/>
+        <dimCoord id="6eef7051" long_name="pressure" points="[1000.]" shape="(1,)" units="Unit('hPa')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord id="cb784457" points="[253464.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[253464.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

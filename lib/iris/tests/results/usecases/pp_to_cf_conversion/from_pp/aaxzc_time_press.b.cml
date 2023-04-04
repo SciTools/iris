@@ -7,12 +7,12 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="6eef7051" long_name="pressure" points="[10.0, 30.0, 50.0, 100.0, 150.0, 200.0, 250.0,
-		300.0, 400.0, 500.0, 600.0, 700.0, 850.0, 950.0,
-		1000.0]" shape="(15,)" units="Unit('hPa')" value_type="float32"/>
+        <dimCoord id="6eef7051" long_name="pressure" points="[  10.,   30.,   50.,  100.,  150.,  200.,  250.,
+  300.,  400.,  500.,  600.,  700.,  850.,  950.,
+ 1000.]" shape="(15,)" units="Unit('hPa')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="42c82ea7" points="[756690.0, 763890.0, 771090.0, 778290.0]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+        <dimCoord id="42c82ea7" points="[756690., 763890., 771090., 778290.]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods>
