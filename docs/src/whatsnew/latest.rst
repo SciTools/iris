@@ -69,7 +69,8 @@ This document explains the changes made to Iris for this release
    (:issue:`4415`, :pull:`5194`)
 
 #. `@HGWright`_ and `@trexfeathers`_ (reviewer) changed the way
-    :class:`CellMethod` are printed to be more CF compliant. (:pull:`5224`)
+   :class:`~iris.coords.CellMethod` are printed to be more CF compliant.
+   (:pull:`5224`)
 
 
 💣 Incompatible Changes
