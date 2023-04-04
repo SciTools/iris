@@ -73,6 +73,10 @@ This document explains the changes made to Iris for this release
    dimension, when the scalar coord provided is already a dim coord.
    (:issue:`4415`, :pull:`5194`)
 
+#. `@HGWright`_ and `@trexfeathers`_ (reviewer) changed the way
+   :class:`~iris.coords.CellMethod` are printed to be more CF compliant.
+   (:pull:`5224`)
+
 
 💣 Incompatible Changes
 =======================
