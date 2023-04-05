@@ -355,6 +355,10 @@ def fill_between(x, y1, y2, *args, **kwargs):
     See :func:`iris.plot.fill_between` for details of valid arguments and
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     axes = kwargs.get("axes")
     result = iplt.fill_between(x, y1, y2, *args, **kwargs)
@@ -368,6 +372,11 @@ def hist(x, *args, **kwargs):
 
     See :func:`iris.plot.hist` for details of valid arguments and
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     axes = kwargs.get("axes")
     result = iplt.hist(x, *args, **kwargs)

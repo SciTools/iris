@@ -436,6 +436,11 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
        if the actual error equals the maximum, whereas :func:`util.approx_equal`
        will return False.
 
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     wmsg = (
         "iris.util.approx_equal has been deprecated and will be removed, "
@@ -484,6 +489,11 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
            print(i, between_3_and_6(i))
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if lh_inclusive and rh_inclusive:
@@ -1079,6 +1089,10 @@ def clip_string(the_str, clip_length=70, rider="..."):
         If the clip length was greater than the original string, the
         original string is returned unaltered.
 
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
 
     if clip_length >= len(the_str) or clip_length <= 0:
@@ -1100,7 +1114,6 @@ def clip_string(the_str, clip_length=70, rider="..."):
             return first_part + remainder[:termination_point] + rider
 
 
-# needs doing
 def format_array(arr):
     """
     Returns the given array as a string, using the python builtin str
@@ -1109,6 +1122,11 @@ def format_array(arr):
     Useful for xml representation of arrays.
 
     For customisations, use the :mod:`numpy.core.arrayprint` directly.
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 
@@ -1173,6 +1191,11 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
         >>> ncube = iris.util.new_axis(cube, 'time')
         >>> ncube.shape
         (1, 360, 360)
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
 
     def _reshape_data_array(data_manager):
@@ -1421,6 +1444,10 @@ def regular_points(zeroth, step, count):
     count : number
         The number of point values.
 
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
     _, regular = iris.util.points_step(points)
@@ -1850,10 +1877,10 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         # Plot the masked cube slice:
         iplt.pcolormesh(masked_cube_slice)
 
-        Notes
-        ------
-        This function does not maintain laziness when called; it realises data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
 
     """

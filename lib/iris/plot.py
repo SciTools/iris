@@ -1275,7 +1275,13 @@ def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
 
 
 def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at cell boundaries from the given Cube."""
+    """Plots orography defined at cell boundaries from the given Cube.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+    """
 
     # XXX Needs contiguous orography corners to work.
     raise NotImplementedError(
@@ -1308,7 +1314,13 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at sample points from the given Cube."""
+    """Plots orography defined at sample points from the given Cube.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+    """
 
     style_args = {"facecolor": facecolor}
 
@@ -1749,6 +1761,11 @@ def fill_between(x, y1, y2, *args, **kwargs):
     See :func:`matplotlib.pyplot.fill_between` for details of additional valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     # here we are more specific about argument types than generic 1d plotting
     if not isinstance(x, (iris.cube.Cube, iris.coords.Coord)):
@@ -1780,6 +1797,11 @@ def hist(x, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.hist` for details of additional valid
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if isinstance(x, iris.cube.Cube):
@@ -1826,6 +1848,11 @@ def symbols(x, y, symbols, size, axes=None, units="inches"):
 
     * units: ['inches', 'points']
         The unit for the symbol size.
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if axes is None:
