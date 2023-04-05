@@ -310,7 +310,6 @@ class _LiftEmptyMasks:
 
         """
 
-        # TODO: decorate iris.analysis, iris.plot, iris.util
         @functools.wraps(decorated_func)
         def _wrapper(*args, **kwargs):
             mask_lifter = _LiftEmptyMasks(
