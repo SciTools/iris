@@ -59,10 +59,10 @@ class TestInputs:
                 input_ = input_.core_data()
             return has_mask(input_)
 
-        result_args = [get_has_mask(a) for a in args]
-        result_kwargs = [get_has_mask(v) for v in kwargs.values()]
+        interior_args_have_masks = [get_has_mask(a) for a in args]
+        interior_kwargs_have_masks = [get_has_mask(v) for v in kwargs.values()]
 
-        return result_args, result_kwargs
+        return interior_args_have_masks, interior_kwargs_have_masks
 
     @pytest.mark.parametrize(
         "with_mask, some_masked, scalar_mask, expected_masked",
