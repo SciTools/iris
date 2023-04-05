@@ -1341,7 +1341,6 @@ def _build_dask_mdtol_function(dask_stats_function):
 
     """
 
-    @iris.util.lift_empty_masks
     @wraps(dask_stats_function)
     def inner_stat(array, axis=-1, mdtol=None, **kwargs):
         # Call the statistic to get the basic result (missing-data tolerant).
@@ -1406,7 +1405,6 @@ def _axis_to_single_trailing(stats_function):
     return inner_stat
 
 
-@iris.util.lift_empty_masks
 def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
     """
     Calculate percentiles along the trailing axis of a 1D or 2D array.
@@ -1492,7 +1490,6 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
     return result
 
 
-@iris.util.lift_empty_masks
 def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
     """
     Compute the weighted quantile of a 1D numpy array.
@@ -1538,7 +1535,6 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
     return result
 
 
-@iris.util.lift_empty_masks
 def _weighted_percentile(
     data, axis, weights, percent, returned=False, **kwargs
 ):
@@ -1617,7 +1613,6 @@ def _weighted_percentile(
         return result
 
 
-@iris.util.lift_empty_masks
 def _count(array, **kwargs):
     """
     Counts the number of points along the axis that satisfy the condition
@@ -1662,7 +1657,6 @@ def _proportion(array, function, axis, **kwargs):
     return result
 
 
-@iris.util.lift_empty_masks
 def _lazy_max_run(array, axis=-1, **kwargs):
     """
     Lazily perform the calculation of maximum run lengths along the given axis
@@ -1703,14 +1697,12 @@ def _lazy_max_run(array, axis=-1, **kwargs):
     return result
 
 
-@iris.util.lift_empty_masks
 def _rms(array, axis, **kwargs):
     rval = np.sqrt(ma.average(array**2, axis=axis, **kwargs))
 
     return rval
 
 
-@iris.util.lift_empty_masks
 def _lazy_rms(array, axis, **kwargs):
     # Note that, since we specifically need the ma version of average to handle
     # weights correctly with masked data, we cannot rely on NEP13/18 and need
@@ -1721,7 +1713,6 @@ def _lazy_rms(array, axis, **kwargs):
     return rval
 
 
-@iris.util.lift_empty_masks
 def _sum(array, **kwargs):
     """
     Weighted or scaled sum.  Uses Dask's support for NEP13/18 to work as either
@@ -1766,7 +1757,6 @@ def _sum_units_func(units, **kwargs):
     return result
 
 
-@iris.util.lift_empty_masks
 def _peak(array, **kwargs):
     def column_segments(column):
         nan_indices = np.where(np.isnan(column))[0]
@@ -1942,9 +1932,7 @@ This aggregator handles masked data, which it treats as interrupting a run, and 
 MAX_RUN.name = lambda: "max_run"
 
 
-GMEAN = Aggregator(
-    "geometric_mean", iris.util.lift_empty_masks(scipy.stats.mstats.gmean)
-)
+GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 geometric mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1961,9 +1949,7 @@ This aggregator handles masked data, but NOT lazy data.
 """
 
 
-HMEAN = Aggregator(
-    "harmonic_mean", iris.util.lift_empty_masks(scipy.stats.mstats.hmean)
-)
+HMEAN = Aggregator("harmonic_mean", scipy.stats.mstats.hmean)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 harmonic mean over a :class:`~iris.cube.Cube`, as computed by
@@ -2034,7 +2020,7 @@ This aggregator handles masked data.
 """
 
 
-MEDIAN = Aggregator("median", iris.util.lift_empty_masks(ma.median))
+MEDIAN = Aggregator("median", ma.median)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the median over a :class:`~iris.cube.Cube`, as computed by

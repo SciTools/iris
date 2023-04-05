@@ -413,7 +413,6 @@ def broadcast_to_shape(array, shape, dim_map):
     return array_view
 
 
-@lift_empty_masks
 def delta(ndarray, dimension, circular=False):
     """
     Calculates the difference between values along a given dimension.
@@ -581,7 +580,6 @@ def guess_coord_axis(coord):
     return axis
 
 
-@lift_empty_masks
 def rolling_window(a, window=1, step=1, axis=-1):
     """
     Make an ndarray with a rolling window of the last dimension
@@ -652,7 +650,6 @@ def rolling_window(a, window=1, step=1, axis=-1):
     return rw
 
 
-@lift_empty_masks
 def array_equal(array1, array2, withnans=False):
     """
     Returns whether two arrays have the same shape and elements.
@@ -876,7 +873,6 @@ def reverse(cube_or_array, coords_or_dims):
     return cube_or_array[tuple(index)]
 
 
-@lift_empty_masks
 def monotonic(array, strict=False, return_direction=False):
     """
     Return whether the given 1d array is monotonic.
@@ -1679,7 +1675,6 @@ def regular_points(zeroth, step, count):
     return points
 
 
-@lift_empty_masks
 def points_step(points):
     """Determine whether `points` has a regular step.
 
@@ -1734,7 +1729,6 @@ def unify_time_units(cubes):
                 time_coord.convert_units(new_unit)
 
 
-@lift_empty_masks
 def _is_circular(points, modulus, bounds=None):
     """
     Determine whether the provided points or bounds are circular in nature

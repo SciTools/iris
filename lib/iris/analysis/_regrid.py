@@ -20,7 +20,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.util import _meshgrid, guess_coord_axis, lift_empty_masks
+from iris.util import _meshgrid, guess_coord_axis
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):
@@ -44,7 +44,6 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
     return pts[..., 0], pts[..., 1]
 
 
-@lift_empty_masks
 def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     src_cube, weights, grid_cube
 ):
@@ -289,7 +288,6 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     return regrid_info
 
 
-@lift_empty_masks
 def _curvilinear_to_rectilinear_regrid_data(
     data,
     dims,
@@ -367,7 +365,6 @@ def _curvilinear_to_rectilinear_regrid_data(
     return result
 
 
-@lift_empty_masks
 def _regrid_weighted_curvilinear_to_rectilinear__perform(
     src_cube, regrid_info
 ):
@@ -912,9 +909,6 @@ class RectilinearRegridder:
             in the horizontal dimensions will be combined before regridding.
 
         """
-        # TODO: consider refactoring to allow use of @iris.util.lift_empty_masks.
-        #  Correct behaviour appears to currently depend on receiving a masked
-        #   array/Cube in certain cases.
         from iris.cube import Cube
 
         # Validity checks.

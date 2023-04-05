@@ -14,7 +14,7 @@ from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import RectilinearRegridder, _create_cube
 import iris.analysis.cartography
 import iris.coord_systems
-from iris.util import _meshgrid, lift_empty_masks
+from iris.util import _meshgrid
 
 
 class AreaWeightedRegridder:
@@ -689,7 +689,6 @@ def _regrid_area_weighted_array(
     return new_data
 
 
-@lift_empty_masks
 def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     src_cube, grid_cube
 ):
@@ -1075,7 +1074,6 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     )
 
 
-@lift_empty_masks
 def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     src_cube, regrid_info, mdtol
 ):

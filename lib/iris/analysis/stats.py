@@ -12,10 +12,9 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris.util import broadcast_to_shape, lift_empty_masks
+from iris.util import broadcast_to_shape
 
 
-@lift_empty_masks
 def pearsonr(
     cube_a,
     cube_b,

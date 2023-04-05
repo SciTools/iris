@@ -24,7 +24,7 @@ from iris.analysis.cartography import (
 import iris.analysis.maths
 import iris.coord_systems
 import iris.coords
-from iris.util import delta, lift_empty_masks
+from iris.util import delta
 
 __all__ = ["cube_delta", "curl", "differentiate"]
 
@@ -127,7 +127,6 @@ def _construct_midpoint_coord(coord, circular=None):
     return mid_point_coord
 
 
-@lift_empty_masks
 def cube_delta(cube, coord):
     """
     Given a cube calculate the difference between each value in the
@@ -206,7 +205,6 @@ cube_delta(temperature_cube, 'pressure')
     return delta_cube
 
 
-@lift_empty_masks
 def differentiate(cube, coord_to_differentiate):
     r"""
     Calculate the differential of a given cube with respect to the
