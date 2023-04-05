@@ -160,6 +160,16 @@ class TestInputs:
             args_masked = self.input_checker(arg1, arg2)[0]
         assert args_masked == [True, True]
 
+    def test_multi_chunk(self):
+        """
+        Check that a Dask array with multiple chunks can be correctly
+        inspected.
+        """
+        args = [make_masked(some_masked=b, dask=True) for b in (False, True)]
+        args = [arg.rechunk(1) for arg in args]
+        args_masked = self.input_checker(*args)[0]
+        assert args_masked == [False, True]
+
 
 class TestReturned:
     @staticmethod
