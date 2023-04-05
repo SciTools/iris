@@ -17,6 +17,7 @@ import os
 import os.path
 import sys
 import tempfile
+import textwrap
 import typing
 from typing import Tuple
 from warnings import warn
@@ -324,15 +325,29 @@ class _LiftEmptyMasks:
                 mask_lifter.restore_input_cube_masks()
             return mask_lifter.re_apply_masks_to_output(result)
 
-        # TODO: get the indentation right with this.
         extra_doc = """
             .. note::
 
                 Uses :obj:`iris.util.lift_empty_masks`
 
             """
-        if _wrapper.__doc__:
-            _wrapper.__doc__ += extra_doc
+        orig_doc = _wrapper.__doc__
+        if orig_doc is None:
+            new_doc = extra_doc
+        else:
+            doc_lines = orig_doc.split("\n")
+            first_doc_line = next(
+                filter(lambda line: len(line) > 0, doc_lines)
+            )
+            original_indent = len(first_doc_line) - len(
+                first_doc_line.lstrip()
+            )
+            extra_doc = textwrap.indent(
+                textwrap.dedent(extra_doc), " " * original_indent
+            )
+            new_doc = "\n".join([orig_doc, extra_doc])
+        _wrapper.__doc__ = new_doc
+
         return _wrapper
 
 
