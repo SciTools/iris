@@ -1938,7 +1938,7 @@ class Coord(_DimensionalMetadata):
         * diffs: (array or tuple of arrays)
             A boolean array or tuple of boolean arrays which are true where
             there are discontiguities between neighbouring bounds. If self is
-            a 2D coord of shape (Y, X), a tuple of arrays is returned, where
+            a 2D coord of shape (Y, X), a pair of arrays is returned, where
             the first is an array of differences along the x-axis, of the
             shape (Y, X-1) and the second is an array of differences along
             the y-axis, of the shape (Y-1, X).
