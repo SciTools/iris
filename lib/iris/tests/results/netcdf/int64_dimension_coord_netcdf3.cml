@@ -10,6 +10,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data dtype="float64" shape="(2, 2)" state="deferred"/>
+    <data dtype="float64" shape="(2, 2)" state="loaded"/>
   </cube>
 </cubes>
