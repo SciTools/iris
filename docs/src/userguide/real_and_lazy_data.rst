@@ -189,17 +189,17 @@ coordinates' lazy points and bounds:
 
 .. doctest::
 
-    >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'), 'air_potential_temperature')
+    >>> cube = iris.load_cube(iris.sample_data_path('orca2_votemper.nc'),'votemper')
 
-    >>> dim_coord = cube.coord('model_level_number')
+    >>> dim_coord = cube.coord('depth')
     >>> print(dim_coord.has_lazy_points())
     False
     >>> print(dim_coord.has_bounds())
-    False
+    True
     >>> print(dim_coord.has_lazy_bounds())
     False
 
-    >>> aux_coord = cube.coord('sigma')
+    >>> aux_coord = cube.coord('longitude')
     >>> print(aux_coord.has_lazy_points())
     True
     >>> print(aux_coord.has_bounds())
@@ -214,16 +214,15 @@ coordinates' lazy points and bounds:
     >>> print(aux_coord.has_lazy_bounds())
     True
 
-    >>> derived_coord = cube.coord('altitude')
+    # Fetch a derived coordinate, from a different file: These can also have lazy data.
+    >>> cube2 = iris.load_cube(iris.sample_data_path('hybrid_height.nc'), 'air_potential_temperature')
+    >>> derived_coord = cube2.coord('altitude')
     >>> print(derived_coord.has_lazy_points())
     True
     >>> print(derived_coord.has_bounds())
     True
     >>> print(derived_coord.has_lazy_bounds())
     True
-
-.. note::
-    Printing a lazy :class:`~iris.coords.AuxCoord` will realise its points and bounds arrays!
 
 
 Dask Processing Options

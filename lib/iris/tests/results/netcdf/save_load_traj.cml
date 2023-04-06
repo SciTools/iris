@@ -38,6 +38,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float32" shape="(10,)" state="deferred"/>
+    <data dtype="float32" shape="(10,)" state="loaded"/>
   </cube>
 </cubes>
