@@ -31,7 +31,7 @@ class Test(tests.IrisTest):
         # Then generate a discontiguity at a single lat-lon point.
         # Discontiguities will be caused at the rightmost bounds.
         self.testcube_discontig_right = full2d_global()
-        make_bounds_discontiguous_at_point(self.testcube_discontig, 3, 3)
+        make_bounds_discontiguous_at_point(self.testcube_discontig_right, 3, 3)
 
         # Repeat for a discontiguity on the leftmost bounds.
         self.testcube_discontig_left = full2d_global()
