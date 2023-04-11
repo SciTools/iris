@@ -240,18 +240,18 @@ for more information on setting dask processing options.
 
 .. _delayed_netcdf_save:
 
-Delayed netCDF Saving
+Delayed NetCDF Saving
 ---------------------
 
-When saving data to netCDF files, it is possible to *delay* writing lazy content to the
+When saving data to NetCDF files, it is possible to *delay* writing lazy content to the
 output file, to be performed by  `Dask <https://docs.dask.org/en/stable/>`_  later,
 thus enabling parallel save operations.
 
 This works in the following way :
-    1. an :func:`iris.save` call is made, with a netcdf file output and the additional
+    1. an :func:`iris.save` call is made, with a NetCDF file output and the additional
        keyword ``compute=False``.
-       This is currently *only* available when saving to netCDF, so it is documented in
-       the netCDF file format API.  See : :func:`iris.fileformats.netcdf.save`.
+       This is currently *only* available when saving to NetCDF, so it is documented in
+       the Iris NetCDF file format API.  See: :func:`iris.fileformats.netcdf.save`.
 
     2. the call creates the output file, but does not fill in variables' data, where
        the data is a lazy array in the Iris object.  Instead, these variables are
@@ -270,6 +270,6 @@ from shared lazy input data, these can be computed in parallel efficiently by Da
 can do.
 
 .. note::
-    This feature does **not** enable parallel writes to the *same* netCDF output file.
+    This feature does **not** enable parallel writes to the *same* NetCDF output file.
     That can only be done on certain operating systems, with a specially configured
-    build of the netCDF C library, and is not supported by Iris at present.
+    build of the NetCDF C library, and is not supported by Iris at present.

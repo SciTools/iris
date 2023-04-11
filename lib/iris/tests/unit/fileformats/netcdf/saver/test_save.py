@@ -4,6 +4,10 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for the :func:`iris.fileformats.netcdf.save` function."""
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
@@ -24,10 +28,6 @@ from iris.fileformats.netcdf import (
 )
 from iris.tests.stock import lat_lon_cube
 from iris.tests.stock.mesh import sample_mesh_cube
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
 
 
 class Test_conventions(tests.IrisTest):

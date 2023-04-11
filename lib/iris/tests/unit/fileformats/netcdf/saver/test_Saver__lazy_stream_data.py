@@ -26,7 +26,7 @@ class Test__lazy_stream_data:
     @staticmethod
     @pytest.fixture(autouse=True)
     def saver_patch():
-        # Install patches, so we can creata a Saver without opening a real output file.
+        # Install patches, so we can create a Saver without opening a real output file.
         # Mock just enough of Dataset behaviour to allow a 'Saver.complete()' call.
         mock_dataset = mock.MagicMock(_isopen=False)
         mock_dataset_class = mock.Mock(return_value=mock_dataset)
@@ -63,9 +63,9 @@ class Test__lazy_stream_data:
         )
 
     @staticmethod
-    def mock_var(shape, dtype=np.float32):
+    def mock_var(shape):
         # Create a test cf_var object
-        return mock.MagicMock(shape=tuple(shape), dtype=np.dtype(dtype))
+        return mock.MagicMock(shape=tuple(shape), dtype=np.dtype(np.float32))
 
     def test_data_save(self, compute, data_is_lazy):
         """Real data is transferred immediately, lazy data creates a delayed write."""
@@ -81,9 +81,9 @@ class Test__lazy_stream_data:
         assert cf_var.__setitem__.call_count == (0 if data_is_lazy else 1)
         assert len(saver._delayed_writes) == (1 if data_is_lazy else 0)
         if data_is_lazy:
-            result_data, result__write, fill_info = saver._delayed_writes[0]
+            result_data, result_writer, fill_info = saver._delayed_writes[0]
             assert result_data is data
-            assert isinstance(result__write, nc_threadsafe.NetCDFWriteProxy)
+            assert isinstance(result_writer, nc_threadsafe.NetCDFWriteProxy)
             assert isinstance(fill_info, _FillvalueCheckInfo)
         else:
             cf_var.__setitem__.assert_called_once_with(slice(None), data)

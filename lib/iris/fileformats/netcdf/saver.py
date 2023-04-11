@@ -308,6 +308,10 @@ def _data_fillvalue_check(arraylib, data, check_value):
     return is_masked, contains_value
 
 
+class SaverFillValueWarning(UserWarning):
+    pass
+
+
 def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     """
     From the given information, work out whether there was a possible or actual
@@ -336,7 +340,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     is_byte_data = fill_info.dtype.itemsize == 1
     result = None
     if is_byte_data and is_masked and user_value is None:
-        result = UserWarning(
+        result = SaverFillValueWarning(
             f"CF var '{varname}' contains byte data with masked points, but "
             "no fill_value keyword was given. As saved, these "
             "points will read back as valid values. To save as "
@@ -345,7 +349,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
             "keyword during saving, otherwise use ncedit/equivalent."
         )
     elif contains_fill_value:
-        result = UserWarning(
+        result = SaverFillValueWarning(
             f"CF var '{varname}' contains unmasked data points equal to the "
             f"fill-value, {check_value}. As saved, these points will read back "
             "as missing data. To save these as normal values, "

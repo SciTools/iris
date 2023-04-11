@@ -473,7 +473,6 @@ def save(source, target, saver=None, **kwargs):
             # Force append=True for the tail cubes. Don't modify the incoming
             # kwargs.
             kwargs = kwargs.copy()
-            result = []
             for i, cube in enumerate(source):
                 if i != 0:
                     kwargs["append"] = True

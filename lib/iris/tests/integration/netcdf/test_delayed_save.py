@@ -18,6 +18,7 @@ import pytest
 
 import iris
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
+from iris.fileformats.netcdf.saver import SaverFillValueWarning
 import iris.tests
 from iris.tests.stock import realistic_4d
 
@@ -39,6 +40,7 @@ class Test__lazy_stream_data:
         include_lazy_content=True,
         ensure_fillvalue_collision=False,
         data_is_maskedbytes=False,
+        include_extra_coordlikes=False,
     ):
         cube = realistic_4d()
 
@@ -80,6 +82,24 @@ class Test__lazy_stream_data:
         cube.data = fix_array(cube.data)
         auxcoord = cube.coord("surface_altitude")
         auxcoord.points = fix_array(auxcoord.points)
+
+        if include_extra_coordlikes:
+            # Also concoct + attach an ancillary variable and a cell-measure, so we can
+            #  check that they behave the same as coordinates.
+            ancil_dims = [0, 2]
+            cm_dims = [0, 3]
+            ancil_shape = [cube.shape[idim] for idim in ancil_dims]
+            cm_shape = [cube.shape[idim] for idim in cm_dims]
+            from iris.coords import AncillaryVariable, CellMeasure
+
+            ancil = AncillaryVariable(
+                fix_array(np.zeros(ancil_shape)), long_name="sample_ancil"
+            )
+            cube.add_ancillary_variable(ancil, ancil_dims)
+            cm = CellMeasure(
+                fix_array(np.zeros(cm_shape)), long_name="sample_cm"
+            )
+            cube.add_cell_measure(cm, cm_dims)
         return cube
 
     def test_realfile_loadsave_equivalence(self, save_is_delayed, output_path):
@@ -106,8 +126,8 @@ class Test__lazy_stream_data:
         reloaded_cubes = iris.load(output_path)
         reloaded_cubes = sorted(reloaded_cubes, key=lambda cube: cube.name())
         assert reloaded_cubes == original_cubes
-        # NOTE: it might be nicer to do assertCDL, but I', not sure how to access that
-        # from pytest-style test code ?
+        # NOTE: it might be nicer to use assertCDL, but unfortunately importing
+        # unitest.TestCase seems to lose us the ability to use fixtures.
 
     @staticmethod
     def getmask(cube_or_coord):
@@ -122,8 +142,11 @@ class Test__lazy_stream_data:
         # Check when lazy data is actually written :
         #  - in 'immediate' mode, on initial file write
         #  - in 'delayed' mode, only when delayed-write is executed.
-        original_cube = self.make_testcube()
+        original_cube = self.make_testcube(include_extra_coordlikes=True)
         assert original_cube.has_lazy_data()
+        assert original_cube.coord("surface_altitude").has_lazy_points()
+        assert original_cube.cell_measure("sample_cm").has_lazy_data()
+        assert original_cube.ancillary_variable("sample_ancil").has_lazy_data()
 
         result = iris.save(
             original_cube, output_path, compute=not save_is_delayed
@@ -139,20 +162,34 @@ class Test__lazy_stream_data:
         # If 'delayed', the lazy content should all be masked, otherwise none of it.
         data_mask = self.getmask(readback_cube)
         coord_mask = self.getmask(readback_cube.coord("surface_altitude"))
+        ancil_mask = self.getmask(
+            readback_cube.ancillary_variable("sample_ancil")
+        )
+        cm_mask = self.getmask(readback_cube.cell_measure("sample_cm"))
         if save_is_delayed:
             assert np.all(data_mask)
             assert np.all(coord_mask)
+            assert np.all(ancil_mask)
+            assert np.all(cm_mask)
         else:
             assert np.all(~data_mask)
             assert np.all(~coord_mask)
+            assert np.all(~ancil_mask)
+            assert np.all(~cm_mask)
 
         if save_is_delayed:
             result.compute()
             # Re-fetch the arrays.  The data is **no longer masked**.
             data_mask = self.getmask(readback_cube)
             coord_mask = self.getmask(readback_cube.coord("surface_altitude"))
+            ancil_mask = self.getmask(
+                readback_cube.ancillary_variable("sample_ancil")
+            )
+            cm_mask = self.getmask(readback_cube.cell_measure("sample_cm"))
             assert np.all(~data_mask)
             assert np.all(~coord_mask)
+            assert np.all(~ancil_mask)
+            assert np.all(~cm_mask)
 
     @pytest.mark.parametrize(
         "warning_type", ["WarnMaskedBytes", "WarnFillvalueCollision"]
@@ -181,12 +218,16 @@ class Test__lazy_stream_data:
             result = iris.save(cube, output_path, compute=not save_is_delayed)
 
         if not save_is_delayed:
-            result_warnings = [log.message for log in logged_warnings]
+            result_warnings = [
+                log.message
+                for log in logged_warnings
+                if isinstance(log.message, SaverFillValueWarning)
+            ]
         else:
             assert len(logged_warnings) == 0
             # Complete the operation now
             # NOTE: warnings should not be *issued* here, instead they are returned.
-            warnings.simplefilter("error")
+            warnings.simplefilter("error", category=SaverFillValueWarning)
             result_warnings = result.compute()
 
         # Either way, we should now have 2 similar warnings.
