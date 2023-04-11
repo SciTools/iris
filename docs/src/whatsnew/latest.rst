@@ -57,6 +57,9 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
+#. `@schlunma`_ fixed :meth:`iris.cube.CubeList.concatenate` so that it
+   preserves derived coordinates. (:issue:`2478`, :pull:`5096`)
+
 #. `@trexfeathers`_ and `@pp-mo`_ made Iris' use of the `netCDF4`_ library
    thread-safe. (:pull:`5095`)
 
