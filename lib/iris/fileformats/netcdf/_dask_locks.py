@@ -9,7 +9,7 @@ Module containing code to create locks enabling dask workers to co-operate.
 This matter is complicated by needing different solutions for different dask scheduler
 types, i.e. local 'threads' scheduler, local 'processes' or distributed.
 
-In any case, a "iris.fileformats.netcdf.saver.Saver" object contains a netCDF4.Dataset
+In any case, an "iris.fileformats.netcdf.saver.Saver" object contains a netCDF4.Dataset
 targetting an output file, and creates a Saver.file_write_lock object to serialise
 write-accesses to the file from dask tasks :  All dask-task file writes go via a
 "iris.fileformats.netcdf.saver.NetCDFWriteProxy" object, which also contains a link

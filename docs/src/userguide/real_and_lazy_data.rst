@@ -5,9 +5,8 @@
 .. testsetup:: *
 
     import dask.array as da
-    from dask.array import Delayed
     import iris
-    from iris.cube import Cubelist
+    from iris.cube import CubeList
     import numpy as np
 
 
@@ -267,7 +266,7 @@ This works in the following way :
 The benefit of this, is that costly data transfer operations can be performed in
 parallel with writes to other data files.  Also, where array contents are calculated
 from shared lazy input data, these can be computed in parallel efficiently by Dask
-(i.e. without re-fetching), similar to what :meth:`iris.cube.Cubelist.realise_data`
+(i.e. without re-fetching), similar to what :meth:`iris.cube.CubeList.realise_data`
 can do.
 
 .. note::
