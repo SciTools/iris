@@ -16,12 +16,41 @@ import iris.tests as tests  # isort:skip
 import cf_units
 import numpy as np
 
-from iris._concatenate import concatenate
+from iris._concatenate import _DerivedCoordAndDims, concatenate
 import iris.aux_factory
 import iris.coords
 import iris.cube
 import iris.tests.stock as stock
 from iris.util import unify_time_units
+
+
+class Test_DerivedCoordAndDims:
+    def test_equal(self):
+        assert _DerivedCoordAndDims(
+            "coord", "dims", "aux_factory"
+        ) == _DerivedCoordAndDims("coord", "dims", "aux_factory")
+
+    def test_non_equal_coord(self):
+        assert _DerivedCoordAndDims(
+            "coord_0", "dims", "aux_factory"
+        ) != _DerivedCoordAndDims("coord_1", "dims", "aux_factory")
+
+    def test_non_equal_dims(self):
+        assert _DerivedCoordAndDims(
+            "coord", "dims_0", "aux_factory"
+        ) != _DerivedCoordAndDims("coord", "dims_1", "aux_factory")
+
+    def test_non_equal_aux_factory(self):
+        # Note: aux factories are not taken into account for equality!
+        assert _DerivedCoordAndDims(
+            "coord", "dims", "aux_factory_0"
+        ) == _DerivedCoordAndDims("coord", "dims", "aux_factory_1")
+
+    def test_non_equal_types(self):
+        assert (
+            _DerivedCoordAndDims("coord", "dims", "aux_factory")
+            != "I am not a _DerivedCoordAndDims"
+        )
 
 
 class Test_concatenate__epoch(tests.IrisTest):
@@ -287,7 +316,7 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
         cube_b.coord("time").points = [12, 18]
         cube_b.coord("ps").points = [10.0, 20.0]
 
-        result = concatenate([cube_a, cube_b])
+        result = concatenate([cube_a, cube_b], check_aux_coords=False)
         self.assertEqual(len(result), 2)
 
     def test_ignore_diff_air_pressure(self):
