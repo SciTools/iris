@@ -245,24 +245,23 @@ class Test__lazy_stream_data:
         assert isinstance(result, Delayed)
         assert result.compute() == []
 
-    _distributed_client = None
-
     @classmethod
     @pytest.fixture(params=["ThreadedScheduler", "DistributedScheduler"])
     def scheduler_type(cls, request):
         sched_typename = request.param
         if sched_typename == "ThreadedScheduler":
             config_name = "threads"
-            if cls._distributed_client is not None:
-                cls._distributed_client.close()
-                cls._distributed_client = None
         else:
             config_name = "distributed"
-            if cls._distributed_client is None:
-                cls._distributed_client = distributed.Client()
+
+        if config_name == "distributed":
+            _distributed_client = distributed.Client()
 
         with dask.config.set(scheduler=config_name):
             yield sched_typename
+
+        if config_name == "distributed":
+            _distributed_client.close()
 
     def test_distributed(self, output_path, scheduler_type, save_is_delayed):
         # Check operation works, and behaves the same, with a distributed scheduler.

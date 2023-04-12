@@ -4,14 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for :func:`iris.fileformats.netcdf.saver._data_fillvalue_check`.
-
-Repurposed from
-`iris.tests.unit.fileformats.netcdf.test__FillValueMaskCheckAndStoreTarget.py`,
-to show that the logic is basically the same.
-
-Now runs all testcases on both real + lazy data.
-
+Unit tests for :func:`iris.fileformats.netcdf.saver._fillvalue_report`.
 """
 import warnings
 
@@ -20,6 +13,7 @@ import pytest
 
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 from iris.fileformats.netcdf.saver import (
+    SaverFillValueWarning,
     _fillvalue_report,
     _FillvalueCheckInfo,
 )
@@ -98,10 +92,13 @@ class Test__fillvaluereport:
             # Check that we get the expected warning
             expected_msg = "'<testvar>' contains unmasked data points equal to the fill-value"
             # Enter a warnings context that checks for the error.
-            warning_context = pytest.warns(match=expected_msg).__enter__()
+            warning_context = pytest.warns(
+                SaverFillValueWarning, match=expected_msg
+            )
+            warning_context.__enter__()
         else:
-            # Check that we get NO warning.
-            warnings.filterwarnings("error")
+            # Check that we get NO warning of the expected type.
+            warnings.filterwarnings("error", category=SaverFillValueWarning)
 
         # Do call: it should raise AND return a warning, ONLY IF there was a collision.
         result = _fillvalue_report(

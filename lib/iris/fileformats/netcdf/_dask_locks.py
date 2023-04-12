@@ -32,7 +32,7 @@ A worker behaves like a process, though it may execute on a remote machine.  Whe
 distributed.Lock is deserialised to reconstruct the worker task, this creates an object
 that communicates with the scheduler.  These objects behave as a single common lock,
 as they all have the same string 'identity', so the scheduler implements inter-process
-communication so that they can mutally exclude each other.
+communication so that they can mutually exclude each other.
 
 It is also *conceivable* that multiple processes could write to the same file in
 parallel, if the operating system supports it.  However, this also requires that the

@@ -6,11 +6,7 @@
 """
 Unit tests for :func:`iris.fileformats.netcdf.saver._data_fillvalue_check`.
 
-Repurposed from
-`iris.tests.unit.fileformats.netcdf.test__FillValueMaskCheckAndStoreTarget.py`,
-to show that the logic is basically the same.
-
-Now runs all testcases on both real + lazy data.
+Note: now runs all testcases on both real + lazy data.
 
 """
 

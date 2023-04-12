@@ -293,11 +293,11 @@ def _data_fillvalue_check(arraylib, data, check_value):
 
     Returns
     -------
-        is_masked : bool
-            True if array has any masked points.
-        contains_value : bool
-            True if array contains check_value.
-            Always False if check_value is None.
+    is_masked : bool
+        True if array has any masked points.
+    contains_value : bool
+        True if array contains check_value.
+        Always False if check_value is None.
 
     """
     is_masked = arraylib.any(arraylib.ma.getmaskarray(data))
@@ -322,7 +322,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     fill_info : _FillvalueCheckInfo
         A named-tuple containing the context of the fill-value check
     is_masked : bool
-        whether the data arary was masked
+        whether the data array was masked
     contains_fill_value : bool
         whether the data array contained the fill-value
     warn : bool
@@ -2381,7 +2381,7 @@ class Saver:
             # save lazy data with a delayed operation.  For now, we just record the
             # necessary information -- a single, complete delayed action is constructed
             # later by a call to delayed_completion().
-            def store(data, cf_var, fill_value):
+            def store(data, cf_var, fill_info):
                 # Create a data-writeable object that we can stream into, which
                 # encapsulates the file to be opened + variable to be written.
                 write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
@@ -2397,14 +2397,12 @@ class Saver:
         else:
             # Real data is always written directly, i.e. not via lazy save.
             # We also check it immediately for any fill-value problems.
-            def store(data, cf_var, fill_value):
+            def store(data, cf_var, fill_info):
                 cf_var[:] = data
-                return _data_fillvalue_check(np, data, fill_value)
+                return _data_fillvalue_check(np, data, fill_info.check_value)
 
         # Store the data and check if it is masked and contains the fill value.
-        is_masked, contains_fill_value = store(
-            data, cf_var, fill_value_to_check
-        )
+        is_masked, contains_fill_value = store(data, cf_var, fill_info)
 
         if not doing_delayed_save:
             # Issue a fill-value warning immediately, if appropriate.
