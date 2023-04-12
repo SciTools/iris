@@ -140,6 +140,8 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
 
+#. `@Esadek-MO`_ added notes to function docstrings to
+   to clarify if the function preserves laziness or not. (:pull:`5137`)
 
 💼 Internal
 ===========
