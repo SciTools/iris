@@ -144,6 +144,9 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
+#. `@bouweandela`_ and `@trexfeathers`_ (reviewer) modernized and simplified
+   the code of ``iris.analysis._Groupby``. (:pull:`5015`)
+
 #. `@fnattino`_ changed the order of ``ncgen`` arguments in the command to
    create NetCDF files for testing  (caused errors on OS X). (:pull:`5105`)
 
