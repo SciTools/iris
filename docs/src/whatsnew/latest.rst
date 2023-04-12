@@ -80,6 +80,14 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.CellMethod` are printed to be more CF compliant.
    (:pull:`5224`)
 
+#. `@stephenworsley`_ fixed the way discontiguities were discovered for 2D coords.
+   Previously, the only bounds being compared were the bottom right bound in one
+   cell with the bottom left bound in the cell to its right, and the top left bound
+   in a cell with the bottom left bound in the cell above it. Now all bounds are
+   compared with all adjacent bounds from neighbouring cells. This affects
+   :meth:`~iris.coords.Coord.is_contiguous` and :func:`iris.util.find_discontiguities`
+   where additional discontiguities may be detected which previously were not.
+
 
 💣 Incompatible Changes
 =======================
