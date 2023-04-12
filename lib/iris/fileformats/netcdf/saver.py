@@ -2533,6 +2533,7 @@ def save(
     packing=None,
     fill_value=None,
     compute=True,
+    return_saver_list=None,
 ):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
@@ -2825,5 +2826,8 @@ def save(
     else:
         # Return a delayed completion object.
         result = sman.delayed_completion()
+
+    if return_saver_list is not None:
+        return_saver_list.append(sman)
 
     return result

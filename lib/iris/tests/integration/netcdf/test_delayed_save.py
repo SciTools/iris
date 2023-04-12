@@ -138,7 +138,9 @@ class Test__lazy_stream_data:
             data = cube_or_coord.data
         return np.ma.getmaskarray(data)
 
-    def test_time_of_writing(self, save_is_delayed, output_path):
+    def test_time_of_writing(
+        self, save_is_delayed, output_path  # , scheduler_type
+    ):
         # Check when lazy data is actually written :
         #  - in 'immediate' mode, on initial file write
         #  - in 'delayed' mode, only when delayed-write is executed.
@@ -148,8 +150,12 @@ class Test__lazy_stream_data:
         assert original_cube.cell_measure("sample_cm").has_lazy_data()
         assert original_cube.ancillary_variable("sample_ancil").has_lazy_data()
 
+        return_saver_list = []
         result = iris.save(
-            original_cube, output_path, compute=not save_is_delayed
+            original_cube,
+            output_path,
+            compute=not save_is_delayed,
+            return_saver_list=return_saver_list,
         )
         assert save_is_delayed == (result is not None)
 
@@ -178,6 +184,9 @@ class Test__lazy_stream_data:
             assert np.all(~cm_mask)
 
         if save_is_delayed:
+            saver = return_saver_list[0]
+            assert len(saver._delayed_writes) != 0
+            assert len(saver._delayed_writes) == 4
             result.compute()
             # Re-fetch the arrays.  The data is **no longer masked**.
             data_mask = self.getmask(readback_cube)
@@ -186,10 +195,24 @@ class Test__lazy_stream_data:
                 readback_cube.ancillary_variable("sample_ancil")
             )
             cm_mask = self.getmask(readback_cube.cell_measure("sample_cm"))
-            assert np.all(~data_mask)
-            assert np.all(~coord_mask)
-            assert np.all(~ancil_mask)
-            assert np.all(~cm_mask)
+            results = [
+                np.all(~x)
+                for x in (data_mask, coord_mask, ancil_mask, cm_mask)
+            ]
+            shapes = [
+                x.shape for x in (data_mask, coord_mask, ancil_mask, cm_mask)
+            ]
+            assert shapes == [
+                (6, 70, 100, 100),
+                (100, 100),
+                (6, 100),
+                (6, 100),
+            ]
+            assert results == [True, True, True, True]
+            # assert np.all(~data_mask)
+            # assert np.all(~coord_mask)
+            # assert np.all(~ancil_mask)
+            # assert np.all(~cm_mask)
 
     @pytest.mark.parametrize(
         "warning_type", ["WarnMaskedBytes", "WarnFillvalueCollision"]
