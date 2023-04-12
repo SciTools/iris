@@ -10,7 +10,7 @@ Definitions of coordinates and other dimensional metadata.
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from collections.abc import Container, Iterator
+from collections.abc import Container
 import copy
 from functools import lru_cache
 from itertools import zip_longest
@@ -1216,10 +1216,6 @@ BOUND_MODE = 1
 BOUND_POSITION_START = 0
 BOUND_POSITION_MIDDLE = 0.5
 BOUND_POSITION_END = 1
-
-
-# Private named tuple class for coordinate groups.
-_GroupbyItem = namedtuple("GroupbyItem", "groupby_point, groupby_slice")
 
 
 def _get_2d_coord_bound_grid(bounds):
@@ -3131,26 +3127,3 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
-
-
-# See ExplicitCoord._group() for the description/context.
-class _GroupIterator(Iterator):
-    def __init__(self, points):
-        self._points = points
-        self._start = 0
-
-    def __next__(self):
-        num_points = len(self._points)
-        if self._start >= num_points:
-            raise StopIteration
-
-        stop = self._start + 1
-        m = self._points[self._start]
-        while stop < num_points and self._points[stop] == m:
-            stop += 1
-
-        group = _GroupbyItem(m, slice(self._start, stop))
-        self._start = stop
-        return group
-
-    next = __next__

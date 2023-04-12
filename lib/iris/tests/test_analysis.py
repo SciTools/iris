@@ -1915,6 +1915,17 @@ class TestWeights:
         assert kwargs["weights"].units == "1"
 
 
+def test__Groupby_repr():
+    groupby_coord = iris.coords.AuxCoord([2000, 2000], var_name="year")
+    shared_coord = iris.coords.DimCoord(
+        [0, 1],
+        var_name="time",
+        units=cf_units.Unit("days since 2000-01-01"),
+    )
+    grouper = iris.analysis._Groupby([groupby_coord], [(shared_coord, 0)])
+    assert repr(grouper) == "_Groupby(['year'], shared_coords=['time'])"
+
+
 CUBE = iris.cube.Cube(0)
 
 
