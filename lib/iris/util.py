@@ -1820,14 +1820,15 @@ def _meshgrid(*xi, **kwargs):
 
 def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     """
-    Searches coord for discontiguities in the bounds array, returned as a
-    boolean array (True where discontiguities are present).
+    Searches the 'x' and 'y' coord on the cube for discontiguities in the
+    bounds array, returned as a boolean array (True for all cells which are
+    discontiguous with the cell immediately above them or to their right).
 
     Args:
 
     * cube (`iris.cube.Cube`):
         The cube to be checked for discontinuities in its 'x' and 'y'
-        coordinates.
+        coordinates. These coordinates must be 2D.
 
     Kwargs:
 
