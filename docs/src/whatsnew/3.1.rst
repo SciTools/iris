@@ -7,11 +7,8 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: v3.1.0 Release Highlights
-   :icon: report
+.. dropdown:: |icon_report| v3.1.0 Release Highlights
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
    :open:
 

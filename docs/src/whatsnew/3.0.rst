@@ -6,11 +6,8 @@ v3.0 (25 Jan 2021)
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-.. dropdown:: v3.0.0 Release Highlights
-   :icon: report
+.. dropdown:: |icon_report| v3.0.0 Release Highlights
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
    :open:
 
@@ -43,11 +40,8 @@ This document explains the changes made to Iris for this release
 v3.0.1 (27 Jan 2021)
 ====================
 
-.. dropdown:: v3.0.1 Patches
-   :icon: alert
+.. dropdown:: |icon_alert| v3.0.1 Patches
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
 
    The patches included in this release include:
@@ -63,11 +57,8 @@ v3.0.1 (27 Jan 2021)
 v3.0.2 (27 May 2021)
 ====================
 
-.. dropdown:: v3.0.2 Patches
-   :icon: alert
+.. dropdown:: |icon_alert| v3.0.2 Patches
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
 
    The patches included in this release include:
@@ -118,11 +109,8 @@ v3.0.2 (27 May 2021)
 v3.0.3 (07 July 2021)
 =====================
 
-.. dropdown:: v3.0.3 Patches
-   :icon: alert
+.. dropdown:: |icon_alert| v3.0.3 Patches
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
 
    The patches included in this release include:
@@ -137,11 +125,8 @@ v3.0.3 (07 July 2021)
 v3.0.4 (22 July 2021)
 =====================
 
-.. dropdown:: v3.0.4 Patches
-   :icon: alert
+.. dropdown:: |icon_alert| v3.0.4 Patches
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
 
    The patches included in this release include:

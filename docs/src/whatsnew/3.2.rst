@@ -7,11 +7,8 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: v3.2.0 Release Highlights
-   :icon: report
+.. dropdown:: |icon_report| v3.2.0 Release Highlights
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
    :open:
 
@@ -29,11 +26,8 @@ This document explains the changes made to Iris for this release
 v3.2.1 (11 Mar 2022)
 ====================
 
-.. dropdown:: v3.2.1 Patches
-   :icon: alert
+.. dropdown:: |icon_alert| v3.2.1 Patches
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
 
    📢 **Welcome** to `@dennissergeev`_, who made his first contribution to Iris.  Nice work!

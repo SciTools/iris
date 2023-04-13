@@ -6,12 +6,8 @@
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-
-.. dropdown:: |iris_version| Release Highlights
-   :icon: report
+.. dropdown:: |icon_report| |iris_version| Release Highlights
    :animate: fade-in
-   :color: light
-   :class-title: text-center
    :class-body: bg-light
    :open:
 
