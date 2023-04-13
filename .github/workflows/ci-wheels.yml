@@ -74,7 +74,7 @@ jobs:
           CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+        echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
 
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
@@ -103,7 +103,7 @@ jobs:
     - name: "nox cache"
       uses: ./.github/workflows/composite/nox-cache
       with:
-        cache_build: 0
+        cache_build: 1
         env_name: ${{ env.ENV_NAME }}
         lock_file: ${{ env.LOCK_FILE }}
 
