@@ -53,6 +53,9 @@ This document explains the changes made to Iris for this release
    enable lazy computation of rotated wind vector components (:issue:`4934`,
    :pull:`4972`)
 
+#. `@ESadek-MO`_ updated to the latest CF Standard Names Table v80
+   (07 February 2023). (:pull:`5244`)
+
 #. `@pp-mo`_ and  `@lbdreyer`_ supported delayed saving of lazy data, when writing to
    the netCDF file format.  See : :ref:`delayed netCDF saves <delayed_netcdf_save>`.
    Also with significant input from `@fnattino`_.
