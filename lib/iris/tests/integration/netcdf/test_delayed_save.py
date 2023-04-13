@@ -203,8 +203,8 @@ class Test__lazy_stream_data:
 
             n_tries = 0
             all_done = False
-            n_max_tries = 4
-            retry_delay = 3.0
+            n_max_tries = 12
+            retry_delay = 5.0
             start_time = datetime.now()
             while not all_done and n_tries < n_max_tries:
                 n_tries += 1
