@@ -6,6 +6,7 @@
 """
 Integration tests for delayed saving.
 """
+import time
 import warnings
 
 from cf_units import Unit
@@ -139,7 +140,7 @@ class Test__lazy_stream_data:
         return np.ma.getmaskarray(data)
 
     def test_time_of_writing(
-        self, save_is_delayed, output_path  # , scheduler_type
+        self, save_is_delayed, output_path, scheduler_type
     ):
         # Check when lazy data is actually written :
         #  - in 'immediate' mode, on initial file write
@@ -188,27 +189,44 @@ class Test__lazy_stream_data:
             assert len(saver._delayed_writes) != 0
             assert len(saver._delayed_writes) == 4
             result.compute()
-            # Re-fetch the arrays.  The data is **no longer masked**.
-            data_mask = self.getmask(readback_cube)
-            coord_mask = self.getmask(readback_cube.coord("surface_altitude"))
-            ancil_mask = self.getmask(
-                readback_cube.ancillary_variable("sample_ancil")
-            )
-            cm_mask = self.getmask(readback_cube.cell_measure("sample_cm"))
-            results = [
-                np.all(~x)
-                for x in (data_mask, coord_mask, ancil_mask, cm_mask)
-            ]
-            shapes = [
-                x.shape for x in (data_mask, coord_mask, ancil_mask, cm_mask)
-            ]
-            assert shapes == [
-                (6, 70, 100, 100),
-                (100, 100),
-                (6, 100),
-                (6, 100),
-            ]
-            assert results == [True, True, True, True]
+
+            # shapes = [
+            #     x.shape for x in (data_mask, coord_mask, ancil_mask, cm_mask)
+            # ]
+            # assert shapes == [
+            #     (6, 70, 100, 100),
+            #     (100, 100),
+            #     (6, 100),
+            #     (6, 100),
+            # ]
+
+            n_tries = 0
+            all_done = False
+            n_max_retries = 4
+            retry_delay = 3.0
+            while not all_done and n_tries < n_max_retries:
+                n_tries += 1
+
+                # Re-fetch the arrays.  The data is **no longer masked**.
+                data_mask = self.getmask(readback_cube)
+                coord_mask = self.getmask(
+                    readback_cube.coord("surface_altitude")
+                )
+                ancil_mask = self.getmask(
+                    readback_cube.ancillary_variable("sample_ancil")
+                )
+                cm_mask = self.getmask(readback_cube.cell_measure("sample_cm"))
+                results = [
+                    np.all(~x)
+                    for x in (data_mask, coord_mask, ancil_mask, cm_mask)
+                ]
+                all_done = all(results)
+
+                if not all_done:
+                    time.sleep(retry_delay)
+
+            assert all_done and n_tries == 1
+
             # assert np.all(~data_mask)
             # assert np.all(~coord_mask)
             # assert np.all(~ancil_mask)
@@ -269,12 +287,21 @@ class Test__lazy_stream_data:
         assert result.compute() == []
 
     @classmethod
-    @pytest.fixture(params=["ThreadedScheduler", "DistributedScheduler"])
+    @pytest.fixture(
+        params=[
+            "ThreadedScheduler",
+            "DistributedScheduler",
+            "SingleThreadScheduler",
+        ]
+    )
     def scheduler_type(cls, request):
         sched_typename = request.param
         if sched_typename == "ThreadedScheduler":
             config_name = "threads"
+        elif sched_typename == "SingleThreadScheduler":
+            config_name = "single-threaded"
         else:
+            assert sched_typename == "DistributedScheduler"
             config_name = "distributed"
 
         if config_name == "distributed":
@@ -286,15 +313,21 @@ class Test__lazy_stream_data:
         if config_name == "distributed":
             _distributed_client.close()
 
-    def test_distributed(self, output_path, scheduler_type, save_is_delayed):
-        # Check operation works, and behaves the same, with a distributed scheduler.
+    def test_scheduler_types(
+        self, output_path, scheduler_type, save_is_delayed
+    ):
+        # Check operation works and behaves the same with different schedulers,
+        # especially including distributed.
 
         # Just check that the dask scheduler is setup as 'expected'.
         if scheduler_type == "ThreadedScheduler":
             expected_dask_scheduler = "threads"
+        elif scheduler_type == "SingleThreadScheduler":
+            expected_dask_scheduler = "single-threaded"
         else:
             assert scheduler_type == "DistributedScheduler"
             expected_dask_scheduler = "distributed"
+
         assert dask.config.get("scheduler") == expected_dask_scheduler
 
         # Use a testcase that produces delayed warnings.

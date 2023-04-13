@@ -95,6 +95,8 @@ def get_dask_array_scheduler_type():
         # Detect the ones which we recognise.
         if get_function == dask.threaded.get:
             result = "threads"
+        elif get_function == dask.local.get_sync:
+            result = "single-threaded"
         elif get_function == dask.multiprocessing.get:
             result = "processes"
         else:
@@ -113,7 +115,7 @@ def get_worker_lock(identity: str):
 
     """
     scheduler_type = get_dask_array_scheduler_type()
-    if scheduler_type == "threads":
+    if scheduler_type in ("threads", "single-threaded"):
         # N.B. the "identity" string is never used in this case, as the same actual
         # lock object is used by all workers.
         lock = threading.Lock()
