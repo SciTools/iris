@@ -54,7 +54,7 @@ This document explains the changes made to Iris for this release
    :pull:`4972`)
 
 #. `@ESadek-MO`_ updated to the latest CF Standard Names Table v80
-   (07 February 2023). (:pull:`4910`)
+   (07 February 2023). (:pull:`5244`)
 
 
 🐛 Bugs Fixed
