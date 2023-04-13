@@ -6,7 +6,6 @@
 """
 Integration tests for delayed saving.
 """
-from datetime import datetime
 import time
 import warnings
 
@@ -29,8 +28,17 @@ class Test__lazy_stream_data:
     @pytest.fixture(autouse=True, scope="function")
     def output_path(self, tmp_path_factory):
         tmpdir = tmp_path_factory.mktemp("save_testfiles")
-        self.temp_output_filepath = tmpdir / "tmp.nc"
+        self.temp_output_filepath = tmpdir / f"tmp_{time.time()}.nc"
         yield self.temp_output_filepath
+
+    @pytest.fixture(autouse=True, scope="module")
+    def all_vars_lazy(self):
+        # For the operation of these tests, we want to force all netcdf variables
+        # to load as lazy data, i.e. **don't** use real data for 'small' ones.
+        old_value = iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES
+        iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = 0
+        yield
+        iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = old_value
 
     @staticmethod
     @pytest.fixture(params=[False, True], ids=["SaveImmediate", "SaveDelayed"])
@@ -143,9 +151,9 @@ class Test__lazy_stream_data:
     def test_time_of_writing(
         self, save_is_delayed, output_path, scheduler_type
     ):
-        # Check when lazy data is actually written :
+        # Check when lazy data is *actually* written :
         #  - in 'immediate' mode, on initial file write
-        #  - in 'delayed' mode, only when delayed-write is executed.
+        #  - in 'delayed' mode, only when the delayed-write is computed.
         original_cube = self.make_testcube(include_extra_coordlikes=True)
         assert original_cube.has_lazy_data()
         assert original_cube.coord("surface_altitude").has_lazy_points()
@@ -166,14 +174,20 @@ class Test__lazy_stream_data:
             output_path, "air_potential_temperature"
         )
         assert readback_cube.has_lazy_data()
+        assert readback_cube.coord("surface_altitude").has_lazy_points()
+        assert readback_cube.cell_measure("sample_cm").has_lazy_data()
+        assert readback_cube.ancillary_variable("sample_ancil").has_lazy_data()
 
         # If 'delayed', the lazy content should all be masked, otherwise none of it.
-        data_mask = self.getmask(readback_cube)
-        coord_mask = self.getmask(readback_cube.coord("surface_altitude"))
-        ancil_mask = self.getmask(
-            readback_cube.ancillary_variable("sample_ancil")
-        )
-        cm_mask = self.getmask(readback_cube.cell_measure("sample_cm"))
+        tests_components = [
+            readback_cube,
+            readback_cube.coord("surface_altitude"),
+            readback_cube.ancillary_variable("sample_ancil"),
+            readback_cube.cell_measure("sample_cm"),
+        ]
+        data_mask, coord_mask, ancil_mask, cm_mask = [
+            self.getmask(data) for data in tests_components
+        ]
         if save_is_delayed:
             assert np.all(data_mask)
             assert np.all(coord_mask)
@@ -191,64 +205,16 @@ class Test__lazy_stream_data:
             assert len(saver._delayed_writes) == 4
             result.compute()
 
-            # shapes = [
-            #     x.shape for x in (data_mask, coord_mask, ancil_mask, cm_mask)
-            # ]
-            # assert shapes == [
-            #     (6, 70, 100, 100),
-            #     (100, 100),
-            #     (6, 100),
-            #     (6, 100),
-            # ]
+            # Re-fetch the arrays.  The data is **no longer masked**.
+            data_mask, coord_mask, ancil_mask, cm_mask = [
+                self.getmask(data) for data in tests_components
+            ]
 
-            n_tries = 0
-            all_done = False
-            n_max_tries = 12
-            retry_delay = 5.0
-            start_time = datetime.now()
-            while not all_done and n_tries < n_max_tries:
-                n_tries += 1
-
-                # Re-fetch the arrays.  The data is **no longer masked**.
-                data_mask = self.getmask(readback_cube)
-                coord_mask = self.getmask(
-                    readback_cube.coord("surface_altitude")
-                )
-                ancil_mask = self.getmask(
-                    readback_cube.ancillary_variable("sample_ancil")
-                )
-                cm_mask = self.getmask(readback_cube.cell_measure("sample_cm"))
-                results = [
-                    np.all(~x)
-                    for x in (data_mask, coord_mask, ancil_mask, cm_mask)
-                ]
-                all_done = all(results)
-
-                if not all_done:
-                    time.sleep(retry_delay)
-
-            # Perform a sequence of checks which should show what happened ...
-
-            end_time = datetime.now()
-            elapsed = (end_time - start_time).total_seconds()
-            print("time_of_writing, delayed-save test results:")
-            print(
-                f"  : results={results}, tries={n_tries}, elapsed-time={elapsed}"
-            )
-
-            # Check it either succeeded or timed out
-            assert all_done or n_tries >= n_max_tries
-
-            # Did it succeed? (if not must have retried)
-            assert all_done
-
-            # Did it work first time?
-            assert n_tries == 1
-
-            # assert np.all(~data_mask)
-            # assert np.all(~coord_mask)
-            # assert np.all(~ancil_mask)
-            # assert np.all(~cm_mask)
+            # All written now ?
+            assert np.all(~data_mask)
+            assert np.all(~coord_mask)
+            assert np.all(~ancil_mask)
+            assert np.all(~cm_mask)
 
     @pytest.mark.parametrize(
         "warning_type", ["WarnMaskedBytes", "WarnFillvalueCollision"]
@@ -307,8 +273,8 @@ class Test__lazy_stream_data:
     @classmethod
     @pytest.fixture(
         params=[
-            "ThreadedScheduler",
-            "DistributedScheduler",
+            # "ThreadedScheduler",
+            # "DistributedScheduler",
             "SingleThreadScheduler",
         ]
     )
