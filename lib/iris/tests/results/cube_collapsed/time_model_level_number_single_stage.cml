@@ -6,51 +6,51 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord bounds="[[-0.12825, -0.12735],
-		[-0.12735, -0.12645],
-		[-0.12645, -0.12555],
-		..., 
-		[-0.04095, -0.04005],
-		[-0.04005, -0.03915],
-		[-0.03915, -0.03825]]" id="f1ab3066" points="[-0.1278, -0.1269, -0.126, ..., -0.0405, -0.0396,
-		-0.0387]" shape="(100,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+ [-0.12735, -0.12645],
+ [-0.12645, -0.12555],
+ ...,
+ [-0.04095, -0.04005],
+ [-0.04005, -0.03915],
+ [-0.03915, -0.03825]]" id="f1ab3066" points="[-0.1278, -0.1269, -0.126 , ..., -0.0405, -0.0396,
+ -0.0387]" shape="(100,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[359.579, 359.58],
-		[359.58, 359.581],
-		[359.581, 359.582],
-		..., 
-		[359.666, 359.667],
-		[359.667, 359.668],
-		[359.668, 359.669]]" id="d3676747" points="[359.58, 359.581, 359.581, ..., 359.667, 359.668,
-		359.669]" shape="(100,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord bounds="[[359.57916, 359.58005],
+ [359.58005, 359.58096],
+ [359.58096, 359.58185],
+ ...,
+ [359.66644, 359.66736],
+ [359.66736, 359.66824],
+ [359.66824, 359.66916]]" id="d3676747" points="[359.5796, 359.5805, 359.5814, ..., 359.6669,
+ 359.6678, 359.6687]" shape="(100,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[0.0, 42077.5]]" id="fb105c19" long_name="level_height" points="[21038.8]" shape="(1,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[[    0. , 42077.5]]" id="fb105c19" long_name="level_height" points="[21038.75]" shape="(1,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1, 70]]" id="38fd0305" points="[35]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+        <dimCoord bounds="[[ 1, 70]]" id="38fd0305" points="[35]" shape="(1,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <auxCoord bounds="[[0.0, 1.0]]" id="a5c170db" long_name="sigma" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[[0., 1.]]" id="a5c170db" long_name="sigma" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[347921.166667, 347922.0]]" id="cb784457" points="[347921.583333]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[[347921.16666667, 347922.        ]]" id="cb784457" points="[347921.58333334]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

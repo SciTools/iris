@@ -3,7 +3,7 @@
   <cube dtype="int64" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <auxCoord id="d00b57c8" long_name="columns" points="[col_1, col_2, col_3, col_4, col_5]" shape="(5,)" units="Unit('unknown')" value_type="object"/>
+        <auxCoord id="d00b57c8" long_name="columns" points="['col_1', 'col_2', 'col_3', 'col_4', 'col_5']" shape="(5,)" units="Unit('unknown')" value_type="object"/>
       </coord>
       <coord datadims="[0]">
         <dimCoord id="343cbc01" long_name="index" points="[0, 1]" shape="(2,)" units="Unit('unknown')" value_type="int64"/>

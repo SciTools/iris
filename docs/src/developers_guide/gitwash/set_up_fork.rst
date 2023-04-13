@@ -15,7 +15,7 @@ Overview
 
    git clone git@github.com:your-user-name/iris.git
    cd iris
-   git remote add upstream git://github.com/SciTools/iris.git
+   git remote add upstream git@github.com/SciTools/iris.git
 
 In Detail
 =========

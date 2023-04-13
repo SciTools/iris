@@ -7,32 +7,30 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="1d45e087" points="[0.0, 3.0, 6.0, 0.0, 3.0, 6.0, 0.0, 6.0]" shape="(8,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <auxCoord id="1d45e087" points="[0., 3., 6., 0., 3., 6., 0., 6.]" shape="(8,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[1000.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[1000.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="7668f483" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
-		9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
-		17.0, 18.0, 19.0]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="7668f483" points="[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
+ 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="0.0" grid_north_pole_longitude="90.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="5614ddf4" points="[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
-		9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
-		17.0, 18.0, 19.0]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="5614ddf4" points="[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
+ 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="0.0" grid_north_pole_longitude="90.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="6eef7051" long_name="pressure" points="[1000.0, 1000.0, 1000.0, 800.0, 800.0, 800.0,
-		900.0, 900.0]" shape="(8,)" units="Unit('hPa')" value_type="float32"/>
+        <auxCoord id="6eef7051" long_name="pressure" points="[1000., 1000., 1000.,  800.,  800.,  800.,  900.,
+  900.]" shape="(8,)" units="Unit('hPa')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="cb784457" points="[1000.0, 1003.0, 1006.0, 1000.0, 1003.0, 1006.0,
-		1000.0, 1006.0]" shape="(8,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <auxCoord id="cb784457" points="[1000., 1003., 1006., 1000., 1003., 1006., 1000.,
+ 1006.]" shape="(8,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

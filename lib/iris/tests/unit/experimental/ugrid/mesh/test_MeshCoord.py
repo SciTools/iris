@@ -235,9 +235,7 @@ class Test__getitem__(tests.IrisTest):
     def test_slice_wholeslice_1tuple(self):
         # The only slicing case that we support, to enable cube slicing.
         meshcoord = sample_meshcoord()
-        meshcoord2 = meshcoord[
-            :,
-        ]
+        meshcoord2 = meshcoord[:,]
         self.assertIsNot(meshcoord2, meshcoord)
         self.assertEqual(meshcoord2, meshcoord)
         # In this case, we should *NOT* copy the linked Mesh object.

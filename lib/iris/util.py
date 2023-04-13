@@ -70,6 +70,11 @@ def broadcast_to_shape(array, shape, dim_map):
         # a is an array of shape (48, 96)
         result = broadcast_to_shape(a, (96, 48, 12), (1, 0))
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     if len(dim_map) != array.ndim:
         # We must check for this condition here because we cannot rely on
@@ -142,6 +147,11 @@ def delta(ndarray, dimension, circular=False):
             >>> iris.util.delta(original, 0, circular=360)
             array([90, 90, 90, 90])
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     if circular is not False:
         _delta = np.roll(ndarray, -1, axis=dimension)
@@ -191,6 +201,11 @@ def describe_diff(cube_a, cube_b, output_file=None):
         of the differences in metadata between two cubes. Determining whether
         two cubes will merge requires additional logic that is beyond the
         scope of this function.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 
@@ -243,6 +258,11 @@ def guess_coord_axis(coord):
 
     Returns:
         'T', 'Z', 'Y', 'X', or None.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     axis = None
@@ -305,6 +325,11 @@ def rolling_window(a, window=1, step=1, axis=-1):
         array([[ 1.,  2.,  3.],
                [ 6.,  7.,  8.]])
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     # NOTE: The implementation of this function originates from
     # https://github.com/numpy/numpy/pull/31#issuecomment-1304851 04/08/2011
@@ -359,6 +384,10 @@ def array_equal(array1, array2, withnans=False):
     This provides much the same functionality as :func:`numpy.array_equal`, but
     with additional support for arrays of strings and NaN-tolerant operation.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
 
     def normalise_array(array):
@@ -406,6 +435,11 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
        b, max_rel, max_abs)``. Note that :func:`~math.isclose` will return True
        if the actual error equals the maximum, whereas :func:`util.approx_equal`
        will return False.
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     wmsg = (
@@ -455,6 +489,11 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
            print(i, between_3_and_6(i))
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if lh_inclusive and rh_inclusive:
@@ -509,6 +548,11 @@ def reverse(cube_or_array, coords_or_dims):
          [[23 22 21 20]
           [19 18 17 16]
           [15 14 13 12]]]
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -588,6 +632,11 @@ def monotonic(array, strict=False, return_direction=False):
 
             ``(monotonic_status, direction)``
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     if array.ndim != 1 or len(array) <= 1:
         raise ValueError(
@@ -639,6 +688,11 @@ def column_slices_generator(full_slice, ndims):
 
     This method was developed as numpy does not support the direct
     approach of [(3, 5), : , (1, 6, 8)] for column based indexing.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     list_of_slices = []
@@ -735,7 +789,6 @@ def _build_full_slice_given_keys(keys, ndim):
 
     for i, key in enumerate(keys):
         if key is Ellipsis:
-
             # replace any subsequent Ellipsis objects in keys with
             # slice(None, None) as per Numpy
             keys = keys[:i] + tuple(
@@ -1036,6 +1089,10 @@ def clip_string(the_str, clip_length=70, rider="..."):
         If the clip length was greater than the original string, the
         original string is returned unaltered.
 
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
 
     if clip_length >= len(the_str) or clip_length <= 0:
@@ -1066,37 +1123,26 @@ def format_array(arr):
 
     For customisations, use the :mod:`numpy.core.arrayprint` directly.
 
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
 
-    summary_threshold = 85
-    summary_insert = "..." if arr.size > summary_threshold else ""
-    edge_items = 3
-    ffunc = str
     max_line_len = 50
 
-    # Format the array with version 1.13 legacy behaviour
-    with np.printoptions(legacy="1.13"):
-        # Use this (private) routine for more control.
-        formatArray = np.core.arrayprint._formatArray
-        # N.B. the 'legacy' arg had different forms in different numpy versions
-        # -- fetch the required form from the internal options dict
-        format_options_legacy = np.core.arrayprint._format_options["legacy"]
-
-        result = formatArray(
-            arr,
-            ffunc,
-            max_line_len,
-            next_line_prefix="\t\t",
-            separator=", ",
-            edge_items=edge_items,
-            summary_insert=summary_insert,
-            legacy=format_options_legacy,
-        )
+    result = np.array2string(
+        arr,
+        max_line_len,
+        separator=", ",
+        threshold=85,
+    )
 
     return result
 
 
-def new_axis(src_cube, scalar_coord=None, expand_extras=()):
+def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     """
     Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
@@ -1129,6 +1175,11 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):
         >>> ncube = iris.util.new_axis(cube, 'time')
         >>> ncube.shape
         (1, 360, 360)
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
 
     def _reshape_data_array(data_manager):
@@ -1173,8 +1224,14 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):
 
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
+        try:
+            src_cube.coord(scalar_coord, dim_coords=False)
+        except iris.exceptions.CoordinateNotFoundError:
+            emsg = scalar_coord.name() + " is already a dimension coordinate."
+            raise ValueError(emsg)
+
         if not scalar_coord.shape == (1,):
-            emsg = scalar_coord.name() + "is not a scalar coordinate."
+            emsg = scalar_coord.name() + " is not a scalar coordinate."
             raise ValueError(emsg)
 
     expand_extras = [
@@ -1239,6 +1296,11 @@ def squeeze(cube):
         >>> ncube = iris.util.squeeze(cube)
         >>> ncube.shape
         (360, 360)
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 
@@ -1309,7 +1371,14 @@ def file_is_newer_than(result_path, source_paths):
 
 
 def is_regular(coord):
-    """Determine if the given coord is regular."""
+    """
+    Determine if the given coord is regular.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+    """
     try:
         regular_step(coord)
     except iris.exceptions.CoordinateNotRegularError:
@@ -1320,7 +1389,15 @@ def is_regular(coord):
 
 
 def regular_step(coord):
-    """Return the regular step from a coord or fail."""
+    """
+    Return the regular step from a coord or fail.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+    """
     if coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError("Expected 1D coord")
     if coord.shape[0] < 2:
@@ -1351,6 +1428,10 @@ def regular_points(zeroth, step, count):
     count : number
         The number of point values.
 
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
     _, regular = iris.util.points_step(points)
@@ -1371,6 +1452,12 @@ def points_step(points):
     -------
     numeric, bool
         A tuple containing the average difference between values, and whether the difference is regular.
+
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # Calculations only make sense with multiple points
     points = np.asanyarray(points)
@@ -1399,6 +1486,11 @@ def unify_time_units(cubes):
 
     * cubes:
         An iterable containing :class:`iris.cube.Cube` instances.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     epochs = {}
@@ -1540,6 +1632,12 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
                 forecast_period                  x              -              -
                 time                             x              -              -
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+
     """
     from iris.coords import Coord, DimCoord
 
@@ -1666,6 +1764,12 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
                 time                            x              -              -
                 year                            x              -              -
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+
     """
     from iris.coords import Coord
 
@@ -1716,14 +1820,15 @@ def _meshgrid(*xi, **kwargs):
 
 def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     """
-    Searches coord for discontiguities in the bounds array, returned as a
-    boolean array (True where discontiguities are present).
+    Searches the 'x' and 'y' coord on the cube for discontiguities in the
+    bounds array, returned as a boolean array (True for all cells which are
+    discontiguous with the cell immediately above them or to their right).
 
     Args:
 
     * cube (`iris.cube.Cube`):
         The cube to be checked for discontinuities in its 'x' and 'y'
-        coordinates.
+        coordinates. These coordinates must be 2D.
 
     Kwargs:
 
@@ -1756,6 +1861,12 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
 
         # Plot the masked cube slice:
         iplt.pcolormesh(masked_cube_slice)
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
 
     """
     lats_and_lons = [
@@ -1815,8 +1926,9 @@ def _mask_array(array, points_to_mask, in_place=False):
 
     If array is lazy then in_place is ignored: _math_op_common will use the
     returned value regardless of in_place, so we do not need to implement it
-    here.  If in_place is True then array must be a np.ma.MaskedArray or dask
-    array (must be a dask array if points_to_mask is lazy).
+    here.  If in_place is True then array must be a
+    :class:`numpy.ma.MaskedArray` or :class:`dask.array.Array`
+    (must be a dask array if points_to_mask is lazy).
 
     """
     # Decide which array library to use.
@@ -1897,6 +2009,10 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
 
     If either ``cube`` or ``points_to_mask`` is lazy, the result will be lazy.
 
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+
     """
     if in_place and not cube.has_lazy_data():
         # Ensure cube data is masked type so we can work on it in-place.
@@ -1943,6 +2059,11 @@ def equalise_attributes(cubes):
     * removed (list):
         A list of dicts holding the removed attributes.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     removed = []
     # Work out which attributes are identical across all the cubes.
@@ -1978,13 +2099,19 @@ def is_masked(array):
 
     Parameters
     ----------
-    array : :class:`numpy.Array` or `dask.array.Array`
+    array : :class:`numpy.Array` or :class:`dask.array.Array`
             The array to be checked for masks.
 
     Returns
     -------
     bool
         Whether or not the array has any masks.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
 
     """
     if is_lazy_data(array):
@@ -2002,7 +2129,6 @@ def _strip_metadata_from_dims(cube, dims):
 
     To be used by operations that modify or remove dimensions.
     Note: does nothing to (aux)-coordinates.  Those would be handled explicitly by the calling operation.
-
     """
     reduced_cube = cube.copy()
 

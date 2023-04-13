@@ -10,6 +10,9 @@ Tests the high-level plotting interface.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
+
+import numpy as np
+
 import iris
 import iris.tests.test_plot as test_plot
 
@@ -279,6 +282,22 @@ class TestSubplotColorbar(tests.IrisTest):
         # plot using the second/last figure subplot axes (default)
         mappable = qplt.contourf(self.data)
         self._check(mappable, self.figure2, self.axes2)
+
+
+@tests.skip_data
+@tests.skip_plot
+class TestPlotHist(tests.GraphicsTest):
+    def test_horizontal(self):
+        cube = test_plot.simple_cube()[0]
+        qplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
+        self.check_graphic()
+
+    def test_vertical(self):
+        cube = test_plot.simple_cube()[0]
+        qplt.hist(
+            cube, bins=np.linspace(287.7, 288.2, 11), orientation="horizontal"
+        )
+        self.check_graphic()
 
 
 if __name__ == "__main__":

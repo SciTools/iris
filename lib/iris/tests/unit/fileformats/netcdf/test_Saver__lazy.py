@@ -82,12 +82,6 @@ class Test_check_attribute_compliance__exception_handling(
     pass
 
 
-class Test__create_cf_cell_measure_variable(
-    LazyMixin, test_Saver.Test__create_cf_cell_measure_variable
-):
-    pass
-
-
 class TestStreamed(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_2d()

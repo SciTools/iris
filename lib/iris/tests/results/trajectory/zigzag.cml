@@ -8,37 +8,35 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[347921.166667]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[347921.16666667]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="f1ab3066" points="[-0.1188, -0.11570692636, -0.112613852721,
-		-0.109520779081, -0.106427705441,
-		-0.103334631802, -0.100241558162,
-		-0.0971484845225, -0.0940554108829,
-		-0.0909623372432, -0.0878692636036,
-		-0.0847761899639, -0.0810340518516,
-		-0.0761434730157, -0.0712528941797,
-		-0.0663623153438, -0.0614717365078,
-		-0.0565811576719, -0.0516905788359, -0.0468]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
+        <auxCoord id="f1ab3066" points="[-0.1188    , -0.11570693, -0.11261385,
+ -0.10952078, -0.10642771, -0.10333463,
+ -0.10024156, -0.09714848, -0.09405541,
+ -0.09096234, -0.08786926, -0.08477619,
+ -0.08103405, -0.07614347, -0.07125289,
+ -0.06636232, -0.06147174, -0.05658116,
+ -0.05169058, -0.0468    ]" shape="(20,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="d3676747" points="[359.5886, 359.594786147, 359.600972295,
-		359.607158442, 359.613344589, 359.619530736,
-		359.625716884, 359.631903031, 359.638089178,
-		359.644275326, 359.650461473, 359.65664762,
-		359.658834052, 359.653943473, 359.649052894,
-		359.644162315, 359.639271737, 359.634381158,
-		359.629490579, 359.6246]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
+        <auxCoord id="d3676747" points="[359.5886    , 359.59478615, 359.60097229,
+ 359.60715844, 359.61334459, 359.61953074,
+ 359.62571688, 359.63190303, 359.63808918,
+ 359.64427533, 359.65046147, 359.65664762,
+ 359.65883405, 359.65394347, 359.64905289,
+ 359.64416232, 359.63927174, 359.63438116,
+ 359.62949058, 359.6246    ]" shape="(20,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[0.0, 13.3333]]" id="fb105c19" long_name="level_height" points="[5.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[[ 0.      , 13.333332]]" id="fb105c19" long_name="level_height" points="[5.]" shape="(1,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -52,10 +50,10 @@
         </dimCoord>
       </coord>
       <coord>
-        <auxCoord bounds="[[1.0, 0.998464]]" id="a5c170db" long_name="sigma" points="[0.999424]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[[1.        , 0.99846387]]" id="a5c170db" long_name="sigma" points="[0.9994238]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord id="cb784457" points="[347921.166667]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[347921.16666667]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

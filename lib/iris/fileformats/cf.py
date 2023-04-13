@@ -20,10 +20,10 @@ import os
 import re
 import warnings
 
-import netCDF4
 import numpy as np
 import numpy.ma as ma
 
+from iris.fileformats.netcdf import _thread_safe_nc
 import iris.util
 
 #
@@ -1050,7 +1050,9 @@ class CFReader:
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
-        self._dataset = netCDF4.Dataset(self._filename, mode="r")
+        self._dataset = _thread_safe_nc.DatasetWrapper(
+            self._filename, mode="r"
+        )
 
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in [
@@ -1067,6 +1069,19 @@ class CFReader:
         self._translate()
         self._build_cf_groups()
         self._reset()
+
+    def __enter__(self):
+        # Enable use as a context manager
+        # N.B. this **guarantees* closure of the file, when the context is exited.
+        # Note: ideally, the class would not do so much work in the __init__ call, and
+        # would do all that here, after acquiring necessary permissions/locks.
+        # But for legacy reasons, we can't do that.  So **effectively**, the context
+        # (in terms of access control) alreday started, when we created the object.
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # When used as a context-manager, **always** close the file on exit.
+        self._close()
 
     @property
     def filename(self):
@@ -1294,10 +1309,15 @@ class CFReader:
         for nc_var_name in self._dataset.variables.keys():
             self.cf_group[nc_var_name].cf_attrs_reset()
 
-    def __del__(self):
+    def _close(self):
         # Explicitly close dataset to prevent file remaining open.
         if self._dataset is not None:
             self._dataset.close()
+            self._dataset = None
+
+    def __del__(self):
+        # Be sure to close dataset when CFReader is destroyed / garbage-collected.
+        self._close()
 
 
 def _getncattr(dataset, attr, default=None):

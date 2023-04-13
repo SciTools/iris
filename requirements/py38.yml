@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python =3.9
+  - python =3.8
 
 # Setup dependencies.
   - setuptools >=64
@@ -14,9 +14,9 @@ dependencies:
   - cartopy >=0.21
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2.26
+  - dask-core >=2022.9.0
   - matplotlib >=3.5
-  - netcdf4 <1.6.1
+  - netcdf4
   - numpy >=1.19
   - python-xxhash
   - pyproj
@@ -47,8 +47,13 @@ dependencies:
   - sphinxcontrib-napoleon
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
+<<<<<<< HEAD:requirements/ci/py38.yml
   - sphinx-design
   - pydata-sphinx-theme = 0.8.1
+=======
+  - sphinx-panels
+  - pydata-sphinx-theme >=0.13.0
+>>>>>>> upstream/main:requirements/py38.yml
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051

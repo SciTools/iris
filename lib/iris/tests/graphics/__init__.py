@@ -187,7 +187,6 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
     try:
 
         def _create_missing(phash: str) -> None:
-
             output_path = test_output_dir / (test_id + ".png")
 
             print(f"Creating image file: {output_path}")
@@ -214,7 +213,6 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
         phash = get_phash(buffer)
 
         if test_id in repo:
-
             expected = hex_to_hash(repo[test_id])
 
             # Calculate hamming distance vector for the result hash.

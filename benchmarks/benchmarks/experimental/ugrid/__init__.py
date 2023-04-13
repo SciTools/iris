@@ -50,7 +50,7 @@ class UGridCommon:
 
 class Connectivity(UGridCommon):
     def setup(self, n_faces):
-        self.array = np.zeros([n_faces, 3], dtype=np.int)
+        self.array = np.zeros([n_faces, 3], dtype=int)
         super().setup(n_faces)
 
     def create(self):

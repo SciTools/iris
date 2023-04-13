@@ -853,7 +853,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         cached_x_bounds = []
         cached_x_indices = []
         max_x_indices = 0
-        for (x_0, x_1) in grid_x_bounds:
+        for x_0, x_1 in grid_x_bounds:
             if grid_x_decreasing:
                 x_0, x_1 = x_1, x_0
             x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)

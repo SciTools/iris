@@ -264,13 +264,11 @@ class CellMethodSection(Section):
         self.names = []
         self.values = []
         self.contents = []
-        for method in cell_methods:
-            name = method.method
-            # Remove "method: " from the front of the string, leaving the value.
-            value = str(method)[len(name + ": ") :]
-            self.names.append(name)
+        for index, method in enumerate(cell_methods):
+            value = str(method)
+            self.names.append(str(index))
             self.values.append(value)
-            content = "{}: {}".format(name, value)
+            content = "{}: {}".format(index, value)
             self.contents.append(content)
 
 

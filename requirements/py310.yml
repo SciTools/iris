@@ -14,9 +14,9 @@ dependencies:
   - cartopy >=0.21
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2.26
+  - dask-core >=2022.9.0
   - matplotlib >=3.5
-  - netcdf4 <1.6.1
+  - netcdf4
   - numpy >=1.19
   - python-xxhash
   - pyproj
@@ -39,6 +39,7 @@ dependencies:
   - pre-commit
   - psutil
   - pytest
+  - pytest-cov
   - pytest-xdist
   - requests
 
@@ -48,7 +49,7 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
   - sphinx-design
-  - pydata-sphinx-theme = 0.8.1
+  - pydata-sphinx-theme >=0.13.0
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051
