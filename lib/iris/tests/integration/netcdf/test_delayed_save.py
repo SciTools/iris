@@ -233,7 +233,7 @@ class Test__lazy_stream_data:
             elapsed = (end_time - start_time).total_seconds()
             print("time_of_writing, delayed-save test results:")
             print(
-                f"  : all_done={all_done}, tries={n_tries}, elapsed-time={elapsed}"
+                f"  : results={results}, tries={n_tries}, elapsed-time={elapsed}"
             )
 
             # Check it either succeeded or timed out
