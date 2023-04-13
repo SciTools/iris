@@ -116,7 +116,7 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@trexfeathers`_ introduced the ``libnetcdf <4.9`` pin. (:pull:`5242`)
 
 
 📚 Documentation
