@@ -160,12 +160,10 @@ class Test__lazy_stream_data:
         assert original_cube.cell_measure("sample_cm").has_lazy_data()
         assert original_cube.ancillary_variable("sample_ancil").has_lazy_data()
 
-        return_saver_list = []
         result = iris.save(
             original_cube,
             output_path,
             compute=not save_is_delayed,
-            return_saver_list=return_saver_list,
         )
         assert save_is_delayed == (result is not None)
 
@@ -173,6 +171,7 @@ class Test__lazy_stream_data:
         readback_cube = iris.load_cube(
             output_path, "air_potential_temperature"
         )
+        # Check the components to be tested *are* lazy. See: self.all_vars_lazy().
         assert readback_cube.has_lazy_data()
         assert readback_cube.coord("surface_altitude").has_lazy_points()
         assert readback_cube.cell_measure("sample_cm").has_lazy_data()
@@ -200,12 +199,10 @@ class Test__lazy_stream_data:
             assert np.all(~cm_mask)
 
         if save_is_delayed:
-            saver = return_saver_list[0]
-            assert len(saver._delayed_writes) != 0
-            assert len(saver._delayed_writes) == 4
+            # Complete the write.
             result.compute()
 
-            # Re-fetch the arrays.  The data is **no longer masked**.
+            # Re-fetch the lazy arrays.  The data should now **not be masked**.
             data_mask, coord_mask, ancil_mask, cm_mask = [
                 self.getmask(data) for data in tests_components
             ]
