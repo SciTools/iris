@@ -345,6 +345,7 @@ def as_cubes(
     ...     var_name="longitude",
     ...     value_name="air_temperature"
     ... )
+    >>> my_df["longitude"] = my_df["longitude"].infer_objects()
     >>> print(my_df)
        latitude longitude  air_temperature
     0        35         0              300
