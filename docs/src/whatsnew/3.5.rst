@@ -1,13 +1,13 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
+v3.5 (13 Apr 2023) [release candidate]
 ****************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
+.. dropdown:: :opticon:`report` v3.5 Release Highlights
    :container: + shadow
    :title: text-primary text-center font-weight-bold
    :body: bg-light
@@ -16,6 +16,16 @@ This document explains the changes made to Iris for this release
 
    The highlights for this major/minor release of Iris include:
 
+   * We added support for plugins.
+   * We allowed the usage of Iris objects as weights
+     for cube aggregations.
+   * We made Iris' use of the `netCDF4`_ library
+     thread-safe.
+   * We improved performance by changing the netCDF loader to
+     fetch data immediately from small netCDF.
+     variables, instead of creating a dask array.
+   * We added notes within docstrings clarifying whether operations
+     maintain lazy data or not.
    * We're so proud to fully support `@ed-hawkins`_ and `#ShowYourStripes`_ ❤️
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
