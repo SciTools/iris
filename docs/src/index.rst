@@ -15,144 +15,102 @@ representations become unwieldy and inefficient.
 
 For more information see :ref:`why_iris`.
 
-..
-    COMMENT: Image alignment: https://getbootstrap.com/docs/4.0/utilities/sizing/
-
-.. todo::
-    The below example grid-item-card should allow for a :class-img-top:
-    but it will not build.  Waiting for a fix ideally from sphinx-design.
-
-    :class-img-top: w-50 m-auto px-1 py-2
-
-
 .. grid:: 3
 
     .. grid-item-card::
         :text-align: center
         :img-top: _static/icon_shuttle.svg
+        :class-img-top: w-50 m-auto px-1 py-2
         :shadow: lg
 
-        This above image should be nicely scaled and not too big.
+        Information on Iris, how to install and a gallery of examples that
+        create plots.
 
         +++
         .. button-ref:: getting_started_index
             :ref-type: ref
             :class: btn-outline-info btn-block
 
-                TEXT BUTTON
+                Getting Started
 
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_instructions.svg
+        :class-img-top: w-50 m-auto px-1 py-2
+        :shadow: lg
 
-.. todo:: These cards work ok but they do not align the footer.
+        Learn how to use Iris, including loading, navigating, saving,
+        plotting and more.
 
+        +++
+        .. button-ref:: user_guide_index
+            :ref-type: ref
+            :class: btn-outline-info btn-block
 
-.. grid:: 3
+                User Guide
 
-    .. grid-item::
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_development.svg
+        :class-img-top: w-50 m-auto px-1 py-2
+        :shadow: lg
 
-        .. card::
-            :text-align: center
-            :img-top: _static/icon_shuttle.svg
-            :class-img-top: w-50 m-auto px-1 py-2
-            :shadow: lg
+        Information on how you can contribute to Iris as a developer.
 
-            Information on Iris, how to install and a gallery of examples that
-            create plots.
+        +++
+        .. button-ref:: development_where_to_start
+            :ref-type: ref
+            :class: btn-outline-info btn-block
 
-            +++
-            .. button-ref:: getting_started_index
-                :ref-type: ref
-                :class: btn-outline-info btn-block
-
-                    Getting Started
-
-    .. grid-item::
-
-        .. card::
-            :text-align: center
-            :img-top: _static/icon_instructions.svg
-            :class-img-top: w-50 m-auto px-1 py-2
-            :shadow: lg
-
-            Learn how to use Iris, including loading, navigating, saving,
-            plotting and more.
-
-            +++
-            .. button-ref:: user_guide_index
-                :ref-type: ref
-                :class: btn-outline-info btn-block
-
-                    User Guide
-
-    .. grid-item::
-
-        .. card::
-            :text-align: center
-            :img-top: _static/icon_development.svg
-            :class-img-top: w-50 m-auto px-1 py-2
-            :shadow: lg
-
-            Information on how you can contribute to Iris as a developer.
-
-            +++
-            .. button-ref:: development_where_to_start
-                :ref-type: ref
-                :class: btn-outline-info btn-block
-
-                    Developers Guide
+                Developers Guide
 
 
 .. grid:: 3
 
-    .. grid-item::
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_api.svg
+        :class-img-top: w-50 m-auto px-1 py-2
+        :shadow: lg
 
-        .. card::
-            :text-align: center
-            :img-top: _static/icon_api.svg
-            :class-img-top: w-50 m-auto px-1 py-2
-            :shadow: lg
+        Browse full Iris functionality by module.
 
-            Browse full Iris functionality by module.
+        +++
+        .. button-ref:: generated/api/iris
+            :ref-type: doc
+            :class: btn-outline-info btn-block
 
-            +++
-            .. button-ref:: generated/api/iris
-                :ref-type: doc
-                :class: btn-outline-info btn-block
+                Iris API
 
-                    Iris API
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_new_product.svg
+        :class-img-top: w-50 m-auto px-1 py-2
+        :shadow: lg
 
-    .. grid-item::
+        Find out what has recently changed in Iris.
 
-        .. card::
-            :text-align: center
-            :img-top: _static/icon_new_product.svg
-            :class-img-top: w-50 m-auto px-1 py-2
-            :shadow: lg
+        +++
+        .. button-ref:: iris_whatsnew
+            :ref-type: ref
+            :class: btn-outline-info btn-block
 
-            Find out what has recently changed in Iris.
+                What's New
 
-            +++
-            .. button-ref:: iris_whatsnew
-                :ref-type: ref
-                :class: btn-outline-info btn-block
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_thumb.png
+        :class-img-top: w-50 m-auto px-1 py-2
+        :shadow: lg
 
-                    What's New
+        Raise the profile of issues by voting on them.
 
-    .. grid-item::
+        +++
+        .. button-ref:: voted_issues_top
+            :ref-type: ref
+            :class: btn-outline-info btn-block
 
-        .. card::
-            :text-align: center
-            :img-top: _static/icon_thumb.png
-            :class-img-top: w-50 m-auto px-1 py-2
-            :shadow: lg
-
-            Raise the profile of issues by voting on them.
-
-            +++
-            .. button-ref:: voted_issues_top
-                :ref-type: ref
-                :class: btn-outline-info btn-block
-
-                    Voted Issues
+                Voted Issues
 
 
 Icons made by `FreePik <https://www.freepik.com>`_ from
