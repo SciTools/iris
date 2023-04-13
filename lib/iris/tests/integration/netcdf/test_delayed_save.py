@@ -26,7 +26,7 @@ from iris.tests.stock import realistic_4d
 
 
 class Test__lazy_stream_data:
-    @pytest.fixture(autouse=True, scope="module")
+    @pytest.fixture(autouse=True, scope="function")
     def output_path(self, tmp_path_factory):
         tmpdir = tmp_path_factory.mktemp("save_testfiles")
         self.temp_output_filepath = tmpdir / "tmp.nc"
