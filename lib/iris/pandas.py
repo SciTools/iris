@@ -347,11 +347,11 @@ def as_cubes(
     ... )
     >>> my_df["longitude"] = my_df["longitude"].infer_objects()
     >>> print(my_df)
-       latitude longitude  air_temperature
-    0        35         0              300
-    1        25         0              301
-    2        35        10              302
-    3        25        10              303
+       latitude  longitude  air_temperature
+    0        35          0              300
+    1        25          0              301
+    2        35         10              302
+    3        25         10              303
     >>> my_df = my_df.set_index(["latitude", "longitude"])
     >>> my_df = my_df.sort_index()
     >>> converted_cube = as_cubes(my_df)[0]
