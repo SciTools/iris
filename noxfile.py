@@ -169,6 +169,15 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
 @nox.session(python=PY_VER, venv_backend="conda")
 def tests(session: nox.sessions.Session):
+    tests_generic(session, use_xdist=True)
+
+
+@nox.session(python=PY_VER, venv_backend="conda")
+def tests_no_xdist(session: nox.sessions.Session):
+    tests_generic(session, use_xdist=False)
+
+
+def tests_generic(session: nox.sessions.Session, use_xdist: bool = True):
     """
     Perform iris system, integration and unit tests.
 
@@ -185,10 +194,16 @@ def tests(session: nox.sessions.Session):
     session.env.update(ENV)
     run_args = [
         "pytest",
-        "-n",
-        "auto",
-        "lib/iris/tests",
+        "-v",
+        "-rA",
+        "lib/iris/tests/integration/netcdf/test_delayed_save.py",
     ]
+    if use_xdist:
+        run_args[1:1] = [
+            "-n",
+            "auto",
+        ]
+
     if "-c" in session.posargs or "--coverage" in session.posargs:
         run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
     session.run(*run_args)

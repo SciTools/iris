@@ -6,6 +6,7 @@
 """
 Integration tests for delayed saving.
 """
+from datetime import datetime
 import time
 import warnings
 
@@ -202,9 +203,10 @@ class Test__lazy_stream_data:
 
             n_tries = 0
             all_done = False
-            n_max_retries = 4
+            n_max_tries = 4
             retry_delay = 3.0
-            while not all_done and n_tries < n_max_retries:
+            start_time = datetime.now()
+            while not all_done and n_tries < n_max_tries:
                 n_tries += 1
 
                 # Re-fetch the arrays.  The data is **no longer masked**.
@@ -225,7 +227,23 @@ class Test__lazy_stream_data:
                 if not all_done:
                     time.sleep(retry_delay)
 
-            assert all_done and n_tries == 1
+            # Perform a sequence of checks which should show what happened ...
+
+            end_time = datetime.now()
+            elapsed = (end_time - start_time).total_seconds()
+            print("time_of_writing, delayed-save test results:")
+            print(
+                f"  : all_done={all_done}, tries={n_tries}, elapsed-time={elapsed}"
+            )
+
+            # Check it either succeeded or timed out
+            assert all_done or n_tries >= n_max_tries
+
+            # Did it succeed? (if not must have retried)
+            assert all_done
+
+            # Did it work first time?
+            assert n_tries == 1
 
             # assert np.all(~data_mask)
             # assert np.all(~coord_mask)
