@@ -50,6 +50,9 @@ This document explains the changes made to Iris for this release
    enable lazy computation of rotated wind vector components (:issue:`4934`,
    :pull:`4972`)
 
+#. `@ESadek-MO`_ updated to the latest CF Standard Names Table v80
+   (07 February 2023). (:pull:`5244`)
+
 
 🐛 Bugs Fixed
 =============
@@ -105,7 +108,7 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@trexfeathers`_ introduced the ``libnetcdf <4.9`` pin. (:pull:`5242`)
 
 
 📚 Documentation
