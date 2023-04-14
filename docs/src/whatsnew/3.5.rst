@@ -181,8 +181,9 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ removed the Iris TestRunner. Tests are now run via nox or
    pytest. (:pull:`5205`)
 
-#. `@agriyakhetarpal`_ prevented the GitHub action for publishing releases to
-   PyPI from running in forks. (:pull:`5220`)
+#. `@agriyakhetarpal`_ and `@trexfeathers`_ prevented the GitHub action for
+   publishing releases to PyPI from running in forks.
+   (:pull:`5220`, :pull:`5248`)
 
 #. `@trexfeathers`_ moved the benchmark runner conveniences from ``noxfile.py``
    to a dedicated ``benchmarks/bm_runner.py``. (:pull:`5215`)
