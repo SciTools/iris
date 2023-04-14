@@ -21,30 +21,6 @@ This document explains the changes made to Iris for this release
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
 
-
-NOTE: section below is a template for bugfix patches
-====================================================
-    (Please remove this section when creating an initial 'latest.rst')
-
-v3.X.X (DD MMM YYYY)
-====================
-
-.. dropdown:: :opticon:`alert` v3.X.X Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
-   :animate: fade-in
-
-   The patches in this release of Iris include:
-
-   #. N/A
-
-NOTE: section above is a template for bugfix patches
-====================================================
-    (Please remove this section when creating an initial 'latest.rst')
-
-
-
 📢 Announcements
 ================
 
