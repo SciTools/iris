@@ -6,7 +6,6 @@
 """
 Integration tests for delayed saving.
 """
-import time
 import warnings
 
 from cf_units import Unit
@@ -25,10 +24,10 @@ from iris.tests.stock import realistic_4d
 
 
 class Test__lazy_stream_data:
-    @pytest.fixture(autouse=True, scope="function")
-    def output_path(self, tmp_path_factory):
-        tmpdir = tmp_path_factory.mktemp("save_testfiles")
-        self.temp_output_filepath = tmpdir / f"tmp_{time.time()}.nc"
+    @pytest.fixture(autouse=True)
+    def output_path(self, tmp_path):
+        # A temporary output netcdf-file path, **unique to each test call**.
+        self.temp_output_filepath = tmp_path / "tmp.nc"
         yield self.temp_output_filepath
 
     @pytest.fixture(autouse=True, scope="module")
