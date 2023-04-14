@@ -55,6 +55,11 @@ import dask.multiprocessing
 import dask.threaded
 
 
+# A dedicated error class, allowing filtering and testing of errors raised here.
+class DaskSchedulerTypeError(ValueError):
+    pass
+
+
 def dask_scheduler_is_distributed():
     """Return whether a distributed.Client is active."""
     # NOTE: this replicates logic in `dask.base.get_scheduler` : if a distributed client
@@ -101,7 +106,7 @@ def get_dask_array_scheduler_type():
             result = "processes"
         else:
             msg = f"Dask default scheduler for arrays is unrecognised : {get_function}"
-            raise ValueError(msg)
+            raise DaskSchedulerTypeError(msg)
 
     return result
 
@@ -129,7 +134,7 @@ def get_worker_lock(identity: str):
             f'"{scheduler_type}", '
             "which is not supported by the Iris netcdf saver."
         )
-        raise ValueError(msg)
+        raise DaskSchedulerTypeError(msg)
 
     # NOTE: not supporting 'processes' scheduler, for now.
     return lock
