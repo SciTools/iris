@@ -28,7 +28,7 @@ class Test__lazy_stream_data:
     def saver_patch():
         # Install patches, so we can create a Saver without opening a real output file.
         # Mock just enough of Dataset behaviour to allow a 'Saver.complete()' call.
-        mock_dataset = mock.MagicMock(_isopen=False)
+        mock_dataset = mock.MagicMock()
         mock_dataset_class = mock.Mock(return_value=mock_dataset)
         # Mock the wrapper within the netcdf saver
         target1 = (

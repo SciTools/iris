@@ -653,7 +653,12 @@ class _Common__check_attribute_compliance:
         self.data_dtype = np.dtype("int32")
 
         # We need to create mock datasets which look like they are closed.
-        dataset_class = mock.Mock(return_value=mock.Mock(_isopen=0))
+        dataset_class = mock.Mock(
+            return_value=mock.Mock(
+                # Mock dataset : the isopen() call should return 0.
+                isopen=mock.Mock(return_value=0)
+            )
+        )
         patch = mock.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             dataset_class,

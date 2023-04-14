@@ -2498,7 +2498,7 @@ class Saver:
             Any warnings that were raised while writing delayed data.
 
         """
-        if self._dataset._isopen:
+        if self._dataset.isopen():
             msg = (
                 "Cannot call Saver.complete() until its dataset is closed, "
                 "i.e. the saver's context has exited."
