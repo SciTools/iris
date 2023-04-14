@@ -29,7 +29,9 @@ For more information see :ref:`why_iris`.
         +++
         .. button-ref:: getting_started_index
             :ref-type: ref
-            :class: btn-outline-info btn-block
+            :color: primary
+            :outline:
+            :expand:
 
                 Getting Started
 
@@ -45,7 +47,9 @@ For more information see :ref:`why_iris`.
         +++
         .. button-ref:: user_guide_index
             :ref-type: ref
-            :class: btn-outline-info btn-block
+            :color: primary
+            :outline:
+            :expand:
 
                 User Guide
 
@@ -60,7 +64,9 @@ For more information see :ref:`why_iris`.
         +++
         .. button-ref:: development_where_to_start
             :ref-type: ref
-            :class: btn-outline-info btn-block
+            :color: primary
+            :outline:
+            :expand:
 
                 Developers Guide
 
@@ -78,7 +84,9 @@ For more information see :ref:`why_iris`.
         +++
         .. button-ref:: generated/api/iris
             :ref-type: doc
-            :class: btn-outline-info btn-block
+            :color: primary
+            :outline:
+            :expand:
 
                 Iris API
 
@@ -93,7 +101,9 @@ For more information see :ref:`why_iris`.
         +++
         .. button-ref:: iris_whatsnew
             :ref-type: ref
-            :class: btn-outline-info btn-block
+            :color: primary
+            :outline:
+            :expand:
 
                 What's New
 
@@ -108,7 +118,9 @@ For more information see :ref:`why_iris`.
         +++
         .. button-ref:: voted_issues_top
             :ref-type: ref
-            :class: btn-outline-info btn-block
+            :color: primary
+            :outline:
+            :expand:
 
                 Voted Issues
 
