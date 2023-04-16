@@ -6,9 +6,10 @@ v3.3 (1 Sep 2022)
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-.. dropdown:: |icon_report| v3.3.0 Release Highlights
+.. dropdown:: |iris_version| v3.3.0 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
-   :class-body: bg-light
    :open:
 
    The highlights for this minor release of Iris include:
@@ -31,9 +32,10 @@ This document explains the changes made to Iris for this release
 v3.3.1 (29 Sep 2022)
 ====================
 
-.. dropdown:: |icon_alert| v3.3.1 Patches
+.. dropdown:: v3.3.1 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
-   :class-body: bg-light
 
    The patches in this release of Iris include:
 

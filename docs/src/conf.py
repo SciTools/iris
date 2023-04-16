@@ -140,10 +140,6 @@ rst_epilog = f"""
 .. |python_support| replace:: {python_support}
 .. |iris_version| replace:: v{version}
 .. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
-.. |icon_report| replace:: :octicon:`report;1em;sd-text-info` |nbsp|
-.. |icon_alert| replace:: :octicon:`alert;1em;sd-text-warning` |nbsp|
-.. |nbsp| unicode:: 0xA0
-   :trim:
 """
 
 # Add any Sphinx extension module names here, as strings. They can be
