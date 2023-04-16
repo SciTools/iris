@@ -148,6 +148,9 @@ This document explains the changes made to Iris for this release
 #. `@Esadek-MO`_ added notes to function docstrings to
    to clarify if the function preserves laziness or not. (:pull:`5137`)
 
+#. `@tkknight`_ migrated to `sphinx-design`_ over the legacy `sphinx-panels`_.
+   (:pull:`5127`)
+
 💼 Internal
 ===========
 
@@ -202,3 +205,5 @@ This document explains the changes made to Iris for this release
 .. _#ShowYourStripes: https://showyourstripes.info/s/globe/
 .. _README.md: https://github.com/SciTools/iris#-----
 .. _dask.array.ma.empty_like: https://docs.dask.org/en/stable/generated/dask.array.ma.empty_like.html
+.. _sphinx-panels: https://github.com/executablebooks/sphinx-panels
+.. _sphinx-design: https://github.com/executablebooks/sphinx-design
