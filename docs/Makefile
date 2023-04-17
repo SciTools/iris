@@ -1,5 +1,10 @@
 SUBDIRS = src
 
+help:
+	@for i in $(SUBDIRS); do \
+        echo "make help in $$i..."; \
+        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) help); done
+
 html:
 	@for i in $(SUBDIRS); do \
         echo "make html in $$i..."; \
