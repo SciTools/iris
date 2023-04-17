@@ -44,7 +44,7 @@ dependencies:
   - requests
 
 # Documentation dependencies.
-  - sphinx=5.3
+  - sphinx <=5.3
   - sphinxcontrib-napoleon
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
