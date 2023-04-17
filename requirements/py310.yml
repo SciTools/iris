@@ -45,7 +45,7 @@ dependencies:
   - requests
 
 # Documentation dependencies.
-  - sphinx >=5.3  # need to min pin this else readthedocs uses an older version
+  - sphinx
   - sphinxcontrib-napoleon
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
