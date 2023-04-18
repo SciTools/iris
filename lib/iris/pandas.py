@@ -172,7 +172,7 @@ def as_cube(
     if pandas_array.ndim not in [1, 2]:
         raise ValueError(
             "Only 1D or 2D Pandas arrays "
-            "can currently be conveted to Iris cubes."
+            "can currently be converted to Iris cubes."
         )
 
     # Make the copy work consistently across NumPy 1.6 and 1.7.

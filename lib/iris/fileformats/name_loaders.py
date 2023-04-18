@@ -588,7 +588,7 @@ def _build_cell_methods(av_or_ints, coord):
     Args:
 
     * av_or_ints (iterable of strings):
-        An iterable of strings containing the colummn heading entries
+        An iterable of strings containing the column heading entries
         to be parsed.
     * coord (string or :class:`iris.coords.Coord`):
         The coordinate name (or :class:`iris.coords.Coord` instance)
@@ -1079,7 +1079,7 @@ def load_NAMEIII_version2(filename):
             elif zunits == "Pa":
                 z_name = "air_pressure"
             else:
-                ValueError("Vertical coordinate unkown")
+                ValueError("Vertical coordinate unknown")
             zindex = data.index(zgrid[0])
             dim_coords.append("Z")
 

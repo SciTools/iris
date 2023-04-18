@@ -2855,7 +2855,7 @@ class MeshCoord(AuxCoord):
 
             # N.B. at present, coords in a Mesh are stored+accessed by 'axis', which
             # means they must have a standard_name.  So ...
-            # (a) the 'location' (face/edge) coord *always* has a useable phenomenon
+            # (a) the 'location' (face/edge) coord *always* has a usable phenomenon
             #     identity.
             # (b) we still want to check that location+node coords have the same
             #     phenomenon (i.e. physical meaning identity + units), **but** ...

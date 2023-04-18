@@ -20,6 +20,7 @@ This document explains the changes made to Iris for this release
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
 
+
 📢 Announcements
 ================
 
@@ -68,10 +69,12 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ migrated to `sphinx-design`_ over the legacy `sphinx-panels`_.
    (:pull:`5127`)
 
+
 💼 Internal
 ===========
 
-#. N/A
+#. `@bjlittle`_ added the `codespell`_ `pre-commit`_ ``git-hook`` to automate
+   spell checking within the code-base. (:pull:`5186`)
 
 
 .. comment

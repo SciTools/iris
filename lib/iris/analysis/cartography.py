@@ -1013,7 +1013,7 @@ def _transform_distance_vectors_tolerance_mask(
     """
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
-    errors introduced by the tranformation between coordinate systems.
+    errors introduced by the transformation between coordinate systems.
 
     Args:
     * src_crs (`cartopy.crs.Projection`):

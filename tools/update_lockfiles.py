@@ -54,7 +54,7 @@ for infile in args.files:
         fname = '.'.join(fname.split('.')[:-1])
 
     # conda-lock --filename-template expects a string with a "...{platform}..."
-    # placeholder in it, so we have to build the .lock filname without
+    # placeholder in it, so we have to build the .lock filename without
     # using .format
     ofile_template = Path(args.output_dir) / (fname+'-{platform}.lock')
     subprocess.call([

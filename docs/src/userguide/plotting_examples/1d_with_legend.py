@@ -31,7 +31,7 @@ plt.legend(ncol=2)
 plt.grid(True)
 
 # Provide some axis labels
-plt.ylabel("Temerature / kelvin")
+plt.ylabel("Temperature / kelvin")
 plt.xlabel("Longitude / degrees")
 
 # And a sensible title

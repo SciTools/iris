@@ -121,7 +121,7 @@ class Test(tests.IrisTest):
         expected = dict(zip(members_parent, values_parent))
         self.assertEqual(metadata_parent._asdict(), expected)
 
-        # Check the dependant child class...
+        # Check the dependent child class...
         expected = ["MetadataChildNamedtuple", "MetadataParent"]
         self.assertEqual(self.names(MetadataChild.__bases__), expected)
         expected = [

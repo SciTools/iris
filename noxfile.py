@@ -87,8 +87,8 @@ def cache_venv(session: nox.sessions.Session) -> None:
     cache = session_cachefile(session)
     with open(lockfile, "rb") as fi:
         hexdigest = hashlib.sha256(fi.read()).hexdigest()
-    with open(cache, "w") as fo:
-        fo.write(hexdigest)
+    with open(cache, "w") as fout:
+        fout.write(hexdigest)
 
 
 def cache_cartopy(session: nox.sessions.Session) -> None:

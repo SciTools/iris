@@ -433,7 +433,7 @@ def _spherical_area(y_bounds, x_bounds, radius=1.0):
     Args:
 
     * y_bounds:
-        An (n, 2) shaped NumPy array of latitide bounds in radians.
+        An (n, 2) shaped NumPy array of latitude bounds in radians.
     * x_bounds:
         An (m, 2) shaped NumPy array of longitude bounds in radians.
     * radius:
@@ -586,7 +586,7 @@ def _regrid_area_weighted_array(
     y_dim = src_data.ndim - 2
 
     # Create empty "pre-averaging" data array that will enable the
-    # src_data data coresponding to a given target grid point,
+    # src_data data corresponding to a given target grid point,
     # to be stacked per point.
     # Note that dtype is not preserved and that the array mask
     # allows for regions that do not overlap.

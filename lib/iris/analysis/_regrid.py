@@ -239,7 +239,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     x_indices = _regrid_indices(tx_cells, tx_depth, sx_points)
     y_indices = _regrid_indices(ty_cells, ty_depth, sy_points)
 
-    # Now construct a sparse M x N matix, where M is the flattened target
+    # Now construct a sparse M x N matrix, where M is the flattened target
     # space, and N is the flattened source space. The sparse matrix will then
     # be populated with those source cube points that contribute to a specific
     # target cube cell.
@@ -1021,7 +1021,7 @@ def _create_cube(
         The dimensions of the X and Y coordinate within the source Cube.
     tgt_coords : tuple of :class:`iris.coords.Coord`\\ 's
         Either two 1D :class:`iris.coords.DimCoord`\\ 's, two 1D
-        :class:`iris.experimental.ugrid.DimCoord`\\ 's or two ND
+        :class:`iris.experimental.ugrid.DimCoord`\\ 's or two n-D
         :class:`iris.coords.AuxCoord`\\ 's representing the new grid's
         X and Y coordinates.
     num_tgt_dims : int

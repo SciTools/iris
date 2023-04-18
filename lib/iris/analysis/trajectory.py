@@ -347,7 +347,7 @@ def interpolate(cube, sample_points, method=None):
         for columns_coord in columns.dim_coords + columns.aux_coords:
             src_dims = cube.coord_dims(columns_coord)
             if not squish_my_dims.isdisjoint(src_dims):
-                # Mapping the cube indicies onto the coord
+                # Mapping the cube indices onto the coord
                 initial_coord_inds = [initial_inds[ind] for ind in src_dims]
                 # Making the final ones the same way as for the cube
                 # 0 will always appear in the initial ones because we know this
@@ -660,7 +660,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             for c, (coord, coord_dims) in enumerate(
                 sample_space_coords_and_dims
             ):
-                # Index of this datum along this coordinate (could be nD).
+                # Index of this datum along this coordinate (could be n-D).
                 if coord_dims:
                     keys = tuple(ndi[ind] for ind in coord_dims)
                 else:
