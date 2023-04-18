@@ -273,7 +273,7 @@ class Test__str_repr(tests.IrisTest):
         # Printed name is standard or long -- we don't have a case with neither
         coord_name = standard_name or long_name
         # Construct regexp in 'sections'
-        # NB each consumes upto first non-space in the next line
+        # NB each consumes up to first non-space in the next line
         regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
         regexp += r"mesh: \<Mesh: 'test_mesh'>\n *"
         regexp += f"location: '{location}'\n *"

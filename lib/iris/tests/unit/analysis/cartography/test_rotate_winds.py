@@ -55,7 +55,7 @@ def uv_cubes_3d(ref_cube, n_realization=3):
     """
     Return 3d u, v cubes with a grid in a rotated pole CRS taken from
     the provided 2d cube, by adding a realization dimension
-    coordinate bound to teh zeroth dimension.
+    coordinate bound to the zeroth dimension.
 
     """
     lat = ref_cube.coord("grid_latitude")
@@ -451,7 +451,7 @@ class TestMasking(tests.IrisTest):
         assert anom[~ut.data.mask].max() == pytest.approx(0.3227935)
 
     def test_rotated_to_unrotated(self):
-        # Suffiently accurate so that no mask is introduced.
+        # Sufficiently accurate so that no mask is introduced.
         u, v = uv_cubes()
         ut, vt = rotate_winds(u, v, iris.coord_systems.GeogCS(6371229))
         self.assertFalse(ma.isMaskedArray(ut.data))

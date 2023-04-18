@@ -10,9 +10,7 @@ metadata about a phenomenon.
 In Iris, a cube is an interpretation of the *Climate and Forecast (CF)
 Metadata Conventions* whose purpose is to:
 
-.. panels::
-    :container: container-lg pb-3
-    :column: col-lg-12 p-2
+.. card::
 
     *require conforming datasets to contain sufficient metadata that they are
     self-describing... including physical units if appropriate, and that each

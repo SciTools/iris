@@ -81,7 +81,7 @@ sys.path.append(os.path.abspath("sphinxext"))
 # add some sample files from the developers guide..
 sys.path.append(os.path.abspath(os.path.join("developers_guide")))
 
-# why isnt the iris path added to it is discoverable too?  We dont need to,
+# why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it
 # is added then the travis build will likely fail.
 
@@ -157,7 +157,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
-    "sphinx_panels",
+    "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
@@ -167,9 +167,7 @@ if skip_api == "1":
     autolog("Skipping the API docs generation (SKIP_API=1)")
 else:
     # better api documentation (custom)
-    extensions.extend(
-        ["custom_class_autodoc", "custom_data_autodoc", "generate_package_rst"]
-    )
+    extensions.extend(["custom_data_autodoc", "generate_package_rst"])
 
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
@@ -239,11 +237,11 @@ plot_formats = [
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #"),
-    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #"),
+    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #%s"),
+    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #%s"),
     "discussion": (
         "https://github.com/SciTools/iris/discussions/%s",
-        "Discussion #",
+        "Discussion #%s",
     ),
 }
 

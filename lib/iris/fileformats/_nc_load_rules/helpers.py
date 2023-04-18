@@ -347,7 +347,7 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
         cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_CENT_MERIDIAN, None
     )
 
-    # The following accounts for the inconsistancy in the transverse
+    # The following accounts for the inconsistency in the transverse
     # mercator description within the CF spec.
     if longitude_of_central_meridian is None:
         longitude_of_central_meridian = getattr(
@@ -670,7 +670,7 @@ def get_attr_units(cf_var, attributes):
     ):
         attr_units = cf_units._NO_UNIT_STRING
 
-    # Get any assoicated calendar for a time reference coordinate.
+    # Get any associated calendar for a time reference coordinate.
     if cf_units.as_unit(attr_units).is_time_reference():
         attr_calendar = getattr(cf_var, CF_ATTR_CALENDAR, None)
 
@@ -727,7 +727,7 @@ def get_cf_bounds_var(cf_coord_var):
     attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
     attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 
-    # Determine bounds, prefering standard bounds over climatology.
+    # Determine bounds, preferring standard bounds over climatology.
     # NB. No need to raise a warning if the bounds/climatology
     # variable is missing, as that will already have been done by
     # iris.fileformats.cf.
@@ -1270,7 +1270,7 @@ def _is_rotated(engine, cf_name, cf_attr_value):
 
 ################################################################################
 def is_rotated_latitude(engine, cf_name):
-    """Determine whether the CF coodinate variable is rotated latitude."""
+    """Determine whether the CF coordinate variable is rotated latitude."""
     return _is_rotated(engine, cf_name, CF_VALUE_STD_NAME_GRID_LAT)
 
 

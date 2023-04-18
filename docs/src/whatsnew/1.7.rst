@@ -21,14 +21,14 @@ Features
     transparent; for example, before the introduction of biggus, MemoryErrors
     were likely for very large datasets::
 
-        >>> result = extremely_large_cube.collapsed('time', iris.analyis.MEAN)
+        >>> result = extremely_large_cube.collapsed('time', iris.analysis.MEAN)
         MemoryError
 
     Now, for supported operations, the evaluation is lazy (i.e. it doesn't take
     place until the actual data is subsequently requested) and can handle data
     larger than available system memory::
 
-        >>> result = extremely_large_cube.collapsed('time', iris.analyis.MEAN)
+        >>> result = extremely_large_cube.collapsed('time', iris.analysis.MEAN)
         >>> print(type(result))
         <class 'iris.cube.Cube'>
 

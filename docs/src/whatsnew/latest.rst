@@ -7,10 +7,9 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: |iris_version| Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
@@ -20,6 +19,7 @@ This document explains the changes made to Iris for this release
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
+
 
 📢 Announcements
 ================
@@ -66,13 +66,15 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@tkknight`_ migrated to `sphinx-design`_ over the legacy `sphinx-panels`_.
+   (:pull:`5127`)
 
 
 💼 Internal
 ===========
 
-#. N/A
+#. `@bjlittle`_ added the `codespell`_ `pre-commit`_ ``git-hook`` to automate
+   spell checking within the code-base. (:pull:`5186`)
 
 
 .. comment
@@ -85,3 +87,5 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 
+.. _sphinx-panels: https://github.com/executablebooks/sphinx-panels
+.. _sphinx-design: https://github.com/executablebooks/sphinx-design

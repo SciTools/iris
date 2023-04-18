@@ -1076,7 +1076,7 @@ class CFReader:
         # Note: ideally, the class would not do so much work in the __init__ call, and
         # would do all that here, after acquiring necessary permissions/locks.
         # But for legacy reasons, we can't do that.  So **effectively**, the context
-        # (in terms of access control) alreday started, when we created the object.
+        # (in terms of access control) already started, when we created the object.
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):

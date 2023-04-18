@@ -7,10 +7,9 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` v3.4.0 Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.4.0 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
@@ -31,13 +30,13 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
+
 v3.4.1 (21 Feb 2023)
 ====================
 
-.. dropdown:: :opticon:`alert` v3.4.1 Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.4.1 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
 
    The patches in this release of Iris include:
