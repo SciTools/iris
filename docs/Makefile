@@ -60,3 +60,7 @@ show:
 		echo "Running show in $$i..."; \
 		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) show); done
 
+livehtml:
+	@for i in $(SUBDIRS); do \
+		echo "Running show in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) livehtml); done

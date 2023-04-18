@@ -29,6 +29,9 @@ help:
 	@echo "  doctest      to run all doctests embedded in the documentation (if enabled)"
 	@echo "  linkcheck    to check all external links for integrity"
 	@echo "  show         to open the built documentation in the default browser"
+	@echo "  livehtml     to auto build the docs when any file changes are detected."
+	@echo "               You need to install sphinx-autobuild first:"
+	@echo "                   conda install -c conda-forge sphinx-autobuild"
 
 html:
 	$(SPHINXBUILD) $(WARNING_TO_ERROR) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -68,3 +71,5 @@ linkcheck:
 show:
 	@python -c "import webbrowser; webbrowser.open_new_tab('file://$(shell pwd)/$(BUILDDIR)/html/index.html')"
 
+livehtml:
+	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) --ignore generated $(O)
