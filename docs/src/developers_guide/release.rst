@@ -173,7 +173,7 @@ Ensure that the artifacts are successfully uploaded and available on
 from PyPI::
 
     > conda deactivate
-    > conda env create --file ./requrements/ci/iris.yml
+    > conda env create --file ./requirements/iris.yml
     > . activate iris-dev
     > python -m pip install --no-deps scitools-iris
 

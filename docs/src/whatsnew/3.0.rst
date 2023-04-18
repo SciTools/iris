@@ -142,7 +142,7 @@ v3.0.4 (22 July 2021)
       Firstly, ancillary-variables or cell-measures with long names can now widen the cube "dimensions map" to fit,
       whereas previously printing these cases caused an Exception.
       Secondly, cube units are now always printed, whereas previously they were missed out any time that the
-      "dimensions map" was widened to accomodate long coordinate names.
+      "dimensions map" was widened to accommodate long coordinate names.
       (:pull:`4233`)(:pull:`4238`)
 
    💼 **Internal**

@@ -220,7 +220,7 @@ def recombine_submeshes(
     # Use the mesh_dim to transpose inputs + outputs, if required, as it is
     # simpler for all the array operations to always have the mesh dim *last*.
     if mesh_dim == mesh_cube.ndim - 1:
-        # Mesh dim is already the last one : no tranpose required
+        # Mesh dim is already the last one : no transpose required
         untranspose_dims = None
     else:
         dim_range = np.arange(mesh_cube.ndim, dtype=int)

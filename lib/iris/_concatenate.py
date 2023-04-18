@@ -22,7 +22,7 @@ from iris.util import array_equal, guess_coord_axis
 #
 #   * Cope with auxiliary coordinate factories.
 #
-#   * Allow concatentation over a user specified dimension.
+#   * Allow concatenation over a user specified dimension.
 #
 
 

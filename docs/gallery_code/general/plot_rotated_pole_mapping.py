@@ -40,7 +40,7 @@ def main():
     plt.gca().coastlines()
     iplt.show()
 
-    # Plot #3: Contourf overlayed by coloured point data
+    # Plot #3: Contourf overlaid by coloured point data
     plt.figure()
     qplt.contourf(air_pressure)
     iplt.points(air_pressure, c=air_pressure.data)

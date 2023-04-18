@@ -113,10 +113,10 @@ def write_repo_json(data: Dict[str, str]) -> None:
     string_data = {}
     for key, val in data.items():
         string_data[key] = str(val)
-    with open(IMAGE_REPO_PATH, "wb") as fo:
+    with open(IMAGE_REPO_PATH, "wb") as fout:
         json.dump(
             string_data,
-            codecs.getwriter("utf-8")(fo),
+            codecs.getwriter("utf-8")(fout),
             indent=4,
             sort_keys=True,
         )

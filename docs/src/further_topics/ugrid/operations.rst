@@ -897,7 +897,7 @@ previously initialised regridder:
 
     .. code-block:: python
 
-        # Extract a different cube defined on te same Mesh.
+        # Extract a different cube defined on the same Mesh.
         >>> mesh_cube2 = mesh_cubes.extract_cube("precipitation_flux")
         >>> print(mesh_cube2)
         precipitation_flux / (kg m-2 s-1)   (-- : 1; -- : 13824)

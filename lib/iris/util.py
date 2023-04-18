@@ -1801,7 +1801,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 @functools.wraps(np.meshgrid)
 def _meshgrid(*xi, **kwargs):
     """
-    @numpy v1.13, the dtype of each output nD coordinate is the same as its
+    @numpy v1.13, the dtype of each output n-D coordinate is the same as its
     associated input 1D coordinate. This is not the case prior to numpy v1.13,
     where the output dtype is cast up to its highest resolution, regardlessly.
 
@@ -1953,7 +1953,7 @@ def _mask_array(array, points_to_mask, in_place=False):
     points_to_mask = al.ma.filled(points_to_mask, False)
 
     # Get broadcasted views of the arrays.  Note that broadcast_arrays does not
-    # preserve masks, so we need to explicitly handle any exising mask on array.
+    # preserve masks, so we need to explicitly handle any existing mask on array.
     array_mask = al.ma.getmaskarray(array)
 
     array_data, array_mask, points_to_mask = al.broadcast_arrays(

@@ -118,7 +118,7 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     """
     Construct small 2d cubes with 2d X and Y coordinates.
 
-    This makes cubes with 'expanded' coordinates (4 bounds per cell), analagous
+    This makes cubes with 'expanded' coordinates (4 bounds per cell), analogous
     to ORCA data.
     The coordinates are always geographical, so either it has a coord system
     or they are "true" lats + lons.

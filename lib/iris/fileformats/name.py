@@ -8,7 +8,7 @@
 
 def _get_NAME_loader(filename):
     """
-    Return the approriate load function for a NAME file based
+    Return the appropriate load function for a NAME file based
     on the contents of its header.
 
     """

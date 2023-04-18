@@ -167,7 +167,7 @@ v3.2.1 (11 Mar 2022)
    as well as some long-standing bugs with vertical coordinates and number
    formats. (:pull:`4411`)
 
-#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to alway return ``None`` if
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to always return ``None`` if
    no value match is found.  (:pull:`4417`)
 
 #. `@wjbenfold`_ changed :meth:`iris.util.points_step` to stop it from warning

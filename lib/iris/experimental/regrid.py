@@ -295,23 +295,23 @@ class _ProjectedUnstructuredRegridder:
         if src_x_coord.coord_system != src_y_coord.coord_system:
             raise ValueError(
                 "'src_cube' lateral geographic coordinates have "
-                "differing coordinate sytems."
+                "differing coordinate systems."
             )
         if src_x_coord.coord_system is None:
             raise ValueError(
                 "'src_cube' lateral geographic coordinates have "
-                "no coordinate sytem."
+                "no coordinate system."
             )
         tgt_x_coord, tgt_y_coord = get_xy_dim_coords(tgt_grid_cube)
         if tgt_x_coord.coord_system != tgt_y_coord.coord_system:
             raise ValueError(
                 "'tgt_grid_cube' lateral geographic coordinates "
-                "have differing coordinate sytems."
+                "have differing coordinate systems."
             )
         if tgt_x_coord.coord_system is None:
             raise ValueError(
                 "'tgt_grid_cube' lateral geographic coordinates "
-                "have no coordinate sytem."
+                "have no coordinate system."
             )
 
         if projection is None:
@@ -572,12 +572,12 @@ class _ProjectedUnstructuredRegridder:
         if src_x_coord.coord_system != src_y_coord.coord_system:
             raise ValueError(
                 "'src' lateral geographic coordinates have "
-                "differing coordinate sytems."
+                "differing coordinate systems."
             )
         if src_cs is None:
             raise ValueError(
                 "'src' lateral geographic coordinates have "
-                "no coordinate sytem."
+                "no coordinate system."
             )
 
         # Check the source grid units.

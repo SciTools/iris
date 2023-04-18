@@ -205,7 +205,7 @@ class TestAll_NAMEIII(TestAll):
         self.assertEqual(com, res)
 
     def test_malformed_height_above_ground(self):
-        # Parse height above ground level, with additonal stuff at the string
+        # Parse height above ground level, with additional stuff at the string
         # end (agl).
         data = "Z = 50.00000 m agl and stuff"
         res = _cf_height_from_name(data)
