@@ -117,6 +117,14 @@ pull-requests given the `Iris`_ GitHub repository `.pre-commit-config.yaml`_.
 
 See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jobs.
 
+.. note::
+
+  The `codespell`_ ``pre-commit`` hook checks the spelling of the whole codebase
+  and documentation.  This hook is configured in the ``[tool.codespell]`` section
+  of the ``pyproject.toml`` file.
+
+  Append to the ``ignore-words-list`` option any **valid words** that are
+  considered **not** a typo and should **not** be corrected by `codespell`_.
 
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
