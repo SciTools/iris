@@ -67,21 +67,14 @@ or simply::
 
 and add the changed lockfiles to your pull request.
 
-.. note::
-
-   If your installation of conda runs through Artifactory or another similar
-   proxy then you will need to amend that lockfile to use URLs that Github
-   Actions can access. A utility to strip out Artifactory exists in the
-   ``ssstack`` tool.
-
 New lockfiles are generated automatically each week to ensure that Iris continues to be
 tested against the latest available version of its dependencies.
 Each week the yaml files in ``requirements`` are resolved by a GitHub Action.
 If the resolved environment has changed, a pull request is created with the new lock files.
 The CI test suite will run on this pull request. If the tests fail, a developer
-will need to create a new branch based off the ``auto-update-lockfiles`` branch 
+will need to create a new branch based off the ``auto-update-lockfiles`` branch
 and add the required fixes to this new branch. If the fixes are made to the
-``auto-update-lockfiles`` branch these will be overwritten the next time the 
+``auto-update-lockfiles`` branch these will be overwritten the next time the
 Github Action is run.
 
 
