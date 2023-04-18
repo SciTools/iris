@@ -36,9 +36,9 @@ The results of the failing image tests will now be available in
 Reviewing Failing Tests
 -----------------------
 
-#. Run ``iris/lib/iris/tests/graphics/idiff.py`` with python, e.g.:
+#. Run ``iris/lib/iris/tests/graphics/idiff.py`` with python, e.g.::
 
-    python idiff.py
+     python idiff.py
 
    This will open a window for you to visually inspect
    side-by-side **old**, **new** and **difference** images for each failed
