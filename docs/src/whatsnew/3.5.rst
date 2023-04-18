@@ -6,11 +6,9 @@ v3.5 (13 Apr 2023) [release candidate]
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-
-.. dropdown:: :opticon:`report` v3.5 Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.5 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 

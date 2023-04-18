@@ -6,10 +6,9 @@ v3.0 (25 Jan 2021)
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-.. dropdown:: :opticon:`report` v3.0.0 Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.0.0 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
@@ -42,10 +41,9 @@ This document explains the changes made to Iris for this release
 v3.0.1 (27 Jan 2021)
 ====================
 
-.. dropdown:: :opticon:`alert` v3.0.1 Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.0.1 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
 
    The patches included in this release include:
@@ -61,10 +59,9 @@ v3.0.1 (27 Jan 2021)
 v3.0.2 (27 May 2021)
 ====================
 
-.. dropdown:: :opticon:`alert` v3.0.2 Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.0.2 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
 
    The patches included in this release include:
@@ -115,10 +112,9 @@ v3.0.2 (27 May 2021)
 v3.0.3 (07 July 2021)
 =====================
 
-.. dropdown:: :opticon:`alert` v3.0.3 Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.0.3 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
 
    The patches included in this release include:
@@ -133,10 +129,9 @@ v3.0.3 (07 July 2021)
 v3.0.4 (22 July 2021)
 =====================
 
-.. dropdown:: :opticon:`alert` v3.0.4 Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.0.4 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
 
    The patches included in this release include:

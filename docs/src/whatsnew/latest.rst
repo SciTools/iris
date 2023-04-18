@@ -7,10 +7,9 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: |iris_version| Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
@@ -66,8 +65,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
-
+#. `@tkknight`_ migrated to `sphinx-design`_ over the legacy `sphinx-panels`_.
+   (:pull:`5127`)
 
 💼 Internal
 ===========
@@ -85,3 +84,5 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 
+.. _sphinx-panels: https://github.com/executablebooks/sphinx-panels
+.. _sphinx-design: https://github.com/executablebooks/sphinx-design
