@@ -1,0 +1,4 @@
+nc-time-axis>=1.4
+pandas
+pre-commit
+stratify

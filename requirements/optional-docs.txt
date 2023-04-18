@@ -1,0 +1,6 @@
+sphinx<=5.3
+sphinx-copybutton
+sphinx-gallery>=0.11.0
+sphinxcontrib-napoleon
+sphinx-design
+pydata-sphinx-theme>=0.13.0
