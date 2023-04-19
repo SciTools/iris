@@ -77,4 +77,3 @@ docs/iris_image_test_output/
 
 # Files generated during test runs.
 lib/iris/tests/results/**/*.dot
-lib/iris/tests/results/PP/extra_char_data.w_data_loaded.pp.txt
