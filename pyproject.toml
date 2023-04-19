@@ -66,3 +66,9 @@ exclude_lines = [
 [tool.codespell]
 ignore-words-list = "alpha-numeric,degreee,discontiguities,lazyness,meaned,nin"
 skip = "_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
+
+[tool.check-manifest]
+ignore = [
+    "lib/iris/_version.py",
+    "lib/iris/std_names.py",
+]

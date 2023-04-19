@@ -1,18 +1,25 @@
-# Top-level files
-include CHANGES COPYING COPYING.LESSER
 prune .github
+prune benchmarks
+prune docs
+prune etc
+recursive-include lib *.cdl *.cml *.json *.md *.py *.template *.txt *.xml
+prune requirements
+prune tools
+exclude .git-blame-ignore-revs
+exclude .git_archival.txt
+exclude .gitattributes
 exclude .gitignore
+exclude .mailmap
+exclude .pre-commit-config.yaml
+exclude .readthedocs.yml
+exclude CHANGES
+exclude codecov.yml
+include COPYING
+include COPYING.LESSER
+exclude Makefile
+exclude noxfile.py
 
-# Files required for conda package management
-recursive-include requirements *
-
-# Files required to build docs
-recursive-include docs *
-prune docs/src/_build
-prune docs/src/generated
-prune docs/gallery_tests
-
-# Files required to build std_names module
+# files required to build iris.std_names module
 include tools/generate_std_names.py
 include etc/cf-standard-name-table.xml
 
