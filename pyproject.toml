@@ -71,5 +71,4 @@ skip = "_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
 ignore = [
     "lib/iris/_version.py",
     "lib/iris/std_names.py",
-    "lib/iris/tests/results/PP/extra_char_data.w_data_loaded.pp.txt",
 ]
