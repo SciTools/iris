@@ -3,7 +3,7 @@ prune benchmarks
 prune docs
 prune etc
 recursive-include lib *.cdl *.cml *.json *.md *.py *.template *.txt *.xml
-recursive-exclude requirements *.lock *.md *.yml
+prune requirements
 recursive-include requirements *.txt
 prune tools
 exclude .flake8
