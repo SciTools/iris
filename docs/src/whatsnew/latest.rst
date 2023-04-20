@@ -69,6 +69,10 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ migrated to `sphinx-design`_ over the legacy `sphinx-panels`_.
    (:pull:`5127`)
 
+#. `@tkknight`_ updated the ``make`` target for ``help`` and added
+   ``livehtml`` to auto generate the documentation when changes are detected
+   during development. (:pull:`5258`)
+
 
 💼 Internal
 ===========
