@@ -73,6 +73,10 @@ This document explains the changes made to Iris for this release
    ``livehtml`` to auto generate the documentation when changes are detected
    during development. (:pull:`5258`)
 
+#. `@tkknight`_ removed the legacy custom sphinx extensions that generates the
+   API documentation.  Instead use a less complex approach via
+   `sphinx-apidoc`_. (:pull:`????????????`)
+
 
 💼 Internal
 ===========

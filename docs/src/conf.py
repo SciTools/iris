@@ -143,7 +143,7 @@ rst_epilog = f"""
 """
 
 # Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
     "sphinx.ext.todo",
@@ -166,8 +166,8 @@ extensions = [
 if skip_api == "1":
     autolog("Skipping the API docs generation (SKIP_API=1)")
 else:
-    # better api documentation (custom)
-    extensions.extend(["custom_data_autodoc", "generate_package_rst"])
+    extensions.extend(["sphinxcontrib.apidoc"])
+    extensions.extend(["api_rst_formatting"])
 
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
@@ -202,12 +202,35 @@ todo_include_todos = True
 # api generation configuration
 autodoc_member_order = "groupwise"
 autodoc_default_flags = ["show-inheritance"]
+
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
 autodoc_typehints = "none"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
-autoclass_content = "init"
+autoclass_content = "both"
 modindex_common_prefix = ["iris"]
+
+# -- apidoc extension ---------------------------------------------------------
+# See https://github.com/sphinx-contrib/apidoc
+source_code_root = (Path(__file__).parents[2]).absolute()
+module_dir = source_code_root / "lib"
+apidoc_module_dir = str(module_dir)
+apidoc_output_dir = str(Path(__file__).parent / "generated/api")
+apidoc_toc_file = False
+
+apidoc_excluded_paths = [
+    str(module_dir / "iris/tests"),
+    str(module_dir / "iris/experimental/raster.*"),  # gdal conflicts
+]
+
+apidoc_module_first = True
+apidoc_separate_modules = True
+apidoc_extra_args = []
+
+autolog(f"[sphinx-apidoc] source_code_root = {source_code_root}")
+autolog(f"[sphinx-apidoc] apidoc_excluded_paths = {apidoc_excluded_paths}")
+autolog(f"[sphinx-apidoc] apidoc_output_dir = {apidoc_output_dir}")
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -385,13 +408,8 @@ sphinx_gallery_conf = {
 }
 
 # -----------------------------------------------------------------------------
-# Remove matplotlib agg warnings from generated doc when using plt.show
-warnings.filterwarnings(
-    "ignore",
-    category=UserWarning,
-    message="Matplotlib is currently using agg, which is a"
-    " non-GUI backend, so cannot show the figure.",
-)
+# Remove warnings
+warnings.filterwarnings("ignore")
 
 # -- numfig options (built-in) ------------------------------------------------
 # Enable numfig.

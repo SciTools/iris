@@ -191,7 +191,7 @@ The legacy support resources:
    :maxdepth: 1
    :hidden:
 
-   generated/api/iris
+   Iris API <generated/api/iris>
 
 
 .. toctree::
