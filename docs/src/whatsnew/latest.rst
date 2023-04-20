@@ -75,7 +75,7 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_ removed the legacy custom sphinx extensions that generates the
    API documentation.  Instead use a less complex approach via
-   `sphinx-apidoc`_. (:pull:`????????????`)
+   `sphinx-apidoc`_. (:pull:`5264`)
 
 
 💼 Internal
