@@ -1,5 +1,0 @@
-filelock
-imagehash>=4.0
-requests
-pytest
-pytest-xdist

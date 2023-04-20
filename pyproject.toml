@@ -32,7 +32,6 @@ classifiers = [
 ]
 dynamic = [
     "dependencies",
-    "optional-dependencies",
     "readme",
     "version",
 ]
@@ -64,13 +63,8 @@ license-files = ["COPYING", "COPYING.LESSER"]
 zip-safe = false
 
 [tool.setuptools.dynamic]
-dependencies = {file = "requirements/core.txt"}
+dependencies = {file = "requirements/pypi-core.txt"}
 readme = {file = "README.md", content-type = "text/markdown"}
-
-[tool.setuptools.dynamic.optional-dependencies]
-dev = {file = "requirements/optional-dev.txt"}
-docs = {file = "requirements/optional-docs.txt"}
-test = {file = "requirements/optional-test.txt"}
 
 [tool.setuptools.packages.find]
 include = ["iris*"]
