@@ -45,6 +45,7 @@ dependencies:
 
 # Documentation dependencies.
   - sphinx <=5.3
+  - sphinxcontrib-apidoc
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
   - sphinx-design
