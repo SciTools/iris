@@ -48,9 +48,6 @@ jobs:
           - os: "ubuntu-latest"
             python-version: "3.9"
             session: "tests"
-          - os: "ubuntu-latest"
-            python-version: "3.8"
-            session: "tests"
 
     env:
       IRIS_TEST_DATA_VERSION: "2.19"
