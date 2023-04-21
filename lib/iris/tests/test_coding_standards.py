@@ -71,15 +71,15 @@ def test_python_versions():
     This test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    latest_supported = "3.10"
-    all_supported = ["3.8", "3.9", latest_supported]
+    latest_supported = "3.11"
+    all_supported = ["3.8", "3.9", "3.10", latest_supported]
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"
     benchmarks_dir = root_dir / "benchmarks"
 
     # Places that are checked:
-    setup_cfg_file = root_dir / "setup.cfg"
+    pyproject_toml_file = root_dir / "pyproject.toml"
     requirements_dir = root_dir / "requirements"
     nox_file = root_dir / "noxfile.py"
     ci_wheels_file = workflows_dir / "ci-wheels.yml"
@@ -89,10 +89,10 @@ def test_python_versions():
 
     text_searches: List[Tuple[Path, str]] = [
         (
-            setup_cfg_file,
+            pyproject_toml_file,
             "\n    ".join(
                 [
-                    "Programming Language :: Python :: " + ver
+                    f'"Programming Language :: Python :: {ver}",'
                     for ver in all_supported
                 ]
             ),

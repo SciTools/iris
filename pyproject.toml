@@ -8,6 +8,69 @@ requires = [
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
 
+[project]
+authors = [
+    {name = "Iris Contributors", email = "scitools.pub@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Unix",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dynamic = [
+    "dependencies",
+    "readme",
+    "version",
+]
+description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
+keywords = [
+    "cf-metadata",
+    "data-analysis",
+    "earth-science",
+    "grib",
+    "netcdf",
+    "meteorology",
+    "oceanography",
+    "space-weather",
+    "ugrid",
+    "visualisation",
+]
+license = {text = "LGPL-3.0-or-later"}
+name = "scitools-iris"
+requires-python = ">=3.8"
+
+[project.urls]
+Code = "https://github.com/SciTools/iris"
+Discussions = "https://github.com/SciTools/iris/discussions"
+Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
+Issues = "https://github.com/SciTools/iris/issues"
+
+[tool.setuptools]
+license-files = ["COPYING", "COPYING.LESSER"]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements/pypi-core.txt"}
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+include = ["iris*"]
+where = ["lib"]
+
 [tool.setuptools_scm]
 write_to = "lib/iris/_version.py"
 local_scheme = "dirty-tag"

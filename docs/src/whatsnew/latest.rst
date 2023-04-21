@@ -86,7 +86,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@rcomer`_ and `@bjlittle`_ (reviewer) added testing support for python
+   3.11. (:pull:`5226`) 
 
 
 📚 Documentation
@@ -111,6 +112,13 @@ This document explains the changes made to Iris for this release
    of assets bundled within a ``sdist`` and binary ``wheel`` of our
    `scitools-iris`_ PyPI package. (:pull:`5259`)
 
+#. `@rcomer`_ removed a now redundant copying workaround from Resolve testing.
+   (:pull:`5267`)
+
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) migrated ``setup.cfg`` to
+   ``pyproject.toml``, as motivated by `PEP-0621`_. (:pull:`5262`)
+
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
@@ -125,3 +133,4 @@ This document explains the changes made to Iris for this release
 .. _sphinx-panels: https://github.com/executablebooks/sphinx-panels
 .. _sphinx-design: https://github.com/executablebooks/sphinx-design
 .. _check-manifest: https://github.com/mgedmin/check-manifest
+.. _PEP-0621: https://peps.python.org/pep-0621/
