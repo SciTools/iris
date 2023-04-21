@@ -72,7 +72,7 @@ def test_python_versions():
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
     latest_supported = "3.11"
-    all_supported = ["3.8", "3.9", "3.10", latest_supported]
+    all_supported = ["3.9", "3.10", latest_supported]
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"
