@@ -69,6 +69,10 @@ def _break_print(message: str):
     sleep(1)
 
 
+def _mark_section(section_number: int):
+    _break_print(f"SECTION {section_number} ...")
+
+
 def _get_input(message: str, expected_inputs: str) -> str:
     _break_print(message)
     return input(expected_inputs + " : ")
@@ -690,61 +694,92 @@ def merge_back(
 
 
 def main():
+    _mark_section(1)
     release_type = get_release_type()
+
+    _mark_section(2)
     release_strings = get_release_tag()
+
+    _mark_section(3)
     is_release_candidate = check_release_candidate(
         release_type,
         release_strings,
     )
+
+    _mark_section(4)
     is_first_in_series = check_first_in_series(
         release_type,
         release_strings,
         is_release_candidate,
     )
+
+    _mark_section(5)
     update_standard_names(
         is_first_in_series,
     )
+
+    _mark_section(6)
     check_deprecations(
         release_type,
     )
+
+    _mark_section(7)
     create_release_branch(
         release_strings,
         is_first_in_series,
     )
+
+    _mark_section(8)
     whats_new_rsts = finalise_whats_new(
         release_type,
         release_strings,
         is_release_candidate,
         is_first_in_series,
     )
+
+    _mark_section(9)
     cut_release(
         release_strings,
         is_release_candidate,
     )
+
+    _mark_section(10)
     check_rtd(
         release_strings,
         is_release_candidate,
     )
+
+    _mark_section(11)
     sha256 = check_pypi(
         release_strings,
         is_release_candidate,
     )
+
+    _mark_section(12)
     update_conda_forge(
         release_strings,
         is_release_candidate,
         sha256,
     )
+
+    _mark_section(13)
     update_links(
         release_strings,
     )
+
+    _mark_section(14)
     twitter_announce(
         release_strings,
         is_first_in_series,
     )
+
+    _mark_section(15)
     update_citation(
         release_strings,
         is_release_candidate,
     )
+
+    _mark_section(16)
     merge_back(
         release_strings,
         is_first_in_series,
