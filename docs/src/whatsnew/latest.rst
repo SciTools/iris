@@ -80,6 +80,10 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added the `codespell`_ `pre-commit`_ ``git-hook`` to automate
    spell checking within the code-base. (:pull:`5186`)
 
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) added a `check-manifest`_
+   GitHub Action and `pre-commit`_ ``git-hook`` to automate verification
+   of assets bundled within a ``sdist`` and binary ``wheel`` of our
+   `scitools-iris`_ PyPI package. (:pull:`5259`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -93,3 +97,4 @@ This document explains the changes made to Iris for this release
 
 .. _sphinx-panels: https://github.com/executablebooks/sphinx-panels
 .. _sphinx-design: https://github.com/executablebooks/sphinx-design
+.. _check-manifest: https://github.com/mgedmin/check-manifest
