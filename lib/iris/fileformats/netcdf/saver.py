@@ -23,9 +23,10 @@ from typing import List
 import warnings
 
 import cf_units
+import dask
 import dask.array as da
+from dask.delayed import Delayed
 import numpy as np
-import numpy.ma as ma
 
 from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
@@ -44,7 +45,7 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
 import iris.util
 
@@ -154,207 +155,6 @@ _FACTORY_DEFNS = {
         "depth_c: {depth_c}",
     ),
 }
-
-
-# Cell methods.
-_CM_KNOWN_METHODS = [
-    "point",
-    "sum",
-    "mean",
-    "maximum",
-    "minimum",
-    "mid_range",
-    "standard_deviation",
-    "variance",
-    "mode",
-    "median",
-]
-
-_CM_COMMENT = "comment"
-_CM_EXTRA = "extra"
-_CM_INTERVAL = "interval"
-_CM_METHOD = "method"
-_CM_NAME = "name"
-_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s+)+")
-_CM_PARSE = re.compile(
-    r"""
-                           (?P<name>([\w_]+\s*?:\s+)+)
-                           (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
-                           (?:
-                               \(\s*
-                               (?P<extra>.+)
-                               \)\s*
-                           )?
-                       """,
-    re.VERBOSE,
-)
-
-
-class UnknownCellMethodWarning(Warning):
-    pass
-
-
-def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
-    """
-    Split a CF cell_methods attribute string into a list of zero or more cell
-    methods, each of which is then parsed with a regex to return a list of match
-    objects.
-
-    Args:
-
-    * nc_cell_methods: The value of the cell methods attribute to be split.
-
-    Returns:
-
-    * nc_cell_methods_matches: A list of the re.Match objects associated with
-      each parsed cell method
-
-    Splitting is done based on words followed by colons outside of any brackets.
-    Validation of anything other than being laid out in the expected format is
-    left to the calling function.
-    """
-
-    # Find name candidates
-    name_start_inds = []
-    for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
-        name_start_inds.append(m.start())
-
-    # Remove those that fall inside brackets
-    bracket_depth = 0
-    for ind, cha in enumerate(nc_cell_methods):
-        if cha == "(":
-            bracket_depth += 1
-        elif cha == ")":
-            bracket_depth -= 1
-            if bracket_depth < 0:
-                msg = (
-                    "Cell methods may be incorrectly parsed due to mismatched "
-                    "brackets"
-                )
-                warnings.warn(msg, UserWarning, stacklevel=2)
-        if bracket_depth > 0 and ind in name_start_inds:
-            name_start_inds.remove(ind)
-
-    # List tuples of indices of starts and ends of the cell methods in the string
-    method_indices = []
-    for ii in range(len(name_start_inds) - 1):
-        method_indices.append((name_start_inds[ii], name_start_inds[ii + 1]))
-    method_indices.append((name_start_inds[-1], len(nc_cell_methods)))
-
-    # Index the string and match against each substring
-    nc_cell_methods_matches = []
-    for start_ind, end_ind in method_indices:
-        nc_cell_method_str = nc_cell_methods[start_ind:end_ind]
-        nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str.strip())
-        if not nc_cell_method_match:
-            msg = (
-                f"Failed to fully parse cell method string: {nc_cell_methods}"
-            )
-            warnings.warn(msg, UserWarning, stacklevel=2)
-            continue
-        nc_cell_methods_matches.append(nc_cell_method_match)
-
-    return nc_cell_methods_matches
-
-
-def parse_cell_methods(nc_cell_methods):
-    """
-    Parse a CF cell_methods attribute string into a tuple of zero or
-    more CellMethod instances.
-
-    Args:
-
-    * nc_cell_methods (str):
-        The value of the cell methods attribute to be parsed.
-
-    Returns:
-
-    * cell_methods
-        An iterable of :class:`iris.coords.CellMethod`.
-
-    Multiple coordinates, intervals and comments are supported.
-    If a method has a non-standard name a warning will be issued, but the
-    results are not affected.
-
-    """
-
-    cell_methods = []
-    if nc_cell_methods is not None:
-        for m in _split_cell_methods(nc_cell_methods):
-            d = m.groupdict()
-            method = d[_CM_METHOD]
-            method = method.strip()
-            # Check validity of method, allowing for multi-part methods
-            # e.g. mean over years.
-            method_words = method.split()
-            if method_words[0].lower() not in _CM_KNOWN_METHODS:
-                msg = "NetCDF variable contains unknown cell method {!r}"
-                warnings.warn(
-                    msg.format("{}".format(method_words[0])),
-                    UnknownCellMethodWarning,
-                )
-            d[_CM_METHOD] = method
-            name = d[_CM_NAME]
-            name = name.replace(" ", "")
-            name = name.rstrip(":")
-            d[_CM_NAME] = tuple([n for n in name.split(":")])
-            interval = []
-            comment = []
-            if d[_CM_EXTRA] is not None:
-                #
-                # tokenise the key words and field colon marker
-                #
-                d[_CM_EXTRA] = d[_CM_EXTRA].replace(
-                    "comment:", "<<comment>><<:>>"
-                )
-                d[_CM_EXTRA] = d[_CM_EXTRA].replace(
-                    "interval:", "<<interval>><<:>>"
-                )
-                d[_CM_EXTRA] = d[_CM_EXTRA].split("<<:>>")
-                if len(d[_CM_EXTRA]) == 1:
-                    comment.extend(d[_CM_EXTRA])
-                else:
-                    next_field_type = comment
-                    for field in d[_CM_EXTRA]:
-                        field_type = next_field_type
-                        index = field.rfind("<<interval>>")
-                        if index == 0:
-                            next_field_type = interval
-                            continue
-                        elif index > 0:
-                            next_field_type = interval
-                        else:
-                            index = field.rfind("<<comment>>")
-                            if index == 0:
-                                next_field_type = comment
-                                continue
-                            elif index > 0:
-                                next_field_type = comment
-                        if index != -1:
-                            field = field[:index]
-                        field_type.append(field.strip())
-            #
-            # cater for a shared interval over multiple axes
-            #
-            if len(interval):
-                if len(d[_CM_NAME]) != len(interval) and len(interval) == 1:
-                    interval = interval * len(d[_CM_NAME])
-            #
-            # cater for a shared comment over multiple axes
-            #
-            if len(comment):
-                if len(d[_CM_NAME]) != len(comment) and len(comment) == 1:
-                    comment = comment * len(d[_CM_NAME])
-            d[_CM_INTERVAL] = tuple(interval)
-            d[_CM_COMMENT] = tuple(comment)
-            cell_method = iris.coords.CellMethod(
-                d[_CM_METHOD],
-                coords=d[_CM_NAME],
-                intervals=d[_CM_INTERVAL],
-                comments=d[_CM_COMMENT],
-            )
-            cell_methods.append(cell_method)
-    return tuple(cell_methods)
 
 
 class CFNameCoordMap:
@@ -467,61 +267,139 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-class _FillValueMaskCheckAndStoreTarget:
-    """
-    To be used with da.store. Remembers whether any element was equal to a
-    given value and whether it was masked, before passing the chunk to the
-    given target.
-
-    NOTE: target needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
-
-    """
-
-    def __init__(self, target, fill_value=None):
-        assert hasattr(target, "THREAD_SAFE_FLAG")
-        self.target = target
-        self.fill_value = fill_value
-        self.contains_value = False
-        self.is_masked = False
-
-    def __setitem__(self, keys, arr):
-        if self.fill_value is not None:
-            self.contains_value = self.contains_value or self.fill_value in arr
-        self.is_masked = self.is_masked or ma.is_masked(arr)
-        self.target[keys] = arr
-
-
 # NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
+_FillvalueCheckInfo = collections.namedtuple(
+    "_FillvalueCheckInfo", ["user_value", "check_value", "dtype", "varname"]
+)
+
+
+def _data_fillvalue_check(arraylib, data, check_value):
+    """
+    Check whether an array is masked, and whether it contains a fill-value.
+
+    Parameters
+    ----------
+    arraylib : module
+        Either numpy or dask.array : When dask, results are lazy computations.
+    data : array-like
+        Array to check (numpy or dask)
+    check_value : number or None
+        If not None, fill-value to check for existence in the array.
+        If None, do not do value-in-array check
+
+    Returns
+    -------
+    is_masked : bool
+        True if array has any masked points.
+    contains_value : bool
+        True if array contains check_value.
+        Always False if check_value is None.
+
+    """
+    is_masked = arraylib.any(arraylib.ma.getmaskarray(data))
+    if check_value is None:
+        contains_value = False
+    else:
+        contains_value = arraylib.any(data == check_value)
+    return is_masked, contains_value
+
+
+class SaverFillValueWarning(UserWarning):
+    pass
+
+
+def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
+    """
+    From the given information, work out whether there was a possible or actual
+    fill-value collision, and if so construct a warning.
+
+    Parameters
+    ----------
+    fill_info : _FillvalueCheckInfo
+        A named-tuple containing the context of the fill-value check
+    is_masked : bool
+        whether the data array was masked
+    contains_fill_value : bool
+        whether the data array contained the fill-value
+    warn : bool
+        if True, also issue any resulting warning immediately.
+
+    Returns
+    -------
+        None or :class:`Warning`
+        If not None, indicates a known or possible problem with filling
+
+    """
+    varname = fill_info.varname
+    user_value = fill_info.user_value
+    check_value = fill_info.check_value
+    is_byte_data = fill_info.dtype.itemsize == 1
+    result = None
+    if is_byte_data and is_masked and user_value is None:
+        result = SaverFillValueWarning(
+            f"CF var '{varname}' contains byte data with masked points, but "
+            "no fill_value keyword was given. As saved, these "
+            "points will read back as valid values. To save as "
+            "masked byte data, `_FillValue` needs to be explicitly "
+            "set. For Cube data this can be done via the 'fill_value' "
+            "keyword during saving, otherwise use ncedit/equivalent."
+        )
+    elif contains_fill_value:
+        result = SaverFillValueWarning(
+            f"CF var '{varname}' contains unmasked data points equal to the "
+            f"fill-value, {check_value}. As saved, these points will read back "
+            "as missing data. To save these as normal values, "
+            "`_FillValue` needs to be set to not equal any valid data "
+            "points. For Cube data this can be done via the 'fill_value' "
+            "keyword during saving, otherwise use ncedit/equivalent."
+        )
+
+    if warn and result is not None:
+        warnings.warn(result)
+    return result
+
+
 class Saver:
     """A manager for saving netcdf files."""
 
-    def __init__(self, filename, netcdf_format):
+    def __init__(self, filename, netcdf_format, compute=True):
         """
         A manager for saving netcdf files.
 
-        Args:
-
-        * filename (string):
+        Parameters
+        ----------
+        filename : string
             Name of the netCDF file to save the cube.
 
-        * netcdf_format (string):
+        netcdf_format : string
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 
-        Returns:
-            None.
+        compute : bool, default=True
+            If True, delayed variable saves will be completed on exit from the Saver
+            context (after first closing the target file), equivalent to
+            :meth:`complete()`.
+            If False, the file is created and closed without writing the data of
+            variables for which the source data was lazy.  These writes can be
+            completed later, see :meth:`delayed_completion`.
 
-        For example::
+        Returns
+        -------
+        None
 
-            # Initialise Manager for saving
-            with Saver(filename, netcdf_format) as sman:
-                # Iterate through the cubelist.
-                for cube in cubes:
-                    sman.write(cube)
+        Example
+        -------
+        >>> import iris
+        >>> from iris.fileformats.netcdf.saver import Saver
+        >>> cubes = iris.load(iris.sample_data_path('atlantic_profiles.nc'))
+        >>> with Saver("tmp.nc", "NETCDF4") as sman:
+        ...     # Iterate through the cubelist.
+        ...     for cube in cubes:
+        ...         sman.write(cube)
 
         """
         if netcdf_format not in [
@@ -548,18 +426,30 @@ class Saver:
         self._mesh_dims = {}
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
+        #: Target filepath
+        self.filepath = os.path.abspath(filename)
+        #: A list of delayed writes for lazy saving
+        self._delayed_writes = (
+            []
+        )  # a list of triples (source, target, fill-info)
+        #: Whether to complete delayed saves on exit (and raise associated warnings).
+        self.compute = compute
+        # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
+        #: A per-file write lock to prevent dask attempting overlapping writes.
+        self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
         #: NetCDF dataset
+        self._dataset = None
         try:
             self._dataset = _thread_safe_nc.DatasetWrapper(
-                filename, mode="w", format=netcdf_format
+                self.filepath, mode="w", format=netcdf_format
             )
         except RuntimeError:
-            dir_name = os.path.dirname(filename)
+            dir_name = os.path.dirname(self.filepath)
             if not os.path.isdir(dir_name):
                 msg = "No such file or directory: {}".format(dir_name)
                 raise IOError(msg)
             if not os.access(dir_name, os.R_OK | os.W_OK):
-                msg = "Permission denied: {}".format(filename)
+                msg = "Permission denied: {}".format(self.filepath)
                 raise IOError(msg)
             else:
                 raise
@@ -572,6 +462,8 @@ class Saver:
 
         self._dataset.sync()
         self._dataset.close()
+        if self.compute:
+            self.complete()
 
     def write(
         self,
@@ -2444,8 +2336,7 @@ class Saver:
 
         return "{}_{}".format(varname, num)
 
-    @staticmethod
-    def _lazy_stream_data(data, fill_value, fill_warn, cf_var):
+    def _lazy_stream_data(self, data, fill_value, fill_warn, cf_var):
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
             # Reduce dimensionality where the data array has an extra dimension
@@ -2454,25 +2345,8 @@ class Saver:
             #  contains just 1 row, so the cf_var is 1D.
             data = data.squeeze(axis=0)
 
-        if is_lazy_data(data):
-
-            def store(data, cf_var, fill_value):
-                # Store lazy data and check whether it is masked and contains
-                # the fill value
-                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
-                da.store([data], [target])
-                return target.is_masked, target.contains_value
-
-        else:
-
-            def store(data, cf_var, fill_value):
-                cf_var[:] = data
-                is_masked = np.ma.is_masked(data)
-                contains_value = fill_value is not None and fill_value in data
-                return is_masked, contains_value
-
+        # Decide whether we are checking for fill-value collisions.
         dtype = cf_var.dtype
-
         # fill_warn allows us to skip warning if packing attributes have been
         #  specified. It would require much more complex operations to work out
         #  what the values and fill_value _would_ be in such a case.
@@ -2480,38 +2354,166 @@ class Saver:
             if fill_value is not None:
                 fill_value_to_check = fill_value
             else:
+                # Retain 'fill_value == None', to show that no specific value was given.
+                # But set 'fill_value_to_check' to a calculated value
                 fill_value_to_check = _thread_safe_nc.default_fillvals[
                     dtype.str[1:]
                 ]
+            # Cast the check-value to the correct dtype.
+            # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
+            # does not have a compatible type.  This causes a deprecation warning at
+            # numpy 1.24, *and* was preventing correct fill-value checking of character
+            # data, since they are actually bytes (dtype 'S1').
+            fill_value_to_check = np.array(fill_value_to_check, dtype=dtype)
         else:
+            # A None means we will NOT check for collisions.
             fill_value_to_check = None
 
-        # Store the data and check if it is masked and contains the fill value.
-        is_masked, contains_fill_value = store(
-            data, cf_var, fill_value_to_check
+        fill_info = _FillvalueCheckInfo(
+            user_value=fill_value,
+            check_value=fill_value_to_check,
+            dtype=dtype,
+            varname=cf_var.name,
         )
 
-        if dtype.itemsize == 1 and fill_value is None:
-            if is_masked:
-                msg = (
-                    "CF var '{}' contains byte data with masked points, but "
-                    "no fill_value keyword was given. As saved, these "
-                    "points will read back as valid values. To save as "
-                    "masked byte data, `_FillValue` needs to be explicitly "
-                    "set. For Cube data this can be done via the 'fill_value' "
-                    "keyword during saving, otherwise use ncedit/equivalent."
+        doing_delayed_save = is_lazy_data(data)
+        if doing_delayed_save:
+            # save lazy data with a delayed operation.  For now, we just record the
+            # necessary information -- a single, complete delayed action is constructed
+            # later by a call to delayed_completion().
+            def store(data, cf_var, fill_info):
+                # Create a data-writeable object that we can stream into, which
+                # encapsulates the file to be opened + variable to be written.
+                write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
+                    self.filepath, cf_var, self.file_write_lock
                 )
-                warnings.warn(msg.format(cf_var.name))
-        elif contains_fill_value:
-            msg = (
-                "CF var '{}' contains unmasked data points equal to the "
-                "fill-value, {}. As saved, these points will read back "
-                "as missing data. To save these as normal values, "
-                "`_FillValue` needs to be set to not equal any valid data "
-                "points. For Cube data this can be done via the 'fill_value' "
-                "keyword during saving, otherwise use ncedit/equivalent."
+                # Add to the list of delayed writes, used in delayed_completion().
+                self._delayed_writes.append((data, write_wrapper, fill_info))
+                # In this case, fill-value checking is done later. But return 2 dummy
+                # values, to be consistent with the non-streamed "store" signature.
+                is_masked, contains_value = False, False
+                return is_masked, contains_value
+
+        else:
+            # Real data is always written directly, i.e. not via lazy save.
+            # We also check it immediately for any fill-value problems.
+            def store(data, cf_var, fill_info):
+                cf_var[:] = data
+                return _data_fillvalue_check(np, data, fill_info.check_value)
+
+        # Store the data and check if it is masked and contains the fill value.
+        is_masked, contains_fill_value = store(data, cf_var, fill_info)
+
+        if not doing_delayed_save:
+            # Issue a fill-value warning immediately, if appropriate.
+            _fillvalue_report(
+                fill_info, is_masked, contains_fill_value, warn=True
             )
-            warnings.warn(msg.format(cf_var.name, fill_value))
+
+    def delayed_completion(self) -> Delayed:
+        """
+        Create and return a :class:`dask.delayed.Delayed` to perform file completion
+        for delayed saves.
+
+        This contains all the delayed writes, which complete the file by filling out
+        the data of variables initially created empty, and also the checks for
+        potential fill-value collisions.
+        When computed, it returns a list of any warnings which were generated in the
+        save operation.
+
+        Returns
+        -------
+        completion : :class:`dask.delayed.Delayed`
+
+        Notes
+        -----
+        The dataset *must* be closed (saver has exited its context) before the
+        result can be computed, otherwise computation will hang (never return).
+        """
+        if self._delayed_writes:
+            # Create a single delayed da.store operation to complete the file.
+            sources, targets, fill_infos = zip(*self._delayed_writes)
+            store_op = da.store(sources, targets, compute=False, lock=False)
+
+            # Construct a delayed fill-check operation for each (lazy) source array.
+            delayed_fillvalue_checks = [
+                # NB with arraylib=dask.array, this routine does lazy array computation
+                _data_fillvalue_check(da, source, fillinfo.check_value)
+                for source, fillinfo in zip(sources, fill_infos)
+            ]
+
+            # Return a single delayed object which completes the delayed saves and
+            # returns a list of any fill-value warnings.
+            @dask.delayed
+            def compute_and_return_warnings(store_op, fv_infos, fv_checks):
+                # Note: we don't actually *do* anything with the 'store_op' argument,
+                # but including it here ensures that dask will compute it (thus
+                # performing all the delayed saves), before calling this function.
+                results = []
+                # Pair each fill_check result (is_masked, contains_value) with its
+                # fillinfo and construct a suitable Warning if needed.
+                for fillinfo, (is_masked, contains_value) in zip(
+                    fv_infos, fv_checks
+                ):
+                    fv_warning = _fillvalue_report(
+                        fill_info=fillinfo,
+                        is_masked=is_masked,
+                        contains_fill_value=contains_value,
+                    )
+                    if fv_warning is not None:
+                        # Collect the warnings and return them.
+                        results.append(fv_warning)
+                return results
+
+            result = compute_and_return_warnings(
+                store_op,
+                fv_infos=fill_infos,
+                fv_checks=delayed_fillvalue_checks,
+            )
+
+        else:
+            # Return a delayed, which returns an empty list, for usage consistency.
+            @dask.delayed
+            def no_op():
+                return []
+
+            result = no_op()
+
+        return result
+
+    def complete(self, issue_warnings=True) -> List[Warning]:
+        """
+        Complete file by computing any delayed variable saves.
+
+        This requires that the Saver has closed the dataset (exited its context).
+
+        Parameters
+        ----------
+        issue_warnings : bool, default = True
+            If true, issue all the resulting warnings with :func:`warnings.warn`.
+
+        Returns
+        -------
+        warnings : list of Warning
+            Any warnings that were raised while writing delayed data.
+
+        """
+        if self._dataset.isopen():
+            msg = (
+                "Cannot call Saver.complete() until its dataset is closed, "
+                "i.e. the saver's context has exited."
+            )
+            raise ValueError(msg)
+
+        delayed_write = self.delayed_completion()
+        # Complete the saves now, and handle any delayed warnings that occurred
+        result_warnings = delayed_write.compute()
+        if issue_warnings:
+            # Issue any delayed warnings from the compute.
+            for delayed_warning in result_warnings:
+                warnings.warn(delayed_warning)
+
+        return result_warnings
 
 
 def save(
@@ -2530,6 +2532,7 @@ def save(
     least_significant_digit=None,
     packing=None,
     fill_value=None,
+    compute=True,
 ):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
@@ -2652,8 +2655,24 @@ def save(
         `:class:`iris.cube.CubeList`, or a single element, and each element of
         this argument will be applied to each cube separately.
 
+    * compute (bool):
+        When False, create the output file but don't write any lazy array content to
+        its variables, such as lazy cube data or aux-coord points and bounds.
+
+        Instead return a :class:`dask.delayed.Delayed` which, when computed, will
+        stream all the lazy content via :meth:`dask.store`, to complete the file.
+        Several such data saves can be performed in parallel, by passing a list of them
+        into a :func:`dask.compute` call.
+
+        Default is ``True``, meaning complete the file immediately, and return ``None``.
+
+        .. Note::
+            when computed, the returned :class:`dask.delayed.Delayed` object returns
+            a list of :class:`Warning` :  These are any warnings which *would* have
+            been issued in the save call, if compute had been True.
+
     Returns:
-        None.
+        A list of :class:`Warning`.
 
     .. note::
 
@@ -2752,7 +2771,9 @@ def save(
                 raise ValueError(msg)
 
     # Initialise Manager for saving
-    with Saver(filename, netcdf_format) as sman:
+    # N.B. make the Saver compute=False, as we want control over creation of the
+    # delayed-completion object.
+    with Saver(filename, netcdf_format, compute=compute) as sman:
         # Iterate through the cubelist.
         for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(
@@ -2797,3 +2818,12 @@ def save(
 
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=conventions)
+
+    if compute:
+        # No more to do, since we used Saver(compute=True).
+        result = None
+    else:
+        # Return a delayed completion object.
+        result = sman.delayed_completion()
+
+    return result

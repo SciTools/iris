@@ -30,7 +30,33 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@bsherratt`_ added support for plugins - see the corresponding
+   :ref:`documentation page<community_plugins>` for further information.
+   (:pull:`5144`)
+
+#. `@rcomer`_ enabled lazy evaluation of :obj:`~iris.analysis.RMS` calcuations
+   with weights. (:pull:`5017`)
+
+#. `@schlunma`_ allowed the usage of cubes, coordinates, cell measures, or
+   ancillary variables as weights for cube aggregations
+   (:meth:`iris.cube.Cube.collapsed`, :meth:`iris.cube.Cube.aggregated_by`, and
+   :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
+   if necessary. (:pull:`5084`)
+
+#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
+   and :func:`iris.quickplot.hist`. (:pull:`5189`)
+
+#. `@tinyendian`_ edited :func:`~iris.analysis.cartography.rotate_winds` to
+   enable lazy computation of rotated wind vector components (:issue:`4934`,
+   :pull:`4972`)
+
+#. `@ESadek-MO`_ updated to the latest CF Standard Names Table v80
+   (07 February 2023). (:pull:`5244`)
+
+#. `@pp-mo`_ and  `@lbdreyer`_ supported delayed saving of lazy data, when writing to
+   the netCDF file format.  See : :ref:`delayed netCDF saves <delayed_netcdf_save>`.
+   Also with significant input from `@fnattino`_.
+   (:pull:`5191`)
 
 
 🐛 Bugs Fixed
@@ -97,7 +123,8 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@fnattino: https://github.com/fnattino
+.. _@tinyendian: https://github.com/tinyendian
 
 
 .. comment

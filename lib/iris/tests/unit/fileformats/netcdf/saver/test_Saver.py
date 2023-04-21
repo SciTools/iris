@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.Saver` class."""
+"""Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -205,7 +205,13 @@ class Test_write(tests.IrisTest):
         api = self.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
-        with Saver("/dummy/path", "NETCDF4") as saver:
+        # Mock the apparent dtype of mocked variables, to avoid an error.
+        ref = api.DatasetWrapper.return_value
+        ref = ref.createVariable.return_value
+        ref.dtype = np.dtype(np.float32)
+        # NOTE: use compute=False as otherwise it gets in a pickle trying to construct
+        # a fill-value report on a non-compliant variable in a non-file (!)
+        with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
             saver.write(cube, zlib=True)
         dataset = api.DatasetWrapper.return_value
         create_var_call = mock.call(
@@ -646,8 +652,16 @@ class _Common__check_attribute_compliance:
         self.container = mock.Mock(name="container", attributes={})
         self.data_dtype = np.dtype("int32")
 
+        # We need to create mock datasets which look like they are closed.
+        dataset_class = mock.Mock(
+            return_value=mock.Mock(
+                # Mock dataset : the isopen() call should return 0.
+                isopen=mock.Mock(return_value=0)
+            )
+        )
         patch = mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper"
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            dataset_class,
         )
         _ = patch.start()
         self.addCleanup(patch.stop)
@@ -662,7 +676,7 @@ class _Common__check_attribute_compliance:
 
     def check_attribute_compliance_call(self, value):
         self.set_attribute(value)
-        with Saver(mock.Mock(), "NETCDF4") as saver:
+        with Saver("nonexistent test file", "NETCDF4") as saver:
             saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
@@ -771,7 +785,7 @@ class Test_check_attribute_compliance__exception_handling(
         self.container.attributes["valid_range"] = [1, 2]
         self.container.attributes["valid_min"] = [1]
         msg = 'Both "valid_range" and "valid_min"'
-        with Saver(mock.Mock(), "NETCDF4") as saver:
+        with Saver("nonexistent test file", "NETCDF4") as saver:
             with self.assertRaisesRegex(ValueError, msg):
                 saver.check_attribute_compliance(
                     self.container, self.data_dtype

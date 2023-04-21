@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.save` function."""
-
+"""Unit tests for the :func:`iris.fileformats.netcdf.save` function."""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -15,6 +14,7 @@ from tempfile import mkdtemp
 from unittest import mock
 
 import numpy as np
+import pytest
 
 import iris
 from iris.coords import AuxCoord, DimCoord
@@ -22,6 +22,7 @@ from iris.cube import Cube, CubeList
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.fileformats.netcdf import (
     CF_CONVENTIONS_VERSION,
+    Saver,
     _thread_safe_nc,
     save,
 )
@@ -357,6 +358,105 @@ class Test_HdfSaveBug(tests.IrisTest):
         cube_1 = Cube([0], long_name="cube_1", var_name="Mesh_2d_face_N_nodes")
         # Test save + loadback
         self._check_save_and_reload([cube_1, cube_2])
+
+
+class Test_compute_usage:
+    """
+    Test the operation  of the save function 'compute' keyword.
+
+    In actual use, this keyword controls 'delayed saving'.  That is tested elsewhere,
+    in testing the 'Saver' class itself.
+    """
+
+    # A fixture to mock out Saver object creation in a 'save' call.
+    @staticmethod
+    @pytest.fixture
+    def mock_saver_creation():
+        # A mock for a Saver object.
+        mock_saver = mock.MagicMock(spec=Saver)
+        # make an __enter__ call return the object itself (as the real Saver does).
+        mock_saver.__enter__ = mock.Mock(return_value=mock_saver)
+        # A mock for the Saver() constructor call.
+        mock_new_saver_call = mock.Mock(return_value=mock_saver)
+
+        # Replace the whole Saver class with a simple function, which thereby emulates
+        # the constructor call.  This avoids complications due to the fact that Mock
+        # patching does not work in the usual way for __init__ and __new__ methods.
+        def mock_saver_class_create(*args, **kwargs):
+            return mock_new_saver_call(*args, **kwargs)
+
+        # Patch the Saver() creation to return our mock Saver object.
+        with mock.patch(
+            "iris.fileformats.netcdf.saver.Saver", mock_saver_class_create
+        ):
+            # Return mocks for both constructor call, and Saver object.
+            yield mock_new_saver_call, mock_saver
+
+    # A fixture to provide some mock args for 'Saver' creation.
+    @staticmethod
+    @pytest.fixture
+    def mock_saver_args():
+        from collections import namedtuple
+
+        # A special object for the cube, since cube.attributes must be indexable
+        mock_cube = mock.MagicMock()
+        args = namedtuple(
+            "saver_args", ["cube", "filename", "format", "compute"]
+        )(
+            cube=mock_cube,
+            filename=mock.sentinel.filepath,
+            format=mock.sentinel.netcdf4,
+            compute=mock.sentinel.compute,
+        )
+        return args
+
+    def test_saver_creation(self, mock_saver_creation, mock_saver_args):
+        # Check that 'save' creates a Saver, passing the 'compute' keyword.
+        mock_saver_new, mock_saver = mock_saver_creation
+        args = mock_saver_args
+        save(
+            cube=args.cube,
+            filename=args.filename,
+            netcdf_format=args.format,
+            compute=args.compute,
+        )
+        # Check the Saver create call it made, in particular that the compute arg is
+        # passed in.
+        mock_saver_new.assert_called_once_with(
+            args.filename, args.format, compute=args.compute
+        )
+
+    def test_compute_true(self, mock_saver_creation, mock_saver_args):
+        # Check operation when compute=True.
+        mock_saver_new, mock_saver = mock_saver_creation
+        args = mock_saver_args
+        result = save(
+            cube=args.cube,
+            filename=args.filename,
+            netcdf_format=args.format,
+            compute=True,
+        )
+        # It should NOT have called 'delayed_completion'
+        assert mock_saver.delayed_completion.call_count == 0
+        # Result should be None
+        assert result is None
+
+    def test_compute_false_result_delayed(
+        self, mock_saver_creation, mock_saver_args
+    ):
+        # Check operation when compute=False.
+        mock_saver_new, mock_saver = mock_saver_creation
+        args = mock_saver_args
+        result = save(
+            cube=args.cube,
+            filename=args.filename,
+            netcdf_format=args.format,
+            compute=False,
+        )
+        # It should have called 'delayed_completion' ..
+        assert mock_saver.delayed_completion.call_count == 1
+        # .. and should return the result of that.
+        assert result is mock_saver.delayed_completion.return_value
 
 
 if __name__ == "__main__":

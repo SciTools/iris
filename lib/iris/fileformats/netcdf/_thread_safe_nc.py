@@ -340,3 +340,44 @@ class NetCDFDataProxy:
     def __setstate__(self, state):
         for key, value in state.items():
             setattr(self, key, value)
+
+
+class NetCDFWriteProxy:
+    """
+    The "opposite" of a NetCDFDataProxy : An object mimicking the data access of a
+    netCDF4.Variable, but where the data is to be ***written to***.
+
+    It encapsulates the netcdf file and variable which are actually to be written to.
+    This opens the file each time, to enable writing the data chunk, then closes it.
+    TODO: could be improved with a caching scheme, but this just about works.
+    """
+
+    def __init__(self, filepath, cf_var, file_write_lock):
+        self.path = filepath
+        self.varname = cf_var.name
+        self.lock = file_write_lock
+
+    def __setitem__(self, keys, array_data):
+        # Write to the variable.
+        # First acquire a file-specific lock for all workers writing to this file.
+        self.lock.acquire()
+        # Open the file for writing + write to the specific file variable.
+        # Exactly as above, in NetCDFDataProxy : a DatasetWrapper causes problems with
+        # invalid ID's and the netCDF4 library, for so-far unknown reasons.
+        # Instead, use _GLOBAL_NETCDF4_LOCK, and netCDF4 _directly_.
+        with _GLOBAL_NETCDF4_LOCK:
+            dataset = None
+            try:
+                dataset = netCDF4.Dataset(self.path, "r+")
+                var = dataset.variables[self.varname]
+                var[keys] = array_data
+            finally:
+                try:
+                    if dataset:
+                        dataset.close()
+                finally:
+                    # *ALWAYS* let go !
+                    self.lock.release()
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"

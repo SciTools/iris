@@ -4,39 +4,48 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the `iris.fileformats.netcdf._FillValueMaskCheckAndStoreTarget`
-class.
+Unit tests for :func:`iris.fileformats.netcdf.saver._data_fillvalue_check`.
+
+Note: now runs all testcases on both real + lazy data.
 
 """
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
+import collections
 
-from unittest import mock
-
+import dask.array as da
 import numpy as np
 
-from iris.fileformats.netcdf.saver import _FillValueMaskCheckAndStoreTarget
+from iris.fileformats.netcdf.saver import _data_fillvalue_check
 
 
-class Test__FillValueMaskCheckAndStoreTarget(tests.IrisTest):
+class Check__fillvalueandmasking:
     def _call_target(self, fill_value, keys, vals):
-        inner_target = mock.MagicMock()
-        target = _FillValueMaskCheckAndStoreTarget(
-            inner_target, fill_value=fill_value
-        )
+        data = np.zeros(20, dtype=np.float32)
+        if any(np.ma.isMaskedArray(val) for val in vals):
+            # N.B. array is masked if "vals" is, but has no masked points initially.
+            data = np.ma.masked_array(data, mask=np.zeros_like(data))
 
         for key, val in zip(keys, vals):
-            target[key] = val
+            data[key] = val
 
-        calls = [mock.call(key, val) for key, val in zip(keys, vals)]
-        inner_target.__setitem__.assert_has_calls(calls)
+        if hasattr(self.arraylib, "compute"):
+            data = da.from_array(data, chunks=-1)
 
-        return target
+        results = _data_fillvalue_check(
+            arraylib=self.arraylib, data=data, check_value=fill_value
+        )
 
-    def test___setitem__(self):
-        self._call_target(None, [1], [2])
+        if hasattr(results, "compute"):
+            results = results.compute()
+
+        # Return a named tuple, for named-property access to the 2 result values.
+        result = collections.namedtuple("_", ["is_masked", "contains_value"])(
+            *results
+        )
+        return result
 
     def test_no_fill_value_not_masked(self):
         # Test when the fill value is not present and the data is not masked
@@ -90,3 +99,11 @@ class Test__FillValueMaskCheckAndStoreTarget(tests.IrisTest):
         target = self._call_target(fill_value, keys, vals)
         self.assertFalse(target.contains_value)
         self.assertTrue(target.is_masked)
+
+
+class Test__real(Check__fillvalueandmasking, tests.IrisTest):
+    arraylib = np
+
+
+class Test__lazy(Check__fillvalueandmasking, tests.IrisTest):
+    arraylib = da
