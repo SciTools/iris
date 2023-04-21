@@ -204,7 +204,7 @@ def check_deprecations(release_type: ReleaseTypes) -> None:
 def _delete_local_branch(branch_name: str):
     message = (
         "Before the next step, avoid a name clash by deleting any "
-        "existing local branch.\n"
+        "existing local branch, if one exists.\n"
         f"git branch -D {branch_name};\n"
         f"git push -d origin {branch_name};"
     )
