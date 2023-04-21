@@ -117,7 +117,7 @@ class Test__lazy_stream_data:
         )
         original_cubes = iris.load(input_filepath)
 
-        # Pre-empt some standard changes that an iris save will impose.
+        # Preempt some standard changes that an iris save will impose.
         for cube in original_cubes:
             if cube.units == Unit("-"):
                 # replace 'unknown unit' with 'no unit'.

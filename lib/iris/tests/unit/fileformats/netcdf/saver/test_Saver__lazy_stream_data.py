@@ -105,7 +105,7 @@ class Test__lazy_stream_data:
         fill_value = 2.0  # IS occurring in data
         cf_var = self.mock_var(data.shape)
 
-        # Do initial save.  When compute=True, this issues warnigns
+        # Do initial save.  When compute=True, this issues warnings
         with warnings.catch_warnings(record=True) as logged_warnings:
             saver._lazy_stream_data(
                 data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var

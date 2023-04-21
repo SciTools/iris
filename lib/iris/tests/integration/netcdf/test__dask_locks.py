@@ -7,7 +7,7 @@
 Unit tests for the :mod:`iris.fileformats.netcdf._dask_locks` package.
 
 Note: these integration tests replace any unit testing of this module, due to its total
-dependence on Dask, and even on Dask's implemenetation details rather than supported
+dependence on Dask, and even on Dask's implementation details rather than supported
 and documented API and behaviour.
 So (a) it is essential to check the module's behaviour against actual Dask operation,
 and (b) mock-ist testing of the implementation code in isolation would not add anything
