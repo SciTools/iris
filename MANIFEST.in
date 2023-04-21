@@ -4,7 +4,9 @@ prune docs
 prune etc
 recursive-include lib *.cdl *.cml *.json *.md *.py *.template *.txt *.xml
 prune requirements
+recursive-include requirements *.txt
 prune tools
+exclude .flake8
 exclude .git-blame-ignore-revs
 exclude .git_archival.txt
 exclude .gitattributes
@@ -20,8 +22,8 @@ exclude Makefile
 exclude noxfile.py
 
 # files required to build iris.std_names module
-include tools/generate_std_names.py
 include etc/cf-standard-name-table.xml
+include tools/generate_std_names.py
 
 global-exclude *.py[cod]
 global-exclude __pycache__
