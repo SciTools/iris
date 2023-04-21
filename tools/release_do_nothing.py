@@ -65,7 +65,7 @@ class WhatsNewRsts:
 def _break_print(message: str):
     print()
     print(message)
-    # Help with flow/visibility by waiting 2secs before proceeding.
+    # Help with flow/visibility by waiting 1secs before proceeding.
     sleep(1)
 
 
@@ -79,7 +79,7 @@ def _wait_for_done(message: str):
     done = False
     while not done:
         done = (
-            input("Type DONE when complete : ").casefold() == "done".casefold()
+            input("Step complete? y / [n] : ").casefold() == "y".casefold()
         )
 
 
@@ -140,7 +140,7 @@ def check_release_candidate(
             "Release candidates are not expected for PATCH releases. "
             "Are you sure you want to continue?"
         )
-        if _get_input(message, "y / N").casefold() != "y".casefold():
+        if _get_input(message, "y / [n]").casefold() != "y".casefold():
             exit()
     return is_release_candidate
 
@@ -157,7 +157,7 @@ def check_first_in_series(
             f"{release_strings.series} series, including release candidates?"
         )
         first_in_series = (
-            _get_input(message, "Y / n").casefold() == "n".casefold()
+            _get_input(message, "[y] / n").casefold() == "n".casefold()
         )
         if first_in_series:
             _break_print("First in series confirmed.")
@@ -167,7 +167,7 @@ def check_first_in_series(
                     "release candidate, but this is not. Are you sure you "
                     "want to continue?"
                 )
-                if _get_input(message, "y / N").casefold() != "y".casefold():
+                if _get_input(message, "y / [n]").casefold() != "y".casefold():
                     exit()
         else:
             _break_print("Existing series confirmed.")
