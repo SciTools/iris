@@ -398,7 +398,8 @@ def check_rtd(
     _wait_for_done(message)
 
     message = (
-        "Consider deactivating older branch doc builds - those formatted 0.0.x"
+        "Keep the latest 2 branch doc builds active - those formatted 0.0.x - "
+        "deactivate older ones."
     )
     _wait_for_done(message)
 
@@ -409,7 +410,8 @@ def check_rtd(
         f"- The version badge in the top left reads: {release_strings.tag} .\n"
         "   (this demonstrates that setuptools_scm has worked correctly).\n"
         "- The What's New looks correct.\n"
-        f"- {release_strings.tag} is available in RTD's version switcher.\n"
+        f"- {release_strings.tag} is available in RTD's version switcher.\n\n"
+        "NOTE: the docs can take several minutes to finish building."
     )
     if not is_release_candidate:
         message += (
@@ -423,7 +425,8 @@ def check_rtd(
         "to confirm:\n\n"
         "- The docs have rendered\n"
         f"- The version badge in the top left includes: {release_strings.branch} .\n"
-        f"- {release_strings.branch} is NOT available in RTD's version switcher.\n"
+        f"- {release_strings.branch} is NOT available in RTD's version switcher.\n\n"
+        "NOTE: the docs can take several minutes to finish building."
     )
     _wait_for_done(message)
 
