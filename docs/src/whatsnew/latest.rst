@@ -60,7 +60,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@rcomer`_ and `@bjlittle`_ (reviewer) added testing support for python
+   3.11. (:pull:`5226`) 
 
 
 📚 Documentation
