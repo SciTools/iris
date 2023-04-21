@@ -564,8 +564,9 @@ def update_conda_forge(
     else:
         channel_command = " "
     message = (
-        "Confirm that conda install works as expected:\n"
-        f"conda install{channel_command}iris={release_strings.release};"
+        "Confirm that conda/mamba install works as expected:\n"
+        f"mamba create -n tmp_iris{channel_command}iris={release_strings.release};\n"
+        f"mamba remove -n tmp_iris --all;"
     )
     _wait_for_done(message)
 
