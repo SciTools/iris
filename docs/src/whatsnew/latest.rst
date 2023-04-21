@@ -7,16 +7,15 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: |iris_version| Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
    The highlights for this major/minor release of Iris include:
 
-   * We're so proud to fully support `@ed-hawkins`_ and `#ShowYourStripes`_ ❤️
+   * N/A
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -25,9 +24,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
-#. Welcome and congratulations to `@HGWright`_, `@scottrobinson02`_ and
-   `@agriyakhetarpal`_ who made their first contributions to Iris! 🎉
+#. N/A
 
 
 ✨ Features
@@ -65,31 +62,7 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. `@schlunma`_ fixed :meth:`iris.cube.CubeList.concatenate` so that it
-   preserves derived coordinates. (:issue:`2478`, :pull:`5096`)
-
-#. `@trexfeathers`_ and `@pp-mo`_ made Iris' use of the `netCDF4`_ library
-   thread-safe. (:pull:`5095`)
-
-#. `@ESadek-MO`_ removed check and error raise for saving
-   cubes with masked :class:`iris.coords.CellMeasure`.
-   (:issue:`5147`, :pull:`5181`)
-
-#. `@scottrobinson02`_ fixed :class:`iris.util.new_axis` creating an anonymous new
-   dimension, when the scalar coord provided is already a dim coord.
-   (:issue:`4415`, :pull:`5194`)
-
-#. `@HGWright`_ and `@trexfeathers`_ (reviewer) changed the way
-   :class:`~iris.coords.CellMethod` are printed to be more CF compliant.
-   (:pull:`5224`)
-
-#. `@stephenworsley`_ fixed the way discontiguities were discovered for 2D coords.
-   Previously, the only bounds being compared were the bottom right bound in one
-   cell with the bottom left bound in the cell to its right, and the top left bound
-   in a cell with the bottom left bound in the cell above it. Now all bounds are
-   compared with all adjacent bounds from neighbouring cells. This affects
-   :meth:`~iris.coords.Coord.is_contiguous` and :func:`iris.util.find_discontiguities`
-   where additional discontiguities may be detected which previously were not.
+#. N/A
 
 
 💣 Incompatible Changes
@@ -101,10 +74,7 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. `@pp-mo`_ changed the netCDF loader to fetch data immediately from small netCDF
-   variables, instead of creating a dask array: This saves both time and memory.
-   Note that some cubes, coordinates etc loaded from netCDF will now have real data
-   where previously it was lazy.  (:pull:`5229`)
+#. N/A
 
 
 🔥 Deprecations
@@ -116,95 +86,41 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@trexfeathers`_ introduced the ``libnetcdf <4.9`` pin. (:pull:`5242`)
+#. N/A
 
 
 📚 Documentation
 ================
 
-#. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
-#. `@tkknight`_ unpinned ``pydata-sphinx-theme`` and set the default to use
-   the light version (not dark) while we make the docs dark mode friendly
-   (:pull:`5129`)
+#. `@tkknight`_ migrated to `sphinx-design`_ over the legacy `sphinx-panels`_.
+   (:pull:`5127`)
 
-#. `@jonseddon`_ updated the citation to a more recent version of Iris. (:pull:`5116`)
+#. `@tkknight`_ updated the ``make`` target for ``help`` and added
+   ``livehtml`` to auto generate the documentation when changes are detected
+   during development. (:pull:`5258`)
 
-#. `@rcomer`_ linked the :obj:`~iris.analysis.PERCENTILE` aggregator from the
-   :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
-   data. (:pull:`5128`)
-
-#. `@trexfeathers`_ updated the WSL link to Microsoft's latest documentation,
-   and removed an ECMWF link in the ``v1.0`` What's New that was failing the
-   linkcheck CI. (:pull:`5109`)
-
-#. `@trexfeathers`_ added a new top-level :doc:`/community/index` section,
-   as a one-stop place to find out about getting involved, and how we relate
-   to other projects. (:pull:`5025`)
-
-#. The **Iris community**, with help from the **Xarray community**, produced
-   the :doc:`/community/iris_xarray` page, highlighting the similarities and
-   differences between the two packages. (:pull:`5025`)
-
-#. `@bjlittle`_ added a new section to the `README.md`_ to show our support
-   for the outstanding work of `@ed-hawkins`_ et al for `#ShowYourStripes`_.
-   (:pull:`5141`)
-
-#. `@HGWright`_ fixed some typo's from Gitwash. (:pull:`5145`)
-
-#. `@Esadek-MO`_ added notes to function docstrings to
-   to clarify if the function preserves laziness or not. (:pull:`5137`)
 
 💼 Internal
 ===========
 
-#. `@bouweandela`_ and `@trexfeathers`_ (reviewer) modernized and simplified
-   the code of ``iris.analysis._Groupby``. (:pull:`5015`)
+#. `@bjlittle`_ added the `codespell`_ `pre-commit`_ ``git-hook`` to automate
+   spell checking within the code-base. (:pull:`5186`)
 
-#. `@fnattino`_ changed the order of ``ncgen`` arguments in the command to
-   create NetCDF files for testing  (caused errors on OS X). (:pull:`5105`)
-
-#. `@rcomer`_ removed some old infrastructure that printed test timings.
-   (:pull:`5101`)
-
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) added coverage testing. This
-   can be enabled by using the "--coverage" flag when running the tests with
-   nox i.e. ``nox --session tests -- --coverage``. (:pull:`4765`)
-
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer) removed the ``--coding-tests``
-   option from Iris' test runner. (:pull:`4765`)
-
-#. `@lbdreyer`_ removed the Iris TestRunner. Tests are now run via nox or
-   pytest. (:pull:`5205`)
-
-#. `@agriyakhetarpal`_ prevented the GitHub action for publishing releases to
-   PyPI from running in forks. (:pull:`5220`)
-
-#. `@trexfeathers`_ moved the benchmark runner conveniences from ``noxfile.py``
-   to a dedicated ``benchmarks/bm_runner.py``. (:pull:`5215`)
-
-#. `@bjlittle`_ follow-up to :pull:`4972`, enforced ``dask>=2022.09.0`` minimum
-   pin for first use of `dask.array.ma.empty_like`_ and replaced `@tinyendian`_
-   workaround. (:pull:`5225`)
-
-#. `@HGWright`_, `@bjlittle`_ and `@trexfeathers`_ removed the legacy pin for
-   ``numpy`` array printing and replaced the test results files to match default
-   ``numpy`` output. (:pull:`5235`)
-
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) added a `check-manifest`_
+   GitHub Action and `pre-commit`_ ``git-hook`` to automate verification
+   of assets bundled within a ``sdist`` and binary ``wheel`` of our
+   `scitools-iris`_ PyPI package. (:pull:`5259`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-.. _@fnattino: https://github.com/fnattino
-.. _@ed-hawkins: https://github.com/ed-hawkins
-.. _@scottrobinson02: https://github.com/scottrobinson02
-.. _@agriyakhetarpal: https://github.com/agriyakhetarpal
-.. _@tinyendian: https://github.com/tinyendian
+
 
 
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _#ShowYourStripes: https://showyourstripes.info/s/globe/
-.. _README.md: https://github.com/SciTools/iris#-----
-.. _dask.array.ma.empty_like: https://docs.dask.org/en/stable/generated/dask.array.ma.empty_like.html
+.. _sphinx-panels: https://github.com/executablebooks/sphinx-panels
+.. _sphinx-design: https://github.com/executablebooks/sphinx-design
+.. _check-manifest: https://github.com/mgedmin/check-manifest

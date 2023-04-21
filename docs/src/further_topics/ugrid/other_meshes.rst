@@ -27,7 +27,8 @@ To represent the Voronoi Polygons as faces, the corner coordinates will be used
 as the **nodes** when creating the Iris
 :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -115,7 +116,8 @@ as the **nodes** when creating the Iris
 :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -253,7 +255,8 @@ To make an unstructured cube, the data must be 'flattened' to convert the given 
 dimensions into a single mesh dimension.  Since Iris cubes don't support a "reshape" or
 "flatten" operations, we create a new cube from the flattened data.
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 

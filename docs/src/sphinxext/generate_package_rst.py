@@ -10,6 +10,10 @@ import re
 import inspect
 import ntpath
 
+# stop warnings cluttering the make output
+import warnings
+warnings.filterwarnings("ignore")
+
 # list of tuples for modules to exclude.  Useful if the documentation throws
 # warnings, especially for experimental modules.
 exclude_modules = [

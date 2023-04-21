@@ -726,7 +726,7 @@ class Resolve:
 
             If container or type(coord) is DimCoord/AuxCoord (i.e. not
             MeshCoord), then points+bounds define the built AuxCoord/DimCoord.
-            Theses points+bounds come either from those args, or the 'coord'.
+            These points+bounds come either from those args, or the 'coord'.
             Alternatively, when container or type(coord) is MeshCoord, then
             points==bounds==None and the preparted item contains
             mesh/location/axis properties for the resulting MeshCoord.
@@ -1014,7 +1014,7 @@ class Resolve:
                     # Map to the first available unmapped local dimension or
                     # the first available free dimension.
                     # Dimension shape doesn't matter here as the extent is 1,
-                    # therefore broadcasting will take care of any discrepency
+                    # therefore broadcasting will take care of any discrepancy
                     # between src and tgt dimension extent.
                     if unmapped_local_items:
                         result, _ = unmapped_local_items.pop(0)

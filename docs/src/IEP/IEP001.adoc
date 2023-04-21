@@ -119,7 +119,7 @@ cube.sel(height=1.5)
 
 The semantics of position-based slices will continue to match that of normal Python slices. The start position is included, the end position is excluded.
 
-Value-based slices will be stricly inclusive, with both the start and end values included. This behaviour differs from normal Python slices but is in common with pandas.
+Value-based slices will be strictly inclusive, with both the start and end values included. This behaviour differs from normal Python slices but is in common with pandas.
 
 Just as for normal Python slices, we do not need to provide the ability to control the include/exclude behaviour for slicing.
 

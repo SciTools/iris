@@ -5,16 +5,16 @@ Seasonal Ensemble Model Plots
 This example demonstrates the loading of a lagged ensemble dataset from the
 GloSea4 model, which is then used to produce two types of plot:
 
- * The first shows the "postage stamp" style image with an array of 14 images,
-   one for each ensemble member with a shared colorbar. (The missing image in
-   this example represents ensemble member number 6 which was a failed run)
+* The first shows the "postage stamp" style image with an array of 14 images,
+  one for each ensemble member with a shared colorbar. (The missing image in
+  this example represents ensemble member number 6 which was a failed run)
 
- * The second plot shows the data limited to a region of interest, in this case
-   a region defined for forecasting ENSO (El Nino-Southern Oscillation), which,
-   for the purposes of this example, has had the ensemble mean subtracted from
-   each ensemble member to give an anomaly surface temperature. In practice a
-   better approach would be to take the climatological mean, calibrated to the
-   model, from each ensemble member.
+* The second plot shows the data limited to a region of interest, in this case
+  a region defined for forecasting ENSO (El Nino-Southern Oscillation), which,
+  for the purposes of this example, has had the ensemble mean subtracted from
+  each ensemble member to give an anomaly surface temperature. In practice a
+  better approach would be to take the climatological mean, calibrated to the
+  model, from each ensemble member.
 
 """
 
@@ -115,7 +115,7 @@ def main():
     # Get the time for the entire plot.
     time = last_time_coord.units.num2date(last_time_coord.bounds[0, 0])
 
-    # Set a global title for the postage stamps with the date formated by
+    # Set a global title for the postage stamps with the date formatted by
     # "monthname year".
     time_string = time.strftime("%B %Y")
     plt.suptitle(f"Surface temperature ensemble forecasts for {time_string}")

@@ -928,7 +928,7 @@ class Saver:
 
         """
         if coordlike_elements:
-            # Choose the approriate parent attribute
+            # Choose the appropriate parent attribute
             elem_type = type(coordlike_elements[0])
             if elem_type in (AuxCoord, DimCoord):
                 role_attribute_name = "coordinates"
@@ -1082,7 +1082,7 @@ class Saver:
                 warnings.warn(msg)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
-                # primary coord that signals the presense of a dimensionless
+                # primary coord that signals the presence of a dimensionless
                 # vertical coord, then set the `formula_terms` attribute.
                 primary_coord = factory.dependencies[factory_defn.primary]
                 if primary_coord in primaries:
@@ -1389,7 +1389,7 @@ class Saver:
             A var_name suitable for passing through for variable creation.
 
         """
-        # Replace invalid charaters with an underscore ("_").
+        # Replace invalid characters with an underscore ("_").
         var_name = re.sub(r"[^a-zA-Z0-9]", "_", var_name)
         # Ensure the variable name starts with a letter.
         if re.match(r"^[^a-zA-Z]", var_name):

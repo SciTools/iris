@@ -138,7 +138,7 @@ To do this perform the following steps.
 Create a conda environment with the appropriate conda packages to build the
 source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
 
-    > conda create -n iris-pypi -c conda-forge --yes pip python setuptools twine wheel
+    > conda create -n iris-pypi -c conda-forge --yes build twine
     > . activate iris-pypi
 
 Checkout the appropriate Iris ``<release>`` tag from the appropriate ``<repo>``.
@@ -149,7 +149,7 @@ For example, to checkout tag ``v1.0`` from ``upstream``::
 
 Build the source distribution and wheel from the Iris root directory::
 
-    > python setup.py sdist bdist_wheel
+    > python -m build
 
 This ``./dist`` directory should now be populated with the source archive
 ``.tar.gz`` file, and built distribution ``.whl`` file.
@@ -173,9 +173,8 @@ Ensure that the artifacts are successfully uploaded and available on
 from PyPI::
 
     > conda deactivate
-    > conda env create --file ./requrements/ci/iris.yml
+    > conda env create --file ./requirements/iris.yml
     > . activate iris-dev
-    > conda install -c conda-forge pip
     > python -m pip install --no-deps scitools-iris
 
 For further details on how to test Iris, see :ref:`developer_running_tests`.

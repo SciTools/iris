@@ -6,6 +6,7 @@
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
+.. _codespell: https://github.com/codespell-project/codespell
 .. _conda: https://docs.conda.io/en/latest/
 .. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
