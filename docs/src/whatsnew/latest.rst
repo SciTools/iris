@@ -30,29 +30,6 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@bsherratt`_ added support for plugins - see the corresponding
-   :ref:`documentation page<community_plugins>` for further information.
-   (:pull:`5144`)
-
-#. `@rcomer`_ enabled lazy evaluation of :obj:`~iris.analysis.RMS` calcuations
-   with weights. (:pull:`5017`)
-
-#. `@schlunma`_ allowed the usage of cubes, coordinates, cell measures, or
-   ancillary variables as weights for cube aggregations
-   (:meth:`iris.cube.Cube.collapsed`, :meth:`iris.cube.Cube.aggregated_by`, and
-   :meth:`iris.cube.Cube.rolling_window`). This automatically adapts cube units
-   if necessary. (:pull:`5084`)
-
-#. `@lbdreyer`_ and `@trexfeathers`_ (reviewer)  added :func:`iris.plot.hist` 
-   and :func:`iris.quickplot.hist`. (:pull:`5189`)
-
-#. `@tinyendian`_ edited :func:`~iris.analysis.cartography.rotate_winds` to
-   enable lazy computation of rotated wind vector components (:issue:`4934`,
-   :pull:`4972`)
-
-#. `@ESadek-MO`_ updated to the latest CF Standard Names Table v80
-   (07 February 2023). (:pull:`5244`)
-
 #. `@pp-mo`_ and  `@lbdreyer`_ supported delayed saving of lazy data, when writing to
    the netCDF file format.  See : :ref:`delayed netCDF saves <delayed_netcdf_save>`.
    Also with significant input from `@fnattino`_.
@@ -87,7 +64,10 @@ This document explains the changes made to Iris for this release
 ===============
 
 #. `@rcomer`_ and `@bjlittle`_ (reviewer) added testing support for python
-   3.11. (:pull:`5226`) 
+   3.11. (:pull:`5226`)
+
+#. `@rcomer`_ dropped support for python 3.8, in accordance with the NEP29_
+   recommendations (:pull:`5226`) 
 
 
 📚 Documentation
@@ -124,7 +104,6 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@fnattino: https://github.com/fnattino
-.. _@tinyendian: https://github.com/tinyendian
 
 
 .. comment
@@ -134,3 +113,4 @@ This document explains the changes made to Iris for this release
 .. _sphinx-design: https://github.com/executablebooks/sphinx-design
 .. _check-manifest: https://github.com/mgedmin/check-manifest
 .. _PEP-0621: https://peps.python.org/pep-0621/
+.. _NEP29: https://numpy.org/neps/nep-0029-deprecation_policy.html
