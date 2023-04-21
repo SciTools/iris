@@ -98,6 +98,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@trexfeathers`_ (reviewer) migrated ``setup.cfg`` to
    ``pyproject.toml``, as motivated by `PEP-0621`_. (:pull:`5262`)
 
+#. `@bjlittle`_ adopted `pypa/build`_ recommended best practice to build a
+   binary ``wheel`` from the ``sdist``. (:pull:`5266`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -113,4 +116,5 @@ This document explains the changes made to Iris for this release
 .. _sphinx-design: https://github.com/executablebooks/sphinx-design
 .. _check-manifest: https://github.com/mgedmin/check-manifest
 .. _PEP-0621: https://peps.python.org/pep-0621/
+.. _pypa/build: https://pypa-build.readthedocs.io/en/stable/
 .. _NEP29: https://numpy.org/neps/nep-0029-deprecation_policy.html
