@@ -7,16 +7,15 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: |iris_version| Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
    The highlights for this major/minor release of Iris include:
 
-   * We're so proud to fully support `@ed-hawkins`_ and `#ShowYourStripes`_ ❤️
+   * N/A
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -25,7 +24,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Congratulations to `@ESadek-MO`_ who has become a core developer for Iris! 🎉
+#. N/A
 
 
 ✨ Features
@@ -67,32 +66,13 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. `@rcomer`_ clarified instructions for updating gallery tests. (:pull:`5100`)
-#. `@tkknight`_ unpinned ``pydata-sphinx-theme`` and set the default to use
-   the light version (not dark) while we make the docs dark mode friendly
-   (:pull:`5129`)
+#. `@tkknight`_ migrated to `sphinx-design`_ over the legacy `sphinx-panels`_.
+   (:pull:`5127`)
 
-#. `@jonseddon`_ updated the citation to a more recent version of Iris. (:pull:`5116`)
+#. `@tkknight`_ updated the ``make`` target for ``help`` and added
+   ``livehtml`` to auto generate the documentation when changes are detected
+   during development. (:pull:`5258`)
 
-#. `@rcomer`_ linked the :obj:`~iris.analysis.PERCENTILE` aggregator from the
-   :obj:`~iris.analysis.MEDIAN` docstring, noting that the former handles lazy
-   data. (:pull:`5128`)
-
-#. `@trexfeathers`_ updated the WSL link to Microsoft's latest documentation,
-   and removed an ECMWF link in the ``v1.0`` What's New that was failing the
-   linkcheck CI. (:pull:`5109`)
-
-#. `@trexfeathers`_ added a new top-level :doc:`/community/index` section,
-   as a one-stop place to find out about getting involved, and how we relate
-   to other projects. (:pull:`5025`)
-
-#. The **Iris community**, with help from the **Xarray community**, produced
-   the :doc:`/community/iris_xarray` page, highlighting the similarities and
-   differences between the two packages. (:pull:`5025`)
-
-#. `@bjlittle`_ added a new section to the `README.md`_ to show our support
-   for the outstanding work of `@ed-hawkins`_ et al for `#ShowYourStripes`_.
-   (:pull:`5141`)
 
 #. `@trexfeathers`_ re-wrote the :ref:`iris_development_releases` documentation
    for clarity, and wrote a step-by-step
@@ -102,22 +82,24 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. `@fnattino`_ changed the order of ``ncgen`` arguments in the command to
-   create NetCDF files for testing  (caused errors on OS X). (:pull:`5105`)
+#. `@bjlittle`_ added the `codespell`_ `pre-commit`_ ``git-hook`` to automate
+   spell checking within the code-base. (:pull:`5186`)
 
-#. `@rcomer`_ removed some old infrastructure that printed test timings.
-   (:pull:`5101`)
-
+#. `@bjlittle`_ and `@trexfeathers`_ (reviewer) added a `check-manifest`_
+   GitHub Action and `pre-commit`_ ``git-hook`` to automate verification
+   of assets bundled within a ``sdist`` and binary ``wheel`` of our
+   `scitools-iris`_ PyPI package. (:pull:`5259`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-.. _@fnattino: https://github.com/fnattino
-.. _@ed-hawkins: https://github.com/ed-hawkins
+
+
 
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _#ShowYourStripes: https://showyourstripes.info/s/globe/
-.. _README.md: https://github.com/SciTools/iris#-----
+.. _sphinx-panels: https://github.com/executablebooks/sphinx-panels
+.. _sphinx-design: https://github.com/executablebooks/sphinx-design
+.. _check-manifest: https://github.com/mgedmin/check-manifest

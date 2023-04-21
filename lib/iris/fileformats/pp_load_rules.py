@@ -756,7 +756,6 @@ def _convert_time_coords(
             )
         )
     ):
-
         coords_and_dims.append(
             _new_coord_and_dims(
                 do_vector,

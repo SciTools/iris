@@ -15,13 +15,22 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 import numpy.ma as ma
 
+from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
 import iris.tests.stock as stock
 
 
 def _make_cube(
-    x, y, data, aux=None, cell_measure=None, ancil=None, offset=0, scalar=None
+    x,
+    y,
+    data,
+    aux=None,
+    cell_measure=None,
+    ancil=None,
+    derived=None,
+    offset=0,
+    scalar=None,
 ):
     """
     A convenience test function that creates a custom 2D cube.
@@ -45,6 +54,18 @@ def _make_cube(
 
     * aux:
         A CSV string specifying which points only auxiliary
+        coordinates to create. Accepts either of 'x', 'y', 'xy'.
+
+    * cell_measure:
+        A CSV string specifying which points only cell measures
+        coordinates to create. Accepts either of 'x', 'y', 'xy'.
+
+    * ancil:
+        A CSV string specifying which points only ancillary variables
+        coordinates to create. Accepts either of 'x', 'y', 'xy'.
+
+    * derived:
+        A CSV string specifying which points only derived coordinates
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
 
     * offset:
@@ -119,6 +140,30 @@ def _make_cube(
                 payload * 100 + offset, long_name="xy-aux", units="1"
             )
             cube.add_ancillary_variable(av, (0, 1))
+
+    if derived is not None:
+        derived = derived.split(",")
+        delta = AuxCoord(0.0, var_name="delta", units="m")
+        sigma = AuxCoord(1.0, var_name="sigma", units="1")
+        cube.add_aux_coord(delta, ())
+        cube.add_aux_coord(sigma, ())
+        if "y" in derived:
+            orog = AuxCoord(y_range * 10, long_name="orog", units="m")
+            cube.add_aux_coord(orog, 0)
+        elif "x" in derived:
+            orog = AuxCoord(x_range * 10, long_name="orog", units="m")
+            cube.add_aux_coord(orog, 1)
+        elif "xy" in derived:
+            payload = np.arange(y_size * x_size, dtype=np.float32).reshape(
+                y_size, x_size
+            )
+            orog = AuxCoord(
+                payload * 100 + offset, long_name="orog", units="m"
+            )
+            cube.add_aux_coord(orog, (0, 1))
+        else:
+            raise NotImplementedError()
+        cube.add_aux_factory(HybridHeightFactory(delta, sigma, orog))
 
     if scalar is not None:
         data = np.array([scalar], dtype=np.float32)
@@ -358,6 +403,14 @@ class TestNoConcat(tests.IrisTest):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1, ancil="x"))
+        cubes.append(_make_cube((2, 4), y, 2))
+        result = concatenate(cubes)
+        self.assertEqual(len(result), 2)
+
+    def test_derived_coord_missing(self):
+        cubes = []
+        y = (0, 2)
+        cubes.append(_make_cube((0, 2), y, 1, derived="x"))
         cubes.append(_make_cube((2, 4), y, 2))
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
@@ -732,6 +785,17 @@ class Test2D(tests.IrisTest):
         cubes.append(_make_cube(x, (4, 6), 1, ancil="x,y,xy"))
         result = concatenate(cubes)
         com = _make_cube(x, (0, 6), 1, ancil="x,y,xy")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (6, 2))
+        self.assertEqual(result[0], com)
+
+    def test_concat_2y2d_derived_x_y_xy(self):
+        cubes = []
+        x = (0, 2)
+        cubes.append(_make_cube(x, (0, 4), 1, derived="x,y,xy"))
+        cubes.append(_make_cube(x, (4, 6), 1, derived="x,y,xy"))
+        result = concatenate(cubes)
+        com = _make_cube(x, (0, 6), 1, derived="x,y,xy")
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (6, 2))
         self.assertEqual(result[0], com)

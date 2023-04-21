@@ -46,3 +46,29 @@ verbose = "False"
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = "lib/iris"
+
+[tool.coverage.run]
+branch = true
+source = [
+    "lib/iris",
+]
+omit = [
+    "lib/iris/tests/*",
+    "lib/iris/etc/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:"
+]
+
+[tool.codespell]
+ignore-words-list = "alpha-numeric,degreee,discontiguities,lazyness,meaned,nin"
+skip = "_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
+
+[tool.check-manifest]
+ignore = [
+    "lib/iris/_version.py",
+    "lib/iris/std_names.py",
+]

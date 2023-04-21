@@ -8,24 +8,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord bounds="[[-28083.0, 6477.0]]" id="1d45e087" points="[6477]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>
+        <dimCoord bounds="[[-28083.,   6477.]]" id="1d45e087" points="[6477]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="int32" var_name="forecast_period"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[243363.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
+        <dimCoord id="9c8bdf81" points="[243363.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="4a0cb9d8" points="[0.0, 3.75, 7.5, 11.25, 15.0, 18.75, 22.5, 26.25,
-		30.0, 33.75]" shape="(10,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
+        <auxCoord id="4a0cb9d8" points="[ 0.      ,  3.749999,  7.499998, 11.249997,
+ 14.999996, 18.749996, 22.499994, 26.249992,
+ 29.999992, 33.749992]" shape="(10,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="62e940e0" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
-		70.0, 67.5]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
+        <auxCoord id="62e940e0" points="[89.999985, 87.499985, 84.999985, 82.499985,
+ 79.999985, 77.49999 , 74.99999 , 72.49999 ,
+ 69.99999 , 67.49999 ]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
       </coord>
       <coord>
-        <dimCoord id="6eef7051" long_name="pressure" points="[1000.0]" shape="(1,)" units="Unit('hPa')" value_type="float32" var_name="pressure"/>
+        <dimCoord id="6eef7051" long_name="pressure" points="[1000.]" shape="(1,)" units="Unit('hPa')" value_type="float32" var_name="pressure"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[215280.0, 249840.0]]" id="cb784457" points="[249840.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[215280., 249840.]]" id="cb784457" points="[249840.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>
@@ -36,6 +38,6 @@
         <coord name="time"/>
       </cellMethod>
     </cellMethods>
-    <data dtype="float32" shape="(10,)" state="deferred"/>
+    <data dtype="float32" shape="(10,)" state="loaded"/>
   </cube>
 </cubes>

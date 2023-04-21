@@ -113,10 +113,10 @@ def write_repo_json(data: Dict[str, str]) -> None:
     string_data = {}
     for key, val in data.items():
         string_data[key] = str(val)
-    with open(IMAGE_REPO_PATH, "wb") as fo:
+    with open(IMAGE_REPO_PATH, "wb") as fout:
         json.dump(
             string_data,
-            codecs.getwriter("utf-8")(fo),
+            codecs.getwriter("utf-8")(fout),
             indent=4,
             sort_keys=True,
         )
@@ -187,7 +187,6 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
     try:
 
         def _create_missing(phash: str) -> None:
-
             output_path = test_output_dir / (test_id + ".png")
 
             print(f"Creating image file: {output_path}")
@@ -214,7 +213,6 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
         phash = get_phash(buffer)
 
         if test_id in repo:
-
             expected = hex_to_hash(repo[test_id])
 
             # Calculate hamming distance vector for the result hash.

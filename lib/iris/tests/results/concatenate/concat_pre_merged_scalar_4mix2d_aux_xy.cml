@@ -3,19 +3,19 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10.0, 20.0]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord bounds="[[-0.5, 0.5],
-		[0.5, 1.5]]" id="78a0dfe8" long_name="x" points="[0.0, 1.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[[-0.5,  0.5],
+ [ 0.5,  1.5]]" id="78a0dfe8" long_name="x" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[1.0, 101.0],
-		[201.0, 301.0]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  1., 101.],
+ [201., 301.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-0.5, 0.5],
-		[0.5, 1.5]]" id="6fdbcbab" long_name="y" points="[0.0, 1.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[[-0.5,  0.5],
+ [ 0.5,  1.5]]" id="6fdbcbab" long_name="y" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -24,19 +24,19 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10.0, 20.0]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
         <dimCoord bounds="[[1.5, 2.5],
-		[2.5, 3.5]]" id="78a0dfe8" long_name="x" points="[2.0, 3.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+ [2.5, 3.5]]" id="78a0dfe8" long_name="x" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[4.0, 104.0],
-		[204.0, 304.0]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  4., 104.],
+ [204., 304.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord bounds="[[1.5, 2.5],
-		[2.5, 3.5]]" id="6fdbcbab" long_name="y" points="[2.0, 3.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+ [2.5, 3.5]]" id="6fdbcbab" long_name="y" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -45,19 +45,19 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10.0, 20.0]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
         <dimCoord bounds="[[1.5, 2.5],
-		[2.5, 3.5]]" id="78a0dfe8" long_name="x" points="[2.0, 3.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+ [2.5, 3.5]]" id="78a0dfe8" long_name="x" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[2.0, 102.0],
-		[202.0, 302.0]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  2., 102.],
+ [202., 302.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-0.5, 0.5],
-		[0.5, 1.5]]" id="6fdbcbab" long_name="y" points="[0.0, 1.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[[-0.5,  0.5],
+ [ 0.5,  1.5]]" id="6fdbcbab" long_name="y" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -66,19 +66,19 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10.0, 20.0]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord bounds="[[-0.5, 0.5],
-		[0.5, 1.5]]" id="78a0dfe8" long_name="x" points="[0.0, 1.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[[-0.5,  0.5],
+ [ 0.5,  1.5]]" id="78a0dfe8" long_name="x" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[3.0, 103.0],
-		[203.0, 303.0]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  3., 103.],
+ [203., 303.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord bounds="[[1.5, 2.5],
-		[2.5, 3.5]]" id="6fdbcbab" long_name="y" points="[2.0, 3.0]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+ [2.5, 3.5]]" id="6fdbcbab" long_name="y" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

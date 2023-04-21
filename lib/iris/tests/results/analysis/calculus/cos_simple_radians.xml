@@ -1,2 +1,2 @@
 <?xml version="1.0" ?>
-<auxCoord id="42112e89" long_name="cos(latitude)" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+<auxCoord id="42112e89" long_name="cos(latitude)" points="[1.]" shape="(1,)" units="Unit('1')" value_type="float32"/>

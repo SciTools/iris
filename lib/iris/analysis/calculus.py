@@ -594,7 +594,6 @@ def curl(i_cube, j_cube, k_cube=None):
         horiz_cs, (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS)
     )
     if not spherical_coords:
-
         # TODO Implement some mechanism for conforming to a common grid
         dj_dx = _curl_differentiate(j_cube, x_coord)
         prototype_diff = dj_dx

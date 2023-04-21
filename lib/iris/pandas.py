@@ -159,6 +159,8 @@ def as_cube(
             as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
             as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
+
     """
     message = (
         "iris.pandas.as_cube has been deprecated, and will be removed in a "
@@ -170,7 +172,7 @@ def as_cube(
     if pandas_array.ndim not in [1, 2]:
         raise ValueError(
             "Only 1D or 2D Pandas arrays "
-            "can currently be conveted to Iris cubes."
+            "can currently be converted to Iris cubes."
         )
 
     # Make the copy work consistently across NumPy 1.6 and 1.7.
@@ -239,6 +241,8 @@ def as_cubes(
     need to be 'melted' before conversion. See the Examples for how.
 
     :class:`dask.dataframe.DataFrame`\\ s are not supported.
+
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     Examples
     --------
@@ -341,12 +345,13 @@ def as_cubes(
     ...     var_name="longitude",
     ...     value_name="air_temperature"
     ... )
+    >>> my_df["longitude"] = my_df["longitude"].infer_objects()
     >>> print(my_df)
-       latitude longitude  air_temperature
-    0        35         0              300
-    1        25         0              301
-    2        35        10              302
-    3        25        10              303
+       latitude  longitude  air_temperature
+    0        35          0              300
+    1        25          0              301
+    2        35         10              302
+    3        25         10              303
     >>> my_df = my_df.set_index(["latitude", "longitude"])
     >>> my_df = my_df.sort_index()
     >>> converted_cube = as_cubes(my_df)[0]
@@ -599,6 +604,10 @@ def as_series(cube, copy=True):
     If you have a large array that cannot be copied,
     make sure it is not masked and use copy=False.
 
+    Notes
+    ------
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
+
     """
     message = (
         "iris.pandas.as_series has been deprecated, and will be removed in a "
@@ -808,6 +817,10 @@ def as_data_frame(
     419902           NaN
     419903    298.995148
     Name: surface_temperature, Length: 419904, dtype: float32
+
+    Notes
+    ------
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
 

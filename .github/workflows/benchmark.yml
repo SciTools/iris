@@ -21,11 +21,10 @@ jobs:
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
-      IRIS_TEST_DATA_VERSION: "2.18"
+      IRIS_TEST_DATA_VERSION: "2.19"
       # Lets us manually bump the cache to rebuild
       ENV_CACHE_BUILD: "0"
       TEST_DATA_CACHE_BUILD: "2"
-      PY_VER: 3.8
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -33,9 +32,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Nox
+      - name: Install ASV & Nox
         run: |
-          pip install nox
+          pip install asv nox
 
       - name: Cache environment directories
         id: cache-env-dir
@@ -78,7 +77,7 @@ jobs:
           
           if [ "$first_commit" != "" ]
           then
-            nox --session="benchmarks(overnight)" -- $first_commit
+            python benchmarks/bm_runner.py overnight $first_commit
           fi
 
       - name: Create issues for performance shifts

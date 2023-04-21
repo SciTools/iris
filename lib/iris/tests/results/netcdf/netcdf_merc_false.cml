@@ -6,16 +6,16 @@
     </attributes>
     <coords>
       <coord datadims="[2]">
-        <dimCoord id="94e59ce8" long_name="x-coordinate in Cartesian system" points="[-5950000.0, -5925000.0, -5900000.0, -5875000.0,
-		-5850000.0, -5825000.0, -5800000.0, -5775000.0,
-		-5750000.0, -5725000.0]" shape="(10,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
+        <dimCoord id="94e59ce8" long_name="x-coordinate in Cartesian system" points="[-5950000., -5925000., -5900000., -5875000.,
+ -5850000., -5825000., -5800000., -5775000.,
+ -5750000., -5725000.]" shape="(10,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
           <mercator ellipsoid="GeogCS(6371229.0)" false_easting="-12500.0" false_northing="-12500.0" longitude_of_projection_origin="12.0" scale_factor_at_projection_origin="None" standard_parallel="-2.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="a72902b5" long_name="y-coordinate in Cartesian system" points="[-6200000.0, -6175000.0, -6150000.0, -6125000.0,
-		-6100000.0, -6075000.0, -6050000.0, -6025000.0,
-		-6000000.0, -5975000.0]" shape="(10,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
+        <dimCoord id="a72902b5" long_name="y-coordinate in Cartesian system" points="[-6200000., -6175000., -6150000., -6125000.,
+ -6100000., -6075000., -6050000., -6025000.,
+ -6000000., -5975000.]" shape="(10,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
           <mercator ellipsoid="GeogCS(6371229.0)" false_easting="-12500.0" false_northing="-12500.0" longitude_of_projection_origin="12.0" scale_factor_at_projection_origin="None" standard_parallel="-2.0"/>
         </dimCoord>
       </coord>

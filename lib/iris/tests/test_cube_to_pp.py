@@ -348,7 +348,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
 
             os.remove(temp_filename)
 
-        # Test mutiple process flags
+        # Test multiple process flags
         multiple_bit_values = ((128, 64), (4096, 1024), (8192, 1024))
 
         # Maps lbproc value to the process flags that should be created

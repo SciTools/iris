@@ -289,7 +289,6 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
 
 
 class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
-
     _mergetest_type = "coord"
 
     def setUp(self):
@@ -444,7 +443,6 @@ class _MergeTest_coordprops(_MergeTest):
 
 
 class Test_register__CoordSig_scalar(_MergeTest_coordprops, tests.IrisTest):
-
     _mergetest_type = "aux_coords (scalar)"
 
     def setUp(self):
@@ -486,7 +484,6 @@ class _MergeTest_coordprops_vect(_MergeTest_coordprops):
 
 
 class Test_register__CoordSig_dim(_MergeTest_coordprops_vect, tests.IrisTest):
-
     _mergetest_type = "dim_coords"
     _coord_typename = "dim_coord"
 
@@ -515,7 +512,6 @@ class Test_register__CoordSig_dim(_MergeTest_coordprops_vect, tests.IrisTest):
 
 
 class Test_register__CoordSig_aux(_MergeTest_coordprops_vect, tests.IrisTest):
-
     _mergetest_type = "aux_coords (non-scalar)"
     _coord_typename = "aux_coord"
 

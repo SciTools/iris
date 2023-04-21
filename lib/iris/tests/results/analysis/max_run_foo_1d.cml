@@ -3,7 +3,7 @@
   <cube dtype="int64" long_name="thingness" units="1">
     <coords>
       <coord>
-        <dimCoord bounds="[[0, 11]]" id="b0d35dcf" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord bounds="[[ 0, 11]]" id="b0d35dcf" long_name="foo" points="[5]" shape="(1,)" units="Unit('1')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -15,6 +15,7 @@ import warnings
 import cartopy.crs as ccrs
 import cartopy.img_transform
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -1012,7 +1013,7 @@ def _transform_distance_vectors_tolerance_mask(
     """
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
-    errors introduced by the tranformation between coordinate systems.
+    errors introduced by the transformation between coordinate systems.
 
     Args:
     * src_crs (`cartopy.crs.Projection`):
@@ -1206,9 +1207,15 @@ def rotate_winds(u_cube, v_cube, target_cs):
         x = x.transpose()
         y = y.transpose()
 
-    # Create resulting cubes.
-    ut_cube = u_cube.copy()
-    vt_cube = v_cube.copy()
+    # Create resulting cubes - produce lazy output data if at least
+    # one input cube has lazy data
+    lazy_output = u_cube.has_lazy_data() or v_cube.has_lazy_data()
+    if lazy_output:
+        ut_cube = u_cube.copy(data=da.empty_like(u_cube.lazy_data()))
+        vt_cube = v_cube.copy(data=da.empty_like(v_cube.lazy_data()))
+    else:
+        ut_cube = u_cube.copy()
+        vt_cube = v_cube.copy()
     ut_cube.rename("transformed_{}".format(u_cube.name()))
     vt_cube.rename("transformed_{}".format(v_cube.name()))
 
@@ -1236,8 +1243,12 @@ def rotate_winds(u_cube, v_cube, target_cs):
     apply_mask = mask.any()
     if apply_mask:
         # Make masked arrays to accept masking.
-        ut_cube.data = ma.asanyarray(ut_cube.data)
-        vt_cube.data = ma.asanyarray(vt_cube.data)
+        if lazy_output:
+            ut_cube = ut_cube.copy(data=da.ma.empty_like(ut_cube.core_data()))
+            vt_cube = vt_cube.copy(data=da.ma.empty_like(vt_cube.core_data()))
+        else:
+            ut_cube.data = ma.asanyarray(ut_cube.data)
+            vt_cube.data = ma.asanyarray(vt_cube.data)
 
     # Project vectors with u, v components one horiz slice at a time and
     # insert into the resulting cubes.
@@ -1250,16 +1261,20 @@ def rotate_winds(u_cube, v_cube, target_cs):
         for dim in dims:
             index[dim] = slice(None, None)
         index = tuple(index)
-        u = u_cube.data[index]
-        v = v_cube.data[index]
+        u = u_cube.core_data()[index]
+        v = v_cube.core_data()[index]
         ut, vt = _transform_distance_vectors(u, v, ds, dx2, dy2)
         if apply_mask:
-            ut = ma.asanyarray(ut)
-            ut[mask] = ma.masked
-            vt = ma.asanyarray(vt)
-            vt[mask] = ma.masked
-        ut_cube.data[index] = ut
-        vt_cube.data[index] = vt
+            if lazy_output:
+                ut = da.ma.masked_array(ut, mask=mask)
+                vt = da.ma.masked_array(vt, mask=mask)
+            else:
+                ut = ma.asanyarray(ut)
+                ut[mask] = ma.masked
+                vt = ma.asanyarray(vt)
+                vt[mask] = ma.masked
+        ut_cube.core_data()[index] = ut
+        vt_cube.core_data()[index] = vt
 
     # Calculate new coords of locations in target coordinate system.
     xyz_tran = target_crs.transform_points(src_crs, x, y)

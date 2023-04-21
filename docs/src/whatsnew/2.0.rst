@@ -36,7 +36,7 @@ Features
   * The *new* in-place arithmetic operators :data:`__iadd__`, :data:`__idiv__`,
     :data:`__imul__`, :data:`__isub__`, and :data:`__itruediv__` have been
     added to support :class:`~iris.cube.Cube` operations :data:`+=`,
-    :data:`/=`, :data:`*=`, and :data:`-=`. Note that, for **divison**
+    :data:`/=`, :data:`*=`, and :data:`-=`. Note that, for **division**
     *__future__.division* is always in effect.
 
 * Changes to the :class:`iris.coords.Coord`:

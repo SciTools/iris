@@ -24,49 +24,49 @@
     </attributes>
     <coords>
       <coord datadims="[0, 1]">
-        <auxCoord id="4a0cb9d8" points="[[67.961, 68.2429, 68.5243, ..., 34.1096,
-		 33.8638, 33.6184],
-		[67.8378, 68.1179, 68.3976, ..., 34.0729,
-		 33.8273, 33.5822],
-		[67.7109, 67.9893, 68.2671, ..., 34.0349,
-		 33.7896, 33.5448],
-		..., 
-		[32.8965, 32.9768, 33.0561, ..., 17.4017,
-		 17.2537, 17.1056],
-		[32.6643, 32.7441, 32.8228, ..., 17.2567,
-		 17.1094, 16.962],
-		[32.4325, 32.5117, 32.5898, ..., 17.1116,
-		 16.9649, 16.8182]]" shape="(160, 256)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="lat"/>
+        <auxCoord id="4a0cb9d8" points="[[67.961   , 68.24289 , 68.52434 , ...,
+  34.109604, 33.863754, 33.618435],
+ [67.83776 , 68.117905, 68.39756 , ...,
+  34.07287 , 33.82729 , 33.58224 ],
+ [67.71093 , 67.9893  , 68.26714 , ...,
+  34.03487 , 33.789574, 33.544804],
+ ...,
+ [32.896484, 32.976807, 33.05606 , ...,
+  17.401686, 17.253696, 17.105606],
+ [32.6643  , 32.744053, 32.82275 , ...,
+  17.25671 , 17.109385, 16.961958],
+ [32.43249 , 32.51169 , 32.589832, ...,
+  17.111609, 16.964945, 16.81818 ]]" shape="(160, 256)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="lat"/>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord id="62e940e0" points="[[-101.722, -101.394, -101.058, ..., 46.6587,
-		 46.702, 46.7449],
-		[-100.974, -100.638, -100.294, ..., 46.3615,
-		 46.4063, 46.4507],
-		[-100.235, -99.8915, -99.5392, ..., 46.0648,
-		 46.1111, 46.157],
-		..., 
-		[-54.193, -53.9159, -53.6379, ..., 10.6062,
-		 10.7575, 10.9081],
-		[-54.0971, -53.8212, -53.5444, ..., 10.4515,
-		 10.6029, 10.7534],
-		[-54.0022, -53.7274, -53.4518, ..., 10.2976,
-		 10.449, 10.5996]]" shape="(160, 256)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
+        <auxCoord id="62e940e0" points="[[-101.722    , -101.394264 , -101.057724 , ...,
+    46.658653 ,   46.702015 ,   46.74493  ],
+ [-100.9741   , -100.63843  , -100.29384  , ...,
+    46.36149  ,   46.406345 ,   46.450745 ],
+ [-100.2348   ,  -99.89151  ,  -99.53921  , ...,
+    46.064785 ,   46.111134 ,   46.15701  ],
+ ...,
+ [ -54.192978 ,  -53.915894 ,  -53.637886 , ...,
+    10.606156 ,   10.757536 ,   10.908099 ],
+ [ -54.097107 ,  -53.821198 ,  -53.544376 , ...,
+    10.451456 ,   10.602854 ,   10.753438 ],
+ [ -54.00215  ,  -53.72741  ,  -53.45177  , ...,
+    10.297576 ,   10.448985 ,   10.5995865]]" shape="(160, 256)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="9fba0c21" points="[-2.28188e+06, -2.24639e+06, -2.21091e+06, ...,
-		6.69544e+06, 6.73092e+06, 6.7664e+06]" shape="(256,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
+        <dimCoord id="9fba0c21" points="[-2281878. , -2246394.2, -2210911.2, ...,
+  6695437. ,  6730919.5,  6766404. ]" shape="(256,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
           <stereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" scale_factor_at_projection_origin="1.0" true_scale_lat="None"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="f10e9ab3" points="[-981693.0, -1.01719e+06, -1.05269e+06, ...,
-		-6.55525e+06, -6.59075e+06, -6.62625e+06]" shape="(160,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
+        <dimCoord id="f10e9ab3" points="[ -981693.3 , -1017193.44, -1052694.1 , ...,
+ -6555247.  , -6590747.  , -6626247.  ]" shape="(160,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
           <stereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" scale_factor_at_projection_origin="1.0" true_scale_lat="None"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="cb784457" points="[406500.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float32" var_name="time"/>
+        <dimCoord id="cb784457" points="[406500.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>

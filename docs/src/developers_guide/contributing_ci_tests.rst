@@ -48,18 +48,18 @@ GitHub Actions Test Environment
 -------------------------------
 
 The CI test environments for our GHA is determined from the requirement files
-in ``requirements/ci/pyXX.yml``.  These are conda environment files list the top-level
+in ``requirements/pyXX.yml``.  These are conda environment files list the top-level
 package dependencies for running and testing Iris.
 
 For reproducible test results, these environments are resolved for all their dependencies
-and stored as conda lock files in the ``requirements/ci/nox.lock`` directory.  The test environments
+and stored as conda lock files in the ``requirements/locks`` directory.  The test environments
 will not resolve the dependencies each time, instead they will use the lock files to reproduce the
 exact same environment each time.
 
 **If you have updated the requirement YAML files with new dependencies, you will need to
 generate new lock files.** To do this, run the command::
 
-   python tools/update_lockfiles.py -o requirements/ci/nox.lock requirements/ci/py*.yml
+   python tools/update_lockfiles.py -o requirements/locks requirements/py*.yml
 
 or simply::
 
@@ -67,21 +67,14 @@ or simply::
 
 and add the changed lockfiles to your pull request.
 
-.. note::
-
-   If your installation of conda runs through Artifactory or another similar
-   proxy then you will need to amend that lockfile to use URLs that Github
-   Actions can access. A utility to strip out Artifactory exists in the
-   ``ssstack`` tool.
-
 New lockfiles are generated automatically each week to ensure that Iris continues to be
 tested against the latest available version of its dependencies.
-Each week the yaml files in ``requirements/ci`` are resolved by a GitHub Action.
+Each week the yaml files in ``requirements`` are resolved by a GitHub Action.
 If the resolved environment has changed, a pull request is created with the new lock files.
 The CI test suite will run on this pull request. If the tests fail, a developer
-will need to create a new branch based off the ``auto-update-lockfiles`` branch 
+will need to create a new branch based off the ``auto-update-lockfiles`` branch
 and add the required fixes to this new branch. If the fixes are made to the
-``auto-update-lockfiles`` branch these will be overwritten the next time the 
+``auto-update-lockfiles`` branch these will be overwritten the next time the
 Github Action is run.
 
 
@@ -117,6 +110,14 @@ pull-requests given the `Iris`_ GitHub repository `.pre-commit-config.yaml`_.
 
 See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jobs.
 
+.. note::
+
+  The `codespell`_ ``pre-commit`` hook checks the spelling of the whole codebase
+  and documentation.  This hook is configured in the ``[tool.codespell]`` section
+  of the ``pyproject.toml`` file.
+
+  Append to the ``ignore-words-list`` option any **valid words** that are
+  considered **not** a typo and should **not** be corrected by `codespell`_.
 
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
