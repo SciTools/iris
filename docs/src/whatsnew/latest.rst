@@ -85,6 +85,9 @@ This document explains the changes made to Iris for this release
    of assets bundled within a ``sdist`` and binary ``wheel`` of our
    `scitools-iris`_ PyPI package. (:pull:`5259`)
 
+#. `@rcomer`_ removed a now redundant copying workaround from Resolve testing.
+   (:pull:`5267`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
