@@ -331,8 +331,8 @@ def cut_release(
     _break_print("The release ...")
 
     message = (
-        "Visit https://github.com/SciTools/iris/releases/new to start "
-        "drafting a new release."
+        "Visit https://github.com/SciTools/iris/releases/new to open "
+        "a blank new-release web page."
     )
     _wait_for_done(message)
 
