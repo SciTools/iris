@@ -599,7 +599,7 @@ def twitter_announce(
 ) -> None:
     message = (
         "Announce the release via https://twitter.com/scitools_iris, and any "
-        "other appropriate message boards.\n"
+        "other appropriate message boards (e.g. Yammer).\n"
         "Any content used for the announcement should be stored in the "
         "SciTools/twitter-scitools-iris GitHub repo.\n"
     )
