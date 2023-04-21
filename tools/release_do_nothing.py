@@ -366,8 +366,9 @@ def cut_release(
         )
         _wait_for_done(message)
 
-    message = "Tick the box to set this as the latest release."
-    _wait_for_done(message)
+    else:
+        message = "Tick the box to set this as the latest release."
+        _wait_for_done(message)
 
     message = "Click: Publish release !"
     _wait_for_done(message)
