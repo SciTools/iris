@@ -464,7 +464,8 @@ def check_pypi(
     _wait_for_done(message)
 
     message = (
-        f"Visit the below and click `view hashes`:\n"
+        f"Visit the below and click `view hashes` for the Source Distribution"
+        f"(`.tar.gz`):\n"
         f"https://pypi.org/project/scitools-iris/{release_strings.release}#files\n"
     )
     sha256 = _get_input(message, "Input the SHA256 hash")
