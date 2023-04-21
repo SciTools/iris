@@ -11,12 +11,13 @@ Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from platform import python_version
 import re
-import sys
 import unittest.mock as mock
 
 import dask.array as da
 import numpy as np
+from pkg_resources import parse_version
 import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
@@ -78,10 +79,10 @@ class Test__readonly_properties(tests.IrisTest):
     def test_fixed_metadata(self):
         # Check that you cannot set any of these on an existing MeshCoord.
         meshcoord = self.meshcoord
-        if sys.version_info.minor >= 11:
+        if parse_version(python_version()) >= parse_version("3.11"):
             msg = "object has no setter"
         else:
-            msg = "can't set"
+            msg = "can't set attribute"
         for prop in ("mesh", "location", "axis"):
             with self.assertRaisesRegex(AttributeError, msg):
                 setattr(meshcoord, prop, mock.sentinel.odd)
