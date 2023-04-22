@@ -15,7 +15,7 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 from iris.coords import CellMethod
-from iris.fileformats.netcdf import parse_cell_methods
+from iris.fileformats._nc_load_rules.helpers import parse_cell_methods
 
 
 class Test(tests.IrisTest):

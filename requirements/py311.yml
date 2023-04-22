@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python =3.8
+  - python =3.11
 
 # Setup dependencies.
   - setuptools >=64
@@ -35,11 +35,13 @@ dependencies:
   - python-stratify
 
 # Test dependencies.
+  - distributed
   - filelock
   - imagehash >=4.0
   - pre-commit
   - psutil
   - pytest
+  - pytest-cov
   - pytest-xdist
   - requests
 

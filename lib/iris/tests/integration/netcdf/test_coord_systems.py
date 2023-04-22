@@ -18,7 +18,7 @@ from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.tests import stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
-from iris.tests.unit.fileformats.netcdf import test_load_cubes as tlc
+from iris.tests.unit.fileformats.netcdf.loader import test_load_cubes as tlc
 
 
 @tests.skip_data

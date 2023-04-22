@@ -35,9 +35,7 @@ jobs:
     - name: "building"
       shell: bash
       run: |
-        # require build with explicit --sdist and --wheel in order to
-        # get correct version associated with sdist and bdist artifacts
-        pipx run build --sdist --wheel
+        pipx run build
 
     - uses: actions/upload-artifact@v3
       with:
@@ -54,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10", "3.11"]
         session: ["wheel"]
     env:
       ENV_NAME: "ci-wheels"

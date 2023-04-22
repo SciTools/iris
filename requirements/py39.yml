@@ -35,6 +35,7 @@ dependencies:
   - python-stratify
 
 # Test dependencies.
+  - distributed
   - filelock
   - imagehash >=4.0
   - pre-commit

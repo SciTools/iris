@@ -14,7 +14,7 @@ from dask import array as da
 from iris.coords import AuxCoord
 from iris.fileformats.netcdf import Saver
 from iris.tests import stock
-from iris.tests.unit.fileformats.netcdf import test_Saver
+from iris.tests.unit.fileformats.netcdf.saver import test_Saver
 
 
 class LazyMixin(tests.IrisTest):
