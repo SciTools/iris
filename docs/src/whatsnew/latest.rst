@@ -81,7 +81,7 @@ This document explains the changes made to Iris for this release
    during development. (:pull:`5258`)
 
 #. `@tkknight`_ updated the :ref:`installing_from_source` instructions to use
-   ``pip``.  (:pull:`????`)
+   ``pip``.  (:pull:`5273`)
 
 
 💼 Internal
