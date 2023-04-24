@@ -15,7 +15,7 @@ dependencies:
   - cf-units >=3.1
   - cftime >=1.5
   - dask-core >=2022.9.0
-  - libnetcdf <4.9
+  - libnetcdf !=4.9.1
   - matplotlib >=3.5
   - netcdf4
   - numpy >=1.19
