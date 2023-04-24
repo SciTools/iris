@@ -107,10 +107,10 @@ all the packages from the `testing` and `documentation` sections.
 
 .. _requirements: https://github.com/scitools/iris/tree/main/requirements
 
-Finally you need to run the command to configure your shell environment
-to find your local Iris code::
+Finally you need to run the command to configure your environment
+to find your local Iris code.  From your Iris directory run::
 
-  python setup.py develop
+  pip install --no-deps --editable .
 
 
 Running the Tests
