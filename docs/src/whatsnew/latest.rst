@@ -67,7 +67,7 @@ This document explains the changes made to Iris for this release
    3.11. (:pull:`5226`)
 
 #. `@rcomer`_ dropped support for python 3.8, in accordance with the NEP29_
-   recommendations (:pull:`5226`) 
+   recommendations (:pull:`5226`)
 
 
 📚 Documentation
@@ -79,6 +79,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the ``make`` target for ``help`` and added
    ``livehtml`` to auto generate the documentation when changes are detected
    during development. (:pull:`5258`)
+
+#. `@tkknight`_ updated the :ref:`installing_from_source` instructions to use
+   ``pip``.  (:pull:`5273`)
 
 
 💼 Internal
