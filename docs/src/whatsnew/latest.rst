@@ -86,6 +86,10 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the :ref:`installing_from_source` instructions to use
    ``pip``.  (:pull:`5273`)
 
+#. `@tkknight`_ removed the legacy custom sphinx extensions that generate the
+   API documentation.  Instead use a less complex approach via
+   `sphinx-apidoc`_. (:pull:`5264`)
+
 
 💼 Internal
 ===========
