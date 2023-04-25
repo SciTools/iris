@@ -69,6 +69,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ dropped support for python 3.8, in accordance with the NEP29_
    recommendations (:pull:`5226`)
 
+#. `@trexfeathers`_ introduced the ``libnetcdf !=4.9.1`` and ``numpy !=1.24.3``
+   pins (:pull:`5274`)
+
 
 📚 Documentation
 ================
