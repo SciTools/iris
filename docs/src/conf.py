@@ -169,10 +169,6 @@ else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
 
-# -- panels extension ---------------------------------------------------------
-# See https://sphinx-panels.readthedocs.io/en/latest/
-panels_add_bootstrap_css = False
-
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 napoleon_google_docstring = True
