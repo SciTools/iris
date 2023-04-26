@@ -273,7 +273,6 @@ doctest_global_setup = "import iris"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "_static/iris-logo-title.svg"
 html_favicon = "_static/iris-logo.svg"
 html_theme = "pydata_sphinx_theme"
 
@@ -320,6 +319,11 @@ html_theme_options = {
     # Omitted `theme-switcher` below to disable it
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
     "navbar_end": ["navbar-icon-links"],
+    # https://pydata-sphinx-theme.readthedocs.io/en/v0.11.0/user_guide/branding.html#different-logos-for-light-and-dark-mode
+    "logo": {
+        "image_light": "_static/iris-logo-title.svg",
+        "image_dark": "_static/iris-logo-title-dark.svg",
+    },
 }
 
 rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
