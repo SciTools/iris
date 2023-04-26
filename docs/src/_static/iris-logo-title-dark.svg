@@ -103,5 +103,5 @@
 			<circle cx="50%" cy="50%" r="39.0625%" fill="url(#land_gradient)" clip-path="url(#land_clip_-30.0)" transform="rotate(-4.99 512.0 512.0)" id="land"/>
 		</g>
 	</svg>
-	<text y="199.68" font-size="153.6pt" x="572.0" fill="#156475" font-family="georgia" text-anchor="end" id="text">Iris</text>
+	<text y="199.68" font-size="153.6pt" x="572.0" fill="#aec928" font-family="georgia" text-anchor="end" id="text">Iris</text>
 </svg>
