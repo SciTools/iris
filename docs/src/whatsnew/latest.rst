@@ -96,6 +96,9 @@ This document explains the changes made to Iris for this release
    :doc:`/developers_guide/release_do_nothing` for the release process.
    (:pull:`5134`)
 
+#. `@trexfeathers`_ and `@tkknight`_ added a dark-mode friendly logo.
+   (:pull:`5278`)
+
 💼 Internal
 ===========
 
