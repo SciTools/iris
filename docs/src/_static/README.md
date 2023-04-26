@@ -1,4 +1,4 @@
-# Iris logos
+# Iris  logos
 
 [![iris-logo-title.svg](iris-logo-title.svg)](iris-logo-title.svg)
 
