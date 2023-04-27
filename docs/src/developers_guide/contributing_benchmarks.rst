@@ -22,6 +22,8 @@ requests, instead it is **run overnight against each the commits of the
 previous day** to check if any commit has introduced performance shifts.
 Detected shifts are reported in a new Iris GitHub issue.
 
+.. _on_demand_pr_benchmark:
+
 If a pull request author/reviewer suspects their changes may cause performance
 shifts, they can manually order their pull request to be benchmarked by adding
 the ``benchmark_this`` label to the PR. Read more in `benchmarks/README.md`_.
