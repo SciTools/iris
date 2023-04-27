@@ -37,6 +37,13 @@ class Test_replace_axes_with_cartopy_axes(tests.IrisTest):
             expected.get_position().bounds, result.get_position().bounds
         )
 
+    def test_ax_on_subfigure(self):
+        subfig, _ = self.fig.subfigures(nrows=2)
+        subfig.subplots()
+        _replace_axes_with_cartopy_axes(ccrs.PlateCarree())
+        result = plt.gca()
+        self.assertIs(result.get_figure(), subfig)
+
     def tearDown(self):
         plt.close(self.fig)
 
