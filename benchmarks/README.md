@@ -11,6 +11,15 @@ shifts in performance being flagged in a new GitHub issue.
 
 ## Running benchmarks
 
+On GitHub: a Pull Request can be benchmarked by adding the 
+https://github.com/SciTools/iris/labels/benchmark_this 
+label to the PR (to run a second time: just remove and re-add the label).
+Note that a benchmark run could take an hour or more to complete.
+This runs a comparison between the PR branch's ``HEAD`` and its merge-base with
+the PR's base branch, thus showing performance differences introduced
+by the PR. (This run is managed by 
+[the aforementioned GitHub Action](../.github/workflows/benchmark.yml)).
+
 `asv ...` commands must be run from this directory. You will need to have ASV
 installed, as well as Nox (see
 [Benchmark environments](#benchmark-environments)).

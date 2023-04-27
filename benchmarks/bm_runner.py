@@ -33,7 +33,9 @@ ASV_HARNESS = (
 
 
 def _subprocess_run_print(args, **kwargs):
-    print(f"BM_RUNNER DEBUG: {' '.join(args)}")
+    # Use subprocess for printing to reduce chance of printing out of sequence
+    #  with the subsequent calls.
+    subprocess.run(["echo", f"BM_RUNNER DEBUG: {' '.join(args)}"])
     return subprocess.run(args, **kwargs)
 
 

@@ -119,6 +119,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ adopted `pypa/build`_ recommended best practice to build a
    binary ``wheel`` from the ``sdist``. (:pull:`5266`)
 
+#. `@trexfeathers`_ enabled on-demand benchmarking of Pull Requests; see
+   :ref:`here <on_demand_pr_benchmark>`. (:pull:`5286`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
