@@ -17,7 +17,7 @@ For example::
  author = {{Met Office}},
  title = {Iris: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data },
  edition = {v3.5},
- year = {2010 - 2022},
+ year = {2010 - 2023},
  address = {Exeter, Devon },
  url = {http://scitools.org.uk/},
  doi = {10.5281/zenodo.7871017}
@@ -34,7 +34,7 @@ Suggested format::
 
 For example::
 
- Iris. v3.5. 1-Dec-2022. Met Office. UK. https://doi.org/10.5281/zenodo.7871017 22-12-2022
+ Iris. v3.5. 27-Apr-2023. Met Office. UK. https://doi.org/10.5281/zenodo.7871017 22-12-2022
 
 
 ********************
