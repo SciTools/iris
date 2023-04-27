@@ -39,7 +39,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@rcomer`_ enabled automatic replacement of a Matplotlib
+   :class:`~matplotlib.axes.Axes` with a Cartopy
+   :class:`~cartopy.mpl.geoaxes.GeoAxes` when the ``Axes`` is on a
+   :class:`~matplotlib.figure.SubFigure`. (:issue:`5282`, :pull:`5288`)
 
 
 💣 Incompatible Changes
