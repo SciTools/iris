@@ -16,11 +16,11 @@ For example::
  @manual{Iris,
  author = {{Met Office}},
  title = {Iris: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data },
- edition = {v3.4},
+ edition = {v3.5},
  year = {2010 - 2022},
  address = {Exeter, Devon },
  url = {http://scitools.org.uk/},
- doi = {10.5281/zenodo.7386117}
+ doi = {10.5281/zenodo.7871017}
  }
 
 
@@ -34,7 +34,7 @@ Suggested format::
 
 For example::
 
- Iris. v3.4. 1-Dec-2022. Met Office. UK. https://doi.org/10.5281/zenodo.7386117 22-12-2022
+ Iris. v3.5. 1-Dec-2022. Met Office. UK. https://doi.org/10.5281/zenodo.7871017 22-12-2022
 
 
 ********************
