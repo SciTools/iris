@@ -122,6 +122,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ enabled on-demand benchmarking of Pull Requests; see
    :ref:`here <on_demand_pr_benchmark>`. (:pull:`5286`)
 
+#. `@trexfeathers`_ made a suite of improvements to the benchmarking scripts.
+   (:pull:`5289`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
