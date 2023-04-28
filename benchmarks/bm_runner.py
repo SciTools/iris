@@ -32,10 +32,14 @@ ASV_HARNESS = (
 )
 
 
-def _subprocess_run_print(args, **kwargs):
+def echo(echo_string: str):
     # Use subprocess for printing to reduce chance of printing out of sequence
     #  with the subsequent calls.
-    subprocess.run(["echo", f"BM_RUNNER DEBUG: {' '.join(args)}"])
+    subprocess.run(["echo", f"BM_RUNNER DEBUG: {echo_string}"])
+
+
+def _subprocess_run_echo(args, **kwargs):
+    echo(" ".join(args))
     kwargs.setdefault("check", True)
     return subprocess.run(args, **kwargs)
 
@@ -43,7 +47,7 @@ def _subprocess_run_print(args, **kwargs):
 def _subprocess_run_asv(args, **kwargs):
     args.insert(0, "asv")
     kwargs["cwd"] = BENCHMARKS_DIR
-    return _subprocess_run_print(args, **kwargs)
+    return _subprocess_run_echo(args, **kwargs)
 
 
 def _check_requirements(package: str) -> None:
@@ -66,12 +70,12 @@ def _prep_data_gen_env() -> None:
     python_version = "3.11"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
-        print("Using existing data generation environment.")
+        echo("Using existing data generation environment.")
     else:
-        print("Setting up the data generation environment ...")
+        echo("Setting up the data generation environment ...")
         # Get Nox to build an environment for the `tests` session, but don't
         #  run the session. Will re-use a cached environment if appropriate.
-        _subprocess_run_print(
+        _subprocess_run_echo(
             [
                 "nox",
                 f"--noxfile={root_dir / 'noxfile.py'}",
@@ -87,10 +91,10 @@ def _prep_data_gen_env() -> None:
         ).resolve()
         environ[data_gen_var] = str(data_gen_python)
 
-        print("Installing Mule into data generation environment ...")
+        echo("Installing Mule into data generation environment ...")
         mule_dir = data_gen_python.parents[1] / "resources" / "mule"
         if not mule_dir.is_dir():
-            _subprocess_run_print(
+            _subprocess_run_echo(
                 [
                     "git",
                     "clone",
@@ -98,7 +102,7 @@ def _prep_data_gen_env() -> None:
                     str(mule_dir),
                 ]
             )
-        _subprocess_run_print(
+        _subprocess_run_echo(
             [
                 str(data_gen_python),
                 "-m",
@@ -108,7 +112,7 @@ def _prep_data_gen_env() -> None:
             ]
         )
 
-        print("Data generation environment ready.")
+        echo("Data generation environment ready.")
 
 
 def _setup_common() -> None:
@@ -117,10 +121,10 @@ def _setup_common() -> None:
 
     _prep_data_gen_env()
 
-    print("Setting up ASV ...")
+    echo("Setting up ASV ...")
     _subprocess_run_asv(["machine", "--yes"])
 
-    print("Setup complete.")
+    echo("Setup complete.")
 
 
 def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
@@ -226,7 +230,7 @@ class Overnight(_SubParserGenerator):
 
         # git rev-list --first-parent is the command ASV uses.
         git_command = f"git rev-list --first-parent {commit_range}"
-        commit_string = _subprocess_run_print(
+        commit_string = _subprocess_run_echo(
             git_command.split(" "), capture_output=True, text=True
         ).stdout
         commit_list = commit_string.rstrip().split("\n")
@@ -261,7 +265,7 @@ class Branch(_SubParserGenerator):
         _setup_common()
 
         git_command = f"git merge-base HEAD {args.base_branch}"
-        merge_base = _subprocess_run_print(
+        merge_base = _subprocess_run_echo(
             git_command.split(" "), capture_output=True, text=True
         ).stdout[:8]
 
