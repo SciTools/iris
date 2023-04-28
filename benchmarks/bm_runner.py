@@ -269,7 +269,7 @@ class Branch(_SubParserGenerator):
 
         asv_command = (
             ASV_HARNESS.format(
-                command="continuous", posargs=f"HEAD {merge_base}"
+                command="continuous", posargs=f"{merge_base} HEAD"
             )
             + f" --factor={COMPARE_FACTOR}"
         )
