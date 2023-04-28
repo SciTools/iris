@@ -74,6 +74,8 @@ jobs:
 
       - name: Benchmark this pull request
         if: ${{ github.event.label.name == 'benchmark_this' }}
+        # HEAD^2 gives us the HEAD of the PR's branch, instead of GitHub's
+        #  simulated merge commit.
         run: |
           git checkout HEAD^2
           python benchmarks/bm_runner.py branch origin/${{ github.base_ref }}
