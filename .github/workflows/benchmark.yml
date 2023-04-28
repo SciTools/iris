@@ -75,7 +75,7 @@ jobs:
       - name: Benchmark this pull request
         if: ${{ github.event.label.name == 'benchmark_this' }}
         run: |
-          git checkout ${{ github.head_ref }}
+          git checkout HEAD^
           python benchmarks/bm_runner.py branch origin/${{ github.base_ref }}
 
       - name: Run overnight benchmarks
