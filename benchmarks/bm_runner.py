@@ -36,6 +36,7 @@ def _subprocess_run_print(args, **kwargs):
     # Use subprocess for printing to reduce chance of printing out of sequence
     #  with the subsequent calls.
     subprocess.run(["echo", f"BM_RUNNER DEBUG: {' '.join(args)}"])
+    kwargs["check"] = True
     return subprocess.run(args, **kwargs)
 
 
