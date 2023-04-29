@@ -904,7 +904,7 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
 
     ax = plt.gca()
     if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
-        fig = plt.gcf()
+        fig = ax.get_figure()
         if isinstance(ax, matplotlib.axes.SubplotBase):
             _ = fig.add_subplot(
                 ax.get_subplotspec(),
