@@ -20,16 +20,17 @@ def main_api_rst_formatting(app):
     print(f"[{ntpath.basename(__file__)}] Processing RST files", end="")
 
     for file in src_dir.iterdir():
-        print(f".", end="")
+        if file.suffix == ".rst":
+            print(f".", end="")
 
-        with open(file, "r") as f:
-            lines = f.read()
+            with open(file, "r") as f:
+                lines = f.read()
 
-        lines = lines.replace(" package\n=", "\n")
-        lines = lines.replace(" module\n=", "\n")
+            lines = lines.replace(" package\n=", "\n")
+            lines = lines.replace(" module\n=", "\n")
 
-        with open(file, "w") as f:
-            f.write(lines)
+            with open(file, "w") as f:
+                f.write(lines)
     print("")
 
 def setup(app):

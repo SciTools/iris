@@ -36,6 +36,9 @@ This document explains the changes made to Iris for this release
    Also with significant input from `@fnattino`_.
    (:pull:`5191`)
 
+#. `@rcomer`_ tweaked binary operations so that dask arrays may safely be passed
+   to arithmetic operations and :func:`~iris.util.mask_cube`. (:pull:`4929`)
+
 
 🐛 Bugs Fixed
 =============
