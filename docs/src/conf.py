@@ -320,7 +320,6 @@ html_theme_options = {
     # Omit `theme-switcher` from navbar_end below to disable it
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
     # "navbar_end": ["navbar-icon-links"],
-    "navbar_end": ["navbar-icon-links"],
     # https://pydata-sphinx-theme.readthedocs.io/en/v0.11.0/user_guide/branding.html#different-logos-for-light-and-dark-mode
     "logo": {
         "image_light": "_static/iris-logo-title.svg",
@@ -365,12 +364,6 @@ html_css_files = [
 html_js_files = [
     "https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js",
 ]
-
-# TREMTEST START
-# create a dark stylesheet using: https://datatables.net/manual/styling/theme-creator
-
-
-# TREMTEST END
 
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
