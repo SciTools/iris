@@ -27,8 +27,8 @@ To represent the Voronoi Polygons as faces, the corner coordinates will be used
 as the **nodes** when creating the Iris
 :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
-.. dropdown:: :octicon:`code`
-    :color: light
+.. dropdown:: Code
+    :icon: code
 
     .. code-block:: python
 
@@ -116,8 +116,8 @@ as the **nodes** when creating the Iris
 :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
 
-.. dropdown:: :octicon:`code`
-    :color: light
+.. dropdown:: Code
+    :icon: code
 
     .. code-block:: python
 
@@ -231,6 +231,7 @@ as the **nodes** when creating the Iris
 ..  figure:: images/orca_grid.png
     :width: 300
     :alt: Plot of ORCA-gridded data from NEMO.
+    :class: dark-light
 
 NEMO can use various grids, but is frequently used with ORCA type grids.
 ORCA grids store global data in 2-dimensional ny * nx arrays.  All cells are
@@ -255,8 +256,8 @@ To make an unstructured cube, the data must be 'flattened' to convert the given 
 dimensions into a single mesh dimension.  Since Iris cubes don't support a "reshape" or
 "flatten" operations, we create a new cube from the flattened data.
 
-.. dropdown:: :octicon:`code`
-    :color: light
+.. dropdown:: Code
+    :icon: code
 
     .. code-block:: python
 

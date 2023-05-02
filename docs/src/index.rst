@@ -20,7 +20,7 @@ For more information see :ref:`why_iris`.
     .. grid-item-card::
         :text-align: center
         :img-top: _static/icon_shuttle.svg
-        :class-img-top: w-50 m-auto px-1 py-2
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
         :shadow: lg
 
         Information on Iris, how to install and a gallery of examples that
@@ -38,7 +38,7 @@ For more information see :ref:`why_iris`.
     .. grid-item-card::
         :text-align: center
         :img-top: _static/icon_instructions.svg
-        :class-img-top: w-50 m-auto px-1 py-2
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
         :shadow: lg
 
         Learn how to use Iris, including loading, navigating, saving,
@@ -56,7 +56,7 @@ For more information see :ref:`why_iris`.
     .. grid-item-card::
         :text-align: center
         :img-top: _static/icon_development.svg
-        :class-img-top: w-50 m-auto px-1 py-2
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
         :shadow: lg
 
         Information on how you can contribute to Iris as a developer.
@@ -76,7 +76,7 @@ For more information see :ref:`why_iris`.
     .. grid-item-card::
         :text-align: center
         :img-top: _static/icon_api.svg
-        :class-img-top: w-50 m-auto px-1 py-2
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
         :shadow: lg
 
         Browse full Iris functionality by module.
@@ -93,7 +93,7 @@ For more information see :ref:`why_iris`.
     .. grid-item-card::
         :text-align: center
         :img-top: _static/icon_new_product.svg
-        :class-img-top: w-50 m-auto px-1 py-2
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
         :shadow: lg
 
         Find out what has recently changed in Iris.
@@ -110,7 +110,7 @@ For more information see :ref:`why_iris`.
     .. grid-item-card::
         :text-align: center
         :img-top: _static/icon_thumb.png
-        :class-img-top: w-50 m-auto px-1 py-2
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
         :shadow: lg
 
         Raise the profile of issues by voting on them.
