@@ -53,3 +53,6 @@ dependencies:
   - sphinx-design
   - pydata-sphinx-theme >=0.13.0
 
+# Temporary minimum pins.
+# See https://github.com/SciTools/iris/pull/5051
+  - graphviz >=6.0.0
