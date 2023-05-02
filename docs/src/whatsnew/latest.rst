@@ -24,7 +24,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. `@bjlittle`_ added the community `Contributor Covenant`_ code of conduct.
+   (:pull:`5291`)
 
 
 ✨ Features
@@ -96,7 +97,6 @@ This document explains the changes made to Iris for this release
    API documentation.  Instead use a less complex approach via
    `sphinx-apidoc`_. (:pull:`5264`)
 
-
 #. `@trexfeathers`_ re-wrote the :ref:`iris_development_releases` documentation
    for clarity, and wrote a step-by-step
    :doc:`/developers_guide/release_do_nothing` for the release process.
@@ -104,6 +104,7 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ and `@tkknight`_ added a dark-mode friendly logo.
    (:pull:`5278`)
+
 
 💼 Internal
 ===========
@@ -145,3 +146,4 @@ This document explains the changes made to Iris for this release
 .. _PEP-0621: https://peps.python.org/pep-0621/
 .. _pypa/build: https://pypa-build.readthedocs.io/en/stable/
 .. _NEP29: https://numpy.org/neps/nep-0029-deprecation_policy.html
+.. _Contributor Covenant: https://www.contributor-covenant.org/version/2/1/code_of_conduct/

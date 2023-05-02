@@ -9,47 +9,16 @@
     analysing and visualising Earth science data
 </h4>
 
-<p align="center">
-<a href="https://github.com/SciTools/iris/actions/workflows/ci-tests.yml">
-<img src="https://github.com/SciTools/iris/actions/workflows/ci-tests.yml/badge.svg?branch=main"
-     alt="ci-tests"></a>
-<a href="https://scitools-iris.readthedocs.io/en/latest/?badge=latest">
-<img src="https://readthedocs.org/projects/scitools-iris/badge/?version=latest"
-     alt="Documentation Status"></a>
-<a href="https://results.pre-commit.ci/latest/github/SciTools/iris/main">
-<img src="https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg"
-     alt="pre-commit.ci status"></a>
-<a href="https://codecov.io/gh/SciTools/iris">
-<img src="https://codecov.io/gh/SciTools/iris/branch/main/graph/badge.svg?token=0GeICSIF3g"
-     alt="code coverage"></a>
-</p>
-
-<p align="center">
-<a href="https://anaconda.org/conda-forge/iris">
-<img src="https://img.shields.io/conda/v/conda-forge/iris?color=orange&label=conda-forge%7Ciris&logo=conda-forge&logoColor=white"
-     alt="conda-forge"></a>
-<a href="https://pypi.org/project/scitools-iris">
-<img src="https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris&logo=python&logoColor=white"
-     alt="pypi"></a>
-<a href="https://github.com/SciTools/iris/releases">
-<img src="https://img.shields.io/github/v/release/scitools/iris"
-     alt="latest release"></a>
-<a href="https://github.com/SciTools/iris/commits/main">
-<img src="https://img.shields.io/github/commits-since/SciTools/iris/latest.svg"
-     alt="Commits since last release"></a>
-<a href="https://zenodo.org/badge/latestdoi/5312648">
-<img src="https://zenodo.org/badge/5312648.svg"
-     alt="zenodo"></a>
-<a href="https://github.com/psf/black">
-<img src="https://img.shields.io/badge/code%20style-black-000000.svg"
-     alt="black"></a>
-<a href="https://github.com/SciTools/iris/discussions">
-<img src="https://img.shields.io/badge/github-discussions-yellow?style=social&logo=github&style=plastic"
-     alt="github discussions"></a>
-<a href="https://twitter.com/scitools_iris">
-<img src="https://img.shields.io/twitter/follow/scitools_iris?color=yellow&label=twitter%7Cscitools_iris&logo=twitter&style=plastic"
-     alt="twitter scitools_iris"></a>
-</p>
+|                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ⚙️ CI            | [![ci-manifest](https://github.com/SciTools/iris/actions/workflows/ci-manifest.yml/badge.svg)](https://github.com/SciTools/iris/actions/workflows/ci-manifest.yml) [![ci-tests](https://github.com/SciTools/iris/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/SciTools/iris/actions/workflows/ci-tests.yml) [![ci-wheels](https://github.com/SciTools/iris/actions/workflows/ci-wheels.yml/badge.svg)](https://github.com/SciTools/iris/actions/workflows/ci-wheels.yml) [![pre-commit](https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg)](https://results.pre-commit.ci/latest/github/SciTools/iris/main) |
+| 💬 Community     | [![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-2.1-4baaaa.svg)](https://www.contributor-covenant.org/version/2/1/code_of_conduct/) [![GH Discussions](https://img.shields.io/badge/github-discussions%20%F0%9F%92%AC-yellow?logo=github&logoColor=lightgrey)](https://github.com/SciTools/iris/discussions) [![twitter](https://img.shields.io/twitter/follow/scitools_iris?color=yellow&label=twitter%7Cscitools_iris&logo=twitter&style=plastic)](https://twitter.com/scitools_iris)                                                                                                                         |
+| 📖 Documentation | [![rtd](https://readthedocs.org/projects/scitools-iris/badge/?version=latest)](https://scitools-iris.readthedocs.io/en/latest/?badge=latest)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 📈 Health        | [![codecov](https://codecov.io/gh/SciTools/iris/branch/main/graph/badge.svg?token=0GeICSIF3g)](https://codecov.io/gh/SciTools/iris)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ✨ Meta           | [![code style - black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![NEP29](https://raster.shields.io/badge/follows-NEP29-orange.png)](https://numpy.org/neps/nep-0029-deprecation_policy.html) [![license - bds-3-clause](https://img.shields.io/github/license/SciTools/iris)](https://github.com/SciTools/iris/blob/main/LICENSE) [![conda platform](https://img.shields.io/conda/pn/conda-forge/iris.svg)](https://anaconda.org/conda-forge/iris)                                                                                                                                        |
+| 📦 Package       | [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.595182.svg)](https://doi.org/10.5281/zenodo.595182) [![conda-forge](https://img.shields.io/conda/vn/conda-forge/iris?color=orange&label=conda-forge&logo=conda-forge&logoColor=white)](https://anaconda.org/conda-forge/iris) [![pypi](https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi&logo=python&logoColor=white)](https://pypi.org/project/scitools-iris/) [![pypi - python version](https://img.shields.io/pypi/pyversions/scitools-iris.svg?color=orange&logo=python&label=python&logoColor=white)](https://pypi.org/project/scitools-iris/)                    |
+| 🧰 Repo          | [![commits-since](https://img.shields.io/github/commits-since/SciTools/iris/latest.svg)](https://github.com/SciTools/iris/commits/main) [![contributors](https://img.shields.io/github/contributors/SciTools/iris)](https://github.com/SciTools/iris/graphs/contributors) [![release](https://img.shields.io/github/v/release/scitools/iris)](https://github.com/SciTools/iris/releases)                                                                                                                                                                                                                                                     |
+|                  |
 
 <p align="center">
 For documentation see the 

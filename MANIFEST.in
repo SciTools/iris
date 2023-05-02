@@ -15,6 +15,7 @@ exclude .mailmap
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
 exclude CHANGES
+exclude CODE_OF_CONDUCT.md
 exclude codecov.yml
 include COPYING
 include COPYING.LESSER
