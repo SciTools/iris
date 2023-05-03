@@ -7,7 +7,7 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: v3.6 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
@@ -24,8 +24,8 @@ This document explains the changes made to Iris for this release
 
    * Performing lazy arithmetic with an Iris :class:`~iris.cube.Cube` and a
      :class:`dask.array.Array`, and
-   * Various improvements to our documentation including dark-mode friendly
-     rendering, and adoption of `sphinx-design`_ and `sphinx-apidoc`_.
+   * Various improvements to our documentation resulting from adoption of
+     `sphinx-design`_ and `sphinx-apidoc`_.
 
    As always, get in touch with us on :issue:`GitHub<new/choose>`, particularly
    if you have any feedback with regards to delayed saving, or have any issues
