@@ -27,7 +27,7 @@ BENCHMARKS_DIR = Path(__file__).parent
 
 # Common ASV arguments for all run_types except `custom`.
 ASV_HARNESS = (
-    "{command} {posargs} --attribute rounds=4 --interleave-rounds --strict "
+    "run {posargs} --attribute rounds=4 --interleave-rounds --strict "
     "--show-stderr"
 )
 
@@ -127,6 +127,37 @@ def _setup_common() -> None:
     echo("Setup complete.")
 
 
+def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
+    """Run through a list of commits comparing each one to the next."""
+    commits = [commit[:8] for commit in commits]
+    shifts_dir = BENCHMARKS_DIR / ".asv" / "performance-shifts"
+    for i in range(len(commits) - 1):
+        before = commits[i]
+        after = commits[i + 1]
+        asv_command = (
+            f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
+        )
+        _subprocess_run_asv(asv_command.split(" "))
+
+        if overnight_mode:
+            # Record performance shifts.
+            # Run the command again but limited to only showing performance
+            #  shifts.
+            shifts = _subprocess_run_asv(
+                [*asv_command.split(" "), "--only-changed"],
+                capture_output=True,
+                text=True,
+            ).stdout
+            if shifts:
+                # Write the shifts report to a file.
+                # Dir is used by .github/workflows/benchmarks.yml,
+                #  but not cached - intended to be discarded after run.
+                shifts_dir.mkdir(exist_ok=True, parents=True)
+                shifts_path = (shifts_dir / after).with_suffix(".txt")
+                with shifts_path.open("w") as shifts_file:
+                    shifts_file.write(shifts)
+
+
 class _SubParserGenerator(ABC):
     """Convenience for holding all the necessary argparse info in 1 place."""
 
@@ -194,7 +225,7 @@ class Overnight(_SubParserGenerator):
         _setup_common()
 
         commit_range = f"{args.first_commit}^^.."
-        asv_command = ASV_HARNESS.format(command="run", posargs=commit_range)
+        asv_command = ASV_HARNESS.format(posargs=commit_range)
         _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
 
         # git rev-list --first-parent is the command ASV uses.
@@ -203,35 +234,6 @@ class Overnight(_SubParserGenerator):
             git_command.split(" "), capture_output=True, text=True
         ).stdout
         commit_list = commit_string.rstrip().split("\n")
-
-        # Run through the list of commits comparing each one to the next.
-        commits = [commit[:8] for commit in commit_list]
-        shifts_dir = BENCHMARKS_DIR / ".asv" / "performance-shifts"
-        for i in range(len(commits) - 1):
-            before = commits[i]
-            after = commits[i + 1]
-            asv_command = (
-                f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
-            )
-            _subprocess_run_asv(asv_command.split(" "))
-
-            # Record performance shifts.
-            # Run the command again but limited to only showing performance
-            #  shifts.
-            shifts = _subprocess_run_asv(
-                [*asv_command.split(" "), "--only-changed"],
-                capture_output=True,
-                text=True,
-            ).stdout
-            if shifts:
-                # Write the shifts report to a file.
-                # Dir is used by .github/workflows/benchmarks.yml,
-                #  but not cached - intended to be discarded after run.
-                shifts_dir.mkdir(exist_ok=True, parents=True)
-                shifts_path = (shifts_dir / after).with_suffix(".txt")
-                with shifts_path.open("w") as shifts_file:
-                    shifts_file.write(shifts)
-
         _asv_compare(*reversed(commit_list), overnight_mode=True)
 
 
@@ -267,13 +269,14 @@ class Branch(_SubParserGenerator):
             git_command.split(" "), capture_output=True, text=True
         ).stdout[:8]
 
-        asv_command = (
-            ASV_HARNESS.format(
-                command="continuous", posargs=f"{merge_base} HEAD"
-            )
-            + f" --factor={COMPARE_FACTOR}"
-        )
-        _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+        with NamedTemporaryFile("w") as hashfile:
+            hashfile.writelines([merge_base, "\n", "HEAD"])
+            hashfile.flush()
+            commit_range = f"HASHFILE:{hashfile.name}"
+            asv_command = ASV_HARNESS.format(posargs=commit_range)
+            _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+
+        _asv_compare(merge_base, "HEAD")
 
 
 class _CSPerf(_SubParserGenerator, ABC):
@@ -321,8 +324,7 @@ class _CSPerf(_SubParserGenerator, ABC):
         commit_range = "upstream/main^!"
 
         asv_command = (
-            ASV_HARNESS.format(command="run", posargs=commit_range)
-            + f" --bench={run_type}"
+            ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
         )
         # C/SPerf benchmarks are much bigger than the CI ones:
         # Don't fail the whole run if memory blows on 1 benchmark.
