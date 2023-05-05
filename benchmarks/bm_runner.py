@@ -130,32 +130,36 @@ def _setup_common() -> None:
 def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
     """Run through a list of commits comparing each one to the next."""
     commits = [commit[:8] for commit in commits]
-    shifts_dir = BENCHMARKS_DIR / ".asv" / "performance-shifts"
+    comps_dir = BENCHMARKS_DIR / ".asv" / "performance-comparisons"
     for i in range(len(commits) - 1):
         before = commits[i]
         after = commits[i + 1]
         asv_command = (
             f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
         )
-        _subprocess_run_asv(asv_command.split(" "))
 
-        if overnight_mode:
-            # Record performance shifts.
-            # Run the command again but limited to only showing performance
-            #  shifts.
-            shifts = _subprocess_run_asv(
-                [*asv_command.split(" "), "--only-changed"],
-                capture_output=True,
-                text=True,
-            ).stdout
-            if shifts:
-                # Write the shifts report to a file.
-                # Dir is used by .github/workflows/benchmarks.yml,
-                #  but not cached - intended to be discarded after run.
-                shifts_dir.mkdir(exist_ok=True, parents=True)
-                shifts_path = (shifts_dir / after).with_suffix(".txt")
-                with shifts_path.open("w") as shifts_file:
-                    shifts_file.write(shifts)
+        _subprocess_run_asv(asv_command.split(" "))
+        # Now store the results in variables.
+        comparison = _subprocess_run_asv(
+            asv_command.split(" "),
+            capture_output=True,
+            text=True,
+        ).stdout
+        shifts = _subprocess_run_asv(
+            [*asv_command.split(" "), "--only-changed"],
+            capture_output=True,
+            text=True,
+        ).stdout
+
+        if shifts or (not overnight_mode):
+            # Write the comparisons report to a file.
+            # For the overnight run: only write if there are shifts.
+            # Dir is used by .github/workflows/benchmarks.yml,
+            #  but not cached - intended to be discarded after run.
+            comps_dir.mkdir(exist_ok=True, parents=True)
+            comps_path = (comps_dir / after).with_suffix(".txt")
+            with comps_path.open("w") as comps_file:
+                comps_file.write(comparison)
 
 
 class _SubParserGenerator(ABC):

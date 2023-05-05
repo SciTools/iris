@@ -101,9 +101,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -d benchmarks/.asv/performance-shifts ]
+          if [ -d benchmarks/.asv/performance-comparisons ]
           then
-            cd benchmarks/.asv/performance-shifts
+            cd benchmarks/.asv/performance-comparisons
             for commit_file in *
             do
               commit="${commit_file%.*}"
