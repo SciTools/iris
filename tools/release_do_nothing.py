@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright Iris contributors
 #
 # This file is part of Iris and is released under the LGPL license.
@@ -281,6 +282,18 @@ def finalise_whats_new(
         _wait_for_done(message)
 
         message = (
+            f"In {rsts.release.name}: ensure the page title underline is "
+            "the exact same length as the page title text."
+        )
+        _wait_for_done(message)
+
+        dropdown_title = f"\n{release_strings.series} Release Highlights\n"
+        message = (
+            f"In {rsts.release.name}: set the sphinx-design dropdown title to:{dropdown_title}"
+        )
+        _wait_for_done(message)
+
+        message = (
             f"Review {rsts.release.name} to ensure it is a good reflection of "
             f"what is new in {release_strings.series}."
         )
@@ -355,8 +368,9 @@ def cut_release(
     if is_release_candidate:
         message = (
             "This is a release candidate - include the following instructions "
-            "for Conda-installing:\n"
-            "conda install -c conda-forge/label/rc_iris iris;"
+            "for installing with conda or pip:\n"
+            f"conda install -c conda-forge/label/rc_iris iris={release_strings.release}\n"
+            f"pip install scitools-iris=={release_strings.release}"
         )
         _wait_for_done(message)
 
@@ -378,6 +392,13 @@ def cut_release(
         "publishing to PyPI."
     )
     _break_print(message)
+
+    url = "https://github.com/SciTools/iris/actions/workflows/ci-wheels.yml"
+    message = (
+        f"Visit {url} to monitor the building, testing and publishing of "
+        "the Iris sdist and binary wheel to PyPI."
+    )
+    _wait_for_done(message)
 
 
 def check_rtd(

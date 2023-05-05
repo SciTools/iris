@@ -225,6 +225,11 @@ class TestLicenseHeaders(tests.IrisTest):
             ):
                 with open(full_fname) as fh:
                     content = fh.read()
+                    if content.startswith("#!"):
+                        # account for files with leading shebang directives
+                        # i.e., first strip out the shebang line before
+                        # then performing license header compliance checking
+                        content = "\n".join(content.split("\n")[1:])
                     if not content.startswith(LICENSE_TEMPLATE):
                         print(
                             "The file {} does not start with the required "
