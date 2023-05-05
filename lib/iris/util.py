@@ -76,35 +76,31 @@ def broadcast_to_shape(array, shape, dim_map):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-    if len(dim_map) != array.ndim:
-        # We must check for this condition here because we cannot rely on
-        # getting an error from numpy if the dim_map argument is not the
-        # correct length, we might just get a segfault.
-        raise ValueError(
-            "dim_map must have an entry for every "
-            "dimension of the input array"
-        )
+    n_new_dims = len(shape) - len(array.shape)
+    array = array.reshape(array.shape + (1,) * n_new_dims)
 
-    def _broadcast_helper(a):
-        strides = [0] * len(shape)
-        for idim, dim in enumerate(dim_map):
-            if shape[dim] != a.shape[idim]:
-                # We'll get garbage values if the dimensions of array are not
-                # those indicated by shape.
-                raise ValueError("shape and array are not compatible")
-            strides[dim] = a.strides[idim]
-        return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+    # Map current dims to their target dims.
+    map_dims = tuple(dim_map) + tuple(
+        n for n in range(len(shape)) if n not in dim_map
+    )
+    # transpose needs the inverse mapping.  Keep this as a tuple as dask's transpose
+    # breaks if this is an array.
+    inverse_map_dims = tuple(np.argsort(map_dims))
 
-    array_view = _broadcast_helper(array)
-    if ma.isMaskedArray(array):
-        if array.mask is ma.nomask:
-            # Degenerate masks can be applied as-is.
-            mask_view = array.mask
+    # Get dims in required order.
+    array = np.transpose(array, inverse_map_dims)
+    new_array = np.broadcast_to(array, shape)
+
+    if ma.isMA(array):
+        # broadcast_to strips masks so we need to handle them explicitly.
+        mask = ma.getmask(array)
+        if mask is ma.nomask:
+            new_mask = ma.nomask
         else:
-            # Mask arrays need to be handled in the same way as the data array.
-            mask_view = _broadcast_helper(array.mask)
-        array_view = ma.array(array_view, mask=mask_view)
-    return array_view
+            new_mask = np.broadcast_to(mask, shape)
+        new_array = ma.array(new_array, mask=new_mask)
+
+    return new_array
 
 
 def delta(ndarray, dimension, circular=False):
