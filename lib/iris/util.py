@@ -76,19 +76,12 @@ def broadcast_to_shape(array, shape, dim_map):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-    n_new_dims = len(shape) - len(array.shape)
+    n_orig_dims = len(array.shape)
+    n_new_dims = len(shape) - n_orig_dims
     array = array.reshape(array.shape + (1,) * n_new_dims)
 
-    # Map current dims to their target dims.
-    map_dims = tuple(dim_map) + tuple(
-        n for n in range(len(shape)) if n not in dim_map
-    )
-    # transpose needs the inverse mapping.  Keep this as a tuple as dask's transpose
-    # breaks if this is an array.
-    inverse_map_dims = tuple(np.argsort(map_dims))
-
     # Get dims in required order.
-    array = np.transpose(array, inverse_map_dims)
+    array = np.moveaxis(array, range(n_orig_dims), dim_map)
     new_array = np.broadcast_to(array, shape)
 
     if ma.isMA(array):
