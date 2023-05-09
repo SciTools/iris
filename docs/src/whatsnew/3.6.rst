@@ -1,24 +1,35 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+v3.6 (03 May 2023) [release candidate]
+**************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: v3.6 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
    :open:
 
-   The highlights for this major/minor release of Iris include:
+   We're so excited about our recent support for **delayed saving of lazy data
+   to netCDF** (:pull:`5191`) that we're celebrating this important step change
+   in behavour with its very own dedicated release 🥳
 
-   * N/A
+   We're super keen for the community to leverage the benefit of this new
+   feature within Iris that we've brought this release forward several months.
+   As a result, this minor release of Iris is intentionally light in content.
+   However, there are some other goodies available for you to enjoy, such as:
 
-   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
-   any issues or feature requests for improving Iris. Enjoy!
+   * Performing lazy arithmetic with an Iris :class:`~iris.cube.Cube` and a
+     :class:`dask.array.Array`, and
+   * Various improvements to our documentation resulting from adoption of
+     `sphinx-design`_ and `sphinx-apidoc`_.
+
+   As always, get in touch with us on :issue:`GitHub<new/choose>`, particularly
+   if you have any feedback with regards to delayed saving, or have any issues
+   or feature requests for improving Iris. Enjoy!
 
 
 📢 Announcements
@@ -32,7 +43,7 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@pp-mo`_ and  `@lbdreyer`_ supported delayed saving of lazy data, when writing to
-   the netCDF file format.  See : :ref:`delayed netCDF saves <delayed_netcdf_save>`.
+   the netCDF file format.  See :ref:`delayed netCDF saves <delayed_netcdf_save>`.
    Also with significant input from `@fnattino`_.
    (:pull:`5191`)
 
