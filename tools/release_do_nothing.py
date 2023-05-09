@@ -674,7 +674,7 @@ def merge_back(
         message = (
             f"Merge in the commits from {release_strings.branch}.\n"
             f"{merge_commit}\n"
-            f"git merge upstream/{release_strings.branch} --no-ff"
+            f"git merge upstream/{release_strings.branch} --no-ff "
             '-m "Merging release branch into main";'
         )
         _wait_for_done(message)
