@@ -8,12 +8,13 @@ Provides common metadata mixin behaviour.
 
 """
 
+
 from collections.abc import Mapping
 from functools import wraps
 
 import cf_units
 
-import iris.std_names
+from iris.std_name_table import check_valid_std_name
 
 from .metadata import BaseMetadata
 
@@ -23,7 +24,6 @@ __all__ = ["CFVariableMixin"]
 def _get_valid_standard_name(name):
     # Standard names are optionally followed by a standard name
     # modifier, separated by one or more blank spaces
-
     if name is not None:
         # Supported standard name modifiers. Ref: [CF] Appendix C.
         valid_std_name_modifiers = [
@@ -35,21 +35,21 @@ def _get_valid_standard_name(name):
 
         name_groups = name.split(maxsplit=1)
         if name_groups:
-            std_name = name_groups[0]
-            name_is_valid = std_name in iris.std_names.STD_NAMES
+            std_name = check_valid_std_name(name_groups[0])
             try:
                 std_name_modifier = name_groups[1]
             except IndexError:
-                pass  # No modifier
+                result = std_name
             else:
-                name_is_valid &= std_name_modifier in valid_std_name_modifiers
-
-            if not name_is_valid:
-                raise ValueError(
-                    "{!r} is not a valid standard_name".format(name)
-                )
-
-    return name
+                if std_name_modifier in valid_std_name_modifiers:
+                    result = f"{std_name} {std_name_modifier}"
+                else:
+                    raise ValueError(
+                        f"{repr(std_name_modifier)} is not a valid standard_name"
+                    )
+    else:
+        result = None
+    return result
 
 
 class LimitedAttributeDict(dict):
