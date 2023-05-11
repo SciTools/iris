@@ -4,11 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Integration tests for loading and saving netcdf files."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from itertools import repeat
 import os.path
 import shutil
@@ -28,6 +23,10 @@ import iris.exceptions
 from iris.fileformats.netcdf import Saver, UnknownCellMethodWarning
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.tests.stock.netcdf import ncgen_from_cdl
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
 
 
 class TestLazySave(tests.IrisTest):
@@ -379,6 +378,7 @@ class TestDatasetLoad(tests.IrisTest):
             if ds is not None:
                 ds.close()
 
+        # Check that result is just the same as a 'direct' load.
         self.assertEqual(expected, result)
 
 
@@ -415,7 +415,10 @@ class TestDatasetSave(tests.IrisTest):
         # Save indirectly via netcdf dataset.
         filepath_indirect = f"{self.temp_dir}/tmp_indirect.nc"
         nc_dataset = threadsafe_nc.DatasetWrapper(filepath_indirect, "w")
-        iris.save(testdata, nc_dataset, saver="nc")
+        # NOTE: we **must** use delayed saving here, as we cannot do direct saving to
+        # a user-owned dataset.
+        result = iris.save(testdata, nc_dataset, saver="nc", compute=False)
+
         # Do some very basic sanity checks on the Dataset object.
         self.assertEqual(
             ["time", "levelist", "latitude", "longitude"],
@@ -425,10 +428,40 @@ class TestDatasetSave(tests.IrisTest):
             ["co2", "time", "levelist", "latitude", "longitude", "lnsp"],
             list(nc_dataset.variables),
         )
-        # Save to file.
         nc_dataset.close()
+
         # Check the saved file against the same CDL as the 'normal' save.
         self.assertCDL(filepath_indirect)
+
+        # Confirm that cube content is however not yet written.
+        ds = threadsafe_nc.DatasetWrapper(filepath_indirect)
+        for cube in testdata:
+            assert np.all(ds.variables[cube.var_name][:].mask)
+        ds.close()
+
+        # Complete the delayed saves.
+        result.compute()
+
+        # Check that data now *is* written.
+        ds = threadsafe_nc.DatasetWrapper(filepath_indirect)
+        for cube in testdata:
+            assert np.all(ds.variables[cube.var_name][:] == cube.data)
+        ds.close()
+
+    def test_no_completed_save(self):
+        # Call as above 'test_basic_save' but with "compute=True" : this should raise
+        # an error.
+        filepath = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        testdata = iris.load(filepath)
+        filepath_indirect = f"{self.temp_dir}/tmp_indirect_complete.nc"
+        nc_dataset = threadsafe_nc.DatasetWrapper(filepath_indirect, "w")
+
+        # NOTE: a "normal" compute=True call should raise an error.
+        msg = "Cannot save to a user-provided dataset with 'compute=True'"
+        with pytest.raises(ValueError, match=msg):
+            iris.save(testdata, nc_dataset, saver="nc")
 
 
 if __name__ == "__main__":

@@ -449,6 +449,13 @@ class Saver:
             # Given a dataset : derive instance filepath from the dataset
             self._dataset = filename
             self.filepath = self._dataset.filepath()
+            if compute:
+                msg = (
+                    "Cannot save to a user-provided dataset with 'compute=True'. "
+                    "Please use 'compute=False' and complete delayed saving in the "
+                    "calling code after the file is closed."
+                )
+                raise ValueError(msg)
         else:
             # Given a filepath string/path : create a dataset from that
             try:
