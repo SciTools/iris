@@ -8,7 +8,6 @@ Provides common metadata mixin behaviour.
 
 """
 
-
 from collections.abc import Mapping
 from functools import wraps
 
@@ -24,6 +23,7 @@ __all__ = ["CFVariableMixin"]
 def _get_valid_standard_name(name):
     # Standard names are optionally followed by a standard name
     # modifier, separated by one or more blank spaces
+
     if name is not None:
         # Supported standard name modifiers. Ref: [CF] Appendix C.
         valid_std_name_modifiers = [
@@ -35,21 +35,24 @@ def _get_valid_standard_name(name):
 
         name_groups = name.split(maxsplit=1)
         if name_groups:
-            std_name = check_valid_std_name(name_groups[0])
+            std_name = name_groups[0]
+            try:
+                new_std_name = check_valid_std_name(name_groups[0])
+                name = name.replace(std_name, new_std_name)
+            except ValueError:
+                raise ValueError(
+                    "{!r} is not a valid standard_name".format(name)
+                )
             try:
                 std_name_modifier = name_groups[1]
             except IndexError:
-                result = std_name
+                pass  # No modifier
             else:
-                if std_name_modifier in valid_std_name_modifiers:
-                    result = f"{std_name} {std_name_modifier}"
-                else:
+                if std_name_modifier not in valid_std_name_modifiers:
                     raise ValueError(
-                        f"{repr(std_name_modifier)} is not a valid standard_name"
+                        "{!r} is not a valid standard_name".format(name)
                     )
-    else:
-        result = None
-    return result
+    return name
 
 
 class LimitedAttributeDict(dict):
