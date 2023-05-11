@@ -43,44 +43,35 @@ def get_description(name):
     Arg:
 
     * name `string` containing the standard name.
-
-    Requesting the description of a aliased standard name results in a error
-    if the alias proceessing is set to "replace", because the aliased standard
-    name should already have been replaced.
     """
     if not hasattr(iris.std_names, "DESCRIPTIONS"):
         return None
 
+    error = False
     if name in iris.std_names.STD_NAMES:
         descr = iris.std_names.DESCRIPTIONS[name]
-        action = iris.std_names._ALTERNATIVE_MODES[0]
     elif hasattr(iris.std_names, "ALIASES"):
         if name in iris.std_names.ALIASES:
             descr = iris.std_names.DESCRIPTIONS[iris.std_names.ALIASES[name]]
-            action = iris.std_names._MODE
+            if iris.std_names._MODE == iris.std_names._REPLACE:
+                msg = (
+                    "\nStandard name {!r} is aliased and is \nreplaced by {!r}.\n"
+                    "The description for the latter will be used."
+                )
+                warnings.warn(msg.format(name, iris.std_names.ALIASES[name]))
         else:
-            action = iris.std_names._ALTERNATIVE_MODES[2]
+            error = True
     else:
-        action = iris.std_names._ALTERNATIVE_MODES[2]
+        error = True
 
-    if action == iris.std_names._ALTERNATIVE_MODES[1]:
-        msg = (
-            "\nStandard name {!r} is aliased and is \nreplaced by {!r}.\n"
-            "The description for the latter will be used."
-        )
-        warnings.warn(msg.format(name, iris.std_names.ALIASES[name]))
-    elif action == iris.std_names._ALTERNATIVE_MODES[2]:
-        raise ValueError(
-            "{!r} is not a valid standard name (or it may have been aliased).".format(
-                name
-            )
-        )
+    if error:
+        raise ValueError("{!r} is not a valid standard name.".format(name))
     return descr
 
 
 def check_valid_std_name(name):
     """
-    Returning standard name as a `string`.
+    Check and return if argument is a valid standard name or alias.
 
     Arg:
 
@@ -89,36 +80,30 @@ def check_valid_std_name(name):
     Depending on the setting of the alias proceessing the following will
     happen if 'name' is an aliased standard name:
     "accept" - the aliased standard name is accepted as valid and returned,
-    "warn" - a warning is issued and the valid standard name is returned,
+    "warn" - a warning is issued, otherwise the same as "accept",
     "replace" - the valid standard name is returned without warning.
 
     When 'name' is neither a standard name nor an alias an error results.
     """
+    error = False
     if name in iris.std_names.STD_NAMES:
         std_name = name
-        action = iris.std_names._ALTERNATIVE_MODES[0]
     elif hasattr(iris.std_names, "ALIASES"):
         if name in iris.std_names.ALIASES:
-            if iris.std_names._MODE == iris.std_names._ALTERNATIVE_MODES[0]:
-                std_name = name
-                action = iris.std_names._ALTERNATIVE_MODES[0]
-            else:
+            if iris.std_names._MODE == iris.std_names._REPLACE:
                 std_name = iris.std_names.ALIASES[name]
-                if (
-                    iris.std_names._MODE
-                    == iris.std_names._ALTERNATIVE_MODES[1]
-                ):
-                    action = iris.std_names._MODE
-                else:
-                    action = iris.std_names._ALTERNATIVE_MODES[0]
+            else:
+                std_name = name
+                if iris.std_names._MODE == iris.std_names._WARN:
+                    msg = "\nThe standard name {!r} is aliased should be \nreplaced by {!r}."
+                    warnings.warn(
+                        msg.format(name, iris.std_names.ALIASES[name])
+                    )
         else:
-            action = iris.std_names._ALTERNATIVE_MODES[2]
+            error = True
     else:
-        action = iris.std_names._ALTERNATIVE_MODES[2]
+        error = True
 
-    if action == iris.std_names._ALTERNATIVE_MODES[2]:
-        raise ValueError("{repr(name)} is not a valid standard_name.")
-    elif action == iris.std_names._ALTERNATIVE_MODES[1]:
-        msg = "\nThe standard name {!r} is aliased and is \nreplaced by {!r}."
-        warnings.warn(msg.format(name, iris.std_names.ALIASES[name]))
+    if error:
+        raise ValueError("{!r} is not a valid standard_name.".format(name))
     return std_name
