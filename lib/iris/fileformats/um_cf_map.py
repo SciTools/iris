@@ -1207,7 +1207,7 @@ CF_TO_LBFC = {
     CFName('sea_ice_thickness', None, 'm'): 687,
     CFName('sea_surface_elevation', None, 'm'): 608,
     CFName('snow_grain_size', None, '1e-6 m'): 1507,
-    CFName('surface_snow_amount', None, '1e-6 m'): 93,
+    CFName('snowfall_amount', None, 'kg m-2'): 93,
     CFName('snowfall_flux', None, 'kg m-2 s-1'): 108,
     CFName('soil_albedo', None, '1'): 1395,
     CFName('soil_carbon_content', None, 'kg m-2'): 1397,
