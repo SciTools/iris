@@ -49,7 +49,7 @@ This document explains the changes made to Iris for this release
 ===========================
 
 #. `@rcomer`_ made :meth:`~iris.cube.Cube.aggregated_by` faster. (:pull:`4970`)
-#. `@rsdavies`_ modified the CF complaint standard name for m01s00i023 :issue:`4566`
+#. `@rsdavies`_ modified the CF compliant standard name for m01s00i023 :issue:`4566`
 
 🔥 Deprecations
 ===============
