@@ -37,7 +37,7 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@rsdavies`_ modified the CF complaint standard name for m01s00i023 :issue:`4566`
 
 
 💣 Incompatible Changes
@@ -79,7 +79,7 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
-
+.. _@rsdavies: https://github.com/rsdavies
 
 
 
