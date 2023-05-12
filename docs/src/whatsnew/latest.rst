@@ -49,6 +49,7 @@ This document explains the changes made to Iris for this release
 ===========================
 
 #. `@rcomer`_ made :meth:`~iris.cube.Cube.aggregated_by` faster. (:pull:`4970`)
+#. `@rsdavies`_ modified the CF complaint standard name for m01s00i023 :issue:`4566`
 
 🔥 Deprecations
 ===============
@@ -77,7 +78,7 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
-
+.. _@rsdavies: https://github.com/rsdavies
 
 
 
