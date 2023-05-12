@@ -30,35 +30,8 @@ class Test___common_cmp__(tests.IrisTest):
         with self.assertRaisesRegex(exception_type, regexp):
             cell >= other
 
-    def test_cftime_cell(self):
-        # Check that cell comparison when the cell contains
-        # cftime.datetime objects raises an exception otherwise
-        # this will fall back to id comparison producing unreliable
-        # results.
-        cell = Cell(cftime.datetime(2010, 3, 21))
-        dt = mock.Mock(timetuple=mock.Mock())
-        self.assert_raises_on_comparison(
-            cell, dt, TypeError, "determine the order of cftime"
-        )
-        self.assert_raises_on_comparison(
-            cell, 23, TypeError, "determine the order of cftime"
-        )
-        self.assert_raises_on_comparison(
-            cell, "hello", TypeError, "Unexpected type.*str"
-        )
-
-    def test_cftime_other(self):
-        # Check that cell comparison to a cftime.datetime object
-        # raises an exception otherwise this will fall back to id comparison
-        # producing unreliable results.
-        dt = cftime.datetime(2010, 3, 21)
-        cell = Cell(mock.Mock(timetuple=mock.Mock()))
-        self.assert_raises_on_comparison(
-            cell, dt, TypeError, "determine the order of cftime"
-        )
-
     def test_PartialDateTime_bounded_cell(self):
-        # Check that bounded comparisions to a PartialDateTime
+        # Check that bounded comparisons to a PartialDateTime
         # raise an exception. These are not supported as they
         # depend on the calendar.
         dt = PartialDateTime(month=6)
@@ -85,10 +58,9 @@ class Test___common_cmp__(tests.IrisTest):
     def test_datetime_unbounded_cell(self):
         # Check that cell comparison works with datetimes.
         dt = datetime.datetime(2000, 6, 15)
-        cell = Cell(datetime.datetime(2000, 1, 1))
-        # Note the absence of the inverse of these
-        # e.g. self.assertGreater(dt, cell).
-        # See http://bugs.python.org/issue8005
+        cell = Cell(cftime.datetime(2000, 1, 1))
+        self.assertGreater(dt, cell)
+        self.assertGreaterEqual(dt, cell)
         self.assertLess(cell, dt)
         self.assertLessEqual(cell, dt)
 

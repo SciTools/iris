@@ -45,7 +45,6 @@ def _title(cube_or_coord, with_units):
             or units.is_no_unit()
             or units == cf_units.Unit("1")
         ):
-
             if _use_symbol(units):
                 units = units.symbol
             elif units.is_time_reference():
@@ -71,7 +70,7 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
     if result is not None:
         draw_edges = mode == iris.coords.POINT_MODE
         bar = plt.colorbar(
-            result, orientation="horizontal", drawedges=draw_edges
+            result, ax=axes, orientation="horizontal", drawedges=draw_edges
         )
         has_known_units = not (
             cube.units.is_unknown() or cube.units.is_no_unit()
@@ -175,6 +174,11 @@ def contour(cube, *args, **kwargs):
 
     See :func:`iris.plot.contour` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -202,6 +206,10 @@ def contourf(cube, *args, **kwargs):
 
     See :func:`iris.plot.contourf` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -230,6 +238,11 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         The width of the lines showing the cell outlines. If None, the default
         width in patch.linewidth in matplotlibrc is used.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = iplt.outline(
         cube, color=color, linewidth=linewidth, coords=coords, axes=axes
@@ -245,6 +258,10 @@ def pcolor(cube, *args, **kwargs):
 
     See :func:`iris.plot.pcolor` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -259,6 +276,11 @@ def pcolormesh(cube, *args, **kwargs):
 
     See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -272,6 +294,11 @@ def points(cube, *args, **kwargs):
     Draws sample point positions on a labelled plot based on the given Cube.
 
     See :func:`iris.plot.points` for details of valid keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -289,6 +316,11 @@ def plot(*args, **kwargs):
     See :func:`iris.plot.plot` for details of valid arguments and
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     axes = kwargs.get("axes")
     result = iplt.plot(*args, **kwargs)
@@ -304,10 +336,63 @@ def scatter(x, y, *args, **kwargs):
     See :func:`iris.plot.scatter` for details of valid arguments and
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     axes = kwargs.get("axes")
     result = iplt.scatter(x, y, *args, **kwargs)
     _label_1d_plot(x, y, axes=axes)
+    return result
+
+
+def fill_between(x, y1, y2, *args, **kwargs):
+    """
+    Draws a labelled fill_between plot based on the given cubes or coordinates.
+
+    See :func:`iris.plot.fill_between` for details of valid arguments and
+    keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+    """
+    axes = kwargs.get("axes")
+    result = iplt.fill_between(x, y1, y2, *args, **kwargs)
+    _label_1d_plot(x, y1, axes=axes)
+    return result
+
+
+def hist(x, *args, **kwargs):
+    """
+    Compute and plot a labelled histogram.
+
+    See :func:`iris.plot.hist` for details of valid arguments and
+    keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+    """
+    axes = kwargs.get("axes")
+    result = iplt.hist(x, *args, **kwargs)
+    title = _title(x, with_units=False)
+    label = _title(x, with_units=True)
+
+    if axes is None:
+        axes = plt.gca()
+
+    orientation = kwargs.get("orientation")
+    if orientation == "horizontal":
+        axes.set_ylabel(label)
+    else:
+        axes.set_xlabel(label)
+    axes.set_title(title)
+
     return result
 
 

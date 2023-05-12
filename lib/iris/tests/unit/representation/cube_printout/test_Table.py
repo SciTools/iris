@@ -60,7 +60,7 @@ class TestTable(tests.IrisTest):
     def test_add_row(self):
         table = Table()
         self.assertEqual(table.n_columns, None)
-        # Add onw row.
+        # Add one row.
         table.add_row(["one", "two", "three"], aligns=["left", "left", "left"])
         self.assertEqual(len(table.rows), 1)
         self.assertEqual(table.n_columns, 3)

@@ -115,6 +115,11 @@ def abs(cube, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.abs, cube.dtype, in_place=in_place)
@@ -159,6 +164,11 @@ def intersection_of_cubes(cube, other_cube):
           coords = ["latitude", "longitude"]    # Replace with relevant coords
           intersections = cubes.extract_overlapping(coords)
           cube1, cube2 = (intersections[0], intersections[1])
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     wmsg = (
@@ -215,33 +225,40 @@ def _assert_is_cube(cube):
 @_lenient_client(services=SERVICES)
 def add(cube, other, dim=None, in_place=False):
     """
-    Calculate the sum of two cubes, or the sum of a cube and a
-    coordinate or scalar value.
+    Calculate the sum of two cubes, or the sum of a cube and a coordinate or
+    array or scalar value.
 
-    When summing two cubes, they must both have the same coordinate
-    systems & data resolution.
+    When summing two cubes, they must both have the same coordinate systems and
+    data resolution.
 
-    When adding a coordinate to a cube, they must both share the same
-    number of elements along a shared axis.
+    When adding a coordinate to a cube, they must both share the same number of
+    elements along a shared axis.
 
-    Args:
+    Parameters
+    ----------
 
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+    cube : iris.cube.Cube
+        First operand to add.
 
-    Kwargs:
+    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+        Second operand to add.
 
-    * dim:
-        If supplying a coord with no match on the cube, you must supply
-        the dimension to process.
-    * in_place:
-        Whether to create a new Cube, or alter the given "cube".
+    dim : int, optional
+        If `other` is a coord which does not exist on the cube, specify the
+        dimension to which it should be mapped.
 
-    Returns:
-        An instance of :class:`iris.cube.Cube`.
+    in_place : bool, default=False
+        If `True`, alters the input cube.  Otherwise a new cube is created.
+
+    Returns
+    -------
+
+    iris.cube.Cube
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -265,32 +282,39 @@ def add(cube, other, dim=None, in_place=False):
 def subtract(cube, other, dim=None, in_place=False):
     """
     Calculate the difference between two cubes, or the difference between
-    a cube and a coordinate or scalar value.
+    a cube and a coordinate or array or scalar value.
 
-    When subtracting two cubes, they must both have the same coordinate
-    systems & data resolution.
+    When differencing two cubes, they must both have the same coordinate systems
+    and data resolution.
 
-    When subtracting a coordinate to a cube, they must both share the
-    same number of elements along a shared axis.
+    When subtracting a coordinate from a cube, they must both share the same
+    number of elements along a shared axis.
 
-    Args:
+    Parameters
+    ----------
 
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+    cube : iris.cube.Cube
+        Cube from which to subtract.
 
-    Kwargs:
+    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+        Object to subtract from the cube.
 
-    * dim:
-        If supplying a coord with no match on the cube, you must supply
-        the dimension to process.
-    * in_place:
-        Whether to create a new Cube, or alter the given "cube".
+    dim : int, optional
+        If `other` is a coord which does not exist on the cube, specify the
+        dimension to which it should be mapped.
 
-    Returns:
-        An instance of :class:`iris.cube.Cube`.
+    in_place : bool, default=False
+        If `True`, alters the input cube.  Otherwise a new cube is created.
+
+    Returns
+    -------
+
+    iris.cube.Cube
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -328,8 +352,8 @@ def _add_subtract_common(
     operation_name       - the public name of the operation (e.g. 'divide')
     cube                 - the cube whose data is used as the first argument
                            to `operation_function`
-    other                - the cube, coord, ndarray or number whose data is
-                           used as the second argument
+    other                - the cube, coord, ndarray, dask array or number whose
+                           data is used as the second argument
     new_dtype            - the expected dtype of the output. Used in the
                            case of scalar masked arrays
     dim                  - dimension along which to apply `other` if it's a
@@ -364,25 +388,40 @@ def _add_subtract_common(
 @_lenient_client(services=SERVICES)
 def multiply(cube, other, dim=None, in_place=False):
     """
-    Calculate the product of a cube and another cube or coordinate.
+    Calculate the product of two cubes, or the product of a cube and a coordinate
+    or array or scalar value.
 
-    Args:
+    When multiplying two cubes, they must both have the same coordinate systems
+    and data resolution.
 
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+    When mulplying a cube by a coordinate, they must both share the same number
+    of elements along a shared axis.
 
-    Kwargs:
+    Parameters
+    ----------
 
-    * dim:
-        If supplying a coord with no match on the cube, you must supply
-        the dimension to process.
+    cube : iris.cube.Cube
+        First operand to multiply.
 
-    Returns:
-        An instance of :class:`iris.cube.Cube`.
+    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+        Second operand to multiply.
 
+    dim : int, optional
+        If `other` is a coord which does not exist on the cube, specify the
+        dimension to which it should be mapped.
+
+    in_place : bool, default=False
+        If `True`, alters the input cube.  Otherwise a new cube is created.
+
+    Returns
+    -------
+
+    iris.cube.Cube
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     _assert_is_cube(cube)
 
@@ -437,25 +476,40 @@ def _inplace_common_checks(cube, other, math_op):
 @_lenient_client(services=SERVICES)
 def divide(cube, other, dim=None, in_place=False):
     """
-    Calculate the division of a cube by a cube or coordinate.
+    Calculate the ratio of two cubes, or the ratio of a cube and a coordinate
+    or array or scalar value.
 
-    Args:
+    When dividing a cube by another cube, they must both have the same coordinate
+    systems and data resolution.
 
-    * cube:
-        An instance of :class:`iris.cube.Cube`.
-    * other:
-        An instance of :class:`iris.cube.Cube` or :class:`iris.coords.Coord`,
-        or a number or :class:`numpy.ndarray`.
+    When dividing a cube by a coordinate, they must both share the same number
+    of elements along a shared axis.
 
-    Kwargs:
+    Parameters
+    ----------
 
-    * dim:
-        If supplying a coord with no match on the cube, you must supply
-        the dimension to process.
+    cube : iris.cube.Cube
+        Numerator.
 
-    Returns:
-        An instance of :class:`iris.cube.Cube`.
+    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+        Denominator.
 
+    dim : int, optional
+        If `other` is a coord which does not exist on the cube, specify the
+        dimension to which it should be mapped.
+
+    in_place : bool, default=False
+        If `True`, alters the input cube.  Otherwise a new cube is created.
+
+    Returns
+    -------
+
+    iris.cube.Cube
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     _assert_is_cube(cube)
 
@@ -519,6 +573,10 @@ def exponentiate(cube, exponent, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(
@@ -540,7 +598,7 @@ def exponentiate(cube, exponent, in_place=False):
     return _math_op_common(
         cube,
         power,
-        cube.units ** exponent,
+        cube.units**exponent,
         new_dtype=new_dtype,
         in_place=in_place,
     )
@@ -567,6 +625,11 @@ def exp(cube, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.exp, cube.dtype, in_place=in_place)
@@ -592,6 +655,11 @@ def log(cube, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -623,6 +691,11 @@ def log2(cube, in_place=False):
     Returns:
         An instance of :class:`iris.cube.Cube`.
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.log2, cube.dtype, in_place=in_place)
@@ -648,6 +721,11 @@ def log10(cube, in_place=False):
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -702,6 +780,12 @@ def apply_ufunc(
     Example::
 
         cube = apply_ufunc(numpy.sin, cube, in_place=True)
+
+    .. note::
+
+        This function maintains laziness when called; it does not realise data. This is dependent on `ufunc` argument
+        being a numpy operation that is compatible with lazy operation.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 
@@ -774,6 +858,7 @@ def _binary_op_common(
     new_dtype=None,
     dim=None,
     in_place=False,
+    sanitise_metadata=True,
 ):
     """
     Function which shares common code between binary operations.
@@ -783,8 +868,8 @@ def _binary_op_common(
     operation_name       - the public name of the operation (e.g. 'divide')
     cube                 - the cube whose data is used as the first argument
                            to `operation_function`
-    other                - the cube, coord, ndarray or number whose data is
-                           used as the second argument
+    other                - the cube, coord, ndarray, dask array or number whose
+                           data is used as the second argument
     new_dtype            - the expected dtype of the output. Used in the
                            case of scalar masked arrays
     new_unit             - unit for the resulting quantity
@@ -792,6 +877,8 @@ def _binary_op_common(
                            coordinate that is not found in `cube`
     in_place             - whether or not to apply the operation in place to
                            `cube` and `cube.data`
+    sanitise_metadata    - whether or not to remove metadata using
+                           _sanitise_metadata function
     """
     from iris.cube import Cube
 
@@ -822,7 +909,10 @@ def _binary_op_common(
         rhs = other.core_data()
     else:
         # The rhs must be an array.
-        rhs = np.asanyarray(other)
+        if iris._lazy_data.is_lazy_data(other):
+            rhs = other
+        else:
+            rhs = np.asanyarray(other)
 
     def unary_func(lhs):
         data = operation_function(lhs, rhs)
@@ -837,6 +927,20 @@ def _binary_op_common(
             raise TypeError(emsg)
         return data
 
+    if in_place and not cube.has_lazy_data():
+        # In-place arithmetic doesn't work if array type of LHS is less complex
+        # than RHS.
+        if iris._lazy_data.is_lazy_data(rhs):
+            cube.data = cube.lazy_data()
+        elif ma.is_masked(rhs) and not isinstance(cube.data, ma.MaskedArray):
+            cube.data = ma.array(cube.data)
+
+    elif isinstance(
+        cube.core_data(), ma.MaskedArray
+    ) and iris._lazy_data.is_lazy_data(rhs):
+        # Workaround for #2987.  numpy#15200 discusses the general problem.
+        cube = cube.copy(cube.lazy_data())
+
     result = _math_op_common(
         cube,
         unary_func,
@@ -844,13 +948,15 @@ def _binary_op_common(
         new_dtype=new_dtype,
         in_place=in_place,
         skeleton_cube=skeleton_cube,
+        sanitise_metadata=sanitise_metadata,
     )
 
     if isinstance(other, Cube):
         # Insert the resultant data from the maths operation
         # within the resolved cube.
         result = resolver.cube(result.core_data(), in_place=in_place)
-        _sanitise_metadata(result, new_unit)
+        if sanitise_metadata:
+            _sanitise_metadata(result, new_unit)
 
     return result
 
@@ -932,6 +1038,7 @@ def _math_op_common(
     new_dtype=None,
     in_place=False,
     skeleton_cube=False,
+    sanitise_metadata=True,
 ):
     from iris.cube import Cube
 
@@ -965,7 +1072,8 @@ def _math_op_common(
     ):
         new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
 
-    _sanitise_metadata(new_cube, new_unit)
+    if sanitise_metadata:
+        _sanitise_metadata(new_cube, new_unit)
 
     return new_cube
 
@@ -1115,7 +1223,7 @@ class IFunc:
         Kwargs:
 
         * other
-            A cube, coord, ndarray or number whose data is used as the
+            A cube, coord, ndarray, dask array or number whose data is used as the
             second argument to the data function.
 
         * new_name:

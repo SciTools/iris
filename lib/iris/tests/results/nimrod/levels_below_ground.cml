@@ -3,7 +3,7 @@
   <cube dtype="int64" units="unknown">
     <coords>
       <coord>
-        <auxCoord id="db03ed0a" long_name="depth_below_ground" points="[42.0]" shape="(1,)" units="Unit('m')" value_type="float32">
+        <auxCoord id="db03ed0a" long_name="depth_below_ground" points="[42.]" shape="(1,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="down"/>
           </attributes>

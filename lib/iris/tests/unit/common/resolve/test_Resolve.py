@@ -15,7 +15,7 @@ import iris.tests as tests  # isort:skip
 from collections import namedtuple
 from copy import deepcopy
 import unittest.mock as mock
-from unittest.mock import sentinel
+from unittest.mock import Mock, sentinel
 
 from cf_units import Unit
 import numpy as np
@@ -825,20 +825,6 @@ class Test__aux_mapping(tests.IrisTest):
             ),
         ]
 
-    def _copy(self, items):
-        # Due to a bug in python 3.6.x, performing a deepcopy of a mock.sentinel
-        # will yield an object that is not equivalent to its parent, so this
-        # is a work-around until we drop support for python 3.6.x.
-        import sys
-
-        version = sys.version_info
-        major, minor = version.major, version.minor
-        result = deepcopy(items)
-        if major == 3 and minor <= 6:
-            for i, item in enumerate(items):
-                result[i] = result[i]._replace(metadata=item.metadata)
-        return result
-
     def test_no_mapping(self):
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         self.assertEqual(dict(), result)
@@ -852,7 +838,7 @@ class Test__aux_mapping(tests.IrisTest):
 
     def test_transpose_mapping(self):
         self.src_coverage.common_items_aux.extend(self.items)
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         items[0].dims[0] = 2
         items[2].dims[0] = 0
         self.tgt_coverage.common_items_aux.extend(items)
@@ -863,7 +849,7 @@ class Test__aux_mapping(tests.IrisTest):
     def test_partial_mapping__transposed(self):
         _ = self.items.pop(1)
         self.src_coverage.common_items_aux.extend(self.items)
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         items[0].dims[0] = 2
         items[1].dims[0] = 0
         self.tgt_coverage.common_items_aux.extend(items)
@@ -872,7 +858,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.assertEqual(expected, result)
 
     def test_mapping__match_multiple_src_metadata(self):
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         _ = self.items.pop(1)
         self.src_coverage.common_items_aux.extend(self.items)
         items[1] = items[0]
@@ -882,7 +868,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.assertEqual(expected, result)
 
     def test_mapping__skip_match_multiple_src_metadata(self):
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         _ = self.items.pop(1)
         self.tgt_coverage.common_items_aux.extend(self.items)
         items[1] = items[0]._replace(dims=[1])
@@ -892,7 +878,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.assertEqual(expected, result)
 
     def test_mapping__skip_different_rank(self):
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         self.src_coverage.common_items_aux.extend(self.items)
         items[2] = items[2]._replace(dims=[1, 2])
         self.tgt_coverage.common_items_aux.extend(items)
@@ -902,7 +888,7 @@ class Test__aux_mapping(tests.IrisTest):
 
     def test_bad_metadata_mapping(self):
         self.src_coverage.common_items_aux.extend(self.items)
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         items[0] = items[0]._replace(metadata=sentinel.bad)
         self.tgt_coverage.common_items_aux.extend(items)
         emsg = "Failed to map common aux coordinate metadata"
@@ -2086,8 +2072,13 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
         #
         # src-to-tgt mapping:
         #   0->1, 1->2, 2->3
-        self.points = (sentinel.points_0, sentinel.points_1, sentinel.points_2)
-        self.bounds = (sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2)
+        self.points = (
+            sentinel.points_0,
+            sentinel.points_1,
+            sentinel.points_2,
+            sentinel.points_3,
+        )
+        self.bounds = sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2
         self.pb_0 = (
             mock.Mock(copy=mock.Mock(return_value=self.points[0])),
             mock.Mock(copy=mock.Mock(return_value=self.bounds[0])),
@@ -2121,9 +2112,13 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
         )
         metadata = [self.src_metadata] * len(self.mapping)
         self.src_coords = [
-            sentinel.src_coord_0,
-            sentinel.src_coord_1,
-            sentinel.src_coord_2,
+            # N.B. these need to mimic a Coord with points and bounds, and
+            # be of a class which is not-a-MeshCoord.
+            # NOTE: strictly, bounds should =above values, and support .copy().
+            # For these tests, just omitting them works + is simpler.
+            Mock(spec=DimCoord, points=self.points[0], bounds=None),
+            Mock(spec=DimCoord, points=self.points[1], bounds=None),
+            Mock(spec=DimCoord, points=self.points[2], bounds=None),
         ]
         self.src_dims_common = [0, 1, 2]
         self.container = DimCoord
@@ -2142,10 +2137,14 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
             sentinel.tgt_metadata_3,
         ]
         self.tgt_coords = [
-            sentinel.tgt_coord_0,
-            sentinel.tgt_coord_1,
-            sentinel.tgt_coord_2,
-            sentinel.tgt_coord_3,
+            # N.B. these need to mimic a Coord with points and bounds, and
+            # be of a class which is not-a-MeshCoord.
+            # NOTE: strictly, bounds should =above values, and support .copy().
+            # For these tests, just omitting them works + is simpler.
+            Mock(spec=DimCoord, points=self.points[0], bounds=None),
+            Mock(spec=DimCoord, points=self.points[1], bounds=None),
+            Mock(spec=DimCoord, points=self.points[2], bounds=None),
+            Mock(spec=DimCoord, points=self.points[3], bounds=None),
         ]
         self.tgt_dims_common = [1, 2, 3]
         self.tgt_dim_coverage = _DimCoverage(
@@ -2275,7 +2274,12 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         #
         # src-to-tgt mapping:
         #   0->1, 1->2, 2->3
-        self.points = (sentinel.points_0, sentinel.points_1, sentinel.points_2)
+        self.points = (
+            sentinel.points_0,
+            sentinel.points_1,
+            sentinel.points_2,
+            sentinel.points_3,
+        )
         self.bounds = (sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2)
         self.pb_0 = (
             mock.Mock(copy=mock.Mock(return_value=self.points[0])),
@@ -2318,9 +2322,13 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
             ),
         ]
         self.src_coords = [
-            sentinel.src_coord_0,
-            sentinel.src_coord_1,
-            sentinel.src_coord_2,
+            # N.B. these need to mimic a Coord with points and bounds, but also
+            # the type() defines the 'container' property of a prepared item.
+            # It seems that 'type()' is not fake-able in Python, so we need to
+            # provide *real* DimCoords, to match "self.container" below.
+            DimCoord(points=[0], bounds=None),
+            DimCoord(points=[1], bounds=None),
+            DimCoord(points=[2], bounds=None),
         ]
         self.src_dims = [(dim,) for dim in self.mapping.keys()]
         self.src_common_items = [
@@ -2329,10 +2337,14 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         ]
         self.tgt_metadata = [sentinel.tgt_metadata_0] + self.src_metadata
         self.tgt_coords = [
-            sentinel.tgt_coord_0,
-            sentinel.tgt_coord_1,
-            sentinel.tgt_coord_2,
-            sentinel.tgt_coord_3,
+            # N.B. these need to mimic a Coord with points and bounds, but also
+            # the type() defines the 'container' property of a prepared item.
+            # It seems that 'type()' is not fake-able in Python, so we need to
+            # provide *real* DimCoords, to match "self.container" below.
+            DimCoord(points=[0], bounds=None),
+            DimCoord(points=[1], bounds=None),
+            DimCoord(points=[2], bounds=None),
+            DimCoord(points=[3], bounds=None),
         ]
         self.tgt_dims = [None] + [(dim,) for dim in self.mapping.values()]
         self.tgt_common_items = [
@@ -4623,6 +4635,11 @@ class Test_cube(tests.IrisTest):
         self.m_coord.side_effect = self.prepared_factory_side_effect
         self.resolve.prepared_category = prepared_category
         self.resolve.prepared_factories = prepared_factories
+
+        # Required to stop mock 'containers' failing in an 'issubclass' call.
+        self.patch(
+            "iris.common.resolve.issubclass", mock.Mock(return_value=False)
+        )
 
     def test_no_resolved_shape(self):
         self.resolve._broadcast_shape = None

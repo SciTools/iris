@@ -313,7 +313,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         #     002 : fc_provides_coordinate_(time[[_period]])
         #     003 : fc_build_coordinate_(time[[_period]])
         msg = "Failed to create.* dimension coordinate"
-        result = self.run_testcase(values_all_zero=True, warning=msg)
+        result = self.run_testcase(values_all_zero=True, warning_regex=msg)
         self.check_result(result, "aux")
 
     def test_dim_fails_typeident(self):

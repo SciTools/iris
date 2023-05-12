@@ -1,0 +1,23 @@
+dimensions:
+	projection_x_coordinate = 4 ;
+	projection_y_coordinate = 3 ;
+variables:
+	int64 air_pressure_anomaly(projection_y_coordinate, projection_x_coordinate) ;
+		air_pressure_anomaly:standard_name = "air_pressure_anomaly" ;
+		air_pressure_anomaly:grid_mapping = "stereographic" ;
+	int stereographic ;
+		stereographic:grid_mapping_name = "stereographic" ;
+		stereographic:longitude_of_projection_origin = 20. ;
+		stereographic:latitude_of_projection_origin = -10. ;
+		stereographic:false_easting = 500000. ;
+		stereographic:false_northing = -200000. ;
+		stereographic:scale_factor_at_projection_origin = 1.3 ;
+	int64 projection_y_coordinate(projection_y_coordinate) ;
+		projection_y_coordinate:axis = "Y" ;
+		projection_y_coordinate:units = "m" ;
+		projection_y_coordinate:standard_name = "projection_y_coordinate" ;
+	int64 projection_x_coordinate(projection_x_coordinate) ;
+		projection_x_coordinate:axis = "X" ;
+		projection_x_coordinate:units = "m" ;
+		projection_x_coordinate:standard_name = "projection_x_coordinate" ;
+}

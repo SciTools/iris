@@ -25,7 +25,7 @@ In what follows we'll refer to the upstream iris ``main`` branch, as
 * If you can possibly avoid it, avoid merging trunk or any other branches into
   your feature branch while you are working.
 * If you do find yourself merging from trunk, consider :ref:`rebase-on-trunk`
-* Ask on the `Iris GitHub Discussions`_ if you get stuck.
+* Ask on the Iris `GitHub Discussions`_ if you get stuck.
 * Ask for code review!
 
 This way of working helps to keep work well organized, with readable history.
@@ -157,7 +157,7 @@ Ask for Your Changes to be Reviewed or Merged
 When you are ready to ask for someone to review your code and consider a merge:
 
 #. Go to the URL of your forked repo, say
-   ``http://github.com/your-user-name/iris``.
+   ``https://github.com/your-user-name/iris``.
 #. Use the 'Switch Branches' dropdown menu near the top left of the page to
    select the branch with your changes:
 
@@ -190,7 +190,7 @@ Delete a Branch on Github
    git push origin :my-unwanted-branch
 
 Note the colon ``:`` before ``test-branch``.  See also:
-http://github.com/guides/remove-a-remote-branch
+https://github.com/guides/remove-a-remote-branch
 
 
 Several People Sharing a Single Repository
@@ -203,7 +203,7 @@ share it via github.
 First fork iris into your account, as from :ref:`forking`.
 
 Then, go to your forked repository github page, say
-``http://github.com/your-user-name/iris``, select :guilabel:`Settings`,
+``https://github.com/your-user-name/iris``, select :guilabel:`Settings`,
 :guilabel:`Manage Access` and then :guilabel:`Invite collaborator`.
 
 .. note:: For more information on sharing your repository see the

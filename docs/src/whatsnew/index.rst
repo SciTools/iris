@@ -1,16 +1,22 @@
+.. include:: ../common_links.inc
+
 .. _iris_whatsnew:
 
 What's New in Iris
-******************
+------------------
 
-These "What's new" pages describe the important changes between major
-Iris versions.
-
+.. include:: latest.rst
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
-   dev.rst
+   latest.rst
+   3.6.rst
+   3.5.rst
+   3.4.rst
+   3.3.rst
+   3.2.rst
    3.1.rst
    3.0.rst
    2.4.rst

@@ -10,6 +10,10 @@ high quality, production ready 1D and 2D plots.
 The functionality of the Matplotlib :py:mod:`~matplotlib.pyplot` module has 
 been extended within Iris to facilitate easy visualisation of a cube's data.
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_zonal_means.py` (Plotting with multiple axes)
 
 ***************************
 Matplotlib's Pyplot Basics
@@ -82,9 +86,9 @@ so ensure that interactive mode is turned off with::
 
         plt.interactive(False)
 
-
-Saving a Plot
-=============
+===============
+ Saving a Plot
+===============
 
 The :py:func:`matplotlib.pyplot.savefig` function is similar to **plt.show()** 
 in that they are both *non-interactive* visualisation modes. 
@@ -101,15 +105,15 @@ see :py:func:`matplotlib.pyplot.savefig`).
 
 Some of the formats which are supported by **plt.savefig**:
 
-	======  ======  ======================================================================
-	Format  Type    Description
-	======  ======  ======================================================================
-	EPS     Vector  Encapsulated PostScript
-	PDF     Vector  Portable Document Format
-	PNG     Raster  Portable Network Graphics, a format with a lossless compression method
-	PS      Vector  PostScript, ideal for printer output
-	SVG     Vector  Scalable Vector Graphics, XML based
-	======  ======  ======================================================================
+======  ======  ======================================================================
+Format  Type    Description
+======  ======  ======================================================================
+EPS     Vector  Encapsulated PostScript
+PDF     Vector  Portable Document Format
+PNG     Raster  Portable Network Graphics, a format with a lossless compression method
+PS      Vector  PostScript, ideal for printer output
+SVG     Vector  Scalable Vector Graphics, XML based
+======  ======  ======================================================================
 
 ******************
 Iris Cube Plotting
@@ -125,12 +129,12 @@ wrapper functions.
 
 As a rule of thumb:
 
-   * if you wish to do a visualisation with a cube, use ``iris.plot`` or 
-     ``iris.quickplot``.
-   * if you wish to show, save or manipulate **any** visualisation, 
-     including ones created with Iris, use ``matplotlib.pyplot``.
-   * if you wish to create a non cube visualisation, also use 
-     ``matplotlib.pyplot``.
+* if you wish to do a visualisation with a cube, use ``iris.plot`` or
+  ``iris.quickplot``.
+* if you wish to show, save or manipulate **any** visualisation,
+  including ones created with Iris, use ``matplotlib.pyplot``.
+* if you wish to create a non cube visualisation, also use
+  ``matplotlib.pyplot``.
 
 The ``iris.quickplot`` module is exactly the same as the ``iris.plot`` module, 
 except that ``quickplot`` will add a title, x and y labels and a colorbar 

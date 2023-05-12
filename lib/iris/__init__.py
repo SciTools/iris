@@ -44,6 +44,10 @@ All the load functions share very similar arguments:
         standard library function :func:`os.path.expanduser` and
         module :mod:`fnmatch` for more details.
 
+        .. warning::
+
+            If supplying a URL, only OPeNDAP Data Sources are supported.
+
     * constraints:
         Either a single constraint, or an iterable of constraints.
         Each constraint can be either a string, an instance of
@@ -87,24 +91,29 @@ All the load functions share very similar arguments:
 
 import contextlib
 import glob
+import importlib
 import itertools
 import os.path
 import pathlib
 import threading
 
 import iris._constraints
-from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
 import iris.io
+
+from ._deprecation import IrisDeprecation, warn_deprecated
+
+try:
+    from ._version import version as __version__  # noqa: F401
+except ModuleNotFoundError:
+    __version__ = "unknown"
+
 
 try:
     import iris_sample_data
 except ImportError:
     iris_sample_data = None
 
-
-# Iris revision.
-__version__ = "3.2.dev0"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
@@ -121,6 +130,7 @@ __all__ = [
     "sample_data_path",
     "save",
     "site_configuration",
+    "use_plugin",
 ]
 
 
@@ -132,37 +142,45 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self):
+    def __init__(self, datum_support=False, pandas_ndim=False):
         """
         A container for run-time options controls.
 
         To adjust the values simply update the relevant attribute from
         within your code. For example::
 
+            # example_future_flag is a fictional example.
             iris.FUTURE.example_future_flag = False
 
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
-        .. note::
-
-            iris.FUTURE.example_future_flag does not exist. It is provided
-            as an example because there are currently no flags in
-            iris.Future.
+        Parameters
+        ----------
+        datum_support : bool, default=False
+            Opts in to loading coordinate system datum information from NetCDF
+            files into :class:`~iris.coord_systems.CoordSystem`\\ s, wherever
+            this information is present.
+        pandas_ndim : bool, default=False
+            See :func:`iris.pandas.as_data_frame` for details - opts in to the
+            newer n-dimensional behaviour.
 
         """
-        # The flag 'example_future_flag' is provided as a future reference
-        # for the structure of this class.
+        # The flag 'example_future_flag' is provided as a reference for the
+        # structure of this class.
+        #
+        # Note that self.__dict__ is used explicitly due to the manner in which
+        # __setattr__ is overridden.
         #
         # self.__dict__['example_future_flag'] = example_future_flag
-        pass
+        self.__dict__["datum_support"] = datum_support
+        self.__dict__["pandas_ndim"] = pandas_ndim
 
     def __repr__(self):
-
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future()"
-        return msg.format()
+        msg = "Future(datum_support={}, pandas_ndim={})"
+        return msg.format(self.datum_support, self.pandas_ndim)
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
@@ -201,14 +219,10 @@ class Future(threading.local):
         statement, the previous state is restored.
 
         For example::
+
+            # example_future_flag is a fictional example.
             with iris.FUTURE.context(example_future_flag=False):
                 # ... code that expects some past behaviour
-
-        .. note::
-
-            iris.FUTURE.example_future_flag does not exist and is
-            provided only as an example since there are currently no
-            flags in Future.
 
         """
         # Save the current context
@@ -287,6 +301,7 @@ def load(uris, constraints=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -315,6 +330,7 @@ def load_cube(uris, constraint=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -354,6 +370,7 @@ def load_cubes(uris, constraints=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -399,6 +416,7 @@ def load_raw(uris, constraints=None, callback=None):
 
     * uris:
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
     Kwargs:
 
@@ -454,3 +472,22 @@ def sample_data_path(*path_to_join):
             "appropriate for general file access.".format(target)
         )
     return target
+
+
+def use_plugin(plugin_name):
+    """
+    Convenience function to import a plugin
+
+    For example::
+
+        use_plugin("my_plugin")
+
+    is equivalent to::
+
+        import iris.plugins.my_plugin
+
+    This is useful for plugins that are not used directly, but instead do all
+    their setup on import.  In this case, style checkers would not know the
+    significance of the import statement and warn that it is an unused import.
+    """
+    importlib.import_module(f"iris.plugins.{plugin_name}")

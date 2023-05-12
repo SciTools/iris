@@ -3,10 +3,10 @@
   <cube dtype="int64" long_name="thingness" units="1">
     <coords>
       <coord>
-        <auxCoord bounds="[[0, 60]]" id="434cbbd8" long_name="bar" points="[30.0]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord bounds="[[ 0, 60]]" id="434cbbd8" long_name="bar" points="[30.]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord bounds="[[-25, 70]]" id="b0d35dcf" long_name="foo" points="[22.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord bounds="[[-25,  70]]" id="b0d35dcf" long_name="foo" points="[22.5]" shape="(1,)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

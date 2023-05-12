@@ -419,7 +419,7 @@ class MixinCallDetails:
             expected = CubeList(fldset_1 + fldset_2)
         else:
             # 'Raw' cubes have combined (vector) times within each file.
-            # The 'other' phenomenon appears seperately.
+            # The 'other' phenomenon appears separately.
             expected = CubeList(
                 [
                     CubeList(fldset_1[:2]).merge_cube(),

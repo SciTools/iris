@@ -11,7 +11,7 @@ import numpy.ma as ma
 
 from iris._lazy_data import map_complete_blocks
 from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
-from iris.analysis._regrid import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder, _create_cube
 import iris.analysis.cartography
 import iris.coord_systems
 from iris.util import _meshgrid
@@ -433,7 +433,7 @@ def _spherical_area(y_bounds, x_bounds, radius=1.0):
     Args:
 
     * y_bounds:
-        An (n, 2) shaped NumPy array of latitide bounds in radians.
+        An (n, 2) shaped NumPy array of latitude bounds in radians.
     * x_bounds:
         An (m, 2) shaped NumPy array of longitude bounds in radians.
     * radius:
@@ -586,7 +586,7 @@ def _regrid_area_weighted_array(
     y_dim = src_data.ndim - 2
 
     # Create empty "pre-averaging" data array that will enable the
-    # src_data data coresponding to a given target grid point,
+    # src_data data corresponding to a given target grid point,
     # to be stacked per point.
     # Note that dtype is not preserved and that the array mask
     # allows for regions that do not overlap.
@@ -853,7 +853,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         cached_x_bounds = []
         cached_x_indices = []
         max_x_indices = 0
-        for (x_0, x_1) in grid_x_bounds:
+        for x_0, x_1 in grid_x_bounds:
             if grid_x_decreasing:
                 x_0, x_1 = x_1, x_0
             x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
@@ -1111,18 +1111,32 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     )
 
     # Wrap up the data as a Cube.
-    regrid_callback = RectilinearRegridder._regrid
-    new_cube = RectilinearRegridder._create_cube(
+
+    _regrid_callback = functools.partial(
+        RectilinearRegridder._regrid,
+        src_x_coord=src_x,
+        src_y_coord=src_y,
+        sample_grid_x=meshgrid_x,
+        sample_grid_y=meshgrid_y,
+    )
+    # TODO: investigate if an area weighted callback would be more appropriate.
+    # _regrid_callback = functools.partial(
+    #     _regrid_area_weighted_array,
+    #     weights_info=weights_info,
+    #     index_info=index_info,
+    #     mdtol=mdtol,
+    # )
+
+    def regrid_callback(*args, **kwargs):
+        _data, dims = args
+        return _regrid_callback(_data, *dims, **kwargs)
+
+    new_cube = _create_cube(
         new_data,
         src_cube,
-        src_x_dim,
-        src_y_dim,
-        src_x,
-        src_y,
-        grid_x,
-        grid_y,
-        meshgrid_x,
-        meshgrid_y,
+        [src_x_dim, src_y_dim],
+        [grid_x, grid_y],
+        2,
         regrid_callback,
     )
 

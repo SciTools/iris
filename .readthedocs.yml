@@ -4,9 +4,22 @@ build:
   os: ubuntu-20.04
   tools:
     python: mambaforge-4.10
+  jobs:
+    post_checkout:
+      # The SciTools/iris repository is shallow i.e., has a .git/shallow,
+      # therefore complete the repository with a full history in order
+      # to allow setuptools-scm to correctly auto-discover the version.
+      - git fetch --unshallow
+      - git fetch --all
+    # Need to stash the local changes that Read the Docs makes so that
+    #  setuptools_scm can generate the correct Iris version.
+    pre_install:
+      - git stash
+    post_install:
+      - git stash pop
 
 conda:
-  environment: requirements/ci/readthedocs.yml
+  environment: requirements/readthedocs.yml
 
 sphinx:
   configuration: docs/src/conf.py
@@ -16,5 +29,3 @@ python:
   install:
     - method: pip
       path: .
-      extra_requirements:
-        - docs

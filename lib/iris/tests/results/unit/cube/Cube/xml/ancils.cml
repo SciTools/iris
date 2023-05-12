@@ -3,48 +3,48 @@
   <cube dtype="int32" long_name="thingness" units="1">
     <coords>
       <coord datadims="[0, 1]">
-        <auxCoord bounds="[[[0, 5],
-		 [5, 10],
-		 [10, 15],
-		 [15, 20]],
+        <auxCoord bounds="[[[ 0,  5],
+  [ 5, 10],
+  [10, 15],
+  [15, 20]],
 
-		[[5, 15],
-		 [15, 20],
-		 [20, 35],
-		 [35, 50]],
+ [[ 5, 15],
+  [15, 20],
+  [20, 35],
+  [35, 50]],
 
-		[[10, 20],
-		 [20, 25],
-		 [25, 40],
-		 [40, 60]]]" id="434cbbd8" long_name="bar" points="[[2.5, 7.5, 12.5, 17.5],
-		[10.0, 17.5, 27.5, 42.5],
-		[15.0, 22.5, 32.5, 50.0]]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
+ [[10, 20],
+  [20, 25],
+  [25, 40],
+  [40, 60]]]" id="434cbbd8" long_name="bar" points="[[ 2.5,  7.5, 12.5, 17.5],
+ [10. , 17.5, 27.5, 42.5],
+ [15. , 22.5, 32.5, 50. ]]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord bounds="[[[-15, 0],
-		 [0, 15],
-		 [15, 30],
-		 [30, 45]],
+        <auxCoord bounds="[[[-15,   0],
+  [  0,  15],
+  [ 15,  30],
+  [ 30,  45]],
 
-		[[-25, 0],
-		 [0, 8],
-		 [8, 45],
-		 [45, 50]],
+ [[-25,   0],
+  [  0,   8],
+  [  8,  45],
+  [ 45,  50]],
 
-		[[-5, 10],
-		 [10, 18],
-		 [18, 55],
-		 [18, 70]]]" id="b0d35dcf" long_name="foo" points="[[-7.5, 7.5, 22.5, 37.5],
-		[-12.5, 4.0, 26.5, 47.5],
-		[2.5, 14.0, 36.5, 44.0]]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
+ [[ -5,  10],
+  [ 10,  18],
+  [ 18,  55],
+  [ 18,  70]]]" id="b0d35dcf" long_name="foo" points="[[ -7.5,   7.5,  22.5,  37.5],
+ [-12.5,   4. ,  26.5,  47.5],
+ [  2.5,  14. ,  36.5,  44. ]]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
     <ancillaryVariables>
       <ancillary-var datadims="[0, 1]">
-        <ancillaryVariable data="[[0.0, 0.0, 0.0, 0.0],
-		[0.0, 0.0, 0.0, 0.0],
-		[0.0, 0.0, 0.0, 0.0]]" id="a80ae209" long_name="xy" shape="(3, 4)" units="Unit('1')" value_type="float64" var_name="vxy"/>
+        <ancillaryVariable data="[[0., 0., 0., 0.],
+ [0., 0., 0., 0.],
+ [0., 0., 0., 0.]]" id="a80ae209" long_name="xy" shape="(3, 4)" units="Unit('1')" value_type="float64" var_name="vxy"/>
       </ancillary-var>
     </ancillaryVariables>
     <data checksum="0xb6520b51" dtype="int32" shape="(3, 4)"/>

@@ -48,11 +48,25 @@ class FullHeader:
         self.dimension_header = DimensionHeader(cube)
 
 
-def string_repr(text, quote_strings=False):
+def string_repr(text, quote_strings=False, clip_strings=False):
     """Produce a one-line printable form of a text string."""
-    if re.findall("[\n\t]", text) or quote_strings:
+    force_quoted = re.findall("[\n\t]", text) or quote_strings
+    if force_quoted:
         # Replace the string with its repr (including quotes).
         text = repr(text)
+    if clip_strings:
+        # First check for quotes.
+        # N.B. not just 'quote_strings', but also array values-as-strings
+        has_quotes = text[0] in "\"'"
+        if has_quotes:
+            # Strip off (and store) any outer quotes before clipping.
+            pre_quote, post_quote = text[0], text[-1]
+            text = text[1:-1]
+        # clipping : use 'rider' with extra space in case it ends in a '.'
+        text = iris.util.clip_string(text, rider=" ...")
+        if has_quotes:
+            # Replace in original quotes
+            text = pre_quote + text + post_quote
     return text
 
 
@@ -62,17 +76,20 @@ def array_repr(arr):
     text = repr(arr)
     # ..then reduce any multiple spaces and newlines.
     text = re.sub("[ \t\n]+", " ", text)
+    text = string_repr(text, quote_strings=False, clip_strings=True)
     return text
 
 
-def value_repr(value, quote_strings=False):
+def value_repr(value, quote_strings=False, clip_strings=False):
     """
     Produce a single-line printable version of an attribute or scalar value.
     """
     if hasattr(value, "dtype"):
         value = array_repr(value)
     elif isinstance(value, str):
-        value = string_repr(value, quote_strings=quote_strings)
+        value = string_repr(
+            value, quote_strings=quote_strings, clip_strings=clip_strings
+        )
     value = str(value)
     return value
 
@@ -132,7 +149,7 @@ class VectorSummary(CoordSummary):
             self.extra = ""
 
 
-class ScalarSummary(CoordSummary):
+class ScalarCoordSummary(CoordSummary):
     def __init__(self, cube, coord):
         self.name = coord.name()
         if (
@@ -188,16 +205,24 @@ class VectorSection(Section):
         ]
 
 
-class ScalarSection(Section):
+class ScalarCoordSection(Section):
     def __init__(self, title, cube, scalars):
         self.title = title
-        self.contents = [ScalarSummary(cube, scalar) for scalar in scalars]
+        self.contents = [
+            ScalarCoordSummary(cube, scalar) for scalar in scalars
+        ]
 
 
 class ScalarCellMeasureSection(Section):
     def __init__(self, title, cell_measures):
         self.title = title
         self.contents = [cm.name() for cm in cell_measures]
+
+
+class ScalarAncillaryVariableSection(Section):
+    def __init__(self, title, ancillary_variables):
+        self.title = title
+        self.contents = [av.name() for av in ancillary_variables]
 
 
 class AttributeSection(Section):
@@ -207,12 +232,30 @@ class AttributeSection(Section):
         self.values = []
         self.contents = []
         for name, value in sorted(attributes.items()):
-            value = value_repr(value, quote_strings=True)
-            value = iris.util.clip_string(value)
+            value = value_repr(value, quote_strings=True, clip_strings=True)
             self.names.append(name)
             self.values.append(value)
             content = "{}: {}".format(name, value)
             self.contents.append(content)
+
+
+class ScalarMeshSection(AttributeSection):
+    # This happens to behave just like an attribute sections, but it
+    # initialises direct from the cube.
+    def __init__(self, title, cube):
+        self.title = title
+        self.names = []
+        self.values = []
+        self.contents = []
+        if cube.mesh is not None:
+            self.names.extend(["name", "location"])
+            self.values.extend([cube.mesh.name(), cube.location])
+            self.contents.extend(
+                [
+                    "{}: {}".format(name, value)
+                    for name, value in zip(self.names, self.values)
+                ]
+            )
 
 
 class CellMethodSection(Section):
@@ -221,13 +264,11 @@ class CellMethodSection(Section):
         self.names = []
         self.values = []
         self.contents = []
-        for method in cell_methods:
-            name = method.method
-            # Remove "method: " from the front of the string, leaving the value.
-            value = str(method)[len(name + ": ") :]
-            self.names.append(name)
+        for index, method in enumerate(cell_methods):
+            value = str(method)
+            self.names.append(str(index))
             self.values.append(value)
-            content = "{}: {}".format(name, value)
+            content = "{}: {}".format(index, value)
             self.contents.append(content)
 
 
@@ -237,7 +278,7 @@ class CubeSummary:
 
     """
 
-    def __init__(self, cube, shorten=False, name_padding=35):
+    def __init__(self, cube, name_padding=35):
         self.header = FullHeader(cube, name_padding)
 
         # Cache the derived coords so we can rely on consistent
@@ -277,13 +318,23 @@ class CubeSummary:
             if id(coord) not in scalar_coord_ids
         ]
 
-        # cell measures
-        vector_cell_measures = [
-            cm for cm in cube.cell_measures() if cm.shape != (1,)
-        ]
-
         # Ancillary Variables
-        vector_ancillary_variables = [av for av in cube.ancillary_variables()]
+        vector_ancillary_variables = []
+        scalar_ancillary_variables = []
+        for av, av_dims in cube._ancillary_variables_and_dims:
+            if av_dims:
+                vector_ancillary_variables.append(av)
+            else:
+                scalar_ancillary_variables.append(av)
+
+        # Cell Measures
+        vector_cell_measures = []
+        scalar_cell_measures = []
+        for cm, cm_dims in cube._cell_measures_and_dims:
+            if cm_dims:
+                vector_cell_measures.append(cm)
+            else:
+                scalar_cell_measures.append(cm)
 
         # Sort scalar coordinates by name.
         scalar_coords.sort(key=lambda coord: coord.name())
@@ -297,9 +348,6 @@ class CubeSummary:
         vector_derived_coords.sort(
             key=lambda coord: (cube.coord_dims(coord), coord.name())
         )
-        scalar_cell_measures = [
-            cm for cm in cube.cell_measures() if cm.shape == (1,)
-        ]
 
         self.vector_sections = {}
 
@@ -322,13 +370,20 @@ class CubeSummary:
         def add_scalar_section(section_class, title, *args):
             self.scalar_sections[title] = section_class(title, *args)
 
+        add_scalar_section(ScalarMeshSection, "Mesh:", cube)
+
         add_scalar_section(
-            ScalarSection, "Scalar coordinates:", cube, scalar_coords
+            ScalarCoordSection, "Scalar coordinates:", cube, scalar_coords
         )
         add_scalar_section(
             ScalarCellMeasureSection,
             "Scalar cell measures:",
             scalar_cell_measures,
+        )
+        add_scalar_section(
+            ScalarAncillaryVariableSection,
+            "Scalar ancillary variables:",
+            scalar_ancillary_variables,
         )
         add_scalar_section(
             CellMethodSection, "Cell methods:", cube.cell_methods

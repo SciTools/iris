@@ -511,7 +511,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         result = self.coord_representations(shape=(2,), dates=True)
         expected = [
             "<AuxCoord: x / (days since 1970-03-5)  [...]  shape(2,)>",
-            "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
+            "AuxCoord :  x / (days since 1970-03-5, standard calendar)",
             "    points: [1970-03-05 00:00:00, 1970-03-06 00:00:00]",
             "    shape: (2,)",
             "    dtype: float64",
@@ -540,7 +540,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             ),
             (
                 "AuxCoord :  time / (hours since 2025-03-23 01:00:00, "
-                "gregorian calendar)"
+                "standard calendar)"
             ),
             "    points: [2025-03-23 01:00:00]",
             "    shape: (1,)",
@@ -553,7 +553,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         result = self.coord_representations(dates=True, bounded=True)
         expected = [
             "<AuxCoord: x / (days since 1970-03-5)  [...]+bounds  shape(5,)>",
-            "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
+            "AuxCoord :  x / (days since 1970-03-5, standard calendar)",
             "    points: [",
             "        1970-03-05 00:00:00, 1970-03-06 00:00:00,",
             "        1970-03-07 00:00:00, 1970-03-08 00:00:00,",
@@ -574,7 +574,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         result = self.coord_representations(dates=True, masked=True)
         expected = [
             "<AuxCoord: x / (days since 1970-03-5)  [...]  shape(5,)>",
-            "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
+            "AuxCoord :  x / (days since 1970-03-5, standard calendar)",
             "    points: [",
             "        1970-03-05 00:00:00, --                 ,",
             "        1970-03-07 00:00:00, 1970-03-08 00:00:00,",
@@ -749,7 +749,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
             ),
             (
                 "DimCoord :  time / (days since 1970-01-01 00:00:00-00, "
-                "gregorian calendar)"
+                "standard calendar)"
             ),
             "    points: [2001-01-10 00:00:00]",
             "    bounds: [[2001-01-10 00:00:00, 2011-01-10 00:00:00]]",
@@ -911,11 +911,11 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
         result = self.repr_str_strings(meshco)
         expected = [
             (
-                "<MeshCoord: longitude / (degrees_east)  "
+                "<MeshCoord: longitude / (unknown)  "
                 "mesh(test_mesh) location(face)  "
                 "[...]+bounds  shape(3,)>"
             ),
-            "MeshCoord :  longitude / (degrees_east)",
+            "MeshCoord :  longitude / (unknown)",
             "    mesh: <Mesh: 'test_mesh'>",
             "    location: 'face'",
             "    points: [3100, 3101, 3102]",
@@ -926,10 +926,6 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    shape: (3,)  bounds(3, 4)",
             "    dtype: int64",
             "    standard_name: 'longitude'",
-            "    long_name: 'long-name'",
-            "    attributes:",
-            "        a  1",
-            "        b  'c'",
             "    axis: 'x'",
         ]
         self.assertLines(expected, result)
@@ -1054,7 +1050,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
         coord = self.sample_coord(dates=True)
         result = coord.summary()
         expected = [
-            "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
+            "AuxCoord :  x / (days since 1970-03-5, standard calendar)",
             "    points: [",
             (
                 "        1970-03-05 00:00:00, 1970-03-06 00:00:00, "
@@ -1069,7 +1065,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
 
         result = coord.summary(convert_dates=False)
         expected = [
-            "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
+            "AuxCoord :  x / (days since 1970-03-5, standard calendar)",
             "    points: [0., 1., 2., 3., 4.]",
             "    shape: (5,)",
             "    dtype: float64",

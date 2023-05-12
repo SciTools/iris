@@ -10,8 +10,9 @@ AuxFactory benchmark tests.
 
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE
 from iris import aux_factory, coords
+
+from . import ARTIFICIAL_DIM_SIZE
 
 
 class FactoryCommon:
@@ -42,10 +43,6 @@ class FactoryCommon:
         """Create an instance of the benchmarked factory. create method is
         specified in the subclass."""
         self.create()
-
-    def time_return(self):
-        """Return an instance of the benchmarked factory."""
-        self.factory
 
 
 class HybridHeightFactory(FactoryCommon):

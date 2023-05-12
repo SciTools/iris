@@ -1,4 +1,4 @@
 <?xml version="1.0" ?>
-<auxCoord bounds="[[-180.0, -90.0],
-		[-90.0, 0.0],
-		[0.0, 90.0]]" id="6a05e671" long_name="foo" points="[-135.0, -45.0, 45.0]" shape="(3,)" units="Unit('degrees')" value_type="float32"/>
+<auxCoord bounds="[[-180.,  -90.],
+ [ -90.,    0.],
+ [   0.,   90.]]" id="6a05e671" long_name="foo" points="[-135.,  -45.,   45.]" shape="(3,)" units="Unit('degrees')" value_type="float32"/>

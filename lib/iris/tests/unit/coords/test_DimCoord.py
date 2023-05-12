@@ -304,7 +304,6 @@ class Test__getitem__(tests.IrisTest, DimCoordTestMixin):
             points_type_name,
             bounds_type_name,
         ) in coords_all_dtypes_and_lazynesses(self, DimCoord):
-
             sub_coord = main_coord[:2]
 
             coord_dtype = main_coord.dtype
@@ -404,7 +403,6 @@ class Test__getitem__(tests.IrisTest, DimCoordTestMixin):
             points_lazyness,
             bounds_lazyness,
         ) in coords_all_dtypes_and_lazynesses(self, DimCoord):
-
             sub_coord = main_coord[:2]
 
             msg = (
@@ -470,7 +468,6 @@ class Test_copy(tests.IrisTest, DimCoordTestMixin):
             points_type_name,
             bounds_type_name,
         ) in coords_all_dtypes_and_lazynesses(self, DimCoord):
-
             copied_coord = main_coord.copy()
 
             copied_points = copied_coord.core_points()
@@ -608,6 +605,18 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         coord = DimCoord(pts, bounds=bnds)
         bnds[1, 1] = 10
         self.assertEqual(coord.bounds[1, 1], 5)
+
+    def test_flip_contiguous(self):
+        pts = np.arange(4)
+        bnds = np.transpose([np.arange(1, 5), np.arange(4)])
+        coord = DimCoord(pts, bounds=bnds)
+        self.assertArrayEqual(coord.bounds, bnds[:, ::-1])
+
+    def test_flip_contiguous_decreasing(self):
+        pts = np.arange(4, 0, -1)
+        bnds = np.transpose([np.arange(4, 0, -1), np.arange(5, 1, -1)])
+        coord = DimCoord(pts, bounds=bnds)
+        self.assertArrayEqual(coord.bounds, bnds[:, ::-1])
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ variables:
 		time:axis = "T" ;
 		time:units = "hours since 1970-01-01 00:00:00" ;
 		time:standard_name = "time" ;
-		time:calendar = "gregorian" ;
+		time:calendar = "standard" ;
 	int model_level_number(model_level_number) ;
 		model_level_number:axis = "Z" ;
 		model_level_number:units = "1" ;
@@ -46,7 +46,7 @@ variables:
 	double forecast_reference_time ;
 		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
 		forecast_reference_time:standard_name = "forecast_reference_time" ;
-		forecast_reference_time:calendar = "gregorian" ;
+		forecast_reference_time:calendar = "standard" ;
 	float level_height(model_level_number) ;
 		level_height:bounds = "level_height_bnds" ;
 		level_height:units = "m" ;

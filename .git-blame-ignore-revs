@@ -1,0 +1,20 @@
+# Format: numpy array format (#5235)
+c18dcd8dafef0cc7bbbf80dfce66f76a46ce59c5
+
+# style: flake8 (#3755)
+7c86bc0168684345dc475457b1a77dadc77ce9bb
+
+# style: black (#3518)
+ffcfad475e0593e1e40895453cf1df154e5f6f2c
+
+# style: isort (#4174)
+15bbcc5ac3d539cb6e820148b66e7cf55d91c5d2
+
+# style: blacken-docs (#4205)
+1572e180243e492d8ff76fa8cdefb82ef6f90415
+
+# style: sort-all (#4353)
+64705dbc40881233aae45f051d96049150369e53
+
+# style: codespell (#5186)
+417aa6bbd9b10d25cad7def54d47ef4d718bc38d

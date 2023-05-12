@@ -18,7 +18,7 @@ not :
 
 3) Iris-specific info is (still) stored in additional properties created on
    the engine object :
-       engine.cf_var, .cube, .cube_parts, .requires, .rule_triggered, .filename
+       engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered, .filename
 
 Our "rules" are just action routines.
 The top-level 'run_actions' routine decides which actions to call, based on the
@@ -78,7 +78,7 @@ def action_function(func):
             # but also may vary depending on whether it successfully
             # triggered, and if so what it matched.
             rule_name = _default_rulenamesfunc(func.__name__)
-        engine.rule_triggered.add(rule_name)
+        engine.rules_triggered.add(rule_name)
 
     func._rulenames_func = _default_rulenamesfunc
     return inner
@@ -110,8 +110,12 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
         hh.build_transverse_mercator_coordinate_system,
     ),
     hh.CF_GRID_MAPPING_STEREO: (
-        hh.has_supported_stereographic_parameters,
+        None,
         hh.build_stereographic_coordinate_system,
+    ),
+    hh.CF_GRID_MAPPING_POLAR: (
+        hh.has_supported_polar_stereographic_parameters,
+        hh.build_polar_stereographic_coordinate_system,
     ),
     hh.CF_GRID_MAPPING_LAMBERT_CONFORMAL: (
         None,

@@ -9,6 +9,7 @@
 # SciTools/iris-code-generators:tools/gen_rules.py
 
 import calendar
+from functools import wraps
 
 import cf_units
 import numpy as np
@@ -514,7 +515,7 @@ def _new_coord_and_dims(
 _HOURS_UNIT = cf_units.Unit("hours")
 
 
-def _epoch_date_hours(epoch_hours_unit, datetime):
+def _epoch_date_hours_internals(epoch_hours_unit, datetime):
     """
     Return an 'hours since epoch' number for a date.
 
@@ -547,7 +548,7 @@ def _epoch_date_hours(epoch_hours_unit, datetime):
         if m == 0:
             # Add a 'January', by changing month=0 to 1.
             m = 1
-            if calendar == cf_units.CALENDAR_GREGORIAN:
+            if calendar == cf_units.CALENDAR_STANDARD:
                 days_offset += 31
             elif calendar == cf_units.CALENDAR_360_DAY:
                 days_offset += 30
@@ -560,7 +561,7 @@ def _epoch_date_hours(epoch_hours_unit, datetime):
         if y == 0:
             # Add a 'Year 0', by changing year=0 to 1.
             y = 1
-            if calendar == cf_units.CALENDAR_GREGORIAN:
+            if calendar == cf_units.CALENDAR_STANDARD:
                 days_in_year_0 = 366
             elif calendar == cf_units.CALENDAR_360_DAY:
                 days_in_year_0 = 360
@@ -587,6 +588,30 @@ def _epoch_date_hours(epoch_hours_unit, datetime):
         epoch_hours -= 24.0 * days_offset
 
     return epoch_hours
+
+
+_epoch_date_hours_cache = {}
+_epoch_date_hours_cache_max_size = 128  # lru_cache default
+
+
+@wraps(_epoch_date_hours_internals)
+def _epoch_date_hours(epoch_hours_unit, datetime):
+    # Not using functools.lru_cache because it does an equality check that fails
+    # on datetime objects from different calendars.
+
+    key = (epoch_hours_unit, hash(datetime))
+
+    if key not in _epoch_date_hours_cache:
+        _epoch_date_hours_cache[key] = _epoch_date_hours_internals(
+            epoch_hours_unit, datetime
+        )
+
+        # Limit cache size
+        while len(_epoch_date_hours_cache) > _epoch_date_hours_cache_max_size:
+            oldest_item = next(iter(_epoch_date_hours_cache))
+            _epoch_date_hours_cache.pop(oldest_item, None)
+
+    return _epoch_date_hours_cache[key]
 
 
 def _convert_time_coords(
@@ -731,7 +756,6 @@ def _convert_time_coords(
             )
         )
     ):
-
         coords_and_dims.append(
             _new_coord_and_dims(
                 do_vector,

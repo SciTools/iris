@@ -74,6 +74,11 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
         target = [0, 0, 0, 0, 0]
         self._test_nearest_neighbour_index(target)
 
+    def test_bounded_float_point(self):
+        coord = DimCoord(1, bounds=[0, 2])
+        result = coord.nearest_neighbour_index(2.5)
+        self.assertEqual(result, 0)
+
 
 class Test_nearest_neighbour_index__descending(tests.IrisTest):
     def setUp(self):
@@ -327,7 +332,8 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         )
         for units in ["unknown", "no_unit", 1, "K"]:
             coord.units = units
-            collapsed_coord = coord.collapsed()
+            with self.assertNoWarningsRegexp():
+                collapsed_coord = coord.collapsed()
             self.assertArrayEqual(
                 collapsed_coord.points, np.mean(coord.points)
             )
@@ -457,7 +463,6 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         )
 
     def test_lazy_nd_points_and_bounds(self):
-
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy)
 
@@ -468,6 +473,96 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
         self.assertArrayEqual(collapsed_coord.points, da.array([55]))
         self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
+
+    def test_numeric_nd_multidim_bounds_warning(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
+
+        msg = (
+            "Collapsing a multi-dimensional coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        with self.assertWarnsRegex(UserWarning, msg):
+            coord.collapsed()
+
+    def test_lazy_nd_multidim_bounds_warning(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
+
+        msg = (
+            "Collapsing a multi-dimensional coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        with self.assertWarnsRegex(UserWarning, msg):
+            coord.collapsed()
+
+    def test_numeric_nd_noncontiguous_bounds_warning(self):
+        self.setupTestArrays((3))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
+
+        msg = (
+            "Collapsing a non-contiguous coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        with self.assertWarnsRegex(UserWarning, msg):
+            coord.collapsed()
+
+    def test_lazy_nd_noncontiguous_bounds_warning(self):
+        self.setupTestArrays((3))
+        coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
+
+        msg = (
+            "Collapsing a non-contiguous coordinate. "
+            "Metadata may not be fully descriptive for 'y'."
+        )
+        with self.assertWarnsRegex(UserWarning, msg):
+            coord.collapsed()
+
+    def test_numeric_3_bounds(self):
+        points = np.array([2.0, 6.0, 4.0])
+        bounds = np.array([[1.0, 0.0, 3.0], [5.0, 4.0, 7.0], [3.0, 2.0, 5.0]])
+
+        coord = AuxCoord(points, bounds=bounds, long_name="x")
+
+        msg = (
+            r"Cannot check if coordinate is contiguous: Invalid operation for "
+            r"'x', with 3 bound\(s\). Contiguous bounds are only defined for "
+            r"1D coordinates with 2 bounds. Metadata may not be fully "
+            r"descriptive for 'x'. Ignoring bounds."
+        )
+        with self.assertWarnsRegex(UserWarning, msg):
+            collapsed_coord = coord.collapsed()
+
+        self.assertFalse(collapsed_coord.has_lazy_points())
+        self.assertFalse(collapsed_coord.has_lazy_bounds())
+
+        self.assertArrayAlmostEqual(collapsed_coord.points, np.array([4.0]))
+        self.assertArrayAlmostEqual(
+            collapsed_coord.bounds, np.array([[2.0, 6.0]])
+        )
+
+    def test_lazy_3_bounds(self):
+        points = da.arange(3) * 2.0
+        bounds = da.arange(3 * 3).reshape(3, 3)
+
+        coord = AuxCoord(points, bounds=bounds, long_name="x")
+
+        msg = (
+            r"Cannot check if coordinate is contiguous: Invalid operation for "
+            r"'x', with 3 bound\(s\). Contiguous bounds are only defined for "
+            r"1D coordinates with 2 bounds. Metadata may not be fully "
+            r"descriptive for 'x'. Ignoring bounds."
+        )
+        with self.assertWarnsRegex(UserWarning, msg):
+            collapsed_coord = coord.collapsed()
+
+        self.assertTrue(collapsed_coord.has_lazy_points())
+        self.assertTrue(collapsed_coord.has_lazy_bounds())
+
+        self.assertArrayAlmostEqual(collapsed_coord.points, da.array([2.0]))
+        self.assertArrayAlmostEqual(
+            collapsed_coord.bounds, da.array([[0.0, 4.0]])
+        )
 
 
 class Test_is_compatible(tests.IrisTest):
@@ -613,7 +708,7 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         coord = DimCoord([10, 20, 40], bounds=[[5, 15], [15, 25], [35, 45]])
         contiguous, diffs = coord._discontiguity_in_bounds()
         self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs, np.array([0, 10]))
+        self.assertArrayEqual(diffs, np.array([False, True]))
 
     def test_1d_one_cell(self):
         # Test a 1D coord with a single cell.
@@ -885,7 +980,7 @@ class Test___str__(tests.IrisTest):
         )
         expected = "\n".join(
             [
-                "DimCoord :  time / (days since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (days since 1970-01-01, standard calendar)",
                 "    points: [1970-01-06 00:00:00]",
                 "    shape: (1,)",
                 "    dtype: int64",
@@ -902,7 +997,7 @@ class Test___str__(tests.IrisTest):
         coord.guess_bounds()
         expected = "\n".join(
             [
-                "DimCoord :  time / (days since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (days since 1970-01-01, standard calendar)",
                 "    points: [1970-01-06 00:00:00, 1970-01-07 00:00:00]",
                 "    bounds: [",
                 "        [1970-01-05 12:00:00, 1970-01-06 12:00:00],",
@@ -921,7 +1016,7 @@ class Test___str__(tests.IrisTest):
         )
         expected = "\n".join(
             [
-                "DimCoord :  time / (years since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (years since 1970-01-01, standard calendar)",
                 "    points: [5]",
                 "    shape: (1,)",
                 "    dtype: int64",
@@ -938,7 +1033,7 @@ class Test___str__(tests.IrisTest):
         coord.guess_bounds()
         expected = "\n".join(
             [
-                "DimCoord :  time / (years since 1970-01-01, gregorian calendar)",
+                "DimCoord :  time / (years since 1970-01-01, standard calendar)",
                 "    points: [5, 6]",
                 "    bounds: [",
                 "        [4.5, 5.5],",
@@ -1059,7 +1154,7 @@ class Test___init____abstractmethod(tests.IrisTest):
     def test(self):
         emsg = (
             "Can't instantiate abstract class Coord with abstract"
-            " methods __init__"
+            " method.* __init__"
         )
         with self.assertRaisesRegex(TypeError, emsg):
             _ = Coord(points=[0, 1])
