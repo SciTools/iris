@@ -23,10 +23,7 @@ from iris.tests.unit.analysis.maths import (
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
-class TestBroadcasting(
-    tests.IrisTest_nometa, CubeArithmeticBroadcastingTestMixin
-):
+class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
         return operator.truediv
@@ -36,8 +33,7 @@ class TestBroadcasting(
         return divide
 
 
-@tests.iristest_timing_decorator
-class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
+class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         return operator.truediv

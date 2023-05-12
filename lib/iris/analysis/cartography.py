@@ -15,6 +15,7 @@ import warnings
 import cartopy.crs as ccrs
 import cartopy.img_transform
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -66,6 +67,10 @@ def wrap_lons(lons, base, period):
         >>> print(wrap_lons(np.array([185, 30, -200, 75]), -180, 360))
         [-175.   30.  160.   75.]
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
@@ -169,20 +174,25 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 
 def _get_lon_lat_coords(cube):
-    lat_coords = [
-        coord for coord in cube.coords() if "latitude" in coord.name()
-    ]
-    lon_coords = [
-        coord for coord in cube.coords() if "longitude" in coord.name()
-    ]
+    def search_for_coord(coord_iterable, coord_name):
+        return [
+            coord for coord in coord_iterable if coord_name in coord.name()
+        ]
+
+    lat_coords = search_for_coord(
+        cube.dim_coords, "latitude"
+    ) or search_for_coord(cube.coords(), "latitude")
+    lon_coords = search_for_coord(
+        cube.dim_coords, "longitude"
+    ) or search_for_coord(cube.coords(), "longitude")
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
-            "Calling `_get_lon_lat_coords` with multiple lat or lon coords"
+            "Calling `_get_lon_lat_coords` with multiple same-type (i.e. dim/aux) lat or lon coords"
             " is currently disallowed"
         )
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
-    return (lon_coord, lat_coord)
+    return lon_coord, lat_coord
 
 
 def _xy_range(cube, mode=None):
@@ -266,6 +276,10 @@ def get_xy_grids(cube):
 
         x, y = get_xy_grids(cube)
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
 
@@ -293,6 +307,11 @@ def get_xy_contiguous_bounded_grids(cube):
     Example::
 
         xs, ys = get_xy_contiguous_bounded_grids(cube)
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -335,7 +354,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
         raise ValueError("Bounds must be [n,2] array")
 
     # fill in a new array of areas
-    radius_sqr = radius_of_earth ** 2
+    radius_sqr = radius_of_earth**2
     radian_lat_64 = radian_lat_bounds.astype(np.float64)
     radian_lon_64 = radian_lon_bounds.astype(np.float64)
 
@@ -493,6 +512,10 @@ def cosine_latitude_weights(cube):
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         weights = np.sqrt(cosine_latitude_weights(cube))
 
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # Find all latitude coordinates, we want one and only one.
     lat_coords = [
@@ -580,6 +603,11 @@ def project(cube, target_proj, nx=None, ny=None):
 
     .. note::
 
+        If there are both dim and aux latitude-longitude coordinates, only
+        the dim coordinates will be used.
+
+    .. note::
+
         This function assumes global data and will if necessary extrapolate
         beyond the geographical extent of the source cube using a nearest
         neighbour approach. nx and ny then include those points which are
@@ -590,6 +618,11 @@ def project(cube, target_proj, nx=None, ny=None):
         Masked arrays are handled by passing their masked status to the
         resulting nearest neighbour values.  If masked, the value in the
         resulting cube is set to 0.
+
+    .. note::
+
+        This function does not maintain laziness when called; it realises data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
     .. warning::
 
@@ -927,7 +960,7 @@ def _crs_distance_differentials(crs, x, y):
 
     """
     # Make a true-latlon coordinate system for distance calculations.
-    crs_latlon = ccrs.Geodetic(globe=ccrs.Globe(ellipse="sphere"))
+    crs_latlon = ccrs.Geodetic(globe=crs.globe)
     # Transform points to true-latlon (just to get the true latitudes).
     _, true_lat = _transform_xy(crs, x, y, crs_latlon)
     # Get coordinate differentials w.r.t. true-latlon.
@@ -980,7 +1013,7 @@ def _transform_distance_vectors_tolerance_mask(
     """
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
-    errors introduced by the tranformation between coordinate systems.
+    errors introduced by the transformation between coordinate systems.
 
     Args:
     * src_crs (`cartopy.crs.Projection`):
@@ -1008,10 +1041,10 @@ def _transform_distance_vectors_tolerance_mask(
     u_one_t, v_zero_t = _transform_distance_vectors(ones, zeros, ds, dx2, dy2)
     u_zero_t, v_one_t = _transform_distance_vectors(zeros, ones, ds, dx2, dy2)
     # Squared magnitudes should be equal to one within acceptable tolerance.
-    # A value of atol=2e-3 is used, which corresponds to a change in magnitude
-    # of approximately 0.1%.
-    sqmag_1_0 = u_one_t ** 2 + v_zero_t ** 2
-    sqmag_0_1 = u_zero_t ** 2 + v_one_t ** 2
+    # A value of atol=2e-3 is used, which masks any magnitude changes >0.5%
+    #  (approx percentage - based on experimenting).
+    sqmag_1_0 = u_one_t**2 + v_zero_t**2
+    sqmag_0_1 = u_zero_t**2 + v_one_t**2
     mask = np.logical_not(
         np.logical_and(
             np.isclose(sqmag_1_0, ones, atol=2e-3),
@@ -1064,6 +1097,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
         The names of the output cubes are those of the inputs, prefixed with
         'transformed\_' (e.g. 'transformed_x_wind').
+
+    .. note::
+
+            This function does not maintain laziness when called; it realises data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
     .. warning::
 
@@ -1169,9 +1207,15 @@ def rotate_winds(u_cube, v_cube, target_cs):
         x = x.transpose()
         y = y.transpose()
 
-    # Create resulting cubes.
-    ut_cube = u_cube.copy()
-    vt_cube = v_cube.copy()
+    # Create resulting cubes - produce lazy output data if at least
+    # one input cube has lazy data
+    lazy_output = u_cube.has_lazy_data() or v_cube.has_lazy_data()
+    if lazy_output:
+        ut_cube = u_cube.copy(data=da.empty_like(u_cube.lazy_data()))
+        vt_cube = v_cube.copy(data=da.empty_like(v_cube.lazy_data()))
+    else:
+        ut_cube = u_cube.copy()
+        vt_cube = v_cube.copy()
     ut_cube.rename("transformed_{}".format(u_cube.name()))
     vt_cube.rename("transformed_{}".format(v_cube.name()))
 
@@ -1199,8 +1243,12 @@ def rotate_winds(u_cube, v_cube, target_cs):
     apply_mask = mask.any()
     if apply_mask:
         # Make masked arrays to accept masking.
-        ut_cube.data = ma.asanyarray(ut_cube.data)
-        vt_cube.data = ma.asanyarray(vt_cube.data)
+        if lazy_output:
+            ut_cube = ut_cube.copy(data=da.ma.empty_like(ut_cube.core_data()))
+            vt_cube = vt_cube.copy(data=da.ma.empty_like(vt_cube.core_data()))
+        else:
+            ut_cube.data = ma.asanyarray(ut_cube.data)
+            vt_cube.data = ma.asanyarray(vt_cube.data)
 
     # Project vectors with u, v components one horiz slice at a time and
     # insert into the resulting cubes.
@@ -1213,16 +1261,20 @@ def rotate_winds(u_cube, v_cube, target_cs):
         for dim in dims:
             index[dim] = slice(None, None)
         index = tuple(index)
-        u = u_cube.data[index]
-        v = v_cube.data[index]
+        u = u_cube.core_data()[index]
+        v = v_cube.core_data()[index]
         ut, vt = _transform_distance_vectors(u, v, ds, dx2, dy2)
         if apply_mask:
-            ut = ma.asanyarray(ut)
-            ut[mask] = ma.masked
-            vt = ma.asanyarray(vt)
-            vt[mask] = ma.masked
-        ut_cube.data[index] = ut
-        vt_cube.data[index] = vt
+            if lazy_output:
+                ut = da.ma.masked_array(ut, mask=mask)
+                vt = da.ma.masked_array(vt, mask=mask)
+            else:
+                ut = ma.asanyarray(ut)
+                ut[mask] = ma.masked
+                vt = ma.asanyarray(vt)
+                vt[mask] = ma.masked
+        ut_cube.core_data()[index] = ut
+        vt_cube.core_data()[index] = vt
 
     # Calculate new coords of locations in target coordinate system.
     xyz_tran = target_crs.transform_points(src_crs, x, y)

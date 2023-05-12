@@ -1,2 +1,2 @@
 <?xml version="1.0" ?>
-<auxCoord id="2f58f9aa" long_name="foo" points="[0.5, 1.5, 2.5, 3.5, 2.0]" shape="(5,)" units="Unit('count')" value_type="float32"/>
+<auxCoord id="2f58f9aa" long_name="foo" points="[0.5, 1.5, 2.5, 3.5, 2. ]" shape="(5,)" units="Unit('count')" value_type="float32"/>

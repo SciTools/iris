@@ -1,0 +1,26 @@
+dimensions:
+	bnds = 2 ;
+	latitude = 3 ;
+	longitude = 5 ;
+	time = 4 ;
+variables:
+	byte climatology_test(time, latitude, longitude) ;
+		climatology_test:long_name = "climatology test" ;
+		climatology_test:units = "Kelvin" ;
+		climatology_test:cell_methods = "time: mean over years" ;
+	double time(time) ;
+		time:axis = "T" ;
+		time:climatology = "time_climatology" ;
+		time:units = "days since 1970-01-01 00:00:00-00" ;
+		time:standard_name = "time" ;
+		time:calendar = "standard" ;
+	double time_climatology(time, bnds) ;
+	double latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	double longitude(longitude) ;
+		longitude:axis = "X" ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
+}

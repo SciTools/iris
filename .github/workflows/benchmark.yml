@@ -1,54 +1,59 @@
-# This is a basic workflow to help you get started with Actions
+# Use ASV to check for performance regressions in the last 24 hours' commits.
 
 name: benchmark-check
 
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  schedule:
+    # Runs every day at 23:00.
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+    inputs:
+      first_commit:
+        description: "Argument to be passed to the overnight benchmark script."
+        required: false
+        type: string
   pull_request:
+    types: [labeled]
 
 jobs:
   benchmark:
-    if: "github.repository == 'SciTools/iris'"
+    if: >
+      github.repository == 'SciTools/iris' && 
+      (github.event_name != 'pull_request' || 
+      github.event.label.name == 'benchmark_this')
     runs-on: ubuntu-latest
 
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
-      IRIS_TEST_DATA_VERSION: "2.5"
+      IRIS_TEST_DATA_VERSION: "2.19"
       # Lets us manually bump the cache to rebuild
+      ENV_CACHE_BUILD: "0"
       TEST_DATA_CACHE_BUILD: "2"
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Fetch the PR base branch too
+      - name: Install ASV & Nox
         run: |
-          git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}
-          git branch _base FETCH_HEAD
-          echo PR_BASE_SHA=$(git rev-parse _base) >> $GITHUB_ENV
+          pip install asv nox
 
-      - name: Install Nox
-        run: |
-          pip install nox
-
-      - name: Cache .nox and .asv/env directories
+      - name: Cache environment directories
         id: cache-env-dir
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             .nox
             benchmarks/.asv/env
-          # Make sure GHA never gets an exact cache match by using the unique
-          #  github.sha. This means it will always store this run as a new
-          #  cache (Nox may have made relevant changes during run). Cache
-          #  restoration still succeeds via the partial restore-key match.
-          key: ${{ runner.os }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}
+            $CONDA/pkgs
+          key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
 
       - name: Cache test data directory
         id: cache-test-data
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${{ env.IRIS_TEST_DATA_PATH }}
@@ -62,22 +67,82 @@ jobs:
           unzip -q iris-test-data.zip
           mkdir --parents ${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_LOC_PATH}
           mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}
-          
+
       - name: Set test data var
         run: |
           echo "OVERRIDE_TEST_DATA_REPOSITORY=${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}/test_data" >> $GITHUB_ENV
 
-      - name: Run CI benchmarks
+      - name: Benchmark this pull request
+        if: ${{ github.event.label.name == 'benchmark_this' }}
         run: |
-          mkdir --parents benchmarks/.asv
-          set -o pipefail
-          nox --session="benchmarks(ci compare)" | tee benchmarks/.asv/ci_compare.txt
+          git checkout ${{ github.head_ref }}
+          python benchmarks/bm_runner.py branch origin/${{ github.base_ref }}
+
+      - name: Run overnight benchmarks
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          first_commit=${{ inputs.first_commit }}
+          if [ "$first_commit" == "" ]
+          then
+            first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
+          fi
+          
+          if [ "$first_commit" != "" ]
+          then
+            python benchmarks/bm_runner.py overnight $first_commit
+          fi
+
+      - name: Create issues for performance shifts
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -d benchmarks/.asv/performance-shifts ]
+          then
+            cd benchmarks/.asv/performance-shifts
+            for commit_file in *
+            do
+              commit="${commit_file%.*}"
+              pr_number=$(git log "$commit"^! --oneline | grep -o "#[0-9]*" | tail -1 | cut -c 2-)
+              author=$(gh pr view $pr_number --json author -q '.["author"]["login"]' --repo $GITHUB_REPOSITORY)
+              merger=$(gh pr view $pr_number --json mergedBy -q '.["mergedBy"]["login"]' --repo $GITHUB_REPOSITORY)
+              # Find a valid assignee from author/merger/nothing.
+              if curl -s https://api.github.com/users/$author | grep -q '"type": "User"'; then
+                assignee=$author
+              elif curl -s https://api.github.com/users/$merger | grep -q '"type": "User"'; then
+                assignee=$merger
+              else
+                assignee=""
+              fi
+              title="Performance Shift(s): \`$commit\`"
+              body="
+          Benchmark comparison has identified performance shifts at
+          
+          * commit $commit (#$pr_number).
+          
+          Please review the report below and \
+          take corrective/congratulatory action as appropriate \
+          :slightly_smiling_face:
+
+          <details>
+          <summary>Performance shift report</summary>
+
+          \`\`\`
+          $(cat $commit_file)
+          \`\`\`
+
+          </details>
+
+          Generated by GHA run [\`${{github.run_id}}\`](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+              "
+              gh issue create --title "$title" --body "$body" --assignee $assignee --label "Bot" --label "Type: Performance" --repo $GITHUB_REPOSITORY
+            done
+          fi
 
       - name: Archive asv results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: asv-report
           path: |
             benchmarks/.asv/results
-            benchmarks/.asv/ci_compare.txt

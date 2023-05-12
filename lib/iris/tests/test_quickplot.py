@@ -10,6 +10,9 @@ Tests the high-level plotting interface.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
+
+import numpy as np
+
 import iris
 import iris.tests.test_plot as test_plot
 
@@ -244,6 +247,56 @@ class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
     def test_not_reference_time_units(self):
         # units should be displayed for other time coordinates
         qplt.plot(self.cube.coord("forecast_period"), self.cube)
+        self.check_graphic()
+
+
+@tests.skip_data
+@tests.skip_plot
+class TestSubplotColorbar(tests.IrisTest):
+    def setUp(self):
+        theta = _load_theta()
+        coords = ["model_level_number", "grid_longitude"]
+        self.data = next(theta.slices(coords))
+        spec = (1, 1, 1)
+        self.figure1 = plt.figure()
+        self.axes1 = self.figure1.add_subplot(*spec)
+        self.figure2 = plt.figure()
+        self.axes2 = self.figure2.add_subplot(*spec)
+
+    def _check(self, mappable, figure, axes):
+        self.assertIs(mappable.axes, axes)
+        self.assertIs(mappable.colorbar.mappable, mappable)
+        self.assertIs(mappable.colorbar.ax.get_figure(), figure)
+
+    def test_with_axes1(self):
+        # plot using the first figure subplot axes (explicit)
+        mappable = qplt.contourf(self.data, axes=self.axes1)
+        self._check(mappable, self.figure1, self.axes1)
+
+    def test_with_axes2(self):
+        # plot using the second figure subplot axes (explicit)
+        mappable = qplt.contourf(self.data, axes=self.axes2)
+        self._check(mappable, self.figure2, self.axes2)
+
+    def test_without_axes__default(self):
+        # plot using the second/last figure subplot axes (default)
+        mappable = qplt.contourf(self.data)
+        self._check(mappable, self.figure2, self.axes2)
+
+
+@tests.skip_data
+@tests.skip_plot
+class TestPlotHist(tests.GraphicsTest):
+    def test_horizontal(self):
+        cube = test_plot.simple_cube()[0]
+        qplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
+        self.check_graphic()
+
+    def test_vertical(self):
+        cube = test_plot.simple_cube()[0]
+        qplt.hist(
+            cube, bins=np.linspace(287.7, 288.2, 11), orientation="horizontal"
+        )
         self.check_graphic()
 
 

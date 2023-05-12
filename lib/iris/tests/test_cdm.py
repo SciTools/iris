@@ -349,7 +349,6 @@ class TestCubeStringRepresentations(IrisDotTest):
         )
 
     def test_cube_summary_cell_methods(self):
-
         cube = self.cube_2d.copy()
 
         # Create a list of values used to create cell methods
@@ -487,7 +486,7 @@ class TestQueryCoord(tests.IrisTest):
         coords = cube.coords(axis="x")
         self.assertEqual([coord.name() for coord in coords], ["longitude"])
 
-        # Renaming shoudn't be enough
+        # Renaming shouldn't be enough
         cube.coord("an_other").rename("time")
         coords = cube.coords(axis="t")
         self.assertEqual([coord.name() for coord in coords], [])
@@ -692,7 +691,7 @@ class TestIteration(TestCube2d):
                 pass
 
     def test_not_iterable(self):
-        self.assertFalse(isinstance(self.t, collections.Iterable))
+        self.assertFalse(isinstance(self.t, collections.abc.Iterable))
 
 
 class Test2dSlicing(TestCube2d):
@@ -719,7 +718,7 @@ class Test2dSlicing(TestCube2d):
 
     def test_cube_slice_with_non_existant_coords(self):
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            self.t.slices(["dim2", "dim1", "doesnt exist"])
+            self.t.slices(["dim2", "dim1", "doesn't exist"])
 
     def test_cube_extract_coord_with_non_describing_coordinates(self):
         with self.assertRaises(ValueError):
@@ -1479,7 +1478,7 @@ class TestConversionToCoordList(tests.IrisTest):
 
         # Invalid coords
         invalid_choices = [
-            iris.analysis.MEAN,  # Caused by mixing up argument order in call to cube.collasped for example
+            iris.analysis.MEAN,  # Caused by mixing up argument order in call to cube.collapsed for example
             None,
             ["grid_latitude", None],
             [lat, None],

@@ -61,7 +61,11 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         units="degrees_east",
         long_name="long-name",
         var_name="var-name",
-        attributes={"a": 1, "b": "c"},
+        attributes={
+            # N.B. cast this so that a save-load roundtrip preserves it
+            "a": np.int64(1),
+            "b": "c",
+        },
     )
     node_y = AuxCoord(1200 + arr.arange(n_nodes), standard_name="latitude")
 

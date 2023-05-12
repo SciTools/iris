@@ -26,12 +26,13 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
     def _test(self, inverse_flattening=False, no_offsets=False):
         test_easting = -100
         test_northing = 200
+        test_scale_factor = 1.2
         gridvar_props = dict(
             latitude_of_projection_origin=0,
             longitude_of_projection_origin=0,
             false_easting=test_easting,
             false_northing=test_northing,
-            scale_factor_at_projection_origin=1,
+            scale_factor_at_projection_origin=test_scale_factor,
             semi_major_axis=6377563.396,
         )
 
@@ -61,6 +62,7 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
             central_lon=cf_grid_var.longitude_of_projection_origin,
             false_easting=test_easting,
             false_northing=test_northing,
+            scale_factor_at_projection_origin=test_scale_factor,
             ellipsoid=expected_ellipsoid,
         )
 

@@ -35,10 +35,18 @@ The gallery contains several interesting worked examples of how an
 
 """
 
-from collections import OrderedDict
-from collections.abc import Iterable
-from functools import wraps
+from __future__ import annotations
 
+from collections.abc import Iterable
+import functools
+from functools import wraps
+from inspect import getfullargspec
+import itertools
+from numbers import Number
+from typing import Optional, Union
+import warnings
+
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -53,7 +61,9 @@ from iris.analysis._interpolation import (
 )
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
+from iris.coords import _DimensionalMetadata
 from iris.exceptions import LazyAggregatorError
+import iris.util
 
 __all__ = (
     "Aggregator",
@@ -63,6 +73,7 @@ __all__ = (
     "HMEAN",
     "Linear",
     "MAX",
+    "MAX_RUN",
     "MEAN",
     "MEDIAN",
     "MIN",
@@ -79,6 +90,7 @@ __all__ = (
     "WPERCENTILE",
     "WeightedAggregator",
     "clear_phenomenon_identity",
+    "create_weighted_aggregator_fn",
 )
 
 
@@ -292,7 +304,6 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     # for coordinate groups
     for cube, coords in zip(cubes, all_coords):
         for coord in coords:
-
             # if this coordinate has already been processed, then continue on
             # to the next one
             if id(coord) in processed_coords:
@@ -464,11 +475,13 @@ class _Aggregator:
         Kwargs:
 
         * units_func (callable):
-            | *Call signature*: (units)
+            | *Call signature*: (units, \**kwargs)
 
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
 
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
@@ -476,7 +489,8 @@ class _Aggregator:
             main operation, but should raise an error in unhandled cases.
 
         Additional kwargs::
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         Aggregators are used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
@@ -582,9 +596,19 @@ class _Aggregator:
         mdtol = kwargs.pop("mdtol", None)
 
         result = self.call_func(data, axis=axis, **kwargs)
-        if mdtol is not None and ma.isMaskedArray(data):
+        if (
+            mdtol is not None
+            and ma.is_masked(data)
+            and result is not ma.masked
+        ):
             fraction_not_missing = data.count(axis=axis) / data.shape[axis]
-            mask_update = 1 - mdtol > fraction_not_missing
+            mask_update = np.array(1 - mdtol > fraction_not_missing)
+            if np.array(result).ndim > mask_update.ndim:
+                # call_func created trailing dimension.
+                mask_update = np.broadcast_to(
+                    mask_update.reshape(mask_update.shape + (1,)),
+                    np.array(result).shape,
+                )
             if ma.isMaskedArray(result):
                 result.mask = result.mask | mask_update
             else:
@@ -612,7 +636,11 @@ class _Aggregator:
         """
         # Update the units if required.
         if self.units_func is not None:
-            cube.units = self.units_func(cube.units)
+            argspec = getfullargspec(self.units_func)
+            if argspec.varkw is None:  # old style
+                cube.units = self.units_func(cube.units)
+            else:  # new style (preferred)
+                cube.units = self.units_func(cube.units, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
@@ -679,23 +707,18 @@ class PercentileAggregator(_Aggregator):
 
     """
 
-    def __init__(self, units_func=None, lazy_func=None, **kwargs):
-        """
+    def __init__(self, units_func=None, **kwargs):
+        r"""
         Create a percentile aggregator.
 
         Kwargs:
 
         * units_func (callable):
-            | *Call signature*: (units)
+            | *Call signature*: (units, \**kwargs)
 
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
-
-        * lazy_func (callable or None):
-            An alternative to :data:`call_func` implementing a lazy
-            aggregation. Note that, it need not support all features of the
-            main operation, but should raise an error in unhandled cases.
 
         Additional kwargs::
             Passed through to :data:`call_func` and :data:`lazy_func`.
@@ -714,9 +737,28 @@ class PercentileAggregator(_Aggregator):
             None,
             _percentile,
             units_func=units_func,
-            lazy_func=lazy_func,
+            lazy_func=_build_dask_mdtol_function(_percentile),
             **kwargs,
         )
+
+    def _base_aggregate(self, data, axis, lazy, **kwargs):
+        """
+        Method to avoid duplication of checks in aggregate and lazy_aggregate.
+        """
+        msg = "{} aggregator requires the mandatory keyword argument {!r}."
+        for arg in self._args:
+            if arg not in kwargs:
+                raise ValueError(msg.format(self.name(), arg))
+
+        if kwargs.get("fast_percentile_method", False) and (
+            kwargs.get("mdtol", 1) != 0
+        ):
+            kwargs["error_on_masked"] = True
+
+        if lazy:
+            return _Aggregator.lazy_aggregate(self, data, axis, **kwargs)
+        else:
+            return _Aggregator.aggregate(self, data, axis, **kwargs)
 
     def aggregate(self, data, axis, **kwargs):
         """
@@ -753,12 +795,41 @@ class PercentileAggregator(_Aggregator):
 
         """
 
-        msg = "{} aggregator requires the mandatory keyword argument {!r}."
-        for arg in self._args:
-            if arg not in kwargs:
-                raise ValueError(msg.format(self.name(), arg))
+        return self._base_aggregate(data, axis, lazy=False, **kwargs)
 
-        return _Aggregator.aggregate(self, data, axis, **kwargs)
+    def lazy_aggregate(self, data, axis, **kwargs):
+        """
+        Perform aggregation over the data with a lazy operation, analogous to
+        the 'aggregate' result.
+
+        Keyword arguments are passed through to the data aggregation function
+        (for example, the "percent" keyword for a percentile aggregator).
+        This function is usually used in conjunction with update_metadata(),
+        which should be passed the same keyword arguments.
+
+        Args:
+
+        * data (array):
+            A lazy array (:class:`dask.array.Array`).
+
+        * axis (int or list of int):
+            The dimensions to aggregate over -- note that this is defined
+            differently to the 'aggregate' method 'axis' argument, which only
+            accepts a single dimension index.
+
+        Kwargs:
+
+        * kwargs:
+            All keyword arguments are passed through to the data aggregation
+            function.
+
+        Returns:
+            A lazy array representing the result of the aggregation operation
+            (:class:`dask.array.Array`).
+
+        """
+
+        return self._base_aggregate(data, axis, lazy=True, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
@@ -878,13 +949,13 @@ class WeightedPercentileAggregator(PercentileAggregator):
     """
 
     def __init__(self, units_func=None, lazy_func=None, **kwargs):
-        """
+        r"""
         Create a weighted percentile aggregator.
 
         Kwargs:
 
         * units_func (callable):
-            | *Call signature*: (units)
+            | *Call signature*: (units, \**kwargs)
 
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
@@ -1004,9 +1075,10 @@ class Aggregator(_Aggregator):
             coord_names.append(coord.name())
 
         # Add a cell method.
-        method_name = self.cell_method.format(**kwargs)
-        cell_method = iris.coords.CellMethod(method_name, coord_names)
-        cube.add_cell_method(cell_method)
+        if self.cell_method is not None:
+            method_name = self.cell_method.format(**kwargs)
+            cell_method = iris.coords.CellMethod(method_name, coord_names)
+            cube.add_cell_method(cell_method)
 
 
 class WeightedAggregator(Aggregator):
@@ -1115,6 +1187,147 @@ class WeightedAggregator(Aggregator):
         return result
 
 
+class _Weights(np.ndarray):
+    """Class for handling weights for weighted aggregation.
+
+    This subclasses :class:`numpy.ndarray`; thus, all methods and properties of
+    :class:`numpy.ndarray` (e.g., `shape`, `ndim`, `view()`, etc.) are
+    available.
+
+    Details on subclassing :class:`numpy.ndarray` are given here:
+    https://numpy.org/doc/stable/user/basics.subclassing.html
+
+    """
+
+    def __new__(cls, weights, cube, units=None):
+        """Create class instance.
+
+        Args:
+
+        * weights (Cube, string, _DimensionalMetadata, array-like):
+            If given as a :class:`iris.cube.Cube`, use its data and units. If
+            given as a :obj:`str` or :class:`iris.coords._DimensionalMetadata`,
+            assume this is (the name of) a
+            :class:`iris.coords._DimensionalMetadata` object of the cube (i.e.,
+            one of :meth:`iris.cube.Cube.coords`,
+            :meth:`iris.cube.Cube.cell_measures`, or
+            :meth:`iris.cube.Cube.ancillary_variables`). If given as an
+            array-like object, use this directly and assume units of `1`.  If
+            `units` is given, ignore all units derived above and use the ones
+            given by `units`.
+        * cube (Cube):
+            Input cube for aggregation. If weights is given as :obj:`str` or
+            :class:`iris.coords._DimensionalMetadata`, try to extract the
+            :class:`iris.coords._DimensionalMetadata` object and corresponding
+            dimensional mappings from this cube. Otherwise, this argument is
+            ignored.
+        * units (string, Unit):
+            If ``None``, use units derived from `weights`. Otherwise, overwrite
+            the units derived from `weights` and use `units`.
+
+        """
+        # `weights` is a cube
+        # Note: to avoid circular imports of Cube we use duck typing using the
+        # "hasattr" syntax here
+        # --> Extract data and units from cube
+        if hasattr(weights, "add_aux_coord"):
+            obj = np.asarray(weights.data).view(cls)
+            obj.units = weights.units
+
+        # `weights`` is a string or _DimensionalMetadata object
+        # --> Extract _DimensionalMetadata object from cube, broadcast it to
+        # correct shape using the corresponding dimensional mapping, and use
+        # its data and units
+        elif isinstance(weights, (str, _DimensionalMetadata)):
+            dim_metadata = cube._dimensional_metadata(weights)
+            arr = dim_metadata._values
+            if dim_metadata.shape != cube.shape:
+                arr = iris.util.broadcast_to_shape(
+                    arr,
+                    cube.shape,
+                    dim_metadata.cube_dims(cube),
+                )
+            obj = np.asarray(arr).view(cls)
+            obj.units = dim_metadata.units
+
+        # Remaining types (e.g., np.ndarray): try to convert to ndarray.
+        else:
+            obj = np.asarray(weights).view(cls)
+            obj.units = Unit("1")
+
+        # Overwrite units from units argument if necessary
+        if units is not None:
+            obj.units = units
+
+        return obj
+
+    def __array_finalize__(self, obj):
+        """See https://numpy.org/doc/stable/user/basics.subclassing.html.
+
+        Note
+        ----
+        `obj` cannot be `None` here since ``_Weights.__new__`` does not call
+        ``super().__new__`` explicitly.
+
+        """
+        self.units = getattr(obj, "units", Unit("1"))
+
+    @classmethod
+    def update_kwargs(cls, kwargs, cube):
+        """Update ``weights`` keyword argument in-place.
+
+        Args:
+
+        * kwargs (dict):
+            Keyword arguments that will be updated in-place if a `weights`
+            keyword is present which is not ``None``.
+        * cube (Cube):
+            Input cube for aggregation. If weights is given as :obj:`str`, try
+            to extract a cell measure with the corresponding name from this
+            cube. Otherwise, this argument is ignored.
+
+        """
+        if kwargs.get("weights") is not None:
+            kwargs["weights"] = cls(kwargs["weights"], cube)
+
+
+def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
+    """Return an aggregator function that can explicitly handle weights.
+
+    Args:
+
+    * aggregator_fn (callable):
+        An aggregator function, i.e., a callable that takes arguments ``data``,
+        ``axis`` and ``**kwargs`` and returns an array. Examples:
+        :meth:`Aggregator.aggregate`, :meth:`Aggregator.lazy_aggregate`.
+        This function should accept the keyword argument ``weights``.
+    * axis (int):
+        Axis to aggregate over. This argument is directly passed to
+        ``aggregator_fn``.
+
+    Kwargs:
+
+    * Arbitrary keyword arguments passed to ``aggregator_fn``. Should not
+      include ``weights`` (this will be removed if present).
+
+    Returns:
+        A function that takes two arguments ``data_arr`` and ``weights`` (both
+        should be an array of the same shape) and returns an array.
+
+    """
+    kwargs_copy = dict(kwargs)
+    kwargs_copy.pop("weights", None)
+    aggregator_fn = functools.partial(aggregator_fn, axis=axis, **kwargs_copy)
+
+    def new_aggregator_fn(data_arr, weights):
+        """Weighted aggregation."""
+        if weights is None:
+            return aggregator_fn(data_arr)
+        return aggregator_fn(data_arr, weights=weights)
+
+    return new_aggregator_fn
+
+
 def _build_dask_mdtol_function(dask_stats_function):
     """
     Make a wrapped dask statistic function that supports the 'mdtol' keyword.
@@ -1123,7 +1336,9 @@ def _build_dask_mdtol_function(dask_stats_function):
     call signature : "dask_stats_function(data, axis=axis, **kwargs)".
     It must be masked-data tolerant, i.e. it ignores masked input points and
     performs a calculation on only the unmasked points.
-    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
+    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.  If an additional
+    dimension is created by 'dask_function', it is assumed to be the trailing
+    one (as for '_percentile').
 
     The returned value is a new function operating on dask arrays.
     It has the call signature `stat(data, axis=-1, mdtol=None, **kwargs)`.
@@ -1143,6 +1358,12 @@ def _build_dask_mdtol_function(dask_stats_function):
             points_per_calc = array.size / dask_result.size
             masked_point_fractions = point_mask_counts / points_per_calc
             boolean_mask = masked_point_fractions > mdtol
+            if dask_result.ndim > boolean_mask.ndim:
+                # dask_stats_function created trailing dimension.
+                boolean_mask = da.broadcast_to(
+                    boolean_mask.reshape(boolean_mask.shape + (1,)),
+                    dask_result.shape,
+                )
             # Return an mdtol-masked version of the basic result.
             result = da.ma.masked_array(
                 da.ma.getdata(dask_result), boolean_mask
@@ -1152,7 +1373,78 @@ def _build_dask_mdtol_function(dask_stats_function):
     return inner_stat
 
 
-def _percentile(data, axis, percent, fast_percentile_method=False, **kwargs):
+def _axis_to_single_trailing(stats_function):
+    """
+    Given a statistical function that acts on the trailing axis of a 1D or 2D
+    array, wrap it so that higher dimension arrays can be passed, as well as any
+    axis as int or tuple.
+
+    """
+
+    @wraps(stats_function)
+    def inner_stat(data, axis, *args, **kwargs):
+        # Get data as a 1D or 2D view with the target axis as the trailing one.
+        if not isinstance(axis, Iterable):
+            axis = (axis,)
+        end = range(-len(axis), 0)
+
+        data = np.moveaxis(data, axis, end)
+        shape = data.shape[: -len(axis)]  # Shape of dims we won't collapse.
+        if shape:
+            data = data.reshape(np.prod(shape), -1)
+        else:
+            data = data.flatten()
+
+        result = stats_function(data, *args, **kwargs)
+
+        # Ensure to unflatten any leading dimensions.
+        if shape:
+            # Account for the additive dimension if necessary.
+            if result.size > np.prod(shape):
+                shape += (-1,)
+            result = result.reshape(shape)
+
+        return result
+
+    return inner_stat
+
+
+def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
+    """
+    Calculate percentiles along the trailing axis of a 1D or 2D array.
+
+    """
+    if fast_percentile_method:
+        if kwargs.pop("error_on_masked", False):
+            msg = (
+                "Cannot use fast np.percentile method with masked array unless"
+                " mdtol is 0."
+            )
+            if ma.is_masked(data):
+                raise TypeError(msg)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                "Warning: 'partition' will ignore the 'mask' of the MaskedArray.",
+            )
+            result = np.percentile(data, percent, axis=-1, **kwargs)
+
+        result = result.T
+    else:
+        quantiles = percent / 100.0
+        for key in ["alphap", "betap"]:
+            kwargs.setdefault(key, 1)
+        result = scipy.stats.mstats.mquantiles(
+            data, quantiles, axis=-1, **kwargs
+        )
+    if not ma.isMaskedArray(data) and not ma.is_masked(result):
+        return np.asarray(result)
+    else:
+        return ma.MaskedArray(result)
+
+
+@_axis_to_single_trailing
+def _percentile(data, percent, fast_percentile_method=False, **kwargs):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1161,50 +1453,43 @@ def _percentile(data, axis, percent, fast_percentile_method=False, **kwargs):
     If a new additive dimension is formed, then it will always be the last
     dimension of the resulting percentile data payload.
 
+    Args:
+
+    * data (array-like)
+        array from which percentiles are to be calculated
+
     Kwargs:
 
-    * fast_percentile_method (boolean) :
+    * fast_percentile_method (boolean)
         When set to True, uses the numpy.percentiles method as a faster
         alternative to the scipy.mstats.mquantiles method. Does not handle
         masked arrays.
 
-    """
-    # Ensure that the target axis is the last dimension.
-    data = np.rollaxis(data, axis, start=data.ndim)
-    shape = data.shape[:-1]
-    # Flatten any leading dimensions.
-    if shape:
-        data = data.reshape([np.prod(shape), data.shape[-1]])
-    # Perform the percentile calculation.
-    if fast_percentile_method:
-        msg = "Cannot use fast np.percentile method with masked array."
-        if ma.is_masked(data):
-            raise TypeError(msg)
-        result = np.percentile(data, percent, axis=-1)
-        result = result.T
-    else:
-        quantiles = np.array(percent) / 100.0
-        result = scipy.stats.mstats.mquantiles(
-            data, quantiles, axis=-1, **kwargs
-        )
-    if not ma.isMaskedArray(data) and not ma.is_masked(result):
-        result = np.asarray(result)
-    else:
-        result = ma.MaskedArray(result)
+    **kwargs : dict, optional
+        passed to scipy.stats.mstats.mquantiles if fast_percentile_method is
+        False.  Otherwise passed to numpy.percentile.
 
-    # Ensure to unflatten any leading dimensions.
-    if shape:
-        if not isinstance(percent, Iterable):
-            percent = [percent]
-        percent = np.array(percent)
-        # Account for the additive dimension.
-        if percent.shape > (1,):
-            shape += percent.shape
-        result = result.reshape(shape)
+    """
+    if not isinstance(percent, Iterable):
+        percent = [percent]
+    percent = np.array(percent)
+
+    # Perform the percentile calculation.
+    _partial_percentile = functools.partial(
+        _calc_percentile,
+        percent=percent,
+        fast_percentile_method=fast_percentile_method,
+        **kwargs,
+    )
+
+    result = iris._lazy_data.map_complete_blocks(
+        data, _partial_percentile, (-1,), percent.shape
+    )
+
     # Check whether to reduce to a scalar result, as per the behaviour
     # of other aggregators.
-    if result.shape == (1,) and quantiles.ndim == 0:
-        result = result[0]
+    if result.shape == (1,):
+        result = np.squeeze(result)
 
     return result
 
@@ -1232,7 +1517,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
         array or float.  Calculated quantile values (set to np.nan wherever sum
         of weights is zero or masked)
     """
-    # Return np.nan if no useable points found
+    # Return np.nan if no usable points found
     if np.isclose(weights.sum(), 0.0) or ma.is_masked(weights.sum()):
         return np.resize(np.array(np.nan), len(quantiles))
     # Sort the data
@@ -1332,18 +1617,21 @@ def _weighted_percentile(
         return result
 
 
-@_build_dask_mdtol_function
-def _lazy_count(array, **kwargs):
-    array = iris._lazy_data.as_lazy_data(array)
+def _count(array, **kwargs):
+    """
+    Counts the number of points along the axis that satisfy the condition
+    specified by ``function``.  Uses Dask's support for NEP13/18 to work as
+    either a lazy or a real function.
+
+    """
     func = kwargs.pop("function", None)
     if not callable(func):
         emsg = "function must be a callable. Got {}."
         raise TypeError(emsg.format(type(func)))
-    return da.sum(func(array), **kwargs)
+    return np.sum(func(array), **kwargs)
 
 
 def _proportion(array, function, axis, **kwargs):
-    count = iris._lazy_data.non_lazy(_lazy_count)
     # if the incoming array is masked use that to count the total number of
     # values
     if ma.isMaskedArray(array):
@@ -1354,7 +1642,7 @@ def _proportion(array, function, axis, **kwargs):
             # case pass the array shape instead of the mask:
             total_non_masked = array.shape[axis]
         else:
-            total_non_masked = count(
+            total_non_masked = _count(
                 array.mask, axis=axis, function=np.logical_not, **kwargs
             )
             total_non_masked = ma.masked_equal(total_non_masked, 0)
@@ -1366,57 +1654,111 @@ def _proportion(array, function, axis, **kwargs):
     # Otherwise, it is possible for numpy to return a masked array that has
     # a dtype for its data that is different to the dtype of the fill-value,
     # which can cause issues outside this function.
-    # Reference - tests/unit/analyis/test_PROPORTION.py Test_masked.test_ma
-    numerator = count(array, axis=axis, function=function, **kwargs)
+    # Reference - tests/unit/analysis/test_PROPORTION.py Test_masked.test_ma
+    numerator = _count(array, axis=axis, function=function, **kwargs)
     result = ma.asarray(numerator / total_non_masked)
 
     return result
 
 
+def _lazy_max_run(array, axis=-1, **kwargs):
+    """
+    Lazily perform the calculation of maximum run lengths along the given axis
+    """
+    array = iris._lazy_data.as_lazy_data(array)
+    func = kwargs.pop("function", None)
+    if not callable(func):
+        emsg = "function must be a callable. Got {}."
+        raise TypeError(emsg.format(type(func)))
+    bool_array = da.ma.getdata(func(array))
+    bool_array = da.logical_and(
+        bool_array, da.logical_not(da.ma.getmaskarray(array))
+    )
+    padding = [(0, 0)] * array.ndim
+    padding[axis] = (0, 1)
+    ones_zeros = da.pad(bool_array, padding).astype(int)
+    cum_sum = da.cumsum(ones_zeros, axis=axis)
+    run_totals = da.where(ones_zeros == 0, cum_sum, 0)
+    stepped_run_lengths = da.reductions.cumreduction(
+        np.maximum.accumulate,
+        np.maximum,
+        np.NINF,
+        run_totals,
+        axis=axis,
+        dtype=cum_sum.dtype,
+        out=None,
+        method="sequential",
+        preop=None,
+    )
+    run_lengths = da.diff(stepped_run_lengths, axis=axis)
+    result = da.max(run_lengths, axis=axis)
+
+    # Check whether to reduce to a scalar result, as per the behaviour
+    # of other aggregators.
+    if result.shape == (1,):
+        result = da.squeeze(result)
+
+    return result
+
+
 def _rms(array, axis, **kwargs):
-    # XXX due to the current limitations in `da.average` (see below), maintain
-    # an explicit non-lazy aggregation function for now.
-    # Note: retaining this function also means that if weights are passed to
-    # the lazy aggregator, the aggregation will fall back to using this
-    # non-lazy aggregator.
-    rval = np.sqrt(ma.average(np.square(array), axis=axis, **kwargs))
-    if not ma.isMaskedArray(array):
-        rval = np.asarray(rval)
+    rval = np.sqrt(ma.average(array**2, axis=axis, **kwargs))
+
     return rval
 
 
-@_build_dask_mdtol_function
 def _lazy_rms(array, axis, **kwargs):
-    # XXX This should use `da.average` and not `da.mean`, as does the above.
-    # However `da.average` current doesn't handle masked weights correctly
-    # (see https://github.com/dask/dask/issues/3846).
-    # To work around this we use da.mean, which doesn't support weights at
-    # all. Thus trying to use this aggregator with weights will currently
-    # raise an error in dask due to the unexpected keyword `weights`,
-    # rather than silently returning the wrong answer.
-    return da.sqrt(da.mean(array ** 2, axis=axis, **kwargs))
+    # Note that, since we specifically need the ma version of average to handle
+    # weights correctly with masked data, we cannot rely on NEP13/18 and need
+    # to implement a separate lazy RMS function.
+
+    rval = da.sqrt(da.ma.average(array**2, axis=axis, **kwargs))
+
+    return rval
 
 
-@_build_dask_mdtol_function
-def _lazy_sum(array, **kwargs):
-    array = iris._lazy_data.as_lazy_data(array)
-    # weighted or scaled sum
+def _sum(array, **kwargs):
+    """
+    Weighted or scaled sum.  Uses Dask's support for NEP13/18 to work as either
+    a lazy or a real function.
+
+    """
     axis_in = kwargs.get("axis", None)
     weights_in = kwargs.pop("weights", None)
     returned_in = kwargs.pop("returned", False)
     if weights_in is not None:
-        wsum = da.sum(weights_in * array, **kwargs)
+        wsum = np.sum(weights_in * array, **kwargs)
     else:
-        wsum = da.sum(array, **kwargs)
+        wsum = np.sum(array, **kwargs)
     if returned_in:
+        al = da if iris._lazy_data.is_lazy_data(array) else np
         if weights_in is None:
-            weights = iris._lazy_data.as_lazy_data(np.ones_like(array))
+            weights = al.ones_like(array)
+            if al is da:
+                # Dask version of ones_like does not preserve masks. See dask#9301.
+                weights = da.ma.masked_array(
+                    weights, da.ma.getmaskarray(array)
+                )
         else:
-            weights = weights_in
-        rvalue = (wsum, da.sum(weights, axis=axis_in))
+            weights = al.ma.masked_array(
+                weights_in, mask=al.ma.getmaskarray(array)
+            )
+        rvalue = (wsum, np.sum(weights, axis=axis_in))
     else:
         rvalue = wsum
     return rvalue
+
+
+def _sum_units_func(units, **kwargs):
+    """Multiply original units with weight units if possible."""
+    weights = kwargs.get("weights")
+    if weights is None:  # no weights given or weights are None
+        result = units
+    elif hasattr(weights, "units"):  # weights are _Weights
+        result = units * weights.units
+    else:  # weights are regular np.ndarrays
+        result = units
+    return result
 
 
 def _peak(array, **kwargs):
@@ -1533,9 +1875,9 @@ def _peak(array, **kwargs):
 #
 COUNT = Aggregator(
     "count",
-    iris._lazy_data.non_lazy(_lazy_count),
-    units_func=lambda units: 1,
-    lazy_func=_lazy_count,
+    _count,
+    units_func=lambda units, **kwargs: 1,
+    lazy_func=_build_dask_mdtol_function(_count),
 )
 """
 An :class:`~iris.analysis.Aggregator` instance that counts the number
@@ -1558,9 +1900,40 @@ To compute the number of *ensemble members* with precipitation exceeding 10
 
 .. seealso:: The :func:`~iris.analysis.PROPORTION` aggregator.
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
+
+
+MAX_RUN = Aggregator(
+    None,
+    iris._lazy_data.non_lazy(_lazy_max_run),
+    units_func=lambda units, **kwargs: 1,
+    lazy_func=_build_dask_mdtol_function(_lazy_max_run),
+)
+"""
+An :class:`~iris.analysis.Aggregator` instance that finds the longest run of
+:class:`~iris.cube.Cube` data occurrences that satisfy a particular criterion,
+as defined by a user supplied *function*, along the given axis.
+
+**Required** kwargs associated with the use of this aggregator:
+
+* function (callable):
+    A function which converts an array of data values into a corresponding array
+    of True/False values.
+
+**For example**:
+
+The longest run of days with precipitation exceeding 10 (in cube data units) at
+each grid location could be calculated with::
+
+    result = precip_cube.collapsed('time', iris.analysis.MAX_RUN,
+                                   function=lambda values: values > 10)
+
+This aggregator handles masked data, which it treats as interrupting a run, and lazy data.
+
+"""
+MAX_RUN.name = lambda: "max_run"
 
 
 GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)
@@ -1575,7 +1948,7 @@ To compute zonal geometric means over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.GMEAN)
 
-This aggregator handles masked data.
+This aggregator handles masked data, but NOT lazy data.
 
 """
 
@@ -1597,7 +1970,7 @@ To compute zonal harmonic mean over the *longitude* axis of a cube::
     The harmonic mean is only valid if all data values are greater
     than zero.
 
-This aggregator handles masked data.
+This aggregator handles masked data, but NOT lazy data.
 
 """
 
@@ -1663,7 +2036,9 @@ To compute zonal medians over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
-This aggregator handles masked data.
+
+This aggregator handles masked data, but NOT lazy data.  For lazy aggregation,
+please try :obj:`~.PERCENTILE`.
 
 """
 
@@ -1682,7 +2057,7 @@ To compute zonal minimums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MIN)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1701,7 +2076,7 @@ To compute zonal maximums over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.MAX)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1727,43 +2102,62 @@ To compute the peak over the *time* axis of a cube::
 
     result = cube.collapsed('time', iris.analysis.PEAK)
 
-This aggregator handles masked data.
+This aggregator handles masked data but NOT lazy data.
 
 """
 
 
-PERCENTILE = PercentileAggregator(alphap=1, betap=1)
+PERCENTILE = PercentileAggregator()
 """
-An :class:`~iris.analysis.PercentileAggregator` instance that calculates the
+A :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
-:func:`scipy.stats.mstats.mquantiles`.
+:func:`scipy.stats.mstats.mquantiles` (default) or :func:`numpy.percentile` (if
+``fast_percentile_method`` is True).
 
-**Required** kwargs associated with the use of this aggregator:
+Parameters
+----------
 
-* percent (float or sequence of floats):
+percent : float or sequence of floats
     Percentile rank/s at which to extract value/s.
 
-Additional kwargs associated with the use of this aggregator:
-
-* alphap (float):
+alphap : float, default=1
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
-    Defaults to 1.
-* betap (float):
+betap : float, default=1
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
-    Defaults to 1.
+fast_percentile_method : bool, default=False
+    When set to True, uses :func:`numpy.percentile` method as a faster
+    alternative to the :func:`scipy.stats.mstats.mquantiles` method.  An
+    exception is raised if the data are masked and the missing data tolerance
+    is not 0.
 
-**For example**:
+**kwargs : dict, optional
+    Passed to :func:`scipy.stats.mstats.mquantiles` or :func:`numpy.percentile`.
+
+Example
+-------
 
 To compute the 10th and 90th percentile over *time*::
 
     result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=[10, 90])
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
+
+.. note::
+
+    Performance of this aggregator on lazy data is particularly sensitive to
+    the dask array chunking, so it may be useful to test with various chunk
+    sizes for a given application.  Any chunking along the dimensions to be
+    aggregated is removed by the aggregator prior to calculating the
+    percentiles.
 
 """
 
 
-PROPORTION = Aggregator("proportion", _proportion, units_func=lambda units: 1)
+PROPORTION = Aggregator(
+    "proportion",
+    _proportion,
+    units_func=lambda units, **kwargs: 1,
+)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 proportion, as a fraction, of :class:`~iris.cube.Cube` data occurrences
@@ -1792,7 +2186,7 @@ Similarly, the proportion of *time* precipitation exceeded 10
 
 .. seealso:: The :func:`~iris.analysis.COUNT` aggregator.
 
-This aggregator handles masked data.
+This aggregator handles masked data, but NOT lazy data.
 
 """
 
@@ -1805,20 +2199,22 @@ An :class:`~iris.analysis.Aggregator` instance that calculates
 the root mean square over a :class:`~iris.cube.Cube`, as computed by
 ((x0**2 + x1**2 + ... + xN-1**2) / N) ** 0.5.
 
-Additional kwargs associated with the use of this aggregator:
+Parameters
+----------
 
-* weights (float ndarray):
+weights : array-like, optional
     Weights matching the shape of the cube or the length of the window for
     rolling window operations. The weights are applied to the squares when
     taking the mean.
 
-**For example**:
+Example
+-------
 
 To compute the zonal root mean square over the *longitude* axis of a cube::
 
     result = cube.collapsed('longitude', iris.analysis.RMS)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1852,7 +2248,7 @@ To obtain the biased standard deviation::
 
 .. note::
 
-    Lazy operation is supported, via :func:`dask.array.nanstd`.
+    Lazy operation is supported, via :func:`dask.array.std`.
 
 This aggregator handles masked data.
 
@@ -1861,8 +2257,9 @@ This aggregator handles masked data.
 
 SUM = WeightedAggregator(
     "sum",
-    iris._lazy_data.non_lazy(_lazy_sum),
-    lazy_func=_build_dask_mdtol_function(_lazy_sum),
+    _sum,
+    units_func=_sum_units_func,
+    lazy_func=_build_dask_mdtol_function(_sum),
 )
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
@@ -1891,7 +2288,7 @@ To compute a weighted rolling sum e.g. to apply a digital filter::
     result = cube.rolling_window('time', iris.analysis.SUM,
                                  len(weights), weights=weights)
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1899,7 +2296,7 @@ This aggregator handles masked data.
 VARIANCE = Aggregator(
     "variance",
     ma.var,
-    units_func=lambda units: units * units,
+    units_func=lambda units, **kwargs: units * units,
     lazy_func=_build_dask_mdtol_function(da.var),
     ddof=1,
 )
@@ -1926,9 +2323,9 @@ To obtain the biased variance::
 
 .. note::
 
-    Lazy operation is supported, via :func:`dask.array.nanvar`.
+    Lazy operation is supported, via :func:`dask.array.var`.
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -1960,6 +2357,11 @@ Additional kwargs associated with the use of this aggregator:
     :func:`scipy.interpolate.interp1d` Defaults to "linear", which is
     equivalent to alphap=0.5, betap=0.5 in `iris.analysis.PERCENTILE`
 
+Notes
+------
+This function does not maintain laziness when called; it realises data.
+See more at :doc:`/userguide/real_and_lazy_data`.
+
 """
 
 
@@ -1985,7 +2387,12 @@ class _Groupby:
 
     """
 
-    def __init__(self, groupby_coords, shared_coords=None):
+    def __init__(
+        self,
+        groupby_coords: list[iris.coords.Coord],
+        shared_coords: Optional[list[tuple[iris.coords.Coord, int]]] = None,
+        climatological: bool = False,
+    ) -> None:
         """
         Determine the group slices over the group-by coordinates.
 
@@ -2001,17 +2408,23 @@ class _Groupby:
             that share the same group-by coordinate axis.  The `int` identifies
             which dimension of the coord is on the group-by coordinate axis.
 
+        * climatological (bool):
+            Indicates whether the output is expected to be climatological. For
+            any aggregated time coord(s), this causes the climatological flag to
+            be set and the point for each cell to equal its first bound, thereby
+            preserving the time of year.
+
         """
         #: Group-by and shared coordinates that have been grouped.
-        self.coords = []
-        self._groupby_coords = []
-        self._shared_coords = []
-        self._slices_by_key = OrderedDict()
+        self.coords: list[iris.coords.Coord] = []
+        self._groupby_coords: list[iris.coords.Coord] = []
+        self._shared_coords: list[tuple[iris.coords.Coord, int]] = []
+        self._groupby_indices: list[tuple[int, ...]] = []
         self._stop = None
         # Ensure group-by coordinates are iterable.
         if not isinstance(groupby_coords, Iterable):
             raise TypeError(
-                "groupby_coords must be a " "`collections.Iterable` type."
+                "groupby_coords must be a `collections.Iterable` type."
             )
 
         # Add valid group-by coordinates.
@@ -2023,13 +2436,22 @@ class _Groupby:
             # Ensure shared coordinates are iterable.
             if not isinstance(shared_coords, Iterable):
                 raise TypeError(
-                    "shared_coords must be a " "`collections.Iterable` type."
+                    "shared_coords must be a `collections.Iterable` type."
                 )
             # Add valid shared coordinates.
             for coord, dim in shared_coords:
                 self._add_shared_coord(coord, dim)
 
-    def _add_groupby_coord(self, coord):
+        # Aggregation is climatological in nature
+        self.climatological = climatological
+
+        # Stores mapping from original cube coords to new ones, as metadata may
+        # not match
+        self.coord_replacement_mapping: list[
+            tuple[iris.coords.Coord, iris.coords.Coord]
+        ] = []
+
+    def _add_groupby_coord(self, coord: iris.coords.Coord) -> None:
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
         if self._stop is None:
@@ -2038,12 +2460,12 @@ class _Groupby:
             raise ValueError("Group-by coordinates have different lengths.")
         self._groupby_coords.append(coord)
 
-    def _add_shared_coord(self, coord, dim):
+    def _add_shared_coord(self, coord: iris.coords.Coord, dim: int) -> None:
         if coord.shape[dim] != self._stop and self._stop is not None:
             raise ValueError("Shared coordinates have different lengths.")
         self._shared_coords.append((coord, dim))
 
-    def group(self):
+    def group(self) -> list[tuple[int, ...]]:
         """
         Calculate the groups and associated slices over one or more group-by
         coordinates.
@@ -2052,144 +2474,84 @@ class _Groupby:
         group slices.
 
         Returns:
-            A generator of the coordinate group slices.
+            A list of the coordinate group slices.
 
         """
-        if self._groupby_coords:
-            if not self._slices_by_key:
-                items = []
-                groups = []
+        if not self._groupby_indices:
+            # Construct the group indices for each group over the group-by
+            # coordinates. Keep constructing until all group-by coordinate
+            # groups are exhausted.
 
-                for coord in self._groupby_coords:
-                    groups.append(iris.coords._GroupIterator(coord.points))
-                    items.append(next(groups[-1]))
+            def group_iterator(points):
+                start = 0
+                for _, group in itertools.groupby(points):
+                    stop = sum((1 for _ in group), start)
+                    yield slice(start, stop)
+                    start = stop
 
-                # Construct the group slice for each group over the group-by
-                # coordinates. Keep constructing until all group-by coordinate
-                # groups are exhausted.
-                while any([item is not None for item in items]):
-                    # Determine the extent (start, stop) of the group given
-                    # each current group-by coordinate group.
-                    start = max(
-                        [
-                            item.groupby_slice.start
-                            for item in items
-                            if item is not None
-                        ]
-                    )
-                    stop = min(
-                        [
-                            item.groupby_slice.stop
-                            for item in items
-                            if item is not None
-                        ]
-                    )
-                    # Construct composite group key for the group using the
-                    # start value from each group-by coordinate.
-                    key = tuple(
-                        [coord.points[start] for coord in self._groupby_coords]
-                    )
-                    # Associate group slice with group key within the ordered
-                    # dictionary.
-                    self._slices_by_key.setdefault(key, []).append(
-                        slice(start, stop)
-                    )
-                    # Prepare for the next group slice construction over the
-                    # group-by coordinates.
-                    for item_index, item in enumerate(items):
-                        if item is None:
-                            continue
-                        # Get coordinate current group slice.
-                        groupby_slice = item.groupby_slice
-                        # Determine whether coordinate has spanned all its
-                        # groups i.e. its full length
-                        # or whether we need to get the coordinates next group.
-                        if groupby_slice.stop == self._stop:
-                            # This coordinate has exhausted all its groups,
-                            # so remove it.
-                            items[item_index] = None
-                        elif groupby_slice.stop == stop:
-                            # The current group of this coordinate is
-                            # exhausted, so get the next one.
-                            items[item_index] = next(groups[item_index])
+            groups = [group_iterator(c.points) for c in self._groupby_coords]
+            groupby_slices = [next(group) for group in groups]
+            indices_by_key: dict[
+                tuple[Union[Number, str], ...], list[int]
+            ] = {}
+            while any(s is not None for s in groupby_slices):
+                # Determine the extent (start, stop) of the group given
+                # each current group-by coordinate group.
+                start = max(s.start for s in groupby_slices if s is not None)
+                stop = min(s.stop for s in groupby_slices if s is not None)
+                # Construct composite group key for the group using the
+                # start value from each group-by coordinate.
+                key = tuple(
+                    coord.points[start] for coord in self._groupby_coords
+                )
+                # Associate group slice with group key within the ordered
+                # dictionary.
+                indices_by_key.setdefault(key, []).extend(range(start, stop))
+                # Prepare for the next group slice construction over the
+                # group-by coordinates.
+                for index, groupby_slice in enumerate(groupby_slices):
+                    if groupby_slice is None:
+                        continue
+                    # Determine whether coordinate has spanned all its
+                    # groups i.e. its full length
+                    # or whether we need to get the coordinates next group.
+                    if groupby_slice.stop == self._stop:
+                        # This coordinate has exhausted all its groups,
+                        # so remove it.
+                        groupby_slices[index] = None
+                    elif groupby_slice.stop == stop:
+                        # The current group of this coordinate is
+                        # exhausted, so get the next one.
+                        groupby_slices[index] = next(groups[index])
 
-                # Merge multiple slices together into one tuple.
-                self._slice_merge()
-                # Calculate the new group-by coordinates.
-                self._compute_groupby_coords()
-                # Calculate the new shared coordinates.
-                self._compute_shared_coords()
-            # Generate the group-by slices/groups.
-            for groupby_slice in self._slices_by_key.values():
-                yield groupby_slice
+            # Cache the indices
+            self._groupby_indices = [tuple(i) for i in indices_by_key.values()]
+            # Calculate the new group-by coordinates.
+            self._compute_groupby_coords()
+            # Calculate the new shared coordinates.
+            self._compute_shared_coords()
 
-        return
+        # Return the group-by indices/groups.
+        return self._groupby_indices
 
-    def _slice_merge(self):
-        """
-        Merge multiple slices into one tuple and collapse items from
-        containing list.
-
-        """
-        # Iterate over the ordered dictionary in order to reduce
-        # multiple slices into a single tuple and collapse
-        # all items from containing list.
-        for key, groupby_slices in self._slices_by_key.items():
-            if len(groupby_slices) > 1:
-                # Compress multiple slices into tuple representation.
-                groupby_indicies = []
-
-                for groupby_slice in groupby_slices:
-                    groupby_indicies.extend(
-                        range(groupby_slice.start, groupby_slice.stop)
-                    )
-
-                self._slices_by_key[key] = tuple(groupby_indicies)
-            else:
-                # Remove single inner slice from list.
-                self._slices_by_key[key] = groupby_slices[0]
-
-    def _compute_groupby_coords(self):
+    def _compute_groupby_coords(self) -> None:
         """Create new group-by coordinates given the group slices."""
-
-        groupby_slice = []
-
-        # Iterate over the ordered dictionary in order to construct
-        # a group-by slice that samples the first element from each group.
-        for key_slice in self._slices_by_key.values():
-            if isinstance(key_slice, tuple):
-                groupby_slice.append(key_slice[0])
-            else:
-                groupby_slice.append(key_slice.start)
-
-        groupby_slice = np.array(groupby_slice)
+        # Construct a group-by slice that samples the first element from each
+        # group.
+        groupby_slice = np.array([i[0] for i in self._groupby_indices])
 
         # Create new group-by coordinates from the group-by slice.
         self.coords = [coord[groupby_slice] for coord in self._groupby_coords]
 
-    def _compute_shared_coords(self):
+    def _compute_shared_coords(self) -> None:
         """Create the new shared coordinates given the group slices."""
-
-        groupby_indices = []
-        groupby_bounds = []
-
-        # Iterate over the ordered dictionary in order to construct a list of
-        # tuple group indices, and a list of the respective bounds of those
-        # indices.
-        for key_slice in self._slices_by_key.values():
-            if isinstance(key_slice, tuple):
-                indices = key_slice
-            else:
-                indices = tuple(range(*key_slice.indices(self._stop)))
-
-            groupby_indices.append(indices)
-            groupby_bounds.append((indices[0], indices[-1]))
-
-        # Create new shared bounded coordinates.
         for coord, dim in self._shared_coords:
+            climatological_coord = (
+                self.climatological and coord.units.is_time_reference()
+            )
             if coord.points.dtype.kind in "SU":
                 if coord.bounds is None:
-                    new_points = []
+                    new_points_list = []
                     new_bounds = None
                     # np.apply_along_axis does not work with str.join, so we
                     # need to loop through the array directly. First move axis
@@ -2197,34 +2559,35 @@ class _Groupby:
                     work_arr = np.moveaxis(coord.points, dim, -1)
                     shape = work_arr.shape
                     work_shape = (-1, shape[-1])
-                    new_shape = (len(self),)
+                    new_shape: tuple[int, ...] = (len(self),)
                     if coord.ndim > 1:
                         new_shape += shape[:-1]
                     work_arr = work_arr.reshape(work_shape)
 
-                    for indices in groupby_indices:
+                    for indices in self._groupby_indices:
                         for arr in work_arr:
-                            new_points.append("|".join(arr.take(indices)))
+                            new_points_list.append("|".join(arr.take(indices)))
 
                     # Reinstate flattened dimensions. Aggregated dim now leads.
-                    new_points = np.array(new_points).reshape(new_shape)
+                    new_points = np.array(new_points_list).reshape(new_shape)
 
                     # Move aggregated dimension back to position it started in.
                     new_points = np.moveaxis(new_points, 0, dim)
                 else:
                     msg = (
-                        "collapsing the bounded string coordinate {0!r}"
-                        " is not supported".format(coord.name())
+                        "collapsing the bounded string coordinate"
+                        f" {coord.name()!r} is not supported"
                     )
                     raise ValueError(msg)
             else:
-                new_bounds = []
+                new_bounds_list = []
                 if coord.has_bounds():
                     # Derive new coord's bounds from bounds.
                     item = coord.bounds
-                    maxmin_axis = (dim, -1)
+                    maxmin_axis: Union[int, tuple[int, int]] = (dim, -1)
                     first_choices = coord.bounds.take(0, -1)
                     last_choices = coord.bounds.take(1, -1)
+
                 else:
                     # Derive new coord's bounds from points.
                     item = coord.points
@@ -2238,12 +2601,13 @@ class _Groupby:
                 # Construct list of coordinate group boundary pairs.
                 if monotonic:
                     # Use first and last bound or point for new bounds.
-                    for start, stop in groupby_bounds:
+                    for indices in self._groupby_indices:
+                        start, stop = indices[0], indices[-1]
                         if (
                             getattr(coord, "circular", False)
                             and (stop + 1) == self._stop
                         ):
-                            new_bounds.append(
+                            new_bounds_list.append(
                                 [
                                     first_choices.take(start, dim),
                                     first_choices.take(0, dim)
@@ -2251,7 +2615,7 @@ class _Groupby:
                                 ]
                             )
                         else:
-                            new_bounds.append(
+                            new_bounds_list.append(
                                 [
                                     first_choices.take(start, dim),
                                     last_choices.take(stop, dim),
@@ -2259,9 +2623,9 @@ class _Groupby:
                             )
                 else:
                     # Use min and max bound or point for new bounds.
-                    for indices in groupby_indices:
+                    for indices in self._groupby_indices:
                         item_slice = item.take(indices, dim)
-                        new_bounds.append(
+                        new_bounds_list.append(
                             [
                                 item_slice.min(axis=maxmin_axis),
                                 item_slice.max(axis=maxmin_axis),
@@ -2272,54 +2636,47 @@ class _Groupby:
                 # dimension last, and the aggregated dimension back in its
                 # original position.
                 new_bounds = np.moveaxis(
-                    np.array(new_bounds), (0, 1), (dim, -1)
+                    np.array(new_bounds_list), (0, 1), (dim, -1)
                 )
 
                 # Now create the new bounded group shared coordinate.
                 try:
-                    new_points = new_bounds.mean(-1)
+                    if climatological_coord:
+                        # Use the first bound as the point
+                        new_points = new_bounds[..., 0]
+                    else:
+                        new_points = new_bounds.mean(-1)
                 except TypeError:
                     msg = (
-                        "The {0!r} coordinate on the collapsing dimension"
-                        " cannot be collapsed.".format(coord.name())
+                        f"The {coord.name()!r} coordinate on the collapsing"
+                        " dimension cannot be collapsed."
                     )
                     raise ValueError(msg)
 
             try:
-                self.coords.append(
-                    coord.copy(points=new_points, bounds=new_bounds)
-                )
+                new_coord = coord.copy(points=new_points, bounds=new_bounds)
             except ValueError:
                 # non monotonic points/bounds
-                self.coords.append(
-                    iris.coords.AuxCoord.from_coord(coord).copy(
-                        points=new_points, bounds=new_bounds
-                    )
+                new_coord = iris.coords.AuxCoord.from_coord(coord).copy(
+                    points=new_points, bounds=new_bounds
                 )
 
-    def __len__(self):
+            if climatological_coord:
+                new_coord.climatological = True
+                self.coord_replacement_mapping.append((coord, new_coord))
+
+            self.coords.append(new_coord)
+
+    def __len__(self) -> int:
         """Calculate the number of groups given the group-by coordinates."""
+        return len(self.group())
 
-        if self._slices_by_key:
-            value = len(self._slices_by_key)
-        else:
-            value = len([s for s in self.group()])
-
-        return value
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         groupby_coords = [coord.name() for coord in self._groupby_coords]
-
-        if self._shared_coords_by_name:
-            shared_coords = [coord.name() for coord in self._shared_coords]
-            shared_string = ", shared_coords=%r)" % shared_coords
-        else:
-            shared_string = ")"
-
-        return "%s(%r%s" % (
-            self.__class__.__name__,
-            groupby_coords,
-            shared_string,
+        shared_coords = [coord.name() for coord, _ in self._shared_coords]
+        return (
+            f"{self.__class__.__name__}({groupby_coords!r}"
+            f", shared_coords={shared_coords!r})"
         )
 
 
@@ -2328,6 +2685,11 @@ def clear_phenomenon_identity(cube):
     Helper function to clear the standard_name, attributes, and
     cell_methods of a cube.
 
+
+    Notes
+    ------
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     cube.rename(None)
     cube.attributes.clear()
@@ -2421,6 +2783,10 @@ class Linear:
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
+            The N arrays of values within `sample_points` will be used to
+            create an N-d grid of points that will then be sampled (rather than
+            just N points)
+
             The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
             cftime.datetime instances.
@@ -2502,7 +2868,7 @@ class AreaWeighted:
             Both sourge and target cubes must have an XY grid defined by
             separate X and Y dimensions with dimension coordinates.
             All of the XY dimension coordinates must also be bounded, and have
-            the same cooordinate system.
+            the same coordinate system.
 
         """
         if not (0 <= mdtol <= 1):

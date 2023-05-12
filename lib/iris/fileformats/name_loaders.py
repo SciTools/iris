@@ -456,7 +456,7 @@ def _generate_cubes(
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
         time_unit = cf_units.Unit(
-            "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
+            "hours since epoch", calendar=cf_units.CALENDAR_STANDARD
         )
 
         # Build time, height, latitude and longitude coordinates.
@@ -571,7 +571,9 @@ def _generate_cubes(
                 cube.attributes[key] = value
 
         if cell_methods is not None:
-            cube.add_cell_method(cell_methods[i])
+            cell_method = cell_methods[i]
+            if cell_method is not None:
+                cube.add_cell_method(cell_method)
 
         yield cube
 
@@ -586,7 +588,7 @@ def _build_cell_methods(av_or_ints, coord):
     Args:
 
     * av_or_ints (iterable of strings):
-        An iterable of strings containing the colummn heading entries
+        An iterable of strings containing the column heading entries
         to be parsed.
     * coord (string or :class:`iris.coords.Coord`):
         The coordinate name (or :class:`iris.coords.Coord` instance)
@@ -610,7 +612,7 @@ def _build_cell_methods(av_or_ints, coord):
             cell_method = None
             msg = "Unknown {} statistic: {!r}. Unable to create cell method."
             warnings.warn(msg.format(coord, av_or_int))
-        cell_methods.append(cell_method)
+        cell_methods.append(cell_method)  # NOTE: this can be a None
     return cell_methods
 
 
@@ -992,7 +994,6 @@ def load_NAMEIII_version2(filename):
     # using the next() method. This will come in handy as we wish to
     # progress through the file line by line.
     with open(filename, "r") as file_handle:
-
         # define a dictionary to hold the header metadata about this file
         header = read_header(file_handle)
 
@@ -1003,7 +1004,6 @@ def load_NAMEIII_version2(filename):
         column_headings = {}
         datacol1 = header["Number of preliminary cols"]
         for line in file_handle:
-
             data = [col.strip() for col in line.split(",")][:-1]
 
             # If first column is not zero we have reached the end
@@ -1079,7 +1079,7 @@ def load_NAMEIII_version2(filename):
             elif zunits == "Pa":
                 z_name = "air_pressure"
             else:
-                ValueError("Vertical coordinate unkown")
+                ValueError("Vertical coordinate unknown")
             zindex = data.index(zgrid[0])
             dim_coords.append("Z")
 
@@ -1212,7 +1212,7 @@ def load_NAMEIII_trajectory(filename):
 
     """
     time_unit = cf_units.Unit(
-        "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
+        "hours since epoch", calendar=cf_units.CALENDAR_STANDARD
     )
 
     with open(filename, "r") as infile:

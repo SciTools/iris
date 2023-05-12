@@ -5,13 +5,22 @@
 Running the Tests
 *****************
 
-Using setuptools for Testing Iris
-=================================
+There are two options for running the tests:
 
-.. warning:: The `setuptools`_ ``test`` command was deprecated in `v41.5.0`_. See :ref:`using nox`.
+* Use an environment you created yourself.  This requires more manual steps to
+  set up, but gives you more flexibility.  For example, you can run a subset of
+  the tests or use ``python`` interactively to investigate any issues.  See
+  :ref:`test manual env`.
 
-A prerequisite of running the tests is to have the Python environment
-setup.  For more information on this see :ref:`installing_from_source`.
+* Use ``nox``.  This will automatically generate an environment and run test
+  sessions consistent with our GitHub continuous integration.  See :ref:`using nox`.
+
+.. _test manual env:
+
+Testing Iris in a Manually Created Environment
+==============================================
+
+To create a suitable environment for running the tests, see :ref:`installing_from_source`.
 
 Many Iris tests will use data that may be defined in the test itself, however
 this is not always the case as sometimes example files may be used.  Due to
@@ -32,11 +41,56 @@ The example command below uses ``~/projects`` as the parent directory::
    git clone git@github.com:SciTools/iris-test-data.git
    export OVERRIDE_TEST_DATA_REPOSITORY=~/projects/iris-test-data/test_data
 
-All the Iris tests may be run from the root ``iris`` project directory via::
+All the Iris tests may be run from the root ``iris`` project directory using
+``pytest``.  For example::
 
-   python setup.py test
+   pytest -n 2
 
-You can also run a specific test, the example below runs the tests for
+will run the tests across two processes.  For more options, use the command
+``pytest -h``.  Below is a trimmed example of the output::
+
+   ============================= test session starts ==============================
+   platform linux -- Python 3.10.5, pytest-7.1.2, pluggy-1.0.0
+   rootdir: /path/to/git/clone/iris, configfile: pyproject.toml, testpaths: lib/iris
+   plugins: xdist-2.5.0, forked-1.4.0
+   gw0 I / gw1 I
+   gw0 [6361] / gw1 [6361] 
+
+   ........................................................................ [  1%]
+   ........................................................................ [  2%]
+   ........................................................................ [  3%]
+   ...
+   .......................ssssssssssssssssss............................... [ 99%]
+   ........................                                                 [100%]
+   =============================== warnings summary ===============================
+   ...
+   -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+   =========================== short test summary info ============================
+   SKIPPED [1] lib/iris/tests/experimental/test_raster.py:152: Test requires 'gdal'.
+   SKIPPED [1] lib/iris/tests/experimental/test_raster.py:155: Test requires 'gdal'.
+   ...
+   ========= 6340 passed, 21 skipped, 1659 warnings in 193.57s (0:03:13) ==========
+
+There may be some tests that have been **skipped**.  This is due to a Python
+decorator being present in the test script that will intentionally skip a test
+if a certain condition is not met.  In the example output above there are
+**21** skipped tests. At the point in time when this was run this was due to an
+experimental dependency not being present.
+
+.. tip::
+
+   The most common reason for tests to be skipped is when the directory for the
+   ``iris-test-data`` has not been set which would shows output such as::
+
+      SKIPPED [1] lib/iris/tests/unit/fileformats/test_rules.py:157: Test(s) require external data.
+      SKIPPED [1] lib/iris/tests/unit/fileformats/pp/test__interpret_field.py:97: Test(s) require external data.
+      SKIPPED [1] lib/iris/tests/unit/util/test_demote_dim_coord_to_aux_coord.py:29: Test(s) require external data.
+      
+   All Python decorators that skip tests will be defined in
+   ``lib/iris/tests/__init__.py`` with a function name with a prefix of
+   ``skip_``.
+
+You can also run a specific test module.  The example below runs the tests for
 mapping::
 
    cd lib/iris/tests
@@ -51,62 +105,12 @@ using the commands ``python test_mapping.py -h`` or
 
              python test_mapping.py -d
 
-          You can also use the ``-d`` command line option when running all
-          the tests but this will take a while to run and will require the
-          manual closing of each of the figures for the tests to continue.
-
-The output from running the tests is verbose as it will run ~5000 separate
-tests.  Below is a trimmed example of the output::
-
-   running test
-   Running test suite(s): default
-
-   Running test discovery on iris.tests with 2 processors.
-   test_circular_subset (iris.tests.experimental.regrid.test_regrid_area_weighted_rectilinear_src_and_grid.TestAreaWeightedRegrid) ... ok
-   test_cross_section (iris.tests.experimental.regrid.test_regrid_area_weighted_rectilinear_src_and_grid.TestAreaWeightedRegrid) ... ok
-   test_different_cs (iris.tests.experimental.regrid.test_regrid_area_weighted_rectilinear_src_and_grid.TestAreaWeightedRegrid) ... ok
-   ...
-   ...
-   test_ellipsoid (iris.tests.unit.experimental.raster.test_export_geotiff.TestProjection) ... SKIP: Test requires 'gdal'.
-   test_no_ellipsoid (iris.tests.unit.experimental.raster.test_export_geotiff.TestProjection) ... SKIP: Test requires 'gdal'.
-   ...
-   ...
-   test_slice (iris.tests.test_util.TestAsCompatibleShape) ... ok
-   test_slice_and_transpose (iris.tests.test_util.TestAsCompatibleShape) ... ok
-   test_transpose (iris.tests.test_util.TestAsCompatibleShape) ... ok
-
-   ----------------------------------------------------------------------
-   Ran 4762 tests in 238.649s
-
-   OK (SKIP=22)
-
-There may be some tests that have been **skipped**.  This is due to a Python
-decorator being present in the test script that will intentionally skip a test
-if a certain condition is not met.  In the example output above there are
-**22** skipped tests, at the point in time when this was run this was primarily
-due to an experimental dependency not being present.
-
-
-.. tip::
-
-   The most common reason for tests to be skipped is when the directory for the
-   ``iris-test-data`` has not been set which would shows output such as::
-
-      test_coord_coord_map (iris.tests.test_plot.Test1dScatter) ... SKIP: Test(s) require external data.
-      test_coord_coord (iris.tests.test_plot.Test1dScatter) ... SKIP: Test(s) require external data.
-      test_coord_cube (iris.tests.test_plot.Test1dScatter) ... SKIP: Test(s) require external data.
-
-   All Python decorators that skip tests will be defined in
-   ``lib/iris/tests/__init__.py`` with a function name with a prefix of
-   ``skip_``.
-
-
 .. _using nox:
 
 Using Nox for Testing Iris
 ==========================
 
-Iris has adopted the use of the `nox`_ tool for automated testing on `cirrus-ci`_
+The `nox`_ tool has for adopted for automated testing on `Iris GitHub Actions`_
 and also locally on the command-line for developers.
 
 `nox`_ is similar to `tox`_, but instead leverages the expressiveness and power of a Python
@@ -124,15 +128,12 @@ automates the process of:
 * building the documentation and executing the doc-tests
 * building the documentation gallery
 * running the documentation URL link check
-* linting the code-base
-* ensuring the code-base style conforms to the `black`_ standard
-
 
 You can perform all of these tasks manually yourself, however the onus is on you to first ensure
 that all of the required package dependencies are installed and available in the testing environment.
 
 `Nox`_ has been configured to automatically do this for you, and provides a means to easily replicate
-the remote testing behaviour of `cirrus-ci`_ locally for the developer.
+the remote testing behaviour of `Iris GitHub Actions`_ locally for the developer.
 
 
 Installing Nox

@@ -65,7 +65,7 @@ class Test(tests.IrisTest):
     def test_multiple_odd_dims(self):
         # Test to ensure multiple collapsed dimensions don't interfere.
         # make a 5-D array where dimensions 0, 2 and 3 are degenerate.
-        array = np.arange(3 ** 5).reshape([3] * 5)
+        array = np.arange(3**5).reshape([3] * 5)
         array[1:] = array[0:1]
         array[:, :, 1:] = array[:, :, 0:1]
         array[:, :, :, 1:] = array[:, :, :, 0:1]

@@ -9,8 +9,9 @@ Iterate benchmark tests.
 """
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE
 from iris import coords, cube, iterate
+
+from . import ARTIFICIAL_DIM_SIZE
 
 
 def setup():

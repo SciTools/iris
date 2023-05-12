@@ -9,13 +9,14 @@ Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`.
 """
 from pathlib import Path
 import shutil
-import subprocess
 import tempfile
+import warnings
 
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
-from iris.fileformats.netcdf import _load_cube
+from iris.fileformats.netcdf.loader import _load_cube
+from iris.tests.stock.netcdf import ncgen_from_cdl
 
 """
 Notes on testing method.
@@ -29,9 +30,7 @@ WHERE:
 As it's hard to construct a suitable CFReader from scratch, it would seem
 simpler (for now) to use an ACTUAL FILE.
 Likewise, the easiest approach to that is with CDL and "ncgen".
-To do this, we need a test "fixture" that can create suitable test files in a
-temporary directory.
-
+For this, we just use 'tests.stock.netcdf.ncgen_from_cdl'.
 """
 
 
@@ -77,44 +76,50 @@ class Mixin__nc_load_actions:
 
         """
         # Write the CDL to a file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(cdl_string)
-
-        # Create a netCDF file from the CDL file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        subprocess.check_call(command, shell=True)
+        ncgen_from_cdl(cdl_string, cdl_path, nc_path)
 
         # Simulate the inner part of the file reading process.
         cf = CFReader(nc_path)
-        # Grab a data variable : FOR NOW always grab the 'phenom' variable.
-        cf_var = cf.cf_group.data_variables["phenom"]
 
-        engine = iris.fileformats.netcdf._actions_engine()
+        with cf:
+            # Grab a data variable : FOR NOW always grab the 'phenom' variable.
+            cf_var = cf.cf_group.data_variables["phenom"]
 
-        # If debug enabled, switch on the activation summary debug output.
-        # Use 'patch' so it is restored after the test.
-        self.patch("iris.fileformats.netcdf.DEBUG", self.debug)
+            engine = iris.fileformats.netcdf.loader._actions_engine()
 
-        # Call the main translation function to load a single cube.
-        # _load_cube establishes per-cube facts, activates rules and
-        # produces an actual cube.
-        cube = _load_cube(engine, cf, cf_var, nc_path)
+            # If debug enabled, switch on the activation summary debug output.
+            # Use 'patch' so it is restored after the test.
+            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug)
 
-        # Also Record, on the cubes, which hybrid coord elements were identified
-        # by the rules operation.
-        # Unlike the other translations, _load_cube does *not* convert this
-        # information into actual cube elements.  That is instead done by
-        # `iris.fileformats.netcdf._load_aux_factory`.
-        # For rules testing, it is anyway more convenient to deal with the raw
-        # data, as each factory type has different validity requirements to
-        # build it, and none of that is relevant to the rules operation.
-        cube._formula_type_name = engine.requires.get("formula_type")
-        cube._formula_terms_byname = engine.requires.get("formula_terms")
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="Ignoring a datum in netCDF load for consistency with existing "
+                    "behaviour. In a future version of Iris, this datum will be "
+                    "applied. To apply the datum when loading, use the "
+                    "iris.FUTURE.datum_support flag.",
+                    category=FutureWarning,
+                )
+                # Call the main translation function to load a single cube.
+                # _load_cube establishes per-cube facts, activates rules and
+                # produces an actual cube.
+                cube = _load_cube(engine, cf, cf_var, nc_path)
 
-        # Always returns a single cube.
-        return cube
+            # Also Record, on the cubes, which hybrid coord elements were identified
+            # by the rules operation.
+            # Unlike the other translations, _load_cube does *not* convert this
+            # information into actual cube elements.  That is instead done by
+            # `iris.fileformats.netcdf._load_aux_factory`.
+            # For rules testing, it is anyway more convenient to deal with the raw
+            # data, as each factory type has different validity requirements to
+            # build it, and none of that is relevant to the rules operation.
+            cube._formula_type_name = engine.requires.get("formula_type")
+            cube._formula_terms_byname = engine.requires.get("formula_terms")
 
-    def run_testcase(self, warning=None, **testcase_kwargs):
+            # Always returns a single cube.
+            return cube
+
+    def run_testcase(self, warning_regex=None, **testcase_kwargs):
         """
         Run a testcase with chosen options, returning a test cube.
 
@@ -130,10 +135,10 @@ class Mixin__nc_load_actions:
             print(cdl_string)
             print("------\n")
 
-        if warning is None:
+        if warning_regex is None:
             context = self.assertNoWarningsRegexp()
         else:
-            context = self.assertWarnsRegexp(warning)
+            context = self.assertWarnsRegex(UserWarning, warning_regex)
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
 

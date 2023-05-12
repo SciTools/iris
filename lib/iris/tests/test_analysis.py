@@ -9,8 +9,10 @@
 import iris.tests as tests  # isort:skip
 
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
 import iris.analysis.cartography
@@ -19,6 +21,7 @@ import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.tests.stock
+import iris.util
 
 
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
@@ -286,7 +289,7 @@ class TestAnalysisWeights(tests.IrisTest):
             iris.analysis.MEAN,
         )
 
-        # Test collpasing of non data coord
+        # Test collapsing of non data coord
         self.assertRaises(
             iris.exceptions.CoordinateCollapseError,
             e.collapsed,
@@ -931,6 +934,106 @@ class TestAggregators(tests.IrisTest):
             gt6, ("analysis", "count_foo_bar_2d.cml"), checksum=False
         )
 
+    def test_max_run_1d(self):
+        cube = tests.stock.simple_1d()
+        # [ 0  1  2  3  4  5  6  7  8  9 10]
+        result = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 1, 4, 5, 6, 8, 9]),
+        )
+        self.assertArrayEqual(result.data, np.array(3))
+        self.assertEqual(result.units, 1)
+        self.assertTupleEqual(result.cell_methods, ())
+        self.assertCML(
+            result, ("analysis", "max_run_foo_1d.cml"), checksum=False
+        )
+
+    def test_max_run_lazy(self):
+        cube = tests.stock.simple_1d()
+        # [ 0  1  2  3  4  5  6  7  8  9 10]
+        # Make data lazy
+        cube.data = da.from_array(cube.data)
+        result = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 1, 4, 5, 6, 8, 9]),
+        )
+        self.assertTrue(result.has_lazy_data())
+        # Realise data
+        _ = result.data
+        self.assertArrayEqual(result.data, np.array(3))
+        self.assertEqual(result.units, 1)
+        self.assertTupleEqual(result.cell_methods, ())
+        self.assertCML(
+            result, ("analysis", "max_run_foo_1d.cml"), checksum=False
+        )
+
+    def test_max_run_2d(self):
+        cube = tests.stock.simple_2d()
+        # [[ 0  1  2  3]
+        #  [ 4  5  6  7]
+        #  [ 8  9 10 11]]
+        foo_result = cube.collapsed(
+            "foo",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
+        )
+        self.assertArrayEqual(
+            foo_result.data, np.array([1, 2, 1], dtype=np.float32)
+        )
+        self.assertEqual(foo_result.units, 1)
+        self.assertTupleEqual(foo_result.cell_methods, ())
+        self.assertCML(
+            foo_result, ("analysis", "max_run_foo_2d.cml"), checksum=False
+        )
+
+        bar_result = cube.collapsed(
+            "bar",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
+        )
+        self.assertArrayEqual(
+            bar_result.data, np.array([2, 2, 0, 3], dtype=np.float32)
+        )
+        self.assertEqual(bar_result.units, 1)
+        self.assertTupleEqual(bar_result.cell_methods, ())
+        self.assertCML(
+            bar_result, ("analysis", "max_run_bar_2d.cml"), checksum=False
+        )
+
+        with self.assertRaises(ValueError):
+            _ = cube.collapsed(
+                ("foo", "bar"),
+                iris.analysis.MAX_RUN,
+                function=lambda val: np.isin(val, [0, 3, 4, 5, 7, 9, 11]),
+            )
+
+    def test_max_run_masked(self):
+        cube = tests.stock.simple_2d()
+        # [[ 0  1  2  3]
+        #  [ 4  5  6  7]
+        #  [ 8  9 10 11]]
+        iris.util.mask_cube(
+            cube, np.isin(cube.data, [0, 2, 3, 5, 7, 11]), in_place=True
+        )
+        # [[--  1 -- --]
+        #  [ 4 --  6 --]
+        #  [ 8  9 10 --]]
+        result = cube.collapsed(
+            "bar",
+            iris.analysis.MAX_RUN,
+            function=lambda val: np.isin(val, [0, 1, 4, 5, 6, 9, 10, 11]),
+        )
+        self.assertArrayEqual(
+            result.data, np.array([1, 1, 2, 0], dtype=np.float32)
+        )
+        self.assertEqual(result.units, 1)
+        self.assertTupleEqual(result.cell_methods, ())
+        self.assertCML(
+            result, ("analysis", "max_run_bar_2d_masked.cml"), checksum=False
+        )
+
     def test_weighted_sum_consistency(self):
         # weighted sum with unit weights should be the same as a sum
         cube = tests.stock.simple_1d()
@@ -1560,6 +1663,287 @@ class TestRollingWindow(tests.IrisTest):
         )
         # use almost equal to compare floats
         self.assertArrayAlmostEqual(expected_result, res_cube.data)
+
+
+class TestCreateWeightedAggregatorFn(tests.IrisTest):
+    @staticmethod
+    def aggregator_fn(data, axis, **kwargs):
+        return (data, axis, kwargs)
+
+    def test_no_weights_supplied(self):
+        aggregator_fn = iris.analysis.create_weighted_aggregator_fn(
+            self.aggregator_fn, 42, test_kwarg="test"
+        )
+        output = aggregator_fn("dummy_array", None)
+        self.assertEqual(len(output), 3)
+        self.assertEqual(output[0], "dummy_array")
+        self.assertEqual(output[1], 42)
+        self.assertEqual(output[2], {"test_kwarg": "test"})
+
+    def test_weights_supplied(self):
+        aggregator_fn = iris.analysis.create_weighted_aggregator_fn(
+            self.aggregator_fn, 42, test_kwarg="test"
+        )
+        output = aggregator_fn("dummy_array", "w")
+        self.assertEqual(len(output), 3)
+        self.assertEqual(output[0], "dummy_array")
+        self.assertEqual(output[1], 42)
+        self.assertEqual(output[2], {"test_kwarg": "test", "weights": "w"})
+
+    def test_weights_in_kwargs(self):
+        kwargs = {"test_kwarg": "test", "weights": "ignored"}
+        aggregator_fn = iris.analysis.create_weighted_aggregator_fn(
+            self.aggregator_fn, 42, **kwargs
+        )
+        output = aggregator_fn("dummy_array", "w")
+        self.assertEqual(len(output), 3)
+        self.assertEqual(output[0], "dummy_array")
+        self.assertEqual(output[1], 42)
+        self.assertEqual(output[2], {"test_kwarg": "test", "weights": "w"})
+        self.assertEqual(kwargs, {"test_kwarg": "test", "weights": "ignored"})
+
+
+class TestWeights:
+    @pytest.fixture(autouse=True)
+    def setup_test_data(self):
+        self.lat = iris.coords.DimCoord(
+            [0, 1], standard_name="latitude", units="degrees"
+        )
+        self.lon = iris.coords.DimCoord(
+            [0, 1, 2], standard_name="longitude", units="degrees"
+        )
+        self.cell_measure = iris.coords.CellMeasure(
+            np.arange(6).reshape(2, 3), standard_name="cell_area", units="m2"
+        )
+        self.aux_coord = iris.coords.AuxCoord(
+            [3, 4], long_name="auxcoord", units="s"
+        )
+        self.ancillary_variable = iris.coords.AncillaryVariable(
+            [5, 6, 7], var_name="ancvar", units="kg"
+        )
+        self.cube = iris.cube.Cube(
+            np.arange(6).reshape(2, 3),
+            standard_name="air_temperature",
+            units="K",
+            dim_coords_and_dims=[(self.lat, 0), (self.lon, 1)],
+            aux_coords_and_dims=[(self.aux_coord, 0)],
+            cell_measures_and_dims=[(self.cell_measure, (0, 1))],
+            ancillary_variables_and_dims=[(self.ancillary_variable, 1)],
+        )
+
+    def test_init_with_weights(self):
+        weights = iris.analysis._Weights([], self.cube)
+        new_weights = iris.analysis._Weights(weights, self.cube)
+        assert isinstance(new_weights, iris.analysis._Weights)
+        assert new_weights is not weights
+        np.testing.assert_array_equal(new_weights, [])
+        assert new_weights.units == "1"
+        assert weights.units == "1"
+
+    def test_init_with_weights_and_units(self):
+        weights = iris.analysis._Weights([], self.cube)
+        new_weights = iris.analysis._Weights(weights, self.cube, units="J")
+        assert isinstance(new_weights, iris.analysis._Weights)
+        assert new_weights is not weights
+        np.testing.assert_array_equal(new_weights, [])
+        assert new_weights.units == "J"
+        assert weights.units == "1"
+
+    def test_init_with_cube(self):
+        weights = iris.analysis._Weights(self.cube, self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.arange(6).reshape(2, 3))
+        assert weights.units == "K"
+
+    def test_init_with_cube_and_units(self):
+        weights = iris.analysis._Weights(self.cube, self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.arange(6).reshape(2, 3))
+        assert weights.units == "J"
+
+    def test_init_with_str_dim_coord(self):
+        weights = iris.analysis._Weights("latitude", self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[0, 0, 0], [1, 1, 1]])
+        assert weights.units == "degrees"
+
+    def test_init_with_str_dim_coord_and_units(self):
+        weights = iris.analysis._Weights("latitude", self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[0, 0, 0], [1, 1, 1]])
+        assert weights.units == "J"
+
+    def test_init_with_str_aux_coord(self):
+        weights = iris.analysis._Weights("auxcoord", self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[3, 3, 3], [4, 4, 4]])
+        assert weights.units == "s"
+
+    def test_init_with_str_aux_coord_and_units(self):
+        weights = iris.analysis._Weights("auxcoord", self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[3, 3, 3], [4, 4, 4]])
+        assert weights.units == "J"
+
+    def test_init_with_str_ancillary_variable(self):
+        weights = iris.analysis._Weights("ancvar", self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[5, 6, 7], [5, 6, 7]])
+        assert weights.units == "kg"
+
+    def test_init_with_str_ancillary_variable_and_units(self):
+        weights = iris.analysis._Weights("ancvar", self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[5, 6, 7], [5, 6, 7]])
+        assert weights.units == "J"
+
+    def test_init_with_str_cell_measure(self):
+        weights = iris.analysis._Weights("cell_area", self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.arange(6).reshape(2, 3))
+        assert weights.units == "m2"
+
+    def test_init_with_str_cell_measure_and_units(self):
+        weights = iris.analysis._Weights("cell_area", self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.arange(6).reshape(2, 3))
+        assert weights.units == "J"
+
+    def test_init_with_dim_coord(self):
+        weights = iris.analysis._Weights(self.lat, self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[0, 0, 0], [1, 1, 1]])
+        assert weights.units == "degrees"
+
+    def test_init_with_dim_coord_and_units(self):
+        weights = iris.analysis._Weights(self.lat, self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[0, 0, 0], [1, 1, 1]])
+        assert weights.units == "J"
+
+    def test_init_with_aux_coord(self):
+        weights = iris.analysis._Weights(self.aux_coord, self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[3, 3, 3], [4, 4, 4]])
+        assert weights.units == "s"
+
+    def test_init_with_aux_coord_and_units(self):
+        weights = iris.analysis._Weights(self.aux_coord, self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[3, 3, 3], [4, 4, 4]])
+        assert weights.units == "J"
+
+    def test_init_with_ancillary_variable(self):
+        weights = iris.analysis._Weights(self.ancillary_variable, self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[5, 6, 7], [5, 6, 7]])
+        assert weights.units == "kg"
+
+    def test_init_with_ancillary_variable_and_units(self):
+        weights = iris.analysis._Weights(
+            self.ancillary_variable, self.cube, units="J"
+        )
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [[5, 6, 7], [5, 6, 7]])
+        assert weights.units == "J"
+
+    def test_init_with_cell_measure(self):
+        weights = iris.analysis._Weights(self.cell_measure, self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.arange(6).reshape(2, 3))
+        assert weights.units == "m2"
+
+    def test_init_with_cell_measure_and_units(self):
+        weights = iris.analysis._Weights(
+            self.cell_measure, self.cube, units="J"
+        )
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.arange(6).reshape(2, 3))
+        assert weights.units == "J"
+
+    def test_init_with_list(self):
+        weights = iris.analysis._Weights([1, 2, 3], self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [1, 2, 3])
+        assert weights.units == "1"
+
+    def test_init_with_list_and_units(self):
+        weights = iris.analysis._Weights([1, 2, 3], self.cube, units="J")
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, [1, 2, 3])
+        assert weights.units == "J"
+
+    def test_init_with_ndarray(self):
+        weights = iris.analysis._Weights(np.zeros((5, 5)), self.cube)
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.zeros((5, 5)))
+        assert weights.units == "1"
+
+    def test_init_with_ndarray_and_units(self):
+        weights = iris.analysis._Weights(
+            np.zeros((5, 5)), self.cube, units="J"
+        )
+        assert isinstance(weights, iris.analysis._Weights)
+        np.testing.assert_array_equal(weights, np.zeros((5, 5)))
+        assert weights.units == "J"
+
+    def test_init_with_invalid_obj(self):
+        with pytest.raises(KeyError):
+            iris.analysis._Weights("invalid_obj", self.cube)
+
+    def test_init_with_invalid_obj_and_units(self):
+        with pytest.raises(KeyError):
+            iris.analysis._Weights("invalid_obj", self.cube, units="J")
+
+    def test_update_kwargs_no_weights(self):
+        kwargs = {"test": [1, 2, 3]}
+        iris.analysis._Weights.update_kwargs(kwargs, self.cube)
+        assert kwargs == {"test": [1, 2, 3]}
+
+    def test_update_kwargs_weights_none(self):
+        kwargs = {"test": [1, 2, 3], "weights": None}
+        iris.analysis._Weights.update_kwargs(kwargs, self.cube)
+        assert kwargs == {"test": [1, 2, 3], "weights": None}
+
+    def test_update_kwargs_weights(self):
+        kwargs = {"test": [1, 2, 3], "weights": [1, 2]}
+        iris.analysis._Weights.update_kwargs(kwargs, self.cube)
+        assert len(kwargs) == 2
+        assert kwargs["test"] == [1, 2, 3]
+        assert isinstance(kwargs["weights"], iris.analysis._Weights)
+        np.testing.assert_array_equal(kwargs["weights"], [1, 2])
+        assert kwargs["weights"].units == "1"
+
+
+def test__Groupby_repr():
+    groupby_coord = iris.coords.AuxCoord([2000, 2000], var_name="year")
+    shared_coord = iris.coords.DimCoord(
+        [0, 1],
+        var_name="time",
+        units=cf_units.Unit("days since 2000-01-01"),
+    )
+    grouper = iris.analysis._Groupby([groupby_coord], [(shared_coord, 0)])
+    assert repr(grouper) == "_Groupby(['year'], shared_coords=['time'])"
+
+
+CUBE = iris.cube.Cube(0)
+
+
+@pytest.mark.parametrize(
+    "kwargs,expected",
+    [
+        ({}, "s"),
+        ({"test": "m"}, "s"),
+        ({"weights": None}, "s"),
+        ({"weights": [1, 2, 3]}, "s"),
+        ({"weights": iris.analysis._Weights([1], CUBE)}, "s"),
+        ({"weights": iris.analysis._Weights([1], CUBE, units="kg")}, "s kg"),
+    ],
+)
+def test_sum_units_func(kwargs, expected):
+    units = cf_units.Unit("s")
+    result = iris.analysis._sum_units_func(units, **kwargs)
+    assert result == expected
 
 
 if __name__ == "__main__":

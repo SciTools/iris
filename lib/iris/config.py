@@ -171,8 +171,7 @@ TEST_DATA_DIR = get_dir_option(
 )
 
 # Override the data repository if the appropriate environment variable
-# has been set.  This is used in setup.py in the TestRunner command to
-# enable us to simulate the absence of external data.
+# has been set.
 override = os.environ.get("OVERRIDE_TEST_DATA_REPOSITORY")
 if override:
     TEST_DATA_DIR = None

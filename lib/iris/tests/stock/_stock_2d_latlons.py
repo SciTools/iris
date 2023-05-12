@@ -118,7 +118,7 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     """
     Construct small 2d cubes with 2d X and Y coordinates.
 
-    This makes cubes with 'expanded' coordinates (4 bounds per cell), analagous
+    This makes cubes with 'expanded' coordinates (4 bounds per cell), analogous
     to ORCA data.
     The coordinates are always geographical, so either it has a coord system
     or they are "true" lats + lons.
@@ -296,7 +296,9 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     return cube
 
 
-def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
+def make_bounds_discontiguous_at_point(
+    cube, at_iy, at_ix, in_y=False, upper=True
+):
     """
     Meddle with the XY grid bounds of a 2D cube to make the grid discontiguous.
 
@@ -325,16 +327,22 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
         if not in_y:
             # Make a discontinuity "at" (iy, ix), by moving the right-hand edge
             # of the cell to the midpoint of the existing left+right bounds.
-            new_bds_br = 0.5 * (bds_bl + bds_br)
-            new_bds_tr = 0.5 * (bds_tl + bds_tr)
-            bds_br, bds_tr = new_bds_br, new_bds_tr
+            new_bds_b = 0.5 * (bds_bl + bds_br)
+            new_bds_t = 0.5 * (bds_tl + bds_tr)
+            if upper:
+                bds_br, bds_tr = new_bds_b, new_bds_t
+            else:
+                bds_bl, bds_tl = new_bds_b, new_bds_t
         else:
             # Same but in the 'grid y direction' :
             # Make a discontinuity "at" (iy, ix), by moving the **top** edge of
             # the cell to the midpoint of the existing **top+bottom** bounds.
-            new_bds_tl = 0.5 * (bds_bl + bds_tl)
-            new_bds_tr = 0.5 * (bds_br + bds_tr)
-            bds_tl, bds_tr = new_bds_tl, new_bds_tr
+            new_bds_l = 0.5 * (bds_bl + bds_tl)
+            new_bds_r = 0.5 * (bds_br + bds_tr)
+            if upper:
+                bds_tl, bds_tr = new_bds_l, new_bds_r
+            else:
+                bds_bl, bds_br = new_bds_l, new_bds_r
 
         # Write in the new bounds (all 4 corners).
         bds[at_iy, at_ix] = [bds_bl, bds_br, bds_tr, bds_tl]
@@ -355,7 +363,16 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
             msg = "The coordinate {!r} doesn't span a data dimension."
             raise ValueError(msg.format(coord.name()))
 
-        masked_data = ma.masked_array(cube.data)
-        masked_data[at_iy, at_ix] = ma.masked
+    masked_data = ma.masked_array(cube.data)
+
+    # Mask all points which would be found discontiguous.
+    # Note that find_discontiguities finds all instances where a cell is
+    # discontiguous with a neighbouring cell to its *right* or *above*
+    # that cell.
+    masked_data[at_iy, at_ix] = ma.masked
+    if in_y or not upper:
+        masked_data[at_iy, at_ix - 1] = ma.masked
+    if not in_y or not upper:
+        masked_data[at_iy - 1, at_ix] = ma.masked
 
     cube.data = masked_data

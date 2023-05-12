@@ -207,7 +207,7 @@ variables:
         result = self.run_testcase(
             formula_root_name="unknown",
             term_names=["a", "b"],
-            warning="Ignored formula of unrecognised type: 'unknown'.",
+            warning_regex="Ignored formula of unrecognised type: 'unknown'.",
         )
         # Check that it picks up the terms, but *not* the factory root coord,
         # which is simply discarded.
@@ -226,7 +226,7 @@ variables:
 
         extra_type = "ocean_sigma_coordinate"
         result = self.run_testcase(
-            extra_formula_type=extra_type, warning=warning
+            extra_formula_type=extra_type, warning_regex=warning
         )
         # NOTE: FOR NOW, check expected behaviour : only one factory will be
         # built, but there are coordinates (terms) for both types.

@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" units="unknown" var_name="wibble">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.7"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord id="5ae9804c" points="[ 0. , 12.5, 25. , 37.5, 50. ]" shape="(5,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="projection_x_coordinate">
+          <mercator ellipsoid="None" false_easting="0.0" false_northing="0.0" longitude_of_projection_origin="0.0" scale_factor_at_projection_origin="1.2" standard_parallel="None"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="502d5aa1" points="[ 0. , 12.5, 25. , 37.5, 50. ]" shape="(5,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="projection_y_coordinate">
+          <mercator ellipsoid="None" false_easting="0.0" false_northing="0.0" longitude_of_projection_origin="0.0" scale_factor_at_projection_origin="1.2" standard_parallel="None"/>
+        </dimCoord>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x1936d0c2" dtype="float64" mask_checksum="no-masked-elements" shape="(5, 5)"/>
+  </cube>
+</cubes>

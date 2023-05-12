@@ -3,14 +3,14 @@
   <cube dtype="float32" long_name="thingness" units="1">
     <coords>
       <coord datadims="[1, 2]">
-        <auxCoord id="434cbbd8" long_name="bar" points="[[2.5, 7.5],
-		[10.0, 17.5],
-		[15.0, 22.5]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="434cbbd8" long_name="bar" points="[[ 2.5,  7.5],
+ [10. , 17.5],
+ [15. , 22.5]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="b0d35dcf" long_name="foo" points="[[-7.5, 7.5],
-		[-12.5, 4.0],
-		[2.5, 14.0]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
+        <auxCoord id="b0d35dcf" long_name="foo" points="[[ -7.5,   7.5],
+ [-12.5,   4. ],
+ [  2.5,  14. ]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4252ba3a" points="[0, 1, 1]" shape="(3,)" standard_name="height" units="Unit('1')" value_type="int64"/>
@@ -22,7 +22,7 @@
         <dimCoord id="0a0f475b" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="10b8e1fc" long_name="wibble" points="[10.0, 30.0, 30.0]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord id="10b8e1fc" long_name="wibble" points="[10., 30., 30.]" shape="(3,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

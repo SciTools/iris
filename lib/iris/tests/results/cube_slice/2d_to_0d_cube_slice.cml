@@ -3,10 +3,10 @@
   <cube dtype="int32" long_name="test 2d dimensional cube" units="meters">
     <coords>
       <coord>
-        <auxCoord id="da892976" long_name="an_other" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
+        <auxCoord id="da892976" long_name="an_other" points="[3.]" shape="(1,)" units="Unit('meters')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="98bd3c83" long_name="dim1" points="[3.0]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
+        <dimCoord id="98bd3c83" long_name="dim1" points="[3.]" shape="(1,)" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord>
         <dimCoord bounds="[[0, 1]]" id="e4dc1958" long_name="dim2" points="[0]" shape="(1,)" units="Unit('meters')" value_type="int32"/>

@@ -13,9 +13,7 @@ Unit tests for
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import unittest
-
-from cf_units import CALENDAR_360_DAY, CALENDAR_GREGORIAN, Unit
+from cf_units import CALENDAR_360_DAY, CALENDAR_STANDARD, Unit
 from cftime import datetime as nc_datetime
 import numpy as np
 
@@ -40,7 +38,7 @@ def _lbcode(value=None, ix=None, iy=None):
     return result
 
 
-_EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_GREGORIAN)
+_EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_STANDARD)
 _HOURS_UNIT = Unit("hours")
 
 
@@ -733,7 +731,6 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
 
 
 class TestArrayInputWithLBTIM_0_3_1(TestField):
-    @unittest.skip("#3508 investigate unit test failure")
     def test_t1_scalar_t2_list(self):
         lbtim = _lbtim(ib=3, ic=1)
         lbcode = _lbcode(1)
@@ -756,9 +753,13 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
         )
 
         # Expected coords.
+        leap_year_adjust = np.array([0, 24, 24])
         points = np.ones_like(years) * lbft
         bounds = np.array(
-            [lbft - ((years - 1970) * 365 * 24 + 2 * 24), points]
+            [
+                lbft - ((years - 1970) * 365 * 24 + 2 * 24 + leap_year_adjust),
+                points,
+            ]
         ).transpose()
         fp_coord = AuxCoord(
             points,
@@ -766,7 +767,7 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
             units="hours",
             bounds=bounds,
         )
-        points = (years - 1970) * 365 * 24 + 10 * 24 + 9
+        points = (years - 1970) * 365 * 24 + 10 * 24 + 9 + leap_year_adjust
         bounds = np.array(
             [np.ones_like(points) * (8 * 24 + 9), points]
         ).transpose()

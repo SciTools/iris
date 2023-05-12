@@ -16,6 +16,7 @@ import cf_units
 import numpy as np
 
 import iris
+import iris.analysis
 import iris.coords as coords
 import iris.tests.stock
 
@@ -192,7 +193,7 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
         self.check_graphic()
 
     def test_cube_cube(self):
-        # plot two phenomena against eachother, in this case just dummy data
+        # plot two phenomena against each other, in this case just dummy data
         cube1 = self.cube1d.copy()
         cube2 = self.cube1d.copy()
         cube1.rename("some phenomenon")
@@ -322,6 +323,127 @@ class Test1dQuickplotScatter(Test1dScatter):
             "Temperature",
         )
         self.draw_method = qplt.scatter
+
+
+@tests.skip_data
+@tests.skip_plot
+class Test2dPoints(tests.GraphicsTest):
+    def setUp(self):
+        super().setUp()
+        pp_file = tests.get_data_path(("PP", "globClim1", "u_wind.pp"))
+        self.cube = iris.load(pp_file)[0][0]
+
+    def test_circular_changes(self):
+        # Circular
+        iplt.pcolormesh(self.cube, vmax=50)
+        iplt.points(self.cube, s=self.cube.data)
+        plt.gca().coastlines()
+
+        self.check_graphic()
+
+
+@tests.skip_data
+@tests.skip_plot
+class Test1dFillBetween(tests.GraphicsTest):
+    def setUp(self):
+        super().setUp()
+        self.cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "testing", "small_theta_colpex.nc")
+            ),
+            "air_potential_temperature",
+        )[0, 0]
+        self.draw_method = iplt.fill_between
+
+    def test_coord_coord(self):
+        x = self.cube.coord("grid_latitude")
+        y1 = self.cube.coord("surface_altitude")[:, 0]
+        y2 = self.cube.coord("surface_altitude")[:, 1]
+        self.draw_method(x, y1, y2)
+        self.check_graphic()
+
+    def test_coord_cube(self):
+        x = self.cube.coord("grid_latitude")
+        y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)
+        y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)
+        self.draw_method(x, y1, y2)
+        self.check_graphic()
+
+    def test_cube_coord(self):
+        x = self.cube.collapsed("grid_longitude", iris.analysis.MEAN)
+        y1 = self.cube.coord("surface_altitude")[:, 0]
+        y2 = y1 + 10
+        self.draw_method(x, y1, y2)
+        self.check_graphic()
+
+    def test_cube_cube(self):
+        x = self.cube.collapsed("grid_longitude", iris.analysis.MEAN)
+        y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)
+        y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)
+        self.draw_method(x, y1, y2)
+        self.check_graphic()
+
+    def test_incompatible_objects_x_odd(self):
+        # cubes/coordinates of different sizes cannot be plotted
+        x = self.cube.coord("grid_latitude")[:-1]
+        y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)
+        y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y1, y2)
+
+    def test_incompatible_objects_y1_odd(self):
+        # cubes/coordinates of different sizes cannot be plotted
+        x = self.cube.coord("grid_latitude")
+        y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)[:-1]
+        y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y1, y2)
+
+    def test_incompatible_objects_y2_odd(self):
+        # cubes/coordinates of different sizes cannot be plotted
+        x = self.cube.coord("grid_latitude")
+        y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)
+        y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)[:-1]
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y1, y2)
+
+    def test_incompatible_objects_all_odd(self):
+        # cubes/coordinates of different sizes cannot be plotted
+        x = self.cube.coord("grid_latitude")
+        y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)[:-1]
+        y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)[:-2]
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y1, y2)
+
+    def test_multidimensional(self):
+        # multidimensional cubes/coordinates are not allowed
+        x = self.cube.coord("grid_latitude")
+        y1 = self.cube
+        y2 = self.cube
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y1, y2)
+
+    def test_not_cube_or_coord(self):
+        # inputs must be cubes or coordinates
+        x = np.arange(self.cube.shape[0])
+        y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)
+        y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)
+        with self.assertRaises(TypeError):
+            self.draw_method(x, y1, y2)
+
+
+@tests.skip_data
+@tests.skip_plot
+class Test1dQuickplotFillBetween(Test1dFillBetween):
+    def setUp(self):
+        tests.GraphicsTest.setUp(self)
+        self.cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "testing", "small_theta_colpex.nc")
+            ),
+            "air_potential_temperature",
+        )[0, 0]
+        self.draw_method = qplt.fill_between
 
 
 @tests.skip_data
@@ -546,7 +668,7 @@ class CheckForWarningsMetaclass(type):
     """
     Metaclass that adds a further test for each base class test
     that checks that each test raises a UserWarning. Each base
-    class test is then overriden to ignore warnings in order to
+    class test is then overridden to ignore warnings in order to
     check the underlying functionality.
 
     """
@@ -590,9 +712,8 @@ class CheckForWarningsMetaclass(type):
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestPcolorNoBounds(
-    tests.GraphicsTest_nometa, SliceMixin, metaclass=CheckForWarningsMetaclass
+    tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
@@ -607,9 +728,8 @@ class TestPcolorNoBounds(
 
 
 @tests.skip_data
-@tests.iristest_timing_decorator
 class TestPcolormeshNoBounds(
-    tests.GraphicsTest_nometa, SliceMixin, metaclass=CheckForWarningsMetaclass
+    tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates
@@ -879,6 +999,15 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
             units="1",
         )
         self.draw("contourf", cube, coords=["grid_latitude", x])
+
+
+@tests.skip_data
+@tests.skip_plot
+class TestPlotHist(tests.GraphicsTest):
+    def test_cube(self):
+        cube = simple_cube()[0]
+        iplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
+        self.check_graphic()
 
 
 @tests.skip_data

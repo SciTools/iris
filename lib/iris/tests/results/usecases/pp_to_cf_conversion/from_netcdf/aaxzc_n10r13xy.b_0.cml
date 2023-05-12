@@ -7,34 +7,34 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <auxCoord bounds="[[866160.0, 868320.0],
-		[874800.0, 876960.0],
-		[883440.0, 885600.0],
-		[892080.0, 894240.0]]" id="1d45e087" points="[867240.0, 875880.0, 884520.0, 893160.0]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
+        <auxCoord bounds="[[866160., 868320.],
+ [874800., 876960.],
+ [883440., 885600.],
+ [892080., 894240.]]" id="1d45e087" points="[867240., 875880., 884520., 893160.]" shape="(4,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[187200.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
+        <dimCoord id="9c8bdf81" points="[187200.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
       </coord>
       <coord>
         <dimCoord id="15ce08b0" long_name="height" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="77a50eb5" points="[90.0, 87.5, 85.0, 82.5, 80.0, 77.5, 75.0, 72.5,
-		70.0, 67.5, 65.0, 62.5, 60.0]" shape="(13,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude">
+        <dimCoord id="77a50eb5" points="[90. , 87.5, 85. , 82.5, 80. , 77.5, 75. , 72.5,
+ 70. , 67.5, 65. , 62.5, 60. ]" shape="(13,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="f913a8b3" points="[0.0, 3.75, 7.5, 11.25, 15.0, 18.75, 22.5, 26.25,
-		30.0, 33.75]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude">
+        <dimCoord id="f913a8b3" points="[ 0.  ,  3.75,  7.5 , 11.25, 15.  , 18.75, 22.5 ,
+ 26.25, 30.  , 33.75]" shape="(10,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[1053360.0, 1055520.0],
-		[1062000.0, 1064160.0],
-		[1070640.0, 1072800.0],
-		[1079280.0, 1081440.0]]" id="cb784457" points="[1054440.0, 1063080.0, 1071720.0, 1080360.0]" shape="(4,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[1053360., 1055520.],
+ [1062000., 1064160.],
+ [1070640., 1072800.],
+ [1079280., 1081440.]]" id="cb784457" points="[1054440., 1063080., 1071720., 1080360.]" shape="(4,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

@@ -85,28 +85,32 @@ class CubeRepresentation:
         self.cube_id = id(self.cube)
         self.cube_str = escape(str(self.cube))
 
-        self.str_headings = {
-            "Dimension coordinates:": None,
-            "Auxiliary coordinates:": None,
-            "Mesh coordinates:": None,
-            "Derived coordinates:": None,
-            "Cell measures:": None,
-            "Ancillary variables:": None,
-            "Scalar coordinates:": None,
-            "Scalar cell measures:": None,
-            "Cell methods:": None,
-            "Attributes:": None,
-        }
-        self.dim_desc_coords = [
+        # Define the expected vector and scalar sections in output, in expected
+        # order of appearance.
+        # NOTE: if we recoded this to use a CubeSummary, these section titles
+        # would be available from that.
+        self.vector_section_names = [
             "Dimension coordinates:",
-            "Auxiliary coordinates:",
             "Mesh coordinates:",
+            "Auxiliary coordinates:",
             "Derived coordinates:",
             "Cell measures:",
             "Ancillary variables:",
         ]
-
-        self.two_cell_headers = ["Scalar coordinates:", "Attributes:"]
+        self.scalar_section_names = [
+            "Mesh:",
+            "Scalar coordinates:",
+            "Scalar cell measures:",
+            "Cell methods:",
+            "Attributes:",
+        ]
+        self.sections_data = {
+            name: None
+            for name in self.vector_section_names + self.scalar_section_names
+        }
+        # 'Scalar-cell-measures' is currently alone amongst the scalar sections,
+        # in displaying only a 'name' and no 'value' field.
+        self.single_cell_section_names = ["Scalar cell measures:"]
 
         # Important content that summarises a cube is defined here.
         self.shapes = self.cube.shape
@@ -160,7 +164,7 @@ class CubeRepresentation:
 
         # Get heading indices within the printout.
         start_inds = []
-        for hdg in self.str_headings.keys():
+        for hdg in self.sections_data.keys():
             heading = "{}{}".format(left_indent, hdg)
             try:
                 start_ind = bits.index(heading)
@@ -178,7 +182,7 @@ class CubeRepresentation:
                 content = bits[i0 + 1 : i1]
             else:
                 content = bits[i0 + 1 :]
-            self.str_headings[str_heading_name] = content
+            self.sections_data[str_heading_name] = content
 
     def _make_header(self):
         """
@@ -272,47 +276,29 @@ class CubeRepresentation:
         row.append("</tr>")
         return row
 
-    def _expand_last_cell(self, element, body):
-        """Expand an element containing a cell by adding a new line."""
-        split_point = element.index("</td>")
-        element = element[:split_point] + "<br>" + body + element[split_point:]
-        return element
-
     def _make_content(self):
         elements = []
-        for k, v in self.str_headings.items():
+        for k, v in self.sections_data.items():
             if v is not None:
                 # Add the sub-heading title.
                 elements.extend(self._make_row(k))
                 for line in v:
                     # Add every other row in the sub-heading.
-                    if k in self.dim_desc_coords:
+                    if k in self.vector_section_names:
                         body = re.findall(r"[\w-]+", line)
                         title = body.pop(0)
                         colspan = 0
-                    elif k in self.two_cell_headers:
-                        try:
-                            split_point = line.index(":")
-                        except ValueError:
-                            # When a line exists in v without a ':', we expect
-                            # that this is due to the value of some attribute
-                            # containing multiple lines. We collect all these
-                            # lines in the same cell.
-                            body = line.strip()
-                            # We choose the element containing the last cell
-                            # in the last row.
-                            element = elements[-2]
-                            element = self._expand_last_cell(element, body)
-                            elements[-2] = element
-                            continue
+                    else:
+                        colspan = self.ndims
+                        if k in self.single_cell_section_names:
+                            title = line.strip()
+                            body = ""
                         else:
+                            line = line.strip()
+                            split_point = line.index(" ")
                             title = line[:split_point].strip()
                             body = line[split_point + 2 :].strip()
-                        colspan = self.ndims
-                    else:
-                        title = line.strip()
-                        body = ""
-                        colspan = self.ndims
+
                     elements.extend(
                         self._make_row(title, body=body, col_span=colspan)
                     )

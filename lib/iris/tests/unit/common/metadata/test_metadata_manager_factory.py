@@ -167,10 +167,10 @@ class Test_instance__pickle(tests.IrisTest):
     def test_pickle(self):
         for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
             with self.temp_filename(suffix=".pkl") as fname:
-                with open(fname, "wb") as fo:
-                    pickle.dump(self.metadata, fo, protocol=protocol)
-                with open(fname, "rb") as fi:
-                    metadata = pickle.load(fi)
+                with open(fname, "wb") as fout:
+                    pickle.dump(self.metadata, fout, protocol=protocol)
+                with open(fname, "rb") as fin:
+                    metadata = pickle.load(fin)
                     self.assertEqual(metadata, self.metadata)
 
 

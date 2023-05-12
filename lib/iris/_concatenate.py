@@ -22,7 +22,7 @@ from iris.util import array_equal, guess_coord_axis
 #
 #   * Cope with auxiliary coordinate factories.
 #
-#   * Allow concatentation over a user specified dimension.
+#   * Allow concatenation over a user specified dimension.
 #
 
 
@@ -160,6 +160,39 @@ class _CoordMetaData(
         return self.defn.name()
 
 
+class _DerivedCoordAndDims(
+    namedtuple("DerivedCoordAndDims", ["coord", "dims", "aux_factory"])
+):
+    """
+    Container for a derived coordinate, the associated AuxCoordFactory, and the
+    associated data dimension(s) spanned over a :class:`iris.cube.Cube`.
+
+    Args:
+
+    * coord:
+        A :class:`iris.coords.DimCoord` or :class:`iris.coords.AuxCoord`
+        coordinate instance.
+
+    * dims:
+        A tuple of the data dimension(s) spanned by the coordinate.
+
+    * aux_factory:
+        A :class:`iris.aux_factory.AuxCoordFactory` instance.
+
+    """
+
+    __slots__ = ()
+
+    def __eq__(self, other):
+        """Do not take aux factories into account for equality."""
+        result = NotImplemented
+        if isinstance(other, _DerivedCoordAndDims):
+            equal_coords = self.coord == other.coord
+            equal_dims = self.dims == other.dims
+            result = equal_coords and equal_dims
+        return result
+
+
 class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
     """
     Container for the metadata that defines a cell measure or ancillary
@@ -280,6 +313,7 @@ def concatenate(
     check_aux_coords=True,
     check_cell_measures=True,
     check_ancils=True,
+    check_derived_coords=True,
 ):
     """
     Concatenate the provided cubes over common existing dimensions.
@@ -295,6 +329,30 @@ def concatenate(
     * error_on_mismatch:
         If True, raise an informative
         :class:`~iris.exceptions.ContatenateError` if registration fails.
+
+    * check_aux_coords
+        Checks if the points and bounds of auxiliary coordinates of the cubes
+        match. This check is not applied to auxiliary coordinates that span the
+        dimension the concatenation is occurring along.  Defaults to True.
+
+    * check_cell_measures
+        Checks if the data of cell measures of the cubes match. This check is
+        not applied to cell measures that span the dimension the concatenation
+        is occurring along. Defaults to True.
+
+    * check_ancils
+        Checks if the data of ancillary variables of the cubes match. This
+        check is not applied to ancillary variables that span the dimension the
+        concatenation is occurring along. Defaults to True.
+
+    * check_derived_coords
+        Checks if the points and bounds of derived coordinates of the cubes
+        match. This check is not applied to derived coordinates that span the
+        dimension the concatenation is occurring along. Note that differences
+        in scalar coordinates and dimensional coordinates used to derive the
+        coordinate are still checked. Checks for auxiliary coordinates used to
+        derive the coordinates can be ignored with `check_aux_coords`. Defaults
+        to True.
 
     Returns:
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube`
@@ -321,6 +379,7 @@ def concatenate(
                 check_aux_coords,
                 check_cell_measures,
                 check_ancils,
+                check_derived_coords,
             )
             if registered:
                 axis = proto_cube.axis
@@ -378,6 +437,8 @@ class _CubeSignature:
         self.cm_metadata = []
         self.ancillary_variables_and_dims = []
         self.av_metadata = []
+        self.derived_coords_and_dims = []
+        self.derived_metadata = []
         self.dim_mapping = []
 
         # Determine whether there are any anonymous cube dimensions.
@@ -436,6 +497,17 @@ class _CubeSignature:
             self.av_metadata.append(metadata)
             av_and_dims = _CoordAndDims(av, tuple(dims))
             self.ancillary_variables_and_dims.append(av_and_dims)
+
+        def name_key_func(factory):
+            return factory.name()
+
+        for factory in sorted(cube.aux_factories, key=name_key_func):
+            coord = factory.make_coord(cube.coord_dims)
+            dims = cube.coord_dims(coord)
+            metadata = _CoordMetaData(coord, dims)
+            self.derived_metadata.append(metadata)
+            coord_and_dims = _DerivedCoordAndDims(coord, tuple(dims), factory)
+            self.derived_coords_and_dims.append(coord_and_dims)
 
     def _coordinate_differences(self, other, attr, reason="metadata"):
         """
@@ -544,6 +616,14 @@ class _CubeSignature:
             msgs.append(
                 msg_template.format("Ancillary variables", *differences)
             )
+        # Check derived coordinates.
+        if self.derived_metadata != other.derived_metadata:
+            differences = self._coordinate_differences(
+                other, "derived_metadata"
+            )
+            msgs.append(
+                msg_template.format("Derived coordinates", *differences)
+            )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
             differences = self._coordinate_differences(
@@ -597,6 +677,7 @@ class _CoordSignature:
         self.ancillary_variables_and_dims = (
             cube_signature.ancillary_variables_and_dims
         )
+        self.derived_coords_and_dims = cube_signature.derived_coords_and_dims
         self.dim_coords = cube_signature.dim_coords
         self.dim_mapping = cube_signature.dim_mapping
         self.dim_extents = []
@@ -779,6 +860,11 @@ class _ProtoCube:
             # Concatenate the new ancillary variables
             ancillary_variables_and_dims = self._build_ancillary_variables()
 
+            # Concatenate the new aux factories
+            aux_factories = self._build_aux_factories(
+                dim_coords_and_dims, aux_coords_and_dims
+            )
+
             # Concatenate the new data payload.
             data = self._build_data()
 
@@ -790,6 +876,7 @@ class _ProtoCube:
                 aux_coords_and_dims=aux_coords_and_dims,
                 cell_measures_and_dims=cell_measures_and_dims,
                 ancillary_variables_and_dims=ancillary_variables_and_dims,
+                aux_factories=aux_factories,
                 **kwargs,
             )
         else:
@@ -807,6 +894,7 @@ class _ProtoCube:
         check_aux_coords=False,
         check_cell_measures=False,
         check_ancils=False,
+        check_derived_coords=False,
     ):
         """
         Determine whether the given source-cube is suitable for concatenation
@@ -826,6 +914,31 @@ class _ProtoCube:
 
         * error_on_mismatch:
             If True, raise an informative error if registration fails.
+
+        * check_aux_coords
+            Checks if the points and bounds of auxiliary coordinates of the
+            cubes match. This check is not applied to auxiliary coordinates
+            that span the dimension the concatenation is occurring along.
+            Defaults to False.
+
+        * check_cell_measures
+            Checks if the data of cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension the
+            concatenation is occurring along. Defaults to False.
+
+        * check_ancils
+            Checks if the data of ancillary variables of the cubes match. This
+            check is not applied to ancillary variables that span the dimension
+            the concatenation is occurring along. Defaults to False.
+
+        * check_derived_coords
+            Checks if the points and bounds of derived coordinates of the cubes
+            match. This check is not applied to derived coordinates that span
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to False.
 
         Returns:
             Boolean.
@@ -898,6 +1011,21 @@ class _ProtoCube:
                     cube_signature.ancillary_variables_and_dims,
                 ):
                     # AncillaryVariables that span the candidate axis can differ
+                    if (
+                        candidate_axis not in coord_a.dims
+                        or candidate_axis not in coord_b.dims
+                    ):
+                        if not coord_a == coord_b:
+                            match = False
+
+        # Check for compatible derived coordinates.
+        if match:
+            if check_derived_coords:
+                for coord_a, coord_b in zip(
+                    self._cube_signature.derived_coords_and_dims,
+                    cube_signature.derived_coords_and_dims,
+                ):
+                    # Derived coords that span the candidate axis can differ
                     if (
                         candidate_axis not in coord_a.dims
                         or candidate_axis not in coord_b.dims
@@ -1087,6 +1215,64 @@ class _ProtoCube:
             ancillary_variables_and_dims.append((av.copy(), dims))
 
         return ancillary_variables_and_dims
+
+    def _build_aux_factories(self, dim_coords_and_dims, aux_coords_and_dims):
+        """
+        Generate the aux factories for the new concatenated cube.
+
+        Args:
+
+        * dim_coords_and_dims:
+            A list of dimension coordinate and dimension tuple pairs from the
+            concatenated cube.
+
+        * aux_coords_and_dims:
+            A list of auxiliary coordinates and dimension(s) tuple pairs from
+            the concatenated cube.
+
+        Returns:
+            A list of :class:`iris.aux_factory.AuxCoordFactory`.
+
+        """
+        # Setup convenience hooks.
+        cube_signature = self._cube_signature
+        old_dim_coords = cube_signature.dim_coords
+        old_aux_coords = [a[0] for a in cube_signature.aux_coords_and_dims]
+        new_dim_coords = [d[0] for d in dim_coords_and_dims]
+        new_aux_coords = [a[0] for a in aux_coords_and_dims]
+        scalar_coords = cube_signature.scalar_coords
+
+        aux_factories = []
+
+        # Generate all the factories for the new concatenated cube.
+        for i, (coord, dims, factory) in enumerate(
+            cube_signature.derived_coords_and_dims
+        ):
+            # Check whether the derived coordinate of the factory spans the
+            # nominated dimension of concatenation.
+            if self.axis in dims:
+                # Update the dependencies of the factory with coordinates of
+                # the concatenated cube. We need to check all coordinate types
+                # here (dim coords, aux coords, and scalar coords).
+                new_dependencies = {}
+                for old_dependency in factory.dependencies.values():
+                    if old_dependency in old_dim_coords:
+                        dep_idx = old_dim_coords.index(old_dependency)
+                        new_dependency = new_dim_coords[dep_idx]
+                    elif old_dependency in old_aux_coords:
+                        dep_idx = old_aux_coords.index(old_dependency)
+                        new_dependency = new_aux_coords[dep_idx]
+                    else:
+                        dep_idx = scalar_coords.index(old_dependency)
+                        new_dependency = scalar_coords[dep_idx]
+                    new_dependencies[id(old_dependency)] = new_dependency
+
+                # Create new factory with the updated dependencies.
+                factory = factory.updated(new_dependencies)
+
+            aux_factories.append(factory)
+
+        return aux_factories
 
     def _build_data(self):
         """

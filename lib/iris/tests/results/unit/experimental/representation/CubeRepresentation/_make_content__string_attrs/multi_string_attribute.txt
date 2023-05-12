@@ -1,0 +1,8 @@
+<tr class="iris">
+    <td class="iris-title iris-word-cell">Attributes</td>
+    <td class="iris-title"></td>
+</tr>
+<tr class="iris">
+    <td class="iris-word-cell iris-subheading-cell">	multi-string</td>
+    <td class="iris-word-cell" colspan="1">[&#x27;vector&#x27;, &#x27;of&#x27;, &#x27;strings&#x27;]</td>
+</tr>

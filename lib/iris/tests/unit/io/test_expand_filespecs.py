@@ -10,6 +10,7 @@
 import iris.tests as tests  # isort:skip
 
 import os
+from pathlib import Path
 import shutil
 import tempfile
 import textwrap
@@ -94,7 +95,30 @@ class TestExpandFilespecs(tests.IrisTest):
             .format(self.tmpdir)
         )
 
-        self.assertStringEqual(str(err.exception), expected)
+        self.assertMultiLineEqual(str(err.exception), expected)
+
+    def test_false_bool_absolute(self):
+        tempdir = self.tmpdir
+        msg = os.path.join(tempdir, "no_exist.txt")
+        (result,) = iio.expand_filespecs([msg], False)
+        self.assertEqual(result, msg)
+
+    def test_false_bool_home(self):
+        # ensure that not only does files_expected not error,
+        # but that the path is still expanded from a ~
+        msg = str(Path().home() / "no_exist.txt")
+        (result,) = iio.expand_filespecs(["~/no_exist.txt"], False)
+        self.assertEqual(result, msg)
+
+    def test_false_bool_relative(self):
+        cwd = os.getcwd()
+        try:
+            os.chdir(self.tmpdir)
+            item_out = iio.expand_filespecs(["no_exist.txt"], False)
+            item_in = [os.path.join(self.tmpdir, "no_exist.txt")]
+            self.assertEqual(item_out, item_in)
+        finally:
+            os.chdir(cwd)
 
 
 if __name__ == "__main__":

@@ -15,11 +15,12 @@ import numpy as np
 
 from iris.analysis._regrid import CurvilinearRegridder as Regridder
 from iris.analysis.cartography import rotate_pole
+from iris.aux_factory import HybridHeightFactory
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.pp import EARTH_RADIUS
-from iris.tests.stock import global_pp, lat_lon_cube
+from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
 
@@ -169,6 +170,88 @@ class Test___call__(tests.IrisTest):
         )
 
 
+class Test__derived_coord(tests.IrisTest):
+    def setUp(self):
+        src = realistic_4d()[0]
+        tgt = realistic_4d()
+        new_lon, new_lat = np.meshgrid(
+            src.coord("grid_longitude").points,
+            src.coord("grid_latitude").points,
+        )
+        coord_system = src.coord("grid_latitude").coord_system
+        lat = AuxCoord(
+            new_lat, standard_name="latitude", coord_system=coord_system
+        )
+        lon = AuxCoord(
+            new_lon, standard_name="longitude", coord_system=coord_system
+        )
+        lat_t = AuxCoord(
+            new_lat.T, standard_name="latitude", coord_system=coord_system
+        )
+        lon_t = AuxCoord(
+            new_lon.T, standard_name="longitude", coord_system=coord_system
+        )
+
+        src.remove_coord("grid_latitude")
+        src.remove_coord("grid_longitude")
+        src_t = src.copy()
+        src.add_aux_coord(lat, [1, 2])
+        src.add_aux_coord(lon, [1, 2])
+        src_t.add_aux_coord(lat_t, [2, 1])
+        src_t.add_aux_coord(lon_t, [2, 1])
+        self.src = src.copy()
+        self.src_t = src_t
+        self.tgt = tgt
+        self.altitude = src.coord("altitude")
+        transposed_src = src.copy()
+        transposed_src.transpose([0, 2, 1])
+        self.altitude_transposed = transposed_src.coord("altitude")
+
+    def test_no_transpose(self):
+        rg = Regridder(self.src, self.tgt)
+        res = rg(self.src)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
+        )
+        assert np.allclose(res.coord("altitude").points, self.altitude.points)
+
+    def test_cube_transposed(self):
+        rg = Regridder(self.src, self.tgt)
+        transposed_cube = self.src.copy()
+        transposed_cube.transpose([0, 2, 1])
+        res = rg(transposed_cube)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
+        )
+        assert np.allclose(
+            res.coord("altitude").points, self.altitude_transposed.points
+        )
+
+    def test_coord_transposed(self):
+        rg = Regridder(self.src_t, self.tgt)
+        res = rg(self.src_t)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
+        )
+        assert np.allclose(
+            res.coord("altitude").points, self.altitude_transposed.points
+        )
+
+    def test_both_transposed(self):
+        rg = Regridder(self.src_t, self.tgt)
+        transposed_cube = self.src_t.copy()
+        transposed_cube.transpose([0, 2, 1])
+        res = rg(transposed_cube)
+
+        assert len(res.aux_factories) == 1 and isinstance(
+            res.aux_factories[0], HybridHeightFactory
+        )
+        assert np.allclose(res.coord("altitude").points, self.altitude.points)
+
+
 @tests.skip_data
 class Test___call____bad_src(tests.IrisTest):
     def setUp(self):
@@ -219,7 +302,7 @@ class Test__call__multidimensional(tests.IrisTest):
         grid_cube.add_dim_coord(grid_y_coord, 0)
         grid_cube.add_dim_coord(grid_x_coord, 1)
 
-        # Define some key points in true-lat/lon thta have known positions
+        # Define some key points in true-lat/lon that have known positions
         # First 3x2 points in the centre of each output cell.
         x_centres, y_centres = np.meshgrid(
             grid_x_coord.points, grid_y_coord.points

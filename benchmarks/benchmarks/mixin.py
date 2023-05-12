@@ -10,9 +10,10 @@ Mixin benchmark tests.
 
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE
 from iris import coords
 from iris.common.metadata import AncillaryVariableMetadata
+
+from . import ARTIFICIAL_DIM_SIZE
 
 LONG_NAME = "air temperature"
 STANDARD_NAME = "air_temperature"

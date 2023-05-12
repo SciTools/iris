@@ -1,23 +1,30 @@
-# Top-level files
-include CHANGES COPYING COPYING.LESSER
+prune .github
+prune benchmarks
+prune docs
+prune etc
+recursive-include lib *.cdl *.cml *.json *.md *.py *.template *.txt *.xml
+prune requirements
+recursive-include requirements *.txt
+prune tools
+exclude .flake8
+exclude .git-blame-ignore-revs
+exclude .git_archival.txt
+exclude .gitattributes
+exclude .gitignore
+exclude .mailmap
+exclude .pre-commit-config.yaml
+exclude .readthedocs.yml
+exclude CHANGES
+exclude CODE_OF_CONDUCT.md
+exclude codecov.yml
+include COPYING
+include COPYING.LESSER
+exclude Makefile
+exclude noxfile.py
 
-# Files from setup.py package_data that are not automatically added to source distributions
-recursive-include lib/iris/tests/results *.cml *.cdl *.txt *.xml *.json
-recursive-include lib/iris/etc *
-include lib/iris/tests/stock/file_headers/*
-
-recursive-include requirements *
-
-# File required to build docs
-recursive-include docs Makefile *.js *.png *.py *.rst
-prune docs/src/_build
-prune docs/src/generated
-prune docs/gallery_tests
-
-# Files required to build std_names module
-include tools/generate_std_names.py
+# files required to build iris.std_names module
 include etc/cf-standard-name-table.xml
+include tools/generate_std_names.py
 
-global-exclude *.pyc
+global-exclude *.py[cod]
 global-exclude __pycache__
-global-exclude iris_image_test_output
