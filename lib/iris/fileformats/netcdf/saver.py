@@ -372,7 +372,7 @@ class Saver:
 
         Parameters
         ----------
-        filename : string
+        filename : string or netCDF4.Dataset
             Name of the netCDF file to save the cube.
             OR a writeable object supporting the :class:`netCF4.Dataset` api.
 
@@ -384,9 +384,19 @@ class Saver:
             If ``True``, delayed variable saves will be completed on exit from the Saver
             context (after first closing the target file), equivalent to
             :meth:`complete()`.
+
             If ``False``, the file is created and closed without writing the data of
             variables for which the source data was lazy.  These writes can be
             completed later, see :meth:`delayed_completion`.
+
+            .. Note::
+                If ``filename`` is an open dataset, rather than a filepath, then the
+                caller must specify ``compute=False``, **close the dataset**, and
+                complete delayed saving afterwards.
+                If ``compute`` is ``True`` in this case, an error is raised.
+                This is because lazy content must be written by delayed save operations,
+                which will only succeed if the dataset can be (re-)opened for writing.
+                See :func:`save`.
 
         Returns
         -------
@@ -402,14 +412,6 @@ class Saver:
         ...     for cube in cubes:
         ...         sman.write(cube)
 
-        Notes
-        -----
-        If ``filename`` is an open dataset, rather than a filepath, then the caller
-        must specify ``compute=False``, **close the dataset**, and complete delayed
-        saving afterward.  If ``compute`` is ``True`` in this case, an error is raised.
-        This is because lazy content must be written by delayed save operations, which
-        only work if the dataset can be (re-)opened for writing.
-        See :func:`save`.
 
         """
         if netcdf_format not in [
@@ -2592,8 +2594,9 @@ def save(
         Name of the netCDF file to save the cube(s).
         **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
 
-        **Note** : when saving to a dataset, ``compute`` **must** be ``False`` -- See
-        the ``compute`` parameter.
+        .. Note::
+            When saving to a dataset, ``compute`` **must** be ``False`` :
+            See the ``compute`` parameter.
 
     Kwargs:
 
