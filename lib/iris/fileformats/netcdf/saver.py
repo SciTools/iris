@@ -374,17 +374,17 @@ class Saver:
         ----------
         filename : string
             Name of the netCDF file to save the cube.
-            OR a writeable object supporting the netCF4.Dataset api.
+            OR a writeable object supporting the :class:`netCF4.Dataset` api.
 
         netcdf_format : string
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 
         compute : bool, default=True
-            If True, delayed variable saves will be completed on exit from the Saver
+            If ``True``, delayed variable saves will be completed on exit from the Saver
             context (after first closing the target file), equivalent to
             :meth:`complete()`.
-            If False, the file is created and closed without writing the data of
+            If ``False``, the file is created and closed without writing the data of
             variables for which the source data was lazy.  These writes can be
             completed later, see :meth:`delayed_completion`.
 
@@ -401,6 +401,15 @@ class Saver:
         ...     # Iterate through the cubelist.
         ...     for cube in cubes:
         ...         sman.write(cube)
+
+        Notes
+        -----
+        If ``filename`` is an open dataset, rather than a filepath, then the caller
+        must specify ``compute=False``, **close the dataset**, and complete delayed
+        saving afterward.  If ``compute`` is ``True`` in this case, an error is raised.
+        This is because lazy content must be written by delayed save operations, which
+        only work if the dataset can be (re-)opened for writing.
+        See :func:`save`.
 
         """
         if netcdf_format not in [
@@ -2581,6 +2590,10 @@ def save(
 
     * filename (string):
         Name of the netCDF file to save the cube(s).
+        **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
+
+        **Note** : when saving to a dataset, ``compute`` **must** be ``False`` -- See
+        the ``compute`` parameter.
 
     Kwargs:
 
@@ -2680,23 +2693,33 @@ def save(
         this argument will be applied to each cube separately.
 
     * compute (bool):
-        When False, create the output file but don't write any lazy array content to
-        its variables, such as lazy cube data or aux-coord points and bounds.
+        Default is ``True``, meaning complete the file immediately, and return ``None``.
 
+        When ``False``, create the output file but don't write any lazy array content to
+        its variables, such as lazy cube data or aux-coord points and bounds.
         Instead return a :class:`dask.delayed.Delayed` which, when computed, will
         stream all the lazy content via :meth:`dask.store`, to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
 
-        Default is ``True``, meaning complete the file immediately, and return ``None``.
-
         .. Note::
             when computed, the returned :class:`dask.delayed.Delayed` object returns
-            a list of :class:`Warning` :  These are any warnings which *would* have
-            been issued in the save call, if compute had been True.
+            a list of :class:`Warning`\\s :  These are any warnings which *would* have
+            been issued in the save call, if ``compute`` had been ``True``.
+
+        .. Note::
+            If saving to an open dataset instead of a filepath, then the caller
+            **must** specify ``compute=False``, and complete delayed saves **after
+            closing the dataset**.
+            This is because delayed saves may be performed in other processes : These
+            must (re-)open the dataset for writing, which will fail if the file is
+            still open for writing by the caller.
 
     Returns:
-        A list of :class:`Warning`.
+        result (None, or dask.delayed.Delayed):
+            If `compute=True`, returns `None`.
+            Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
+            writing to fill in the variables data.
 
     .. note::
 

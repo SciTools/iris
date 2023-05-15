@@ -4,6 +4,10 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Integration tests for loading and saving netcdf files."""
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from itertools import repeat
 import os.path
 import shutil
@@ -23,10 +27,6 @@ import iris.exceptions
 from iris.fileformats.netcdf import Saver, UnknownCellMethodWarning
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.tests.stock.netcdf import ncgen_from_cdl
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
 
 
 class TestLazySave(tests.IrisTest):
@@ -388,6 +388,11 @@ class TestDatasetSave(tests.IrisTest):
     def setUpClass(cls):
         # Create a temp directory for transient test files.
         cls.temp_dir = tempfile.mkdtemp()
+        cls.testpath = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        # Load some test data for save testing.
+        cls.testdata = iris.load(cls.testpath)
 
     @classmethod
     def tearDownClass(cls):
@@ -396,15 +401,11 @@ class TestDatasetSave(tests.IrisTest):
 
     def test_basic_save(self):
         # test saving to a Dataset, in place of a filepath spec.
+        # NOTE that this requires 'compute=False', as delayed saves can only operate on
+        # a closed file.
 
-        # load some test data (--> 2 cubes)
-        filepath = tests.get_data_path(
-            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
-        )
-        testdata = iris.load(filepath)
-
-        # Give the cubes a definite order, since this is not stable !
-        testdata = sorted(testdata, key=lambda cube: cube.name())
+        # Give the test cubes a definite order, since this is not stable !
+        testdata = sorted(self.testdata, key=lambda cube: cube.name())
 
         # Save to netcdf file in the usual way.
         filepath_direct = f"{self.temp_dir}/tmp_direct.nc"
@@ -412,14 +413,14 @@ class TestDatasetSave(tests.IrisTest):
         # Check against test-specific CDL result file.
         self.assertCDL(filepath_direct)
 
-        # Save indirectly via netcdf dataset.
+        # Save same data indirectly via a netcdf dataset.
         filepath_indirect = f"{self.temp_dir}/tmp_indirect.nc"
         nc_dataset = threadsafe_nc.DatasetWrapper(filepath_indirect, "w")
         # NOTE: we **must** use delayed saving here, as we cannot do direct saving to
         # a user-owned dataset.
         result = iris.save(testdata, nc_dataset, saver="nc", compute=False)
 
-        # Do some very basic sanity checks on the Dataset object.
+        # Do some very basic sanity checks on the resulting Dataset.
         self.assertEqual(
             ["time", "levelist", "latitude", "longitude"],
             list(nc_dataset.dimensions),
@@ -448,20 +449,16 @@ class TestDatasetSave(tests.IrisTest):
             assert np.all(ds.variables[cube.var_name][:] == cube.data)
         ds.close()
 
-    def test_no_completed_save(self):
+    def test_computed_delayed_save__fail(self):
         # Call as above 'test_basic_save' but with "compute=True" : this should raise
         # an error.
-        filepath = tests.get_data_path(
-            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
-        )
-        testdata = iris.load(filepath)
         filepath_indirect = f"{self.temp_dir}/tmp_indirect_complete.nc"
         nc_dataset = threadsafe_nc.DatasetWrapper(filepath_indirect, "w")
 
         # NOTE: a "normal" compute=True call should raise an error.
         msg = "Cannot save to a user-provided dataset with 'compute=True'"
         with pytest.raises(ValueError, match=msg):
-            iris.save(testdata, nc_dataset, saver="nc")
+            iris.save(self.testdata, nc_dataset, saver="nc")
 
 
 if __name__ == "__main__":
