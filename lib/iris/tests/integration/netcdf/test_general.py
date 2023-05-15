@@ -10,6 +10,7 @@ import iris.tests as tests  # isort:skip
 
 from itertools import repeat
 import os.path
+from pathlib import Path
 import shutil
 import tempfile
 from unittest import mock
@@ -362,28 +363,34 @@ data:
 
 
 @tests.skip_data
-class TestDatasetLoad(tests.IrisTest):
-    def test_basic_load(self):
-        # test loading from an open Dataset, in place of a filepath spec.
-        filepath = tests.get_data_path(
+class TestDatasetAndPathLoads(tests.IrisTest):
+    @classmethod
+    def setUpClass(cls):
+        cls.filepath = tests.get_data_path(
             ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
         )
-        phenom_id = "Carbon Dioxide"
-        expected = iris.load_cube(filepath, phenom_id)
-        ds = None
-        try:
-            ds = threadsafe_nc.DatasetWrapper(filepath)
-            result = iris.load_cube(ds, phenom_id)
-        finally:
-            if ds is not None:
-                ds.close()
+        cls.phenom_id = "Carbon Dioxide"
+        cls.expected = iris.load_cube(cls.filepath, cls.phenom_id)
+
+    def test_basic_load(self):
+        # test loading from an open Dataset, in place of a filepath spec.
+        ds = threadsafe_nc.DatasetWrapper(self.filepath)
+        result = iris.load_cube(ds, self.phenom_id)
+        ds.close()
 
         # Check that result is just the same as a 'direct' load.
-        self.assertEqual(expected, result)
+        self.assertEqual(self.expected, result)
+
+    def test_path_string_load_same(self):
+        # Check that loading from a Path is the same as passing a filepath string.
+        # Apart from general utility, checks that we won't mistake a Path for a Dataset.
+        path = Path(self.filepath)
+        result = iris.load_cube(path, self.phenom_id)
+        self.assertEqual(result, self.expected)
 
 
 @tests.skip_data
-class TestDatasetSave(tests.IrisTest):
+class TestDatasetAndPathSaves(tests.IrisTest):
     @classmethod
     def setUpClass(cls):
         # Create a temp directory for transient test files.
@@ -459,6 +466,17 @@ class TestDatasetSave(tests.IrisTest):
         msg = "Cannot save to a user-provided dataset with 'compute=True'"
         with pytest.raises(ValueError, match=msg):
             iris.save(self.testdata, nc_dataset, saver="nc")
+
+    def test_path_string_save_same(self):
+        # Ensure that save to a Path is the same as passing a filepath string.
+        # Apart from general utility, checks that we won't mistake a Path for a Dataset.
+        tempfile_fromstr = f"{self.temp_dir}/tmp_fromstr.nc"
+        iris.save(self.testdata, tempfile_fromstr)
+        tempfile_frompath = f"{self.temp_dir}/tmp_frompath.nc"
+        path = Path(tempfile_frompath)
+        iris.save(self.testdata, path)
+        self.assertCDL(tempfile_fromstr)
+        self.assertCDL(tempfile_frompath)
 
 
 if __name__ == "__main__":
