@@ -399,7 +399,10 @@ class TestDatasetAndPathSaves(tests.IrisTest):
             ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
         )
         # Load some test data for save testing.
-        cls.testdata = iris.load(cls.testpath)
+        testdata = iris.load(cls.testpath)
+        # Sort to ensure non-random cube order.
+        testdata = sorted(testdata, key=lambda cube: cube.name())
+        cls.testdata = testdata
 
     @classmethod
     def tearDownClass(cls):
