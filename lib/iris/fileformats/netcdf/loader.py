@@ -486,12 +486,12 @@ def _translate_constraints_to_var_callback(constraints):
 
 def load_cubes(file_sources, callback=None, constraints=None):
     """
-    Loads cubes from a list of NetCDF file_sources/OPeNDAP URLs.
+    Loads cubes from a list of NetCDF filenames/OPeNDAP URLs.
 
     Args:
 
     * file_sources (string/list):
-        One or more NetCDF file_sources/OPeNDAP URLs to load from.
+        One or more NetCDF filenames/OPeNDAP URLs to load from.
         OR open datasets.
 
     Kwargs:
