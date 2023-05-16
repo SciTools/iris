@@ -15,11 +15,10 @@ from unittest import mock
 import warnings
 
 import dask.array as da
-import netCDF4
 import numpy as np
 import pytest
 
-import iris.fileformats.netcdf._thread_safe_nc as nc_threadsafe
+import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf.saver import Saver, _FillvalueCheckInfo
 
 
@@ -73,12 +72,17 @@ class Test__lazy_stream_data:
             }
         else:
             extra_properties = {}
-        return mock.MagicMock(
-            spec=netCDF4.Variable,
+        mock_cfvar = mock.MagicMock(
+            spec=threadsafe_nc.VariableWrapper,
             shape=tuple(shape),
             dtype=np.dtype(np.float32),
             **extra_properties,
         )
+        # Give the mock cf-var a name property, as required by '_lazy_stream_data'.
+        # This *can't* be an extra kwarg to MagicMock __init__, since that already
+        # defines a specific 'name' kwarg, with a different purpose.
+        mock_cfvar.name = "<mock_cfvar>"
+        return mock_cfvar
 
     def test_data_save(self, compute, data_form):
         """Real data is transferred immediately, lazy data creates a delayed write."""
@@ -112,7 +116,7 @@ class Test__lazy_stream_data:
         if data_form == "lazydata":
             result_data, result_writer, fill_info = saver._delayed_writes[0]
             assert result_data is data
-            assert isinstance(result_writer, nc_threadsafe.NetCDFWriteProxy)
+            assert isinstance(result_writer, threadsafe_nc.NetCDFWriteProxy)
             assert isinstance(fill_info, _FillvalueCheckInfo)
         elif data_form == "realdata":
             cf_var.__setitem__.assert_called_once_with(slice(None), data)
