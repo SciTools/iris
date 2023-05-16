@@ -22,6 +22,7 @@ from iris.coords import AuxCoord
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
+from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
 
 
 class TestBoundsVertexDim(tests.IrisTest):
@@ -238,6 +239,7 @@ class TestCoordConstruction(tests.IrisTest):
 
         points = np.arange(6)
         self.cf_coord_var = mock.Mock(
+            spec=threadsafe_nc.VariableWrapper,
             dimensions=("foo",),
             scale_factor=1,
             add_offset=0,
@@ -257,6 +259,7 @@ class TestCoordConstruction(tests.IrisTest):
 
         bounds = np.arange(12).reshape(6, 2)
         self.cf_bounds_var = mock.Mock(
+            spec=threadsafe_nc.VariableWrapper,
             dimensions=("x", "nv"),
             scale_factor=1,
             add_offset=0,
