@@ -253,6 +253,13 @@ def load_http(urls, callback):
         intended interface for loading is :func:`iris.load`.
 
     """
+    #
+    # NOTE: this routine is *also* called by "load_data_objects", in which case the
+    # 'urls' will actually be 'data objects'.
+    # In principle, however, their scopes are different, so it's just an implementation
+    # detail that right now the same code will do for both.
+    # If that changes sometime, the two routines may go their separate ways.
+
     # Create default dict mapping iris format handler to its associated filenames
     from iris.fileformats import FORMAT_AGENT
 
@@ -283,7 +290,8 @@ def load_data_objects(urls, callback):
         intended interface for loading is :func:`iris.load`.
 
     """
-    # NOTE: this operation is currently *identical* to the http one.
+    # NOTE: this operation is currently *identical* to the http one.  But it seems
+    # sensible to provide a distinct handler function for this scheme.
     yield from load_http(urls, callback)
 
 

@@ -376,6 +376,8 @@ class TestDatasetAndPathLoads(tests.IrisTest):
         # test loading from an open Dataset, in place of a filepath spec.
         ds = threadsafe_nc.DatasetWrapper(self.filepath)
         result = iris.load_cube(ds, self.phenom_id)
+        # It should still be open (!)
+        self.assertTrue(ds.isopen())
         ds.close()
 
         # Check that result is just the same as a 'direct' load.
@@ -414,12 +416,9 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         # NOTE that this requires 'compute=False', as delayed saves can only operate on
         # a closed file.
 
-        # Give the test cubes a definite order, since this is not stable !
-        testdata = sorted(self.testdata, key=lambda cube: cube.name())
-
         # Save to netcdf file in the usual way.
         filepath_direct = f"{self.temp_dir}/tmp_direct.nc"
-        iris.save(testdata, filepath_direct)
+        iris.save(self.testdata, filepath_direct)
         # Check against test-specific CDL result file.
         self.assertCDL(filepath_direct)
 
@@ -428,9 +427,13 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         nc_dataset = threadsafe_nc.DatasetWrapper(filepath_indirect, "w")
         # NOTE: we **must** use delayed saving here, as we cannot do direct saving to
         # a user-owned dataset.
-        result = iris.save(testdata, nc_dataset, saver="nc", compute=False)
+        result = iris.save(
+            self.testdata, nc_dataset, saver="nc", compute=False
+        )
 
         # Do some very basic sanity checks on the resulting Dataset.
+        # It should still be open (!)
+        self.assertTrue(nc_dataset.isopen())
         self.assertEqual(
             ["time", "levelist", "latitude", "longitude"],
             list(nc_dataset.dimensions),
@@ -446,7 +449,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
 
         # Confirm that cube content is however not yet written.
         ds = threadsafe_nc.DatasetWrapper(filepath_indirect)
-        for cube in testdata:
+        for cube in self.testdata:
             assert np.all(ds.variables[cube.var_name][:].mask)
         ds.close()
 
@@ -455,7 +458,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
 
         # Check that data now *is* written.
         ds = threadsafe_nc.DatasetWrapper(filepath_indirect)
-        for cube in testdata:
+        for cube in self.testdata:
             assert np.all(ds.variables[cube.var_name][:] == cube.data)
         ds.close()
 

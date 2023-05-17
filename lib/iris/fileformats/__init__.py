@@ -146,7 +146,9 @@ FORMAT_AGENT.add_spec(
             hasattr(object, x)
             for x in ("variables", "dimensions", "groups", "ncattrs")
         ),
-        netcdf.load_cubes,  # using the same call : it must distinguish.
+        # Note: this uses the same call as the above "NetCDF_v4" (and "NetCDF OPeNDAP")
+        # The handler itself needs to detect what is passed + handle it appropriately.
+        netcdf.load_cubes,
         priority=4,
         constraint_aware_handler=True,
     )
