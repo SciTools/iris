@@ -3718,7 +3718,7 @@ class Cube(CFVariableMixin):
     def __rdiv__(self, other):
         data = 1 / self.core_data()
         reciprocal = self.copy(data=data)
-        reciprocal.units = reciprocal.units ** -1
+        reciprocal.units = reciprocal.units**-1
         return iris.analysis.maths.multiply(reciprocal, other)
 
     __truediv__ = __div__
