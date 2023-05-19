@@ -2744,6 +2744,12 @@ class TestCoords(tests.IrisTest):
             _ = self.cube.coord(bad_coord)
 
 
+class Test_coord_division_units(tests.IrisTest):
+    def test(self):
+        aux = AuxCoord(1, long_name="length", units="metres")
+        cube = Cube(1, units="seconds")
+        self.assertEqual((aux/cube).units, "m.s-1")
+
 class Test__getitem_CellMeasure(tests.IrisTest):
     def setUp(self):
         cube = Cube(np.arange(6).reshape(2, 3))
