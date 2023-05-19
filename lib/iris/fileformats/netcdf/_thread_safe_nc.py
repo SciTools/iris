@@ -51,24 +51,18 @@ class _ThreadSafeWrapper(ABC):
         )
 
     @classmethod
-    def _from_existing(cls, instance):
+    def from_existing(cls, instance):
         """Pass an existing instance to __init__, where it is contained."""
         assert cls.is_contained_type(instance)
         return cls(instance)
 
     def __init__(self, *args, **kwargs):
         """Contain an existing instance, or generate a new one from arguments."""
-        if len(args) > 0 and self.is_contained_type(args[0]):
+        if len(args) == 1 and self.is_contained_type(args[0]):
             # Passed a contained-type object : Wrap ourself around that.
             instance = args[0]
-            # Explicitly ban "wrapping a wrapper".
-            if hasattr(instance, "THREAD_SAFE_FLAG"):
-                msg = (
-                    "Cannot create {cls} containing an existing {cls}.".format(
-                        cls=self.__class__.__name__
-                    )
-                )
-                raise ValueError(msg)
+            # We should never find ourselves "wrapping a wrapper".
+            assert not hasattr(instance, "THREAD_SAFE_FLAG")
         else:
             # Create a contained object of the intended type from passed args.
             with _GLOBAL_NETCDF4_LOCK:
@@ -158,7 +152,7 @@ class VariableWrapper(_ThreadSafeWrapper):
             dimensions_ = list(
                 self._contained_instance.get_dims(*args, **kwargs)
             )
-        return tuple([DimensionWrapper._from_existing(d) for d in dimensions_])
+        return tuple([DimensionWrapper.from_existing(d) for d in dimensions_])
 
 
 class GroupWrapper(_ThreadSafeWrapper):
@@ -187,7 +181,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         with _GLOBAL_NETCDF4_LOCK:
             dimensions_ = self._contained_instance.dimensions
         return {
-            k: DimensionWrapper._from_existing(v)
+            k: DimensionWrapper.from_existing(v)
             for k, v in dimensions_.items()
         }
 
@@ -203,7 +197,7 @@ class GroupWrapper(_ThreadSafeWrapper):
             new_dimension = self._contained_instance.createDimension(
                 *args, **kwargs
             )
-        return DimensionWrapper._from_existing(new_dimension)
+        return DimensionWrapper.from_existing(new_dimension)
 
     # All Group API that returns Variable(s) is wrapped to instead return
     #  VariableWrapper(s).
@@ -220,7 +214,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         with _GLOBAL_NETCDF4_LOCK:
             variables_ = self._contained_instance.variables
         return {
-            k: VariableWrapper._from_existing(v) for k, v in variables_.items()
+            k: VariableWrapper.from_existing(v) for k, v in variables_.items()
         }
 
     def createVariable(self, *args, **kwargs) -> VariableWrapper:
@@ -235,7 +229,7 @@ class GroupWrapper(_ThreadSafeWrapper):
             new_variable = self._contained_instance.createVariable(
                 *args, **kwargs
             )
-        return VariableWrapper._from_existing(new_variable)
+        return VariableWrapper.from_existing(new_variable)
 
     def get_variables_by_attributes(
         self, *args, **kwargs
@@ -253,7 +247,7 @@ class GroupWrapper(_ThreadSafeWrapper):
                     *args, **kwargs
                 )
             )
-        return [VariableWrapper._from_existing(v) for v in variables_]
+        return [VariableWrapper.from_existing(v) for v in variables_]
 
     # All Group API that returns Group(s) is wrapped to instead return
     #  GroupWrapper(s).
@@ -269,7 +263,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             groups_ = self._contained_instance.groups
-        return {k: GroupWrapper._from_existing(v) for k, v in groups_.items()}
+        return {k: GroupWrapper.from_existing(v) for k, v in groups_.items()}
 
     @property
     def parent(self):
@@ -282,7 +276,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             parent_ = self._contained_instance.parent
-        return GroupWrapper._from_existing(parent_)
+        return GroupWrapper.from_existing(parent_)
 
     def createGroup(self, *args, **kwargs):
         """
@@ -294,7 +288,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_group = self._contained_instance.createGroup(*args, **kwargs)
-        return GroupWrapper._from_existing(new_group)
+        return GroupWrapper.from_existing(new_group)
 
 
 class DatasetWrapper(GroupWrapper):
@@ -319,7 +313,7 @@ class DatasetWrapper(GroupWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             instance = cls.CONTAINED_CLASS.fromcdl(*args, **kwargs)
-        return cls._from_existing(instance)
+        return cls.from_existing(instance)
 
 
 class NetCDFDataProxy:

@@ -470,7 +470,7 @@ class Saver:
             # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
             # Except if it already is one, since they forbid "re-wrapping".
             if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
-                self._dataset = _thread_safe_nc.DatasetWrapper._from_existing(
+                self._dataset = _thread_safe_nc.DatasetWrapper.from_existing(
                     self._dataset
                 )
 
