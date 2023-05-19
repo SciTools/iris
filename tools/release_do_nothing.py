@@ -720,6 +720,12 @@ def merge_back(
             f"{merge_commit}"
         )
         _wait_for_done(message)
+        message = (
+            f"Once the pull request is merged ensure that the {release_strings.branch} "
+            "release branch is restored.\n"
+            "GitHub automation rules may have automatically deleted the release branch."
+        )
+        _wait_for_done(message)
 
 
 def main():
