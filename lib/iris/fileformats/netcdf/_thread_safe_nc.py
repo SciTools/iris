@@ -35,22 +35,42 @@ class _ThreadSafeWrapper(ABC):
     the C-layer.
     """
 
+    # Note: this is only used to create a "contained" from passed args.
     CONTAINED_CLASS = NotImplemented
+    # Note: this defines how we identify/check that a contained is of the expected type
+    # (in a duck-type way).
+    _DUCKTYPE_CHECK_PROPERTIES: typing.List[str] = [NotImplemented]
 
     # Allows easy type checking, avoiding difficulties with isinstance and mocking.
     THREAD_SAFE_FLAG = True
 
     @classmethod
+    def is_contained_type(cls, instance):
+        return all(
+            hasattr(instance, attr) for attr in cls._DUCKTYPE_CHECK_PROPERTIES
+        )
+
+    @classmethod
     def _from_existing(cls, instance):
         """Pass an existing instance to __init__, where it is contained."""
-        assert isinstance(instance, cls.CONTAINED_CLASS)
+        assert cls.is_contained_type(instance)
         return cls(instance)
 
     def __init__(self, *args, **kwargs):
         """Contain an existing instance, or generate a new one from arguments."""
-        if isinstance(args[0], self.CONTAINED_CLASS):
+        if len(args) > 0 and self.is_contained_type(args[0]):
+            # Passed a contained-type object : Wrap ourself around that.
             instance = args[0]
+            # Explicitly ban "wrapping a wrapper".
+            if hasattr(instance, "THREAD_SAFE_FLAG"):
+                msg = (
+                    "Cannot create {cls} containing an existing {cls}.".format(
+                        cls=self.__class__.__name__
+                    )
+                )
+                raise ValueError(msg)
         else:
+            # Create a contained object of the intended type from passed args.
             with _GLOBAL_NETCDF4_LOCK:
                 instance = self.CONTAINED_CLASS(*args, **kwargs)
 
@@ -89,6 +109,7 @@ class DimensionWrapper(_ThreadSafeWrapper):
     """
 
     CONTAINED_CLASS = netCDF4.Dimension
+    _DUCKTYPE_CHECK_PROPERTIES = ["isunlimited"]
 
 
 class VariableWrapper(_ThreadSafeWrapper):
@@ -99,6 +120,7 @@ class VariableWrapper(_ThreadSafeWrapper):
     """
 
     CONTAINED_CLASS = netCDF4.Variable
+    _DUCKTYPE_CHECK_PROPERTIES = ["dimensions", "dtype"]
 
     def setncattr(self, *args, **kwargs) -> None:
         """
@@ -147,6 +169,8 @@ class GroupWrapper(_ThreadSafeWrapper):
     """
 
     CONTAINED_CLASS = netCDF4.Group
+    # Note: will also accept a whole Dataset object, but that is OK.
+    _DUCKTYPE_CHECK_PROPERTIES = ["createVariable"]
 
     # All Group API that returns Dimension(s) is wrapped to instead return
     #  DimensionWrapper(s).
@@ -281,6 +305,8 @@ class DatasetWrapper(GroupWrapper):
     """
 
     CONTAINED_CLASS = netCDF4.Dataset
+    # Note: 'close' exists on Dataset but not Group (though a rather weak distinction).
+    _DUCKTYPE_CHECK_PROPERTIES = ["createVariable", "close"]
 
     @classmethod
     def fromcdl(cls, *args, **kwargs):

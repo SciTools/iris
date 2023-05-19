@@ -457,9 +457,8 @@ class Saver:
         # Detect if we were passed a pre-opened dataset (or something like one)
         self._to_open_dataset = hasattr(filename, "createVariable")
         if self._to_open_dataset:
-            # Given a dataset : derive instance filepath from the dataset
+            # We were passed a *dataset*, so we don't open (or close) one of our own.
             self._dataset = filename
-            self.filepath = self._dataset.filepath()
             if compute:
                 msg = (
                     "Cannot save to a user-provided dataset with 'compute=True'. "
@@ -467,6 +466,17 @@ class Saver:
                     "calling code after the file is closed."
                 )
                 raise ValueError(msg)
+
+            # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
+            # Except if it already is one, since they forbid "re-wrapping".
+            if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
+                self._dataset = _thread_safe_nc.DatasetWrapper._from_existing(
+                    self._dataset
+                )
+
+            # In this case the dataset gives a filepath, not the other way around.
+            self.filepath = self._dataset.filepath()
+
         else:
             # Given a filepath string/path : create a dataset from that
             try:
