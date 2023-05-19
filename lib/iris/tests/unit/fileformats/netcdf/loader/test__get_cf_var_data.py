@@ -24,7 +24,9 @@ class Test__get_cf_var_data(tests.IrisTest):
         self.shape = (300000, 240, 200)
         self.expected_chunks = _optimum_chunksize(self.shape, self.shape)
 
-    def _make(self, chunksizes=None, shape=None, dtype="i4"):
+    def _make(
+        self, chunksizes=None, shape=None, dtype="i4", **extra_properties
+    ):
         cf_data = mock.MagicMock(
             _FillValue=None,
             __getitem__="<real-data>",
@@ -40,6 +42,7 @@ class Test__get_cf_var_data(tests.IrisTest):
             cf_name="DUMMY_VAR",
             shape=shape,
             size=np.prod(shape),
+            **extra_properties,
         )
         cf_var.__getitem__.return_value = mock.sentinel.real_data_accessed
         return cf_var
@@ -89,6 +92,15 @@ class Test__get_cf_var_data(tests.IrisTest):
         cf_var = self._make(shape=(100,), dtype="f8")
         var_data = _get_cf_var_data(cf_var, self.filename)
         self.assertIs(var_data, mock.sentinel.real_data_accessed)
+
+    def test_cf_data_emulation(self):
+        # Check that a variable emulation object passes its real data directly.
+        emulated_data = mock.Mock()
+        # Make a cf_var with a special extra '_data_array' property.
+        cf_var = self._make(chunksizes=None, _data_array=emulated_data)
+        result = _get_cf_var_data(cf_var, self.filename)
+        # This should get directly returned.
+        self.assertIs(emulated_data, result)
 
 
 if __name__ == "__main__":

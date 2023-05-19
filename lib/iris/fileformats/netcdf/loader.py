@@ -191,34 +191,42 @@ def _get_cf_var_data(cf_var, filename):
     unnecessarily slow + wasteful of memory.
 
     """
-    total_bytes = cf_var.size * cf_var.dtype.itemsize
-    if total_bytes < _LAZYVAR_MIN_BYTES:
-        # Don't make a lazy array, as it will cost more memory AND more time to access.
-        # Instead fetch the data immediately, as a real array, and return that.
-        result = cf_var[:]
-
+    if hasattr(cf_var, "_data_array"):
+        # The variable is not an actual netCDF4 file variable, but an emulating
+        # object with an attached data array (either numpy or dask), which can be
+        # returned immediately as-is.  This is used as a hook to translate data to/from
+        # netcdf data container objects in other packages, such as xarray.
+        # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
+        result = cf_var._data_array
     else:
-        # Get lazy chunked data out of a cf variable.
-        dtype = _get_actual_dtype(cf_var)
+        total_bytes = cf_var.size * cf_var.dtype.itemsize
+        if total_bytes < _LAZYVAR_MIN_BYTES:
+            # Don't make a lazy array, as it will cost more memory AND more time to access.
+            # Instead fetch the data immediately, as a real array, and return that.
+            result = cf_var[:]
 
-        # Make a data-proxy that mimics array access and can fetch from the file.
-        fill_value = getattr(
-            cf_var.cf_data,
-            "_FillValue",
-            _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
-        )
-        proxy = NetCDFDataProxy(
-            cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
-        )
-        # Get the chunking specified for the variable : this is either a shape, or
-        # maybe the string "contiguous".
-        chunks = cf_var.cf_data.chunking()
-        # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
-        if chunks == "contiguous":
-            chunks = None
+        else:
+            # Get lazy chunked data out of a cf variable.
+            dtype = _get_actual_dtype(cf_var)
 
-        # Return a dask array providing deferred access.
-        result = as_lazy_data(proxy, chunks=chunks)
+            # Make a data-proxy that mimics array access and can fetch from the file.
+            fill_value = getattr(
+                cf_var.cf_data,
+                "_FillValue",
+                _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
+            )
+            proxy = NetCDFDataProxy(
+                cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
+            )
+            # Get the chunking specified for the variable : this is either a shape, or
+            # maybe the string "contiguous".
+            chunks = cf_var.cf_data.chunking()
+            # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
+            if chunks == "contiguous":
+                chunks = None
+
+            # Return a dask array providing deferred access.
+            result = as_lazy_data(proxy, chunks=chunks)
 
     return result
 

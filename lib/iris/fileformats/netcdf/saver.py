@@ -2390,70 +2390,87 @@ class Saver:
             #  contains just 1 row, so the cf_var is 1D.
             data = data.squeeze(axis=0)
 
-        # Decide whether we are checking for fill-value collisions.
-        dtype = cf_var.dtype
-        # fill_warn allows us to skip warning if packing attributes have been
-        #  specified. It would require much more complex operations to work out
-        #  what the values and fill_value _would_ be in such a case.
-        if fill_warn:
-            if fill_value is not None:
-                fill_value_to_check = fill_value
-            else:
-                # Retain 'fill_value == None', to show that no specific value was given.
-                # But set 'fill_value_to_check' to a calculated value
-                fill_value_to_check = _thread_safe_nc.default_fillvals[
-                    dtype.str[1:]
-                ]
-            # Cast the check-value to the correct dtype.
-            # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
-            # does not have a compatible type.  This causes a deprecation warning at
-            # numpy 1.24, *and* was preventing correct fill-value checking of character
-            # data, since they are actually bytes (dtype 'S1').
-            fill_value_to_check = np.array(fill_value_to_check, dtype=dtype)
+        if hasattr(cf_var, "_data_array"):
+            # The variable is not an actual netCDF4 file variable, but an emulating
+            # object with an attached data array (either numpy or dask), which should be
+            # copied immediately to the target.  This is used as a hook to translate
+            # data to/from netcdf data container objects in other packages, such as
+            # xarray.
+            # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
+            # N.B. also, in this case there is no need for fill-value checking as the
+            # data is not being translated to an in-file representation.
+            cf_var._data_array = data
         else:
-            # A None means we will NOT check for collisions.
-            fill_value_to_check = None
-
-        fill_info = _FillvalueCheckInfo(
-            user_value=fill_value,
-            check_value=fill_value_to_check,
-            dtype=dtype,
-            varname=cf_var.name,
-        )
-
-        doing_delayed_save = is_lazy_data(data)
-        if doing_delayed_save:
-            # save lazy data with a delayed operation.  For now, we just record the
-            # necessary information -- a single, complete delayed action is constructed
-            # later by a call to delayed_completion().
-            def store(data, cf_var, fill_info):
-                # Create a data-writeable object that we can stream into, which
-                # encapsulates the file to be opened + variable to be written.
-                write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
-                    self.filepath, cf_var, self.file_write_lock
+            # Decide whether we are checking for fill-value collisions.
+            dtype = cf_var.dtype
+            # fill_warn allows us to skip warning if packing attributes have been
+            #  specified. It would require much more complex operations to work out
+            #  what the values and fill_value _would_ be in such a case.
+            if fill_warn:
+                if fill_value is not None:
+                    fill_value_to_check = fill_value
+                else:
+                    # Retain 'fill_value == None', to show that no specific value was given.
+                    # But set 'fill_value_to_check' to a calculated value
+                    fill_value_to_check = _thread_safe_nc.default_fillvals[
+                        dtype.str[1:]
+                    ]
+                # Cast the check-value to the correct dtype.
+                # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
+                # does not have a compatible type.  This causes a deprecation warning at
+                # numpy 1.24, *and* was preventing correct fill-value checking of character
+                # data, since they are actually bytes (dtype 'S1').
+                fill_value_to_check = np.array(
+                    fill_value_to_check, dtype=dtype
                 )
-                # Add to the list of delayed writes, used in delayed_completion().
-                self._delayed_writes.append((data, write_wrapper, fill_info))
-                # In this case, fill-value checking is done later. But return 2 dummy
-                # values, to be consistent with the non-streamed "store" signature.
-                is_masked, contains_value = False, False
-                return is_masked, contains_value
+            else:
+                # A None means we will NOT check for collisions.
+                fill_value_to_check = None
 
-        else:
-            # Real data is always written directly, i.e. not via lazy save.
-            # We also check it immediately for any fill-value problems.
-            def store(data, cf_var, fill_info):
-                cf_var[:] = data
-                return _data_fillvalue_check(np, data, fill_info.check_value)
-
-        # Store the data and check if it is masked and contains the fill value.
-        is_masked, contains_fill_value = store(data, cf_var, fill_info)
-
-        if not doing_delayed_save:
-            # Issue a fill-value warning immediately, if appropriate.
-            _fillvalue_report(
-                fill_info, is_masked, contains_fill_value, warn=True
+            fill_info = _FillvalueCheckInfo(
+                user_value=fill_value,
+                check_value=fill_value_to_check,
+                dtype=dtype,
+                varname=cf_var.name,
             )
+
+            doing_delayed_save = is_lazy_data(data)
+            if doing_delayed_save:
+                # save lazy data with a delayed operation.  For now, we just record the
+                # necessary information -- a single, complete delayed action is constructed
+                # later by a call to delayed_completion().
+                def store(data, cf_var, fill_info):
+                    # Create a data-writeable object that we can stream into, which
+                    # encapsulates the file to be opened + variable to be written.
+                    write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
+                        self.filepath, cf_var, self.file_write_lock
+                    )
+                    # Add to the list of delayed writes, used in delayed_completion().
+                    self._delayed_writes.append(
+                        (data, write_wrapper, fill_info)
+                    )
+                    # In this case, fill-value checking is done later. But return 2 dummy
+                    # values, to be consistent with the non-streamed "store" signature.
+                    is_masked, contains_value = False, False
+                    return is_masked, contains_value
+
+            else:
+                # Real data is always written directly, i.e. not via lazy save.
+                # We also check it immediately for any fill-value problems.
+                def store(data, cf_var, fill_info):
+                    cf_var[:] = data
+                    return _data_fillvalue_check(
+                        np, data, fill_info.check_value
+                    )
+
+            # Store the data and check if it is masked and contains the fill value.
+            is_masked, contains_fill_value = store(data, cf_var, fill_info)
+
+            if not doing_delayed_save:
+                # Issue a fill-value warning immediately, if appropriate.
+                _fillvalue_report(
+                    fill_info, is_masked, contains_fill_value, warn=True
+                )
 
     def delayed_completion(self) -> Delayed:
         """
