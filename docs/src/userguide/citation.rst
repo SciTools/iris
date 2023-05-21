@@ -15,12 +15,12 @@ For example::
 
  @manual{Iris,
  author = {{Met Office}},
- title = {Iris: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data },
- edition = {v3.5},
+ title = {Iris: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data},
+ edition = {v3.6},
  year = {2010 - 2023},
- address = {Exeter, Devon },
+ address = {Exeter, Devon},
  url = {http://scitools.org.uk/},
- doi = {10.5281/zenodo.7871017}
+ doi = {10.5281/zenodo.7948293}
  }
 
 

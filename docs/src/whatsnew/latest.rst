@@ -48,8 +48,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
-
+#. `@rcomer`_ made :meth:`~iris.cube.Cube.aggregated_by` faster. (:pull:`4970`)
+#. `@rsdavies`_ modified the CF compliant standard name for m01s00i023 :issue:`4566`
 
 🔥 Deprecations
 ===============
@@ -72,13 +72,16 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@pp-mo`_ supported loading and saving netcdf :class:`netCDF4.Dataset` compatible
+   objects in place of file-paths, as hooks for a forthcoming
+   `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
+   (:pull:`5214`)
 
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
-
+.. _@rsdavies: https://github.com/rsdavies
 
 
 

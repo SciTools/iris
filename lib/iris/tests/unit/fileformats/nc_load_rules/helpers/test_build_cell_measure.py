@@ -15,6 +15,7 @@ import pytest
 
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_cell_measures
+from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
 
 
 @pytest.fixture
@@ -31,6 +32,7 @@ def mock_engine():
 def mock_cf_cm_var(monkeypatch):
     data = np.arange(6)
     output = mock.Mock(
+        spec=threadsafe_nc.VariableWrapper,
         dimensions=("foo",),
         scale_factor=1,
         add_offset=0,

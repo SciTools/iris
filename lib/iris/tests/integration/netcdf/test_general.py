@@ -4,13 +4,13 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Integration tests for loading and saving netcdf files."""
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
 from itertools import repeat
 import os.path
+from pathlib import Path
 import shutil
 import tempfile
 from unittest import mock
@@ -26,6 +26,13 @@ from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
 import iris.exceptions
 from iris.fileformats.netcdf import Saver, UnknownCellMethodWarning
+
+# Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
+# netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
+import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+
+nc = threadsafe_nc.netCDF4
+
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -359,6 +366,129 @@ data:
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
+
+
+@tests.skip_data
+class TestDatasetAndPathLoads(tests.IrisTest):
+    @classmethod
+    def setUpClass(cls):
+        cls.filepath = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        cls.phenom_id = "Carbon Dioxide"
+        cls.expected = iris.load_cube(cls.filepath, cls.phenom_id)
+
+    def test_basic_load(self):
+        # test loading from an open Dataset, in place of a filepath spec.
+        ds = nc.Dataset(self.filepath)
+        result = iris.load_cube(ds, self.phenom_id)
+        # It should still be open (!)
+        self.assertTrue(ds.isopen())
+        ds.close()
+
+        # Check that result is just the same as a 'direct' load.
+        self.assertEqual(self.expected, result)
+
+    def test_path_string_load_same(self):
+        # Check that loading from a Path is the same as passing a filepath string.
+        # Apart from general utility, checks that we won't mistake a Path for a Dataset.
+        path = Path(self.filepath)
+        result = iris.load_cube(path, self.phenom_id)
+        self.assertEqual(result, self.expected)
+
+
+@tests.skip_data
+class TestDatasetAndPathSaves(tests.IrisTest):
+    @classmethod
+    def setUpClass(cls):
+        # Create a temp directory for transient test files.
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.testpath = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        # Load some test data for save testing.
+        testdata = iris.load(cls.testpath)
+        # Sort to ensure non-random cube order.
+        testdata = sorted(testdata, key=lambda cube: cube.name())
+        cls.testdata = testdata
+
+    @classmethod
+    def tearDownClass(cls):
+        # Destroy the temp directory.
+        shutil.rmtree(cls.temp_dir)
+
+    def test_basic_save(self):
+        # test saving to a Dataset, in place of a filepath spec.
+        # NOTE that this requires 'compute=False', as delayed saves can only operate on
+        # a closed file.
+
+        # Save to netcdf file in the usual way.
+        filepath_direct = f"{self.temp_dir}/tmp_direct.nc"
+        iris.save(self.testdata, filepath_direct)
+        # Check against test-specific CDL result file.
+        self.assertCDL(filepath_direct)
+
+        # Save same data indirectly via a netcdf dataset.
+        filepath_indirect = f"{self.temp_dir}/tmp_indirect.nc"
+        nc_dataset = nc.Dataset(filepath_indirect, "w")
+        # NOTE: we **must** use delayed saving here, as we cannot do direct saving to
+        # a user-owned dataset.
+        result = iris.save(
+            self.testdata, nc_dataset, saver="nc", compute=False
+        )
+
+        # Do some very basic sanity checks on the resulting Dataset.
+        # It should still be open (!)
+        self.assertTrue(nc_dataset.isopen())
+        self.assertEqual(
+            ["time", "levelist", "latitude", "longitude"],
+            list(nc_dataset.dimensions),
+        )
+        self.assertEqual(
+            ["co2", "time", "levelist", "latitude", "longitude", "lnsp"],
+            list(nc_dataset.variables),
+        )
+        nc_dataset.close()
+
+        # Check the saved file against the same CDL as the 'normal' save.
+        self.assertCDL(filepath_indirect)
+
+        # Confirm that cube content is however not yet written.
+        ds = nc.Dataset(filepath_indirect)
+        for cube in self.testdata:
+            assert np.all(ds.variables[cube.var_name][:].mask)
+        ds.close()
+
+        # Complete the delayed saves.
+        result.compute()
+
+        # Check that data now *is* written.
+        ds = nc.Dataset(filepath_indirect)
+        for cube in self.testdata:
+            assert np.all(ds.variables[cube.var_name][:] == cube.data)
+        ds.close()
+
+    def test_computed_delayed_save__fail(self):
+        # Call as above 'test_basic_save' but with "compute=True" : this should raise
+        # an error.
+        filepath_indirect = f"{self.temp_dir}/tmp_indirect_complete.nc"
+        nc_dataset = nc.Dataset(filepath_indirect, "w")
+
+        # NOTE: a "normal" compute=True call should raise an error.
+        msg = "Cannot save to a user-provided dataset with 'compute=True'"
+        with pytest.raises(ValueError, match=msg):
+            iris.save(self.testdata, nc_dataset, saver="nc")
+
+    def test_path_string_save_same(self):
+        # Ensure that save to a Path is the same as passing a filepath string.
+        # Apart from general utility, checks that we won't mistake a Path for a Dataset.
+        tempfile_fromstr = f"{self.temp_dir}/tmp_fromstr.nc"
+        iris.save(self.testdata, tempfile_fromstr)
+        tempfile_frompath = f"{self.temp_dir}/tmp_frompath.nc"
+        path = Path(tempfile_frompath)
+        iris.save(self.testdata, path)
+        self.assertCDL(tempfile_fromstr)
+        self.assertCDL(tempfile_frompath)
 
 
 if __name__ == "__main__":

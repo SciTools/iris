@@ -372,20 +372,31 @@ class Saver:
 
         Parameters
         ----------
-        filename : string
+        filename : string or netCDF4.Dataset
             Name of the netCDF file to save the cube.
+            OR a writeable object supporting the :class:`netCF4.Dataset` api.
 
         netcdf_format : string
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 
         compute : bool, default=True
-            If True, delayed variable saves will be completed on exit from the Saver
+            If ``True``, delayed variable saves will be completed on exit from the Saver
             context (after first closing the target file), equivalent to
             :meth:`complete()`.
-            If False, the file is created and closed without writing the data of
+
+            If ``False``, the file is created and closed without writing the data of
             variables for which the source data was lazy.  These writes can be
             completed later, see :meth:`delayed_completion`.
+
+            .. Note::
+                If ``filename`` is an open dataset, rather than a filepath, then the
+                caller must specify ``compute=False``, **close the dataset**, and
+                complete delayed saving afterwards.
+                If ``compute`` is ``True`` in this case, an error is raised.
+                This is because lazy content must be written by delayed save operations,
+                which will only succeed if the dataset can be (re-)opened for writing.
+                See :func:`save`.
 
         Returns
         -------
@@ -400,6 +411,7 @@ class Saver:
         ...     # Iterate through the cubelist.
         ...     for cube in cubes:
         ...         sman.write(cube)
+
 
         """
         if netcdf_format not in [
@@ -427,43 +439,76 @@ class Saver:
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: Target filepath
-        self.filepath = os.path.abspath(filename)
-        #: A list of delayed writes for lazy saving
-        self._delayed_writes = (
-            []
-        )  # a list of triples (source, target, fill-info)
+        self.filepath = (
+            None  # this line just for the API page -- value is set later
+        )
         #: Whether to complete delayed saves on exit (and raise associated warnings).
         self.compute = compute
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
         #: A per-file write lock to prevent dask attempting overlapping writes.
+        self.file_write_lock = (
+            None  # this line just for the API page -- value is set later
+        )
+
+        # A list of delayed writes for lazy saving
+        # a list of triples (source, target, fill-info).
+        self._delayed_writes = []
+
+        # Detect if we were passed a pre-opened dataset (or something like one)
+        self._to_open_dataset = hasattr(filename, "createVariable")
+        if self._to_open_dataset:
+            # We were passed a *dataset*, so we don't open (or close) one of our own.
+            self._dataset = filename
+            if compute:
+                msg = (
+                    "Cannot save to a user-provided dataset with 'compute=True'. "
+                    "Please use 'compute=False' and complete delayed saving in the "
+                    "calling code after the file is closed."
+                )
+                raise ValueError(msg)
+
+            # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
+            # Except if it already is one, since they forbid "re-wrapping".
+            if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
+                self._dataset = _thread_safe_nc.DatasetWrapper.from_existing(
+                    self._dataset
+                )
+
+            # In this case the dataset gives a filepath, not the other way around.
+            self.filepath = self._dataset.filepath()
+
+        else:
+            # Given a filepath string/path : create a dataset from that
+            try:
+                self.filepath = os.path.abspath(filename)
+                self._dataset = _thread_safe_nc.DatasetWrapper(
+                    self.filepath, mode="w", format=netcdf_format
+                )
+            except RuntimeError:
+                dir_name = os.path.dirname(self.filepath)
+                if not os.path.isdir(dir_name):
+                    msg = "No such file or directory: {}".format(dir_name)
+                    raise IOError(msg)
+                if not os.access(dir_name, os.R_OK | os.W_OK):
+                    msg = "Permission denied: {}".format(self.filepath)
+                    raise IOError(msg)
+                else:
+                    raise
+
         self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
-        #: NetCDF dataset
-        self._dataset = None
-        try:
-            self._dataset = _thread_safe_nc.DatasetWrapper(
-                self.filepath, mode="w", format=netcdf_format
-            )
-        except RuntimeError:
-            dir_name = os.path.dirname(self.filepath)
-            if not os.path.isdir(dir_name):
-                msg = "No such file or directory: {}".format(dir_name)
-                raise IOError(msg)
-            if not os.access(dir_name, os.R_OK | os.W_OK):
-                msg = "Permission denied: {}".format(self.filepath)
-                raise IOError(msg)
-            else:
-                raise
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
-
         self._dataset.sync()
-        self._dataset.close()
-        if self.compute:
-            self.complete()
+        if not self._to_open_dataset:
+            # Only close if the Saver created it.
+            self._dataset.close()
+            # Complete after closing, if required
+            if self.compute:
+                self.complete()
 
     def write(
         self,
@@ -2345,70 +2390,87 @@ class Saver:
             #  contains just 1 row, so the cf_var is 1D.
             data = data.squeeze(axis=0)
 
-        # Decide whether we are checking for fill-value collisions.
-        dtype = cf_var.dtype
-        # fill_warn allows us to skip warning if packing attributes have been
-        #  specified. It would require much more complex operations to work out
-        #  what the values and fill_value _would_ be in such a case.
-        if fill_warn:
-            if fill_value is not None:
-                fill_value_to_check = fill_value
-            else:
-                # Retain 'fill_value == None', to show that no specific value was given.
-                # But set 'fill_value_to_check' to a calculated value
-                fill_value_to_check = _thread_safe_nc.default_fillvals[
-                    dtype.str[1:]
-                ]
-            # Cast the check-value to the correct dtype.
-            # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
-            # does not have a compatible type.  This causes a deprecation warning at
-            # numpy 1.24, *and* was preventing correct fill-value checking of character
-            # data, since they are actually bytes (dtype 'S1').
-            fill_value_to_check = np.array(fill_value_to_check, dtype=dtype)
+        if hasattr(cf_var, "_data_array"):
+            # The variable is not an actual netCDF4 file variable, but an emulating
+            # object with an attached data array (either numpy or dask), which should be
+            # copied immediately to the target.  This is used as a hook to translate
+            # data to/from netcdf data container objects in other packages, such as
+            # xarray.
+            # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
+            # N.B. also, in this case there is no need for fill-value checking as the
+            # data is not being translated to an in-file representation.
+            cf_var._data_array = data
         else:
-            # A None means we will NOT check for collisions.
-            fill_value_to_check = None
-
-        fill_info = _FillvalueCheckInfo(
-            user_value=fill_value,
-            check_value=fill_value_to_check,
-            dtype=dtype,
-            varname=cf_var.name,
-        )
-
-        doing_delayed_save = is_lazy_data(data)
-        if doing_delayed_save:
-            # save lazy data with a delayed operation.  For now, we just record the
-            # necessary information -- a single, complete delayed action is constructed
-            # later by a call to delayed_completion().
-            def store(data, cf_var, fill_info):
-                # Create a data-writeable object that we can stream into, which
-                # encapsulates the file to be opened + variable to be written.
-                write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
-                    self.filepath, cf_var, self.file_write_lock
+            # Decide whether we are checking for fill-value collisions.
+            dtype = cf_var.dtype
+            # fill_warn allows us to skip warning if packing attributes have been
+            #  specified. It would require much more complex operations to work out
+            #  what the values and fill_value _would_ be in such a case.
+            if fill_warn:
+                if fill_value is not None:
+                    fill_value_to_check = fill_value
+                else:
+                    # Retain 'fill_value == None', to show that no specific value was given.
+                    # But set 'fill_value_to_check' to a calculated value
+                    fill_value_to_check = _thread_safe_nc.default_fillvals[
+                        dtype.str[1:]
+                    ]
+                # Cast the check-value to the correct dtype.
+                # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
+                # does not have a compatible type.  This causes a deprecation warning at
+                # numpy 1.24, *and* was preventing correct fill-value checking of character
+                # data, since they are actually bytes (dtype 'S1').
+                fill_value_to_check = np.array(
+                    fill_value_to_check, dtype=dtype
                 )
-                # Add to the list of delayed writes, used in delayed_completion().
-                self._delayed_writes.append((data, write_wrapper, fill_info))
-                # In this case, fill-value checking is done later. But return 2 dummy
-                # values, to be consistent with the non-streamed "store" signature.
-                is_masked, contains_value = False, False
-                return is_masked, contains_value
+            else:
+                # A None means we will NOT check for collisions.
+                fill_value_to_check = None
 
-        else:
-            # Real data is always written directly, i.e. not via lazy save.
-            # We also check it immediately for any fill-value problems.
-            def store(data, cf_var, fill_info):
-                cf_var[:] = data
-                return _data_fillvalue_check(np, data, fill_info.check_value)
-
-        # Store the data and check if it is masked and contains the fill value.
-        is_masked, contains_fill_value = store(data, cf_var, fill_info)
-
-        if not doing_delayed_save:
-            # Issue a fill-value warning immediately, if appropriate.
-            _fillvalue_report(
-                fill_info, is_masked, contains_fill_value, warn=True
+            fill_info = _FillvalueCheckInfo(
+                user_value=fill_value,
+                check_value=fill_value_to_check,
+                dtype=dtype,
+                varname=cf_var.name,
             )
+
+            doing_delayed_save = is_lazy_data(data)
+            if doing_delayed_save:
+                # save lazy data with a delayed operation.  For now, we just record the
+                # necessary information -- a single, complete delayed action is constructed
+                # later by a call to delayed_completion().
+                def store(data, cf_var, fill_info):
+                    # Create a data-writeable object that we can stream into, which
+                    # encapsulates the file to be opened + variable to be written.
+                    write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
+                        self.filepath, cf_var, self.file_write_lock
+                    )
+                    # Add to the list of delayed writes, used in delayed_completion().
+                    self._delayed_writes.append(
+                        (data, write_wrapper, fill_info)
+                    )
+                    # In this case, fill-value checking is done later. But return 2 dummy
+                    # values, to be consistent with the non-streamed "store" signature.
+                    is_masked, contains_value = False, False
+                    return is_masked, contains_value
+
+            else:
+                # Real data is always written directly, i.e. not via lazy save.
+                # We also check it immediately for any fill-value problems.
+                def store(data, cf_var, fill_info):
+                    cf_var[:] = data
+                    return _data_fillvalue_check(
+                        np, data, fill_info.check_value
+                    )
+
+            # Store the data and check if it is masked and contains the fill value.
+            is_masked, contains_fill_value = store(data, cf_var, fill_info)
+
+            if not doing_delayed_save:
+                # Issue a fill-value warning immediately, if appropriate.
+                _fillvalue_report(
+                    fill_info, is_masked, contains_fill_value, warn=True
+                )
 
     def delayed_completion(self) -> Delayed:
         """
@@ -2557,6 +2619,11 @@ def save(
 
     * filename (string):
         Name of the netCDF file to save the cube(s).
+        **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
+
+        .. Note::
+            When saving to a dataset, ``compute`` **must** be ``False`` :
+            See the ``compute`` parameter.
 
     Kwargs:
 
@@ -2656,23 +2723,33 @@ def save(
         this argument will be applied to each cube separately.
 
     * compute (bool):
-        When False, create the output file but don't write any lazy array content to
-        its variables, such as lazy cube data or aux-coord points and bounds.
+        Default is ``True``, meaning complete the file immediately, and return ``None``.
 
+        When ``False``, create the output file but don't write any lazy array content to
+        its variables, such as lazy cube data or aux-coord points and bounds.
         Instead return a :class:`dask.delayed.Delayed` which, when computed, will
         stream all the lazy content via :meth:`dask.store`, to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
 
-        Default is ``True``, meaning complete the file immediately, and return ``None``.
-
         .. Note::
             when computed, the returned :class:`dask.delayed.Delayed` object returns
-            a list of :class:`Warning` :  These are any warnings which *would* have
-            been issued in the save call, if compute had been True.
+            a list of :class:`Warning`\\s :  These are any warnings which *would* have
+            been issued in the save call, if ``compute`` had been ``True``.
+
+        .. Note::
+            If saving to an open dataset instead of a filepath, then the caller
+            **must** specify ``compute=False``, and complete delayed saves **after
+            closing the dataset**.
+            This is because delayed saves may be performed in other processes : These
+            must (re-)open the dataset for writing, which will fail if the file is
+            still open for writing by the caller.
 
     Returns:
-        A list of :class:`Warning`.
+        result (None, or dask.delayed.Delayed):
+            If `compute=True`, returns `None`.
+            Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
+            writing to fill in the variables data.
 
     .. note::
 
