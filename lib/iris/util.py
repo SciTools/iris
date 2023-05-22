@@ -34,8 +34,7 @@ def broadcast_to_shape(array, shape, dim_map):
     Broadcast an array to a given shape.
 
     Each dimension of the array must correspond to a dimension in the
-    given shape. Striding is used to repeat the array until it matches
-    the desired shape, returning repeated views on the original array.
+    given shape. The result is a read-only view (see :func:`numpy.broadcast_to`).
     If you need to write to the resulting array, make a copy first.
 
     Args:
