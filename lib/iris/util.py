@@ -23,7 +23,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import as_concrete_data, is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data, is_lazy_masked_data
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
@@ -92,6 +92,12 @@ def broadcast_to_shape(array, shape, dim_map):
         else:
             new_mask = np.broadcast_to(mask, shape)
         new_array = ma.array(new_array, mask=new_mask)
+
+    elif is_lazy_masked_data(array):
+        # broadcast_to strips masks so we need to handle them explicitly.
+        mask = da.ma.getmaskarray(array)
+        new_mask = da.broadcast_to(mask, shape)
+        new_array = da.ma.masked_array(new_array, new_mask)
 
     return new_array
 

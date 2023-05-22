@@ -47,6 +47,15 @@ def is_lazy_data(data):
     return result
 
 
+def is_lazy_masked_data(data):
+    """
+    Return True if the argument is both an Iris 'lazy' data array and the
+    underlying array is of masked type.  Otherwise return False.
+
+    """
+    return is_lazy_data(data) and ma.isMA(da.utils.meta_from_array(data))
+
+
 @lru_cache
 def _optimum_chunksize_internals(
     chunks,
