@@ -66,7 +66,9 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@tkknight`_ prepared the documentation for dark mode and enable the option
+   to use it.  By default the theme will be based on the users system settings,
+   defaulting to ``light`` if no system setting is found.  (:pull:`5299`)
 
 
 💼 Internal

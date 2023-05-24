@@ -10,12 +10,12 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="89.186264mm"
-   height="35.112755mm"
-   viewBox="0 0 89.186264 35.112755"
+   width="99.186264mm"
+   height="45.112755mm"
+   viewBox="0 0 99.186261 45.112755"
    version="1.1"
    id="svg1444"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="iris-esmf-regrid.svg">
   <defs
      id="defs1438" />
@@ -27,20 +27,20 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="167.70776"
-     inkscape:cy="25.61879"
+     inkscape:cx="125.49117"
+     inkscape:cy="44.51643"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0"
-     inkscape:window-width="1920"
-     inkscape:window-height="983"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1" />
+     fit-margin-top="5"
+     fit-margin-left="5"
+     fit-margin-right="5"
+     fit-margin-bottom="5"
+     inkscape:window-width="1718"
+     inkscape:window-height="1368"
+     inkscape:window-x="3633"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata1441">
     <rdf:RDF>
@@ -57,7 +57,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-14.306365,-64.275871)">
+     transform="translate(-9.306365,-59.275871)">
     <image
        width="52.94648"
        height="19.676056"

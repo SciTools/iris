@@ -317,9 +317,9 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
-    # Omitted `theme-switcher` below to disable it
+    # Omit `theme-switcher` from navbar_end below to disable it
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
-    "navbar_end": ["navbar-icon-links"],
+    # "navbar_end": ["navbar-icon-links"],
     # https://pydata-sphinx-theme.readthedocs.io/en/v0.11.0/user_guide/branding.html#different-logos-for-light-and-dark-mode
     "logo": {
         "image_light": "_static/iris-logo-title.svg",
@@ -338,7 +338,7 @@ html_context = {
     "doc_path": "docs/src",
     # default theme.  Also disabled the button in the html_theme_options.
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
-    "default_mode": "light",
+    "default_mode": "auto",
     # custom
     "on_rtd": on_rtd,
     "rtd_version": rtd_version,
@@ -355,13 +355,14 @@ html_context = {
 html_static_path = ["_static"]
 html_style = "theme_override.css"
 
-# this allows for using datatables: https://datatables.net/
+# this allows for using datatables: https://datatables.net/.
+# the version can be manually upgraded by changing the urls below.
 html_css_files = [
-    "https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css",
+    "https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css",
 ]
 
 html_js_files = [
-    "https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js",
+    "https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js",
 ]
 
 # url link checker.  Some links work but report as broken, lets ignore them.
