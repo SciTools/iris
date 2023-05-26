@@ -210,7 +210,7 @@ def _gh_post_results(commit_sha: str, results_full: str, results_shifts: str):
         # Post the report as a comment on the active PR.
         command = (
             "gh pr comment ${{ github.event.number }} "
-            f"--body {performance_report} "
+            f'--body "{performance_report}" '
             f"--repo {repo}"
         )
         _subprocess_runner(command.split(" "))
@@ -259,8 +259,8 @@ def _gh_post_results(commit_sha: str, results_full: str, results_shifts: str):
 
         command = (
             "gh issue create "
-            f"--title {title} "
-            f"--body {body} "
+            f'--title "{title}" '
+            f'--body "{body}" '
             f"--assignee {assignee} "
             '--label "Bot" --label "Type: Performance" '
             f"--repo {repo}"
