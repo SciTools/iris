@@ -40,7 +40,7 @@ def echo(echo_string: str):
 
 
 def _subprocess_runner(args, **kwargs):
-    if kwargs.pop("asv"):
+    if kwargs.pop("asv", False):
         args.insert(0, "asv")
         kwargs["cwd"] = BENCHMARKS_DIR
     echo(" ".join(args))
