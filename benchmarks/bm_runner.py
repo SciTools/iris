@@ -388,7 +388,15 @@ class Branch(_SubParserGenerator):
             commit_range = f"HASHFILE:{hashfile.name}"
             asv_command = ASV_HARNESS.format(posargs=commit_range)
             _subprocess_runner(
-                [*asv_command.split(" "), *args.asv_args], asv=True
+                [
+                    *asv_command.split(" "),
+                    "--bench",
+                    "aux_factory",
+                    "--attribute",
+                    "rounds=1",
+                    *args.asv_args,
+                ],
+                asv=True,
             )
 
         _asv_compare(merge_base, "HEAD")
