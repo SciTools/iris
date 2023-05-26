@@ -171,16 +171,12 @@ def _gh_post_results(commit_sha: str, results_full: str, results_shifts: str):
         # Only run when within GHA.
         return
 
+    on_pull_request = "GITHUB_BASE_REF" in environ
     run_id = environ["GITHUB_RUN_ID"]
     repo = environ["GITHUB_REPOSITORY"]
     gha_run_link = (
         f"[`{run_id}`](https://github.com/{repo}/actions/runs/{run_id})"
     )
-
-    on_pull_request = "GITHUB_BASE_REF" in environ
-    if on_pull_request:
-        # TODO: get commit SHA of HEAD^2, for better reporting in the comment.
-        pass
 
     performance_report = dedent(
         (
@@ -211,9 +207,15 @@ def _gh_post_results(commit_sha: str, results_full: str, results_shifts: str):
     )
 
     if on_pull_request:
-        # TODO: raise a comment containing the performance report.
-        pass
+        # Post the report as a comment on the active PR.
+        command = (
+            "gh pr comment ${{ github.event.number }} "
+            f"--body {performance_report} "
+            f"--repo {repo}"
+        )
+        _subprocess_runner(command.split(" "))
     else:
+        # Post the report as new issue.
         commit_msg = _subprocess_runner_capture(
             f"git log {commit_sha}^! --oneline".split(" ")
         )
@@ -263,7 +265,7 @@ def _gh_post_results(commit_sha: str, results_full: str, results_shifts: str):
             '--label "Bot" --label "Type: Performance" '
             f"--repo {repo}"
         )
-        _subprocess_runner(command.split())
+        _subprocess_runner(command.split(" "))
 
 
 class _SubParserGenerator(ABC):
@@ -350,7 +352,11 @@ class Branch(_SubParserGenerator):
     description = (
         "Performs the same operations as ``overnight``, but always on two commits "
         "only - ``HEAD``, and ``HEAD``'s merge-base with the input "
-        "**base_branch**. Output from this run is never saved to a file. Designed "
+        "**base_branch**. Commit performance comparisons are saved to a file in:\n"
+        "``.asv/performance-comparisons/``\n\n"
+        "If running on GitHub Actions: the performance results will be posted "
+        "on the relevant pull request.\n"
+        "Designed "
         "for testing if the active branch's changes cause performance shifts - "
         "anticipating what would be caught by ``overnight`` once merged.\n\n"
         "**For maximum accuracy, avoid using the machine that is running this "
