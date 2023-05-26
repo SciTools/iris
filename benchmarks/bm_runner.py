@@ -17,6 +17,7 @@ from pathlib import Path
 import re
 import subprocess
 from tempfile import NamedTemporaryFile
+from textwrap import dedent
 from typing import Literal
 
 # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
@@ -38,16 +39,18 @@ def echo(echo_string: str):
     subprocess.run(["echo", f"BM_RUNNER DEBUG: {echo_string}"])
 
 
-def _subprocess_run_echo(args, **kwargs):
+def _subprocess_runner(args, **kwargs):
+    if kwargs.get("asv"):
+        args.insert(0, "asv")
+        kwargs["cwd"] = BENCHMARKS_DIR
     echo(" ".join(args))
     kwargs.setdefault("check", True)
     return subprocess.run(args, **kwargs)
 
 
-def _subprocess_run_asv(args, **kwargs):
-    args.insert(0, "asv")
-    kwargs["cwd"] = BENCHMARKS_DIR
-    return _subprocess_run_echo(args, **kwargs)
+def _subprocess_runner_capture(args, **kwargs) -> str:
+    result = _subprocess_runner(args, capture_output=True, **kwargs)
+    return result.stdout.decode()
 
 
 def _check_requirements(package: str) -> None:
@@ -75,7 +78,7 @@ def _prep_data_gen_env() -> None:
         echo("Setting up the data generation environment ...")
         # Get Nox to build an environment for the `tests` session, but don't
         #  run the session. Will re-use a cached environment if appropriate.
-        _subprocess_run_echo(
+        _subprocess_runner(
             [
                 "nox",
                 f"--noxfile={root_dir / 'noxfile.py'}",
@@ -94,7 +97,7 @@ def _prep_data_gen_env() -> None:
         echo("Installing Mule into data generation environment ...")
         mule_dir = data_gen_python.parents[1] / "resources" / "mule"
         if not mule_dir.is_dir():
-            _subprocess_run_echo(
+            _subprocess_runner(
                 [
                     "git",
                     "clone",
@@ -102,7 +105,7 @@ def _prep_data_gen_env() -> None:
                     str(mule_dir),
                 ]
             )
-        _subprocess_run_echo(
+        _subprocess_runner(
             [
                 str(data_gen_python),
                 "-m",
@@ -122,7 +125,7 @@ def _setup_common() -> None:
     _prep_data_gen_env()
 
     echo("Setting up ASV ...")
-    _subprocess_run_asv(["machine", "--yes"])
+    _subprocess_runner(["machine", "--yes"], asv=True)
 
     echo("Setup complete.")
 
@@ -130,7 +133,6 @@ def _setup_common() -> None:
 def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
     """Run through a list of commits comparing each one to the next."""
     commits = [commit[:8] for commit in commits]
-    comps_dir = BENCHMARKS_DIR / ".asv" / "performance-comparisons"
     for i in range(len(commits) - 1):
         before = commits[i]
         after = commits[i + 1]
@@ -138,28 +140,130 @@ def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
             f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
         )
 
-        _subprocess_run_asv(asv_command.split(" "))
+        _subprocess_runner(asv_command.split(" "), asv=True)
         # Now store the results in variables.
-        comparison = _subprocess_run_asv(
-            asv_command.split(" "),
-            capture_output=True,
-            text=True,
-        ).stdout
-        shifts = _subprocess_run_asv(
-            [*asv_command.split(" "), "--only-changed"],
-            capture_output=True,
-            text=True,
-        ).stdout
+        comparison = _subprocess_runner_capture(
+            asv_command.split(" "), asv=True
+        )
+        shifts = _subprocess_runner_capture(
+            [*asv_command.split(" "), "--only-changed"], asv=True
+        )
+
+        # Write the comparisons report to a file.
+        comps_dir = BENCHMARKS_DIR / ".asv" / "performance-comparisons"
+        comps_dir.mkdir(exist_ok=True, parents=True)
+        comps_path = (comps_dir / f"{after}-vs-{before}").with_suffix(".txt")
+        comps_path.write_text(comparison)
 
         if shifts or (not overnight_mode):
-            # Write the comparisons report to a file.
-            # For the overnight run: only write if there are shifts.
-            # Dir is used by .github/workflows/benchmarks.yml,
-            #  but not cached - intended to be discarded after run.
-            comps_dir.mkdir(exist_ok=True, parents=True)
-            comps_path = (comps_dir / after).with_suffix(".txt")
-            with comps_path.open("w") as comps_file:
-                comps_file.write(comparison)
+            # For the overnight run: only post if there are shifts.
+            _gh_post_results(after, comparison, shifts)
+
+
+def _gh_post_results(commit_sha: str, results_full: str, results_shifts: str):
+    """
+    Post the results on GitHub, if running under GitHub Actions.
+
+    If benchmarking a pull request: post as a new comment. Otherwise: post as
+    a new issue.
+    """
+    if "GITHUB_ACTIONS" not in environ:
+        # Only run when within GHA.
+        return
+
+    run_id = environ["GITHUB_RUN_ID"]
+    repo = environ["GITHUB_REPOSITORY"]
+    gha_run_link = (
+        f"[`{run_id}`](https://github.com/{repo}/actions/runs/{run_id})"
+    )
+
+    on_pull_request = "GITHUB_BASE_REF" in environ
+    if on_pull_request:
+        # TODO: get commit SHA of HEAD^2, for better reporting in the comment.
+        pass
+
+    performance_report = dedent(
+        (
+            f"""
+            ### Performance Benchmark Report: {commit_sha}
+    
+            <details>
+            <summary>Performance shifts</summary>
+    
+            ```
+            {results_shifts}
+            ```
+    
+            </details>
+    
+            <details>
+            <summary>Full benchmark results</summary>
+    
+            ```
+            {results_full}
+            ```
+    
+            </details>
+    
+            Generated by GHA run {gha_run_link}
+            """
+        )
+    )
+
+    if on_pull_request:
+        # TODO: raise a comment containing the performance report.
+        pass
+    else:
+        commit_msg = _subprocess_runner_capture(
+            f"git log {commit_sha}^! --oneline".split(" ")
+        )
+        pr_tag = re.search("#[0-9]*", commit_msg).group(0)
+
+        assignee = ""
+        for login_type in ("author", "mergedBy"):
+            gh_query = f'.["{login_type}"]["login"]'
+            command = (
+                f"gh pr view {pr_tag[1:]} "
+                f"--json {login_type} -q '{gh_query}' "
+                f"--repo {environ['GITHUB_REPOSITORY']}"
+            )
+            login = _subprocess_runner_capture(command.split(" "))
+
+            command = ["curl", "-s", f"https://api.github.com/users/{login}"]
+            login_info = _subprocess_runner_capture(command)
+            is_user = '"type": "User"' in login_info
+            if is_user:
+                assignee = login
+                break
+
+        title = f"Performance Shift(s): `{commit_sha}`"
+        body = dedent(
+            (
+                f"""
+                Benchmark comparison has identified performance shifts at:
+    
+                * commit {commit_sha} ({pr_tag}).
+    
+                <p>
+                Please review the report below and 
+                take corrective/congratulatory action as appropriate 
+                :slightly_smiling_face:
+                </p>
+    
+                {performance_report}
+                """
+            )
+        )
+
+        command = (
+            "gh issue create "
+            f"--title {title} "
+            f"--body {body} "
+            f"--assignee {assignee} "
+            '--label "Bot" --label "Type: Performance" '
+            f"--repo {repo}"
+        )
+        _subprocess_runner(command.split())
 
 
 class _SubParserGenerator(ABC):
@@ -206,9 +310,11 @@ class Overnight(_SubParserGenerator):
     name = "overnight"
     description = (
         "Benchmarks all commits between the input **first_commit** to ``HEAD``, "
-        "comparing each to its parent for performance shifts. If a commit causes "
-        "shifts, the output is saved to a file:\n"
-        "``.asv/performance-shifts/<commit-sha>``\n\n"
+        "comparing each to its parent for performance shifts. Commit"
+        "performance comparisons are saved to a file in:\n"
+        "``.asv/performance-comparisons/``\n\n"
+        "If running on GitHub Actions: performance shift(s) will be reported "
+        "in a new issue.\n"
         "Designed for checking the previous 24 hours' commits, typically in a "
         "scheduled script."
     )
@@ -230,13 +336,11 @@ class Overnight(_SubParserGenerator):
 
         commit_range = f"{args.first_commit}^^.."
         asv_command = ASV_HARNESS.format(posargs=commit_range)
-        _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+        _subprocess_runner([*asv_command.split(" "), *args.asv_args], asv=True)
 
         # git rev-list --first-parent is the command ASV uses.
         git_command = f"git rev-list --first-parent {commit_range}"
-        commit_string = _subprocess_run_echo(
-            git_command.split(" "), capture_output=True, text=True
-        ).stdout
+        commit_string = _subprocess_runner_capture(git_command.split(" "))
         commit_list = commit_string.rstrip().split("\n")
         _asv_compare(*reversed(commit_list), overnight_mode=True)
 
@@ -269,16 +373,16 @@ class Branch(_SubParserGenerator):
         _setup_common()
 
         git_command = f"git merge-base HEAD {args.base_branch}"
-        merge_base = _subprocess_run_echo(
-            git_command.split(" "), capture_output=True, text=True
-        ).stdout[:8]
+        merge_base = _subprocess_runner_capture(git_command.split(" "))[:8]
 
         with NamedTemporaryFile("w") as hashfile:
             hashfile.writelines([merge_base, "\n", "HEAD"])
             hashfile.flush()
             commit_range = f"HASHFILE:{hashfile.name}"
             asv_command = ASV_HARNESS.format(posargs=commit_range)
-            _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+            _subprocess_runner(
+                [*asv_command.split(" "), *args.asv_args], asv=True
+            )
 
         _asv_compare(merge_base, "HEAD")
 
@@ -335,10 +439,10 @@ class _CSPerf(_SubParserGenerator, ABC):
         asv_command = asv_command.replace(" --strict", "")
         # Only do a single round.
         asv_command = re.sub(r"rounds=\d", "rounds=1", asv_command)
-        _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+        _subprocess_runner([*asv_command.split(" "), *args.asv_args], asv=True)
 
         asv_command = f"publish {commit_range} --html-dir={publish_subdir}"
-        _subprocess_run_asv(asv_command.split(" "))
+        _subprocess_runner(asv_command.split(" "), asv=True)
 
         # Print completion message.
         location = BENCHMARKS_DIR / ".asv"
@@ -389,7 +493,7 @@ class Custom(_SubParserGenerator):
     @staticmethod
     def func(args: argparse.Namespace) -> None:
         _setup_common()
-        _subprocess_run_asv([args.asv_sub_command, *args.asv_args])
+        _subprocess_runner([args.asv_sub_command, *args.asv_args], asv=True)
 
 
 def main():
