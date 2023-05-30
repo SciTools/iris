@@ -212,7 +212,9 @@ def _gh_post_results(commit_sha: str, results_full: str, results_shifts: str):
     if on_pull_request:
         # Post the report as a comment on the active PR.
         body_file_path.write_text(performance_report)
-        pr_number = _subprocess_runner_capture(["echo", "github.event.number"])
+        pr_number = _subprocess_runner_capture(
+            ["echo", "${{github.event.number}}"]
+        ).rstrip
         command = (
             f"gh pr comment {pr_number} "
             f"--body-file {body_file_path} "
