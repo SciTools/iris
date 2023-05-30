@@ -24,8 +24,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      pull-requests: read|write
-      issues: read|write
+      pull-requests: write
+      issues: write
 
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
