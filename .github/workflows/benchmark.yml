@@ -23,6 +23,10 @@ jobs:
       github.event.label.name == 'benchmark_this')
     runs-on: ubuntu-latest
 
+    permissions:
+      pull-requests: read|write
+      issues: read|write
+
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
