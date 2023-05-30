@@ -74,6 +74,8 @@ jobs:
 
       - name: Benchmark this pull request
         if: ${{ github.event.label.name == 'benchmark_this' }}
+        env:
+          PR_NUMBER: ${{ github.event.number }}
         run: |
           python benchmarks/bm_runner.py branch origin/${{ github.base_ref }}
 
