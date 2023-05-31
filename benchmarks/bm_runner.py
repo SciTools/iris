@@ -32,17 +32,23 @@ ASV_HARNESS = (
 )
 
 
-def _subprocess_run_print(args, **kwargs):
+def echo(echo_string: str):
     # Use subprocess for printing to reduce chance of printing out of sequence
     #  with the subsequent calls.
-    subprocess.run(["echo", f"BM_RUNNER DEBUG: {' '.join(args)}"])
+    subprocess.run(["echo", f"BM_RUNNER DEBUG: {echo_string}"])
+
+
+def _subprocess_runner(args, asv=False, **kwargs):
+    if asv:
+        args.insert(0, "asv")
+        kwargs["cwd"] = BENCHMARKS_DIR
+    echo(" ".join(args))
     return subprocess.run(args, **kwargs)
 
 
-def _subprocess_run_asv(args, **kwargs):
-    args.insert(0, "asv")
-    kwargs["cwd"] = BENCHMARKS_DIR
-    return _subprocess_run_print(args, **kwargs)
+def _subprocess_runner_capture(args, **kwargs) -> str:
+    result = _subprocess_runner(args, capture_output=True, **kwargs)
+    return result.stdout.decode()
 
 
 def _check_requirements(package: str) -> None:
@@ -65,12 +71,12 @@ def _prep_data_gen_env() -> None:
     python_version = "3.11"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
-        print("Using existing data generation environment.")
+        echo("Using existing data generation environment.")
     else:
-        print("Setting up the data generation environment ...")
+        echo("Setting up the data generation environment ...")
         # Get Nox to build an environment for the `tests` session, but don't
         #  run the session. Will re-use a cached environment if appropriate.
-        _subprocess_run_print(
+        _subprocess_runner(
             [
                 "nox",
                 f"--noxfile={root_dir / 'noxfile.py'}",
@@ -86,10 +92,10 @@ def _prep_data_gen_env() -> None:
         ).resolve()
         environ[data_gen_var] = str(data_gen_python)
 
-        print("Installing Mule into data generation environment ...")
+        echo("Installing Mule into data generation environment ...")
         mule_dir = data_gen_python.parents[1] / "resources" / "mule"
         if not mule_dir.is_dir():
-            _subprocess_run_print(
+            _subprocess_runner(
                 [
                     "git",
                     "clone",
@@ -97,7 +103,7 @@ def _prep_data_gen_env() -> None:
                     str(mule_dir),
                 ]
             )
-        _subprocess_run_print(
+        _subprocess_runner(
             [
                 str(data_gen_python),
                 "-m",
@@ -107,7 +113,7 @@ def _prep_data_gen_env() -> None:
             ]
         )
 
-        print("Data generation environment ready.")
+        echo("Data generation environment ready.")
 
 
 def _setup_common() -> None:
@@ -116,10 +122,10 @@ def _setup_common() -> None:
 
     _prep_data_gen_env()
 
-    print("Setting up ASV ...")
-    _subprocess_run_asv(["machine", "--yes"])
+    echo("Setting up ASV ...")
+    _subprocess_runner(["machine", "--yes"], asv=True)
 
-    print("Setup complete.")
+    echo("Setup complete.")
 
 
 def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
@@ -132,17 +138,15 @@ def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
         asv_command = (
             f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
         )
-        _subprocess_run_asv(asv_command.split(" "))
+        _subprocess_runner(asv_command.split(" "), asv=True)
 
         if overnight_mode:
             # Record performance shifts.
             # Run the command again but limited to only showing performance
             #  shifts.
-            shifts = _subprocess_run_asv(
-                [*asv_command.split(" "), "--only-changed"],
-                capture_output=True,
-                text=True,
-            ).stdout
+            shifts = _subprocess_runner_capture(
+                [*asv_command.split(" "), "--only-changed"], asv=True
+            )
             if shifts:
                 # Write the shifts report to a file.
                 # Dir is used by .github/workflows/benchmarks.yml,
@@ -221,13 +225,11 @@ class Overnight(_SubParserGenerator):
 
         commit_range = f"{args.first_commit}^^.."
         asv_command = ASV_HARNESS.format(posargs=commit_range)
-        _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+        _subprocess_runner([*asv_command.split(" "), *args.asv_args], asv=True)
 
         # git rev-list --first-parent is the command ASV uses.
         git_command = f"git rev-list --first-parent {commit_range}"
-        commit_string = _subprocess_run_print(
-            git_command.split(" "), capture_output=True, text=True
-        ).stdout
+        commit_string = _subprocess_runner_capture(git_command.split(" "))
         commit_list = commit_string.rstrip().split("\n")
         _asv_compare(*reversed(commit_list), overnight_mode=True)
 
@@ -260,16 +262,16 @@ class Branch(_SubParserGenerator):
         _setup_common()
 
         git_command = f"git merge-base HEAD {args.base_branch}"
-        merge_base = _subprocess_run_print(
-            git_command.split(" "), capture_output=True, text=True
-        ).stdout[:8]
+        merge_base = _subprocess_runner_capture(git_command.split(" "))[:8]
 
         with NamedTemporaryFile("w") as hashfile:
             hashfile.writelines([merge_base, "\n", "HEAD"])
             hashfile.flush()
             commit_range = f"HASHFILE:{hashfile.name}"
             asv_command = ASV_HARNESS.format(posargs=commit_range)
-            _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+            _subprocess_runner(
+                [*asv_command.split(" "), *args.asv_args], asv=True
+            )
 
         _asv_compare(merge_base, "HEAD")
 
@@ -326,14 +328,14 @@ class _CSPerf(_SubParserGenerator, ABC):
         asv_command = asv_command.replace(" --strict", "")
         # Only do a single round.
         asv_command = re.sub(r"rounds=\d", "rounds=1", asv_command)
-        _subprocess_run_asv([*asv_command.split(" "), *args.asv_args])
+        _subprocess_runner([*asv_command.split(" "), *args.asv_args], asv=True)
 
         asv_command = f"publish {commit_range} --html-dir={publish_subdir}"
-        _subprocess_run_asv(asv_command.split(" "))
+        _subprocess_runner(asv_command.split(" "), asv=True)
 
         # Print completion message.
         location = BENCHMARKS_DIR / ".asv"
-        print(
+        echo(
             f'New ASV results for "{run_type}".\n'
             f'See "{publish_subdir}",'
             f'\n  or JSON files under "{location / "results"}".'
@@ -380,7 +382,7 @@ class Custom(_SubParserGenerator):
     @staticmethod
     def func(args: argparse.Namespace) -> None:
         _setup_common()
-        _subprocess_run_asv([args.asv_sub_command, *args.asv_args])
+        _subprocess_runner([args.asv_sub_command, *args.asv_args], asv=True)
 
 
 def main():
