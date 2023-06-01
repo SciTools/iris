@@ -30,7 +30,8 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
+   lazy data. (:pull:`5307`)
 
 
 🐛 Bugs Fixed
