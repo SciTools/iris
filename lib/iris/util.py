@@ -23,7 +23,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import as_concrete_data, is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data, is_lazy_masked_data
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
@@ -34,8 +34,7 @@ def broadcast_to_shape(array, shape, dim_map):
     Broadcast an array to a given shape.
 
     Each dimension of the array must correspond to a dimension in the
-    given shape. Striding is used to repeat the array until it matches
-    the desired shape, returning repeated views on the original array.
+    given shape. The result is a read-only view (see :func:`numpy.broadcast_to`).
     If you need to write to the resulting array, make a copy first.
 
     Args:
@@ -76,35 +75,30 @@ def broadcast_to_shape(array, shape, dim_map):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-    if len(dim_map) != array.ndim:
-        # We must check for this condition here because we cannot rely on
-        # getting an error from numpy if the dim_map argument is not the
-        # correct length, we might just get a segfault.
-        raise ValueError(
-            "dim_map must have an entry for every "
-            "dimension of the input array"
-        )
+    n_orig_dims = len(array.shape)
+    n_new_dims = len(shape) - n_orig_dims
+    array = array.reshape(array.shape + (1,) * n_new_dims)
 
-    def _broadcast_helper(a):
-        strides = [0] * len(shape)
-        for idim, dim in enumerate(dim_map):
-            if shape[dim] != a.shape[idim]:
-                # We'll get garbage values if the dimensions of array are not
-                # those indicated by shape.
-                raise ValueError("shape and array are not compatible")
-            strides[dim] = a.strides[idim]
-        return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+    # Get dims in required order.
+    array = np.moveaxis(array, range(n_orig_dims), dim_map)
+    new_array = np.broadcast_to(array, shape)
 
-    array_view = _broadcast_helper(array)
-    if ma.isMaskedArray(array):
-        if array.mask is ma.nomask:
-            # Degenerate masks can be applied as-is.
-            mask_view = array.mask
+    if ma.isMA(array):
+        # broadcast_to strips masks so we need to handle them explicitly.
+        mask = ma.getmask(array)
+        if mask is ma.nomask:
+            new_mask = ma.nomask
         else:
-            # Mask arrays need to be handled in the same way as the data array.
-            mask_view = _broadcast_helper(array.mask)
-        array_view = ma.array(array_view, mask=mask_view)
-    return array_view
+            new_mask = np.broadcast_to(mask, shape)
+        new_array = ma.array(new_array, mask=new_mask)
+
+    elif is_lazy_masked_data(array):
+        # broadcast_to strips masks so we need to handle them explicitly.
+        mask = da.ma.getmaskarray(array)
+        new_mask = da.broadcast_to(mask, shape)
+        new_array = da.ma.masked_array(new_array, new_mask)
+
+    return new_array
 
 
 def delta(ndarray, dimension, circular=False):
