@@ -96,7 +96,7 @@ This achieves approximately a 10-fold improvement if enough CPUs are
 available to have one per file. See this benchmarking:
 
 +---------------+-----------------------+---------------+---------------+
-| Machine       | CPUs Available       | CPUs Used    | Time Taken    |
+| Machine       | CPUs Available        | CPUs Used     | Time Taken    |
 +===============+=======================+===============+===============+
 | A             | 4                     | 3             | 4m 05s        |
 |               |                       +---------------+---------------+
@@ -181,7 +181,7 @@ This achieves a significant performance improvement - more than twice as
 fast as the previous benchmarks:
 
 +---------------+-----------------------+---------------+---------------+-----------+
-| Machine       | CPUs Available       | CPUs Used    | Previous Time | New Time  |
+| Machine       | CPUs Available        | CPUs Used     | Previous Time | New Time  |
 +===============+=======================+===============+===============+===========+
 | Example       | 8                     | 7             | 2m 35s        | 1m 05s    |
 |               |                       +---------------+---------------+-----------+
