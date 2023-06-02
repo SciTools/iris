@@ -14,7 +14,7 @@ computing clusters and avoiding parallelisation conflicts between Dask and NumPy
     relevant when using Dask with Iris, that we hope will assist users to make
     the best start when using Dask. It is *not* a fully comprehensive guide
     encompassing all best practices. You can find more general dask information in the
-    `official Dask Documentation <https://docs/dask.org/en/stable/>`_.
+    `official Dask Documentation <https://docs.dask.org/en/stable/>`_.
 
 
 Introduction
