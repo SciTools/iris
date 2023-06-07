@@ -1197,7 +1197,7 @@ class _Weights:
 
     """
 
-    def __init__(self, weights, cube, units=None):
+    def __init__(self, weights, cube):
         """Initialize class instance.
 
         Args:
@@ -1210,19 +1210,14 @@ class _Weights:
             one of :meth:`iris.cube.Cube.coords`,
             :meth:`iris.cube.Cube.cell_measures`, or
             :meth:`iris.cube.Cube.ancillary_variables`). If given as an
-            array-like object, use this directly and assume units of `1`. If
-            `units` is given, ignore all units derived above and use the ones
-            given by `units`. Note: this does **not** create a copy of the
-            input array.
+            array-like object, use this directly and assume units of `1`. Note:
+            this does **not** create a copy of the input array.
         * cube (Cube):
             Input cube for aggregation. If weights is given as :obj:`str` or
             :class:`iris.coords._DimensionalMetadata`, try to extract the
             :class:`iris.coords._DimensionalMetadata` object and corresponding
             dimensional mappings from this cube. Otherwise, this argument is
             ignored.
-        * units (string, Unit):
-            If ``None``, use units derived from `weights`. Otherwise, overwrite
-            the units derived from `weights` and use `units`.
 
         """
         # `weights` is a cube
@@ -1253,10 +1248,6 @@ class _Weights:
         else:
             derived_array = weights
             derived_units = Unit("1")
-
-        # Overwrite units from units argument if necessary
-        if units is not None:
-            derived_units = Unit(units)
 
         self.array = derived_array
         self.units = derived_units

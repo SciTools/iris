@@ -1742,26 +1742,12 @@ class TestWeights:
         assert weights.array is self.data
         assert weights.units == "1"
 
-    def test_init_with_array_and_units(self):
-        weights = _Weights(self.data, self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        assert weights.array is self.data
-        assert weights.units == "J"
-
     def test_init_with_cube(self):
         weights = _Weights(self.cube, self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
         assert weights.array is self.data
         assert weights.units == "K"
-
-    def test_init_with_cube_and_units(self):
-        weights = _Weights(self.cube, self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        assert weights.array is self.data
-        assert weights.units == "J"
 
     def test_init_with_str_dim_coord(self):
         weights = _Weights("latitude", self.cube)
@@ -1771,27 +1757,12 @@ class TestWeights:
         np.testing.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
         assert weights.units == "degrees"
 
-    def test_init_with_str_dim_coord_and_units(self):
-        weights = _Weights("latitude", self.cube, units="J")
-        # DimCoord always realizes points
-        assert isinstance(weights.array, np.ndarray)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
-        assert weights.units == "J"
-
     def test_init_with_str_aux_coord(self):
         weights = _Weights("auxcoord", self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
         np.testing.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
         assert weights.units == "s"
-
-    def test_init_with_str_aux_coord_and_units(self):
-        weights = _Weights("auxcoord", self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
-        assert weights.units == "J"
 
     def test_init_with_str_ancillary_variable(self):
         weights = _Weights("ancvar", self.cube)
@@ -1800,26 +1771,12 @@ class TestWeights:
         np.testing.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
         assert weights.units == "kg"
 
-    def test_init_with_str_ancillary_variable_and_units(self):
-        weights = _Weights("ancvar", self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
-        assert weights.units == "J"
-
     def test_init_with_str_cell_measure(self):
         weights = _Weights("cell_area", self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
         np.testing.assert_array_equal(weights.array, self.data)
         assert weights.units == "m2"
-
-    def test_init_with_str_cell_measure_and_units(self):
-        weights = _Weights("cell_area", self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, self.data)
-        assert weights.units == "J"
 
     def test_init_with_dim_coord(self):
         weights = _Weights(self.lat, self.cube)
@@ -1829,27 +1786,12 @@ class TestWeights:
         np.testing.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
         assert weights.units == "degrees"
 
-    def test_init_with_dim_coord_and_units(self):
-        weights = _Weights(self.lat, self.cube, units="J")
-        # DimCoord always realizes points
-        assert isinstance(weights.array, np.ndarray)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
-        assert weights.units == "J"
-
     def test_init_with_aux_coord(self):
         weights = _Weights(self.aux_coord, self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
         np.testing.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
         assert weights.units == "s"
-
-    def test_init_with_aux_coord_and_units(self):
-        weights = _Weights(self.aux_coord, self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
-        assert weights.units == "J"
 
     def test_init_with_ancillary_variable(self):
         weights = _Weights(self.ancillary_variable, self.cube)
@@ -1858,26 +1800,12 @@ class TestWeights:
         np.testing.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
         assert weights.units == "kg"
 
-    def test_init_with_ancillary_variable_and_units(self):
-        weights = _Weights(self.ancillary_variable, self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
-        assert weights.units == "J"
-
     def test_init_with_cell_measure(self):
         weights = _Weights(self.cell_measure, self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
         np.testing.assert_array_equal(weights.array, self.data)
         assert weights.units == "m2"
-
-    def test_init_with_cell_measure_and_units(self):
-        weights = _Weights(self.cell_measure, self.cube, units="J")
-        assert isinstance(weights.array, self.target_type)
-        assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, self.data)
-        assert weights.units == "J"
 
     def test_get_updated_kwargs_no_weights(self):
         kwargs = {"test": [1, 2, 3]}
