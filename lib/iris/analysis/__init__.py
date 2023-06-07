@@ -1187,20 +1187,18 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-class _Weights(np.ndarray):
+class _Weights:
     """Class for handling weights for weighted aggregation.
 
-    This subclasses :class:`numpy.ndarray`; thus, all methods and properties of
-    :class:`numpy.ndarray` (e.g., `shape`, `ndim`, `view()`, etc.) are
-    available.
+    Provides the following two attributes:
 
-    Details on subclassing :class:`numpy.ndarray` are given here:
-    https://numpy.org/doc/stable/user/basics.subclassing.html
+    * ``array``: Lazy or non-lazy array of weights.
+    * ``units``: Units associated with the weights.
 
     """
 
-    def __new__(cls, weights, cube, units=None):
-        """Create class instance.
+    def __init__(self, weights, cube, units=None):
+        """Initialize class instance.
 
         Args:
 
@@ -1212,9 +1210,10 @@ class _Weights(np.ndarray):
             one of :meth:`iris.cube.Cube.coords`,
             :meth:`iris.cube.Cube.cell_measures`, or
             :meth:`iris.cube.Cube.ancillary_variables`). If given as an
-            array-like object, use this directly and assume units of `1`.  If
+            array-like object, use this directly and assume units of `1`. If
             `units` is given, ignore all units derived above and use the ones
-            given by `units`.
+            given by `units`. Note: this does **not** create a copy of the
+            input array.
         * cube (Cube):
             Input cube for aggregation. If weights is given as :obj:`str` or
             :class:`iris.coords._DimensionalMetadata`, try to extract the
@@ -1231,8 +1230,8 @@ class _Weights(np.ndarray):
         # "hasattr" syntax here
         # --> Extract data and units from cube
         if hasattr(weights, "add_aux_coord"):
-            obj = np.asarray(weights.data).view(cls)
-            obj.units = weights.units
+            derived_array = weights.core_data()
+            derived_units = weights.units
 
         # `weights`` is a string or _DimensionalMetadata object
         # --> Extract _DimensionalMetadata object from cube, broadcast it to
@@ -1240,55 +1239,56 @@ class _Weights(np.ndarray):
         # its data and units
         elif isinstance(weights, (str, _DimensionalMetadata)):
             dim_metadata = cube._dimensional_metadata(weights)
-            arr = dim_metadata._values
+            derived_array = dim_metadata._core_values()
             if dim_metadata.shape != cube.shape:
-                arr = iris.util.broadcast_to_shape(
-                    arr,
+                derived_array = iris.util.broadcast_to_shape(
+                    derived_array,
                     cube.shape,
                     dim_metadata.cube_dims(cube),
                 )
-            obj = np.asarray(arr).view(cls)
-            obj.units = dim_metadata.units
+            derived_units = dim_metadata.units
 
-        # Remaining types (e.g., np.ndarray): try to convert to ndarray.
+        # Remaining types (e.g., np.ndarray, dask.array.core.Array, etc.)
+        # --> Use array directly and assign units of "1"
         else:
-            obj = np.asarray(weights).view(cls)
-            obj.units = Unit("1")
+            derived_array = weights
+            derived_units = Unit("1")
 
         # Overwrite units from units argument if necessary
         if units is not None:
-            obj.units = units
+            derived_units = Unit(units)
 
-        return obj
-
-    def __array_finalize__(self, obj):
-        """See https://numpy.org/doc/stable/user/basics.subclassing.html.
-
-        Note
-        ----
-        `obj` cannot be `None` here since ``_Weights.__new__`` does not call
-        ``super().__new__`` explicitly.
-
-        """
-        self.units = getattr(obj, "units", Unit("1"))
+        self.array = derived_array
+        self.units = derived_units
 
     @classmethod
-    def update_kwargs(cls, kwargs, cube):
-        """Update ``weights`` keyword argument in-place.
+    def get_updated_kwargs(cls, kwargs, cube):
+        """Get kwargs and weights units updated with `weights` information.
 
         Args:
 
         * kwargs (dict):
-            Keyword arguments that will be updated in-place if a `weights`
-            keyword is present which is not ``None``.
+            Keyword arguments that will be updated if a `weights` keyword is
+            present which is not ``None``.
         * cube (Cube):
             Input cube for aggregation. If weights is given as :obj:`str`, try
             to extract a cell measure with the corresponding name from this
             cube. Otherwise, this argument is ignored.
 
+        Returns:
+            tuple. A tuple containing the updated keyword arguments and the
+            weights units.
+
         """
+        kwargs = dict(kwargs)
+        weights_units = None
+
         if kwargs.get("weights") is not None:
-            kwargs["weights"] = cls(kwargs["weights"], cube)
+            weights = cls(kwargs["weights"], cube)
+            kwargs["weights"] = weights.array
+            weights_units = weights.units
+
+        return (kwargs, weights_units)
 
 
 def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
@@ -1752,11 +1752,10 @@ def _sum(array, **kwargs):
 def _sum_units_func(units, **kwargs):
     """Multiply original units with weight units if possible."""
     weights = kwargs.get("weights")
-    if weights is None:  # no weights given or weights are None
-        result = units
-    elif hasattr(weights, "units"):  # weights are _Weights
-        result = units * weights.units
-    else:  # weights are regular np.ndarrays
+    weights_units = kwargs.get("_weights_units")
+    if weights is not None and weights_units is not None:
+        result = units * weights_units
+    else:
         result = units
     return result
 

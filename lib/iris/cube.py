@@ -3836,7 +3836,7 @@ class Cube(CFVariableMixin):
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        _Weights.update_kwargs(kwargs, self)
+        (kwargs, weights_units) = _Weights.get_updated_kwargs(kwargs, self)
 
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
@@ -3981,7 +3981,11 @@ class Cube(CFVariableMixin):
             )
 
         aggregator.update_metadata(
-            collapsed_cube, coords, axis=collapse_axis, **kwargs
+            collapsed_cube,
+            coords,
+            axis=collapse_axis,
+            _weights_units=weights_units,
+            **kwargs,
         )
         result = aggregator.post_process(
             collapsed_cube, data_result, coords, **kwargs
@@ -4074,7 +4078,7 @@ x            -              -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        _Weights.update_kwargs(kwargs, self)
+        (kwargs, weights_units) = _Weights.get_updated_kwargs(kwargs, self)
 
         groupby_coords = []
         dimension_to_groupby = None
@@ -4114,16 +4118,10 @@ x            -              -
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
-
-                # iris.util.broadcast_to_shape does not preserve _Weights type
-                weights = _Weights(
-                    iris.util.broadcast_to_shape(
-                        weights,
-                        self.shape,
-                        (dimension_to_groupby,),
-                    ),
-                    self,
-                    units=weights.units,
+                weights = iris.util.broadcast_to_shape(
+                    weights,
+                    self.shape,
+                    (dimension_to_groupby,),
                 )
             if weights.shape != self.shape:
                 raise ValueError(
@@ -4274,7 +4272,11 @@ x            -              -
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
-            aggregateby_cube, groupby_coords, aggregate=True, **kwargs
+            aggregateby_cube,
+            groupby_coords,
+            aggregate=True,
+            _weights_units=weights_units,
+            **kwargs,
         )
         # Replace the appropriate coordinates within the aggregate-by cube.
         (dim_coord,) = self.coords(
@@ -4413,7 +4415,7 @@ x            -               -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        _Weights.update_kwargs(kwargs, self)
+        (kwargs, weights_units) = _Weights.get_updated_kwargs(kwargs, self)
 
         coord = self._as_list_of_coords(coord)[0]
 
@@ -4500,6 +4502,7 @@ x            -               -
             new_cube,
             [coord],
             action="with a rolling window of length %s over" % window,
+            _weights_units=weights_units,
             **kwargs,
         )
         # and perform the data transformation, generating weights first if
@@ -4516,14 +4519,8 @@ x            -               -
                         "as the window."
                     )
                 kwargs = dict(kwargs)
-
-                # iris.util.broadcast_to_shape does not preserve _Weights type
-                kwargs["weights"] = _Weights(
-                    iris.util.broadcast_to_shape(
-                        weights, rolling_window_data.shape, (dimension + 1,)
-                    ),
-                    self,
-                    units=weights.units,
+                kwargs["weights"] = iris.util.broadcast_to_shape(
+                    weights, rolling_window_data.shape, (dimension + 1,)
                 )
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs

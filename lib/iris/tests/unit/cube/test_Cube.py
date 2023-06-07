@@ -988,7 +988,7 @@ class Test_rolling_window(tests.IrisTest):
         self.assertEqual(res_cube.cell_measures(), [])
 
     def test_weights_arr(self):
-        weights = [0, 0, 1, 0, 2]
+        weights = np.array([0, 0, 1, 0, 2])
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
         np.testing.assert_array_equal(res_cube.data, [10, 13])
         self.assertEqual(res_cube.units, "kg")
