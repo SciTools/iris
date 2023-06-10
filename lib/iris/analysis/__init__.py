@@ -488,7 +488,7 @@ class _Aggregator:
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
 
-        Additional kwargs::
+        Additional kwargs:
             Passed through to :data:`call_func`, :data:`lazy_func`, and
             :data:`units_func`.
 
@@ -720,8 +720,9 @@ class PercentileAggregator(_Aggregator):
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
 
-        Additional kwargs::
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+        Additional kwargs:
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         This aggregator can used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
@@ -961,13 +962,24 @@ class WeightedPercentileAggregator(PercentileAggregator):
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
 
+            If the aggregator is used by a cube aggregation method (e.g.,
+            :meth:`~iris.cube.Cube.collapsed`,
+            :meth:`~iris.cube.Cube.aggregated_by`,
+            :meth:`~iris.cube.Cube.rolling_window`), a keyword argument
+            `_weights_units` is provided to this function to allow updating
+            units based on the weights. `_weights_units` is determined from the
+            `weights` given to the aggregator (``None`` if no weights are
+            given). See :ref:`user guide <cube-statistics-collapsing-average>`
+            for an example of weighted aggregation that changes units.
+
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
 
-        Additional kwargs::
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+        Additional kwargs:
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         This aggregator can used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
@@ -1090,7 +1102,7 @@ class WeightedAggregator(Aggregator):
     def __init__(
         self, cell_method, call_func, units_func=None, lazy_func=None, **kwargs
     ):
-        """
+        r"""
         Create a weighted aggregator for the given :data:`call_func`.
 
         Args:
@@ -1099,12 +1111,29 @@ class WeightedAggregator(Aggregator):
             Cell method string that supports string format substitution.
 
         * call_func (callable):
-            Data aggregation function. Call signature `(data, axis, **kwargs)`.
+            Data aggregation function. Call signature `(data, axis,
+            \**kwargs)`.
 
         Kwargs:
 
         * units_func (callable):
-            Units conversion function.
+            | *Call signature*: (units, \**kwargs)
+
+            If provided, called to convert a cube's units.
+            Returns an :class:`cf_units.Unit`, or a
+            value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
+
+            If the aggregator is used by a cube aggregation method (e.g.,
+            :meth:`~iris.cube.Cube.collapsed`,
+            :meth:`~iris.cube.Cube.aggregated_by`,
+            :meth:`~iris.cube.Cube.rolling_window`), a keyword argument
+            `_weights_units` is provided to this function to allow updating
+            units based on the weights. `_weights_units` is determined from the
+            `weights` given to the aggregator (``None`` if no weights are
+            given). See :ref:`user guide <cube-statistics-collapsing-average>`
+            for an example of weighted aggregation that changes units.
 
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
@@ -1112,7 +1141,8 @@ class WeightedAggregator(Aggregator):
             main operation, but should raise an error in unhandled cases.
 
         Additional kwargs:
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         """
         Aggregator.__init__(
