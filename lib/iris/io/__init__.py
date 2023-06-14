@@ -216,7 +216,7 @@ def load_files(filenames, callback, constraints=None):
             )
             handler_map[handling_format_spec].append(fn)
 
-    # Call each iris format handler with the approriate filenames
+    # Call each iris format handler with the appropriate filenames
     for handling_format_spec in sorted(handler_map):
         fnames = handler_map[handling_format_spec]
         if handling_format_spec.constraint_aware_handler:
@@ -454,7 +454,7 @@ def save(source, target, saver=None, **kwargs):
 
     # Single cube?
     if isinstance(source, Cube):
-        saver(source, target, **kwargs)
+        result = saver(source, target, **kwargs)
 
     # CubeList or sequence of cubes?
     elif isinstance(source, CubeList) or (
@@ -477,9 +477,13 @@ def save(source, target, saver=None, **kwargs):
                 if i != 0:
                     kwargs["append"] = True
                 saver(cube, target, **kwargs)
+
+            result = None
         # Netcdf saver.
         else:
-            saver(source, target, **kwargs)
+            result = saver(source, target, **kwargs)
 
     else:
         raise ValueError("Cannot save; non Cube found in source")
+
+    return result

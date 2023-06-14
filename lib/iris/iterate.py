@@ -233,7 +233,7 @@ class _ZipSlicesIterator(Iterator):
                         break
                 # If a coordinate with an equivalent definition (i.e. same
                 # metadata) is not found in the master_dimensioned_coord_list,
-                # add the coords assocaited with the dimension to the list,
+                # add the coords associated with the dimension to the list,
                 # add the size of the dimension to the master_dims_index and
                 # store the offset.
                 if not found:

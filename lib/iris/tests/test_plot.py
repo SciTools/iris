@@ -193,7 +193,7 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
         self.check_graphic()
 
     def test_cube_cube(self):
-        # plot two phenomena against eachother, in this case just dummy data
+        # plot two phenomena against each other, in this case just dummy data
         cube1 = self.cube1d.copy()
         cube2 = self.cube1d.copy()
         cube1.rename("some phenomenon")
@@ -668,7 +668,7 @@ class CheckForWarningsMetaclass(type):
     """
     Metaclass that adds a further test for each base class test
     that checks that each test raises a UserWarning. Each base
-    class test is then overriden to ignore warnings in order to
+    class test is then overridden to ignore warnings in order to
     check the underlying functionality.
 
     """
@@ -999,6 +999,15 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
             units="1",
         )
         self.draw("contourf", cube, coords=["grid_latitude", x])
+
+
+@tests.skip_data
+@tests.skip_plot
+class TestPlotHist(tests.GraphicsTest):
+    def test_cube(self):
+        cube = simple_cube()[0]
+        iplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
+        self.check_graphic()
 
 
 @tests.skip_data

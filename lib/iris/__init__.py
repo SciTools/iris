@@ -91,6 +91,7 @@ All the load functions share very similar arguments:
 
 import contextlib
 import glob
+import importlib
 import itertools
 import os.path
 import pathlib
@@ -129,6 +130,7 @@ __all__ = [
     "sample_data_path",
     "save",
     "site_configuration",
+    "use_plugin",
 ]
 
 
@@ -175,7 +177,6 @@ class Future(threading.local):
         self.__dict__["pandas_ndim"] = pandas_ndim
 
     def __repr__(self):
-
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
         msg = "Future(datum_support={}, pandas_ndim={})"
@@ -471,3 +472,22 @@ def sample_data_path(*path_to_join):
             "appropriate for general file access.".format(target)
         )
     return target
+
+
+def use_plugin(plugin_name):
+    """
+    Convenience function to import a plugin
+
+    For example::
+
+        use_plugin("my_plugin")
+
+    is equivalent to::
+
+        import iris.plugins.my_plugin
+
+    This is useful for plugins that are not used directly, but instead do all
+    their setup on import.  In this case, style checkers would not know the
+    significance of the import statement and warn that it is an unused import.
+    """
+    importlib.import_module(f"iris.plugins.{plugin_name}")

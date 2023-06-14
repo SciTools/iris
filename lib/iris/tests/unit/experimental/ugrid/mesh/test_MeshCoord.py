@@ -11,11 +11,13 @@ Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from platform import python_version
 import re
 import unittest.mock as mock
 
 import dask.array as da
 import numpy as np
+from pkg_resources import parse_version
 import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
@@ -77,8 +79,12 @@ class Test__readonly_properties(tests.IrisTest):
     def test_fixed_metadata(self):
         # Check that you cannot set any of these on an existing MeshCoord.
         meshcoord = self.meshcoord
+        if parse_version(python_version()) >= parse_version("3.11"):
+            msg = "object has no setter"
+        else:
+            msg = "can't set attribute"
         for prop in ("mesh", "location", "axis"):
-            with self.assertRaisesRegex(AttributeError, "can't set"):
+            with self.assertRaisesRegex(AttributeError, msg):
                 setattr(meshcoord, prop, mock.sentinel.odd)
 
     def test_coord_system(self):
@@ -235,9 +241,7 @@ class Test__getitem__(tests.IrisTest):
     def test_slice_wholeslice_1tuple(self):
         # The only slicing case that we support, to enable cube slicing.
         meshcoord = sample_meshcoord()
-        meshcoord2 = meshcoord[
-            :,
-        ]
+        meshcoord2 = meshcoord[:,]
         self.assertIsNot(meshcoord2, meshcoord)
         self.assertEqual(meshcoord2, meshcoord)
         # In this case, we should *NOT* copy the linked Mesh object.
@@ -275,7 +279,7 @@ class Test__str_repr(tests.IrisTest):
         # Printed name is standard or long -- we don't have a case with neither
         coord_name = standard_name or long_name
         # Construct regexp in 'sections'
-        # NB each consumes upto first non-space in the next line
+        # NB each consumes up to first non-space in the next line
         regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
         regexp += r"mesh: \<Mesh: 'test_mesh'>\n *"
         regexp += f"location: '{location}'\n *"

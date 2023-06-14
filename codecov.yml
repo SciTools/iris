@@ -1,0 +1,9 @@
+coverage:
+  # see https://docs.codecov.com/docs/commit-status
+  status:
+    project:
+      default:
+        target: auto
+        # coverage can drop by up to <threshold>% while still posting success
+        threshold: 3%
+    patch: off

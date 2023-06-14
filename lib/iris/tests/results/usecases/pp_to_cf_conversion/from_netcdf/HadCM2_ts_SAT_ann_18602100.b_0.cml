@@ -11,21 +11,21 @@
         <dimCoord id="a62739f9" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[-89.9, 89.9],
-		[1.25, 89.9],
-		[-89.9, 1.24998]]" id="4a0cb9d8" points="[0.0, 45.575, -44.325]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
+        <auxCoord bounds="[[-89.9      ,  89.9      ],
+ [  1.25     ,  89.9      ],
+ [-89.9      ,   1.2499847]]" id="4a0cb9d8" points="[  0.     ,  45.575  , -44.32501]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[-1.875, 358.125],
-		[-1.875, 358.125],
-		[-1.875, 358.125]]" id="62e940e0" points="[178.125, 178.125, 178.125]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
+        <auxCoord bounds="[[ -1.875, 358.125],
+ [ -1.875, 358.125],
+ [ -1.875, 358.125]]" id="62e940e0" points="[178.125, 178.125, 178.125]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="longitude"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="22225738" long_name="site_number" points="[1.0, 2.0, 3.0]" shape="(3,)" units="Unit('1')" value_type="float32" var_name="site_number"/>
+        <dimCoord id="22225738" long_name="site_number" points="[1., 2., 3.]" shape="(3,)" units="Unit('1')" value_type="float32" var_name="site_number"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="42c82ea7" points="[670020.0, 670380.0, 670740.0, ..., 755340.0,
-		755700.0, 756060.0]" shape="(240,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
+        <dimCoord id="42c82ea7" points="[670020., 670380., 670740., ..., 755340., 755700.,
+ 756060.]" shape="(240,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

@@ -28,6 +28,7 @@ from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris._merge
 import iris.analysis
+from iris.analysis import _Weights
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
@@ -541,6 +542,7 @@ class CubeList(list):
         check_aux_coords=True,
         check_cell_measures=True,
         check_ancils=True,
+        check_derived_coords=True,
     ):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
@@ -553,19 +555,29 @@ class CubeList(list):
         Kwargs:
 
         * check_aux_coords
-            Checks the auxiliary coordinates of the cubes match. This check
-            is not applied to auxiliary coordinates that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the points and bounds of auxiliary coordinates of the
+            cubes match. This check is not applied to auxiliary coordinates
+            that span the dimension the concatenation is occurring along.
+            Defaults to True.
 
         * check_cell_measures
-            Checks the cell measures of the cubes match. This check
-            is not applied to cell measures that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the data of cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension the
+            concatenation is occurring along. Defaults to True.
 
         * check_ancils
-            Checks the ancillary variables of the cubes match. This check
-            is not applied to ancillary variables that span the dimension
+            Checks if the data of ancillary variables of the cubes match. This
+            check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
+
+        * check_derived_coords
+            Checks if the points and bounds of derived coordinates of the cubes
+            match. This check is not applied to derived coordinates that span
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to True.
 
         .. note::
 
@@ -586,6 +598,7 @@ class CubeList(list):
                 check_aux_coords=check_aux_coords,
                 check_cell_measures=check_cell_measures,
                 check_ancils=check_ancils,
+                check_derived_coords=check_derived_coords,
             )
             n_res_cubes = len(res)
             if n_res_cubes == 1:
@@ -612,6 +625,7 @@ class CubeList(list):
         check_aux_coords=True,
         check_cell_measures=True,
         check_ancils=True,
+        check_derived_coords=True,
     ):
         """
         Concatenate the cubes over their common dimensions.
@@ -619,19 +633,29 @@ class CubeList(list):
         Kwargs:
 
         * check_aux_coords
-            Checks the auxiliary coordinates of the cubes match. This check
-            is not applied to auxiliary coordinates that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the points and bounds of auxiliary coordinates of the
+            cubes match. This check is not applied to auxiliary coordinates
+            that span the dimension the concatenation is occurring along.
+            Defaults to True.
 
         * check_cell_measures
-            Checks the cell measures of the cubes match. This check
-            is not applied to cell measures that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the data of cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension the
+            concatenation is occurring along. Defaults to True.
 
         * check_ancils
-            Checks the ancillary variables of the cubes match. This check
-            is not applied to ancillary variables that span the dimension
+            Checks if the data of ancillary variables of the cubes match. This
+            check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
+
+        * check_derived_coords
+            Checks if the points and bounds of derived coordinates of the cubes
+            match. This check is not applied to derived coordinates that span
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to True.
 
         Returns:
             A new :class:`iris.cube.CubeList` of concatenated
@@ -717,6 +741,7 @@ class CubeList(list):
             check_aux_coords=check_aux_coords,
             check_cell_measures=check_cell_measures,
             check_ancils=check_ancils,
+            check_derived_coords=check_derived_coords,
         )
 
     def realise_data(self):
@@ -787,8 +812,8 @@ class Cube(CFVariableMixin):
                 time                        \
 1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             Cell methods:
-                mean within years           time
-                mean over years             time
+                0                           time: mean within years
+                1                           time: mean over years
             Attributes:
                 STASH                       m01s16i203
                 source                      'Data from Met Office Unified Model'
@@ -2688,7 +2713,6 @@ class Cube(CFVariableMixin):
             coord_to_extract in self.aux_coords
             and len(coord_to_extract.points) == 1
         ):
-
             # Default to returning None
             result = None
 
@@ -3722,9 +3746,15 @@ class Cube(CFVariableMixin):
         sum :data:`~iris.analysis.SUM`.
 
         Weighted aggregations support an optional *weights* keyword argument.
-        If set, this should be supplied as an array of weights whose shape
-        matches the cube. Values for latitude-longitude area weights may be
-        calculated using :func:`iris.analysis.cartography.area_weights`.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d (for collapsing over a 1d coordinate) or match the
+        shape of the cube. When weights are not given as arrays, units are
+        correctly handled for weighted sums, i.e., the original unit of the
+        cube is multiplied by the units of the weights. Values for
+        latitude-longitude area weights may be calculated using
+        :func:`iris.analysis.cartography.area_weights`.
 
         Some Iris aggregators support "lazy" evaluation, meaning that
         cubes resulting from this method may represent data arrays which are
@@ -3769,8 +3799,8 @@ class Cube(CFVariableMixin):
                     longitude                   \
 180.0 degrees, bound=(0.0, 360.0) degrees
                 Cell methods:
-                    mean                        month, year
-                    mean                        longitude
+                    0                           month: year: mean
+                    1                           longitude: mean
                 Attributes:
                     Conventions                 'CF-1.5'
                     STASH                       m01s00i024
@@ -3803,6 +3833,10 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
 
@@ -3971,10 +4005,14 @@ class Cube(CFVariableMixin):
         also be supplied. These include :data:`~iris.analysis.MEAN` and
         :data:`~iris.analysis.SUM`.
 
-        Weighted aggregations support an optional *weights* keyword argument. If
-        set, this should be supplied as an array of weights whose shape matches
-        the cube or as 1D array whose length matches the dimension over which is
-        aggregated.
+        Weighted aggregations support an optional *weights* keyword argument.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d or match the shape of the cube. When weights are
+        not given as arrays, units are correctly handled for weighted sums,
+        i.e., the original unit of the cube is multiplied by the units of the
+        weights.
 
         Parameters
         ----------
@@ -4026,13 +4064,17 @@ x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
                 Cell methods:
-                    mean                        month, year
-                    mean                        year
+                    0                           month: year: mean
+                    1                           year: mean
                 Attributes:
                     Conventions                 'CF-1.5'
                     STASH                       m01s00i024
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         groupby_coords = []
         dimension_to_groupby = None
 
@@ -4071,10 +4113,16 @@ x            -              -
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
-                weights = iris.util.broadcast_to_shape(
-                    weights,
-                    self.shape,
-                    (dimension_to_groupby,),
+
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                weights = _Weights(
+                    iris.util.broadcast_to_shape(
+                        weights,
+                        self.shape,
+                        (dimension_to_groupby,),
+                    ),
+                    self,
+                    units=weights.units,
                 )
             if weights.shape != self.shape:
                 raise ValueError(
@@ -4290,8 +4338,11 @@ x            -              -
 
         * kwargs:
             Aggregator and aggregation function keyword arguments. The weights
-            argument to the aggregator, if any, should be a 1d array with the
-            same length as the chosen window.
+            argument to the aggregator, if any, should be a 1d array, cube, or
+            (names of) :meth:`~iris.cube.Cube.coords`,
+            :meth:`~iris.cube.Cube.cell_measures`, or
+            :meth:`~iris.cube.Cube.ancillary_variables` with the same length as
+            the chosen window.
 
         Returns:
             :class:`iris.cube.Cube`.
@@ -4322,7 +4373,7 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    mean                        time (1 hour)
+                    0                           time: mean (interval: 1 hour)
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
@@ -4347,8 +4398,8 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    mean                        time (1 hour)
-                    mean                        time
+                    0                           time: mean (interval: 1 hour)
+                    1                           time: mean
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
@@ -4359,6 +4410,10 @@ x            -               -
             possible windows of size 3 from the original cube.
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        _Weights.update_kwargs(kwargs, self)
+
         coord = self._as_list_of_coords(coord)[0]
 
         if getattr(coord, "circular", False):
@@ -4460,8 +4515,14 @@ x            -               -
                         "as the window."
                     )
                 kwargs = dict(kwargs)
-                kwargs["weights"] = iris.util.broadcast_to_shape(
-                    weights, rolling_window_data.shape, (dimension + 1,)
+
+                # iris.util.broadcast_to_shape does not preserve _Weights type
+                kwargs["weights"] = _Weights(
+                    iris.util.broadcast_to_shape(
+                        weights, rolling_window_data.shape, (dimension + 1,)
+                    ),
+                    self,
+                    units=weights.units,
                 )
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs

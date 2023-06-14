@@ -40,6 +40,7 @@ def mock_cf_av_var(monkeypatch):
         long_name="wibble",
         units="m2",
         shape=data.shape,
+        size=np.prod(data.shape),
         dtype=data.dtype,
         __getitem__=lambda self, key: data[key],
     )

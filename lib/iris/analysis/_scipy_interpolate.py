@@ -225,7 +225,6 @@ class _RegularGridInterpolator:
         prepared = (xi_shape, method) + self._find_indices(xi.T)
 
         if method == "linear":
-
             xi_shape, method, indices, norm_distances, out_of_bounds = prepared
 
             # Allocate arrays for describing the sparse matrix.

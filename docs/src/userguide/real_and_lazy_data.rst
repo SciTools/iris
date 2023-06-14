@@ -6,6 +6,7 @@
 
     import dask.array as da
     import iris
+    from iris.cube import CubeList
     import numpy as np
 
 
@@ -188,17 +189,17 @@ coordinates' lazy points and bounds:
 
 .. doctest::
 
-    >>> cube = iris.load_cube(iris.sample_data_path('hybrid_height.nc'), 'air_potential_temperature')
+    >>> cube = iris.load_cube(iris.sample_data_path('orca2_votemper.nc'),'votemper')
 
-    >>> dim_coord = cube.coord('model_level_number')
+    >>> dim_coord = cube.coord('depth')
     >>> print(dim_coord.has_lazy_points())
     False
     >>> print(dim_coord.has_bounds())
-    False
+    True
     >>> print(dim_coord.has_lazy_bounds())
     False
 
-    >>> aux_coord = cube.coord('sigma')
+    >>> aux_coord = cube.coord('longitude')
     >>> print(aux_coord.has_lazy_points())
     True
     >>> print(aux_coord.has_bounds())
@@ -213,7 +214,9 @@ coordinates' lazy points and bounds:
     >>> print(aux_coord.has_lazy_bounds())
     True
 
-    >>> derived_coord = cube.coord('altitude')
+    # Fetch a derived coordinate, from a different file: These can also have lazy data.
+    >>> cube2 = iris.load_cube(iris.sample_data_path('hybrid_height.nc'), 'air_potential_temperature')
+    >>> derived_coord = cube2.coord('altitude')
     >>> print(derived_coord.has_lazy_points())
     True
     >>> print(derived_coord.has_bounds())
@@ -221,17 +224,51 @@ coordinates' lazy points and bounds:
     >>> print(derived_coord.has_lazy_bounds())
     True
 
-.. note::
-    Printing a lazy :class:`~iris.coords.AuxCoord` will realise its points and bounds arrays!
-
 
 Dask Processing Options
 -----------------------
 
-Iris uses dask to provide lazy data arrays for both Iris cubes and coordinates,
-and for computing deferred operations on lazy arrays.
+Iris uses `Dask <https://docs.dask.org/en/stable/>`_ to provide lazy data arrays for
+both Iris cubes and coordinates, and for computing deferred operations on lazy arrays.
 
 Dask provides processing options to control how deferred operations on lazy arrays
 are computed. This is provided via the ``dask.set_options`` interface. See the
 `dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
 for more information on setting dask processing options.
+
+
+.. _delayed_netcdf_save:
+
+Delayed NetCDF Saving
+---------------------
+
+When saving data to NetCDF files, it is possible to *delay* writing lazy content to the
+output file, to be performed by  `Dask <https://docs.dask.org/en/stable/>`_  later,
+thus enabling parallel save operations.
+
+This works in the following way :
+    1. an :func:`iris.save` call is made, with a NetCDF file output and the additional
+       keyword ``compute=False``.
+       This is currently *only* available when saving to NetCDF, so it is documented in
+       the Iris NetCDF file format API.  See: :func:`iris.fileformats.netcdf.save`.
+
+    2. the call creates the output file, but does not fill in variables' data, where
+       the data is a lazy array in the Iris object.  Instead, these variables are
+       initially created "empty".
+
+    3. the :meth:`~iris.save` call returns a ``result`` which is a
+       :class:`~dask.delayed.Delayed` object.
+
+    4. the save can be completed later by calling ``result.compute()``, or by passing it
+       to the :func:`dask.compute` call.
+
+The benefit of this, is that costly data transfer operations can be performed in
+parallel with writes to other data files.  Also, where array contents are calculated
+from shared lazy input data, these can be computed in parallel efficiently by Dask
+(i.e. without re-fetching), similar to what :meth:`iris.cube.CubeList.realise_data`
+can do.
+
+.. note::
+    This feature does **not** enable parallel writes to the *same* NetCDF output file.
+    That can only be done on certain operating systems, with a specially configured
+    build of the NetCDF C library, and is not supported by Iris at present.

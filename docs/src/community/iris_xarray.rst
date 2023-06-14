@@ -11,7 +11,7 @@ you can be prepared, and to help you choose the best package for your use case.
 Overall Experience
 ------------------
 
-Iris is the more specialised package, focussed on making it as easy
+Iris is the more specialised package, focused on making it as easy
 as possible to work with meteorological and climatological data. Iris
 is built to natively handle many key concepts, such as the CF conventions,
 coordinate systems and bounded coordinates. Iris offers a smaller toolkit of

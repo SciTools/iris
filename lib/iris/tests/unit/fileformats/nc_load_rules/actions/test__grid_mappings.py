@@ -53,7 +53,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         # we can mimic a missing grid-mapping by changing the varname from that
         # which the data-variable refers to, with "gridmapvar_name=xxx".
         # Likewise, an invalid (unrecognised) grid-mapping can be mimicked by
-        # selecting an unkown 'grid_mapping_name' property, with
+        # selecting an unknown 'grid_mapping_name' property, with
         # "gridmapvar_mappropertyname=xxx".
         if mapping_type_name is None:
             # Default grid-mapping and coords are standard lat-lon.
@@ -463,7 +463,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     # All non-latlon coordinate systems ...
     # These all have projection-x/y coordinates with units of metres.
     # They all work the same way.
-    # NOTE: various mapping types *require* certain addtional properties
+    # NOTE: various mapping types *require* certain additional properties
     #   - without which an error will occur during translation.
     #   - run_testcase/_make_testcase_cdl know how to provide these
     #

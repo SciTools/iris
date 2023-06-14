@@ -625,7 +625,7 @@ class PPDataProxy:
     def __setstate__(self, state):
         # Because we have __slots__, this is needed to support Pickle.load()
         # (Use setattr, as there is no object dictionary.)
-        for (key, value) in state:
+        for key, value in state:
             setattr(self, key, value)
 
     def __eq__(self, other):
@@ -1678,7 +1678,7 @@ def load(filename, read_data=False, little_ended=False):
 
 def _interpret_fields(fields):
     """
-    Turn the fields read with load and FF2PP._extract_field into useable
+    Turn the fields read with load and FF2PP._extract_field into usable
     fields. One of the primary purposes of this function is to either convert
     "deferred bytes" into "deferred arrays" or "loaded bytes" into actual
     numpy arrays (via the _create_field_data) function.
@@ -2029,10 +2029,8 @@ def _convert_constraints(constraints):
         res = True
         if field.stash not in _STASH_ALLOW:
             if pp_constraints.get("stash"):
-
                 res = False
                 for call_func in pp_constraints["stash"]:
-
                     if call_func(str(field.stash)):
                         res = True
                         break

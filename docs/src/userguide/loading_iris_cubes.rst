@@ -234,7 +234,7 @@ A single cube is loaded in the following example::
               longitude                          -              x
     ...
          Cell methods:
-              mean                        time
+              0                           time: mean
 
 However, when attempting to load data which would result in anything other than
 one cube, an exception is raised::

@@ -52,7 +52,7 @@ logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 
 def hexdigest(item):
     """
-    Calculate a hexidecimal string hash representation of the provided item.
+    Calculate a hexadecimal string hash representation of the provided item.
 
     Calculates a 64-bit non-cryptographic hash of the provided item, using
     the extremely fast ``xxhash`` hashing algorithm, and returns the hexdigest
@@ -67,7 +67,7 @@ def hexdigest(item):
         The item that requires to have its hexdigest calculated.
 
     Returns:
-        The string hexidecimal representation of the item's 64-bit hash.
+        The string hexadecimal representation of the item's 64-bit hash.
 
     """
     # Special case: deal with numpy arrays.
@@ -969,6 +969,7 @@ class CoordMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
+
         # Perform "strict" combination for "coord_system" and "climatological".
         def func(field):
             left = getattr(self, field)
@@ -1024,6 +1025,7 @@ class CoordMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
+
         # Perform "strict" difference for "coord_system" and "climatological".
         def func(field):
             left = getattr(self, field)

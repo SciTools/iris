@@ -8,20 +8,23 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="c88482b3" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
-		138.9, 203.7, 300.999, 447.049, 666.299,
-		995.549, 1500.85, 2116.15, 2731.4, 3346.65,
-		3961.9, 4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth">
+        <dimCoord id="c88482b3" points="[5.0000000e+00, 1.5000000e+01, 2.5000000e+01,
+ 3.5099991e+01, 4.7849991e+01, 6.6999985e+01,
+ 9.5749985e+01, 1.3889999e+02, 2.0370000e+02,
+ 3.0099927e+02, 4.4704932e+02, 6.6629932e+02,
+ 9.9554932e+02, 1.5008499e+03, 2.1161499e+03,
+ 2.7313999e+03, 3.3466499e+03, 3.9618999e+03,
+ 4.5771484e+03, 5.1924492e+03]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth">
           <attributes>
             <attribute name="positive" value="down"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="42c82ea7" points="[681540.0, 683340.0, 685140.0, 686940.0,
-		688740.0, 690540.0, 692340.0, 694140.0,
-		695940.0, 697740.0, 699540.0, 701340.0,
-		703140.0, 704940.0, 706740.0, 708540.0]" shape="(16,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
+        <dimCoord id="42c82ea7" points="[681540., 683340., 685140., 686940., 688740.,
+ 690540., 692340., 694140., 695940., 697740.,
+ 699540., 701340., 703140., 704940., 706740.,
+ 708540.]" shape="(16,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

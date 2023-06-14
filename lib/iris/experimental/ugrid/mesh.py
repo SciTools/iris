@@ -2855,7 +2855,7 @@ class MeshCoord(AuxCoord):
 
             # N.B. at present, coords in a Mesh are stored+accessed by 'axis', which
             # means they must have a standard_name.  So ...
-            # (a) the 'location' (face/edge) coord *always* has a useable phenomenon
+            # (a) the 'location' (face/edge) coord *always* has a usable phenomenon
             #     identity.
             # (b) we still want to check that location+node coords have the same
             #     phenomenon (i.e. physical meaning identity + units), **but** ...
@@ -3127,9 +3127,7 @@ class MeshCoord(AuxCoord):
             flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
             # Here's the core indexing operation.
             # The comma applies all inds-array values to the *first* dimension.
-            bounds = node_points[
-                flat_inds_safe,
-            ]
+            bounds = node_points[flat_inds_safe,]
             # Fix 'missing' locations, and restore the proper shape.
             bounds = al.ma.masked_array(bounds, missing_inds)
             bounds = bounds.reshape(indices.shape)

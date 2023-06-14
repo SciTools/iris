@@ -15,6 +15,7 @@ import numpy.ma as ma
 
 from iris._concatenate import concatenate
 from iris._lazy_data import as_lazy_data
+from iris.aux_factory import HybridHeightFactory
 import iris.coords
 import iris.cube
 from iris.exceptions import ConcatenateError
@@ -90,16 +91,26 @@ class TestMessages(tests.IrisTest):
             iris.coords.AuxCoord([0, 1, 2], long_name="foo", units="1"),
             data_dims=(1,),
         )
+        # Cell Measures
         cube.add_cell_measure(
             iris.coords.CellMeasure([0, 1, 2], long_name="bar", units="1"),
             data_dims=(1,),
         )
+        # Ancillary Variables
         cube.add_ancillary_variable(
             iris.coords.AncillaryVariable(
                 [0, 1, 2], long_name="baz", units="1"
             ),
             data_dims=(1,),
         )
+        # Derived Coords
+        delta = iris.coords.AuxCoord(0.0, var_name="delta", units="m")
+        sigma = iris.coords.AuxCoord(1.0, var_name="sigma", units="1")
+        orog = iris.coords.AuxCoord(2.0, var_name="orog", units="m")
+        cube.add_aux_coord(delta, ())
+        cube.add_aux_coord(sigma, ())
+        cube.add_aux_coord(orog, ())
+        cube.add_aux_factory(HybridHeightFactory(delta, sigma, orog))
         self.cube = cube
 
     def test_definition_difference_message(self):
@@ -187,6 +198,22 @@ class TestMessages(tests.IrisTest):
         cube_2 = cube_1.copy()
         cube_2.ancillary_variable("baz").units = "m"
         exc_regexp = "Ancillary variables metadata differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_derived_coord_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_aux_factory(cube_2.aux_factories[0])
+        exc_regexp = "Derived coordinates differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_derived_coord_metadata_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.aux_factories[0].units = "km"
+        exc_regexp = "Derived coordinates metadata differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 

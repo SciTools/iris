@@ -7,10 +7,9 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` v3.1.0 Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.1.0 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 

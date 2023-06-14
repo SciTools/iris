@@ -10,36 +10,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -55,36 +55,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -100,36 +100,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -145,36 +145,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -190,36 +190,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -235,36 +235,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -280,36 +280,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -325,36 +325,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -370,36 +370,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -415,36 +415,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -460,36 +460,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -505,36 +505,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -550,36 +550,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -595,36 +595,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -640,36 +640,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -685,36 +685,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -730,36 +730,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a98d134c" long_name="PP Index" points="[1.0]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="a98d134c" long_name="PP Index" points="[1.]" shape="(1,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="a0c313e6" long_name="Puff?" points="[N]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="a0c313e6" long_name="Puff?" points="['N']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord>
-        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.0]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="051ecdd8" long_name="Release Time" points="[366678.]" shape="(1,)" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="154a2a49" long_name="Source" points="[Trajectory1]" shape="(1,)" units="Unit('unknown')" value_type="string"/>
+        <auxCoord id="154a2a49" long_name="Source" points="['Trajectory1']" shape="(1,)" units="Unit('unknown')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="ce812520" long_name="Travel Time" points="[899.9999, 1800.0, 2700.0, ..., 750600.0,
-		751500.0, 752400.0]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
+        <dimCoord id="ce812520" long_name="Travel Time" points="[   899.9999,   1800.    ,   2700.    , ...,
+ 750600.    , 751500.    , 752400.    ]" shape="(836,)" units="Unit('unknown')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523, 492.0515, 489.5057, ..., 380.0841,
-		379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <auxCoord id="28673685" long_name="altitude above sea level" points="[495.523 , 492.0515, 489.5057, ..., 380.0841,
+ 379.5676, 377.3535]" shape="(836,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="4a0cb9d8" points="[47.48951, 47.49149, 47.49434, ..., 57.23113,
-		57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+ 57.13152, 57.03173]" shape="(836,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="62e940e0" points="[18.96614, 18.97848, 18.99101, ..., 34.31649,
-		34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+ 34.37071, 34.42273]" shape="(836,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="cb784457" points="[366678.25, 366678.5, 366678.75, ..., 366886.5,
-		366886.75, 366887.0]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord id="cb784457" points="[366678.25, 366678.5 , 366678.75, ..., 366886.5 ,
+ 366886.75, 366887.  ]" shape="(836,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -53,7 +53,8 @@ structured formats and non-UGRID mesh formats.
 The objects created in this example will be used where possible in the
 subsequent example operations on this page.
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -145,7 +146,8 @@ Creating a :class:`~iris.cube.Cube` is unchanged; the
 :class:`~iris.experimental.ugrid.Mesh` is linked via a
 :class:`~iris.experimental.ugrid.MeshCoord` (see :ref:`ugrid MeshCoords`):
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -206,7 +208,8 @@ The Iris saving process automatically detects if the :class:`~iris.cube.Cube`
 has an associated :class:`~iris.experimental.ugrid.Mesh` and automatically
 saves the file in a UGRID-conformant format:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -281,7 +284,8 @@ The :func:`iris.experimental.ugrid.save_mesh` function allows
 :class:`~iris.experimental.ugrid.Mesh`\es to be saved to file without
 associated :class:`~iris.cube.Cube`\s:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -352,7 +356,8 @@ loading a file remains **optional**. To load UGRID data from a file into the
 Iris mesh data model, use the
 :const:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD` context manager:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -372,7 +377,8 @@ All the existing loading functionality still operates on UGRID-compliant
 data - :class:`~iris.Constraint`\s, callbacks, :func:`~iris.load_cube`
 etcetera:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -415,7 +421,8 @@ The :func:`iris.experimental.ugrid.load_mesh` and
 :class:`~iris.experimental.ugrid.Mesh`\es to be loaded from a file without
 creating any associated :class:`~iris.cube.Cube`\s:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -430,20 +437,20 @@ creating any associated :class:`~iris.cube.Cube`\s:
             node
                 node_dimension: 'Mesh2d_node'
                 node coordinates
-                    <AuxCoord: longitude / (degrees)  <lazy>  shape(5,)>
-                    <AuxCoord: latitude / (unknown)  <lazy>  shape(5,)>
+                    <AuxCoord: longitude / (degrees)  [...]  shape(5,)>
+                    <AuxCoord: latitude / (unknown)  [...]  shape(5,)>
             edge
                 edge_dimension: 'Mesh2d_edge'
-                edge_node_connectivity: <Connectivity: mesh2d_edge / (unknown)  <lazy>  shape(6, 2)>
+                edge_node_connectivity: <Connectivity: mesh2d_edge / (unknown)  [...]  shape(6, 2)>
                 edge coordinates
-                    <AuxCoord: longitude / (unknown)  <lazy>  shape(6,)>
-                    <AuxCoord: latitude / (unknown)  <lazy>  shape(6,)>
+                    <AuxCoord: longitude / (unknown)  [...]  shape(6,)>
+                    <AuxCoord: latitude / (unknown)  [...]  shape(6,)>
             face
                 face_dimension: 'Mesh2d_face'
-                face_node_connectivity: <Connectivity: mesh2d_face / (unknown)  <lazy>  shape(2, 4)>
+                face_node_connectivity: <Connectivity: mesh2d_face / (unknown)  [...]  shape(2, 4)>
                 face coordinates
-                    <AuxCoord: longitude / (unknown)  <lazy>  shape(2,)>
-                    <AuxCoord: latitude / (unknown)  <lazy>  shape(2,)>
+                    <AuxCoord: longitude / (unknown)  [...]  shape(2,)>
+                    <AuxCoord: latitude / (unknown)  [...]  shape(2,)>
             long_name: 'my_mesh'
             var_name: 'my_mesh'
 
@@ -469,7 +476,8 @@ be added to API in the near future.
 This first example uses GeoVista to plot the ``face_cube`` that we created
 earlier:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -539,7 +547,8 @@ earlier:
 
 Here's another example using a global cubed-sphere data set:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -566,8 +575,8 @@ Here's another example using a global cubed-sphere data set:
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -614,7 +623,8 @@ therefore set to return an :class:`~iris.coords.AuxCoord` instead - breaking
 the link between :class:`~iris.cube.Cube` and
 :class:`~iris.experimental.ugrid.Mesh`:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. doctest:: ugrid_operations
 
@@ -657,7 +667,8 @@ mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
 ..
     Not using doctest here as want to keep GeoVista as optional dependency.
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -687,7 +698,7 @@ mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
             Auxiliary coordinates:
                 time                                        x        -
             Cell methods:
-                point                                   time
+                0                                       time: point
             Attributes:
                 Conventions                             UGRID
                 description                             Created by xios
@@ -744,7 +755,7 @@ mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
             Auxiliary coordinates:
                 time                                        x        -
             Cell methods:
-                point                                   time
+                0                                       time: point
             Attributes:
                 Conventions                             UGRID
                 description                             Created by xios
@@ -784,7 +795,8 @@ with the
 ..
     Not using doctest here as want to keep iris-esmf-regrid as optional dependency.
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
@@ -815,8 +827,8 @@ with the
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -851,8 +863,8 @@ with the
             Auxiliary coordinates:
                 time                            x            -               -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -880,11 +892,12 @@ Since calling a regridder is usually a lot faster than initialising, reusing
 regridders can save a lot of time. We can demonstrate the reuse of the
 previously initialised regridder:
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: :octicon:`code`
+    :color: light
 
     .. code-block:: python
 
-        # Extract a different cube defined on te same Mesh.
+        # Extract a different cube defined on the same Mesh.
         >>> mesh_cube2 = mesh_cubes.extract_cube("precipitation_flux")
         >>> print(mesh_cube2)
         precipitation_flux / (kg m-2 s-1)   (-- : 1; -- : 13824)
@@ -894,8 +907,8 @@ previously initialised regridder:
             Auxiliary coordinates:
                 time                            x       -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios
@@ -917,8 +930,8 @@ previously initialised regridder:
             Auxiliary coordinates:
                 time                            x            -               -
             Cell methods:
-                mean                        time (300 s)
-                mean                        time_counter
+                0                           time: mean (interval: 300 s)
+                1                           time_counter: mean
             Attributes:
                 Conventions                 UGRID
                 description                 Created by xios

@@ -53,8 +53,8 @@ merge from trunk.
 Writing a Contribution
 ======================
 
-As introduced above, a contribution is the description of a change to Iris
-which improved Iris in some way. As such, a single Iris Pull Request may
+A contribution is the short description of a change introduced to Iris
+which improved it in some way. As such, a single Iris Pull Request may
 contain multiple changes that are worth highlighting as contributions to the
 what's new document.
 
@@ -67,23 +67,31 @@ exceed **column 80** and ensure that any subsequent lines of the same entry are
 aligned with the first. The content should target an Iris user as the audience.
 The required content, in order, is as follows:
 
-* Names of those who contributed the change. These should be their GitHub
-  user name. Link the name to their GitHub profile. E.g.
-  ```@tkknight <https://github.com/tkknight>`_ changed...``
+* Use your discretion to decide on the names of all those that you want to
+  acknowledge as part of your contribution. Also consider the efforts of the
+  reviewer. Please use GitHub user names that link to their GitHub profile
+  e.g.,
 
-  * Bigger changes take a lot of effort to review, too! Make sure you credit
-    the reviewer(s) where appropriate.
+  ```@tkknight`_ Lorem ipsum dolor sit amet ...``
 
-* The new/changed behaviour
+  Also add a full reference in the following section at the end of the ``latest.rst``::
+
+    .. comment
+       Whatsnew author names (@github name) in alphabetical order. Note that,
+       core dev names are automatically included by the common_links.inc:
+
+    .. _@tkknight: https://github.com/tkknight
+
+* A succinct summary of the new/changed behaviour.
 
 * Context to the change. Possible examples include: what this fixes, why
   something was added, issue references (e.g. ``:issue:`9999```), more specific
   detail on the change itself.
 
-* Pull request references, bracketed, following the final period. E.g.
+* Pull request references, bracketed, following the final period e.g.,
   ``(:pull:`1111`, :pull:`9999`)``
 
-* A trailing blank line (standard reStructuredText list format)
+* A trailing blank line (standard reStructuredText list format).
 
 For example::
 

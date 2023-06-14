@@ -80,42 +80,44 @@ class Mixin__nc_load_actions:
 
         # Simulate the inner part of the file reading process.
         cf = CFReader(nc_path)
-        # Grab a data variable : FOR NOW always grab the 'phenom' variable.
-        cf_var = cf.cf_group.data_variables["phenom"]
 
-        engine = iris.fileformats.netcdf.loader._actions_engine()
+        with cf:
+            # Grab a data variable : FOR NOW always grab the 'phenom' variable.
+            cf_var = cf.cf_group.data_variables["phenom"]
 
-        # If debug enabled, switch on the activation summary debug output.
-        # Use 'patch' so it is restored after the test.
-        self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug)
+            engine = iris.fileformats.netcdf.loader._actions_engine()
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                message="Ignoring a datum in netCDF load for consistency with existing "
-                "behaviour. In a future version of Iris, this datum will be "
-                "applied. To apply the datum when loading, use the "
-                "iris.FUTURE.datum_support flag.",
-                category=FutureWarning,
-            )
-            # Call the main translation function to load a single cube.
-            # _load_cube establishes per-cube facts, activates rules and
-            # produces an actual cube.
-            cube = _load_cube(engine, cf, cf_var, nc_path)
+            # If debug enabled, switch on the activation summary debug output.
+            # Use 'patch' so it is restored after the test.
+            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug)
 
-        # Also Record, on the cubes, which hybrid coord elements were identified
-        # by the rules operation.
-        # Unlike the other translations, _load_cube does *not* convert this
-        # information into actual cube elements.  That is instead done by
-        # `iris.fileformats.netcdf._load_aux_factory`.
-        # For rules testing, it is anyway more convenient to deal with the raw
-        # data, as each factory type has different validity requirements to
-        # build it, and none of that is relevant to the rules operation.
-        cube._formula_type_name = engine.requires.get("formula_type")
-        cube._formula_terms_byname = engine.requires.get("formula_terms")
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="Ignoring a datum in netCDF load for consistency with existing "
+                    "behaviour. In a future version of Iris, this datum will be "
+                    "applied. To apply the datum when loading, use the "
+                    "iris.FUTURE.datum_support flag.",
+                    category=FutureWarning,
+                )
+                # Call the main translation function to load a single cube.
+                # _load_cube establishes per-cube facts, activates rules and
+                # produces an actual cube.
+                cube = _load_cube(engine, cf, cf_var, nc_path)
 
-        # Always returns a single cube.
-        return cube
+            # Also Record, on the cubes, which hybrid coord elements were identified
+            # by the rules operation.
+            # Unlike the other translations, _load_cube does *not* convert this
+            # information into actual cube elements.  That is instead done by
+            # `iris.fileformats.netcdf._load_aux_factory`.
+            # For rules testing, it is anyway more convenient to deal with the raw
+            # data, as each factory type has different validity requirements to
+            # build it, and none of that is relevant to the rules operation.
+            cube._formula_type_name = engine.requires.get("formula_type")
+            cube._formula_terms_byname = engine.requires.get("formula_terms")
+
+            # Always returns a single cube.
+            return cube
 
     def run_testcase(self, warning_regex=None, **testcase_kwargs):
         """

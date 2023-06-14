@@ -219,7 +219,6 @@ def load_cubes(filespecs, callback=None):
 
     for filespec in filespecs:
         for filename in glob.glob(filespec):
-
             field = ABFField(filename)
             cube = field.to_cube()
 
