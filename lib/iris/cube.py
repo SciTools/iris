@@ -19,6 +19,7 @@ import warnings
 from xml.dom.minidom import Document
 import zlib
 
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -1144,7 +1145,7 @@ class Cube(CFVariableMixin):
             )
         if self.has_lazy_data():
             # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = self.units
+            old_unit = Unit(self.units)
             new_unit = unit
 
             pointwise_convert = partial(old_unit.convert, other=new_unit)

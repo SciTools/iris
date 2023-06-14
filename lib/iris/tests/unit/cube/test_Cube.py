@@ -14,6 +14,8 @@ from itertools import permutations
 from unittest import mock
 
 from cf_units import Unit
+import dask.array as da
+from distributed import Client
 import numpy as np
 import numpy.ma as ma
 import pytest
@@ -3011,6 +3013,14 @@ class Test_convert_units(tests.IrisTest):
         cube.convert_units("ft")
         self.assertTrue(cube.has_lazy_data())
         self.assertArrayAllClose(cube.data, real_data_ft)
+
+    def test_unit_multiply(self):
+        _client = Client()
+        cube = iris.cube.Cube(da.arange(1), units="m")
+        cube.units *= "s-1"
+        cube.convert_units("m s-1")
+        cube.data
+        _client.close()
 
 
 class Test__eq__data(tests.IrisTest):
