@@ -278,6 +278,17 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
             [[10.0, 20.0], [10.0, 40.0], [10.0, 20.0], [10.0, 40.0]],
         )
 
+        # Make sure indexing the resulting cube works correctly
+        # (see https://github.com/SciTools/iris/issues/5339)
+        self.assertEqual(result[0][0].shape, (2,))
+
+        # Make sure ALL aux factory dependencies of the resulting cube were
+        # properly updated (i.e., they are different from the original cubes).
+        for aux_factory in result[0].aux_factories:
+            for coord in aux_factory.dependencies.values():
+                self.assertNotEqual(id(coord), id(cube_a.coord(coord.name())))
+                self.assertNotEqual(id(coord), id(cube_b.coord(coord.name())))
+
     def test_equal_derived_coords_with_bounds(self):
         cube_a = self.create_cube()
         cube_a.coord("sigma").bounds = [[0.0, 5.0], [5.0, 20.0]]
