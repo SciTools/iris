@@ -382,6 +382,7 @@ linkcheck_ignore = [
     "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
     "http://www.nationalarchives.gov.uk/doc/open-government-licence",
     "https://www.metoffice.gov.uk/",
+    "https://biggus.readthedocs.io/",
 ]
 
 # list of sources to exclude from the build.

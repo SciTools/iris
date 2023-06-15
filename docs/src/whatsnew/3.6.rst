@@ -55,6 +55,23 @@ This document explains the changes made to Iris for this release
     or feature requests for improving Iris. Enjoy!
 
 
+|iris_version| |build_date|
+===========================
+
+.. dropdown:: |iris_version| Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+
+   The patches in this release of Iris include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@stephenworsley`_ fixed :meth:`~iris.cube.Cube.convert_units` to allow unit
+      conversion of lazy data when using a `Distributed`_ scheduler.
+      (:issue:`5347`, :pull:`5349`)
+
+
 📢 Announcements
 ================
 
@@ -181,3 +198,4 @@ This document explains the changes made to Iris for this release
 .. _pypa/build: https://pypa-build.readthedocs.io/en/stable/
 .. _NEP29: https://numpy.org/neps/nep-0029-deprecation_policy.html
 .. _Contributor Covenant: https://www.contributor-covenant.org/version/2/1/code_of_conduct/
+.. _Distributed: https://distributed.dask.org/en/stable/
