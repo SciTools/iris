@@ -1299,12 +1299,23 @@ class _ProtoCube:
         aux_factories = []
 
         # Generate all the factories for the new concatenated cube.
-        for i, (coord, dims, factory) in enumerate(
-            cube_signature.derived_coords_and_dims
-        ):
+        for _, _, factory in cube_signature.derived_coords_and_dims:
             # Update the dependencies of the factory with coordinates of
             # the concatenated cube. We need to check all coordinate types
             # here (dim coords, aux coords, and scalar coords).
+
+            # Note: in contrast to other _build_... methods of this class, we
+            # do NOT need to distinguish between aux factories that span the
+            # nominated concatenation axis and aux factories that do not. The
+            # reason is that ALL aux factories need to be updated with the new
+            # coordinates of the concatenated cube (passed to this function via
+            # dim_coords_and_dims, aux_coords_and_dims, scalar_coords [these
+            # contain ALL new coordinates, not only the ones spanning the
+            # concatenation dimension]), so no special treatment for the aux
+            # factories that span the concatenation dimension is necessary. If
+            # not all aux factories are properly updated with references to the
+            # new coordinates, this may lead to KeyErrors (see
+            # https://github.com/SciTools/iris/issues/5339).
             new_dependencies = {}
             for old_dependency in factory.dependencies.values():
                 if old_dependency in old_dim_coords:
