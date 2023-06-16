@@ -71,6 +71,11 @@ This document explains the changes made to Iris for this release
       conversion of lazy data when using a `Distributed`_ scheduler.
       (:issue:`5347`, :pull:`5349`)
 
+   #. `@schlunma`_ fixed a bug in the concatenation of cubes with aux factories
+      which could lead to a `KeyError` due to dependencies that have not been
+      properly updated.
+      (:issue:`5339`, :pull:`5340`)
+
 
 📢 Announcements
 ================

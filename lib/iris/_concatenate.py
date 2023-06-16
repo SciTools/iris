@@ -880,8 +880,12 @@ class _ProtoCube:
             # Concatenate the new dimension coordinate.
             dim_coords_and_dims = self._build_dim_coordinates()
 
-            # Concatenate the new auxiliary coordinates.
+            # Concatenate the new auxiliary coordinates (does NOT include
+            # scalar coordinates!).
             aux_coords_and_dims = self._build_aux_coordinates()
+
+            # Concatenate the new scalar coordinates.
+            scalar_coords = self._build_scalar_coordinates()
 
             # Concatenate the new cell measures
             cell_measures_and_dims = self._build_cell_measures()
@@ -891,18 +895,21 @@ class _ProtoCube:
 
             # Concatenate the new aux factories
             aux_factories = self._build_aux_factories(
-                dim_coords_and_dims, aux_coords_and_dims
+                dim_coords_and_dims, aux_coords_and_dims, scalar_coords
             )
 
             # Concatenate the new data payload.
             data = self._build_data()
 
             # Build the new cube.
+            all_aux_coords_and_dims = aux_coords_and_dims + [
+                (scalar_coord, ()) for scalar_coord in scalar_coords
+            ]
             kwargs = cube_signature.defn._asdict()
             cube = iris.cube.Cube(
                 data,
                 dim_coords_and_dims=dim_coords_and_dims,
-                aux_coords_and_dims=aux_coords_and_dims,
+                aux_coords_and_dims=all_aux_coords_and_dims,
                 cell_measures_and_dims=cell_measures_and_dims,
                 ancillary_variables_and_dims=ancillary_variables_and_dims,
                 aux_factories=aux_factories,
@@ -1163,11 +1170,21 @@ class _ProtoCube:
 
             aux_coords_and_dims.append((coord.copy(), dims))
 
-        # Generate all the scalar coordinates for the new concatenated cube.
-        for coord in cube_signature.scalar_coords:
-            aux_coords_and_dims.append((coord.copy(), ()))
-
         return aux_coords_and_dims
+
+    def _build_scalar_coordinates(self):
+        """
+        Generate the scalar coordinates for the new concatenated cube.
+
+        Returns:
+            A list of scalar coordinates.
+
+        """
+        scalar_coords = []
+        for coord in self._cube_signature.scalar_coords:
+            scalar_coords.append(coord.copy())
+
+        return scalar_coords
 
     def _build_cell_measures(self):
         """
@@ -1247,7 +1264,9 @@ class _ProtoCube:
 
         return ancillary_variables_and_dims
 
-    def _build_aux_factories(self, dim_coords_and_dims, aux_coords_and_dims):
+    def _build_aux_factories(
+        self, dim_coords_and_dims, aux_coords_and_dims, scalar_coords
+    ):
         """
         Generate the aux factories for the new concatenated cube.
 
@@ -1261,6 +1280,9 @@ class _ProtoCube:
             A list of auxiliary coordinates and dimension(s) tuple pairs from
             the concatenated cube.
 
+        * scalar_coords:
+            A list of scalar coordinates from the concatenated cube.
+
         Returns:
             A list of :class:`iris.aux_factory.AuxCoordFactory`.
 
@@ -1271,35 +1293,44 @@ class _ProtoCube:
         old_aux_coords = [a[0] for a in cube_signature.aux_coords_and_dims]
         new_dim_coords = [d[0] for d in dim_coords_and_dims]
         new_aux_coords = [a[0] for a in aux_coords_and_dims]
-        scalar_coords = cube_signature.scalar_coords
+        old_scalar_coords = cube_signature.scalar_coords
+        new_scalar_coords = scalar_coords
 
         aux_factories = []
 
         # Generate all the factories for the new concatenated cube.
-        for i, (coord, dims, factory) in enumerate(
-            cube_signature.derived_coords_and_dims
-        ):
-            # Check whether the derived coordinate of the factory spans the
-            # nominated dimension of concatenation.
-            if self.axis in dims:
-                # Update the dependencies of the factory with coordinates of
-                # the concatenated cube. We need to check all coordinate types
-                # here (dim coords, aux coords, and scalar coords).
-                new_dependencies = {}
-                for old_dependency in factory.dependencies.values():
-                    if old_dependency in old_dim_coords:
-                        dep_idx = old_dim_coords.index(old_dependency)
-                        new_dependency = new_dim_coords[dep_idx]
-                    elif old_dependency in old_aux_coords:
-                        dep_idx = old_aux_coords.index(old_dependency)
-                        new_dependency = new_aux_coords[dep_idx]
-                    else:
-                        dep_idx = scalar_coords.index(old_dependency)
-                        new_dependency = scalar_coords[dep_idx]
-                    new_dependencies[id(old_dependency)] = new_dependency
+        for _, _, factory in cube_signature.derived_coords_and_dims:
+            # Update the dependencies of the factory with coordinates of
+            # the concatenated cube. We need to check all coordinate types
+            # here (dim coords, aux coords, and scalar coords).
 
-                # Create new factory with the updated dependencies.
-                factory = factory.updated(new_dependencies)
+            # Note: in contrast to other _build_... methods of this class, we
+            # do NOT need to distinguish between aux factories that span the
+            # nominated concatenation axis and aux factories that do not. The
+            # reason is that ALL aux factories need to be updated with the new
+            # coordinates of the concatenated cube (passed to this function via
+            # dim_coords_and_dims, aux_coords_and_dims, scalar_coords [these
+            # contain ALL new coordinates, not only the ones spanning the
+            # concatenation dimension]), so no special treatment for the aux
+            # factories that span the concatenation dimension is necessary. If
+            # not all aux factories are properly updated with references to the
+            # new coordinates, this may lead to KeyErrors (see
+            # https://github.com/SciTools/iris/issues/5339).
+            new_dependencies = {}
+            for old_dependency in factory.dependencies.values():
+                if old_dependency in old_dim_coords:
+                    dep_idx = old_dim_coords.index(old_dependency)
+                    new_dependency = new_dim_coords[dep_idx]
+                elif old_dependency in old_aux_coords:
+                    dep_idx = old_aux_coords.index(old_dependency)
+                    new_dependency = new_aux_coords[dep_idx]
+                else:
+                    dep_idx = old_scalar_coords.index(old_dependency)
+                    new_dependency = new_scalar_coords[dep_idx]
+                new_dependencies[id(old_dependency)] = new_dependency
+
+            # Create new factory with the updated dependencies.
+            factory = factory.updated(new_dependencies)
 
             aux_factories.append(factory)
 
