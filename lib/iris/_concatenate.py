@@ -13,6 +13,7 @@ from collections import defaultdict, namedtuple
 import dask.array as da
 import numpy as np
 
+from iris._lazy_data import as_concrete_data
 import iris.coords
 import iris.cube
 from iris.util import array_equal, guess_coord_axis
@@ -115,9 +116,13 @@ class _CoordMetaData(
             kwargs["circular"] = coord.circular
         if isinstance(coord, iris.coords.DimCoord):
             # Mix the monotonic ordering into the metadata.
-            if coord.core_points()[0] == coord.core_points()[-1]:
+            if as_concrete_data(
+                coord.core_points()[0] == coord.core_points()[-1]
+            ):
                 order = _CONSTANT
-            elif coord.core_points()[-1] > coord.core_points()[0]:
+            elif as_concrete_data(
+                coord.core_points()[-1] > coord.core_points()[0]
+            ):
                 order = _INCREASING
             else:
                 order = _DECREASING
@@ -776,17 +781,18 @@ class _CoordSignature:
         for coord, order in zip(self.dim_coords, self.dim_order):
             if order == _CONSTANT or order == _INCREASING:
                 points = _Extent(
-                    coord.core_points()[0], coord.core_points()[-1]
+                    as_concrete_data(coord.core_points()[0]),
+                    as_concrete_data(coord.core_points()[-1]),
                 )
                 if coord.core_bounds() is not None:
                     bounds = (
                         _Extent(
-                            coord.core_bounds()[0, 0],
-                            coord.core_bounds()[-1, 0],
+                            as_concrete_data(coord.core_bounds()[0, 0]),
+                            as_concrete_data(coord.core_bounds()[-1, 0]),
                         ),
                         _Extent(
-                            coord.core_bounds()[0, 1],
-                            coord.core_bounds()[-1, 1],
+                            as_concrete_data(coord.core_bounds()[0, 1]),
+                            as_concrete_data(coord.core_bounds()[-1, 1]),
                         ),
                     )
                 else:
@@ -794,17 +800,18 @@ class _CoordSignature:
             else:
                 # The order must be decreasing ...
                 points = _Extent(
-                    coord.core_points()[-1], coord.core_points()[0]
+                    as_concrete_data(coord.core_points()[-1]),
+                    as_concrete_data(coord.core_points()[0]),
                 )
                 if coord.core_bounds() is not None:
                     bounds = (
                         _Extent(
-                            coord.core_bounds()[-1, 0],
-                            coord.core_bounds()[0, 0],
+                            as_concrete_data(coord.core_bounds()[-1, 0]),
+                            as_concrete_data(coord.core_bounds()[0, 0]),
                         ),
                         _Extent(
-                            coord.core_bounds()[-1, 1],
-                            coord.core_bounds()[0, 1],
+                            as_concrete_data(coord.core_bounds()[-1, 1]),
+                            as_concrete_data(coord.core_bounds()[0, 1]),
                         ),
                     )
                 else:
