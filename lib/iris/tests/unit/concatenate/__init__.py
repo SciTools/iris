@@ -5,6 +5,8 @@
 # licensing details.
 """Unit-test infrastructure for the :mod:`iris._concatenate` package."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Any
 

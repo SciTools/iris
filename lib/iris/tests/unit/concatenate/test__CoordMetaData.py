@@ -5,6 +5,8 @@
 # licensing details.
 """Unit-tests for :class:`iris._concatenate._CoordMetaData`."""
 
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
