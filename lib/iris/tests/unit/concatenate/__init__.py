@@ -3,4 +3,133 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the :mod:`iris._concatenate` package."""
+"""Unit-test infrastructure for the :mod:`iris._concatenate` package."""
+
+from dataclasses import dataclass, field
+from typing import Any
+
+import dask.array as da
+import numpy as np
+
+from iris._concatenate import _CONSTANT, _DECREASING, _INCREASING
+import iris.common
+from iris.coords import AuxCoord, DimCoord
+
+__all__ = ["ExpectedItem", "N_POINTS", "SCALE_FACTOR", "create_metadata"]
+
+# number of coordinate points
+N_POINTS: int = 10
+
+# coordinate points multiplication scale factor
+SCALE_FACTOR: int = 10
+
+
+METADATA = {
+    "standard_name": "air_temperature",
+    "long_name": "air temperature",
+    "var_name": "atemp",
+    "units": "kelvin",
+    "attributes": {},
+    "coord_system": None,
+    "climatological": False,
+    "circular": False,
+}
+
+
+@dataclass
+class ExpectedItem:
+    """Expected test result components of :class:`iris._concatenate._CoordMetaData`."""
+
+    defn: iris.common.DimCoordMetadata | iris.common.CoordMetadata
+    dims: tuple[int, ...]
+    points_dtype: np.dtype
+    bounds_dtype: np.dtype | None = None
+    kwargs: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class MetaDataItem:
+    """Test input and expected output from :class:`iris._concatenate._CoordMetaData`."""
+
+    coord: AuxCoord | DimCoord
+    dims: tuple[int, ...]
+    expected: ExpectedItem
+
+
+def create_metadata(
+    dim: bool = True,
+    scalar: bool = False,
+    order: int = None,
+    circular: bool | None = False,
+    dtype: np.dtype = None,
+    lazy: bool = True,
+    with_bounds: bool | None = False,
+) -> MetaDataItem:
+    """Construct payload for :class:`iris._concatenate.CoordMetaData` testing."""
+    if dtype is None:
+        dtype = np.float32
+
+    if order is None:
+        order = _INCREASING
+
+    ones, arange, array, vstack = (
+        (da.ones, da.arange, da.array, da.vstack)
+        if lazy
+        else (np.ones, np.arange, np.array, np.vstack)
+    )
+    bounds = None
+
+    if scalar:
+        points = ones(1, dtype=dtype)
+        order = _CONSTANT
+
+        if with_bounds:
+            bounds = array([0, 2], dtype=dtype).reshape(1, 2)
+    else:
+        if order == _CONSTANT:
+            points = ones(N_POINTS, dtype=dtype)
+        else:
+            if order == _DECREASING:
+                start, stop, step = N_POINTS - 1, -1, -1
+            else:
+                start, stop, step = 0, N_POINTS, 1
+            points = arange(start, stop, step, dtype=dtype) * SCALE_FACTOR
+
+        if with_bounds:
+            offset = SCALE_FACTOR // 2
+            bounds = vstack([points.copy() - offset, points.copy() + offset]).T
+
+    bounds_dtype = dtype if with_bounds else None
+
+    values = METADATA.copy()
+    values["circular"] = circular
+    Coord = DimCoord if dim else AuxCoord
+    coord = Coord(points, bounds=bounds)
+    if dim and lazy:
+        # creating a DimCoord *always* results in realized points/bounds.
+        assert not coord.has_lazy_points()
+        if with_bounds:
+            assert not coord.has_lazy_bounds()
+    metadata = iris.common.DimCoordMetadata(**values)
+
+    if dim:
+        coord.metadata = metadata
+    else:
+        coord.metadata = coord.metadata.from_metadata(metadata)
+
+    dims = tuple([dim for dim in range(coord.ndim)])
+    kwargs = {"scalar": scalar}
+
+    if dim:
+        kwargs["circular"] = circular
+        kwargs["order"] = order
+
+    expected = ExpectedItem(
+        defn=metadata,
+        dims=dims,
+        points_dtype=dtype,
+        bounds_dtype=bounds_dtype,
+        kwargs=kwargs,
+    )
+
+    return MetaDataItem(coord=coord, dims=dims, expected=expected)
