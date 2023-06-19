@@ -87,6 +87,10 @@ This document explains the changes made to Iris for this release
       properly updated.
       (:issue:`5339`, :pull:`5340`)
 
+   #. `@schlunma`_ fixed a bug which realized all weights during weighted
+      aggregation. Now weighted aggregation is fully lazy again.
+      (:issue:`5338`, :pull:`5341`)
+
    🚀 **Performance Enhancements**
 
    #. `@sloosvel`_ improved :meth:`~iris.cube.CubeList.concatenate_cube` and
