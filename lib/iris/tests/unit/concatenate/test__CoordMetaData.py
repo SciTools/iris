@@ -31,19 +31,23 @@ def check(actual: _CoordMetaData, expected: ExpectedItem) -> None:
 
 @pytest.mark.parametrize("order", [_DECREASING, _INCREASING])
 @pytest.mark.parametrize("circular", [False, True])
-@pytest.mark.parametrize("dtype", [np.int32, np.float32])
+@pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
 def test_dim(
-    order: int, circular: bool, dtype: np.dtype, lazy: bool, with_bounds: bool
+    order: int,
+    circular: bool,
+    coord_dtype: np.dtype,
+    lazy: bool,
+    with_bounds: bool,
 ) -> None:
     """Test :class:`iris._concatenate._CoordMetaData` with dim coord."""
     metadata = create_metadata(
-        dim=True,
+        dim_coord=True,
         scalar=False,
         order=order,
         circular=circular,
-        dtype=dtype,
+        coord_dtype=coord_dtype,
         lazy=lazy,
         with_bounds=with_bounds,
     )
@@ -52,19 +56,19 @@ def test_dim(
 
 
 @pytest.mark.parametrize("circular", [False, True])
-@pytest.mark.parametrize("dtype", [np.int32, np.float32])
+@pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
 def test_dim__scalar(
-    circular: bool, dtype: np.dtype, lazy: bool, with_bounds: bool
+    circular: bool, coord_dtype: np.dtype, lazy: bool, with_bounds: bool
 ) -> None:
     """Test :class:`iris._concatenate._CoordMetaData` with scalar dim coord."""
     metadata = create_metadata(
-        dim=True,
+        dim_coord=True,
         scalar=True,
         order=_CONSTANT,
         circular=circular,
-        dtype=dtype,
+        coord_dtype=coord_dtype,
         lazy=lazy,
         with_bounds=with_bounds,
     )
@@ -73,19 +77,19 @@ def test_dim__scalar(
 
 
 @pytest.mark.parametrize("order", [_DECREASING, _INCREASING])
-@pytest.mark.parametrize("dtype", [np.int32, np.float32])
+@pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
 def test_aux(
-    order: int, dtype: np.dtype, lazy: bool, with_bounds: bool
+    order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool
 ) -> None:
     """Test :class:`iris._concatenate._CoordMetaData` with aux coord."""
     metadata = create_metadata(
-        dim=False,
+        dim_coord=False,
         scalar=False,
         order=order,
         circular=None,
-        dtype=dtype,
+        coord_dtype=coord_dtype,
         lazy=lazy,
         with_bounds=with_bounds,
     )
@@ -93,17 +97,19 @@ def test_aux(
     check(actual, metadata.expected)
 
 
-@pytest.mark.parametrize("dtype", [np.int32, np.float32])
+@pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_aux__scalar(dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
+def test_aux__scalar(
+    coord_dtype: np.dtype, lazy: bool, with_bounds: bool
+) -> None:
     """Test :class:`iris._concatenate._CoordMetaData` with scalar aux coord."""
     metadata = create_metadata(
-        dim=False,
+        dim_coord=False,
         scalar=True,
         order=_CONSTANT,
         circular=None,
-        dtype=dtype,
+        coord_dtype=coord_dtype,
         lazy=lazy,
         with_bounds=with_bounds,
     )

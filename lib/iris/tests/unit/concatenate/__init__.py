@@ -59,77 +59,80 @@ class MetaDataItem:
 
 
 def create_metadata(
-    dim: bool = True,
+    dim_coord: bool = True,
     scalar: bool = False,
     order: int = None,
     circular: bool | None = False,
-    dtype: np.dtype = None,
+    coord_dtype: np.dtype = None,
     lazy: bool = True,
     with_bounds: bool | None = False,
 ) -> MetaDataItem:
     """Construct payload for :class:`iris._concatenate.CoordMetaData` testing."""
-    if dtype is None:
-        dtype = np.float32
+    if coord_dtype is None:
+        coord_dtype = np.float32
 
     if order is None:
         order = _INCREASING
 
-    ones, arange, array, vstack = (
-        (da.ones, da.arange, da.array, da.vstack)
-        if lazy
-        else (np.ones, np.arange, np.array, np.vstack)
-    )
+    array_lib = da if lazy else np
     bounds = None
 
     if scalar:
-        points = ones(1, dtype=dtype)
+        points = array_lib.ones(1, dtype=coord_dtype)
         order = _CONSTANT
 
         if with_bounds:
-            bounds = array([0, 2], dtype=dtype).reshape(1, 2)
+            bounds = array_lib.array([0, 2], dtype=coord_dtype).reshape(1, 2)
     else:
         if order == _CONSTANT:
-            points = ones(N_POINTS, dtype=dtype)
+            points = array_lib.ones(N_POINTS, dtype=coord_dtype)
         else:
             if order == _DECREASING:
                 start, stop, step = N_POINTS - 1, -1, -1
             else:
                 start, stop, step = 0, N_POINTS, 1
-            points = arange(start, stop, step, dtype=dtype) * SCALE_FACTOR
+            points = (
+                array_lib.arange(start, stop, step, dtype=coord_dtype)
+                * SCALE_FACTOR
+            )
 
         if with_bounds:
             offset = SCALE_FACTOR // 2
-            bounds = vstack([points.copy() - offset, points.copy() + offset]).T
+            bounds = array_lib.vstack(
+                [points.copy() - offset, points.copy() + offset]
+            ).T
 
-    bounds_dtype = dtype if with_bounds else None
+    bounds_dtype = coord_dtype if with_bounds else None
 
     values = METADATA.copy()
     values["circular"] = circular
-    Coord = DimCoord if dim else AuxCoord
-    coord = Coord(points, bounds=bounds)
-    if dim and lazy:
+    CoordClass = DimCoord if dim_coord else AuxCoord
+    coord = CoordClass(points, bounds=bounds)
+    if dim_coord and lazy:
         # creating a DimCoord *always* results in realized points/bounds.
         assert not coord.has_lazy_points()
         if with_bounds:
             assert not coord.has_lazy_bounds()
     metadata = iris.common.DimCoordMetadata(**values)
 
-    if dim:
+    if dim_coord:
         coord.metadata = metadata
     else:
-        coord.metadata = coord.metadata.from_metadata(metadata)
+        # convert the DimCoordMetadata to a CoordMetadata instance
+        # and assign to the AuxCoord
+        coord.metadata = iris.common.CoordMetadata.from_metadata(metadata)
 
     dims = tuple([dim for dim in range(coord.ndim)])
     kwargs = {"scalar": scalar}
 
-    if dim:
+    if dim_coord:
         kwargs["circular"] = circular
         kwargs["order"] = order
 
     expected = ExpectedItem(
         defn=metadata,
         dims=dims,
-        points_dtype=dtype,
+        points_dtype=coord_dtype,
         bounds_dtype=bounds_dtype,
         kwargs=kwargs,
     )

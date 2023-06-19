@@ -42,18 +42,18 @@ class MockCubeSignature:
 
 
 @pytest.mark.parametrize("order", [_DECREASING, _INCREASING])
-@pytest.mark.parametrize("dtype", [np.int32, np.float32])
+@pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
 def test_dim(
-    order: int, dtype: np.dtype, lazy: bool, with_bounds: bool
+    order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool
 ) -> None:
     """Test extent calculation of vector dimension coordinates."""
     metadata = create_metadata(
-        dim=True,
+        dim_coord=True,
         scalar=False,
         order=order,
-        dtype=dtype,
+        coord_dtype=coord_dtype,
         lazy=lazy,
         with_bounds=with_bounds,
     )
@@ -64,7 +64,7 @@ def test_dim(
     coord_signature = _CoordSignature(cube_signature)
     assert len(coord_signature.dim_extents) == 1
     (actual,) = coord_signature.dim_extents
-    first, last = dtype(0), dtype((N_POINTS - 1) * SCALE_FACTOR)
+    first, last = coord_dtype(0), coord_dtype((N_POINTS - 1) * SCALE_FACTOR)
     if order == _CONSTANT:
         emsg = f"Expected 'order' of '{_DECREASING}' or '{_INCREASING}', got '{order}'."
         raise ValueError(emsg)
@@ -86,16 +86,18 @@ def test_dim(
     assert actual == expected
 
 
-@pytest.mark.parametrize("dtype", [np.int32, np.float32])
+@pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_dim__scalar(dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
+def test_dim__scalar(
+    coord_dtype: np.dtype, lazy: bool, with_bounds: bool
+) -> None:
     """Test extent calculation of scalar dimension coordinates."""
     metadata = create_metadata(
-        dim=True,
+        dim_coord=True,
         scalar=True,
         order=_CONSTANT,
-        dtype=dtype,
+        coord_dtype=coord_dtype,
         lazy=lazy,
         with_bounds=with_bounds,
     )
@@ -106,11 +108,11 @@ def test_dim__scalar(dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
     coord_signature = _CoordSignature(cube_signature)
     assert len(coord_signature.dim_extents) == 1
     (actual,) = coord_signature.dim_extents
-    point = dtype(1)
+    point = coord_dtype(1)
     points_extent = _Extent(min=point, max=point)
     bounds_extent = None
     if with_bounds:
-        first, last = dtype(0), dtype(2)
+        first, last = coord_dtype(0), coord_dtype(2)
         bounds_extent = (
             _Extent(min=first, max=first),
             _Extent(min=last, max=last),
