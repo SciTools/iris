@@ -81,6 +81,7 @@ __all__ = (
     "PEAK",
     "PERCENTILE",
     "PROPORTION",
+    "PercentileAggregator",
     "PointInCell",
     "RMS",
     "STD_DEV",
@@ -89,6 +90,7 @@ __all__ = (
     "VARIANCE",
     "WPERCENTILE",
     "WeightedAggregator",
+    "WeightedPercentileAggregator",
     "clear_phenomenon_identity",
     "create_weighted_aggregator_fn",
 )
@@ -719,6 +721,8 @@ class PercentileAggregator(_Aggregator):
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
 
         Additional kwargs:
             Passed through to :data:`call_func`, :data:`lazy_func`, and
@@ -961,6 +965,8 @@ class WeightedPercentileAggregator(PercentileAggregator):
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
 
             If the aggregator is used by a cube aggregation method (e.g.,
             :meth:`~iris.cube.Cube.collapsed`,
