@@ -3836,7 +3836,10 @@ class Cube(CFVariableMixin):
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        (kwargs, weights_units) = _Weights.get_updated_kwargs(kwargs, self)
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
 
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
@@ -3984,7 +3987,7 @@ class Cube(CFVariableMixin):
             collapsed_cube,
             coords,
             axis=collapse_axis,
-            _weights_units=weights_units,
+            _weights_units=getattr(weights_info, "units", None),
             **kwargs,
         )
         result = aggregator.post_process(
@@ -4078,7 +4081,10 @@ x            -              -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        (kwargs, weights_units) = _Weights.get_updated_kwargs(kwargs, self)
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
 
         groupby_coords = []
         dimension_to_groupby = None
@@ -4275,7 +4281,7 @@ x            -              -
             aggregateby_cube,
             groupby_coords,
             aggregate=True,
-            _weights_units=weights_units,
+            _weights_units=getattr(weights_info, "units", None),
             **kwargs,
         )
         # Replace the appropriate coordinates within the aggregate-by cube.
@@ -4415,7 +4421,10 @@ x            -               -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        (kwargs, weights_units) = _Weights.get_updated_kwargs(kwargs, self)
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
 
         coord = self._as_list_of_coords(coord)[0]
 
@@ -4502,7 +4511,7 @@ x            -               -
             new_cube,
             [coord],
             action="with a rolling window of length %s over" % window,
-            _weights_units=weights_units,
+            _weights_units=getattr(weights_info, "units", None),
             **kwargs,
         )
         # and perform the data transformation, generating weights first if

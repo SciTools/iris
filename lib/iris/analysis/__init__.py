@@ -1288,35 +1288,6 @@ class _Weights:
         self.array = derived_array
         self.units = derived_units
 
-    @classmethod
-    def get_updated_kwargs(cls, kwargs, cube):
-        """Get kwargs and weights units updated with `weights` information.
-
-        Args:
-
-        * kwargs (dict):
-            Keyword arguments that will be updated if a `weights` keyword is
-            present which is not ``None``.
-        * cube (Cube):
-            Input cube for aggregation. If weights is given as :obj:`str`, try
-            to extract a cell measure with the corresponding name from this
-            cube. Otherwise, this argument is ignored.
-
-        Returns:
-            tuple. A tuple containing the updated keyword arguments and the
-            weights units.
-
-        """
-        kwargs = dict(kwargs)
-        weights_units = None
-
-        if kwargs.get("weights") is not None:
-            weights = cls(kwargs["weights"], cube)
-            kwargs["weights"] = weights.array
-            weights_units = weights.units
-
-        return (kwargs, weights_units)
-
 
 def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
     """Return an aggregator function that can explicitly handle weights.

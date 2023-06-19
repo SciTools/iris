@@ -1814,35 +1814,13 @@ class TestWeights:
         np.testing.assert_array_equal(weights.array, self.data)
         assert weights.units == "m2"
 
-    def test_get_updated_kwargs_no_weights(self):
-        kwargs = {"test": [1, 2, 3]}
-        (new_kwargs, weights_units) = _Weights.get_updated_kwargs(
-            kwargs, self.cube
-        )
-        assert new_kwargs is not kwargs
-        assert new_kwargs == {"test": [1, 2, 3]}
-        assert weights_units is None
-
-    def test_get_updated_kwargs_weights_none(self):
-        kwargs = {"test": [1, 2, 3], "weights": None}
-        (new_kwargs, weights_units) = _Weights.get_updated_kwargs(
-            kwargs, self.cube
-        )
-        assert new_kwargs is not kwargs
-        assert new_kwargs == {"test": [1, 2, 3], "weights": None}
-        assert weights_units is None
-
-    def test_get_updated_kwargs_weights(self):
-        kwargs = {"test": [1, 2, 3], "weights": self.data}
-        (new_kwargs, weights_units) = _Weights.get_updated_kwargs(
-            kwargs, self.cube
-        )
-        assert new_kwargs is not kwargs
-        assert len(new_kwargs) == 2
-        assert new_kwargs["test"] == [1, 2, 3]
-        assert isinstance(new_kwargs["weights"], self.target_type)
-        assert new_kwargs["weights"] is self.data
-        assert weights_units == "1"
+    def test_init_with_list(self):
+        list_in = [0, 1, 2]
+        weights = _Weights(list_in, self.cube)
+        assert isinstance(weights.array, list)
+        assert isinstance(weights.units, cf_units.Unit)
+        assert weights.array is list_in
+        assert weights.units == "1"
 
 
 class TestWeightsLazy(TestWeights):
