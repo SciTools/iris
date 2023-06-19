@@ -1707,21 +1707,30 @@ class TestCreateWeightedAggregatorFn(tests.IrisTest):
 class TestWeights:
     @pytest.fixture(autouse=True)
     def setup_test_data(self):
-        self.data = np.arange(6).reshape(2, 3)
+        self.array_lib = np
+        self.target_type = np.ndarray
+        self.create_test_data()
+
+    def create_test_data(self):
+        self.data = self.array_lib.arange(6).reshape(2, 3)
         self.lat = iris.coords.DimCoord(
-            [0, 1], standard_name="latitude", units="degrees"
+            self.array_lib.array([0, 1]),
+            standard_name="latitude",
+            units="degrees",
         )
         self.lon = iris.coords.DimCoord(
-            [0, 1, 2], standard_name="longitude", units="degrees"
+            self.array_lib.array([0, 1, 2]),
+            standard_name="longitude",
+            units="degrees",
         )
         self.cell_measure = iris.coords.CellMeasure(
             self.data, standard_name="cell_area", units="m2"
         )
         self.aux_coord = iris.coords.AuxCoord(
-            [3, 4], long_name="auxcoord", units="s"
+            self.array_lib.array([3, 4]), long_name="auxcoord", units="s"
         )
         self.ancillary_variable = iris.coords.AncillaryVariable(
-            [5, 6, 7], var_name="ancvar", units="kg"
+            self.array_lib.array([5, 6, 7]), var_name="ancvar", units="kg"
         )
         self.cube = iris.cube.Cube(
             self.data,
@@ -1732,8 +1741,6 @@ class TestWeights:
             cell_measures_and_dims=[(self.cell_measure, (0, 1))],
             ancillary_variables_and_dims=[(self.ancillary_variable, 1)],
         )
-
-        self.target_type = np.ndarray
 
     def test_init_with_array(self):
         weights = _Weights(self.data, self.cube)
@@ -1843,35 +1850,9 @@ class TestWeightsLazy(TestWeights):
 
     @pytest.fixture(autouse=True)
     def setup_test_data(self):
-        self.data = da.arange(6).reshape(2, 3)
-        self.lat = iris.coords.DimCoord(
-            da.from_array([0, 1]), standard_name="latitude", units="degrees"
-        )
-        self.lon = iris.coords.DimCoord(
-            da.from_array([0, 1, 2]),
-            standard_name="longitude",
-            units="degrees",
-        )
-        self.cell_measure = iris.coords.CellMeasure(
-            self.data, standard_name="cell_area", units="m2"
-        )
-        self.aux_coord = iris.coords.AuxCoord(
-            da.from_array([3, 4]), long_name="auxcoord", units="s"
-        )
-        self.ancillary_variable = iris.coords.AncillaryVariable(
-            da.from_array([5, 6, 7]), var_name="ancvar", units="kg"
-        )
-        self.cube = iris.cube.Cube(
-            self.data,
-            standard_name="air_temperature",
-            units="K",
-            dim_coords_and_dims=[(self.lat, 0), (self.lon, 1)],
-            aux_coords_and_dims=[(self.aux_coord, 0)],
-            cell_measures_and_dims=[(self.cell_measure, (0, 1))],
-            ancillary_variables_and_dims=[(self.ancillary_variable, 1)],
-        )
-
+        self.array_lib = da
         self.target_type = da.core.Array
+        self.create_test_data()
 
 
 def test__Groupby_repr():
