@@ -115,9 +115,9 @@ class _CoordMetaData(
             kwargs["circular"] = coord.circular
         if isinstance(coord, iris.coords.DimCoord):
             # Mix the monotonic ordering into the metadata.
-            if coord.core_points()[0] == coord.core_points()[-1]:
+            if coord.points[0] == coord.points[-1]:
                 order = _CONSTANT
-            elif coord.core_points()[-1] > coord.core_points()[0]:
+            elif coord.points[-1] > coord.points[0]:
                 order = _INCREASING
             else:
                 order = _DECREASING
@@ -775,37 +775,21 @@ class _CoordSignature:
         self.dim_extents = []
         for coord, order in zip(self.dim_coords, self.dim_order):
             if order == _CONSTANT or order == _INCREASING:
-                points = _Extent(
-                    coord.core_points()[0], coord.core_points()[-1]
-                )
-                if coord.core_bounds() is not None:
+                points = _Extent(coord.points[0], coord.points[-1])
+                if coord.bounds is not None:
                     bounds = (
-                        _Extent(
-                            coord.core_bounds()[0, 0],
-                            coord.core_bounds()[-1, 0],
-                        ),
-                        _Extent(
-                            coord.core_bounds()[0, 1],
-                            coord.core_bounds()[-1, 1],
-                        ),
+                        _Extent(coord.bounds[0, 0], coord.bounds[-1, 0]),
+                        _Extent(coord.bounds[0, 1], coord.bounds[-1, 1]),
                     )
                 else:
                     bounds = None
             else:
                 # The order must be decreasing ...
-                points = _Extent(
-                    coord.core_points()[-1], coord.core_points()[0]
-                )
-                if coord.core_bounds() is not None:
+                points = _Extent(coord.points[-1], coord.points[0])
+                if coord.bounds is not None:
                     bounds = (
-                        _Extent(
-                            coord.core_bounds()[-1, 0],
-                            coord.core_bounds()[0, 0],
-                        ),
-                        _Extent(
-                            coord.core_bounds()[-1, 1],
-                            coord.core_bounds()[0, 1],
-                        ),
+                        _Extent(coord.bounds[-1, 0], coord.bounds[0, 0]),
+                        _Extent(coord.bounds[-1, 1], coord.bounds[0, 1]),
                     )
                 else:
                     bounds = None
