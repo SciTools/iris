@@ -1751,7 +1751,14 @@ def _sum_units_func(units, **kwargs):
     """Multiply original units with weight units if possible."""
     weights = kwargs.get("weights")
     weights_units = kwargs.get("_weights_units")
-    if weights is not None and weights_units is not None:
+    multiply_by_weights_units = all(
+        [
+            weights is not None,
+            weights_units is not None,
+            weights_units != "1",
+        ]
+    )
+    if multiply_by_weights_units:
         result = units * weights_units
     else:
         result = units

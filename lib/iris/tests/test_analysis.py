@@ -1847,24 +1847,33 @@ def test__Groupby_repr():
 @pytest.mark.parametrize(
     "kwargs,expected",
     [
-        ({}, "s"),
-        ({"test": "m"}, "s"),
-        ({"weights": None}, "s"),
-        ({"weights": [1, 2, 3]}, "s"),
-        ({"_weights_units": None}, "s"),
-        ({"test": "m", "_weights_units": None}, "s"),
-        ({"weights": None, "_weights_units": None}, "s"),
-        ({"weights": [1, 2, 3], "_weights_units": None}, "s"),
-        ({"_weights_units": "kg"}, "s"),
-        ({"test": "m", "_weights_units": "kg"}, "s"),
-        ({"weights": None, "_weights_units": "kg"}, "s"),
-        ({"weights": [1, 2, 3], "_weights_units": "kg"}, "s kg"),
+        ({}, "kg m-2"),
+        ({"test": "m"}, "kg m-2"),
+        ({"weights": None}, "kg m-2"),
+        ({"weights": [1, 2, 3]}, "kg m-2"),
+        ({"_weights_units": None}, "kg m-2"),
+        ({"test": "m", "_weights_units": None}, "kg m-2"),
+        ({"weights": None, "_weights_units": None}, "kg m-2"),
+        ({"weights": [1, 2, 3], "_weights_units": None}, "kg m-2"),
+        ({"_weights_units": "1"}, "kg m-2"),
+        ({"test": "m", "_weights_units": "1"}, "kg m-2"),
+        ({"weights": None, "_weights_units": "1"}, "kg m-2"),
+        ({"weights": [1, 2, 3], "_weights_units": "1"}, "kg m-2"),
+        ({"_weights_units": "s"}, "kg m-2"),
+        ({"test": "m", "_weights_units": "s"}, "kg m-2"),
+        ({"weights": None, "_weights_units": "s"}, "kg m-2"),
+        ({"weights": [1, 2, 3], "_weights_units": "s"}, "kg m-2 s"),
     ],
 )
 def test_sum_units_func(kwargs, expected):
-    units = cf_units.Unit("s")
+    units = cf_units.Unit("kg m-2")
     result = iris.analysis._sum_units_func(units, **kwargs)
     assert result == expected
+
+    # Make sure that the units' string representation (= origin) has not
+    # changed if the units have not changed (even when weights units are "1")
+    if result == units:
+        assert result.origin == expected
 
 
 if __name__ == "__main__":
