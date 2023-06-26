@@ -81,6 +81,7 @@ __all__ = (
     "PEAK",
     "PERCENTILE",
     "PROPORTION",
+    "PercentileAggregator",
     "PointInCell",
     "RMS",
     "STD_DEV",
@@ -89,6 +90,7 @@ __all__ = (
     "VARIANCE",
     "WPERCENTILE",
     "WeightedAggregator",
+    "WeightedPercentileAggregator",
     "clear_phenomenon_identity",
     "create_weighted_aggregator_fn",
 )
@@ -488,7 +490,7 @@ class _Aggregator:
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
 
-        Additional kwargs::
+        Additional kwargs:
             Passed through to :data:`call_func`, :data:`lazy_func`, and
             :data:`units_func`.
 
@@ -719,9 +721,12 @@ class PercentileAggregator(_Aggregator):
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
 
-        Additional kwargs::
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+        Additional kwargs:
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         This aggregator can used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
@@ -960,14 +965,27 @@ class WeightedPercentileAggregator(PercentileAggregator):
             If provided, called to convert a cube's units.
             Returns an :class:`cf_units.Unit`, or a
             value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
+
+            If the aggregator is used by a cube aggregation method (e.g.,
+            :meth:`~iris.cube.Cube.collapsed`,
+            :meth:`~iris.cube.Cube.aggregated_by`,
+            :meth:`~iris.cube.Cube.rolling_window`), a keyword argument
+            `_weights_units` is provided to this function to allow updating
+            units based on the weights. `_weights_units` is determined from the
+            `weights` given to the aggregator (``None`` if no weights are
+            given). See :ref:`user guide <cube-statistics-collapsing-average>`
+            for an example of weighted aggregation that changes units.
 
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
 
-        Additional kwargs::
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+        Additional kwargs:
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         This aggregator can used by cube aggregation methods such as
         :meth:`~iris.cube.Cube.collapsed` and
@@ -1090,7 +1108,7 @@ class WeightedAggregator(Aggregator):
     def __init__(
         self, cell_method, call_func, units_func=None, lazy_func=None, **kwargs
     ):
-        """
+        r"""
         Create a weighted aggregator for the given :data:`call_func`.
 
         Args:
@@ -1099,12 +1117,29 @@ class WeightedAggregator(Aggregator):
             Cell method string that supports string format substitution.
 
         * call_func (callable):
-            Data aggregation function. Call signature `(data, axis, **kwargs)`.
+            Data aggregation function. Call signature `(data, axis,
+            \**kwargs)`.
 
         Kwargs:
 
         * units_func (callable):
-            Units conversion function.
+            | *Call signature*: (units, \**kwargs)
+
+            If provided, called to convert a cube's units.
+            Returns an :class:`cf_units.Unit`, or a
+            value that can be made into one.
+            To ensure backwards-compatibility, also accepts a callable with
+            call signature (units).
+
+            If the aggregator is used by a cube aggregation method (e.g.,
+            :meth:`~iris.cube.Cube.collapsed`,
+            :meth:`~iris.cube.Cube.aggregated_by`,
+            :meth:`~iris.cube.Cube.rolling_window`), a keyword argument
+            `_weights_units` is provided to this function to allow updating
+            units based on the weights. `_weights_units` is determined from the
+            `weights` given to the aggregator (``None`` if no weights are
+            given). See :ref:`user guide <cube-statistics-collapsing-average>`
+            for an example of weighted aggregation that changes units.
 
         * lazy_func (callable or None):
             An alternative to :data:`call_func` implementing a lazy
@@ -1112,7 +1147,8 @@ class WeightedAggregator(Aggregator):
             main operation, but should raise an error in unhandled cases.
 
         Additional kwargs:
-            Passed through to :data:`call_func` and :data:`lazy_func`.
+            Passed through to :data:`call_func`, :data:`lazy_func`, and
+            :data:`units_func`.
 
         """
         Aggregator.__init__(
@@ -1187,20 +1223,18 @@ class WeightedAggregator(Aggregator):
         return result
 
 
-class _Weights(np.ndarray):
+class _Weights:
     """Class for handling weights for weighted aggregation.
 
-    This subclasses :class:`numpy.ndarray`; thus, all methods and properties of
-    :class:`numpy.ndarray` (e.g., `shape`, `ndim`, `view()`, etc.) are
-    available.
+    Provides the following two attributes:
 
-    Details on subclassing :class:`numpy.ndarray` are given here:
-    https://numpy.org/doc/stable/user/basics.subclassing.html
+    * ``array``: Lazy or non-lazy array of weights.
+    * ``units``: Units associated with the weights.
 
     """
 
-    def __new__(cls, weights, cube, units=None):
-        """Create class instance.
+    def __init__(self, weights, cube):
+        """Initialize class instance.
 
         Args:
 
@@ -1212,18 +1246,14 @@ class _Weights(np.ndarray):
             one of :meth:`iris.cube.Cube.coords`,
             :meth:`iris.cube.Cube.cell_measures`, or
             :meth:`iris.cube.Cube.ancillary_variables`). If given as an
-            array-like object, use this directly and assume units of `1`.  If
-            `units` is given, ignore all units derived above and use the ones
-            given by `units`.
+            array-like object, use this directly and assume units of `1`. Note:
+            this does **not** create a copy of the input array.
         * cube (Cube):
             Input cube for aggregation. If weights is given as :obj:`str` or
             :class:`iris.coords._DimensionalMetadata`, try to extract the
             :class:`iris.coords._DimensionalMetadata` object and corresponding
             dimensional mappings from this cube. Otherwise, this argument is
             ignored.
-        * units (string, Unit):
-            If ``None``, use units derived from `weights`. Otherwise, overwrite
-            the units derived from `weights` and use `units`.
 
         """
         # `weights` is a cube
@@ -1231,8 +1261,8 @@ class _Weights(np.ndarray):
         # "hasattr" syntax here
         # --> Extract data and units from cube
         if hasattr(weights, "add_aux_coord"):
-            obj = np.asarray(weights.data).view(cls)
-            obj.units = weights.units
+            derived_array = weights.core_data()
+            derived_units = weights.units
 
         # `weights`` is a string or _DimensionalMetadata object
         # --> Extract _DimensionalMetadata object from cube, broadcast it to
@@ -1240,55 +1270,23 @@ class _Weights(np.ndarray):
         # its data and units
         elif isinstance(weights, (str, _DimensionalMetadata)):
             dim_metadata = cube._dimensional_metadata(weights)
-            arr = dim_metadata._values
+            derived_array = dim_metadata._core_values()
             if dim_metadata.shape != cube.shape:
-                arr = iris.util.broadcast_to_shape(
-                    arr,
+                derived_array = iris.util.broadcast_to_shape(
+                    derived_array,
                     cube.shape,
                     dim_metadata.cube_dims(cube),
                 )
-            obj = np.asarray(arr).view(cls)
-            obj.units = dim_metadata.units
+            derived_units = dim_metadata.units
 
-        # Remaining types (e.g., np.ndarray): try to convert to ndarray.
+        # Remaining types (e.g., np.ndarray, dask.array.core.Array, etc.)
+        # --> Use array directly and assign units of "1"
         else:
-            obj = np.asarray(weights).view(cls)
-            obj.units = Unit("1")
+            derived_array = weights
+            derived_units = Unit("1")
 
-        # Overwrite units from units argument if necessary
-        if units is not None:
-            obj.units = units
-
-        return obj
-
-    def __array_finalize__(self, obj):
-        """See https://numpy.org/doc/stable/user/basics.subclassing.html.
-
-        Note
-        ----
-        `obj` cannot be `None` here since ``_Weights.__new__`` does not call
-        ``super().__new__`` explicitly.
-
-        """
-        self.units = getattr(obj, "units", Unit("1"))
-
-    @classmethod
-    def update_kwargs(cls, kwargs, cube):
-        """Update ``weights`` keyword argument in-place.
-
-        Args:
-
-        * kwargs (dict):
-            Keyword arguments that will be updated in-place if a `weights`
-            keyword is present which is not ``None``.
-        * cube (Cube):
-            Input cube for aggregation. If weights is given as :obj:`str`, try
-            to extract a cell measure with the corresponding name from this
-            cube. Otherwise, this argument is ignored.
-
-        """
-        if kwargs.get("weights") is not None:
-            kwargs["weights"] = cls(kwargs["weights"], cube)
+        self.array = derived_array
+        self.units = derived_units
 
 
 def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
@@ -1752,11 +1750,17 @@ def _sum(array, **kwargs):
 def _sum_units_func(units, **kwargs):
     """Multiply original units with weight units if possible."""
     weights = kwargs.get("weights")
-    if weights is None:  # no weights given or weights are None
-        result = units
-    elif hasattr(weights, "units"):  # weights are _Weights
-        result = units * weights.units
-    else:  # weights are regular np.ndarrays
+    weights_units = kwargs.get("_weights_units")
+    multiply_by_weights_units = all(
+        [
+            weights is not None,
+            weights_units is not None,
+            weights_units != "1",
+        ]
+    )
+    if multiply_by_weights_units:
+        result = units * weights_units
+    else:
         result = units
     return result
 
