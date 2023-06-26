@@ -96,6 +96,10 @@ This document explains the changes made to Iris for this release
       minimal in-core memory footprint.
       (:issue:`5115`, :pull:`5142`)
 
+   Note that, the above contribution labelled with ``pre-v3.7.0`` is part of the
+   forthcoming Iris ``v3.7.0`` release, but requires to be included in this patch
+   release.
+
 
 📢 Announcements
 ================
