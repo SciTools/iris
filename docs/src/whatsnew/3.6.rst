@@ -55,10 +55,10 @@ This document explains the changes made to Iris for this release
     or feature requests for improving Iris. Enjoy!
 
 
-|iris_version| |build_date|
-===========================
+v3.6.1 (26 June 2023)
+=====================
 
-.. dropdown:: |iris_version| Patches
+.. dropdown:: v3.6.1 Patches
    :color: primary
    :icon: alert
    :animate: fade-in
