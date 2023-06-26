@@ -9,6 +9,10 @@
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+from unittest import mock
+
+import dask
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -40,6 +44,17 @@ class Test_broadcast_to_shape(tests.IrisTest):
             for j in range(4):
                 self.assertArrayEqual(b[i, :, j, :].T, a)
 
+    @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
+    def test_lazy_added_dimensions_transpose(self, mocked_compute):
+        # adding dimensions and having the dimensions of the input
+        # transposed
+        a = da.random.random([2, 3])
+        b = broadcast_to_shape(a, (5, 3, 4, 2), (3, 1))
+        mocked_compute.assert_not_called()
+        for i in range(5):
+            for j in range(4):
+                self.assertArrayEqual(b[i, :, j, :].T.compute(), a.compute())
+
     def test_masked(self):
         # masked arrays are also accepted
         a = np.random.random([2, 3])
@@ -48,6 +63,19 @@ class Test_broadcast_to_shape(tests.IrisTest):
         for i in range(5):
             for j in range(4):
                 self.assertMaskedArrayEqual(b[i, :, j, :].T, m)
+
+    @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
+    def test_lazy_masked(self, mocked_compute):
+        # masked arrays are also accepted
+        a = np.random.random([2, 3])
+        m = da.ma.masked_array(a, mask=[[0, 1, 0], [0, 1, 1]])
+        b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
+        mocked_compute.assert_not_called()
+        for i in range(5):
+            for j in range(4):
+                self.assertMaskedArrayEqual(
+                    b[i, :, j, :].compute().T, m.compute()
+                )
 
     def test_masked_degenerate(self):
         # masked arrays can have degenerate masks too
