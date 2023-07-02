@@ -9,22 +9,23 @@ inputs:
   env_name:
     description: "environment name"
     required: true
-  version:
-    description: "iris test data version"
-    required: true
 
 runs:
   using: "composite"
   steps:
+    - name: Get Iris test data version
+      shell: bash
+      run: echo "IRIS_TEST_DATA_VERSION=$(python -c 'import iris.tests; print(iris.tests.TEST_DATA_VERSION)')" >> $GITHUB_ENV
+
     - uses: actions/cache@v3
       id: data-cache
       with:
         path: ~/iris-test-data
-        key: ${{ runner.os }}-iris-test-data-${{ inputs.env_name }}-v${{ inputs.version }}-b${{ inputs.cache_build }}
+        key: ${{ runner.os }}-iris-test-data-${{ inputs.env_name }}-v${IRIS_TEST_DATA_VERSION}-b${{ inputs.cache_build }}
 
     - if: steps.data-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        wget --quiet https://github.com/SciTools/iris-test-data/archive/v${{ inputs.version }}.zip -O iris-test-data.zip
+        wget --quiet https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip -O iris-test-data.zip
         unzip -q iris-test-data.zip
-        mv iris-test-data-${{ inputs.version }} ~/iris-test-data
+        mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${HOME}/iris-test-data

@@ -47,6 +47,8 @@ import iris.cube
 import iris.tests.graphics as graphics
 import iris.util
 
+TEST_DATA_VERSION = "2.19"
+
 MPL_AVAILABLE = graphics.MPL_AVAILABLE
 
 

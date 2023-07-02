@@ -50,7 +50,6 @@ jobs:
             session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.19"
       ENV_NAME: "ci-tests"
 
     steps:
@@ -64,13 +63,6 @@ jobs:
         run: |
           echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
           echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
-
-      - name: "data cache"
-        uses: ./.github/workflows/composite/iris-data-cache
-        with:
-          cache_build: 0
-          env_name: ${{ env.ENV_NAME }}
-          version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
         uses: ./.github/workflows/composite/conda-pkg-cache
@@ -100,6 +92,12 @@ jobs:
         run: |
           conda info
           conda list
+
+      - name: "data cache"
+        uses: ./.github/workflows/composite/iris-data-cache
+        with:
+          cache_build: 0
+          env_name: ${{ env.ENV_NAME }}
 
       - name: "cartopy cache"
         uses: ./.github/workflows/composite/cartopy-cache
