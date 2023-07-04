@@ -15,7 +15,7 @@ runs:
   steps:
     - name: Get Iris test data version
       shell: bash
-      run: echo "IRIS_TEST_DATA_VERSION=$(python -c 'import iris.tests; print(iris.tests.TEST_DATA_VERSION)')" >> $GITHUB_ENV
+      run: echo "IRIS_TEST_DATA_VERSION=$(grep '^TEST_DATA_VERSION = ' lib/iris/tests/__init__.py)" >> $GITHUB_ENV
 
     - uses: actions/cache@v3
       id: data-cache
