@@ -56,7 +56,7 @@ repos:
         args: [--filter-files]
 
 -   repo: https://github.com/asottile/blacken-docs
-    rev: 1.14.0
+    rev: 1.15.0
     hooks:
     -   id: blacken-docs
         types: [file, rst]
