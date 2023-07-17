@@ -10,10 +10,10 @@ Definitions of coordinates and other dimensional metadata.
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from collections.abc import Container, Iterator
+from collections.abc import Container
 import copy
 from functools import lru_cache
-from itertools import chain, zip_longest
+from itertools import zip_longest
 import operator
 import warnings
 import zlib
@@ -1218,10 +1218,6 @@ BOUND_POSITION_MIDDLE = 0.5
 BOUND_POSITION_END = 1
 
 
-# Private named tuple class for coordinate groups.
-_GroupbyItem = namedtuple("GroupbyItem", "groupby_point, groupby_slice")
-
-
 def _get_2d_coord_bound_grid(bounds):
     """
     Creates a grid using the bounds of a 2D coordinate with 4 sided cells.
@@ -1936,11 +1932,12 @@ class Coord(_DimensionalMetadata):
         * contiguous: (boolean)
             True if there are no discontiguities.
         * diffs: (array or tuple of arrays)
-            The diffs along the bounds of the coordinate. If self is a 2D
-            coord of shape (Y, X), a tuple of arrays is returned, where the
-            first is an array of differences along the x-axis, of the shape
-            (Y, X-1) and the second is an array of differences along the
-            y-axis, of the shape (Y-1, X).
+            A boolean array or tuple of boolean arrays which are true where
+            there are discontiguities between neighbouring bounds. If self is
+            a 2D coord of shape (Y, X), a pair of arrays is returned, where
+            the first is an array of differences along the x-axis, of the
+            shape (Y, X-1) and the second is an array of differences along
+            the y-axis, of the shape (Y-1, X).
 
         """
         self._sanity_check_bounds()
@@ -1949,7 +1946,9 @@ class Coord(_DimensionalMetadata):
             contiguous = np.allclose(
                 self.bounds[1:, 0], self.bounds[:-1, 1], rtol=rtol, atol=atol
             )
-            diffs = np.abs(self.bounds[:-1, 1] - self.bounds[1:, 0])
+            diffs = ~np.isclose(
+                self.bounds[1:, 0], self.bounds[:-1, 1], rtol=rtol, atol=atol
+            )
 
         elif self.ndim == 2:
 
@@ -1957,31 +1956,55 @@ class Coord(_DimensionalMetadata):
                 bounds = self.bounds.copy()
 
                 if compare_axis == "x":
-                    upper_bounds = bounds[:, :-1, 1]
-                    lower_bounds = bounds[:, 1:, 0]
+                    # Extract the pairs of upper bounds and lower bounds which
+                    # connect along the "x" axis. These connect along indices
+                    # as shown by the following diagram:
+                    #
+                    # 3---2 + 3---2
+                    # |   |   |   |
+                    # 0---1 + 0---1
+                    upper_bounds = np.stack(
+                        (bounds[:, :-1, 1], bounds[:, :-1, 2])
+                    )
+                    lower_bounds = np.stack(
+                        (bounds[:, 1:, 0], bounds[:, 1:, 3])
+                    )
                 elif compare_axis == "y":
-                    upper_bounds = bounds[:-1, :, 3]
-                    lower_bounds = bounds[1:, :, 0]
+                    # Extract the pairs of upper bounds and lower bounds which
+                    # connect along the "y" axis. These connect along indices
+                    # as shown by the following diagram:
+                    #
+                    # 3---2
+                    # |   |
+                    # 0---1
+                    # +   +
+                    # 3---2
+                    # |   |
+                    # 0---1
+                    upper_bounds = np.stack(
+                        (bounds[:-1, :, 3], bounds[:-1, :, 2])
+                    )
+                    lower_bounds = np.stack(
+                        (bounds[1:, :, 0], bounds[1:, :, 1])
+                    )
 
                 if self.name() in ["longitude", "grid_longitude"]:
                     # If longitude, adjust for longitude wrapping
                     diffs = upper_bounds - lower_bounds
-                    index = diffs > 180
+                    index = np.abs(diffs) > 180
                     if index.any():
                         sign = np.sign(diffs)
                         modification = (index.astype(int) * 360) * sign
                         upper_bounds -= modification
 
-                diffs_between_cells = np.abs(upper_bounds - lower_bounds)
-                cell_size = lower_bounds - upper_bounds
-                diffs_along_axis = diffs_between_cells > (
-                    atol + rtol * cell_size
+                diffs_along_bounds = ~np.isclose(
+                    upper_bounds, lower_bounds, rtol=rtol, atol=atol
+                )
+                diffs_along_axis = np.logical_or(
+                    diffs_along_bounds[0], diffs_along_bounds[1]
                 )
 
-                points_close_enough = diffs_along_axis <= (
-                    atol + rtol * cell_size
-                )
-                contiguous_along_axis = np.all(points_close_enough)
+                contiguous_along_axis = ~np.any(diffs_along_axis)
                 return diffs_along_axis, contiguous_along_axis
 
             diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis="x")
@@ -3078,23 +3101,23 @@ class CellMethod(iris.util._OrderedHashable):
     def __str__(self):
         """Return a custom string representation of CellMethod"""
         # Group related coord names intervals and comments together
-        cell_components = zip_longest(
-            self.coord_names, self.intervals, self.comments, fillvalue=""
+        coord_string = " ".join([f"{coord}:" for coord in self.coord_names])
+        method_string = str(self.method)
+        interval_string = " ".join(
+            [f"interval: {interval}" for interval in self.intervals]
         )
+        comment_string = " ".join([comment for comment in self.comments])
 
-        collection_summaries = []
-        cm_summary = "%s: " % self.method
+        if interval_string and comment_string:
+            comment_string = "".join(
+                [f" comment: {comment}" for comment in self.comments]
+            )
+        cm_summary = f"{coord_string} {method_string}"
 
-        for coord_name, interval, comment in cell_components:
-            other_info = ", ".join(filter(None, chain((interval, comment))))
-            if other_info:
-                coord_summary = "%s (%s)" % (coord_name, other_info)
-            else:
-                coord_summary = "%s" % coord_name
+        if interval_string or comment_string:
+            cm_summary += f" ({interval_string}{comment_string})"
 
-            collection_summaries.append(coord_summary)
-
-        return cm_summary + ", ".join(collection_summaries)
+        return cm_summary
 
     def __add__(self, other):
         # Disable the default tuple behaviour of tuple concatenation
@@ -3131,26 +3154,3 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
-
-
-# See ExplicitCoord._group() for the description/context.
-class _GroupIterator(Iterator):
-    def __init__(self, points):
-        self._points = points
-        self._start = 0
-
-    def __next__(self):
-        num_points = len(self._points)
-        if self._start >= num_points:
-            raise StopIteration
-
-        stop = self._start + 1
-        m = self._points[self._start]
-        while stop < num_points and self._points[stop] == m:
-            stop += 1
-
-        group = _GroupbyItem(m, slice(self._start, stop))
-        self._start = stop
-        return group
-
-    next = __next__

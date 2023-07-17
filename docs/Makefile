@@ -1,39 +1,29 @@
 SUBDIRS = src
 
+help:
+	@for i in $(SUBDIRS); do \
+		echo "make help in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) help); done
+
 html:
 	@for i in $(SUBDIRS); do \
-        echo "make html in $$i..."; \
-        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html); done
+		echo "make html in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html); done
 
 html-noplot:
 	@for i in $(SUBDIRS); do \
-        echo "make html-noplot in $$i..."; \
-        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-noplot); done
+		echo "make html-noplot in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-noplot); done
 
 html-noapi:
 	@for i in $(SUBDIRS); do \
-        echo "make html-noapi in $$i..."; \
-        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-noapi); done
+		echo "make html-noapi in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-noapi); done
 
 html-quick:
 	@for i in $(SUBDIRS); do \
-        echo "make html-quick in $$i..."; \
-        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-quick); done
-
-all:
-	@for i in $(SUBDIRS); do \
-		echo "make all in $$i..."; \
-		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) all); done
-
-install:
-	@for i in $(SUBDIRS); do \
-		echo "Installing in $$i..."; \
-		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) install); done
-
-build:
-	@for i in $(SUBDIRS); do \
-		echo "Clearing in $$i..."; \
-		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) build); done
+		echo "make html-quick in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-quick); done
 
 clean:
 	@for i in $(SUBDIRS); do \
@@ -42,8 +32,8 @@ clean:
 
 doctest:
 	@for i in $(SUBDIRS); do \
-        echo "Running doctest in $$i..."; \
-        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) doctest); done
+		echo "Running doctest in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) doctest); done
 
 linkcheck:
 	@for i in $(SUBDIRS); do \
@@ -55,3 +45,7 @@ show:
 		echo "Running show in $$i..."; \
 		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) show); done
 
+livehtml:
+	@for i in $(SUBDIRS); do \
+		echo "Running show in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) livehtml); done

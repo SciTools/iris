@@ -6,12 +6,12 @@ Pull Request Checklist
 ======================
 
 All pull request will be reviewed by a core developer who will manage the
-process of merging. It is the responsibility of a developer submitting a
+process of merging. It is the responsibility of the contributor submitting a
 pull request to do their best to deliver a pull request which meets the
 requirements of the project it is submitted to.
 
-The check list summarises criteria which will be checked before a pull request
-is merged.  Before submitting a pull request please consider this list.
+This check list summarises criteria which will be checked before a pull request
+is merged.  Before submitting a pull request please consider the following:
 
 
 #. **Provide a helpful description** of the Pull Request.  This should include:
@@ -29,7 +29,7 @@ is merged.  Before submitting a pull request please consider this list.
 #. **Check all modified and new source files conform to the required**
    :ref:`code_formatting`.
 
-#. **Check all new dependencies added to the** `requirements/ci/`_ **yaml
+#. **Check all new dependencies added to the** `requirements`_ **yaml
    files.**  If dependencies have been added then new nox testing lockfiles
    should be generated too, see :ref:`gha_test_env`.
 

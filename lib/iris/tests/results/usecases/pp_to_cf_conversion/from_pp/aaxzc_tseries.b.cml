@@ -14,10 +14,10 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="22225738" long_name="site_number" points="[1.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord id="22225738" long_name="site_number" points="[1.]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="42c82ea7" points="[756690.0, 763890.0, 771090.0, 778290.0]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+        <dimCoord id="42c82ea7" points="[756690., 763890., 771090., 778290.]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods>

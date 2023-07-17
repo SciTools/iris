@@ -22,10 +22,11 @@ requests, instead it is **run overnight against each the commits of the
 previous day** to check if any commit has introduced performance shifts.
 Detected shifts are reported in a new Iris GitHub issue.
 
+.. _on_demand_pr_benchmark:
+
 If a pull request author/reviewer suspects their changes may cause performance
-shifts, a convenience is available (currently via Nox) to replicate the
-overnight benchmark run but comparing the current ``HEAD`` with a requested
-branch (e.g. ``upstream/main``). Read more in `benchmarks/README.md`_.
+shifts, they can manually order their pull request to be benchmarked by adding
+the ``benchmark_this`` label to the PR. Read more in `benchmarks/README.md`_.
 
 Other Uses
 ----------
@@ -38,8 +39,8 @@ applications.
 * Results for a series of commits can be visualised for an intuitive
   understanding of when and why changes occurred.
 
-    .. image:: asv_example_images/commits.png
-       :width: 300
+  .. image:: asv_example_images/commits.png
+     :width: 300
 
 * Parameterised benchmarks make it easy to visualise:
 

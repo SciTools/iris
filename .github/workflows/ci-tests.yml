@@ -35,18 +35,22 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.10"]
-        session: ["tests", "doctest", "gallery", "linkcheck"]
+        python-version: ["3.11"]
+        session: ["doctest", "gallery", "linkcheck"]
         include:
+          - os: "ubuntu-latest"
+            python-version: "3.11"
+            session: "tests"
+            coverage: "--coverage"
+          - os: "ubuntu-latest"
+            python-version: "3.10"
+            session: "tests"
           - os: "ubuntu-latest"
             python-version: "3.9"
             session: "tests"
-          - os: "ubuntu-latest"
-            python-version: "3.8"
-            session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.18"
+      IRIS_TEST_DATA_VERSION: "2.19"
       ENV_NAME: "ci-tests"
 
     steps:
@@ -59,7 +63,7 @@ jobs:
           CACHE_WEEKS: 2
         run: |
           echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-          echo "LOCK_FILE=requirements/ci/nox.lock/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+          echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
 
       - name: "data cache"
         uses: ./.github/workflows/composite/iris-data-cache
@@ -107,7 +111,7 @@ jobs:
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
         with:
-          cache_build: 0
+          cache_build: 2
           env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
 
@@ -133,4 +137,8 @@ jobs:
         env:
           PY_VER: ${{ matrix.python-version }}
         run: |
-          nox --session ${{ matrix.session }} -- --verbose
+          nox --session ${{ matrix.session }} -- --verbose ${{ matrix.coverage }}
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        if: ${{ matrix.coverage }}

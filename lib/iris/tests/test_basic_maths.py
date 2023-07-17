@@ -589,9 +589,9 @@ class TestApplyUfunc(tests.IrisTest):
             in_place=False,
         )
 
-        ans = a.data**2
+        answer = a.data**2
 
-        self.assertArrayEqual(b.data, ans)
+        self.assertArrayEqual(b.data, answer)
         self.assertEqual(b.name(), "more_thingness")
         self.assertEqual(b.units, cf_units.Unit("m^2"))
 
@@ -603,10 +603,10 @@ class TestApplyUfunc(tests.IrisTest):
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
         b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
 
-        ans = a.data**2 + c.data**2
+        answer = a.data**2 + c.data**2
         b2 = b**2
 
-        self.assertArrayAlmostEqual(b2.data, ans)
+        self.assertArrayAlmostEqual(b2.data, answer)
 
 
 class TestIFunc(tests.IrisTest):
@@ -620,9 +620,9 @@ class TestIFunc(tests.IrisTest):
         my_ifunc = iris.analysis.maths.IFunc(np.square, lambda x: x.units**2)
         b = my_ifunc(a, new_name="more_thingness", in_place=False)
 
-        ans = a.data**2
+        answer = a.data**2
 
-        self.assertArrayEqual(b.data, ans)
+        self.assertArrayEqual(b.data, answer)
         self.assertEqual(b.name(), "more_thingness")
         self.assertEqual(b.units, cf_units.Unit("m^2"))
 
@@ -637,9 +637,9 @@ class TestIFunc(tests.IrisTest):
         )
         b = my_ifunc(a, c)
 
-        ans = (a.data**2 + c.data**2) ** 0.5
+        answer = (a.data**2 + c.data**2) ** 0.5
 
-        self.assertArrayAlmostEqual(b.data, ans)
+        self.assertArrayAlmostEqual(b.data, answer)
 
         def vec_mag_data_func(u_data, v_data):
             return np.sqrt(u_data**2 + v_data**2)
@@ -654,10 +654,10 @@ class TestIFunc(tests.IrisTest):
         cs_ifunc = iris.analysis.maths.IFunc(np.cumsum, lambda a: a.units)
 
         b = cs_ifunc(a, axis=1)
-        ans = a.data.copy()
-        ans = np.cumsum(ans, axis=1)
+        answer = a.data.copy()
+        answer = np.cumsum(answer, axis=1)
 
-        self.assertArrayAlmostEqual(b.data, ans)
+        self.assertArrayAlmostEqual(b.data, answer)
 
 
 @tests.skip_data

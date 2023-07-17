@@ -3,10 +3,10 @@
   <cube dtype="float64" long_name="temperature" units="kelvin">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="4a0cb9d8" points="[0.0, 5.0, 10.0]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
+        <dimCoord id="4a0cb9d8" points="[ 0.,  5., 10.]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[0.0, 6.0]]" id="62e940e0" points="[3.0]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+        <dimCoord bounds="[[0., 6.]]" id="62e940e0" points="[3.]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

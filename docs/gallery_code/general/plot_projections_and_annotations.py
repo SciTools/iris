@@ -78,7 +78,7 @@ def make_plot(projection_name, projection_crs):
     y_points = y_lower + y_delta * np.concatenate(
         (zeros, steps, ones, steps[::-1])
     )
-    # Get the Iris coordinate sytem of the X coordinate (Y should be the same).
+    # Get the Iris coordinate system of the X coordinate (Y should be the same).
     cs_data1 = x_coord.coord_system
     # Construct an equivalent Cartopy coordinate reference system ("crs").
     crs_data1 = cs_data1.as_cartopy_crs()

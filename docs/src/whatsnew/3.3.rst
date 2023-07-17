@@ -6,11 +6,9 @@ v3.3 (1 Sep 2022)
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-
-.. dropdown:: :opticon:`report` v3.3.0 Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: |iris_version| v3.3.0 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
@@ -34,31 +32,30 @@ This document explains the changes made to Iris for this release
 v3.3.1 (29 Sep 2022)
 ====================
 
-.. dropdown:: :opticon:`alert` v3.3.1 Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.3.1 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
 
    The patches in this release of Iris include:
 
-    #. `@pp-mo`_ fixed the Jupyter notebook display of :class:`~iris.cube.CubeList`.
-       (:issue:`4973`, :pull:`4976`)
+   #. `@pp-mo`_ fixed the Jupyter notebook display of :class:`~iris.cube.CubeList`.
+      (:issue:`4973`, :pull:`4976`)
 
-    #. `@pp-mo`_ fixed a bug in NAME loaders where data with no associated statistic would
-       load as a cube with invalid cell-methods, which cannot be printed or saved to netcdf.
-       (:issue:`3288`, :pull:`4933`)
+   #. `@pp-mo`_ fixed a bug in NAME loaders where data with no associated statistic would
+      load as a cube with invalid cell-methods, which cannot be printed or saved to netcdf.
+      (:issue:`3288`, :pull:`4933`)
 
-    #. `@pp-mo`_ ensured that :data:`iris.cube.Cube.cell_methods` must always be an iterable
-       of :class:`iris.coords.CellMethod` objects (:pull:`4933`).
+   #. `@pp-mo`_ ensured that :data:`iris.cube.Cube.cell_methods` must always be an iterable
+      of :class:`iris.coords.CellMethod` objects (:pull:`4933`).
 
-    #. `@trexfeathers`_ advanced the Cartopy pin to ``>=0.21``, as Cartopy's
-       change to default Transverse Mercator projection affects an Iris test.
-       See `SciTools/cartopy@fcb784d`_ and `SciTools/cartopy@8860a81`_ for more
-       details. (:pull:`4992`)
+   #. `@trexfeathers`_ advanced the Cartopy pin to ``>=0.21``, as Cartopy's
+      change to default Transverse Mercator projection affects an Iris test.
+      See `SciTools/cartopy@fcb784d`_ and `SciTools/cartopy@8860a81`_ for more
+      details. (:pull:`4992`)
 
-    #. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a
-       problem with segfaults. (:pull:`4992`)
+   #. `@trexfeathers`_ introduced the ``netcdf4!=1.6.1`` pin to avoid a
+      problem with segfaults. (:pull:`4992`)
 
 
 📢 Announcements

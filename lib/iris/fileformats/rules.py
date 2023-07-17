@@ -404,15 +404,15 @@ def _load_pairs_from_fields_and_filenames(
 def load_pairs_from_fields(fields, converter):
     """
     Convert an iterable of fields into an iterable of Cubes using the
-    provided convertor.
+    provided converter.
 
     Args:
 
     * fields:
         An iterable of fields.
 
-    * convertor:
-        An Iris convertor function, suitable for use with the supplied fields.
+    * converter:
+        An Iris converter function, suitable for use with the supplied fields.
         See the description in :class:`iris.fileformats.rules.Loader`.
 
     Returns:

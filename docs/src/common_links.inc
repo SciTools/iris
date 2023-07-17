@@ -6,6 +6,7 @@
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
+.. _codespell: https://github.com/codespell-project/codespell
 .. _conda: https://docs.conda.io/en/latest/
 .. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
@@ -30,17 +31,19 @@
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
-.. _readthedocs.yml: https://github.com/SciTools/iris/blob/main/requirements/ci/readthedocs.yml
+.. _readthedocs.yml: https://github.com/SciTools/iris/blob/main/requirements/readthedocs.yml
 .. _SciTools: https://github.com/SciTools
 .. _scitools-iris: https://pypi.org/project/scitools-iris/
 .. _sphinx: https://www.sphinx-doc.org/en/master/
+.. _sphinx-apidoc: https://github.com/sphinx-contrib/apidoc
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _using git: https://docs.github.com/en/github/using-git
-.. _requirements/ci/: https://github.com/SciTools/iris/tree/main/requirements/ci
+.. _requirements: https://github.com/SciTools/iris/tree/main/requirements
 .. _CF-UGRID: https://ugrid-conventions.github.io/ugrid-conventions/
 .. _issues on GitHub: https://github.com/SciTools/iris/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc
 .. _python-stratify: https://github.com/SciTools/python-stratify
 .. _iris-esmf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
+.. _netCDF4: https://github.com/Unidata/netcdf4-python
 
 
 .. comment

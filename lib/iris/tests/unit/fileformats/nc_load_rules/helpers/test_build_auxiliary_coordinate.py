@@ -8,11 +8,11 @@ Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 build_auxilliary_coordinate`.
 
 """
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+import contextlib
 from unittest import mock
 
 import numpy as np
@@ -22,6 +22,7 @@ from iris.coords import AuxCoord
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
+from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
 
 
 class TestBoundsVertexDim(tests.IrisTest):
@@ -48,6 +49,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             long_name="wibble",
             units="m",
             shape=points.shape,
+            size=np.prod(points.shape),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
         )
@@ -111,6 +113,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             cf_name="wibble_bnds",
             cf_data=cf_data,
             shape=bounds.shape,
+            size=np.prod(bounds.shape),
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key],
         )
@@ -165,6 +168,7 @@ class TestDtype(tests.IrisTest):
             long_name="wibble",
             units="m",
             shape=points.shape,
+            size=np.prod(points.shape),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
         )
@@ -176,21 +180,29 @@ class TestDtype(tests.IrisTest):
             cube_parts=dict(coordinates=[]),
         )
 
+    @contextlib.contextmanager
+    def deferred_load_patch(self):
         def patched__getitem__(proxy_self, keys):
             if proxy_self.variable_name == self.cf_coord_var.cf_name:
                 return self.cf_coord_var[keys]
             raise RuntimeError()
 
-        self.deferred_load_patch = mock.patch(
+        # Fix for deferred load, *AND* avoid loading small variable data in real arrays.
+        with mock.patch(
             "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
             new=patched__getitem__,
-        )
+        ):
+            # While loading, "turn off" loading small variables as real data.
+            with mock.patch(
+                "iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0
+            ):
+                yield
 
     def test_scale_factor_add_offset_int(self):
         self.cf_coord_var.scale_factor = 3
         self.cf_coord_var.add_offset = 5
 
-        with self.deferred_load_patch:
+        with self.deferred_load_patch():
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
@@ -199,7 +211,7 @@ class TestDtype(tests.IrisTest):
     def test_scale_factor_float(self):
         self.cf_coord_var.scale_factor = 3.0
 
-        with self.deferred_load_patch:
+        with self.deferred_load_patch():
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
@@ -208,7 +220,7 @@ class TestDtype(tests.IrisTest):
     def test_add_offset_float(self):
         self.cf_coord_var.add_offset = 5.0
 
-        with self.deferred_load_patch:
+        with self.deferred_load_patch():
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
@@ -227,6 +239,7 @@ class TestCoordConstruction(tests.IrisTest):
 
         points = np.arange(6)
         self.cf_coord_var = mock.Mock(
+            spec=threadsafe_nc.VariableWrapper,
             dimensions=("foo",),
             scale_factor=1,
             add_offset=0,
@@ -239,18 +252,21 @@ class TestCoordConstruction(tests.IrisTest):
             units="days since 1970-01-01",
             calendar=None,
             shape=points.shape,
+            size=np.prod(points.shape),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
         )
 
         bounds = np.arange(12).reshape(6, 2)
         self.cf_bounds_var = mock.Mock(
+            spec=threadsafe_nc.VariableWrapper,
             dimensions=("x", "nv"),
             scale_factor=1,
             add_offset=0,
             cf_name="wibble_bnds",
             cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None)),
             shape=bounds.shape,
+            size=np.prod(bounds.shape),
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key],
         )

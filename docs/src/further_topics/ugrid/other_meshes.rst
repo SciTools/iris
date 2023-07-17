@@ -27,7 +27,8 @@ To represent the Voronoi Polygons as faces, the corner coordinates will be used
 as the **nodes** when creating the Iris
 :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: Code
+    :icon: code
 
     .. code-block:: python
 
@@ -44,8 +45,8 @@ as the **nodes** when creating the Iris
                 latitude                         -        x
                 longitude                        -        x
             Cell methods:
-                mean where sea              area
-                mean                        time
+                0                           area: mean where sea
+                1                           time: mean
             Attributes:
                 grid                        'FESOM 1.4 (unstructured grid in the horizontal with 126859 wet nodes;...
                 ...
@@ -77,8 +78,8 @@ as the **nodes** when creating the Iris
                 latitude                         -        x
                 longitude                        -        x
             Cell methods:
-                mean where sea              area
-                mean                        time
+                0                           area: mean where sea
+                1                           time: mean
             Attributes:
                 grid                        'FESOM 1.4 (unstructured grid in the horizontal with 126859 wet nodes;...
                 ...
@@ -115,7 +116,8 @@ as the **nodes** when creating the Iris
 :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: Code
+    :icon: code
 
     .. code-block:: python
 
@@ -229,6 +231,7 @@ as the **nodes** when creating the Iris
 ..  figure:: images/orca_grid.png
     :width: 300
     :alt: Plot of ORCA-gridded data from NEMO.
+    :class: dark-light
 
 NEMO can use various grids, but is frequently used with ORCA type grids.
 ORCA grids store global data in 2-dimensional ny * nx arrays.  All cells are
@@ -253,7 +256,8 @@ To make an unstructured cube, the data must be 'flattened' to convert the given 
 dimensions into a single mesh dimension.  Since Iris cubes don't support a "reshape" or
 "flatten" operations, we create a new cube from the flattened data.
 
-.. dropdown:: :opticon:`code`
+.. dropdown:: Code
+    :icon: code
 
     .. code-block:: python
 
@@ -275,7 +279,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
                 depth                            4.999938 m, bound=(0.0, 10.0) m
                 time                             0001-01-01 12:00:00
             Cell methods:
-                mean                             time
+                0                                time: mean
             Attributes:
                 Conventions                      'CF-1.5'
 
@@ -350,7 +354,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
                 name                             unknown
                 location                         face
             Cell methods:
-                mean                             time
+                0                                time: mean
             Attributes:
                 Conventions                      'CF-1.5'
 

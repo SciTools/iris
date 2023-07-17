@@ -4,9 +4,9 @@
     <coords>
       <coord datadims="[0, 1]">
         <auxCoord id="75879334" points="[[2, 1, 0],
-		[3, 2, 1],
-		[4, 3, 2],
-		[5, 4, 3]]" shape="(4, 3)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
+ [3, 2, 1],
+ [4, 3, 2],
+ [5, 4, 3]]" shape="(4, 3)" standard_name="forecast_period" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="e81eb67d" points="[10, 11, 12]" shape="(3,)" standard_name="forecast_reference_time" units="Unit('1')" value_type="int32"/>

@@ -31,7 +31,7 @@ class Test___common_cmp__(tests.IrisTest):
             cell >= other
 
     def test_PartialDateTime_bounded_cell(self):
-        # Check that bounded comparisions to a PartialDateTime
+        # Check that bounded comparisons to a PartialDateTime
         # raise an exception. These are not supported as they
         # depend on the calendar.
         dt = PartialDateTime(month=6)

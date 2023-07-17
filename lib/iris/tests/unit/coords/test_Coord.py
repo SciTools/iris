@@ -708,7 +708,7 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         coord = DimCoord([10, 20, 40], bounds=[[5, 15], [15, 25], [35, 45]])
         contiguous, diffs = coord._discontiguity_in_bounds()
         self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs, np.array([0, 10]))
+        self.assertArrayEqual(diffs, np.array([False, True]))
 
     def test_1d_one_cell(self):
         # Test a 1D coord with a single cell.

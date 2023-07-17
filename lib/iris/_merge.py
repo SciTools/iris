@@ -298,7 +298,7 @@ class _CoordSignature(
 ):
     """
     Criterion for identifying a specific type of :class:`iris.cube.Cube`
-    based on its scalar and vector coorinate data and metadata, and
+    based on its scalar and vector coordinate data and metadata, and
     auxiliary coordinate factories.
 
     Args:
@@ -516,7 +516,7 @@ class _Relation(namedtuple("Relation", ["separable", "inseparable"])):
     * separable:
         A set of independent candidate dimension names.
 
-    * inseperable:
+    * inseparable:
         A set of dependent candidate dimension names.
 
     """
@@ -1419,7 +1419,7 @@ class ProtoCube:
 
         """
 
-        # Heuristic reordering of coordinate defintion indexes into
+        # Heuristic reordering of coordinate definition indexes into
         # preferred dimension order.
         def axis_and_name(name):
             axis_dict = {"T": 1, "Z": 2, "Y": 3, "X": 4}
@@ -1467,7 +1467,7 @@ class ProtoCube:
                     }
                 else:
                     # TODO: Consider appropriate sort order (ascending,
-                    # decending) i.e. use CF positive attribute.
+                    # descending) i.e. use CF positive attribute.
                     cells = sorted(indexes[name])
                     points = np.array(
                         [cell.point for cell in cells],

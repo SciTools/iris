@@ -6,11 +6,9 @@ v3.2 (15 Feb 2022)
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-
-.. dropdown:: :opticon:`report` v3.2.0 Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.2.0 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
@@ -28,10 +26,9 @@ This document explains the changes made to Iris for this release
 v3.2.1 (11 Mar 2022)
 ====================
 
-.. dropdown:: :opticon:`alert` v3.2.1 Patches
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.2.1 Patches
+   :color: secondary
+   :icon: alert
    :animate: fade-in
 
    📢 **Welcome** to `@dennissergeev`_, who made his first contribution to Iris.  Nice work!
@@ -170,7 +167,7 @@ v3.2.1 (11 Mar 2022)
    as well as some long-standing bugs with vertical coordinates and number
    formats. (:pull:`4411`)
 
-#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to alway return ``None`` if
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to always return ``None`` if
    no value match is found.  (:pull:`4417`)
 
 #. `@wjbenfold`_ changed :meth:`iris.util.points_step` to stop it from warning

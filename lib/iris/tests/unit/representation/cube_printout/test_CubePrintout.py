@@ -537,10 +537,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Cell methods:",
-            "        stdev                       area",
-            "        mean                        y (10m, vertical), time (3min, =duration)",
+            "        0                           area: stdev",
+            "        1                           y: time: mean (interval: 10m"
+            " interval: 3min comment: vertical comment: =duration)",
         ]
-        self.assertEqual(rep, expected)
+        self.assertEqual(expected, rep)
 
     def test_unstructured_cube(self):
         # Check a sample mesh-cube against the expected result.

@@ -19,6 +19,7 @@ import warnings
 from xml.dom.minidom import Document
 import zlib
 
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -28,6 +29,7 @@ from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris._merge
 import iris.analysis
+from iris.analysis import _Weights
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
@@ -541,6 +543,7 @@ class CubeList(list):
         check_aux_coords=True,
         check_cell_measures=True,
         check_ancils=True,
+        check_derived_coords=True,
     ):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
@@ -553,19 +556,29 @@ class CubeList(list):
         Kwargs:
 
         * check_aux_coords
-            Checks the auxiliary coordinates of the cubes match. This check
-            is not applied to auxiliary coordinates that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the points and bounds of auxiliary coordinates of the
+            cubes match. This check is not applied to auxiliary coordinates
+            that span the dimension the concatenation is occurring along.
+            Defaults to True.
 
         * check_cell_measures
-            Checks the cell measures of the cubes match. This check
-            is not applied to cell measures that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the data of cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension the
+            concatenation is occurring along. Defaults to True.
 
         * check_ancils
-            Checks the ancillary variables of the cubes match. This check
-            is not applied to ancillary variables that span the dimension
+            Checks if the data of ancillary variables of the cubes match. This
+            check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
+
+        * check_derived_coords
+            Checks if the points and bounds of derived coordinates of the cubes
+            match. This check is not applied to derived coordinates that span
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to True.
 
         .. note::
 
@@ -586,6 +599,7 @@ class CubeList(list):
                 check_aux_coords=check_aux_coords,
                 check_cell_measures=check_cell_measures,
                 check_ancils=check_ancils,
+                check_derived_coords=check_derived_coords,
             )
             n_res_cubes = len(res)
             if n_res_cubes == 1:
@@ -612,6 +626,7 @@ class CubeList(list):
         check_aux_coords=True,
         check_cell_measures=True,
         check_ancils=True,
+        check_derived_coords=True,
     ):
         """
         Concatenate the cubes over their common dimensions.
@@ -619,19 +634,29 @@ class CubeList(list):
         Kwargs:
 
         * check_aux_coords
-            Checks the auxiliary coordinates of the cubes match. This check
-            is not applied to auxiliary coordinates that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the points and bounds of auxiliary coordinates of the
+            cubes match. This check is not applied to auxiliary coordinates
+            that span the dimension the concatenation is occurring along.
+            Defaults to True.
 
         * check_cell_measures
-            Checks the cell measures of the cubes match. This check
-            is not applied to cell measures that span the dimension
-            the concatenation is occurring along. Defaults to True.
+            Checks if the data of cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension the
+            concatenation is occurring along. Defaults to True.
 
         * check_ancils
-            Checks the ancillary variables of the cubes match. This check
-            is not applied to ancillary variables that span the dimension
+            Checks if the data of ancillary variables of the cubes match. This
+            check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
+
+        * check_derived_coords
+            Checks if the points and bounds of derived coordinates of the cubes
+            match. This check is not applied to derived coordinates that span
+            the dimension the concatenation is occurring along. Note that
+            differences in scalar coordinates and dimensional coordinates used
+            to derive the coordinate are still checked. Checks for auxiliary
+            coordinates used to derive the coordinates can be ignored with
+            `check_aux_coords`. Defaults to True.
 
         Returns:
             A new :class:`iris.cube.CubeList` of concatenated
@@ -717,6 +742,7 @@ class CubeList(list):
             check_aux_coords=check_aux_coords,
             check_cell_measures=check_cell_measures,
             check_ancils=check_ancils,
+            check_derived_coords=check_derived_coords,
         )
 
     def realise_data(self):
@@ -787,8 +813,8 @@ class Cube(CFVariableMixin):
                 time                        \
 1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             Cell methods:
-                mean within years           time
-                mean over years             time
+                0                           time: mean within years
+                1                           time: mean over years
             Attributes:
                 STASH                       m01s16i203
                 source                      'Data from Met Office Unified Model'
@@ -1119,7 +1145,7 @@ class Cube(CFVariableMixin):
             )
         if self.has_lazy_data():
             # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = self.units
+            old_unit = Unit(self.units)
             new_unit = unit
 
             pointwise_convert = partial(old_unit.convert, other=new_unit)
@@ -3721,9 +3747,15 @@ class Cube(CFVariableMixin):
         sum :data:`~iris.analysis.SUM`.
 
         Weighted aggregations support an optional *weights* keyword argument.
-        If set, this should be supplied as an array of weights whose shape
-        matches the cube. Values for latitude-longitude area weights may be
-        calculated using :func:`iris.analysis.cartography.area_weights`.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d (for collapsing over a 1d coordinate) or match the
+        shape of the cube. When weights are not given as arrays, units are
+        correctly handled for weighted sums, i.e., the original unit of the
+        cube is multiplied by the units of the weights. Values for
+        latitude-longitude area weights may be calculated using
+        :func:`iris.analysis.cartography.area_weights`.
 
         Some Iris aggregators support "lazy" evaluation, meaning that
         cubes resulting from this method may represent data arrays which are
@@ -3768,8 +3800,8 @@ class Cube(CFVariableMixin):
                     longitude                   \
 180.0 degrees, bound=(0.0, 360.0) degrees
                 Cell methods:
-                    mean                        month, year
-                    mean                        longitude
+                    0                           month: year: mean
+                    1                           longitude: mean
                 Attributes:
                     Conventions                 'CF-1.5'
                     STASH                       m01s00i024
@@ -3802,6 +3834,13 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
+
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
 
@@ -3945,7 +3984,11 @@ class Cube(CFVariableMixin):
             )
 
         aggregator.update_metadata(
-            collapsed_cube, coords, axis=collapse_axis, **kwargs
+            collapsed_cube,
+            coords,
+            axis=collapse_axis,
+            _weights_units=getattr(weights_info, "units", None),
+            **kwargs,
         )
         result = aggregator.post_process(
             collapsed_cube, data_result, coords, **kwargs
@@ -3970,10 +4013,14 @@ class Cube(CFVariableMixin):
         also be supplied. These include :data:`~iris.analysis.MEAN` and
         :data:`~iris.analysis.SUM`.
 
-        Weighted aggregations support an optional *weights* keyword argument. If
-        set, this should be supplied as an array of weights whose shape matches
-        the cube or as 1D array whose length matches the dimension over which is
-        aggregated.
+        Weighted aggregations support an optional *weights* keyword argument.
+        If set, this can be supplied as an array, cube, or (names of)
+        :meth:`~iris.cube.Cube.coords`, :meth:`~iris.cube.Cube.cell_measures`,
+        or :meth:`~iris.cube.Cube.ancillary_variables`. In all cases, the
+        weights should be 1d or match the shape of the cube. When weights are
+        not given as arrays, units are correctly handled for weighted sums,
+        i.e., the original unit of the cube is multiplied by the units of the
+        weights.
 
         Parameters
         ----------
@@ -4025,13 +4072,20 @@ x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
                 Cell methods:
-                    mean                        month, year
-                    mean                        year
+                    0                           month: year: mean
+                    1                           year: mean
                 Attributes:
                     Conventions                 'CF-1.5'
                     STASH                       m01s00i024
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
+
         groupby_coords = []
         dimension_to_groupby = None
 
@@ -4129,102 +4183,73 @@ x            -              -
         data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
         data_shape[dimension_to_groupby] = len(groupby)
 
-        # Aggregate the group-by data.
+        # Choose appropriate data and functions for data aggregation.
         if aggregator.lazy_func is not None and self.has_lazy_data():
-            front_slice = (slice(None, None),) * dimension_to_groupby
-            back_slice = (slice(None, None),) * (
-                len(data_shape) - dimension_to_groupby - 1
-            )
+            stack = da.stack
+            input_data = self.lazy_data()
+            agg_method = aggregator.lazy_aggregate
+        else:
+            input_data = self.data
+            # Note numpy.stack does not preserve masks.
+            stack = ma.stack if ma.isMaskedArray(input_data) else np.stack
+            agg_method = aggregator.aggregate
 
-            # Create cube and weights slices
-            groupby_subcubes = map(
-                lambda groupby_slice: self[
+        # Create data and weights slices.
+        front_slice = (slice(None),) * dimension_to_groupby
+        back_slice = (slice(None),) * (
+            len(data_shape) - dimension_to_groupby - 1
+        )
+
+        groupby_subarrs = map(
+            lambda groupby_slice: iris.util._slice_data_with_keys(
+                input_data, front_slice + (groupby_slice,) + back_slice
+            )[1],
+            groupby.group(),
+        )
+
+        if weights is not None:
+            groupby_subweights = map(
+                lambda groupby_slice: weights[
                     front_slice + (groupby_slice,) + back_slice
-                ].lazy_data(),
+                ],
                 groupby.group(),
             )
-            if weights is not None:
-                groupby_subweights = map(
-                    lambda groupby_slice: weights[
-                        front_slice + (groupby_slice,) + back_slice
-                    ],
-                    groupby.group(),
-                )
-            else:
-                groupby_subweights = (None for _ in range(len(groupby)))
-
-            agg = iris.analysis.create_weighted_aggregator_fn(
-                aggregator.lazy_aggregate, axis=dimension_to_groupby, **kwargs
-            )
-            result = list(map(agg, groupby_subcubes, groupby_subweights))
-
-            # If weights are returned, "result" is a list of tuples (each tuple
-            # contains two elements; the first is the aggregated data, the
-            # second is the aggregated weights). Convert these to two lists
-            # (one for the aggregated data and one for the aggregated weights)
-            # before combining the different slices.
-            if return_weights:
-                result, weights_result = list(zip(*result))
-                aggregateby_weights = da.stack(
-                    weights_result, axis=dimension_to_groupby
-                )
-            else:
-                aggregateby_weights = None
-            aggregateby_data = da.stack(result, axis=dimension_to_groupby)
         else:
-            cube_slice = [slice(None, None)] * len(data_shape)
-            for i, groupby_slice in enumerate(groupby.group()):
-                # Slice the cube with the group-by slice to create a group-by
-                # sub-cube.
-                cube_slice[dimension_to_groupby] = groupby_slice
-                groupby_sub_cube = self[tuple(cube_slice)]
+            groupby_subweights = (None for _ in range(len(groupby)))
 
-                # Slice the weights
-                if weights is not None:
-                    groupby_sub_weights = weights[tuple(cube_slice)]
-                    kwargs["weights"] = groupby_sub_weights
+        # Aggregate data slices.
+        agg = iris.analysis.create_weighted_aggregator_fn(
+            agg_method, axis=dimension_to_groupby, **kwargs
+        )
+        result = list(map(agg, groupby_subarrs, groupby_subweights))
 
-                # Perform the aggregation over the group-by sub-cube and
-                # repatriate the aggregated data into the aggregate-by cube
-                # data. If weights are also returned, handle them separately.
-                result = aggregator.aggregate(
-                    groupby_sub_cube.data, axis=dimension_to_groupby, **kwargs
-                )
-                if return_weights:
-                    weights_result = result[1]
-                    result = result[0]
-                else:
-                    weights_result = None
+        # If weights are returned, "result" is a list of tuples (each tuple
+        # contains two elements; the first is the aggregated data, the
+        # second is the aggregated weights). Convert these to two lists
+        # (one for the aggregated data and one for the aggregated weights)
+        # before combining the different slices.
+        if return_weights:
+            result, weights_result = list(zip(*result))
+            aggregateby_weights = stack(
+                weights_result, axis=dimension_to_groupby
+            )
+        else:
+            aggregateby_weights = None
 
-                # Determine aggregation result data type for the aggregate-by
-                # cube data on first pass.
-                if i == 0:
-                    if ma.isMaskedArray(self.data):
-                        aggregateby_data = ma.zeros(
-                            data_shape, dtype=result.dtype
-                        )
-                    else:
-                        aggregateby_data = np.zeros(
-                            data_shape, dtype=result.dtype
-                        )
-                    if weights_result is not None:
-                        aggregateby_weights = np.zeros(
-                            data_shape, dtype=weights_result.dtype
-                        )
-                    else:
-                        aggregateby_weights = None
-                cube_slice[dimension_to_groupby] = i
-                aggregateby_data[tuple(cube_slice)] = result
-                if weights_result is not None:
-                    aggregateby_weights[tuple(cube_slice)] = weights_result
-
-            # Restore original weights.
-            if weights is not None:
-                kwargs["weights"] = weights
+        aggregateby_data = stack(result, axis=dimension_to_groupby)
+        # Ensure plain ndarray is output if plain ndarray was input.
+        if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(
+            input_data
+        ):
+            aggregateby_data = ma.getdata(aggregateby_data)
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
-            aggregateby_cube, groupby_coords, aggregate=True, **kwargs
+            aggregateby_cube,
+            groupby_coords,
+            aggregate=True,
+            _weights_units=getattr(weights_info, "units", None),
+            **kwargs,
         )
         # Replace the appropriate coordinates within the aggregate-by cube.
         (dim_coord,) = self.coords(
@@ -4289,8 +4314,11 @@ x            -              -
 
         * kwargs:
             Aggregator and aggregation function keyword arguments. The weights
-            argument to the aggregator, if any, should be a 1d array with the
-            same length as the chosen window.
+            argument to the aggregator, if any, should be a 1d array, cube, or
+            (names of) :meth:`~iris.cube.Cube.coords`,
+            :meth:`~iris.cube.Cube.cell_measures`, or
+            :meth:`~iris.cube.Cube.ancillary_variables` with the same length as
+            the chosen window.
 
         Returns:
             :class:`iris.cube.Cube`.
@@ -4321,7 +4349,7 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    mean                        time (1 hour)
+                    0                           time: mean (interval: 1 hour)
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
@@ -4346,8 +4374,8 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    mean                        time (1 hour)
-                    mean                        time
+                    0                           time: mean (interval: 1 hour)
+                    1                           time: mean
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
@@ -4358,6 +4386,13 @@ x            -               -
             possible windows of size 3 from the original cube.
 
         """
+        # Update weights kwargs (if necessary) to handle different types of
+        # weights
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
+
         coord = self._as_list_of_coords(coord)[0]
 
         if getattr(coord, "circular", False):
@@ -4443,6 +4478,7 @@ x            -               -
             new_cube,
             [coord],
             action="with a rolling window of length %s over" % window,
+            _weights_units=getattr(weights_info, "units", None),
             **kwargs,
         )
         # and perform the data transformation, generating weights first if

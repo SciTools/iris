@@ -67,9 +67,7 @@ class Test_aggregated_by(tests.IrisTest):
 
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.cell_method = []
-        self.mock_agg.aggregate = mock.Mock(
-            return_value=mock.Mock(dtype="object")
-        )
+        self.mock_agg.aggregate = mock.Mock(return_value=np.arange(4))
         self.mock_agg.aggregate_shape = mock.Mock(return_value=())
         self.mock_agg.lazy_func = None
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
@@ -79,8 +77,8 @@ class Test_aggregated_by(tests.IrisTest):
 
         def mock_weighted_aggregate(*_, **kwargs):
             if kwargs.get("returned", False):
-                return (mock.Mock(dtype="object"), mock.Mock(dtype="object"))
-            return mock.Mock(dtype="object")
+                return (np.arange(11), np.ones(11))
+            return np.arange(4)
 
         self.mock_weighted_agg.aggregate = mock.Mock(
             side_effect=mock_weighted_aggregate
