@@ -788,7 +788,7 @@ class CubeAttrsDict(MutableMapping):
     both :class:`~iris.common.mixin.LimitedAttributeDict`.  The CubeAttrsDict object
     contains *no* additional state of its own, but simply acts as a view on these two.
 
-    When reading (__getitem__, pop. popitem, keys, values etc), it contains all the
+    When reading (__getitem__, pop, popitem, keys, values etc), it contains all the
     keys + values of both 'locals' and 'globals'.  When a key occurs in *both* 'locals'
     and 'globals', the result is the local value.
 
