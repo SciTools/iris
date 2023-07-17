@@ -1249,11 +1249,7 @@ class Cube(CFVariableMixin):
     #
     # Ensure that .attributes is always a :class:`CubeAttrsDict`.
     #
-    @property
-    def attributes(self):
-        return self._metadata_manager.attributes
-
-    @attributes.setter
+    @CFVariableMixin.attributes.setter
     def attributes(self, attributes):
         """
         An override to CfVariableMixin.attributes.setter, which ensures that Cube
