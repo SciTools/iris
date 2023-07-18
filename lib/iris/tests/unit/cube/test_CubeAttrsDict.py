@@ -63,9 +63,7 @@ class Test___init__:
 
     def test_from_cubeattrsdict(self, sample_attrs):
         result = CubeAttrsDict(sample_attrs)
-        check_content(
-            result, matches=sample_attrs
-        )
+        check_content(result, matches=sample_attrs)
 
     def test_from_cubeattrsdict_like(self):
         class MyDict:
