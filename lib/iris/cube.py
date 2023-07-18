@@ -47,7 +47,7 @@ import iris.coords
 import iris.exceptions
 import iris.util
 
-__all__ = ["Cube", "CubeList"]
+__all__ = ["Cube", "CubeList", "CubeAttrsDict"]
 
 
 # The XML namespace to use for CubeML documents
@@ -773,7 +773,7 @@ class CubeAttrsDict(MutableMapping):
     the combined cube 'local' and 'global' attributes, mimicking the behaviour of a
     simple dict.
 
-    This supports all the regular methods of a 'dict',
+    This supports all the regular methods of a 'dict'.
     However, a few things such as the detailed print (repr) are different.
 
     In addition, the 'locals' and 'globals' properties provide specific access to local
@@ -828,16 +828,51 @@ class CubeAttrsDict(MutableMapping):
 
     def __init__(
         self,
-        combined: Optional[Mapping] = "__unset",
+        combined: Optional[Mapping] = "__unspecified",
         locals: Optional[Mapping] = None,
         globals: Optional[Mapping] = None,
     ):
-        # Allow initialisation from a generic dictionary, or local/global specific ones.
+        """
+        Create a cube attributes dictionary.
+
+        Unlike the attributes of other :class:`CfVariableMixin` subclasses, this is a
+        "split" dictionary - i.e. it contains separate global + local settings.
+
+        We support initialisation from a generic dictionary (using default global/local
+        name identification rules), or from specific local and global ones.
+
+        Parameters
+        ----------
+        combined : dict
+            values to init both 'self.globals' and 'self.locals'.  If 'combined' itself
+            has attributes named 'locals' and 'globals', these are used to update the
+            respective content (after initially setting the individual ones).
+            Otherwise, 'combined' is treated as a generic mapping, applied as
+            ``self.update(combined)``,
+            i.e. it will set locals and/or globals with the same logic as '__setitem__'.
+        locals : dict
+            initial content for 'self.locals'
+        globals : dict
+            initial content for 'self.locals'
+
+        Examples
+        --------
+        >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
+        CubeAttrsDict(globals={'history': 'data-story'}, locals={'comment': 'this-cube'})
+        >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this cube'}).globals
+        {'history': 'data-story'}
+        >>> CubeAttrsDict(locals={'history':'local'})
+        CubeAttrsDict(globals={}, locals={'history': 'local'})
+        >>> CubeAttrsDict(globals={'x': 'global'}, locals={'x':'local'})
+        CubeAttrsDict(globals={'x': 'global'}, locals={'x': 'local'})
+        >>>
+
+        """
         # First initialise locals + globals, defaulting to empty.
         self.locals = locals
         self.globals = globals
         # Update with combined, if present.
-        if not isinstance(combined, str) or combined != "__unset":
+        if not isinstance(combined, str) or combined != "__unspecified":
             # Treat a single input with 'locals' and 'globals' properties as an
             # existing CubeAttrsDict, and update from its content.
             # N.B. enforce deep copying, consistent with general Iris usage.
