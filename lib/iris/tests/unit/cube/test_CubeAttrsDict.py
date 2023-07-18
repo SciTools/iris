@@ -64,7 +64,7 @@ class Test___init__:
     def test_from_cubeattrsdict(self, sample_attrs):
         result = CubeAttrsDict(sample_attrs)
         check_content(
-            result, locals=sample_attrs.locals, globals=sample_attrs.globals
+            result, matches=sample_attrs
         )
 
     def test_from_cubeattrsdict_like(self):
@@ -248,15 +248,15 @@ class TestSettingBehaviours:
         check_content(attrs, globals={attrname: "this"})
 
     def test_overwrite_local(self):
-        attrs = CubeAttrsDict(locals={"a": 1})
-        attrs["a"] = "this"
-        check_content(attrs, locals={"a": "this"})
+        attrs = CubeAttrsDict({"a": 1})
+        attrs["a"] = 2
+        check_content(attrs, locals={"a": 2})
 
-    def test_overwrite_global(self):
-        attrs = CubeAttrsDict(globals={"a": 1})
-        # Since a global attr exists, it will write that instead of creating a local
-        attrs["a"] = "this"
-        check_content(attrs, globals={"a": "this"})
+    @pytest.mark.parametrize("attrname", _CF_GLOBAL_ATTRS)
+    def test_overwrite_global(self, attrname):
+        attrs = CubeAttrsDict({attrname: 1})
+        attrs[attrname] = 2
+        check_content(attrs, globals={attrname: 2})
 
     @pytest.mark.parametrize("global_attrname", _CF_GLOBAL_ATTRS)
     def test_overwrite_forced_local(self, global_attrname):
@@ -267,7 +267,7 @@ class TestSettingBehaviours:
 
     def test_overwrite_forced_global(self):
         attrs = CubeAttrsDict(globals={"data": 1})
-        # The attr remains local, even though it would be created local by default
+        # The attr remains global, even though it would be created local by default
         attrs["data"] = 2
         check_content(attrs, globals={"data": 2})
 

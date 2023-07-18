@@ -47,7 +47,7 @@ import iris.coords
 import iris.exceptions
 import iris.util
 
-__all__ = ["Cube", "CubeList", "CubeAttrsDict"]
+__all__ = ["Cube", "CubeAttrsDict", "CubeList"]
 
 
 # The XML namespace to use for CubeML documents
@@ -777,7 +777,8 @@ class CubeAttrsDict(MutableMapping):
     However, a few things such as the detailed print (repr) are different.
 
     In addition, the 'locals' and 'globals' properties provide specific access to local
-    and global attributes, as regular :class:`~iris.common.mixin.LimitedAttributeDict`s.
+    and global attributes, as regular
+    :class:`~iris.common.mixin.LimitedAttributeDict`\\s.
 
     Notes
     -----
