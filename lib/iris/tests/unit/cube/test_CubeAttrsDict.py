@@ -90,7 +90,7 @@ class Test_OddMethods:
         check_content(sample_attrs, {}, {})
 
     def test_del(self, sample_attrs):
-        # 'z' is in boht locals+globals.  Delete removes both.
+        # 'z' is in both locals+globals.  Delete removes both.
         assert "z" in sample_attrs.keys()
         del sample_attrs["z"]
         assert "z" not in sample_attrs.keys()
@@ -221,6 +221,8 @@ class TestDictOrderBehaviour:
         attrs.locals.update(dict(f=7, z=4))
         # .. and check key order of combined attrs
         assert list(attrs.keys()) == ["a", "m", "f", "z"]
+
+    def test_locals_globals_nonalphabetic_order(self):
         # create the "same" thing with locals before globals, *and* different key order
         attrs = CubeAttrsDict()
         attrs.locals.update(dict(z=4, f=7))
