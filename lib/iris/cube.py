@@ -819,17 +819,17 @@ class CubeAttrsDict(MutableMapping):
     "issubclass(CubeAttrsDict, dict)" is False.
 
     Properties 'locals' and 'globals' are the two sets of cube attributes.  These are
-    both :class:`~iris.common.mixin.LimitedAttributeDict`.  The CubeAttrsDict object
+    both :class:`~iris.common.mixin.LimitedAttributeDict` .  The CubeAttrsDict object
     contains *no* additional state of its own, but simply acts as a view on these two.
 
     When reading (__getitem__, pop, popitem, keys, values etc), it contains all the
     keys + values of both 'locals' and 'globals'.  When a key occurs in *both* 'locals'
     and 'globals', the result is the local value.
-    See :meth:``~iris.cube.CubeAttrsDict__getitem__``.
+    See :meth:`~iris.cube.CubeAttrsDict.__getitem__` .
 
     When writing (__setitem__, setdefault, update, etc) to a key already present, the
     existing entry in either 'locals' or 'globals' is updated.  If both are present,
-    'locals' is updated.  See :meth:``~iris.cube.CubeAttrsDict__setitem__``.
+    'locals' is updated.  See :meth:`~iris.cube.CubeAttrsDict.__setitem__` .
 
     When writing to a new key, this generally updates 'locals'.  However, certain
     specific names would never normally be 'data' attributes, and these are created as
@@ -869,8 +869,9 @@ class CubeAttrsDict(MutableMapping):
         """
         Create a cube attributes dictionary.
 
-        Unlike the attributes of other :class:`CfVariableMixin` subclasses, this is a
-        "split" dictionary - i.e. it contains separate global + local settings.
+        Unlike the attributes of other :class:`~iris.common.mixin.CFVariableMixin`
+        subclasses, this is a "split" dictionary - i.e. it contains separate global +
+        local settings.
 
         We support initialisation from a generic dictionary (using default global/local
         name identification rules), or from specific local and global ones.
@@ -883,7 +884,8 @@ class CubeAttrsDict(MutableMapping):
             respective content (after initially setting the individual ones).
             Otherwise, 'combined' is treated as a generic mapping, applied as
             ``self.update(combined)``,
-            i.e. it will set locals and/or globals with the same logic as '__setitem__'.
+            i.e. it will set locals and/or globals with the same logic as
+            :meth:`~iris.cube.CubeAttrsDict.__setitem__` .
         locals : dict
             initial content for 'self.locals'
         globals : dict
@@ -993,7 +995,8 @@ class CubeAttrsDict(MutableMapping):
 
     #
     # The remaining methods are sufficient to generate a complete standard Mapping
-    # API -- see docs for :class:`collections.abc.MutableMapping`.
+    # API.  See -
+    #  https://docs.python.org/3/reference/datamodel.html#emulating-container-types.
     #
 
     def __iter__(self):
