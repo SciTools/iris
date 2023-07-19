@@ -21,7 +21,7 @@ from iris.common.mixin import LimitedAttributeDict
 
 class Test(tests.IrisTest):
     def setUp(self):
-        self.forbidden_keys = LimitedAttributeDict._forbidden_keys
+        self.forbidden_keys = LimitedAttributeDict.CF_ATTRS_FORBIDDEN
         self.emsg = "{!r} is not a permitted attribute"
 
     def test__invalid_keys(self):
