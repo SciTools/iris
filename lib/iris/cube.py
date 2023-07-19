@@ -886,7 +886,7 @@ class CubeAttrsDict(MutableMapping):
         locals : dict
             initial content for 'self.locals'
         globals : dict
-            initial content for 'self.locals'
+            initial content for 'self.globals'
 
         Examples
         --------
@@ -1031,10 +1031,9 @@ class CubeAttrsDict(MutableMapping):
         elif key in self.globals:
             store = self.globals
         else:
-            # If NO existing attribute,  create local unless it is a "known global" one.
+            # If NO existing attribute, create local unless it is a "known global" one.
             from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
 
-            # Not in existing
             if key in _CF_GLOBAL_ATTRS:
                 store = self.globals
             else:
