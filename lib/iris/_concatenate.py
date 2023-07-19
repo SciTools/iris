@@ -9,6 +9,7 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 """
 
 from collections import defaultdict, namedtuple
+import warnings
 
 import dask.array as da
 import numpy as np
@@ -650,13 +651,6 @@ class _CubeSignature:
                     "Data types", "", self.data_type, other.data_type
                 )
             )
-        # Check cube overlap.
-        # if self.something != other.something:
-        #     msgs.append(
-        #         msg_template.format(
-        #             "Cube extent", "",
-        #         )
-        #     )
 
         match = not bool(msgs)
         if error_on_mismatch and not match:
@@ -1000,8 +994,11 @@ class _ProtoCube:
                 coord_signature.dim_extents[dim_ind], candidate_axis
             )
             if error_on_mismatch and not match:
-                msg = "Dimensional coordinate extents differ"
+                msg = ["Dimensional coordinate extents differ"]
                 raise iris.exceptions.ConcatenateError(msg)
+            elif not match:
+                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
+                warnings.warm()
 
         # Check for compatible AuxCoords.
         if match:
