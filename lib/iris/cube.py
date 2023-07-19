@@ -825,15 +825,16 @@ class CubeAttrsDict(MutableMapping):
     When reading (__getitem__, pop, popitem, keys, values etc), it contains all the
     keys + values of both 'locals' and 'globals'.  When a key occurs in *both* 'locals'
     and 'globals', the result is the local value.
+    See :meth:``~iris.cube.CubeAttrsDict__getitem__``.
 
     When writing (__setitem__, setdefault, update, etc) to a key already present, the
     existing entry in either 'locals' or 'globals' is updated.  If both are present,
-    'locals' is updated.
+    'locals' is updated.  See :meth:``~iris.cube.CubeAttrsDict__setitem__``.
 
     When writing to a new key, this generally updates 'locals'.  However, certain
     specific names would never normally be 'data' attributes, and these are created as
-    'globals' instead.  These are determined by Appendix A of the
-    `_CF Conventions: https://cfconventions.org/` .
+    'globals' instead.  These are listed in Appendix A of the
+    `CF Conventions: <https://cfconventions.org/>`_ .
     At present, these are : 'conventions', 'featureType', 'history', 'title'.
 
     Examples
@@ -841,21 +842,21 @@ class CubeAttrsDict(MutableMapping):
 
         >>> from iris.cube import Cube
         >>> cube = Cube([0])
-        >>> cube.attributes.update({{"history": "from test-123", "mycode": 3}})
+        >>> cube.attributes.update({"history": "from test-123", "mycode": 3})
         >>> print(cube.attributes)
-        {{'history': 'from test-123', 'mycode': 3}}
+        {'history': 'from test-123', 'mycode': 3}
         >>> print(repr(cube.attributes))
-        CubeAttrsDict(globals={{'history': 'from test-123'}}, locals={{'mycode': 3}})
+        CubeAttrsDict(globals={'history': 'from test-123'}, locals={'mycode': 3})
 
         >>> cube.attributes['history'] += ' +added'
         >>> print(repr(cube.attributes))
-        CubeAttrsDict(globals={{'history': 'from test-123 +added'}}, locals={{'mycode': 3}})
+        CubeAttrsDict(globals={'history': 'from test-123 +added'}, locals={'mycode': 3})
 
         >>> cube.attributes.locals['history'] = 'per-variable'
         >>> print(cube.attributes)
-        {{'history': 'per-variable', 'mycode': 3}}
+        {'history': 'per-variable', 'mycode': 3}
         >>> print(repr(cube.attributes))
-        CubeAttrsDict(globals={{'history': 'from test-123 +added'}}, locals={{'mycode': 3, 'history': 'per-variable'}})
+        CubeAttrsDict(globals={'history': 'from test-123 +added'}, locals={'mycode': 3, 'history': 'per-variable'})
 
     """
 
@@ -1011,8 +1012,13 @@ class CubeAttrsDict(MutableMapping):
         return len(list(iter(self)))
 
     def __getitem__(self, key):
-        # Fetch an item from the "combined attributes".
-        # If both present, the local setting takes priority.
+        """
+        Fetch an item from the "combined attributes".
+
+        If the name is present in *both* ``self.locals`` and ``self.globals``, then
+        the local value is returned.
+
+        """
         if key in self.locals:
             store = self.locals
         else:
@@ -1020,10 +1026,20 @@ class CubeAttrsDict(MutableMapping):
         return store[key]
 
     def __setitem__(self, key, value):
-        # Assign an attribute value.
-        #  Make local or global according to the existing content, or the known set of
-        # "normally global" attributes given by CF.
+        """
+        Assign an attribute value.
 
+        If there is *no* existing attribute of this name, then one is created, either
+        local or global, depending on whether the name is in the known set of "normally
+        global" attribute names defined by CF.  See :class:`~iris.cube.CubeAttrsDict`.
+
+        If there is an *existing* attribute of this name in either ``self.locals`` or
+        ``self.globals``, then that one is updated (i.e. overwritten).
+
+        If the name is present in *both* locals and globals, then only the local one is
+        updated.
+
+        """
         # If an attribute of this name is already present, update that
         # (the local one having priority).
         if key in self.locals:
@@ -1043,7 +1059,7 @@ class CubeAttrsDict(MutableMapping):
 
     def __delitem__(self, key):
         """
-        Remove an attribute
+        Remove an attribute.
 
         Delete from both local + global.
 
