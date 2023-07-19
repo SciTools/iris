@@ -160,6 +160,11 @@ def geometry_area_weights(cube, geometry, normalize=False):
         calculation might be wrong. In this case, a UserWarning will
         be issued.
 
+    .. note::
+
+        This function does not maintain laziness when called; it realises data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
+
     Args:
 
     * cube (:class:`iris.cube.Cube`):

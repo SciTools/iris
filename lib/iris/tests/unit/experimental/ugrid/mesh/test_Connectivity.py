@@ -9,10 +9,12 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from platform import python_version
 from xml.dom import minidom
 
 import numpy as np
 from numpy import ma
+from pkg_resources import parse_version
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.experimental.ugrid.mesh import Connectivity
@@ -61,10 +63,14 @@ class TestStandard(tests.IrisTest):
 
     def test_read_only(self):
         attributes = ("indices", "cf_role", "start_index", "location_axis")
+        if parse_version(python_version()) >= parse_version("3.11"):
+            msg = "object has no setter"
+        else:
+            msg = "can't set attribute"
         for attribute in attributes:
             self.assertRaisesRegex(
                 AttributeError,
-                "can't set attribute",
+                msg,
                 setattr,
                 self.connectivity,
                 attribute,

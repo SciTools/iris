@@ -94,7 +94,10 @@ class Test_build_cf_groups(tests.IrisTest):
         # Restrict the CFUGridReader functionality to only performing
         # translations and building first level cf-groups for variables.
         self.patch("iris.experimental.ugrid.cf.CFUGridReader._reset")
-        self.patch("netCDF4.Dataset", return_value=self.dataset)
+        self.patch(
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            return_value=self.dataset,
+        )
         cf_reader = CFUGridReader("dummy")
         self.cf_group = cf_reader.cf_group
 

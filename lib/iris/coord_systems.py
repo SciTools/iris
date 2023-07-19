@@ -478,7 +478,6 @@ class GeogCS(CoordSystem):
 
     @classmethod
     def from_datum(cls, datum, longitude_of_prime_meridian=None):
-
         crs = super().__new__(cls)
 
         crs._semi_major_axis = None
@@ -949,7 +948,6 @@ class Geostationary(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-
         """
         Constructs a Geostationary coord system.
 

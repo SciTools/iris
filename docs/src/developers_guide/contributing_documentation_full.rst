@@ -43,7 +43,7 @@ achieved via::
 
     make html-noplot
 
-Another option is to skip the :ref:`iris` documentation creation.  This can be
+Another option is to skip the :doc:`../generated/api/iris` documentation creation.  This can be
 useful as it reduces the time to build the documentation, however you may have
 some build warnings as there maybe references to the API documentation.
 This can be achieved via::
@@ -51,8 +51,8 @@ This can be achieved via::
     make html-noapi
 
 You can combine both the above and skip the
-:ref:`contributing.documentation.gallery` and :ref:`iris` documentation
-completely.  This can be achieved via::
+:ref:`contributing.documentation.gallery` and :doc:`../generated/api/iris`
+documentation completely.  This can be achieved via::
 
     make html-quick
 
@@ -61,7 +61,10 @@ If you wish to run a full clean build you can run::
     make clean
     make html
 
-This is useful for a final test before committing your changes.
+This is useful for a final test before committing your changes. Having built
+the documentation, you can view them in your default browser via::
+
+    make show
 
 .. note:: In order to preserve a clean build for the html, all **warnings**
           have been promoted to be **errors** to ensure they are addressed.
@@ -83,6 +86,8 @@ To run a test for a single gallery example, use the ``pytest -k`` option for
 pattern matching, e.g.::
 
     pytest -v -k plot_coriolis docs/gallery_tests/test_gallery_examples.py
+
+If a gallery test fails, follow the instructions in :ref:`testing.graphics`.
 
 The ``make`` commands shown below can be run in the ``docs`` or ``docs/src``
 directory.
@@ -107,18 +112,6 @@ adding it to the ``linkcheck_ignore`` array that is defined in the
 
 If this fails check the output for the text **broken** and then correct
 or ignore the url.
-
-.. comment
-    Finally, the spelling in the documentation can be checked automatically via the
-    command::
-
-        make spelling
-
-    The spelling check may pull up many technical abbreviations and acronyms.  This
-    can be managed by using an **allow** list in the form of a file.  This file,
-    or list of files is set in the `conf.py`_ using the string list
-    ``spelling_word_list_filename``.
-
 
 .. note:: In addition to the automated `Iris GitHub Actions`_ build of all the
           documentation build options above, the
@@ -162,13 +155,13 @@ The code for the gallery entries are in ``docs/gallery_code``.
 Each sub directory in this directory is a sub section of the gallery.  The
 respective ``README.rst`` in each folder is included in the gallery output.
 
-For each gallery entry there must be a corresponding test script located in
-``docs/gallery_tests``.
-
 To add an entry to the gallery simple place your python code into the
 appropriate sub directory and name it with a prefix of ``plot_``.  If your
 gallery entry does not fit into any existing sub directories then create a new
-directory and place it in there.
+directory and place it in there.  A test for the gallery entry will be
+automatically generated (see Testing_ for how to run it).  To add a new
+reference image for this test, follow the instructions in
+:ref:`testing.graphics`.
 
 The reStructuredText (rst) output of the gallery is located in
 ``docs/src/generated/gallery``.

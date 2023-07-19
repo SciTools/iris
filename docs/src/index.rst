@@ -15,78 +15,121 @@ representations become unwieldy and inefficient.
 
 For more information see :ref:`why_iris`.
 
-.. panels::
-    :container: container-lg pb-3
-    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2 text-center
-    :img-top-cls: w-50 m-auto px-1 py-2
+.. grid:: 3
 
-    ---
-    :img-top: _static/icon_shuttle.svg
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_shuttle.svg
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
+        :shadow: lg
 
-    Information on Iris, how to install and a gallery of examples that
-    create plots.
-    +++
-    .. link-button:: getting_started
-        :type: ref
-        :text: Getting Started
-        :classes: btn-outline-info btn-block
+        Information on Iris, how to install and a gallery of examples that
+        create plots.
+
+        +++
+        .. button-ref:: getting_started_index
+            :ref-type: ref
+            :color: primary
+            :outline:
+            :expand:
+
+                Getting Started
+
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_instructions.svg
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
+        :shadow: lg
+
+        Learn how to use Iris, including loading, navigating, saving,
+        plotting and more.
+
+        +++
+        .. button-ref:: user_guide_index
+            :ref-type: ref
+            :color: primary
+            :outline:
+            :expand:
+
+                User Guide
+
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_development.svg
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
+        :shadow: lg
+
+        Information on how you can contribute to Iris as a developer.
+
+        +++
+        .. button-ref:: development_where_to_start
+            :ref-type: ref
+            :color: primary
+            :outline:
+            :expand:
+
+                Developers Guide
 
 
-    ---
-    :img-top: _static/icon_instructions.svg
+.. grid:: 3
 
-    Learn how to use Iris, including loading, navigating, saving,
-    plotting and more.
-    +++
-    .. link-button:: user_guide_index
-        :type: ref
-        :text: User Guide
-        :classes: btn-outline-info btn-block
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_api.svg
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
+        :shadow: lg
 
-    ---
-    :img-top: _static/icon_development.svg
+        Browse full Iris functionality by module.
 
-    As a developer you can contribute to Iris.
-    +++
-    .. link-button:: development_where_to_start
-        :type: ref
-        :text: Developers Guide
-        :classes: btn-outline-info btn-block
+        +++
+        .. button-ref:: generated/api/iris
+            :ref-type: doc
+            :color: primary
+            :outline:
+            :expand:
 
-    ---
-    :img-top: _static/icon_api.svg
+                Iris API
 
-    Browse full Iris functionality by module.
-    +++
-    .. link-button:: Iris
-        :type: ref
-        :text: Iris API
-        :classes: btn-outline-info btn-block
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_new_product.svg
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
+        :shadow: lg
 
-    ---
-    :img-top: _static/icon_new_product.svg
+        Find out what has recently changed in Iris.
 
-    Find out what has recently changed in Iris.
-    +++
-    .. link-button:: iris_whatsnew
-        :type: ref
-        :text: What's New
-        :classes: btn-outline-info btn-block
+        +++
+        .. button-ref:: iris_whatsnew
+            :ref-type: ref
+            :color: primary
+            :outline:
+            :expand:
 
-    ---
-    :img-top: _static/icon_thumb.png
+                What's New
 
-    Raise the profile of issues by voting on them.
-    +++
-    .. link-button:: voted_issues_top
-        :type: ref
-        :text: Voted Issues
-        :classes: btn-outline-info btn-block
+    .. grid-item-card::
+        :text-align: center
+        :img-top: _static/icon_thumb.png
+        :class-img-top: w-50 m-auto px-1 py-2 dark-light
+        :shadow: lg
+
+        Raise the profile of issues by voting on them.
+
+        +++
+        .. button-ref:: voted_issues_top
+            :ref-type: ref
+            :color: primary
+            :outline:
+            :expand:
+
+                Voted Issues
 
 
 Icons made by `FreePik <https://www.freepik.com>`_ from
 `Flaticon <https://www.flaticon.com/>`_
 
+
+.. _iris_support:
 
 Support
 ~~~~~~~
@@ -101,7 +144,11 @@ The legacy support resources:
 
 * `Users Google Group <https://groups.google.com/forum/#!forum/scitools-iris>`_
 * `Developers Google Group <https://groups.google.com/forum/#!forum/scitools-iris-dev>`_
-* `Legacy Documentation`_ (Iris 2.4 or earlier)
+* `Legacy Documentation`_ (Iris 2.4 or earlier).  This is an archive of zip
+  files of past documentation.  You can download, unzip and view the
+  documentation locally (index.html).  There may be some incorrect rendering
+  and older javascvript (.js) files may show a warning when uncompressing, in
+  which case we suggest you use a different unzip tool.
 
 
 .. toctree::
@@ -131,11 +178,20 @@ The legacy support resources:
 
 
 .. toctree::
+   :caption: Community
+   :maxdepth: 1
+   :name: community_index
+   :hidden:
+
+   Community <community/index>
+
+
+.. toctree::
    :caption: Iris API
    :maxdepth: 1
    :hidden:
 
-   generated/api/iris
+   Iris API <generated/api/iris>
 
 
 .. toctree::

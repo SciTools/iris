@@ -85,7 +85,6 @@ class Trajectory:
         cur_seg = segments[cur_seg_i]
         len_accum = cur_seg.length
         for p in range(self.sample_count):
-
             # calculate the sample position along our total length
             sample_at_len = p * sample_step
 
@@ -216,6 +215,10 @@ def interpolate(cube, sample_points, method=None):
         ('longitude', [-60, -50, -40])]
         interpolated_cube = interpolate(cube, sample_points)
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     from iris.analysis import Linear
 
@@ -344,7 +347,7 @@ def interpolate(cube, sample_points, method=None):
         for columns_coord in columns.dim_coords + columns.aux_coords:
             src_dims = cube.coord_dims(columns_coord)
             if not squish_my_dims.isdisjoint(src_dims):
-                # Mapping the cube indicies onto the coord
+                # Mapping the cube indices onto the coord
                 initial_coord_inds = [initial_inds[ind] for ind in src_dims]
                 # Making the final ones the same way as for the cube
                 # 0 will always appear in the initial ones because we know this
@@ -443,21 +446,7 @@ def interpolate(cube, sample_points, method=None):
         ]
 
         # Apply the fancy indexing to get all the result data points.
-        source_data = source_data[tuple(fancy_source_indices)]
-
-        # "Fix" problems with missing datapoints producing odd values
-        # when copied from a masked into an unmasked array.
-        # TODO: proper masked data handling.
-        if np.ma.isMaskedArray(source_data):
-            # This is **not** proper mask handling, because we cannot produce a
-            # masked result, but it ensures we use a "filled" version of the
-            # input in this case.
-            source_data = source_data.filled()
-        new_cube.data[:] = source_data
-        # NOTE: we assign to "new_cube.data[:]" and *not* just "new_cube.data",
-        # because the existing code produces a default dtype from 'np.empty'
-        # instead of preserving the input dtype.
-        # TODO: maybe this should be fixed -- i.e. to preserve input dtype ??
+        new_cube.data = source_data[tuple(fancy_source_indices)]
 
         # Fill in the empty squashed (non derived) coords.
         column_coords = [
@@ -671,7 +660,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             for c, (coord, coord_dims) in enumerate(
                 sample_space_coords_and_dims
             ):
-                # Index of this datum along this coordinate (could be nD).
+                # Index of this datum along this coordinate (could be n-D).
                 if coord_dims:
                     keys = tuple(ndi[ind] for ind in coord_dims)
                 else:

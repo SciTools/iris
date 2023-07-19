@@ -16,7 +16,7 @@ issues from occurring.
 Both ``merge`` and ``concatenate`` take multiple cubes as input and
 result in fewer cubes as output. The following diagram illustrates the two processes:
 
-.. image:: merge_and_concat.png
+.. image:: merge_and_concat.svg
    :alt: Pictographic of merge and concatenation.
    :align: center
 
@@ -128,7 +128,7 @@ make a new ``z`` dimension coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: merge.png
+.. image:: merge.svg
    :alt: Pictographic of merge.
    :align: center
 
@@ -253,6 +253,11 @@ which are described below.
 Using CubeList.concatenate
 ==========================
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_projections_and_annotations.py` (Brief concatenating examples)
+
 The :meth:`CubeList.concatenate <iris.cube.CubeList.concatenate>` method operates on a list
 of cubes and returns a new :class:`~iris.cube.CubeList` containing the cubes
 that have been concatenated.
@@ -289,7 +294,7 @@ cubes to form a new cube with an extended ``t`` coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: concat.png
+.. image:: concat.svg
    :alt: Pictographic of concatenate.
    :align: center
 

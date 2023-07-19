@@ -120,7 +120,7 @@ For example, given the following :class:`~iris.cube.Cube`,
             forecast_reference_time     1859-09-01 06:00:00
             height                      1.5 m
         Cell methods:
-            mean                        time (6 hour)
+            0                           time: mean (interval: 6 hour)
         Attributes:
             Conventions                 'CF-1.5'
             Model scenario              'A1B'
@@ -389,10 +389,10 @@ instances. Normally, this would cause issues. For example,
 
 .. doctest:: richer-metadata
 
-    >>> simply = {"one": np.int(1), "two": np.array([1.0, 2.0])}
+    >>> simply = {"one": np.int32(1), "two": np.array([1.0, 2.0])}
     >>> simply
     {'one': 1, 'two': array([1., 2.])}
-    >>> fruity = {"one": np.int(1), "two": np.array([1.0, 2.0])}
+    >>> fruity = {"one": np.int32(1), "two": np.array([1.0, 2.0])}
     >>> fruity
     {'one': 1, 'two': array([1., 2.])}
     >>> simply == fruity
@@ -419,7 +419,7 @@ However, metadata class equality is rich enough to handle this eventuality,
 
     >>> metadata1
     CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': 1, 'two': array([1., 2.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
-    >>> metadata2 = cube.metadata._replace(attributes={"one": np.int(1), "two": np.array([1000.0, 2000.0])})
+    >>> metadata2 = cube.metadata._replace(attributes={"one": np.int32(1), "two": np.array([1000.0, 2000.0])})
     >>> metadata2
     CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': 1, 'two': array([1000., 2000.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
     >>> metadata1 == metadata2

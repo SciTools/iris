@@ -8,10 +8,10 @@ air_temperature / (K)               (latitude: 73; longitude: 96)
         pressure                    1000.0 hPa
         time                        1998-12-01 00:00:00
     Cell methods:
-        mean                        longitude (6 minutes, This is a test comment), latitude (12 minutes)
-        average                     longitude (6 minutes, This is another test comment), latitude (15 minutes, This is another comment)
-        average                     longitude, latitude
-        percentile                  longitude (6 minutes, This is another test comment)
+        0                           longitude: latitude: mean (interval: 6 minutes interval: 12 minutes comment: This is a test comment)
+        1                           longitude: latitude: average (interval: 6 minutes interval: 15 minutes comment: This is another test comment comment: This is another comment)
+        2                           longitude: latitude: average
+        3                           longitude: percentile (interval: 6 minutes comment: This is another test comment)
     Attributes:
         STASH                       m01s16i203
         source                      'Data from Met Office Unified Model'

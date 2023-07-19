@@ -133,6 +133,7 @@ class BasicFieldCollation:
 
     def _field_vector_element_arrays(self):
         """Define the field components used in the structure analysis."""
+
         # Define functions to make t1 and t2 values as date-time tuples.
         # These depend on header version (PPField2 has no seconds values).
         def t1_fn(fld):

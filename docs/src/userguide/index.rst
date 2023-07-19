@@ -35,6 +35,7 @@ they may serve as a useful reference for future exploration.
    cube_maths
    citation
    code_maintenance
+   glossary
 
 
 .. toctree::
@@ -44,4 +45,5 @@ they may serve as a useful reference for future exploration.
    ../further_topics/metadata
    ../further_topics/lenient_metadata
    ../further_topics/lenient_maths
+   ../further_topics/dask_best_practices/index
    ../further_topics/ugrid/index

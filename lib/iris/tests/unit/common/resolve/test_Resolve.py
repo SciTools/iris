@@ -825,20 +825,6 @@ class Test__aux_mapping(tests.IrisTest):
             ),
         ]
 
-    def _copy(self, items):
-        # Due to a bug in python 3.6.x, performing a deepcopy of a mock.sentinel
-        # will yield an object that is not equivalent to its parent, so this
-        # is a work-around until we drop support for python 3.6.x.
-        import sys
-
-        version = sys.version_info
-        major, minor = version.major, version.minor
-        result = deepcopy(items)
-        if major == 3 and minor <= 6:
-            for i, item in enumerate(items):
-                result[i] = result[i]._replace(metadata=item.metadata)
-        return result
-
     def test_no_mapping(self):
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         self.assertEqual(dict(), result)
@@ -852,7 +838,7 @@ class Test__aux_mapping(tests.IrisTest):
 
     def test_transpose_mapping(self):
         self.src_coverage.common_items_aux.extend(self.items)
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         items[0].dims[0] = 2
         items[2].dims[0] = 0
         self.tgt_coverage.common_items_aux.extend(items)
@@ -863,7 +849,7 @@ class Test__aux_mapping(tests.IrisTest):
     def test_partial_mapping__transposed(self):
         _ = self.items.pop(1)
         self.src_coverage.common_items_aux.extend(self.items)
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         items[0].dims[0] = 2
         items[1].dims[0] = 0
         self.tgt_coverage.common_items_aux.extend(items)
@@ -872,7 +858,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.assertEqual(expected, result)
 
     def test_mapping__match_multiple_src_metadata(self):
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         _ = self.items.pop(1)
         self.src_coverage.common_items_aux.extend(self.items)
         items[1] = items[0]
@@ -882,7 +868,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.assertEqual(expected, result)
 
     def test_mapping__skip_match_multiple_src_metadata(self):
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         _ = self.items.pop(1)
         self.tgt_coverage.common_items_aux.extend(self.items)
         items[1] = items[0]._replace(dims=[1])
@@ -892,7 +878,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.assertEqual(expected, result)
 
     def test_mapping__skip_different_rank(self):
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         self.src_coverage.common_items_aux.extend(self.items)
         items[2] = items[2]._replace(dims=[1, 2])
         self.tgt_coverage.common_items_aux.extend(items)
@@ -902,7 +888,7 @@ class Test__aux_mapping(tests.IrisTest):
 
     def test_bad_metadata_mapping(self):
         self.src_coverage.common_items_aux.extend(self.items)
-        items = self._copy(self.items)
+        items = deepcopy(self.items)
         items[0] = items[0]._replace(metadata=sentinel.bad)
         self.tgt_coverage.common_items_aux.extend(items)
         emsg = "Failed to map common aux coordinate metadata"

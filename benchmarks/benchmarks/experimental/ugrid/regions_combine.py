@@ -50,7 +50,7 @@ class MixinCombineRegions:
         i_faces = np.concatenate([i_faces[:, 2:], i_faces[:, :2]], axis=1)
         # flatten to get [2 3 4 0 1 (-) 8 9 10 6 7 (-) 13 14 15 11 12 ...]
         i_faces = i_faces.flatten()
-        # reduce back to orignal length, wrap any overflows into valid range
+        # reduce back to original length, wrap any overflows into valid range
         i_faces = i_faces[:n_faces] % n_faces
 
         # Divide into regions -- always slightly uneven, since 7 doesn't divide

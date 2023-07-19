@@ -12,6 +12,8 @@ Unit tests for `iris.aux_factory.AuxCoordFactory`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from unittest import mock
+
 import numpy as np
 
 import iris
@@ -143,7 +145,11 @@ class Test_lazy_aux_coords(tests.IrisTest):
         path = tests.get_data_path(
             ["NetCDF", "testing", "small_theta_colpex.nc"]
         )
-        self.cube = iris.load_cube(path, "air_potential_temperature")
+        # While loading, "turn off" loading small variables as real data.
+        with mock.patch(
+            "iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0
+        ):
+            self.cube = iris.load_cube(path, "air_potential_temperature")
 
     def _check_lazy(self):
         coords = self.cube.aux_coords + self.cube.derived_coords

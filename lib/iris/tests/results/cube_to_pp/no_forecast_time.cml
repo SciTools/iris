@@ -3,12 +3,12 @@
   <cube dtype="int32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="77a50eb5" points="[-1, 0, 1]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
+        <dimCoord id="77a50eb5" points="[-1,  0,  1]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="f913a8b3" points="[-1, 0, 1, 2]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
+        <dimCoord id="f913a8b3" points="[-1,  0,  1,  2]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>

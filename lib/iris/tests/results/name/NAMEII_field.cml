@@ -19,39 +19,38 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord bounds="[[0.0, 100.0]]" id="1a539915" long_name="height above ground level" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
+        <dimCoord bounds="[[  0., 100.]]" id="1a539915" long_name="height above ground level" points="[50.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[52.36655, 52.3676555276],
-		[52.3676555276, 52.3687610552],
-		[52.3687610552, 52.3698665828],
-		..., 
-		[52.5843389372, 52.5854444648],
-		[52.5854444648, 52.5865499924],
-		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
-		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[52.36655   , 52.36765553],
+ [52.36765553, 52.36876106],
+ [52.36876106, 52.36986658],
+ ...,
+ [52.58433894, 52.58544446],
+ [52.58544446, 52.58654999],
+ [52.58654999, 52.58765552]]" id="77a50eb5" points="[52.36710276, 52.36820829, 52.36931382, ...,
+ 52.5848917 , 52.58599723, 52.58710276]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-2.086504, -2.0846949547],
-		[-2.0846949547, -2.0828859094],
-		[-2.0828859094, -2.0810768641],
-		..., 
-		[-1.7301220759, -1.7283130306],
-		[-1.7283130306, -1.7265039853],
-		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
-		..., -1.72921755325, -1.72740850795,
-		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[-2.086504  , -2.08469495],
+ [-2.08469495, -2.08288591],
+ [-2.08288591, -2.08107686],
+ ...,
+ [-1.73012208, -1.72831303],
+ [-1.72831303, -1.72650399],
+ [-1.72650399, -1.72469494]]" id="f913a8b3" points="[-2.08559948, -2.08379043, -2.08198139, ...,
+ -1.72921755, -1.72740851, -1.72559946]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[[351249., 351252.]]" id="cb784457" points="[351252.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -80,39 +79,38 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord bounds="[[0.0, 100.0]]" id="1a539915" long_name="height above ground level" points="[50.0]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
+        <dimCoord bounds="[[  0., 100.]]" id="1a539915" long_name="height above ground level" points="[50.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[52.36655, 52.3676555276],
-		[52.3676555276, 52.3687610552],
-		[52.3687610552, 52.3698665828],
-		..., 
-		[52.5843389372, 52.5854444648],
-		[52.5854444648, 52.5865499924],
-		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
-		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[52.36655   , 52.36765553],
+ [52.36765553, 52.36876106],
+ [52.36876106, 52.36986658],
+ ...,
+ [52.58433894, 52.58544446],
+ [52.58544446, 52.58654999],
+ [52.58654999, 52.58765552]]" id="77a50eb5" points="[52.36710276, 52.36820829, 52.36931382, ...,
+ 52.5848917 , 52.58599723, 52.58710276]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-2.086504, -2.0846949547],
-		[-2.0846949547, -2.0828859094],
-		[-2.0828859094, -2.0810768641],
-		..., 
-		[-1.7301220759, -1.7283130306],
-		[-1.7283130306, -1.7265039853],
-		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
-		..., -1.72921755325, -1.72740850795,
-		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[-2.086504  , -2.08469495],
+ [-2.08469495, -2.08288591],
+ [-2.08288591, -2.08107686],
+ ...,
+ [-1.73012208, -1.72831303],
+ [-1.72831303, -1.72650399],
+ [-1.72650399, -1.72469494]]" id="f913a8b3" points="[-2.08559948, -2.08379043, -2.08198139, ...,
+ -1.72921755, -1.72740851, -1.72559946]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[[351249., 351252.]]" id="cb784457" points="[351252.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>
@@ -141,35 +139,34 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord bounds="[[52.36655, 52.3676555276],
-		[52.3676555276, 52.3687610552],
-		[52.3687610552, 52.3698665828],
-		..., 
-		[52.5843389372, 52.5854444648],
-		[52.5854444648, 52.5865499924],
-		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
-		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[52.36655   , 52.36765553],
+ [52.36765553, 52.36876106],
+ [52.36876106, 52.36986658],
+ ...,
+ [52.58433894, 52.58544446],
+ [52.58544446, 52.58654999],
+ [52.58654999, 52.58765552]]" id="77a50eb5" points="[52.36710276, 52.36820829, 52.36931382, ...,
+ 52.5848917 , 52.58599723, 52.58710276]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-2.086504, -2.0846949547],
-		[-2.0846949547, -2.0828859094],
-		[-2.0828859094, -2.0810768641],
-		..., 
-		[-1.7301220759, -1.7283130306],
-		[-1.7283130306, -1.7265039853],
-		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
-		..., -1.72921755325, -1.72740850795,
-		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[-2.086504  , -2.08469495],
+ [-2.08469495, -2.08288591],
+ [-2.08288591, -2.08107686],
+ ...,
+ [-1.73012208, -1.72831303],
+ [-1.72831303, -1.72650399],
+ [-1.72650399, -1.72469494]]" id="f913a8b3" points="[-2.08559948, -2.08379043, -2.08198139, ...,
+ -1.72921755, -1.72740851, -1.72559946]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[[351249., 351252.]]" id="cb784457" points="[351252.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+        <auxCoord id="e92ff7b7" long_name="z" points="['Boundary layer']" shape="(1,)" units="Unit('no_unit')" value_type="string">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -202,35 +199,34 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord bounds="[[52.36655, 52.3676555276],
-		[52.3676555276, 52.3687610552],
-		[52.3687610552, 52.3698665828],
-		..., 
-		[52.5843389372, 52.5854444648],
-		[52.5854444648, 52.5865499924],
-		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
-		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[52.36655   , 52.36765553],
+ [52.36765553, 52.36876106],
+ [52.36876106, 52.36986658],
+ ...,
+ [52.58433894, 52.58544446],
+ [52.58544446, 52.58654999],
+ [52.58654999, 52.58765552]]" id="77a50eb5" points="[52.36710276, 52.36820829, 52.36931382, ...,
+ 52.5848917 , 52.58599723, 52.58710276]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-2.086504, -2.0846949547],
-		[-2.0846949547, -2.0828859094],
-		[-2.0828859094, -2.0810768641],
-		..., 
-		[-1.7301220759, -1.7283130306],
-		[-1.7283130306, -1.7265039853],
-		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
-		..., -1.72921755325, -1.72740850795,
-		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[-2.086504  , -2.08469495],
+ [-2.08469495, -2.08288591],
+ [-2.08288591, -2.08107686],
+ ...,
+ [-1.73012208, -1.72831303],
+ [-1.72831303, -1.72650399],
+ [-1.72650399, -1.72469494]]" id="f913a8b3" points="[-2.08559948, -2.08379043, -2.08198139, ...,
+ -1.72921755, -1.72740851, -1.72559946]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[[351249., 351252.]]" id="cb784457" points="[351252.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+        <auxCoord id="e92ff7b7" long_name="z" points="['Boundary layer']" shape="(1,)" units="Unit('no_unit')" value_type="string">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -263,35 +259,34 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord bounds="[[52.36655, 52.3676555276],
-		[52.3676555276, 52.3687610552],
-		[52.3687610552, 52.3698665828],
-		..., 
-		[52.5843389372, 52.5854444648],
-		[52.5854444648, 52.5865499924],
-		[52.5865499924, 52.58765552]]" id="77a50eb5" points="[52.3671027638, 52.3682082914, 52.369313819, ...,
-		52.584891701, 52.5859972286, 52.5871027562]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[52.36655   , 52.36765553],
+ [52.36765553, 52.36876106],
+ [52.36876106, 52.36986658],
+ ...,
+ [52.58433894, 52.58544446],
+ [52.58544446, 52.58654999],
+ [52.58654999, 52.58765552]]" id="77a50eb5" points="[52.36710276, 52.36820829, 52.36931382, ...,
+ 52.5848917 , 52.58599723, 52.58710276]" shape="(200,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-2.086504, -2.0846949547],
-		[-2.0846949547, -2.0828859094],
-		[-2.0828859094, -2.0810768641],
-		..., 
-		[-1.7301220759, -1.7283130306],
-		[-1.7283130306, -1.7265039853],
-		[-1.7265039853, -1.72469494]]" id="f913a8b3" points="[-2.08559947735, -2.08379043205, -2.08198138675,
-		..., -1.72921755325, -1.72740850795,
-		-1.72559946265]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord bounds="[[-2.086504  , -2.08469495],
+ [-2.08469495, -2.08288591],
+ [-2.08288591, -2.08107686],
+ ...,
+ [-1.73012208, -1.72831303],
+ [-1.72831303, -1.72650399],
+ [-1.72650399, -1.72469494]]" id="f913a8b3" points="[-2.08559948, -2.08379043, -2.08198139, ...,
+ -1.72921755, -1.72740851, -1.72559946]" shape="(200,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[351249.0, 351252.0]]" id="cb784457" points="[351252.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[[351249., 351252.]]" id="cb784457" points="[351252.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+        <auxCoord id="e92ff7b7" long_name="z" points="['Boundary layer']" shape="(1,)" units="Unit('no_unit')" value_type="string">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>

@@ -126,7 +126,7 @@ class TestFileFormatPicker(tests.IrisTest):
         ]
 
         # test that each filespec is identified as the expected format
-        for (expected_format_name, file_spec) in test_specs:
+        for expected_format_name, file_spec in test_specs:
             test_path = tests.get_data_path(file_spec)
             with open(test_path, "rb") as test_file:
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)

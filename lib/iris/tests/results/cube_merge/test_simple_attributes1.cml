@@ -6,10 +6,10 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="434cbbd8" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="434cbbd8" long_name="bar" points="[ 2.5,  7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="b0d35dcf" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="b0d35dcf" long_name="foo" points="[-7.5,  7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="302bf438" long_name="pressure" points="[10]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>
@@ -21,10 +21,10 @@
   <cube dtype="int32" long_name="thingness" units="1">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="434cbbd8" long_name="bar" points="[2.5, 7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="434cbbd8" long_name="bar" points="[ 2.5,  7.5, 12.5]" shape="(3,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="b0d35dcf" long_name="foo" points="[-7.5, 7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
+        <dimCoord id="b0d35dcf" long_name="foo" points="[-7.5,  7.5, 22.5, 37.5]" shape="(4,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord>
         <dimCoord id="302bf438" long_name="pressure" points="[11]" shape="(1,)" units="Unit('Pa')" value_type="int32"/>

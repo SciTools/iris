@@ -1,0 +1,641 @@
+[PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27870
+   lbcode: 1
+   lbhem: 0
+   lbrow: 145
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 56
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 5
+   lblev: 1
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 897024, 0, 2, 0, 0, 1)
+   brsvd: (20.000338, 0.9977165, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -12.0
+   blev: 9.998206
+   brlev: 0.0
+   bhlev: 0.99885815
+   bhrlev: 1.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -91.25
+   bdy: 1.25
+   bzx: -0.9375
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[ 0.8562012   0.9094238   0.9614258  ...  0.6916504   0.74731445
+   0.8022461 ]
+ [-0.29174805 -0.2397461  -0.18725586 ... -0.36645508 -0.34594727
+  -0.32763672]
+ [-0.76000977 -0.6833496  -0.6347656  ... -0.9243164  -0.8911133
+  -0.7675781 ]
+ ...
+ [-4.647461   -4.7456055  -4.8171387  ... -4.3222656  -4.428955
+  -4.536133  ]
+ [-4.4577637  -4.5183105  -4.580078   ... -4.283203   -4.350342
+  -4.4038086 ]
+ [-4.2226562  -4.284668   -4.342041   ... -4.01001    -4.085205
+  -4.15625   ]]
+   field_title: AJHQA Time mean  !C Atmos u compnt of wind after timestep at 9.998 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27678
+   lbcode: 1
+   lbhem: 0
+   lbrow: 144
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 57
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 6
+   lblev: 1
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 1208320, 0, 3, 0, 0, 1)
+   brsvd: (20.000338, 0.9977165, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -12.0
+   blev: 9.998206
+   brlev: 0.0
+   bhlev: 0.99885815
+   bhrlev: 1.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -90.625
+   bdy: 1.25
+   bzx: -1.875
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[-1.2304688  -1.2202148  -1.2077637  ... -1.2546387  -1.246582
+  -1.2387695 ]
+ [-1.0026855  -1.0119629  -1.0195312  ... -0.9663086  -0.9802246
+  -0.9904785 ]
+ [-0.76538086 -0.8845215  -1.0141602  ... -0.72143555 -0.7011719
+  -0.71118164]
+ ...
+ [-2.1013184  -1.9470215  -1.7893066  ... -2.564209   -2.4177246
+  -2.2590332 ]
+ [-2.0922852  -1.9360352  -1.7756348  ... -2.5288086  -2.3864746
+  -2.2421875 ]
+ [-2.0959473  -1.9523926  -1.8071289  ... -2.5092773  -2.3747559
+  -2.2368164 ]]
+   field_title: AJHQA Time mean  !C Atmos v compnt of wind after timestep at 9.998 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27867
+   lbcode: 1
+   lbhem: 0
+   lbrow: 145
+   lbnpt: 192
+   lbext: 27
+   lbpack: 0
+   lbrel: 2
+   lbfc: 19
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 1
+   lblev: 1
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 1519616, 0, 4, 0, 0, 1)
+   brsvd: (49.998882, 0.99429625, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -10.0
+   blev: 20.000338
+   brlev: 0.0
+   bhlev: 0.9977165
+   bhrlev: 1.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -91.25
+   bdy: 1.25
+   bzx: -1.875
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[282.4619  282.4619  282.4619  ... 282.4619  282.4619  282.4619 ]
+ [282.3506  282.37598 282.40234 ... 282.27344 282.29883 282.3252 ]
+ [281.95508 282.03418 282.10938 ... 281.7578  281.81348 281.87988]
+ ...
+ [245.83203 245.84277 245.83398 ... 245.82031 245.82129 245.82324]
+ [244.42969 244.4248  244.42383 ... 244.45312 244.45215 244.44043]
+ [243.26758 243.26758 243.26758 ... 243.26758 243.26758 243.26758]]
+   field_title: AJHQA Time mean  !C Atmos theta after timestep at 20.00 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27870
+   lbcode: 1
+   lbhem: 0
+   lbrow: 145
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 95
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 13
+   lblev: 1
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 1789952, 0, 10, 0, 0, 1)
+   brsvd: (49.998882, 0.99429625, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -99.0
+   blev: 20.000338
+   brlev: 0.0
+   bhlev: 0.9977165
+   bhrlev: 1.0
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -91.25
+   bdy: 1.25
+   bzx: -1.875
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[0.00079939 0.00079939 0.00079939 ... 0.00079939 0.00079939 0.00079939]
+ [0.00087261 0.00087106 0.00086934 ... 0.00087724 0.00087613 0.00087428]
+ [0.00093523 0.00092579 0.00091752 ... 0.00095657 0.00094989 0.00094373]
+ ...
+ [0.00037911 0.0003811  0.00038037 ... 0.00037897 0.00037865 0.0003793 ]
+ [0.00033554 0.0003354  0.00033541 ... 0.0003389  0.00033855 0.00033566]
+ [0.00030907 0.00030907 0.00030907 ... 0.00030907 0.00030907 0.00030907]]
+   field_title: AJHQA Time mean  !C Atmos specific humidity after timestep at 20.00 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27870
+   lbcode: 1
+   lbhem: 0
+   lbrow: 145
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 56
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 5
+   lblev: 2
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 905216, 0, 2, 0, 0, 1)
+   brsvd: (80.00135, 0.9908815, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -12.0
+   blev: 49.998882
+   brlev: 20.000338
+   bhlev: 0.99429625
+   bhrlev: 0.9977165
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -91.25
+   bdy: 1.25
+   bzx: -0.9375
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[ 1.0332031   1.0991211   1.1638184  ...  0.82910156  0.89819336
+   0.96606445]
+ [-0.46777344 -0.41455078 -0.35766602 ... -0.5932617  -0.5517578
+  -0.51293945]
+ [-1.072998   -1.005127   -0.9387207  ... -1.3034668  -1.2263184
+  -1.1523438 ]
+ ...
+ [-5.9941406  -6.099365   -6.1816406  ... -5.6379395  -5.7575684
+  -5.8745117 ]
+ [-5.8913574  -5.9609375  -6.027832   ... -5.675537   -5.7558594
+  -5.8239746 ]
+ [-5.727051   -5.7910156  -5.848633   ... -5.4992676  -5.581299
+  -5.6572266 ]]
+   field_title: AJHQA Time mean  !C Atmos u compnt of wind after timestep at 50.00 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27678
+   lbcode: 1
+   lbhem: 0
+   lbrow: 144
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 57
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 6
+   lblev: 2
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 1216512, 0, 3, 0, 0, 1)
+   brsvd: (80.00135, 0.9908815, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -12.0
+   blev: 49.998882
+   brlev: 20.000338
+   bhlev: 0.99429625
+   bhrlev: 0.9977165
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -90.625
+   bdy: 1.25
+   bzx: -1.875
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[-1.5361328  -1.5249023  -1.5117188  ... -1.5610352  -1.5537109
+  -1.5454102 ]
+ [-1.2714844  -1.2890625  -1.3078613  ... -1.2194824  -1.2355957
+  -1.2526855 ]
+ [-1.0349121  -1.1855469  -1.3476562  ... -0.96240234 -0.94018555
+  -0.9621582 ]
+ ...
+ [-2.333252   -2.1430664  -1.9562988  ... -2.888916   -2.708252
+  -2.5219727 ]
+ [-2.2441406  -2.0427246  -1.8383789  ... -2.8112793  -2.6252441
+  -2.4382324 ]
+ [-2.1965332  -2.0041504  -1.809082   ... -2.755127   -2.5720215
+  -2.3859863 ]]
+   field_title: AJHQA Time mean  !C Atmos v compnt of wind after timestep at 50.00 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27867
+   lbcode: 1
+   lbhem: 0
+   lbrow: 145
+   lbnpt: 192
+   lbext: 27
+   lbpack: 0
+   lbrel: 2
+   lbfc: 19
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 1
+   lblev: 2
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 1527808, 0, 4, 0, 0, 1)
+   brsvd: (130.00023, 0.98520386, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -10.0
+   blev: 80.00135
+   brlev: 49.998882
+   bhlev: 0.9908815
+   bhrlev: 0.99429625
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -91.25
+   bdy: 1.25
+   bzx: -1.875
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[282.4961  282.4961  282.4961  ... 282.4961  282.4961  282.4961 ]
+ [282.38672 282.4121  282.4375  ... 282.31152 282.33594 282.36133]
+ [282.0957  282.16992 282.2422  ... 281.9121  281.96582 282.02734]
+ ...
+ [246.62598 246.63086 246.625   ... 246.59863 246.60938 246.61816]
+ [245.46387 245.46582 245.4707  ... 245.45703 245.46191 245.46387]
+ [244.5625  244.5625  244.5625  ... 244.5625  244.5625  244.5625 ]]
+   field_title: AJHQA Time mean  !C Atmos theta after timestep at 80.00 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27870
+   lbcode: 1
+   lbhem: 0
+   lbrow: 145
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 95
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 13
+   lblev: 2
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 1818624, 0, 10, 0, 0, 1)
+   brsvd: (130.00023, 0.98520386, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -99.0
+   blev: 80.00135
+   brlev: 49.998882
+   bhlev: 0.9908815
+   bhrlev: 0.99429625
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -91.25
+   bdy: 1.25
+   bzx: -1.875
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[0.00077913 0.00077913 0.00077913 ... 0.00077913 0.00077913 0.00077913]
+ [0.00085118 0.0008495  0.00084755 ... 0.00085498 0.00085392 0.00085248]
+ [0.00091165 0.00090317 0.00089486 ... 0.00092995 0.00092435 0.00091926]
+ ...
+ [0.00038609 0.00038648 0.00038594 ... 0.00038624 0.00038616 0.00038646]
+ [0.00034904 0.00034909 0.0003492  ... 0.0003502  0.00035007 0.00034903]
+ [0.00032891 0.00032891 0.00032891 ... 0.00032891 0.00032891 0.00032891]]
+   field_title: AJHQA Time mean  !C Atmos specific humidity after timestep at 80.00 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27870
+   lbcode: 1
+   lbhem: 0
+   lbrow: 145
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 56
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 5
+   lblev: 3
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 913408, 0, 2, 0, 0, 1)
+   brsvd: (179.99911, 0.97954255, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -12.0
+   blev: 130.00023
+   brlev: 80.00135
+   bhlev: 0.98520386
+   bhrlev: 0.9908815
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -91.25
+   bdy: 1.25
+   bzx: -0.9375
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[ 1.0524902   1.1252441   1.1967773  ...  0.8273926   0.90356445
+   0.9785156 ]
+ [-0.6694336  -0.61328125 -0.5529785  ... -0.8195801  -0.7685547
+  -0.72021484]
+ [-1.3225098  -1.2358398  -1.1459961  ... -1.5771484  -1.4953613
+  -1.4130859 ]
+ ...
+ [-6.96875    -7.027832   -7.0776367  ... -6.741455   -6.8256836
+  -6.900879  ]
+ [-7.010498   -7.0480957  -7.0776367  ... -6.8447266  -6.9067383
+  -6.963135  ]
+ [-6.9716797  -7.010254   -7.04126    ... -6.8120117  -6.8725586
+  -6.9257812 ]]
+   field_title: AJHQA Time mean  !C Atmos u compnt of wind after timestep at 130.0 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+, PP Field
+   lbyr: 2007
+   lbmon: 12
+   lbdat: 1
+   lbhr: 0
+   lbmin: 0
+   lbday: 336
+   lbyrd: 2008
+   lbmond: 1
+   lbdatd: 1
+   lbhrd: 0
+   lbmind: 0
+   lbdayd: 1
+   lbtim: 121
+   lbft: 26280
+   lblrec: 27678
+   lbcode: 1
+   lbhem: 0
+   lbrow: 144
+   lbnpt: 192
+   lbext: 30
+   lbpack: 0
+   lbrel: 2
+   lbfc: 57
+   lbcfc: 0
+   lbproc: 128
+   lbvc: 65
+   lbrvc: 0
+   lbexp: 2388992
+   lbegin: 0
+   lbnrec: 0
+   lbproj: 802
+   lbtyp: 6
+   lblev: 3
+   lbrsvd: (0, 0, 0, 0)
+   lbsrce: 6061111
+   lbuser: (1, 1224704, 0, 3, 0, 0, 1)
+   brsvd: (179.99911, 0.97954255, 0.0, 0.0)
+   bdatum: 0.0
+   bacc: -12.0
+   blev: 130.00023
+   brlev: 80.00135
+   bhlev: 0.98520386
+   bhrlev: 0.9908815
+   bplat: 90.0
+   bplon: 0.0
+   bgor: 0.0
+   bzy: -90.625
+   bdy: 1.25
+   bzx: -1.875
+   bdx: 1.875
+   bmdi: -1073741800.0
+   bmks: 1.0
+   data: [[-1.7414551 -1.7321777 -1.7211914 ... -1.7590332 -1.7546387 -1.7485352]
+ [-1.482666  -1.5065918 -1.5327148 ... -1.4162598 -1.4372559 -1.4589844]
+ [-1.3601074 -1.5227051 -1.6989746 ... -1.2714844 -1.2514648 -1.2753906]
+ ...
+ [-1.7216797 -1.4643555 -1.2097168 ... -2.4348145 -2.1984863 -1.9648438]
+ [-1.529541  -1.295166  -1.0639648 ... -2.2402344 -2.0048828 -1.7670898]
+ [-1.4748535 -1.2502441 -1.0231934 ... -2.137207  -1.9177246 -1.6970215]]
+   field_title: AJHQA Time mean  !C Atmos v compnt of wind after timestep at 130.0 metres !C 01/12/2007 00:00 -> 01/01/2008 00:00
+]

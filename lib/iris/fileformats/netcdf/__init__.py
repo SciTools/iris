@@ -18,6 +18,11 @@ import iris.config
 # Note: *must* be done before importing from submodules, as they also use this !
 logger = iris.config.get_logger(__name__)
 
+# Note: these probably shouldn't be public, but for now they are.
+from .._nc_load_rules.helpers import (
+    UnknownCellMethodWarning,
+    parse_cell_methods,
+)
 from .loader import DEBUG, NetCDFDataProxy, load_cubes
 from .saver import (
     CF_CONVENTIONS_VERSION,
@@ -25,8 +30,6 @@ from .saver import (
     SPATIO_TEMPORAL_AXES,
     CFNameCoordMap,
     Saver,
-    UnknownCellMethodWarning,
-    parse_cell_methods,
     save,
 )
 

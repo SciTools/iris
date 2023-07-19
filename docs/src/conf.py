@@ -81,7 +81,7 @@ sys.path.append(os.path.abspath("sphinxext"))
 # add some sample files from the developers guide..
 sys.path.append(os.path.abspath(os.path.join("developers_guide")))
 
-# why isnt the iris path added to it is discoverable too?  We dont need to,
+# why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it
 # is added then the travis build will likely fail.
 
@@ -122,7 +122,7 @@ def _dotv(version):
 
 # Automate the discovery of the python versions tested with CI.
 python_support = sorted(
-    [fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")]
+    [fname.stem for fname in Path(".").glob("../../requirements/py*.yml")]
 )
 
 if not python_support:
@@ -143,7 +143,7 @@ rst_epilog = f"""
 """
 
 # Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
     "sphinx.ext.todo",
@@ -157,9 +157,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
-    "sphinx_panels",
-    # TODO: Spelling extension disabled until the dependencies can be included
-    # "sphinxcontrib.spelling",
+    "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
@@ -168,14 +166,8 @@ extensions = [
 if skip_api == "1":
     autolog("Skipping the API docs generation (SKIP_API=1)")
 else:
-    # better api documentation (custom)
-    extensions.extend(
-        ["custom_class_autodoc", "custom_data_autodoc", "generate_package_rst"]
-    )
-
-# -- panels extension ---------------------------------------------------------
-# See https://sphinx-panels.readthedocs.io/en/latest/
-panels_add_bootstrap_css = False
+    extensions.extend(["sphinxcontrib.apidoc"])
+    extensions.extend(["api_rst_formatting"])
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -193,16 +185,6 @@ napoleon_use_rtype = True
 napoleon_use_keyword = True
 napoleon_custom_sections = None
 
-# -- spellingextension --------------------------------------------------------
-# See https://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
-spelling_lang = "en_GB"
-# The lines in this file must only use line feeds (no carriage returns).
-spelling_word_list_filename = ["spelling_allow.txt"]
-spelling_show_suggestions = False
-spelling_show_whole_line = False
-spelling_ignore_importable_modules = True
-spelling_ignore_python_builtins = True
-
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
 copybutton_prompt_text = r">>> |\.\.\. "
@@ -216,12 +198,35 @@ todo_include_todos = True
 # api generation configuration
 autodoc_member_order = "groupwise"
 autodoc_default_flags = ["show-inheritance"]
+
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
 autodoc_typehints = "none"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
-autoclass_content = "init"
+autoclass_content = "both"
 modindex_common_prefix = ["iris"]
+
+# -- apidoc extension ---------------------------------------------------------
+# See https://github.com/sphinx-contrib/apidoc
+source_code_root = (Path(__file__).parents[2]).absolute()
+module_dir = source_code_root / "lib"
+apidoc_module_dir = str(module_dir)
+apidoc_output_dir = str(Path(__file__).parent / "generated/api")
+apidoc_toc_file = False
+
+apidoc_excluded_paths = [
+    str(module_dir / "iris/tests"),
+    str(module_dir / "iris/experimental/raster.*"),  # gdal conflicts
+]
+
+apidoc_module_first = True
+apidoc_separate_modules = True
+apidoc_extra_args = []
+
+autolog(f"[sphinx-apidoc] source_code_root = {source_code_root}")
+autolog(f"[sphinx-apidoc] apidoc_excluded_paths = {apidoc_excluded_paths}")
+autolog(f"[sphinx-apidoc] apidoc_output_dir = {apidoc_output_dir}")
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -230,11 +235,13 @@ templates_path = ["_templates"]
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "dask": ("https://docs.dask.org/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
+    "dask": ("https://docs.dask.org/en/stable/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -250,11 +257,11 @@ plot_formats = [
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #"),
-    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #"),
+    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #%s"),
+    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #%s"),
     "discussion": (
         "https://github.com/SciTools/iris/discussions/%s",
-        "Discussion #",
+        "Discussion #%s",
     ),
 }
 
@@ -267,7 +274,6 @@ doctest_global_setup = "import iris"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "_static/iris-logo-title.svg"
 html_favicon = "_static/iris-logo.svg"
 html_theme = "pydata_sphinx_theme"
 
@@ -283,7 +289,8 @@ html_sidebars = {
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html
 html_theme_options = {
-    "footer_items": ["copyright", "sphinx-version", "custom_footer"],
+    "footer_start": ["copyright", "sphinx-version"],
+    "footer_end": ["custom_footer"],
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,
@@ -310,6 +317,14 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "show_toc_level": 1,
+    # Omit `theme-switcher` from navbar_end below to disable it
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    # "navbar_end": ["navbar-icon-links"],
+    # https://pydata-sphinx-theme.readthedocs.io/en/v0.11.0/user_guide/branding.html#different-logos-for-light-and-dark-mode
+    "logo": {
+        "image_light": "_static/iris-logo-title.svg",
+        "image_dark": "_static/iris-logo-title-dark.svg",
+    },
 }
 
 rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
@@ -321,6 +336,9 @@ html_context = {
     "github_user": "scitools",
     "github_version": "main",
     "doc_path": "docs/src",
+    # default theme.  Also disabled the button in the html_theme_options.
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    "default_mode": "auto",
     # custom
     "on_rtd": on_rtd,
     "rtd_version": rtd_version,
@@ -337,13 +355,14 @@ html_context = {
 html_static_path = ["_static"]
 html_style = "theme_override.css"
 
-# this allows for using datatables: https://datatables.net/
+# this allows for using datatables: https://datatables.net/.
+# the version can be manually upgraded by changing the urls below.
 html_css_files = [
-    "https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css",
+    "https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css",
 ]
 
 html_js_files = [
-    "https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js",
+    "https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js",
 ]
 
 # url link checker.  Some links work but report as broken, lets ignore them.
@@ -364,6 +383,7 @@ linkcheck_ignore = [
     "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
     "http://www.nationalarchives.gov.uk/doc/open-government-licence",
     "https://www.metoffice.gov.uk/",
+    "https://biggus.readthedocs.io/",
 ]
 
 # list of sources to exclude from the build.
@@ -391,13 +411,8 @@ sphinx_gallery_conf = {
 }
 
 # -----------------------------------------------------------------------------
-# Remove matplotlib agg warnings from generated doc when using plt.show
-warnings.filterwarnings(
-    "ignore",
-    category=UserWarning,
-    message="Matplotlib is currently using agg, which is a"
-    " non-GUI backend, so cannot show the figure.",
-)
+# Remove warnings
+warnings.filterwarnings("ignore")
 
 # -- numfig options (built-in) ------------------------------------------------
 # Enable numfig.

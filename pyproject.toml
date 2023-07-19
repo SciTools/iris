@@ -8,6 +8,68 @@ requires = [
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
 
+[project]
+authors = [
+    {name = "Iris Contributors", email = "scitools.pub@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Unix",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dynamic = [
+    "dependencies",
+    "readme",
+    "version",
+]
+description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
+keywords = [
+    "cf-metadata",
+    "data-analysis",
+    "earth-science",
+    "grib",
+    "netcdf",
+    "meteorology",
+    "oceanography",
+    "space-weather",
+    "ugrid",
+    "visualisation",
+]
+license = {text = "LGPL-3.0-or-later"}
+name = "scitools-iris"
+requires-python = ">=3.9"
+
+[project.urls]
+Code = "https://github.com/SciTools/iris"
+Discussions = "https://github.com/SciTools/iris/discussions"
+Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
+Issues = "https://github.com/SciTools/iris/issues"
+
+[tool.setuptools]
+license-files = ["COPYING", "COPYING.LESSER"]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements/pypi-core.txt"}
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+include = ["iris*"]
+where = ["lib"]
+
 [tool.setuptools_scm]
 write_to = "lib/iris/_version.py"
 local_scheme = "dirty-tag"
@@ -15,7 +77,7 @@ version_scheme = "release-branch-semver"
 
 [tool.black]
 line-length = 79
-target-version = ['py38']
+target-version = ['py39']
 include = '\.pyi?$'
 extend-exclude = '''
 (
@@ -46,3 +108,29 @@ verbose = "False"
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = "lib/iris"
+
+[tool.coverage.run]
+branch = true
+source = [
+    "lib/iris",
+]
+omit = [
+    "lib/iris/tests/*",
+    "lib/iris/etc/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:"
+]
+
+[tool.codespell]
+ignore-words-list = "alpha-numeric,degreee,discontiguities,lazyness,meaned,nin"
+skip = "_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
+
+[tool.check-manifest]
+ignore = [
+    "lib/iris/_version.py",
+    "lib/iris/std_names.py",
+]

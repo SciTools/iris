@@ -13,11 +13,13 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 import collections
 import datetime
+import warnings
 
 import cartopy.crs as ccrs
 from cartopy.geodesic import Geodesic
 import cartopy.mpl.geoaxes
 import cftime
+import matplotlib.animation as animation
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
@@ -902,7 +904,7 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
 
     ax = plt.gca()
     if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
-        fig = plt.gcf()
+        fig = ax.get_figure()
         if isinstance(ax, matplotlib.axes.SubplotBase):
             _ = fig.add_subplot(
                 ax.get_subplotspec(),
@@ -1110,6 +1112,11 @@ def contour(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.contour` for details of other valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = _draw_2d_from_points("contour", None, cube, *args, **kwargs)
     return result
@@ -1133,6 +1140,11 @@ def contourf(cube, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.contourf` for details of other valid
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -1198,6 +1210,11 @@ def default_projection(cube):
         import matplotlib.pyplot as plt
         ax = plt.ax(projection=default_projection(cube))
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     # XXX logic seems flawed, but it is what map_setup did...
     cs = cube.coord_system("CoordSystem")
@@ -1215,6 +1232,11 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
             Triggers whether the extent should be representative of the cell
             points, or the limits of the cell's bounds.
             The default is iris.coords.POINT_MODE.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     extents = cartography._xy_range(cube, mode)
@@ -1253,7 +1275,13 @@ def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
 
 
 def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at cell boundaries from the given Cube."""
+    """Plots orography defined at cell boundaries from the given Cube.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+    """
 
     # XXX Needs contiguous orography corners to work.
     raise NotImplementedError(
@@ -1286,7 +1314,13 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at sample points from the given Cube."""
+    """Plots orography defined at sample points from the given Cube.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+    """
 
     style_args = {"facecolor": facecolor}
 
@@ -1332,6 +1366,11 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = _draw_2d_from_bounds(
         "pcolormesh",
@@ -1344,11 +1383,6 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         axes=axes,
     )
 
-    # set the _is_stroked property to get a single color grid.
-    # See https://github.com/matplotlib/matplotlib/issues/1302
-    result._is_stroked = False
-    if hasattr(result, "_wrapped_collection_fix"):
-        result._wrapped_collection_fix._is_stroked = False
     return result
 
 
@@ -1378,6 +1412,11 @@ def pcolor(cube, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.pcolor` for details of other valid
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     kwargs.setdefault("antialiased", True)
@@ -1413,6 +1452,11 @@ def pcolormesh(cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.pcolormesh` for details of other
     valid keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     result = _draw_2d_from_bounds("pcolormesh", cube, *args, **kwargs)
     return result
@@ -1437,6 +1481,11 @@ def points(cube, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.scatter` for details of other valid
     keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 
@@ -1529,6 +1578,11 @@ def barbs(u_cube, v_cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.barbs` for details of other valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     #
     # TODO: check u + v cubes for compatibility.
@@ -1579,6 +1633,11 @@ def quiver(u_cube, v_cube, *args, **kwargs):
     See :func:`matplotlib.pyplot.quiver` for details of other valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     #
     # TODO: check u + v cubes for compatibility.
@@ -1625,6 +1684,11 @@ def plot(*args, **kwargs):
     See :func:`matplotlib.pyplot.plot` for details of additional valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     if "coords" in kwargs:
         raise TypeError(
@@ -1656,6 +1720,11 @@ def scatter(x, y, *args, **kwargs):
 
     See :func:`matplotlib.pyplot.scatter` for details of additional
     valid keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     # here we are more specific about argument types than generic 1d plotting
@@ -1692,6 +1761,11 @@ def fill_between(x, y1, y2, *args, **kwargs):
     See :func:`matplotlib.pyplot.fill_between` for details of additional valid
     keyword arguments.
 
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     # here we are more specific about argument types than generic 1d plotting
     if not isinstance(x, (iris.cube.Cube, iris.coords.Coord)):
@@ -1705,6 +1779,41 @@ def fill_between(x, y1, y2, *args, **kwargs):
     return _draw_two_1d_from_points(
         "fill_between", _plot_args, *args, **kwargs
     )
+
+
+def hist(x, *args, **kwargs):
+    """
+    Compute and plot a histogram.
+
+    Args:
+
+    * x:
+        A :class:`~iris.cube.Cube`, :class:`~iris.coords.Coord`,
+        :class:`~iris.coords.CellMeasure`, or :class:`~iris.coords.AncillaryVariable`
+        that will be used as the values that will be used to create the
+        histogram.
+        Note that if a coordinate is given, the points are used, ignoring the
+        bounds.
+
+    See :func:`matplotlib.pyplot.hist` for details of additional valid
+    keyword arguments.
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+    """
+    if isinstance(x, iris.cube.Cube):
+        data = x.data
+    elif isinstance(x, iris.coords._DimensionalMetadata):
+        data = x._values
+    else:
+        raise TypeError(
+            "x must be a cube, coordinate, cell measure or "
+            "ancillary variable."
+        )
+    return plt.hist(data, *args, **kwargs)
 
 
 # Provide convenience show method from pyplot
@@ -1739,6 +1848,11 @@ def symbols(x, y, symbols, size, axes=None, units="inches"):
 
     * units: ['inches', 'points']
         The unit for the symbol size.
+
+    Notes
+    ------
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if axes is None:
@@ -1808,3 +1922,119 @@ def citation(text, figure=None, axes=None):
         anchor.patch.set_boxstyle("round, pad=0, rounding_size=0.2")
         axes = axes if axes else figure.gca()
         axes.add_artist(anchor)
+
+
+def animate(cube_iterator, plot_func, fig=None, **kwargs):
+    """
+    Animates the given cube iterator.
+
+    Parameters
+    ----------
+    cube_iterator : iterable of :class:`iris.cube.Cube` objects
+        Each animation frame corresponds to each :class:`iris.cube.Cube`
+        object. See :meth:`iris.cube.Cube.slices`.
+    plot_func : :mod:`iris.plot` or :mod:`iris.quickplot` plotting function
+        Plotting function used to animate. Must accept the signature
+        ``plot_func(cube, vmin=vmin, vmax=vmax, coords=coords)``.
+        :func:`~iris.plot.contourf`, :func:`~iris.plot.contour`,
+        :func:`~iris.plot.pcolor` and :func:`~iris.plot.pcolormesh`
+        all conform to this signature.
+    fig : :class:`matplotlib.figure.Figure` instance, optional
+        By default, the current figure will be used or a new figure instance
+        created if no figure is available. See :func:`matplotlib.pyplot.gcf`.
+    **kwargs : dict, optional
+        Valid keyword arguments:
+
+        coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+            Use the given coordinates as the axes for the plot. The order of the
+            given coordinates indicates which axis to use for each, where the first
+            element is the horizontal axis of the plot and the second element is
+            the vertical axis of the plot.
+        interval: int, float or long
+            Defines the time interval in milliseconds between successive frames.
+            A default interval of 100ms is set.
+        vmin, vmax: int, float or long
+            Color scaling values, see :class:`matplotlib.colors.Normalize` for
+            further details. Default values are determined by the min-max across
+            the data set over the entire sequence.
+
+        See :class:`matplotlib.animation.FuncAnimation` for details of other
+        valid keyword arguments.
+
+    Returns
+    -------
+    :class:`~matplotlib.animation.FuncAnimation` object suitable for
+    saving and or plotting.
+
+    Examples
+    --------
+    >>> import iris
+    >>> from iris import plot as iplt
+    >>> from iris import quickplot as qplt
+    >>> my_cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+
+    To animate along a set of :class:`~iris.cube.Cube` slices :
+
+    >>> cube_iter = my_cube.slices(("longitude", "latitude"))
+    >>> ani = iplt.animate(cube_iter, qplt.contourf)
+    >>> iplt.show()
+
+    Notes
+    ------
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+    """
+    kwargs.setdefault("interval", 100)
+    coords = kwargs.pop("coords", None)
+
+    if fig is None:
+        fig = plt.gcf()
+
+    def update_animation_iris(i, cubes, vmin, vmax, coords):
+        # Clearing the figure is currently necessary for compatibility with
+        # the iris quickploting module - due to the colorbar.
+        plt.gcf().clf()
+        plot_func(cubes[i], vmin=vmin, vmax=vmax, coords=coords)
+
+    # Turn cube iterator into a list to determine plot ranges.
+    # NOTE: we check that we are not providing a cube as this has a deprecated
+    # iter special method.
+    if hasattr(cube_iterator, "__iter__") and not isinstance(
+        cube_iterator, iris.cube.Cube
+    ):
+        cubes = iris.cube.CubeList(cube_iterator)
+    else:
+        msg = "iterable type object required for animation, {} given".format(
+            type(cube_iterator)
+        )
+        raise TypeError(msg)
+
+    supported = ["iris.plot", "iris.quickplot"]
+    if plot_func.__module__ not in supported:
+        msg = (
+            'Given plotting module "{}" may not be supported, intended '
+            "use: {}."
+        )
+        msg = msg.format(plot_func.__module__, supported)
+        warnings.warn(msg, UserWarning)
+
+    supported = ["contour", "contourf", "pcolor", "pcolormesh"]
+    if plot_func.__name__ not in supported:
+        msg = (
+            'Given plotting function "{}" may not be supported, intended '
+            "use: {}."
+        )
+        msg = msg.format(plot_func.__name__, supported)
+        warnings.warn(msg, UserWarning)
+
+    # Determine plot range.
+    vmin = kwargs.pop("vmin", min([cc.data.min() for cc in cubes]))
+    vmax = kwargs.pop("vmax", max([cc.data.max() for cc in cubes]))
+
+    update = update_animation_iris
+    frames = range(len(cubes))
+
+    return animation.FuncAnimation(
+        fig, update, frames=frames, fargs=(cubes, vmin, vmax, coords), **kwargs
+    )

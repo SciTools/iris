@@ -134,8 +134,9 @@ class FormatAgent:
                 value = value[:50] + "..."
             printable_values[key] = value
         msg = (
-            "No format specification could be found for the given buffer."
-            " File element cache:\n {}".format(printable_values)
+            "No format specification could be found for the given buffer. "
+            "Perhaps a plugin is missing or has not been loaded. "
+            "File element cache:\n {}".format(printable_values)
         )
         raise ValueError(msg)
 
@@ -330,3 +331,22 @@ class UriProtocol(FileElement):
         from iris.io import decode_uri
 
         return decode_uri(basename)[0]
+
+
+class DataSourceObjectProtocol(FileElement):
+    """
+    A :class:`FileElement` that simply returns the URI entry itself.
+
+    This enables a arbitrary non-string data object to be passed, subject to
+    subsequent checks on the object itself (specified in the handler).
+
+    """
+
+    def __init__(self):
+        super().__init__(requires_fh=False)
+
+    def get_element(self, basename, file_handle):
+        # In this context, there should *not* be a file opened by the handler.
+        # Just return 'basename', which in this case is not a name, or even a
+        # string, but a passed 'data object'.
+        return basename

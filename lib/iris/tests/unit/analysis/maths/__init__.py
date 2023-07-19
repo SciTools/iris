@@ -155,7 +155,7 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             # of the mesh-coords, which don't match to the originals.
             # FOR NOW: remove those, for a result matching the other ones.
             # TODO: coord equivalence may need reviewing, either for cube
-            #  maths or for coord equivalance generally.
+            #  maths or for coord equivalence generally.
             #  cf. https://github.com/SciTools/iris/issues/4671
             if cube.mesh and dim == cube.mesh_dim():
                 for co in cube.coords(mesh_coords=True):
@@ -247,7 +247,7 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
 
     def test_in_place_introduces_mask(self):
         # If second cube is masked, result should also be masked.
-        data1 = np.arange(4, dtype=np.float)
+        data1 = np.arange(4, dtype=float)
         data2 = ma.array([2.0, 2.0, 2.0, 2.0], mask=[1, 1, 0, 0])
         cube1 = Cube(data1)
         cube2 = Cube(data2)

@@ -28,12 +28,12 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000.0, 104000.0, 106000.0]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000.0, 96000.0, 98000.0]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
@@ -75,12 +75,12 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000.0, 104000.0, 106000.0]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000.0, 96000.0, 98000.0]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
@@ -121,12 +121,12 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000.0, 104000.0, 106000.0]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000.0, 96000.0, 98000.0]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
@@ -167,12 +167,12 @@
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000.0, 104000.0, 106000.0]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000.0, 96000.0, 98000.0]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
