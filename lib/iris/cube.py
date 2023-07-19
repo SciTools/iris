@@ -22,6 +22,7 @@ from typing import (
     Mapping,
     MutableMapping,
     Optional,
+    Union
 )
 import warnings
 from xml.dom.minidom import Document
@@ -805,31 +806,30 @@ class CubeAttrsDict(MutableMapping):
 
     Examples
     --------
-    .. doctest::
-        :hide:
+
+        >>> from iris.cube import Cube
         >>> cube = Cube([0])
-
-        >>> cube.attributes.update({'history':'fresh', 'x':3})
+        >>> cube.attributes.update({{"history": "from test-123", "mycode": 3}})
         >>> print(cube.attributes)
-        {'history': 'fresh', 'x': 3}
+        {{'history': 'from test-123', 'mycode': 3}}
         >>> print(repr(cube.attributes))
-        CubeAttrsDict(globals={'history': 'fresh'}, locals={'x': 3})
+        CubeAttrsDict(globals={{'history': 'from test-123'}}, locals={{'mycode': 3}})
 
-        >>> cube.attributes['history'] += '+added'
+        >>> cube.attributes['history'] += ' +added'
         >>> print(repr(cube.attributes))
-        CubeAttrsDict(globals={'history': 'fresh+added'}, locals={'x': 3})
+        CubeAttrsDict(globals={{'history': 'from test-123 +added'}}, locals={{'mycode': 3}})
 
-        >>> cube.attributes.locals['history'] = 'per-var'
+        >>> cube.attributes.locals['history'] = 'per-variable'
         >>> print(cube.attributes)
-        {'history': 'per-var', 'x': 3}
+        {{'history': 'per-variable', 'mycode': 3}}
         >>> print(repr(cube.attributes))
-        CubeAttrsDict(globals={'history': 'fresh+added'}, locals={'x': 3, 'history': 'per-var'})
+        CubeAttrsDict(globals={{'history': 'from test-123 +added'}}, locals={{'mycode': 3, 'history': 'per-variable'}})
 
     """
 
     def __init__(
         self,
-        combined: Optional[Mapping] = "__unspecified",
+        combined: Optional[Union[Mapping, str]] = "__unspecified",
         locals: Optional[Mapping] = None,
         globals: Optional[Mapping] = None,
     ):
@@ -858,15 +858,19 @@ class CubeAttrsDict(MutableMapping):
 
         Examples
         --------
-        >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
-        CubeAttrsDict(globals={'history': 'data-story'}, locals={'comment': 'this-cube'})
-        >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this cube'}).globals
-        {'history': 'data-story'}
-        >>> CubeAttrsDict(locals={'history':'local'})
-        CubeAttrsDict(globals={}, locals={'history': 'local'})
-        >>> CubeAttrsDict(globals={'x': 'global'}, locals={'x':'local'})
-        CubeAttrsDict(globals={'x': 'global'}, locals={'x': 'local'})
-        >>>
+
+            >>> from iris.cube import CubeAttrsDict
+            >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
+            CubeAttrsDict(globals={'history': 'data-story'}, locals={'comment': 'this-cube'})
+
+            >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this cube'}).globals
+            {'history': 'data-story'}
+
+            >>> CubeAttrsDict(locals={'history': 'local-history'})
+            CubeAttrsDict(globals={}, locals={'history': 'local-history'})
+
+            >>> CubeAttrsDict(globals={'x': 'global'}, locals={'x': 'local'})
+            CubeAttrsDict(globals={'x': 'global'}, locals={'x': 'local'})
 
         """
         # First initialise locals + globals, defaulting to empty.
