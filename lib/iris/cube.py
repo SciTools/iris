@@ -22,7 +22,7 @@ from typing import (
     Mapping,
     MutableMapping,
     Optional,
-    Union
+    Union,
 )
 import warnings
 from xml.dom.minidom import Document
