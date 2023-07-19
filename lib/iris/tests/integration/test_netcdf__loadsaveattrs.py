@@ -21,13 +21,13 @@ might be recorded either globally or locally.
 import inspect
 from typing import Iterable, Optional, Union
 
-import netCDF4
 import pytest
 
 import iris
 import iris.coord_systems
 from iris.cube import Cube
 import iris.fileformats.netcdf
+import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 
 # First define the known controlled attribute names defined by netCDf and CF conventions
 #
@@ -89,7 +89,7 @@ class MixinAttrsTesting:
         for frame in stack[1:]:
             full_name = frame[3]
             if full_name.startswith("test_"):
-                # Return the name with the inital "test_" removed.
+                # Return the name with the initial "test_" removed.
                 test_name = full_name.replace("test_", "")
                 break
         # Search should not fail, unless we were called from an inappropriate place?
@@ -154,7 +154,7 @@ class MixinAttrsTesting:
         def make_file(
             filepath: str, global_value=None, var_values=None
         ) -> str:
-            ds = netCDF4.Dataset(filepath, "w")
+            ds = threadsafe_nc4.DatasetWrapper(filepath, "w")
             if global_value is not None:
                 ds.setncattr(attr_name, global_value)
             ds.createDimension("x", 3)
@@ -257,7 +257,7 @@ class TestRoundtrip(MixinAttrsTesting):
         """
         # N.B. there is only ever one result-file, but it can contain various variables
         # which came from different input files.
-        ds = netCDF4.Dataset(self.result_filepath)
+        ds = threadsafe_nc4.DatasetWrapper(self.result_filepath)
         if global_attr_value is None:
             assert self.attrname not in ds.ncattrs()
         else:
@@ -849,7 +849,7 @@ class TestSave(MixinAttrsTesting):
             # A special case : the stored name is different
             attr_name = "um_stash_source"
         try:
-            ds = netCDF4.Dataset(self.result_filepath)
+            ds = threadsafe_nc4.DatasetWrapper(self.result_filepath)
             global_result = (
                 ds.getncattr(attr_name) if attr_name in ds.ncattrs() else None
             )
