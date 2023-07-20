@@ -25,7 +25,7 @@ import pytest
 
 import iris
 import iris.coord_systems
-from iris.cube import Cube
+from iris.cube import Cube, CubeAttrsDict
 import iris.fileformats.netcdf
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 
@@ -633,8 +633,13 @@ class TestLoad(MixinAttrsTesting):
         )
         # Default behaviour for a general global user-attribute.
         # It is attached to all loaded cubes.
-        assert cube1.attributes == {"myname": "single-value"}
-        assert cube2.attributes == {"myname": "single-value"}
+
+        expected_dict = {"myname": "single-value"}
+        for cube in (cube1, cube2):
+            # #1 : legacy results, for cube.attributes **viewed as a plain dictionary**.
+            assert dict(cube1.attributes) == expected_dict
+            # #2 : exact expected result, viewed as newstyle split-attributes
+            assert cube1.attributes == CubeAttrsDict(globals=expected_dict)
 
     def test_02_userstyle_single_local(self):
         # Default behaviour for a general local user-attribute.
@@ -658,10 +663,26 @@ class TestLoad(MixinAttrsTesting):
             global_value_file2="global_file2",
             vars_values_file2=vars2,
         )
-        assert cube1.attributes == {"random": "f1v1"}
-        assert cube2.attributes == {"random": "f1v2"}
-        assert cube3.attributes == {"random": "x1"}
-        assert cube4.attributes == {"random": "x2"}
+
+        # (#1) : legacy equivalence : for cube.attributes viewed as a plain 'dict'
+        assert dict(cube1.attributes) == {"random": "f1v1"}
+        assert dict(cube2.attributes) == {"random": "f1v2"}
+        assert dict(cube3.attributes) == {"random": "x1"}
+        assert dict(cube4.attributes) == {"random": "x2"}
+
+        # (#1) : exact results check, for newstyle "split" cube attrs
+        assert cube1.attributes == CubeAttrsDict(
+            globals={"random": "global_file1"}, locals={"random": "f1v1"}
+        )
+        assert cube2.attributes == CubeAttrsDict(
+            globals={"random": "global_file1"}, locals={"random": "f1v2"}
+        )
+        assert cube3.attributes == CubeAttrsDict(
+            globals={"random": "global_file2"}, locals={"random": "x1"}
+        )
+        assert cube4.attributes == CubeAttrsDict(
+            globals={"random": "global_file2"}, locals={"random": "x2"}
+        )
 
     def test_04_userstyle_multiple_same(self):
         # Nothing special to note in this case
@@ -671,8 +692,14 @@ class TestLoad(MixinAttrsTesting):
             global_value_file1="global_file1",
             vars_values_file1={"v1": "same-value", "v2": "same-value"},
         )
-        assert cube1.attributes == {"random": "same-value"}
-        assert cube2.attributes == {"random": "same-value"}
+        for cube in (cube1, cube2):
+            # (#1): legacy values, for cube.attributes viewed as a single dict
+            assert dict(cube.attributes) == {"random": "same-value"}
+            # (#2): exact results, with newstyle "split" cube attrs
+            assert cube2.attributes == CubeAttrsDict(
+                globals={"random": "global_file1"},
+                locals={"random": "same-value"},
+            )
 
     #######################################################
     # Tests on "Conventions" attribute.
@@ -702,7 +729,13 @@ class TestLoad(MixinAttrsTesting):
             global_value_file1="global-setting",
             vars_values_file1="local-setting",
         )
-        assert cube.attributes == {"Conventions": "local-setting"}
+        # (#1): legacy values, for cube.attributes viewed as a single dict
+        assert dict(cube.attributes) == {"Conventions": "local-setting"}
+        # (#2): exact results, with newstyle "split" cube attrs
+        assert cube.attributes == CubeAttrsDict(
+            globals={"Conventions": "global-setting"},
+            locals={"Conventions": "local-setting"},
+        )
 
     #######################################################
     # Tests on "global" style attributes
@@ -725,7 +758,12 @@ class TestLoad(MixinAttrsTesting):
             attr_name=global_attr,
             vars_values_file1=attr_content,
         )
-        assert cube.attributes == {global_attr: attr_content}
+        # (#1): legacy values, for cube.attributes viewed as a single dict
+        assert dict(cube.attributes) == {global_attr: attr_content}
+        # (#2): exact results, with newstyle "split" cube attrs
+        assert cube.attributes == CubeAttrsDict(
+            locals={global_attr: attr_content}
+        )
 
     def test_11_globalstyle__both(self, global_attr):
         attr_global = f"Global-{global_attr}"
@@ -736,7 +774,13 @@ class TestLoad(MixinAttrsTesting):
             vars_values_file1=attr_local,
         )
         # promoted local setting "wins"
-        assert cube.attributes == {global_attr: attr_local}
+        # (#1): legacy values, for cube.attributes viewed as a single dict
+        assert dict(cube.attributes) == {global_attr: attr_local}
+        # (#2): exact results, with newstyle "split" cube attrs
+        assert cube.attributes == CubeAttrsDict(
+            globals={global_attr: attr_global},
+            locals={global_attr: attr_local},
+        )
 
     def test_12_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained
@@ -746,8 +790,12 @@ class TestLoad(MixinAttrsTesting):
             attr_name=global_attr,
             vars_values_file1={"v1": attr_1, "v2": attr_2},
         )
-        assert cube1.attributes == {global_attr: attr_1}
-        assert cube2.attributes == {global_attr: attr_2}
+        # (#1): legacy values, for cube.attributes viewed as a single dict
+        assert dict(cube1.attributes) == {global_attr: attr_1}
+        assert dict(cube2.attributes) == {global_attr: attr_2}
+        # (#2): exact results, with newstyle "split" cube attrs
+        assert cube1.attributes == CubeAttrsDict(locals={global_attr: attr_1})
+        assert cube2.attributes == CubeAttrsDict(locals={global_attr: attr_2})
 
     def test_14_globalstyle__multifile_different(self, global_attr):
         # Different global attributes from multiple files are retained as local ones
@@ -812,7 +860,15 @@ class TestLoad(MixinAttrsTesting):
                 # For some reason, these ones never appear on the cube
                 expected_result = {}
 
-        assert cube.attributes == expected_result
+        if origin_style == "input_local":
+            expected_result_newstyle = CubeAttrsDict(expected_result)
+        else:
+            expected_result_newstyle = CubeAttrsDict(globals=expected_result)
+
+        # (#1): legacy values, for cube.attributes viewed as a single dict
+        assert dict(cube.attributes) == expected_result
+        # (#2): exact results, with newstyle "split" cube attrs
+        assert cube.attributes == expected_result_newstyle
 
 
 class TestSave(MixinAttrsTesting):
