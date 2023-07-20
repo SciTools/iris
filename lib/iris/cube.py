@@ -802,7 +802,7 @@ def _is_single_item(testee):
 
 class CubeAttrsDict(MutableMapping):
     """
-    A dict-like object for "Cube.attributes", which provides unified user access to
+    A dict-like object for Cube :attr:`~iris.cube.Cube.attributes`, which provides unified user access to
     the combined cube 'local' and 'global' attributes, mimicking the behaviour of a
     simple dict.
 
