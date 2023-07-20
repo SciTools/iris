@@ -815,8 +815,8 @@ class CubeAttrsDict(MutableMapping):
 
     Notes
     -----
-    For type testing, "issubclass(CubeAttrsDict, Mapping)" is True, but
-    "issubclass(CubeAttrsDict, dict)" is False.
+    For type testing, ``issubclass(CubeAttrsDict, Mapping)`` is ``True``, but
+    ``issubclass(CubeAttrsDict, dict)`` is ``False``.
 
     Properties 'locals' and 'globals' are the two sets of cube attributes.  These are
     both :class:`~iris.common.mixin.LimitedAttributeDict` .  The CubeAttrsDict object
