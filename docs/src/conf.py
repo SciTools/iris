@@ -384,6 +384,7 @@ linkcheck_ignore = [
     "http://www.nationalarchives.gov.uk/doc/open-government-licence",
     "https://www.metoffice.gov.uk/",
     "https://biggus.readthedocs.io/",
+    "https://stickler-ci.com/",
 ]
 
 # list of sources to exclude from the build.
