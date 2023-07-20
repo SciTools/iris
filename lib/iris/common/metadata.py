@@ -242,7 +242,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         field_strings = []
         for field in self._fields:
             value = getattr(self, field)
-            if value is None or isinstance(value, (str, dict)) and not value:
+            if (
+                value is None
+                or isinstance(value, (str, Mapping))
+                and not value
+            ):
                 continue
             field_strings.append(f"{field}={value}")
 

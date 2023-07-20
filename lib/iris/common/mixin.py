@@ -17,7 +17,7 @@ import iris.std_names
 
 from .metadata import BaseMetadata
 
-__all__ = ["CFVariableMixin"]
+__all__ = ["CFVariableMixin", "LimitedAttributeDict"]
 
 
 def _get_valid_standard_name(name):
@@ -53,7 +53,29 @@ def _get_valid_standard_name(name):
 
 
 class LimitedAttributeDict(dict):
-    _forbidden_keys = (
+    """
+    A specialised 'dict' subclass, which forbids (errors) certain attribute names.
+
+    Used for the attribute dictionaries of all Iris data objects (that is,
+    :class:`CFVariableMixin` and its subclasses).
+
+    The "excluded" attributes are those which either :mod:`netCDF4` or Iris intpret and
+    control with special meaning, which therefore should *not* be defined as custom
+    'user' attributes on Iris data objects such as cubes.
+
+    For example : "coordinates", "grid_mapping", "scale_factor".
+
+    The 'forbidden' attributes are those listed in
+    :data:`iris.common.mixin.LimitedAttributeDict.CF_ATTRS_FORBIDDEN` .
+
+    All the forbidden attributes are amongst those listed in
+    `Appendix A of the CF Conventions: <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_
+    -- however, not *all* of them, since not all are interpreted by Iris.
+
+    """
+
+    #: Attributes with special CF meaning, forbidden in Iris attribute dictionaries.
+    CF_ATTRS_FORBIDDEN = (
         "standard_name",
         "long_name",
         "units",
@@ -78,7 +100,7 @@ class LimitedAttributeDict(dict):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
         for key in self.keys():
-            if key in self._forbidden_keys:
+            if key in self.CF_ATTRS_FORBIDDEN:
                 raise ValueError(f"{key!r} is not a permitted attribute")
 
     def __eq__(self, other):
@@ -99,11 +121,12 @@ class LimitedAttributeDict(dict):
         return not self == other
 
     def __setitem__(self, key, value):
-        if key in self._forbidden_keys:
+        if key in self.CF_ATTRS_FORBIDDEN:
             raise ValueError(f"{key!r} is not a permitted attribute")
         dict.__setitem__(self, key, value)
 
     def update(self, other, **kwargs):
+        """Standard ``dict.update()`` operation."""
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):
@@ -115,7 +138,7 @@ class LimitedAttributeDict(dict):
 
         # Check validity of keys
         for key in keys:
-            if key in self._forbidden_keys:
+            if key in self.CF_ATTRS_FORBIDDEN:
                 raise ValueError(f"{key!r} is not a permitted attribute")
 
         dict.update(self, other, **kwargs)
