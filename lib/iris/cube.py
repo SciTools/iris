@@ -955,16 +955,16 @@ class CubeAttrsDict(MutableMapping):
         self.locals, self.globals = state
 
     #
-    # Support simple comparison, even when contents are arrays.
+    # Support comparison -- required because default operation only compares a single
+    # value at each key.
     #
     def __eq__(self, other):
-        # For equality, require both globals + locals to match
+        # For equality, require both globals + locals to match exactly.
+        # NOTE: array content works correctly, since 'locals' and 'globals' are always
+        # iris.common.mixin.LimitedAttributeDict, which gets this right.
         other = CubeAttrsDict(other)
         result = self.locals == other.locals and self.globals == other.globals
         return result
-
-    def __ne__(self, other):
-        return not self == other
 
     #
     # Provide a copy method, as for 'dict', but *not* provided by MutableMapping
