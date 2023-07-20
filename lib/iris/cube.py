@@ -806,7 +806,7 @@ class CubeAttrsDict(MutableMapping):
     the combined cube ``local`` and ``global`` attributes, mimicking the behaviour of a
     simple dict.
 
-    This supports all the regular methods of a 'dict'.
+    This supports all the regular methods of a :class:`dict`.
     However, a few things such as the detailed print (repr) are different.
 
     In addition, the 'locals' and 'globals' properties provide specific access to local
