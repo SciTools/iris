@@ -35,18 +35,18 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.11"]
-        session: ["doctest", "gallery", "linkcheck"]
+        python-version: ["311"]
+        session: ["docs-tests", "docs-linkcheck", "gallery_tests"]
         include:
           - os: "ubuntu-latest"
-            python-version: "3.11"
+            python-version: "311"
             session: "tests"
-            coverage: "--coverage"
+            posargs: "--cov=lib/iris --cov-report=xml"
           - os: "ubuntu-latest"
-            python-version: "3.10"
+            python-version: "310"
             session: "tests"
           - os: "ubuntu-latest"
-            python-version: "3.9"
+            python-version: "39"
             session: "tests"
 
     env:
@@ -63,7 +63,7 @@ jobs:
           CACHE_WEEKS: 2
         run: |
           echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-          echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+          echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }})-linux-64.lock" >> ${GITHUB_ENV}
 
       - name: "data cache"
         uses: ./.github/workflows/composite/iris-data-cache
@@ -91,10 +91,10 @@ jobs:
       - name: "conda environment cache"
         uses: ./.github/workflows/composite/conda-env-cache
         with:
-          cache_build: 0
+          cache_build: 1
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
-          install_packages: "cartopy nox pip"
+          install_packages: "cartopy tox'<4'"
 
       - name: "conda info"
         run: |
@@ -108,8 +108,8 @@ jobs:
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
-      - name: "nox cache"
-        uses: ./.github/workflows/composite/nox-cache
+      - name: "tox cache"
+        uses: ./.github/workflows/composite/tox-cache
         with:
           cache_build: 2
           env_name: ${{ env.ENV_NAME }}
@@ -134,11 +134,9 @@ jobs:
           cat ${MPL_RC}
 
       - name: "iris ${{ matrix.session }}"
-        env:
-          PY_VER: ${{ matrix.python-version }}
         run: |
-          nox --session ${{ matrix.session }} -- --verbose ${{ matrix.coverage }}
+            tox -e py${{ matrix.python-version }}-${{ matrix.session }} -- ${{ matrix.posargs }}
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
-        if: ${{ matrix.coverage }}
+        if: contains(${{ matrix.posargs }}, "--cov=lib/iris --cov-report=xml")

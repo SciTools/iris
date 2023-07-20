@@ -30,7 +30,7 @@ is merged.  Before submitting a pull request please consider the following:
    :ref:`code_formatting`.
 
 #. **Check all new dependencies added to the** `requirements`_ **yaml
-   files.**  If dependencies have been added then new nox testing lockfiles
+   files.**  If dependencies have been added then new testing lockfiles
    should be generated too, see :ref:`gha_test_env`.
 
 #. **Check the source documentation been updated to explain all new or changed

@@ -37,6 +37,7 @@
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _sphinx-apidoc: https://github.com/sphinx-contrib/apidoc
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
+.. _tox: https://tox.readthedocs.io/en/latest/
 .. _using git: https://docs.github.com/en/github/using-git
 .. _requirements: https://github.com/SciTools/iris/tree/main/requirements
 .. _CF-UGRID: https://ugrid-conventions.github.io/ugrid-conventions/
