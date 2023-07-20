@@ -802,40 +802,23 @@ def _is_single_item(testee):
 
 class CubeAttrsDict(MutableMapping):
     """
-    A dict-like object for Cube :attr:`~iris.cube.Cube.attributes`, which provides unified user access to
-    the combined cube ``local`` and ``global`` attributes, mimicking the behaviour of a
-    simple dict.
+    A :class:`dict`\\-like object for :attr:`iris.cube.Cube.attributes`,
+    providing unified user access to combined cube "local" and "global" attributes
+    dictionaries, with the access behaviour of an ordinary (single) dictionary.
 
-    This supports all the regular methods of a :class:`dict`.
-    However, a few things such as the detailed print (repr) are different.
+    Properties :attr:`globals` and :attr:`locals` are regular
+    :class:`~iris.common.mixin.LimitedAttributeDict`\\s, which can be accessed and
+    modified separately.  The :class:`CubeAttrsDict` itself contains *no* additional
+    state, but simply provides a 'combined' view of both global + local attributes.
 
-    In addition, the 'locals' and 'globals' properties provide specific access to local
-    and global attributes, as regular
-    :class:`~iris.common.mixin.LimitedAttributeDict`\\s.
+    All the read- and write-type methods, such as ``get()``, ``update()``, ``values()``,
+    behave according to the logic documented for : :meth:`__getitem__`,
+    :meth:`__setitem__` and :meth:`__iter__`.
 
     Notes
     -----
     For type testing, ``issubclass(CubeAttrsDict, Mapping)`` is ``True``, but
     ``issubclass(CubeAttrsDict, dict)`` is ``False``.
-
-    Properties 'locals' and 'globals' are the two sets of cube attributes.  These are
-    both :class:`~iris.common.mixin.LimitedAttributeDict` .  The CubeAttrsDict object
-    contains *no* additional state of its own, but simply acts as a view on these two.
-
-    When reading (__getitem__, pop, popitem, keys, values etc), it contains all the
-    keys + values of both 'locals' and 'globals'.  When a key occurs in *both* 'locals'
-    and 'globals', the result is the local value.
-    See :meth:`~iris.cube.CubeAttrsDict.__getitem__` .
-
-    When writing (__setitem__, setdefault, update, etc) to a key already present, the
-    existing entry in either 'locals' or 'globals' is updated.  If both are present,
-    'locals' is updated.  See :meth:`~iris.cube.CubeAttrsDict.__setitem__` .
-
-    When writing to a new key, this generally updates 'locals'.  However, certain
-    specific names would never normally be 'data' attributes, and these are created as
-    'globals' instead.  These are listed in Appendix A of the
-    `CF Conventions: <https://cfconventions.org/>`_ .
-    At present, these are : 'conventions', 'featureType', 'history', 'title'.
 
     Examples
     --------
@@ -869,12 +852,12 @@ class CubeAttrsDict(MutableMapping):
         """
         Create a cube attributes dictionary.
 
-        Unlike the attributes of other :class:`~iris.common.mixin.CFVariableMixin`
-        subclasses, this is a "split" dictionary - i.e. it contains separate global +
-        local settings.
-
-        We support initialisation from a generic dictionary (using default global/local
-        name identification rules), or from specific local and global ones.
+        We support initialisation from a single generic mapping input, using the default
+        global/local assignment rules explained at :meth:`__setatrr__`, or from
+        two separate mappings.  Two separate dicts can be passed in the ``locals``
+        and ``globals`` args, **or** via a ``combined`` arg which has its own
+        ``.globals`` and ``.locals`` properties -- so this allows passing an existing
+        :class:`CubeAttrsDict`, which will be copied.
 
         Parameters
         ----------
@@ -898,14 +881,16 @@ class CubeAttrsDict(MutableMapping):
             >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
             CubeAttrsDict(globals={'history': 'data-story'}, locals={'comment': 'this-cube'})
 
-            >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this cube'}).globals
-            {'history': 'data-story'}
-
             >>> CubeAttrsDict(locals={'history': 'local-history'})
             CubeAttrsDict(globals={}, locals={'history': 'local-history'})
 
             >>> CubeAttrsDict(globals={'x': 'global'}, locals={'x': 'local'})
             CubeAttrsDict(globals={'x': 'global'}, locals={'x': 'local'})
+
+            >>> x1 = CubeAttrsDict(globals={'x': 1}, locals={'y': 2})
+            >>> x2 = CubeAttrsDict(x1)
+            >>> x2
+            CubeAttrsDict(globals={'x': 1}, locals={'y': 2})
 
         """
         # First initialise locals + globals, defaulting to empty.
@@ -1000,7 +985,12 @@ class CubeAttrsDict(MutableMapping):
     #
 
     def __iter__(self):
-        # Ordering: all global keys, then all local ones, but omitting duplicates.
+        """
+        Define the combined iteration order.
+
+        Result is: all global keys, then all local ones, but omitting duplicates.
+
+        """
         # NOTE: this means that in the "summary" view, attributes present in both
         # locals+globals are listed first, amongst the globals, even though they appear
         # with the *value* from locals.
@@ -1032,15 +1022,20 @@ class CubeAttrsDict(MutableMapping):
         """
         Assign an attribute value.
 
-        If there is *no* existing attribute of this name, then one is created, either
-        local or global, depending on whether the name is in the known set of "normally
-        global" attribute names defined by CF.  See :class:`~iris.cube.CubeAttrsDict`.
+        This may be assigned in either ``self.locals`` or ``self.globals``, chosen as
+        follows:
 
-        If there is an *existing* attribute of this name in either ``self.locals`` or
-        ``self.globals``, then that one is updated (i.e. overwritten).
+        * If there is an existing setting in either ``.locals`` or ``.globals``, then
+          that is updated (i.e. overwritten).
 
-        If the name is present in *both* locals and globals, then only the local one is
-        updated.
+        * If it is present in *both*, only
+          ``.locals`` is updated.
+
+        * If there is *no* existing attribute, it is usually created in ``.locals``.
+          **However** a handful of "known normally global" cases, as defined by CF,
+          go into ``.globals`` instead.
+          At present these are : ('conventions', 'featureType', 'history', 'title').
+          See `CF Conventions, Appendix A: <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_ .
 
         """
         # If an attribute of this name is already present, update that
@@ -1278,8 +1273,8 @@ class Cube(CFVariableMixin):
 
         self.cell_methods = cell_methods
 
-        #: A dictionary, with a few restricted keys, for arbitrary
-        #: Cube metadata.
+        #: A dictionary for arbitrary Cube metadata.
+        #: A few keys are restricted - see :class:`CubeAttrsDict`.
         self.attributes = attributes
 
         # Coords
