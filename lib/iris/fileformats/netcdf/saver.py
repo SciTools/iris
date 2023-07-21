@@ -2600,9 +2600,15 @@ def save(
     Save cube(s) to a netCDF file, given the cube and the filename.
 
     * Iris will write CF 1.7 compliant NetCDF files.
-    * The attributes dictionaries on each cube in the saved cube list
-      will be compared and common attributes saved as NetCDF global
-      attributes where appropriate.
+    * If **split-attribute saving is disabled**, i.e.
+      :attr:`iris.FUTURE.save_split_attrs` is ``False``, then attributes dictionaries
+      on each cube in the saved cube list will be compared and common attributes saved
+      as NetCDF global attributes where appropriate.
+
+      Or, **when **split-attribute saving is enabled**, then `cube.attributes.locals``
+      are always saved as attributes of data-variables, and ``cube.attributes.globals``
+      are saved as global (dataset) attributes, where possible.
+      Since the 2 types are now distinguished : see :class:`~iris.cube.CubeAttrsDict`.
     * Keyword arguments specifying how to save the data are applied
       to each cube. To use different settings for different cubes, use
       the NetCDF Context manager (:class:`~Saver`) directly.
@@ -2635,6 +2641,8 @@ def save(
         An interable of cube attribute keys. Any cube attributes with
         matching keys will become attributes on the data variable rather
         than global attributes.
+        **NOTE:** this is *ignored* if 'split-attribute saving' is **enabled**,
+        i.e. when ``iris.FUTURE.save_split_attrs`` is ``True``.
 
     * unlimited_dimensions (iterable of strings and/or
        :class:`iris.coords.Coord` objects):
