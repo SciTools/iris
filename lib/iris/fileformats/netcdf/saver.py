@@ -2789,15 +2789,18 @@ def save(
     # Determine the attribute keys that are common across all cubes and
     # thereby extend the collection of local_keys for attributes
     # that should be attributes on data variables.
-    attributes = cubes[0].attributes
-    common_keys = set(attributes)
-    for cube in cubes[1:]:
-        keys = set(cube.attributes)
+    common_attr_values = None
+    for cube in cubes:
+        cube_attributes = cube.attributes
+        keys = set(cube_attributes)
+        if common_attr_values is None:
+            common_attr_values = cube_attributes.copy()
+            common_keys = keys.copy()
         local_keys.update(keys.symmetric_difference(common_keys))
         common_keys.intersection_update(keys)
         different_value_keys = []
         for key in common_keys:
-            if np.any(attributes[key] != cube.attributes[key]):
+            if np.any(common_attr_values[key] != cube_attributes[key]):
                 different_value_keys.append(key)
         common_keys.difference_update(different_value_keys)
         local_keys.update(different_value_keys)
