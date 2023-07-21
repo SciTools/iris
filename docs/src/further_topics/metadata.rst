@@ -131,7 +131,7 @@ We can easily get all of the associated metadata of the :class:`~iris.cube.Cube`
 using the ``metadata`` property:
 
     >>> cube.metadata
-    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={}, locals={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={'Conventions': 'CF-1.5'}, locals={'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 We can also inspect the ``metadata`` of the ``longitude``
 :class:`~iris.coords.DimCoord` attached to the :class:`~iris.cube.Cube` in the same way:
@@ -676,7 +676,7 @@ For example, consider the following :class:`~iris.common.metadata.CubeMetadata`,
 .. doctest:: metadata-combine
 
     >>> cube.metadata
-    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={}, locals={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={'Conventions': 'CF-1.5'}, locals={'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 We can perform the **identity function** by comparing the metadata with itself,
 
@@ -811,7 +811,7 @@ the ``from_metadata`` class method. For example, given the following
 .. doctest:: metadata-convert
 
     >>> cube.metadata
-    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={}, locals={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={'Conventions': 'CF-1.5'}, locals={'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 We can easily convert it to a :class:`~iris.common.metadata.DimCoordMetadata` instance
 using ``from_metadata``,
