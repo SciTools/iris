@@ -994,11 +994,11 @@ class _ProtoCube:
                 coord_signature.dim_extents[dim_ind], candidate_axis
             )
             if error_on_mismatch and not match:
-                msg = ["Dimensional coordinate extents differ"]
+                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, cannot concatenate overlapping cubes"
                 raise iris.exceptions.ConcatenateError(msg)
             elif not match:
                 msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
-                warnings.warm()
+                warnings.warn(msg)
 
         # Check for compatible AuxCoords.
         if match:
