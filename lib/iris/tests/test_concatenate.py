@@ -15,6 +15,7 @@ import iris.tests as tests  # isort:skip
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
@@ -338,7 +339,10 @@ class TestNoConcat(tests.IrisTest):
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
         cubes.append(_make_cube((1, 3), y, 2))
-        result = concatenate(cubes)
+        with pytest.warns(
+            UserWarning, match="Found cubes with overlap on concatenate axis"
+        ):
+            result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
     def test_points_overlap_decreasing(self):
@@ -346,7 +350,10 @@ class TestNoConcat(tests.IrisTest):
         x = (0, 2)
         cubes.append(_make_cube(x, (3, 0, -1), 1))
         cubes.append(_make_cube(x, (1, -1, -1), 2))
-        result = concatenate(cubes)
+        with pytest.warns(
+            UserWarning, match="Found cubes with overlap on concatenate axis"
+        ):
+            result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
     def test_bounds_overlap_increasing(self):

@@ -995,7 +995,7 @@ class _ProtoCube:
             )
             if error_on_mismatch and not match:
                 msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, cannot concatenate overlapping cubes"
-                raise iris.exceptions.ConcatenateError(msg)
+                raise iris.exceptions.ConcatenateError([msg])
             elif not match:
                 msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
                 warnings.warn(msg)

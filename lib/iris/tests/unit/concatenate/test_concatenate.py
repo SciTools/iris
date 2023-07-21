@@ -246,7 +246,7 @@ class TestMessages(tests.IrisTest):
         cube_1 = self.cube
         cube_2 = cube_1.copy()
         cube_2.coord("time").points = np.arange(1, 3, dtype=np.float32)
-        exc_regexp = "Dimensional coordinate extents differ"
+        exc_regexp = "Found cubes with overlap on concatenate axis"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 
