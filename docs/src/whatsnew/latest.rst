@@ -92,7 +92,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 .. _@rsdavies: https://github.com/rsdavies
-
+.. _@acchamber: https://github.com/acchamber
 
 
 .. comment
