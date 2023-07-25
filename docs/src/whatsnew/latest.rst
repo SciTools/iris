@@ -32,6 +32,9 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
    lazy data. (:pull:`5307`)
+   
+#. `@acchamber`_   added error and warning messages about coordinate overlaps to 
+   :func:`~iris.cube.concatenate` to improve the concatenation process. (:pull:`5382`)
 
 
 🐛 Bugs Fixed
