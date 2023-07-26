@@ -23,6 +23,7 @@ variables:
 	float unknown(Mesh2d_faces) ;
 		unknown:mesh = "Mesh2d" ;
 		unknown:location = "face" ;
+		unknown:coordinates = "face_x face_y" ;
 
 // global attributes:
 		:Conventions = "CF-1.7" ;

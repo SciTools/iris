@@ -403,6 +403,10 @@ class TestSaveUgrid__cube(tests.IrisTest):
             all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords)
         )
 
+        # The face coordinates should be referenced by the data variable.
+        for coord in face_coords:
+            self.assertIn(coord, a_props["coordinates"])
+
         # The dims of the datavar also == [<faces-dim>]
         self.assertEqual(a_props[_VAR_DIMS], [face_dim])
 
@@ -460,8 +464,10 @@ class TestSaveUgrid__cube(tests.IrisTest):
         v_a, v_b = vars["a"], vars["b"]
         self.assertEqual(v_a["mesh"], mesh_name)
         self.assertEqual(v_a["location"], "face")
+        self.assertEqual(v_a["coordinates"], "face_x face_y")
         self.assertEqual(v_b["mesh"], mesh_name)
         self.assertEqual(v_b["location"], "face")
+        self.assertEqual(v_b["coordinates"], "face_x face_y")
 
     def test_multi_cubes_different_locations(self):
         cube1 = make_cube(var_name="a", location="face")
@@ -478,8 +484,10 @@ class TestSaveUgrid__cube(tests.IrisTest):
         v_a, v_b = vars["a"], vars["b"]
         self.assertEqual(v_a["mesh"], mesh_name)
         self.assertEqual(v_a["location"], "face")
+        self.assertEqual(v_a["coordinates"], "face_x face_y")
         self.assertEqual(v_b["mesh"], mesh_name)
         self.assertEqual(v_b["location"], "node")
+        self.assertEqual(v_b["coordinates"], "node_x node_y")
 
         # the main variables map the face and node dimensions
         face_dim = vars_meshdim(vars, "face")
@@ -520,6 +528,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         for props in a_props, b_props:
             self.assertEqual(props["mesh"], "Mesh2d")
             self.assertEqual(props["location"], "face")
+            self.assertEqual(props["coordinates"], "face_x face_y")
 
         # the data variables map the appropriate node dimensions
         self.assertEqual(a_props[_VAR_DIMS], ["Mesh2d_faces"])
@@ -543,11 +552,15 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(2, len(mesh_datavars))
         self.assertEqual(["a", "b"], sorted(mesh_datavars.keys()))
 
+        def get_props_attrs(props: dict):
+            return props["mesh"], props["location"], props["coordinates"]
+
         # the main variables reference the correct meshes, and 'face' location
         a_props, b_props = vars["a"], vars["b"]
-        mesh_a, loc_a = a_props["mesh"], a_props["location"]
-        mesh_b, loc_b = b_props["mesh"], b_props["location"]
+        mesh_a, loc_a, coords_a = get_props_attrs(a_props)
+        mesh_b, loc_b, coords_b = get_props_attrs(b_props)
         self.assertNotEqual(mesh_a, mesh_b)
+        self.assertNotEqual(coords_a, coords_b)
         self.assertEqual(loc_a, "face")
         self.assertEqual(loc_b, "face")
 
