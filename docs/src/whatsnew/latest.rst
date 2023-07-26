@@ -33,6 +33,11 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
    lazy data. (:pull:`5307`)
 
+#. `@trexfeathers`_ included mesh location coordinates
+   (e.g. :attr:`~iris.experimental.ugrid.Mesh.face_coords`) in
+   the data variable's ``coordinates`` attribute when saving to NetCDF.
+   (:issue:`5206`, :pull:`5389`)
+
 
 🐛 Bugs Fixed
 =============
