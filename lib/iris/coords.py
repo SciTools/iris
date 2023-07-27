@@ -1854,6 +1854,8 @@ class Coord(_DimensionalMetadata):
         multiply each value in :attr:`~iris.coords.Coord.points` and
         :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
 
+        Full list of supported units can be found in the UDUNITS-2 documentation
+        https://docs.unidata.ucar.edu/udunits/current/#Database
         """
         super().convert_units(unit=unit)
 
