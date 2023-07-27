@@ -17,9 +17,13 @@ encoding, which only make sense as a "local" attribute (i.e. on a variable),
 and "user" = any additional attributes *not* recognised in conventions, which
 might be recorded either globally or locally.
 
+***TEMPORARY VERSION***
+all added parts ...
+beginning total refactor of the integration.test_netcdf__loadsaveattrs
+
 """
 import inspect
-from typing import Iterable, Optional, Union
+from typing import Any, Iterable, List, Optional, Union
 
 import pytest
 
@@ -75,6 +79,97 @@ _LOCAL_TEST_ATTRS = (
 def local_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
+
+
+# Define all the parameter names, under all 'categories'.
+# NOTE: it's handy to construct this from an iteration, but we do also need a
+# static list, to make it convenient to use this as a parameter.
+# Let's combine category + attribute-name into a single parameter list, and
+# also provide a name-only lookup
+_ATTRIBUTE_TYPES_AND_NAMES = {
+    f"attrstylelocal__{name}": name for name in _LOCAL_TEST_ATTRS
+}
+_ATTRIBUTE_TYPES_AND_NAMES.update(
+    {f"attrstyleglobal__{name}": name for name in _GLOBAL_TEST_ATTRS}
+)
+_ATTRIBUTE_TYPES_AND_NAMES.update(
+    {
+        "attrstyleuser__x": "user",
+        # 'attrstyleConventions__x': 'Conventions'
+        # 'attrstyleUKMOSTASH__': 'STASH'
+        # 'attrstyleUKMOPROCESSFLAGS__': 'ukmo__process_flags'
+        # TODO: probably more special-case ones here
+    }
+)
+_ATTRIBUTE_PARAMS = list(_ATTRIBUTE_TYPES_AND_NAMES.keys())
+
+#
+# N.B. attribute parameters contain a 'style type', which the following routine can
+#  extract.
+# Possible values --so far-- are: ("local", "global", "user", "Conventions")
+#
+
+
+def _extract_attrtype(attr_param: str) -> str:
+    # Extract the attribute "style type" from an attr_param name
+    prefix = "attrstyle"
+    n_prefix = len(prefix)
+    assert attr_param[:n_prefix] == prefix
+    i_dunder = attr_param.index("__", n_prefix)
+    attrtype = attr_param[n_prefix:i_dunder]
+    return attrtype
+
+
+@pytest.fixture(params=_ATTRIBUTE_PARAMS)
+def attrname(request):
+    # Parametrise a test over all the test parameters (types + names)
+    return request.param
+
+
+# Define all the testcases for different parameter input structures :
+#   - combinations of matching+differing, global+local params
+#   - these are interpreted differently for the 3 main test types : Load/Save/Roundtrip
+_TESTCASES_NAMES_AND_INPUT_SPECS = {
+    "case_single_localonly": "G-La",
+    "case_single_globalonly": "GaL-",
+    "case_single_glsame": "GaLa",
+    "case_single_gldiffer": "GaLb",
+    "case_multivar_same_noglobal": "G-Laa",
+    "case_multivar_same_sameglobal": "GaLaa",
+    "case_multivar_same_diffglobal": "GaLbb",
+    "case_multivar_differ_noglobal": "G-Lab",
+    "case_multivar_differ_diffglobal": "GaLbc",
+    "case_multivar_differ_sameglobal": "GaLab",
+    "case_multivar_1none_noglobal": "G-La-",
+    "case_multivar_1none_diffglobal": "GaLb-",
+    "case_multivar_1none_sameglobal": "GaLa-",
+    # Note: the multi-set input cases are more complex.
+    # These are encoded as *pairs* of specs, for 2 different files, or cubes with
+    #  independent global values.
+    # We assume that there can be nothing "special" about a var's interaction with
+    #  another one from the *same file* ??
+    "case_multisource_gsame_lnone": ("GaL-", "GaL-"),
+    "case_multisource_gsame_lallsame": ("GaLa", "GaLa"),
+    "case_multisource_gsame_l1same1none": ("GaLa", "GaL-"),
+    "case_multisource_gsame_l1same1other": ("GaLa", "GaLb"),
+    "case_multisource_gsame_lallother": ("GaLb", "GaLb"),
+    "case_multisource_gsame_lalldiffer": ("GaLb", "GaLc"),
+    "case_multisource_gnone_l1same1none": ("G-La", "G-L-"),
+    "case_multisource_gnone_l1same1same": ("G-La", "G-La"),
+    "case_multisource_gnone_l1same1other": ("G-La", "G-Lb"),
+    "case_multisource_gdiff_lnone": ("GaL-", "GbL-"),
+    "case_multisource_gdiff_l1same1none": ("GaLa", "GbL-"),
+    "case_multisource_gdiff_l1diff1none": ("GaLb", "GcL-"),
+    "case_multisource_gdiff_lallsame": ("GaLa", "GbLb"),
+    "case_multisource_gdiff_lallother": ("GaLc", "GbLc"),
+}
+_TESTCASE_PARAMS = list(_TESTCASES_NAMES_AND_INPUT_SPECS.keys())
+
+
+@pytest.fixture(params=_TESTCASE_PARAMS)
+def testcase(request):
+    # Parametrise a test over all the input testcases
+    return request.param
 
 
 class MixinAttrsTesting:
@@ -1114,3 +1209,178 @@ class TestSave(MixinAttrsTesting):
                 "v a l u e - B",
             ]
         assert results == expected_results
+
+
+#
+# Newstyle stuff, trialling here ...
+#
+
+
+# Expected results for TestLoadAttrs, by _LOAD_EXPECTED[testcase, attr-style, "split/nonsplit"]
+# Each entry contains results for the different "styles" lists first a result for 'split' (new-style) cube attribute dictionaries,
+#  and then a 'generic' (old-style single cube-attributes dictionary) version.
+# IN ADDITION, some of these cases would be expected to generate warnings
+#   - we should add those later
+_LOAD_EXPECTED = {
+    "case_single_localonly": {
+        "type_local": ("G-La", "G-La"),
+        "global": ("G-La", "GaL-"),
+        "user": ("G-La", "GaL-"),
+        # "Conventions": ('G-La', 'GaL-'),
+    },
+    "case_single_globalonly": {
+        "local": ("GaL-", "G-La"),
+        "global": ("GaL-", "GaL-"),
+        "user": ("GaL-", "GaL-"),
+    },
+    "case_single_glsame": {
+        "local": ("GaLa", "G-La"),
+        "global": ("GaLa", "GaL-"),
+        "user": ("GaLa", "GaL-"),
+    },
+    "case_single_gldiffer": {
+        "local": ("GaLb", "G-Lb"),
+        "global": ("GaLb", "GbL-"),
+        "user": ("GaLb", "GbL-"),
+    },
+    "case_multivar_same_noglobal": {
+        "local": ("G-Laa", "G-Laa"),
+        "global": ("G-Laa", "GaL--"),
+        "user": ("G-Laa", "GaL--"),
+    },
+    "case_multivar_same_sameglobal": {
+        "local": ("GaLaa", "G-Laa"),
+        "global": ("GaLaa", "GaL--"),
+        "user": ("GaLaa", "GaL--"),
+    },
+    "case_multivar_same_diffglobal": {
+        "local": ("GaLbb", "G-Lbb"),
+        "global": ("GaLbb", "GbL--"),
+        "user": ("GaLbb", "GbL--"),
+    },
+    "case_EMPTY": {
+        "local": (),
+        "global": (),
+        "user": (),
+    },
+    "case_multivar_differ_noglobal": "G-Lab",
+    "case_multivar_differ_diffglobal": "GaLbc",
+    "case_multivar_differ_sameglobal": "GaLab",
+    "case_multivar_1none_noglobal": "G-La-",
+    "case_multivar_1none_diffglobal": "GaLb-",
+    "case_multivar_1none_sameglobal": "GaLa-",
+    # Note: the multi-set input cases are more complex.
+    # These are encoded as *pairs* of specs, for 2 different files, or cubes with
+    #  independent global values.
+    # We assume that there can be nothing "special" about a var's interaction with
+    #  another one from the *same file* ??
+    "case_multisource_gsame_lnone": ("GaL-", "GaL-"),
+    "case_multisource_gsame_lallsame": ("GaLa", "GaLa"),
+    "case_multisource_gsame_l1same1none": ("GaLa", "GaL-"),
+    "case_multisource_gsame_l1same1other": ("GaLa", "GaLb"),
+    "case_multisource_gsame_lallother": ("GaLb", "GaLb"),
+    "case_multisource_gsame_lalldiffer": ("GaLb", "GaLc"),
+    "case_multisource_gnone_l1same1none": ("G-La", "G-L-"),
+    "case_multisource_gnone_l1same1same": ("G-La", "G-La"),
+    "case_multisource_gnone_l1same1other": ("G-La", "G-Lb"),
+    "case_multisource_gdiff_lnone": ("GaL-", "GbL-"),
+    "case_multisource_gdiff_l1same1none": ("GaLa", "GbL-"),
+    "case_multisource_gdiff_l1diff1none": ("GaLb", "GcL-"),
+    "case_multisource_gdiff_lallsame": ("GaLa", "GbLb"),
+    "case_multisource_gdiff_lallother": ("GaLc", "GbLc"),
+}
+
+
+# define expected results for Load, in the various testcases
+def expected_load_result(
+    testcase: str, attrname: str, split_loaded: bool = False
+):
+    # Note: this one does NOT depend on the newstyle code.
+    # start by expecting the same result as the input
+    pass
+
+
+class TestLoadAttrs(MixinAttrsTesting):
+    def decode_input_specstring(self, spec: str) -> (Any, List[Any]):
+        # Decode an input spec-string to input/output attribute values
+        assert spec[0] == "G" and spec[2] == "L"
+        global_val = spec[1]
+        var_val1 = spec[3]
+        var_val2 = spec[4] if len(spec) > 4 else None
+        if var_val1 == "-":
+            var_val1 = None
+        var_vals = {"v1": var_val1}
+        if var_val2 is not None:
+            if var_val2 == "-":
+                var_val2 = None
+            var_vals["v2"] = var_val2
+        return global_val, var_vals
+
+    def adjust_load_results(self, testcase: str, gA, lA, gB, lB):
+        # Just for now, no adjustments programmed.
+        return gA, lA, gB, lB
+
+    def run_load_testcase(self, testcase: str, attrname: str):
+        # Decode 1 or 2 file specs
+        input_spec = _TESTCASES_NAMES_AND_INPUT_SPECS[testcase]
+        if isinstance(input_spec, str):
+            # Single-source spec (one cube or one file)
+            gA, vA = self.decode_input_specstring(input_spec)
+            gB, vB = None, None
+        else:
+            # Dual-source spec (two files, or sets of cubes with common global)
+            gA, vA = self.decode_input_specstring(input_spec[0])
+            gB, vB = self.decode_input_specstring(input_spec[1])
+
+        # Create testcase as input files
+        self.create_testcase_files(
+            attr_name=attrname,
+            global_value_file1=gA,
+            vars_values_file1=vA,
+            global_value_file2=gB,
+            vars_values_file2=vB,
+        )
+
+        # Load test files
+        cubes = iris.load(self.input_filepaths)
+        # Sort to be sure of the order.
+        cubes = sorted(cubes, key=lambda cube: cube.name())
+
+        # Get standard testcase results from result cubes.
+        # N.B. there are 2 cubes from each testcase (mostly).
+        def attr(cube, attrname, whichtype):
+            # Fetch value of attribute of required type (locals/globals) from cube.
+            # If no cube, or no attribute, result is simply None.
+            if cube is None:
+                result = None
+            else:
+                result = getattr(cube.attributes, whichtype)
+                result = result.get(attrname, None)
+            return result
+
+        gA, gB = [attr(cube, attrname, "globals") for cube in cubes]
+        lA, lB = [attr(cube, attrname, "locals") for cube in cubes]
+
+        #
+        # IF REQUIRED ...
+        # Special-case adjustments for specific test-cases
+        #  - are these more readily made to the raw result CUBES,
+        #  - or to the result "factors" ??
+        #
+        gA, lA, gB, lB = self.adjust_load_results(
+            testcase,
+            gA,
+            lA,
+            gB,
+            lB,
+        )
+
+        # Check results against expected for Load tests.
+        expect_spec = expected_load_result(testcase, attrname)
+
+        self.check_testcase_results(expect_spec, gA, gB, lA, lB)
+
+    def test_case(self, attrname, testcase):
+        # Create the load testcase, which creates test file(s) and load them.
+        self.run_load_testcase(testcase, attrname)
+        # Load the testfiles
