@@ -10,7 +10,6 @@
 import iris.tests as tests  # isort:skip
 
 import datetime
-from unittest import mock
 
 import cftime
 import numpy as np
@@ -87,29 +86,31 @@ class Test___common_cmp__(tests.IrisTest):
 
 class Test___eq__(tests.IrisTest):
     def test_datetimelike(self):
-        # Check that cell equality works with objects with a "timetuple".
-        dt = mock.Mock(timetuple=mock.Mock())
-        cell = mock.MagicMock(
-            spec=Cell, point=datetime.datetime(2010, 3, 21), bound=None
-        )
-        _ = cell == dt
-        cell.__eq__.assert_called_once_with(dt)
-
-    def test_datetimelike_bounded_cell(self):
-        # Check that equality with a datetime-like bounded cell
-        # raises an error. This is not supported as it
-        # depends on the calendar which is not always known from
-        # the datetime-like bound objects.
-        other = mock.Mock(timetuple=mock.Mock())
+        # Check that cell equality works with different datetime objects
+        # using the same calendar
+        point = cftime.datetime(2010, 1, 1, calendar="gregorian")
         cell = Cell(
-            point=object(),
+            datetime.datetime(2010, 1, 1),
             bound=[
-                mock.Mock(timetuple=mock.Mock()),
-                mock.Mock(timetuple=mock.Mock()),
+                datetime.datetime(2010, 1, 1),
+                datetime.datetime(2011, 1, 1),
             ],
         )
-        with self.assertRaisesRegex(TypeError, "bounded region for datetime"):
-            cell == other
+        self.assertEqual(cell, point)
+
+    def test_datetimelike_bounded_cell(self):
+        # Check that equality with a cell with a different calendar
+        # raises an error. This is not supported
+        point = cftime.datetime(2010, 1, 1, calendar="360_day")
+        cell = Cell(
+            datetime.datetime(2010, 1, 1),
+            bound=[
+                datetime.datetime(2010, 1, 1),
+                datetime.datetime(2011, 1, 1),
+            ],
+        )
+        with self.assertRaisesRegex(TypeError, "different calendars"):
+            cell == point
 
     def test_PartialDateTime_other(self):
         cell = Cell(datetime.datetime(2010, 3, 2))
@@ -120,22 +121,87 @@ class Test___eq__(tests.IrisTest):
 
 
 class Test_contains_point(tests.IrisTest):
-    def test_datetimelike_bounded_cell(self):
-        point = object()
+    """
+    Test that contains_point works for combinations of datetime,
+    cf.datatime, and PartialDateTime objects"""
+
+    def test_datetime_PartialDateTime_point(self):
+        point = PartialDateTime(month=6)
         cell = Cell(
-            point=object(),
+            datetime.datetime(2010, 1, 1),
             bound=[
-                mock.Mock(timetuple=mock.Mock()),
-                mock.Mock(timetuple=mock.Mock()),
+                datetime.datetime(2010, 1, 1),
+                datetime.datetime(2011, 1, 1),
             ],
         )
-        with self.assertRaisesRegex(TypeError, "bounded region for datetime"):
+        self.assertFalse(cell.contains_point(point))
+
+    def test_datetime_cftime_standard_point(self):
+        point = cftime.datetime(2010, 6, 15)
+        cell = Cell(
+            datetime.datetime(2010, 1, 1),
+            bound=[
+                datetime.datetime(2010, 1, 1),
+                datetime.datetime(2011, 1, 1),
+            ],
+        )
+        self.assertTrue(cell.contains_point(point))
+
+    def test_datetime_cftime_360day_point(self):
+        point = cftime.datetime(2010, 6, 15, calendar="360_day")
+        cell = Cell(
+            datetime.datetime(2010, 1, 1),
+            bound=[
+                datetime.datetime(2010, 1, 1),
+                datetime.datetime(2011, 1, 1),
+            ],
+        )
+        with self.assertRaisesRegex(TypeError, "different calendars"):
             cell.contains_point(point)
 
-    def test_datetimelike_point(self):
-        point = mock.Mock(timetuple=mock.Mock())
-        cell = Cell(point=object(), bound=[object(), object()])
-        with self.assertRaisesRegex(TypeError, "bounded region for datetime"):
+    def test_cftime_standard_PartialDateTime_point(self):
+        point = PartialDateTime(month=6)
+        cell = Cell(
+            cftime.datetime(2010, 1, 1),
+            bound=[
+                cftime.datetime(2010, 1, 1),
+                cftime.datetime(2011, 1, 1),
+            ],
+        )
+        self.assertFalse(cell.contains_point(point))
+
+    def test_cftime_360day_PartialDateTime_point(self):
+        point = PartialDateTime(month=6)
+        cell = Cell(
+            cftime.datetime(2010, 1, 1, calendar="360_day"),
+            bound=[
+                cftime.datetime(2010, 1, 1, calendar="360_day"),
+                cftime.datetime(2011, 1, 1, calendar="360_day"),
+            ],
+        )
+        self.assertFalse(cell.contains_point(point))
+
+    def test_cftime_standard_datetime_point(self):
+        point = datetime.datetime(2010, 6, 1)
+        cell = Cell(
+            cftime.datetime(2010, 1, 1),
+            bound=[
+                cftime.datetime(2010, 1, 1),
+                cftime.datetime(2011, 1, 1),
+            ],
+        )
+        self.assertTrue(cell.contains_point(point))
+
+    def test_cftime_360day_datetime_point(self):
+        point = datetime.datetime(2010, 6, 1)
+        cell = Cell(
+            cftime.datetime(2010, 1, 1, calendar="360_day"),
+            bound=[
+                cftime.datetime(2010, 1, 1, calendar="360_day"),
+                cftime.datetime(2011, 1, 1, calendar="360_day"),
+            ],
+        )
+        with self.assertRaisesRegex(TypeError, "different calendars"):
             cell.contains_point(point)
 
 
