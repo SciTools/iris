@@ -29,6 +29,13 @@ from iris.cube import Cube, CubeAttrsDict
 import iris.fileformats.netcdf
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 
+
+def ncdump(pth):
+    import os
+
+    os.system("ncdump -h " + str(pth))
+
+
 # First define the known controlled attribute names defined by netCDf and CF conventions
 #
 # Note: certain attributes are "normally" global (e.g. "Conventions"), whilst others
@@ -194,7 +201,8 @@ class TestRoundtrip(MixinAttrsTesting):
     Test handling of attributes in roundtrip netcdf-iris-netcdf.
 
     This behaviour should be (almost) unchanged by the adoption of
-    split-attribute handling.
+    split-attribute handling -- that is, when the save_split_attrs is turned off.
+    Turning on save_split_attrs does cause some notable changes.
 
     NOTE: the tested combinations in the 'TestLoad' test all match tests here, but not
     *all* of the tests here are useful there.  To avoid confusion (!) the ones which are
@@ -205,6 +213,11 @@ class TestRoundtrip(MixinAttrsTesting):
 
     """
 
+    @pytest.fixture(params=["unsplit", "split"], autouse=True)
+    def save_with_splitattrs(self, request):
+        # Do everything twice, with iris.FUTURE.save_split_attrs = [True / False]
+        self.use_split_attrs = request.param == "split"
+
     def _roundtrip_load_and_save(
         self, input_filepaths: Union[str, Iterable[str]], output_filepath: str
     ) -> None:
@@ -213,7 +226,8 @@ class TestRoundtrip(MixinAttrsTesting):
         """
         # Do a load+save to produce a testable output result in a new file.
         cubes = iris.load(input_filepaths)
-        iris.save(cubes, output_filepath)
+        with iris.FUTURE.context(save_split_attrs=self.use_split_attrs):
+            iris.save(cubes, output_filepath)
 
     def create_roundtrip_testcase(
         self,
@@ -239,7 +253,10 @@ class TestRoundtrip(MixinAttrsTesting):
             global_value_file2=global_value_file2,
             var_values_file2=vars_values_file2,
         )
-        self.result_filepath = self._testfile_path("result")
+        # NOTE: we want all the filenames to be distinct between tests, so we base it
+        # on the test name, but it must also include any test *parameters*
+        with_split = "split" if self.use_split_attrs else "unsplit"
+        self.result_filepath = self._testfile_path(f"result-save{with_split}")
         self._roundtrip_load_and_save(
             self.input_filepaths, self.result_filepath
         )
@@ -299,15 +316,27 @@ class TestRoundtrip(MixinAttrsTesting):
 
     def test_02_userstyle_single_local(self):
         # Default behaviour for a general local user-attribute.
-        # It results in a "promoted" global attribute.
+        # It results in a "promoted" global attribute
+        # -- UNLESS saving with split_attrs, when it remains local
         self.create_roundtrip_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
             vars_values_file1={"myvar": "single-value"},
         )
-        self.check_roundtrip_results(
-            global_attr_value="single-value",  # local values eclipse the global ones
+
+        if self.use_split_attrs:
+            # saving cube local + global attributes differently.
+            # value remains local
+            expect_kwargs = dict(var_attr_vals={"myvar": "single-value"})
+        else:
+            # old-style (legacy) saving.
+            # local values eclipse the global ones
             # N.B. the output var has NO such attribute
-        )
+            expect_kwargs = dict(
+                global_attr_value="single-value",
+                var_attr_vals={"myvar": None},
+            )
+
+        self.check_roundtrip_results(**expect_kwargs)
 
     def test_03_userstyle_multiple_different(self):
         # Default behaviour for general user-attributes.
@@ -347,16 +376,30 @@ class TestRoundtrip(MixinAttrsTesting):
 
     def test_05_userstyle_matching_crossfile_promoted(self):
         # matching user-attributes are promoted, even across input files.
+        # THAT IS in legacy case, not when we distinguish local+global cube attrs
         self.create_roundtrip_testcase(
             attr_name="random",
             global_value_file1="global_file1",
             vars_values_file1={"v1": "same-value", "v2": "same-value"},
             vars_values_file2={"f2_v1": "same-value", "f2_v2": "same-value"},
         )
-        self.check_roundtrip_results(
-            global_attr_value="same-value",
-            var_attr_vals={x: None for x in ("v1", "v2", "f2_v1", "f2_v2")},
-        )
+        if self.use_split_attrs:
+            # new "split-attrs" form : matching attrs remain local
+            expect_kwargs = dict(
+                global_attr_value=None,
+                var_attr_vals={
+                    x: "same-value" for x in ("v1", "v2", "f2_v1", "f2_v2")
+                },
+            )
+        else:
+            # legacy form : matching attrs become global
+            expect_kwargs = dict(
+                global_attr_value="same-value",
+                var_attr_vals={
+                    x: None for x in ("v1", "v2", "f2_v1", "f2_v2")
+                },
+            )
+        self.check_roundtrip_results(**expect_kwargs)
 
     def test_06_userstyle_nonmatching_remainlocal(self):
         # Non-matching user attributes remain 'local' to the individual variables.
@@ -365,10 +408,20 @@ class TestRoundtrip(MixinAttrsTesting):
             global_value_file1="global_file1",
             vars_values_file1={"v1": "value-1", "v2": "value-2"},
         )
-        self.check_roundtrip_results(
-            global_attr_value=None,  # NB it still destroys the global one !!
-            var_attr_vals={"v1": "value-1", "v2": "value-2"},
-        )
+        if self.use_split_attrs:
+            # new version saving, with distinct local+global cube attrs
+            # - in this case the separate global attribute also retains its value
+            expect_kwargs = dict(
+                global_attr_value="global_file1",
+                var_attr_vals={"v1": "value-1", "v2": "value-2"},
+            )
+        else:
+            # legacy version saving: the global value is lost
+            expect_kwargs = dict(
+                global_attr_value=None,  # NB it still destroys the global one !!
+                var_attr_vals={"v1": "value-1", "v2": "value-2"},
+            )
+        self.check_roundtrip_results(**expect_kwargs)
 
     #######################################################
     # Tests on "Conventions" attribute.
@@ -425,9 +478,15 @@ class TestRoundtrip(MixinAttrsTesting):
             attr_name=global_attr,
             vars_values_file1=attr_content,
         )
-        self.check_roundtrip_results(
-            global_attr_value=attr_content
-        )  # "promoted"
+        if self.use_split_attrs:
+            # new-style saving with distinguished local/global cube attributes
+            # : it remains a local attribute
+            expected_kwargs = dict(var_attr_vals={"var": attr_content})
+        else:
+            # "legacy" mode (treating all cube attributes as equivalent)
+            # : the local attribute becomes a "promoted" global one
+            expected_kwargs = dict(global_attr_value=attr_content)
+        self.check_roundtrip_results(**expected_kwargs)
 
     def test_11_globalstyle__both(self, global_attr):
         attr_global = f"Global-{global_attr}"
@@ -437,9 +496,22 @@ class TestRoundtrip(MixinAttrsTesting):
             global_value_file1=attr_global,
             vars_values_file1=attr_local,
         )
-        self.check_roundtrip_results(
-            global_attr_value=attr_local  # promoted local setting "wins"
-        )
+        if self.use_split_attrs:
+            # new-style saving with distinguished local/global cube attributes
+            # : both attributes are retained
+            expect_kwargs = dict(
+                global_attr_value=attr_global,  # promoted local setting "wins"
+                var_attr_vals={"var": attr_local},
+            )
+        else:
+            # "legacy" mode (treating all cube attributes as equivalent)
+            # : the local attribute is "promoted", so it replaces the original global
+            # one, and there is now *no* local attribute
+            expect_kwargs = dict(
+                global_attr_value=attr_local,  # promoted local setting "wins"
+                var_attr_vals={"var": None},
+            )
+        self.check_roundtrip_results(**expect_kwargs)
 
     def test_12_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained, not promoted
@@ -465,10 +537,21 @@ class TestRoundtrip(MixinAttrsTesting):
             attr_name=global_attr,
             vars_values_file1={"v1": attrval, "v2": attrval},
         )
-        self.check_roundtrip_results(
-            global_attr_value=attrval,
-            var_attr_vals={"v1": None, "v2": None},
-        )
+        if self.use_split_attrs:
+            # new-style saving with distinguished local/global cube attributes
+            # : they remain local attributes
+            expect_kwargs = dict(
+                global_attr_value=None,
+                var_attr_vals={"v1": attrval, "v2": attrval},
+            )
+        else:
+            # "legacy" mode (treating all cube attributes as equivalent)
+            # : matching local attributes are "promoted" to a global one
+            expect_kwargs = dict(
+                global_attr_value=attrval,
+                var_attr_vals={"v1": None, "v2": None},
+            )
+        self.check_roundtrip_results(**expect_kwargs)
 
     def test_14_globalstyle__multifile_different(self, global_attr):
         # Different global attributes from multiple files are retained as local ones
@@ -877,6 +960,11 @@ class TestSave(MixinAttrsTesting):
 
     """
 
+    @pytest.fixture(params=["unsplit", "split"], autouse=True)
+    def save_with_splitattrs(self, request):
+        # Do everything twice, with iris.FUTURE.save_split_attrs = [True / False]
+        self.use_split_attrs = request.param == "split"
+
     def create_save_testcase(self, attr_name, value1, value2=None):
         """
         Test attribute saving for cube(s) with given value(s).
@@ -899,7 +987,8 @@ class TestSave(MixinAttrsTesting):
             for cube_name, attr_value in zip(cube_names, values)
         ]
         self.result_filepath = self._testfile_path("result")
-        iris.save(cubes, self.result_filepath)
+        with iris.FUTURE.context(save_split_attrs=self.use_split_attrs):
+            iris.save(cubes, self.result_filepath)
         # Get the global+local attribute values directly from the file with netCDF4
         if attr_name == "STASH":
             # A special case : the stored name is different
@@ -923,13 +1012,24 @@ class TestSave(MixinAttrsTesting):
 
     def test_01_userstyle__single(self):
         results = self.create_save_testcase("random", "value-x")
-        # It is stored as a *global* by default.
-        assert results == ["value-x", None]
+        if self.use_split_attrs:
+            # new-style : it remains local
+            expected = [None, "value-x"]
+        else:
+            # old-style (legacy) saving : it is stored as a *global* by default.
+            expected = ["value-x", None]
+        assert results == expected
 
     def test_02_userstyle__multiple_same(self):
         results = self.create_save_testcase("random", "value-x", "value-x")
         # As above.
-        assert results == ["value-x", None, None]
+        if self.use_split_attrs:
+            # new-style : it remains local
+            expected = [None, "value-x", "value-x"]
+        else:
+            # old-style (legacy) saving : it is stored as a *global* by default.
+            expected = ["value-x", None, None]
+        assert results == expected
 
     def test_03_userstyle__multiple_different(self):
         results = self.create_save_testcase("random", "value-A", "value-B")
