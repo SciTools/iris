@@ -930,19 +930,19 @@ class CubeAttrsDict(MutableMapping):
         return attributes
 
     @property
-    def locals(self):
+    def locals(self) -> LimitedAttributeDict:
         return self._locals
 
     @locals.setter
-    def locals(self, attributes):
+    def locals(self, attributes: Optional[Mapping]):
         self._locals = self._normalise_attrs(attributes)
 
     @property
-    def globals(self):
+    def globals(self) -> LimitedAttributeDict:
         return self._globals
 
     @globals.setter
-    def globals(self, attributes):
+    def globals(self, attributes: Optional[Mapping]):
         self._globals = self._normalise_attrs(attributes)
 
     #
