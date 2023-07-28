@@ -100,6 +100,7 @@ import threading
 import iris._constraints
 import iris.config
 import iris.io
+import iris.std_name_table
 
 from ._deprecation import IrisDeprecation, warn_deprecated
 

@@ -13,7 +13,7 @@ from functools import wraps
 
 import cf_units
 
-import iris.std_names
+from iris.std_name_table import check_valid_std_name
 
 from .metadata import BaseMetadata
 
@@ -36,19 +36,22 @@ def _get_valid_standard_name(name):
         name_groups = name.split(maxsplit=1)
         if name_groups:
             std_name = name_groups[0]
-            name_is_valid = std_name in iris.std_names.STD_NAMES
+            try:
+                new_std_name = check_valid_std_name(name_groups[0])
+                name = name.replace(std_name, new_std_name)
+            except ValueError:
+                raise ValueError(
+                    "{!r} is not a valid standard_name".format(name)
+                )
             try:
                 std_name_modifier = name_groups[1]
             except IndexError:
                 pass  # No modifier
             else:
-                name_is_valid &= std_name_modifier in valid_std_name_modifiers
-
-            if not name_is_valid:
-                raise ValueError(
-                    "{!r} is not a valid standard_name".format(name)
-                )
-
+                if std_name_modifier not in valid_std_name_modifiers:
+                    raise ValueError(
+                        "{!r} is not a valid standard_name".format(name)
+                    )
     return name
 
 
