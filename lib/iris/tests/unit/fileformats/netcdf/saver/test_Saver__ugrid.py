@@ -677,6 +677,31 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(v_a[_VAR_DIMS], ["height", "Mesh2d_faces"])
         self.assertEqual(v_b[_VAR_DIMS], ["Mesh2d_faces", "height"])
 
+    def test_mixed_aux_coords(self):
+        """
+        ``coordinates`` attribute should include mesh location coords and 'normal' coords.
+        """
+
+        cube = make_cube()
+        mesh_dim = cube.mesh_dim()
+        mesh_len = cube.shape[mesh_dim]
+        coord = AuxCoord(np.arange(mesh_len), var_name="face_index")
+        cube.add_aux_coord(coord, mesh_dim)
+
+        # Save and snapshot the result
+        tempfile_path = self.check_save_cubes(cube)
+        dims, vars = scan_dataset(tempfile_path)
+
+        # There is exactly 1 mesh-linked (data)var
+        data_vars = vars_w_props(vars, mesh="*")
+        ((_, a_props),) = data_vars.items()
+
+        expected_coords = [c for c in cube.mesh.face_coords]
+        expected_coords.append(coord)
+        expected_coord_names = [c.var_name for c in expected_coords]
+        expected_coord_attr = " ".join(sorted(expected_coord_names))
+        self.assertEqual(a_props["coordinates"], expected_coord_attr)
+
 
 class TestSaveUgrid__mesh(tests.IrisTest):
     """Tests for saving meshes to a file."""
