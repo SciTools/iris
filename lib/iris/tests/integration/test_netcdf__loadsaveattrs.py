@@ -546,8 +546,8 @@ class TestRoundtrip(MixinAttrsTesting):
             )
 
         if (
-                local_attr in ('missing_value', 'standard_error_multiplier')
-                and origin_style == "input_local"
+            local_attr in ("missing_value", "standard_error_multiplier")
+            and origin_style == "input_local"
         ):
             # These ones are actually discarded by roundtrip.
             # Not clear why, but for now this captures the facts.
