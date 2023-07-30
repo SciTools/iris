@@ -1,4 +1,4 @@
-# Copyright Iris contributors
+    # Copyright Iris contributors
 #
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
@@ -930,19 +930,19 @@ class CubeAttrsDict(MutableMapping):
         return attributes
 
     @property
-    def locals(self):
+    def locals(self) -> LimitedAttributeDict:
         return self._locals
 
     @locals.setter
-    def locals(self, attributes):
+    def locals(self, attributes: Optional[Mapping]):
         self._locals = self._normalise_attrs(attributes)
 
     @property
-    def globals(self):
+    def globals(self) -> LimitedAttributeDict:
         return self._globals
 
     @globals.setter
-    def globals(self, attributes):
+    def globals(self, attributes: Optional[Mapping]):
         self._globals = self._normalise_attrs(attributes)
 
     #
@@ -1335,8 +1335,12 @@ class Cube(CFVariableMixin):
     #
     # Ensure that .attributes is always a :class:`CubeAttrsDict`.
     #
-    @CFVariableMixin.attributes.setter
-    def attributes(self, attributes):
+    @property
+    def attributes(self) -> CubeAttrsDict:
+        return super().attributes
+
+    @attributes.setter
+    def attributes(self, attributes: Optional[Mapping]):
         """
         An override to CfVariableMixin.attributes.setter, which ensures that Cube
         attributes are stored in a way which distinguishes global + local ones.
