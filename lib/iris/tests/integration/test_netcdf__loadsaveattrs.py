@@ -39,6 +39,7 @@ import iris.fileformats.netcdf
 
 # A list of "global-style" attribute names : those which should be global attributes by
 # default (i.e. file- or group-level, *not* attached to a variable).
+
 _GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
 # Remove this one, which has peculiar behaviour + is tested separately
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
@@ -263,16 +264,15 @@ class TestRoundtrip(MixinAttrsTesting):
         else:
             assert self.attrname in ds.ncattrs()
             assert ds.getncattr(self.attrname) == global_attr_value
-        if var_attr_vals:
-            var_attr_vals = self._default_vars_and_attrvalues(var_attr_vals)
-            for var_name, value in var_attr_vals.items():
-                assert var_name in ds.variables
-                v = ds.variables[var_name]
-                if value is None:
-                    assert self.attrname not in v.ncattrs()
-                else:
-                    assert self.attrname in v.ncattrs()
-                    assert v.getncattr(self.attrname) == value
+        var_attr_vals = self._default_vars_and_attrvalues(var_attr_vals)
+        for var_name, value in var_attr_vals.items():
+            assert var_name in ds.variables
+            v = ds.variables[var_name]
+            if value is None:
+                assert self.attrname not in v.ncattrs()
+            else:
+                assert self.attrname in v.ncattrs()
+                assert v.getncattr(self.attrname) == value
 
     #######################################################
     # Tests on "user-style" attributes.
@@ -302,7 +302,7 @@ class TestRoundtrip(MixinAttrsTesting):
         # It results in a "promoted" global attribute.
         self.create_roundtrip_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
-            vars_values_file1={"myvar": "single-value"},
+            vars_values_file1="single-value",
         )
         self.check_roundtrip_results(
             global_attr_value="single-value",  # local values eclipse the global ones
@@ -545,10 +545,12 @@ class TestRoundtrip(MixinAttrsTesting):
                 attr_name=local_attr, vars_values_file1=attrval
             )
 
-        if local_attr in iris.fileformats.netcdf.saver._CF_DATA_ATTRS:
-            # These ones are simply discarded on loading.
-            # By experiment, this overlap between _CF_ATTRS and _CF_DATA_ATTRS
-            # currently contains only 'missing_value' and 'standard_error_multiplier'.
+        if (
+                local_attr in ('missing_value', 'standard_error_multiplier')
+                and origin_style == "input_local"
+        ):
+            # These ones are actually discarded by roundtrip.
+            # Not clear why, but for now this captures the facts.
             expect_global = None
             expect_var = None
         else:
