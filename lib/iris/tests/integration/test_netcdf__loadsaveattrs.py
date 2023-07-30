@@ -19,13 +19,15 @@ might be recorded either globally or locally.
 
 """
 import inspect
-from typing import Iterable, Optional, Union
+from typing import Optional, Union
 
+import numpy as np
 import pytest
 
 import iris
 import iris.coord_systems
-from iris.cube import Cube, CubeAttrsDict
+from iris.coords import DimCoord
+from iris.cube import Cube
 import iris.fileformats.netcdf
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 
@@ -129,13 +131,14 @@ class MixinAttrsTesting:
             vars_and_attrvalues = {"var": vars_and_attrvalues}
         return vars_and_attrvalues
 
-    def create_testcase_files(
+    def create_testcase_files_or_cubes(
         self,
         attr_name: str,
         global_value_file1: Optional[str] = None,
         var_values_file1: Union[None, str, dict] = None,
         global_value_file2: Optional[str] = None,
         var_values_file2: Union[None, str, dict] = None,
+        cubes=False,
     ):
         """
         Create temporary input netcdf files with specific content.
@@ -148,9 +151,13 @@ class MixinAttrsTesting:
         created, with an attribute = the dictionary value, *except* that a dictionary
         value of None means that a local attribute is _not_ created on the variable.
         """
-        # Make some input file paths.
-        filepath1 = self._testfile_path("testfile")
-        filepath2 = self._testfile_path("testfile2")
+        # save attribute on the instance
+        self.attrname = attr_name
+
+        if not cubes:
+            # Make some input file paths.
+            filepath1 = self._testfile_path("testfile")
+            filepath2 = self._testfile_path("testfile2")
 
         def make_file(
             filepath: str, global_value=None, var_values=None
@@ -170,24 +177,155 @@ class MixinAttrsTesting:
             ds.close()
             return filepath
 
-        # Create one input file (always).
-        filepaths = [
-            make_file(
-                filepath1,
-                global_value=global_value_file1,
-                var_values=var_values_file1,
+        def make_cubes(var_name, global_value=None, var_values=None):
+            cubes = []
+            var_values = self._default_vars_and_attrvalues(var_values)
+            for varname, local_value in var_values.items():
+                cube = Cube(np.arange(3.0), var_name=var_name)
+                cubes.append(cube)
+                dimco = DimCoord(np.arange(3.0), var_name="x")
+                cube.add_dim_coord(dimco, 0)
+                cube.attributes.globals[attr_name] = global_value
+                if local_value is not None:
+                    cube.attributes.locals[attr_name] = local_value
+            return cubes
+
+        if cubes:
+            results = make_cubes("v1", global_value_file1, var_values_file1)
+            if global_value_file2 is not None or var_values_file2 is not None:
+                results.extend(
+                    make_cubes("v2", global_value_file2, var_values_file2)
+                )
+        else:
+            results = [
+                make_file(filepath1, global_value_file1, var_values_file1)
+            ]
+            if global_value_file2 is not None or var_values_file2 is not None:
+                # Make a second testfile and add it to files-to-be-loaded.
+                results.append(
+                    make_file(filepath2, global_value_file2, var_values_file2)
+                )
+
+        # Save results on the instance
+        if cubes:
+            self.input_cubes = results
+        else:
+            self.input_filepaths = results
+        return results
+
+    def run_testcase(self, attr_name, values, create_cubes_or_files="files"):
+        # Save common attribute-name on the instance
+        self.attrname = attr_name
+
+        # Standardise input to a list-of-lists, each inner list = [global, *locals]
+        assert isinstance(values, list)
+        if not isinstance(values[0], list):
+            values = [values]
+        assert len(values) in (1, 2)
+        assert len(values[0]) > 1
+
+        # Decode into global1, *locals1, and optionally global2, *locals2
+        global1 = values[0][0]
+        vars1 = {}
+        i_var = 0
+        for value in values[0][1:]:
+            vars1[f"var_{i_var}"] = value
+            i_var += 1
+        if len(values) == 1:
+            global2 = None
+            vars2 = None
+        else:
+            assert len(values) == 2
+            global2 = values[1][0]
+            vars2 = {}
+            for value in values[1][1:]:
+                vars2[f"var_{i_var}"] = value
+                i_var += 1
+
+        # Create test files or cubes (and store data on the instance)
+        assert create_cubes_or_files in ("cubes", "files")
+        make_cubes = create_cubes_or_files == "cubes"
+        self.create_testcase_files_or_cubes(
+            attr_name=attr_name,
+            global_value_file1=global1,
+            var_values_file1=vars1,
+            global_value_file2=global2,
+            var_values_file2=vars2,
+            cubes=make_cubes,
+        )
+
+    def fetch_results(
+        self, filepath=None, cubes=None, oldstyle_combined=False
+    ):
+        """
+        Return testcase results from an output file or cubes in a standardised form.
+
+        Unpick the global+local values of an attribute resulting from an operation.
+        A file result is always [global_value, *local_values]
+        A cubes result is [*[global_value, *local_values]] (over different global vals)
+
+        When "oldstyle_combined" simulate the "legacy" result, when each cube had a
+        single combined attribute dictionary.  This enables us to check against former
+        behaviour (and behaviour of results treated as a single dictionary).
+        If results are from a *file*, this has no effect.
+
+        """
+        attr_name = self.attrname
+        if filepath is not None:
+            # Fetch global and local values from a file
+            try:
+                ds = threadsafe_nc4.DatasetWrapper(filepath)
+                global_result = (
+                    ds.getncattr(attr_name)
+                    if attr_name in ds.ncattrs()
+                    else None
+                )
+                # Fetch local attr value from all data variables (except dimcoord vars)
+                local_vars_results = [
+                    (
+                        var.name,
+                        (
+                            var.getncattr(attr_name)
+                            if attr_name in var.ncattrs()
+                            else None
+                        ),
+                    )
+                    for var in ds.variables.values()
+                    if var.name not in ds.dimensions
+                ]
+            finally:
+                ds.close()
+            # This version always returns a single result set [global, local1[, local2]]
+            # Return global, plus locals sorted by varname
+            local_vars_results = sorted(local_vars_results, key=lambda x: x[0])
+            results = [global_result] + [val for _, val in local_vars_results]
+        else:
+            assert cubes is not None
+            # Sort result cubes according to a standard ordering.
+            cubes = sorted(cubes, key=lambda cube: cube.name())
+            # Fetch globals and locals from cubes.
+            if oldstyle_combined:
+                # Replace cubes attributes with all-combined dictionaries
+                cubes = [cube.copy() for cube in cubes]
+                for cube in cubes:
+                    combined = dict(cube.attributes)
+                    cube.attributes.clear()
+                    cube.attributes.locals = combined
+            global_values = set(
+                cube.attributes.globals.get(attr_name, None) for cube in cubes
             )
-        ]
-        if global_value_file2 is not None or var_values_file2 is not None:
-            # Make a second testfile and add it to files-to-be-loaded.
-            filepaths.append(
-                make_file(
-                    filepath2,
-                    global_value=global_value_file2,
-                    var_values=var_values_file2,
-                ),
-            )
-        return filepaths
+            # This way returns *multiple* result 'sets', one for each global value
+            results = [
+                [globalval]
+                + [
+                    cube.attributes.locals.get(attr_name, None)
+                    for cube in cubes
+                    if cube.attributes.globals.get(attr_name, None)
+                    == globalval
+                ]
+                for globalval in sorted(global_values)
+            ]
+        return results
 
 
 class TestRoundtrip(MixinAttrsTesting):
@@ -206,73 +344,37 @@ class TestRoundtrip(MixinAttrsTesting):
 
     """
 
-    def _roundtrip_load_and_save(
-        self, input_filepaths: Union[str, Iterable[str]], output_filepath: str
-    ) -> None:
-        """
-        Load netcdf input file(s) and re-write all to a given output file.
-        """
-        # Do a load+save to produce a testable output result in a new file.
-        cubes = iris.load(input_filepaths)
-        iris.save(cubes, output_filepath)
-
-    def create_roundtrip_testcase(
-        self,
-        attr_name,
-        global_value_file1=None,
-        vars_values_file1=None,
-        global_value_file2=None,
-        vars_values_file2=None,
-    ):
+    def run_roundtrip_testcase(self, attr_name, values):
         """
         Initialise the testcase from the passed-in controls, configure the input
         files and run a save-load roundtrip to produce the output file.
 
         The name of the attribute, and the input and output temporary filepaths are
-        stored on the instance, where "self.check_roundtrip_results()" can get them.
+        stored on the instance, where "self.check_roundtrip_results_OLDSTYLE()" can get them.
 
         """
-        self.attrname = attr_name
-        self.input_filepaths = self.create_testcase_files(
-            attr_name=attr_name,
-            global_value_file1=global_value_file1,
-            var_values_file1=vars_values_file1,
-            global_value_file2=global_value_file2,
-            var_values_file2=vars_values_file2,
+        self.run_testcase(
+            attr_name=attr_name, values=values, create_cubes_or_files="files"
         )
         self.result_filepath = self._testfile_path("result")
-        self._roundtrip_load_and_save(
-            self.input_filepaths, self.result_filepath
-        )
+        # Do a load+save to produce a testable output result in a new file.
+        cubes = iris.load(self.input_filepaths)
+        iris.save(cubes, self.result_filepath)
 
-    def check_roundtrip_results(
-        self, global_attr_value=None, var_attr_vals=None
-    ):
+    def check_roundtrip_results(self, expected):
         """
         Run checks on the generated output file.
 
-        The counterpart to create_testcase, with similar control arguments.
-        Check existence (or not) of : a global attribute, named variables, and their
-        local attributes.  Values of 'None' mean to check that the relevant global/local
-        attribute does *not* exist.
+        The counterpart to create_roundtrip_testcase_OLDSTYLE, with similar control arguments.
+        Check existence (or not) of a global attribute, and a number of local
+        (variable) attributes.
+        Values of 'None' mean to check that the relevant global/local attribute does
+        *not* exist.
         """
         # N.B. there is only ever one result-file, but it can contain various variables
         # which came from different input files.
-        ds = threadsafe_nc4.DatasetWrapper(self.result_filepath)
-        if global_attr_value is None:
-            assert self.attrname not in ds.ncattrs()
-        else:
-            assert self.attrname in ds.ncattrs()
-            assert ds.getncattr(self.attrname) == global_attr_value
-        var_attr_vals = self._default_vars_and_attrvalues(var_attr_vals)
-        for var_name, value in var_attr_vals.items():
-            assert var_name in ds.variables
-            v = ds.variables[var_name]
-            if value is None:
-                assert self.attrname not in v.ncattrs()
-            else:
-                assert self.attrname in v.ncattrs()
-                assert v.getncattr(self.attrname) == value
+        results = self.fetch_results(filepath=self.result_filepath)
+        assert results == expected
 
     #######################################################
     # Tests on "user-style" attributes.
@@ -281,94 +383,60 @@ class TestRoundtrip(MixinAttrsTesting):
     #
 
     def test_01_userstyle_single_global(self):
-        self.create_roundtrip_testcase(
-            attr_name="myname",  # A generic "user" attribute with no special handling
-            global_value_file1="single-value",
-            vars_values_file1={
-                "myvar": None
-            },  # the variable has no such attribute
+        self.run_roundtrip_testcase(
+            attr_name="myname", values=["single-value", None]
         )
         # Default behaviour for a general global user-attribute.
         # It simply remains global.
-        self.check_roundtrip_results(
-            global_attr_value="single-value",  # local values eclipse the global ones
-            var_attr_vals={
-                "myvar": None
-            },  # the variable has no such attribute
-        )
+        self.check_roundtrip_results(["single-value", None])
 
     def test_02_userstyle_single_local(self):
         # Default behaviour for a general local user-attribute.
         # It results in a "promoted" global attribute.
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
-            vars_values_file1="single-value",
+            values=[None, "single-value"],
         )
-        self.check_roundtrip_results(
-            global_attr_value="single-value",  # local values eclipse the global ones
-            # N.B. the output var has NO such attribute
-        )
+        self.check_roundtrip_results(["single-value", None])
 
     def test_03_userstyle_multiple_different(self):
         # Default behaviour for general user-attributes.
         # The global attribute is lost because there are local ones.
-        vars1 = {"f1_v1": "f1v1", "f1_v2": "f2v2"}
-        vars2 = {"f2_v1": "x1", "f2_v2": "x2"}
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name="random",  # A generic "user" attribute with no special handling
-            global_value_file1="global_file1",
-            vars_values_file1=vars1,
-            global_value_file2="global_file2",
-            vars_values_file2=vars2,
+            values=[
+                ["common_global", "f1v1", "f1v2"],
+                ["common_global", "x1", "x2"],
+            ],
         )
-        # combine all 4 vars in one dict
-        all_vars_and_attrs = vars1.copy()
-        all_vars_and_attrs.update(vars2)
-        # TODO: replace with "|", when we drop Python 3.8
-        # see: https://peps.python.org/pep-0584/
         # just check they are all there and distinct
-        assert len(all_vars_and_attrs) == len(vars1) + len(vars2)
-        self.check_roundtrip_results(
-            global_attr_value=None,  # local values eclipse the global ones
-            var_attr_vals=all_vars_and_attrs,
-        )
+        self.check_roundtrip_results([None, "f1v1", "f1v2", "x1", "x2"])
 
     def test_04_userstyle_matching_promoted(self):
         # matching local user-attributes are "promoted" to a global one.
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name="random",
-            global_value_file1="global_file1",
-            vars_values_file1={"v1": "same-value", "v2": "same-value"},
+            values=["global_file1", "same-value", "same-value"],
         )
-        self.check_roundtrip_results(
-            global_attr_value="same-value",
-            var_attr_vals={"v1": None, "v2": None},
-        )
+        self.check_roundtrip_results(["same-value", None, None])
 
     def test_05_userstyle_matching_crossfile_promoted(self):
         # matching user-attributes are promoted, even across input files.
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name="random",
-            global_value_file1="global_file1",
-            vars_values_file1={"v1": "same-value", "v2": "same-value"},
-            vars_values_file2={"f2_v1": "same-value", "f2_v2": "same-value"},
+            values=[
+                ["global_file1", "same-value", "same-value"],
+                [None, "same-value", "same-value"],
+            ],
         )
-        self.check_roundtrip_results(
-            global_attr_value="same-value",
-            var_attr_vals={x: None for x in ("v1", "v2", "f2_v1", "f2_v2")},
-        )
+        self.check_roundtrip_results(["same-value", None, None, None, None])
 
     def test_06_userstyle_nonmatching_remainlocal(self):
         # Non-matching user attributes remain 'local' to the individual variables.
-        self.create_roundtrip_testcase(
-            attr_name="random",
-            global_value_file1="global_file1",
-            vars_values_file1={"v1": "value-1", "v2": "value-2"},
+        self.run_roundtrip_testcase(
+            attr_name="random", values=["global_file1", "value-1", "value-2"]
         )
-        self.check_roundtrip_results(
-            global_attr_value=None,  # NB it still destroys the global one !!
-            var_attr_vals={"v1": "value-1", "v2": "value-2"},
-        )
+        self.check_roundtrip_results([None, "value-1", "value-2"])
 
     #######################################################
     # Tests on "Conventions" attribute.
@@ -383,63 +451,50 @@ class TestRoundtrip(MixinAttrsTesting):
     def test_07_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
         # N.B. this is not good CF, but we'll see what happens anyway.
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name="Conventions",
-            global_value_file1=None,
-            vars_values_file1="user_set",
+            values=[None, "user_set"],
         )
-        self.check_roundtrip_results(
-            global_attr_value="CF-1.7",  # standard content from Iris save
-            var_attr_vals=None,
-        )
+        self.check_roundtrip_results(["CF-1.7", None])
 
     def test_08_conventions_var_both(self):
         # What happens if 'Conventions' appears as both global + local attribute.
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name="Conventions",
-            global_value_file1="global-setting",
-            vars_values_file1="local-setting",
+            values=["global-setting", "local-setting"],
         )
-        self.check_roundtrip_results(
-            global_attr_value="CF-1.7",  # standard content from Iris save
-            var_attr_vals=None,
-        )
+        # standard content from Iris save
+        self.check_roundtrip_results(["CF-1.7", None])
 
     #######################################################
     # Tests on "global" style attributes
     #  = those specific ones which 'ought' only to be global (except on collisions)
     #
-
     def test_09_globalstyle__global(self, global_attr):
         attr_content = f"Global tracked {global_attr}"
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name=global_attr,
-            global_value_file1=attr_content,
+            values=[attr_content, None],
         )
-        self.check_roundtrip_results(global_attr_value=attr_content)
+        self.check_roundtrip_results([attr_content, None])
 
     def test_10_globalstyle__local(self, global_attr):
         # Strictly, not correct CF, but let's see what it does with it.
         attr_content = f"Local tracked {global_attr}"
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name=global_attr,
-            vars_values_file1=attr_content,
+            values=[None, attr_content],
         )
-        self.check_roundtrip_results(
-            global_attr_value=attr_content
-        )  # "promoted"
+        self.check_roundtrip_results([attr_content, None])
 
     def test_11_globalstyle__both(self, global_attr):
         attr_global = f"Global-{global_attr}"
         attr_local = f"Local-{global_attr}"
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name=global_attr,
-            global_value_file1=attr_global,
-            vars_values_file1=attr_local,
+            values=[attr_global, attr_local],
         )
-        self.check_roundtrip_results(
-            global_attr_value=attr_local  # promoted local setting "wins"
-        )
+        self.check_roundtrip_results([attr_local, None])
 
     def test_12_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained, not promoted
@@ -449,26 +504,20 @@ class TestRoundtrip(MixinAttrsTesting):
             UserWarning, match="should only be a CF global attribute"
         ):
             # A warning should be raised when writing the result.
-            self.create_roundtrip_testcase(
+            self.run_roundtrip_testcase(
                 attr_name=global_attr,
-                vars_values_file1={"v1": attr_1, "v2": attr_2},
+                values=[None, attr_1, attr_2],
             )
-        self.check_roundtrip_results(
-            global_attr_value=None,
-            var_attr_vals={"v1": attr_1, "v2": attr_2},
-        )
+        self.check_roundtrip_results([None, attr_1, attr_2])
 
     def test_13_globalstyle__multivar_same(self, global_attr):
         # Multiple *same* local settings are promoted to a common global one
         attrval = f"Locally-defined-{global_attr}"
-        self.create_roundtrip_testcase(
+        self.run_roundtrip_testcase(
             attr_name=global_attr,
-            vars_values_file1={"v1": attrval, "v2": attrval},
+            values=[None, attrval, attrval],
         )
-        self.check_roundtrip_results(
-            global_attr_value=attrval,
-            var_attr_vals={"v1": None, "v2": None},
-        )
+        self.check_roundtrip_results([attrval, None, None])
 
     def test_14_globalstyle__multifile_different(self, global_attr):
         # Different global attributes from multiple files are retained as local ones
@@ -478,34 +527,23 @@ class TestRoundtrip(MixinAttrsTesting):
             UserWarning, match="should only be a CF global attribute"
         ):
             # A warning should be raised when writing the result.
-            self.create_roundtrip_testcase(
-                attr_name=global_attr,
-                global_value_file1=attr_1,
-                vars_values_file1={"v1": None},
-                global_value_file2=attr_2,
-                vars_values_file2={"v2": None},
+            self.run_roundtrip_testcase(
+                attr_name=global_attr, values=[[attr_1, None], [attr_2, None]]
             )
-        self.check_roundtrip_results(
-            # Combining them "demotes" the common global attributes to local ones
-            var_attr_vals={"v1": attr_1, "v2": attr_2}
-        )
+        self.check_roundtrip_results([None, attr_1, attr_2])
 
     def test_15_globalstyle__multifile_same(self, global_attr):
         # Matching global-type attributes in multiple files are retained as global
         attrval = f"Global-{global_attr}"
-        self.create_roundtrip_testcase(
-            attr_name=global_attr,
-            global_value_file1=attrval,
-            vars_values_file1={"v1": None},
-            global_value_file2=attrval,
-            vars_values_file2={"v2": None},
+        self.run_roundtrip_testcase(
+            attr_name=global_attr, values=[[attrval, None], [attrval, None]]
         )
-        self.check_roundtrip_results(
-            # The attribute remains as a common global setting
-            global_attr_value=attrval,
-            # The individual variables do *not* have an attribute of this name
-            var_attr_vals={"v1": None, "v2": None},
-        )
+        #     # The attribute remains as a common global setting
+        #     global_attr_value=attrval,
+        #     # The individual variables do *not* have an attribute of this name
+        #     var_attr_vals={"v1": None, "v2": None},
+        # )
+        self.check_roundtrip_results([attrval, None, None])
 
     #######################################################
     # Tests on "local" style attributes
@@ -535,19 +573,16 @@ class TestRoundtrip(MixinAttrsTesting):
         # as global or a variable attribute
         if origin_style == "input_global":
             # Record in source as a global attribute
-            self.create_roundtrip_testcase(
-                attr_name=local_attr, global_value_file1=attrval
-            )
+            values = [attrval, None]
         else:
             assert origin_style == "input_local"
             # Record in source as a variable-local attribute
-            self.create_roundtrip_testcase(
-                attr_name=local_attr, vars_values_file1=attrval
-            )
+            values = [None, attrval]
+        self.run_roundtrip_testcase(attr_name=local_attr, values=values)
 
         if (
-                local_attr in ('missing_value', 'standard_error_multiplier')
-                and origin_style == "input_local"
+            local_attr in ("missing_value", "standard_error_multiplier")
+            and origin_style == "input_local"
         ):
             # These ones are actually discarded by roundtrip.
             # Not clear why, but for now this captures the facts.
@@ -569,11 +604,7 @@ class TestRoundtrip(MixinAttrsTesting):
         if local_attr == "STASH":
             # A special case, output translates this to a different attribute name.
             self.attrname = "um_stash_source"
-
-        self.check_roundtrip_results(
-            global_attr_value=expect_global,
-            var_attr_vals=expect_var,
-        )
+        self.check_roundtrip_results([expect_global, expect_var])
 
 
 class TestLoad(MixinAttrsTesting):
@@ -590,33 +621,20 @@ class TestLoad(MixinAttrsTesting):
 
     """
 
-    def create_load_testcase(
-        self,
-        attr_name,
-        global_value_file1=None,
-        vars_values_file1=None,
-        global_value_file2=None,
-        vars_values_file2=None,
-    ) -> iris.cube.CubeList:
-        """
-        Initialise the testcase from the passed-in controls, configure the input
-        files and run a save-load roundtrip to produce the output file.
-
-        The name of the tested attribute and all the temporary filepaths are stored
-        on the instance, from where "self.check_load_results()" can get them.
-
-        """
-        self.attrname = attr_name
-        self.input_filepaths = self.create_testcase_files(
-            attr_name=attr_name,
-            global_value_file1=global_value_file1,
-            var_values_file1=vars_values_file1,
-            global_value_file2=global_value_file2,
-            var_values_file2=vars_values_file2,
+    def run_load_testcase(self, attr_name, values):
+        self.run_testcase(
+            attr_name=attr_name, values=values, create_cubes_or_files="files"
         )
+
+    def check_load_results(self, expected, oldstyle_combined=False):
         result_cubes = iris.load(self.input_filepaths)
-        result_cubes = sorted(result_cubes, key=lambda cube: cube.name())
-        return result_cubes
+        results = self.fetch_results(
+            cubes=result_cubes, oldstyle_combined=oldstyle_combined
+        )
+        assert isinstance(expected, list)
+        if not isinstance(expected[0], list):
+            expected = [expected]
+        assert results == expected
 
     #######################################################
     # Tests on "user-style" attributes.
@@ -625,83 +643,58 @@ class TestLoad(MixinAttrsTesting):
     #
 
     def test_01_userstyle_single_global(self):
-        cube1, cube2 = self.create_load_testcase(
-            attr_name="myname",  # A generic "user" attribute with no special handling
-            global_value_file1="single-value",
-            vars_values_file1={
-                "myvar": None,
-                "myvar2": None,
-            },  # the variable has no such attribute
+        self.run_load_testcase(
+            attr_name="myname", values=["single_value", None, None]
         )
-        # Default behaviour for a general global user-attribute.
-        # It is attached to all loaded cubes.
-
-        expected_dict = {"myname": "single-value"}
-        for cube in (cube1, cube2):
-            # #1 : legacy results, for cube.attributes **viewed as a plain dictionary**.
-            assert dict(cube1.attributes) == expected_dict
-            # #2 : exact expected result, viewed as newstyle split-attributes
-            assert cube1.attributes == CubeAttrsDict(globals=expected_dict)
+        # Legacy-equivalent result check (single attributes dict per cube)
+        self.check_load_results(
+            [None, "single_value", "single_value"],
+            oldstyle_combined=True,
+        )
+        # Full new-style results check
+        self.check_load_results(["single_value", None, None])
 
     def test_02_userstyle_single_local(self):
         # Default behaviour for a general local user-attribute.
         # It is attached to only the specific cube.
-        cube1, cube2 = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name="myname",  # A generic "user" attribute with no special handling
-            vars_values_file1={"myvar1": "single-value", "myvar2": None},
+            values=[None, "single-value", None],
         )
-        assert cube1.attributes == {"myname": "single-value"}
-        assert cube2.attributes == {}
+        self.check_load_results(
+            [None, "single-value", None], oldstyle_combined=True
+        )
+        self.check_load_results([None, "single-value", None])
 
     def test_03_userstyle_multiple_different(self):
         # Default behaviour for differing local user-attributes.
         # The global attribute is simply lost, because there are local ones.
-        vars1 = {"f1_v1": "f1v1", "f1_v2": "f1v2"}
-        vars2 = {"f2_v1": "x1", "f2_v2": "x2"}
-        cube1, cube2, cube3, cube4 = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name="random",  # A generic "user" attribute with no special handling
-            global_value_file1="global_file1",
-            vars_values_file1=vars1,
-            global_value_file2="global_file2",
-            vars_values_file2=vars2,
+            values=[
+                ["global_file1", "f1v1", "f1v2"],
+                ["global_file2", "x1", "x2"],
+            ],
         )
-
-        # (#1) : legacy equivalence : for cube.attributes viewed as a plain 'dict'
-        assert dict(cube1.attributes) == {"random": "f1v1"}
-        assert dict(cube2.attributes) == {"random": "f1v2"}
-        assert dict(cube3.attributes) == {"random": "x1"}
-        assert dict(cube4.attributes) == {"random": "x2"}
-
-        # (#1) : exact results check, for newstyle "split" cube attrs
-        assert cube1.attributes == CubeAttrsDict(
-            globals={"random": "global_file1"}, locals={"random": "f1v1"}
+        self.check_load_results(
+            [None, "f1v1", "f1v2", "x1", "x2"],
+            oldstyle_combined=True,
         )
-        assert cube2.attributes == CubeAttrsDict(
-            globals={"random": "global_file1"}, locals={"random": "f1v2"}
-        )
-        assert cube3.attributes == CubeAttrsDict(
-            globals={"random": "global_file2"}, locals={"random": "x1"}
-        )
-        assert cube4.attributes == CubeAttrsDict(
-            globals={"random": "global_file2"}, locals={"random": "x2"}
+        self.check_load_results(
+            [["global_file1", "f1v1", "f1v2"], ["global_file2", "x1", "x2"]]
         )
 
     def test_04_userstyle_multiple_same(self):
         # Nothing special to note in this case
         # TODO: ??remove??
-        cube1, cube2 = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name="random",
-            global_value_file1="global_file1",
-            vars_values_file1={"v1": "same-value", "v2": "same-value"},
+            values=["global_file1", "same-value", "same-value"],
         )
-        for cube in (cube1, cube2):
-            # (#1): legacy values, for cube.attributes viewed as a single dict
-            assert dict(cube.attributes) == {"random": "same-value"}
-            # (#2): exact results, with newstyle "split" cube attrs
-            assert cube2.attributes == CubeAttrsDict(
-                globals={"random": "global_file1"},
-                locals={"random": "same-value"},
-            )
+        self.check_load_results(
+            oldstyle_combined=True, expected=[None, "same-value", "same-value"]
+        )
+        self.check_load_results(["global_file1", "same-value", "same-value"])
 
     #######################################################
     # Tests on "Conventions" attribute.
@@ -716,28 +709,27 @@ class TestLoad(MixinAttrsTesting):
     def test_07_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
         # N.B. this is not good CF, but we'll see what happens anyway.
-        (cube,) = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name="Conventions",
-            global_value_file1=None,
-            vars_values_file1="user_set",
+            values=[None, "user_set"],
         )
-        assert cube.attributes == {"Conventions": "user_set"}
+        # Legacy result
+        self.check_load_results([None, "user_set"], oldstyle_combined=True)
+        # Newstyle result
+        self.check_load_results([None, "user_set"])
 
     def test_08_conventions_var_both(self):
         # What happens if 'Conventions' appears as both global + local attribute.
-        # = the global version gets lost.
-        (cube,) = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name="Conventions",
-            global_value_file1="global-setting",
-            vars_values_file1="local-setting",
+            values=["global-setting", "local-setting"],
         )
-        # (#1): legacy values, for cube.attributes viewed as a single dict
-        assert dict(cube.attributes) == {"Conventions": "local-setting"}
-        # (#2): exact results, with newstyle "split" cube attrs
-        assert cube.attributes == CubeAttrsDict(
-            globals={"Conventions": "global-setting"},
-            locals={"Conventions": "local-setting"},
+        # (#1): legacy result : the global version gets lost.
+        self.check_load_results(
+            [None, "local-setting"], oldstyle_combined=True
         )
+        # (#2): newstyle results : retain both.
+        self.check_load_results(["global-setting", "local-setting"])
 
     #######################################################
     # Tests on "global" style attributes
@@ -746,74 +738,67 @@ class TestLoad(MixinAttrsTesting):
 
     def test_09_globalstyle__global(self, global_attr):
         attr_content = f"Global tracked {global_attr}"
-        (cube,) = self.create_load_testcase(
-            attr_name=global_attr,
-            global_value_file1=attr_content,
+        self.run_load_testcase(
+            attr_name=global_attr, values=[attr_content, None]
         )
-        assert cube.attributes == {global_attr: attr_content}
+        # (#1) legacy
+        self.check_load_results([None, attr_content], oldstyle_combined=True)
+        # (#2) newstyle : global status preserved.
+        self.check_load_results([attr_content, None])
 
     def test_10_globalstyle__local(self, global_attr):
         # Strictly, not correct CF, but let's see what it does with it.
-        # = treated the same as a global setting
         attr_content = f"Local tracked {global_attr}"
-        (cube,) = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name=global_attr,
-            vars_values_file1=attr_content,
+            values=[None, attr_content],
         )
-        # (#1): legacy values, for cube.attributes viewed as a single dict
-        assert dict(cube.attributes) == {global_attr: attr_content}
-        # (#2): exact results, with newstyle "split" cube attrs
-        assert cube.attributes == CubeAttrsDict(
-            locals={global_attr: attr_content}
+        # (#1): legacy result = treated the same as a global setting
+        self.check_load_results([None, attr_content], oldstyle_combined=True)
+        # (#2): newstyle result : remains local
+        self.check_load_results(
+            [None, attr_content],
         )
 
     def test_11_globalstyle__both(self, global_attr):
         attr_global = f"Global-{global_attr}"
         attr_local = f"Local-{global_attr}"
-        (cube,) = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name=global_attr,
-            global_value_file1=attr_global,
-            vars_values_file1=attr_local,
+            values=[attr_global, attr_local],
         )
-        # promoted local setting "wins"
-        # (#1): legacy values, for cube.attributes viewed as a single dict
-        assert dict(cube.attributes) == {global_attr: attr_local}
-        # (#2): exact results, with newstyle "split" cube attrs
-        assert cube.attributes == CubeAttrsDict(
-            globals={global_attr: attr_global},
-            locals={global_attr: attr_local},
-        )
+        # (#1) legacy result : promoted local setting "wins"
+        self.check_load_results([None, attr_local], oldstyle_combined=True)
+        # (#2) newstyle result : both retained
+        self.check_load_results([attr_global, attr_local])
 
     def test_12_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained
         attr_1 = f"Local-{global_attr}-1"
         attr_2 = f"Local-{global_attr}-2"
-        cube1, cube2 = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name=global_attr,
-            vars_values_file1={"v1": attr_1, "v2": attr_2},
+            values=[None, attr_1, attr_2],
         )
         # (#1): legacy values, for cube.attributes viewed as a single dict
-        assert dict(cube1.attributes) == {global_attr: attr_1}
-        assert dict(cube2.attributes) == {global_attr: attr_2}
+        self.check_load_results([None, attr_1, attr_2], oldstyle_combined=True)
         # (#2): exact results, with newstyle "split" cube attrs
-        assert cube1.attributes == CubeAttrsDict(locals={global_attr: attr_1})
-        assert cube2.attributes == CubeAttrsDict(locals={global_attr: attr_2})
+        self.check_load_results([None, attr_1, attr_2])
 
     def test_14_globalstyle__multifile_different(self, global_attr):
-        # Different global attributes from multiple files are retained as local ones
+        # Different global attributes from multiple files
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
-        cube1, cube2, cube3, cube4 = self.create_load_testcase(
+        self.run_load_testcase(
             attr_name=global_attr,
-            global_value_file1=attr_1,
-            vars_values_file1={"f1v1": None, "f1v2": None},
-            global_value_file2=attr_2,
-            vars_values_file2={"f2v1": None, "f2v2": None},
+            values=[[attr_1, None, None], [attr_2, None, None]],
         )
-        assert cube1.attributes == {global_attr: attr_1}
-        assert cube2.attributes == {global_attr: attr_1}
-        assert cube3.attributes == {global_attr: attr_2}
-        assert cube4.attributes == {global_attr: attr_2}
+        # (#1) legacy : multiple globals retained as local ones
+        self.check_load_results(
+            [None, attr_1, attr_1, attr_2, attr_2], oldstyle_combined=True
+        )
+        # (#1) newstyle : result same as input
+        self.check_load_results([[attr_1, None, None], [attr_2, None, None]])
 
     #######################################################
     # Tests on "local" style attributes
@@ -839,38 +824,45 @@ class TestLoad(MixinAttrsTesting):
         # Create testfiles and load them, which should always produce a single cube.
         if origin_style == "input_global":
             # Record in source as a global attribute
-            (cube,) = self.create_load_testcase(
-                attr_name=local_attr, global_value_file1=attrval
-            )
+            values = [attrval, None]
+            # (cube,) = self.create_load_testcase_OLDSTYLE(
+            #     attr_name=local_attr, global_value_file1=attrval
+            # )
         else:
             assert origin_style == "input_local"
             # Record in source as a variable-local attribute
-            (cube,) = self.create_load_testcase(
-                attr_name=local_attr, vars_values_file1=attrval
-            )
+            values = [None, attrval]
+            # (cube,) = self.create_load_testcase_OLDSTYLE(
+            #     attr_name=local_attr, vars_values_file1=attrval
+            # )
+
+        self.run_load_testcase(attr_name=local_attr, values=values)
 
         # Work out the expected result.
-        # NOTE: generally, result will be the same whether the original attribute is
-        # provided as a global or variable attribute ...
-        expected_result = {local_attr: attrval}
-        # ... but there are some special cases
+        result_value = attrval
+        # ... there are some special cases
         if origin_style == "input_local":
             if local_attr == "ukmo__process_flags":
                 # Some odd special behaviour here.
-                expected_result = {local_attr: ("process",)}
+                result_value = (result_value,)
             elif local_attr in ("standard_error_multiplier", "missing_value"):
                 # For some reason, these ones never appear on the cube
-                expected_result = {}
+                result_value = None
 
+        # NOTE: **legacy** result is the same, whether the original attribute was
+        # provided as a global or local attribute ...
+        expected_result_legacy = [None, result_value]
+
+        # While 'newstyle' results preserve the input type local/global.
         if origin_style == "input_local":
-            expected_result_newstyle = CubeAttrsDict(expected_result)
+            expected_result_newstyle = [None, result_value]
         else:
-            expected_result_newstyle = CubeAttrsDict(globals=expected_result)
+            expected_result_newstyle = [result_value, None]
 
         # (#1): legacy values, for cube.attributes viewed as a single dict
-        assert dict(cube.attributes) == expected_result
+        self.check_load_results(expected_result_legacy, oldstyle_combined=True)
         # (#2): exact results, with newstyle "split" cube attrs
-        assert cube.attributes == expected_result_newstyle
+        self.check_load_results(expected_result_newstyle)
 
 
 class TestSave(MixinAttrsTesting):
@@ -879,120 +871,108 @@ class TestSave(MixinAttrsTesting):
 
     """
 
-    def create_save_testcase(self, attr_name, value1, value2=None):
-        """
-        Test attribute saving for cube(s) with given value(s).
-
-        Create cubes(s) and save to temporary file, then return the global and all
-        variable-local attributes of that name (or None-s) from the file.
-        """
-        self.attrname = (
-            attr_name  # Required for common testfile-naming function.
+    def run_save_testcase(self, attr_name, values):
+        self.run_testcase(
+            attr_name=attr_name, values=values, create_cubes_or_files="cubes"
         )
-        if value2 is None:
-            n_cubes = 1
-            values = [value1]
-        else:
-            n_cubes = 2
-            values = [value1, value2]
-        cube_names = [f"cube_{i_cube}" for i_cube in range(n_cubes)]
-        cubes = [
-            Cube([0], long_name=cube_name, attributes={attr_name: attr_value})
-            for cube_name, attr_value in zip(cube_names, values)
-        ]
         self.result_filepath = self._testfile_path("result")
-        iris.save(cubes, self.result_filepath)
-        # Get the global+local attribute values directly from the file with netCDF4
-        if attr_name == "STASH":
-            # A special case : the stored name is different
-            attr_name = "um_stash_source"
-        try:
-            ds = threadsafe_nc4.DatasetWrapper(self.result_filepath)
-            global_result = (
-                ds.getncattr(attr_name) if attr_name in ds.ncattrs() else None
-            )
-            local_results = [
-                (
-                    var.getncattr(attr_name)
-                    if attr_name in var.ncattrs()
-                    else None
-                )
-                for var in ds.variables.values()
-            ]
-        finally:
-            ds.close()
-        return [global_result] + local_results
+        iris.save(self.input_cubes, self.result_filepath)
+
+    def run_save_testcase_legacytype(self, attr_name: str, values: list):
+        """
+        Legacy-type means : before cubes had split attributes.
+
+        This just means we have only one "set" of cubes, with ***no*** distinct global
+        attribute.
+        """
+        if not isinstance(values, list):
+            # Translate single input value to list-of-1
+            values = [values]
+        self.run_save_testcase(attr_name, [None] + values)
+
+    def check_save_results(self, expected: list):
+        results = self.fetch_results(filepath=self.result_filepath)
+        assert results == expected
 
     def test_01_userstyle__single(self):
-        results = self.create_save_testcase("random", "value-x")
+        self.run_save_testcase_legacytype("random", "value-x")
         # It is stored as a *global* by default.
-        assert results == ["value-x", None]
+        self.check_save_results(["value-x", None])
 
-    def test_02_userstyle__multiple_same(self):
-        results = self.create_save_testcase("random", "value-x", "value-x")
-        # As above.
-        assert results == ["value-x", None, None]
+    def test_02_userstyle__multiple_same_NEWSTYLE(self):
+        self.run_save_testcase_legacytype("random", ["value-x", "value-x"])
+        self.check_save_results(["value-x", None, None])
 
     def test_03_userstyle__multiple_different(self):
-        results = self.create_save_testcase("random", "value-A", "value-B")
         # Clashing values are stored as locals on the individual variables.
-        assert results == [None, "value-A", "value-B"]
+        self.run_save_testcase_legacytype("random", ["value-A", "value-B"])
+        self.check_save_results([None, "value-A", "value-B"])
 
     def test_04_Conventions__single(self):
-        results = self.create_save_testcase("Conventions", "x")
+        self.run_save_testcase_legacytype("Conventions", "x")
         # Always discarded + replaced by a single global setting.
-        assert results == ["CF-1.7", None]
+        self.check_save_results(["CF-1.7", None])
 
     def test_05_Conventions__multiple_same(self):
-        results = self.create_save_testcase(
-            "Conventions", "same-value", "same-value"
+        self.run_save_testcase_legacytype(
+            "Conventions", ["same-value", "same-value"]
         )
         # Always discarded + replaced by a single global setting.
-        assert results == ["CF-1.7", None, None]
+        self.check_save_results(["CF-1.7", None, None])
 
     def test_06_Conventions__multiple_different(self):
-        results = self.create_save_testcase(
-            "Conventions", "value-A", "value-B"
+        self.run_save_testcase_legacytype(
+            "Conventions", ["value-A", "value-B"]
         )
         # Always discarded + replaced by a single global setting.
-        assert results == ["CF-1.7", None, None]
+        self.check_save_results(["CF-1.7", None, None])
 
     def test_07_globalstyle__single(self, global_attr):
-        results = self.create_save_testcase(global_attr, "value")
+        self.run_save_testcase_legacytype(global_attr, ["value"])
         # Defaults to global
-        assert results == ["value", None]
+        self.check_save_results(["value", None])
 
     def test_08_globalstyle__multiple_same(self, global_attr):
-        results = self.create_save_testcase(
-            global_attr, "value-same", "value-same"
+        # Multiple user-type with same values are promoted to global.
+        self.run_save_testcase_legacytype(
+            global_attr, ["value-same", "value-same"]
         )
-        assert results == ["value-same", None, None]
+        self.check_save_results(["value-same", None, None])
 
     def test_09_globalstyle__multiple_different(self, global_attr):
+        # Multiple user-type with different values remain local.
         msg_regexp = (
             f"'{global_attr}' is being added as CF data variable attribute,"
             f".* should only be a CF global attribute."
         )
         with pytest.warns(UserWarning, match=msg_regexp):
-            results = self.create_save_testcase(
-                global_attr, "value-A", "value-B"
+            self.run_save_testcase_legacytype(
+                global_attr, ["value-A", "value-B"]
             )
         # *Only* stored as locals when there are differing values.
-        assert results == [None, "value-A", "value-B"]
+        # assert results == [None, "value-A", "value-B"]
+        self.check_save_results([None, "value-A", "value-B"])
 
     def test_10_localstyle__single(self, local_attr):
-        results = self.create_save_testcase(local_attr, "value")
+        self.run_save_testcase_legacytype(local_attr, ["value"])
+
         # Defaults to local
         expected_results = [None, "value"]
+        # .. but a couple of special cases
         if local_attr == "ukmo__process_flags":
             # A particular, really weird case
             expected_results = [None, "v a l u e"]
-        assert results == expected_results
+        elif local_attr == "STASH":
+            # A special case : the stored name is different
+            self.attrname = "um_stash_source"
+
+        self.check_save_results(expected_results)
 
     def test_11_localstyle__multiple_same(self, local_attr):
-        results = self.create_save_testcase(
-            local_attr, "value-same", "value-same"
+        self.run_save_testcase_legacytype(
+            local_attr, ["value-same", "value-same"]
         )
+
         # They remain separate + local
         expected_results = [None, "value-same", "value-same"]
         if local_attr == "ukmo__process_flags":
@@ -1002,10 +982,14 @@ class TestSave(MixinAttrsTesting):
                 "v a l u e - s a m e",
                 "v a l u e - s a m e",
             ]
-        assert results == expected_results
+        elif local_attr == "STASH":
+            # A special case : the stored name is different
+            self.attrname = "um_stash_source"
+
+        self.check_save_results(expected_results)
 
     def test_12_localstyle__multiple_different(self, local_attr):
-        results = self.create_save_testcase(local_attr, "value-A", "value-B")
+        self.run_save_testcase_legacytype(local_attr, ["value-A", "value-B"])
         # Different values are treated just the same as matching ones.
         expected_results = [None, "value-A", "value-B"]
         if local_attr == "ukmo__process_flags":
@@ -1015,4 +999,7 @@ class TestSave(MixinAttrsTesting):
                 "v a l u e - A",
                 "v a l u e - B",
             ]
-        assert results == expected_results
+        elif local_attr == "STASH":
+            # A special case : the stored name is different
+            self.attrname = "um_stash_source"
+        self.check_save_results(expected_results)
