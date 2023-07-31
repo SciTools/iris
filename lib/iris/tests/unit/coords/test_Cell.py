@@ -30,9 +30,7 @@ class Test___common_cmp__(tests.IrisTest):
             cell >= other
 
     def test_PartialDateTime_bounded_cell(self):
-        # Check that bounded comparisons to a PartialDateTime
-        # raise an exception. These are not supported as they
-        # depend on the calendar.
+        # Check bounded cell comparisons to a PartialDateTime
         dt = PartialDateTime(month=6)
         cell = Cell(
             datetime.datetime(2010, 1, 1),
@@ -41,8 +39,23 @@ class Test___common_cmp__(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
+        self.assertGreater(dt, cell)
+        self.assertGreaterEqual(dt, cell)
+        self.assertLess(cell, dt)
+        self.assertLessEqual(cell, dt)
+
+    def test_cftime_calender_bounded_cell(self):
+        # Check that cell comparisons fail with different calendars
+        dt = cftime.datetime(2010, 3, 1, calendar="360_day")
+        cell = Cell(
+            datetime.datetime(2010, 1, 1),
+            bound=[
+                datetime.datetime(2010, 1, 1),
+                datetime.datetime(2011, 1, 1),
+            ],
+        )
         self.assert_raises_on_comparison(
-            cell, dt, TypeError, "bounded region for datetime"
+            cell, dt, TypeError, "different calendars"
         )
 
     def test_PartialDateTime_unbounded_cell(self):
@@ -55,7 +68,7 @@ class Test___common_cmp__(tests.IrisTest):
         self.assertGreaterEqual(dt, cell)
 
     def test_datetime_unbounded_cell(self):
-        # Check that cell comparison works with datetimes.
+        # Check that cell comparison works with datetimes & cftimes.
         dt = datetime.datetime(2000, 6, 15)
         cell = Cell(cftime.datetime(2000, 1, 1))
         self.assertGreater(dt, cell)
@@ -91,6 +104,15 @@ class Test___eq__(tests.IrisTest):
         point = cftime.datetime(2010, 1, 1, calendar="gregorian")
         cell = Cell(
             datetime.datetime(2010, 1, 1),
+            bound=None,
+        )
+        self.assertEqual(cell, point)
+
+    def test_datetimelike_bounded_cell(self):
+        # Check that cell equality works with bounded cells using different datetime objects
+        point = cftime.datetime(2010, 1, 1, calendar="gregorian")
+        cell = Cell(
+            datetime.datetime(2010, 1, 1),
             bound=[
                 datetime.datetime(2010, 1, 1),
                 datetime.datetime(2011, 1, 1),
@@ -98,7 +120,7 @@ class Test___eq__(tests.IrisTest):
         )
         self.assertEqual(cell, point)
 
-    def test_datetimelike_bounded_cell(self):
+    def test_datetimelike_calenders_cell(self):
         # Check that equality with a cell with a different calendar
         # raises an error. This is not supported
         point = cftime.datetime(2010, 1, 1, calendar="360_day")
@@ -110,7 +132,7 @@ class Test___eq__(tests.IrisTest):
             ],
         )
         with self.assertRaisesRegex(TypeError, "different calendars"):
-            cell == point
+            cell >= point
 
     def test_PartialDateTime_other(self):
         cell = Cell(datetime.datetime(2010, 3, 2))
