@@ -84,6 +84,9 @@ This document explains the changes made to Iris for this release
    `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
    (:pull:`5214`)
 
+#. `@rcomer`_ updated :func:`~iris.plot.contourf` to avoid using functionality
+   that is deprecated in Matplotlib v3.8 (:pull:`5405`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
