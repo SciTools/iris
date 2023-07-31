@@ -21,7 +21,7 @@ by the PR. (This run is managed by
 [the aforementioned GitHub Action](../.github/workflows/benchmark.yml)).
 
 `asv ...` commands must be run from this directory. You will need to have ASV
-installed, as well as Nox (see
+installed, as well as tox (see
 [Benchmark environments](#benchmark-environments)).
 
 The benchmark runner ([bm_runner.py](./bm_runner.py)) provides conveniences for
@@ -107,8 +107,7 @@ suites for the UK Met Office NG-VAT project.
 ## Benchmark environments
 
 We have disabled ASV's standard environment management, instead using an
-environment built using the same Nox scripts as Iris' test environments. This
-is done using ASV's plugin architecture - see
+environment built using tox. This is done using ASV's plugin architecture - see
 [asv_delegated_conda.py](asv_delegated_conda.py) and the extra config items in
 [asv.conf.json](asv.conf.json).
 
@@ -116,4 +115,4 @@ is done using ASV's plugin architecture - see
 minimising external factors and also allowing it to compare between a matrix
 of dependencies (each in a separate environment). We have chosen to sacrifice
 these features in favour of testing each commit with its intended dependencies,
-controlled by Nox + lock-files).
+controlled by tox + lock-files).

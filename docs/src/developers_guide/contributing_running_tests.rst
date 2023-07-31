@@ -12,8 +12,8 @@ There are two options for running the tests:
   the tests or use ``python`` interactively to investigate any issues.  See
   :ref:`test manual env`.
 
-* Use ``nox``.  This will automatically generate an environment and run test
-  sessions consistent with our GitHub continuous integration.  See :ref:`using nox`.
+* Use ``tox``.  This will automatically generate an environment and run test
+  sessions consistent with our GitHub continuous integration.  See :ref:`using tox`.
 
 .. _test manual env:
 
@@ -101,97 +101,84 @@ using the commands ``python test_mapping.py -h`` or
 ``python test_mapping.py --help``.
 
 .. tip::  A useful command line option to use is ``-d``.  This will display
-          matplotlib_ figures as the tests are run.  For example::
+          `matplotlib_` figures as the tests are run.  For example::
 
              python test_mapping.py -d
 
-.. _using nox:
+.. _using tox:
 
-Using Nox for Testing Iris
+Using tox for Testing Iris
 ==========================
 
-The `nox`_ tool has for adopted for automated testing on `Iris GitHub Actions`_
+The `tox`_ tool has been adopted for automated testing on `Iris GitHub Actions`_
 and also locally on the command-line for developers.
 
-`nox`_ is similar to `tox`_, but instead leverages the expressiveness and power of a Python
-configuration file rather than an `.ini` style file. As with `tox`_, `nox`_ can use `virtualenv`_
-to create isolated Python environments, but in addition also supports `conda`_ as a testing
-environment backend.
+`tox`_ uses `virtualenv`_ to create isolated Python environments and is
+configured within a tox.ini file.
 
-
-Where is Nox Used?
+Where is tox Used?
 ------------------
 
-Iris uses `nox`_ as a convenience to fully automate the process of executing the Iris tests, but also
-automates the process of:
+Iris uses `tox`_ as a convenience to fully automate the process of:
 
-* building the documentation and executing the doc-tests
-* building the documentation gallery
+* executing the Iris tests,
+* building the documentation,
+* executing the doc-tests,
+* executing the gallery tests, and
 * running the documentation URL link check
 
-You can perform all of these tasks manually yourself, however the onus is on you to first ensure
-that all of the required package dependencies are installed and available in the testing environment.
+You can perform all of these tasks manually yourself, however the onus is on you
+to first ensure that all of the required package dependencies are installed and
+available in the testing environment.
 
-`Nox`_ has been configured to automatically do this for you, and provides a means to easily replicate
-the remote testing behaviour of `Iris GitHub Actions`_ locally for the developer.
+`tox`_ has been configured to automatically do this for you, and provides a
+means to easily replicate the remote testing behaviour of `Iris GitHub Actions`_
+locally for the developer.
 
 
-Installing Nox
+Installing tox
 --------------
 
-We recommend installing `nox`_ using `conda`_. To install `nox`_ in a separate `conda`_ environment::
+We recommend installing `tox`_ using `conda`_. To install `tox`_ in a separate
+`conda`_ environment::
 
-  conda create -n nox -c conda-forge nox
-  conda activate nox
+  conda create -n tox -c conda-forge tox
+  conda activate tox
 
-To install `nox`_ in an existing active `conda`_ environment::
+To install `tox`_ in an existing active `conda`_ environment::
 
-  conda install -c conda-forge nox
+  conda install -c conda-forge tox
 
-The `nox`_ package is also available on PyPI, however `nox`_ has been configured to use the `conda`_
-backend for Iris, so an installation of `conda`_ must always be available.
+The `tox`_ package is also available on PyPI, however `tox`_ has been configured
+to use `conda`_ to create the testing environments and so an installation of
+`conda`_ must always be available.
 
 
-Testing with Nox
+Testing with tox
 ----------------
 
-The `nox`_ configuration file `noxfile.py` is available in the root ``iris`` project directory, and
-defines all the `nox`_ sessions (i.e., tasks) that may be performed. `nox`_ must always be executed
-from the ``iris`` root directory.
+The `tox`_ configuration file `tox.ini` is available in the root ``iris``
+project directory, and defines all the `tox`_ test environments (i.e., tasks)
+that may be performed. `tox`_ must always be executed from the ``iris`` root
+directory.
 
-To list the configured `nox`_ sessions for Iris::
+To list the configured `tox`_ sessions for Iris::
 
-  nox --list
+  tox --listenvs-all
 
-To run the Iris tests for all configured versions of Python::
+To run the Iris tests for Python 3.11::
 
-  nox --session tests
+  tox -e py311-tests
 
-To build the Iris documentation specifically for Python 3.7::
+To build the Iris documentation specifically for Python 3.11::
 
-  nox --session doctest-3.7
+  tox -e py311-docs
 
-To run all the Iris `nox`_ sessions::
+For further `tox`_ command-line options::
 
-  nox
+  tox --help
 
-For further `nox`_ command-line options::
-
-  nox --help
-
-.. tip::
-    For `nox`_ sessions that use the `conda`_ backend, you can use the ``-v`` or ``--verbose``
-    flag to display the `nox`_ `conda`_ environment package details and environment info.
-    For example::
-
-        nox --session tests -- --verbose
+.. note:: `tox`_ will cache its testing environments in the `.tox` root ``iris`` project directory.
 
 
-.. note:: `nox`_ will cache its testing environments in the `.nox` root ``iris`` project directory.
-
-
-.. _setuptools: https://setuptools.readthedocs.io/en/latest/
-.. _tox: https://tox.readthedocs.io/en/latest/
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
-.. _PyPI: https://pypi.org/project/nox/
-.. _v41.5.0: https://setuptools.readthedocs.io/en/latest/history.html#v41-5-0

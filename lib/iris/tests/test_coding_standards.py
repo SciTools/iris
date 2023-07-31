@@ -71,8 +71,8 @@ def test_python_versions():
     This test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    latest_supported = "3.11"
-    all_supported = ["3.9", "3.10", latest_supported]
+    latest_supported = "311"
+    all_supported = ["39", "310", latest_supported]
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"
@@ -81,7 +81,7 @@ def test_python_versions():
     # Places that are checked:
     pyproject_toml_file = root_dir / "pyproject.toml"
     requirements_dir = root_dir / "requirements"
-    nox_file = root_dir / "noxfile.py"
+    tox_config_file = root_dir / "tox.ini"
     ci_wheels_file = workflows_dir / "ci-wheels.yml"
     ci_tests_file = workflows_dir / "ci-tests.yml"
     asv_config_file = benchmarks_dir / "asv.conf.json"
@@ -92,40 +92,47 @@ def test_python_versions():
             pyproject_toml_file,
             "\n    ".join(
                 [
-                    f'"Programming Language :: Python :: {ver}",'
+                    f'"Programming Language :: Python :: {ver[:1]}.{ver[1:]}",'
                     for ver in all_supported
                 ]
             ),
         ),
         (
-            nox_file,
-            "_PY_VERSIONS_ALL = ["
-            + ", ".join([f'"{ver}"' for ver in all_supported]),
-        ),
-        (
             ci_wheels_file,
             "python-version: ["
-            + ", ".join([f'"{ver}"' for ver in all_supported]),
+            + ", ".join([f'"{ver}"' for ver in all_supported])
+            + "]",
         ),
         (
             ci_tests_file,
             (
                 f'python-version: ["{latest_supported}"]\n'
-                f'{" " * 8}session: ["doctest", "gallery", "linkcheck"]'
+                f'{" " * 8}session: ["docs-tests", "docs-linkcheck", "gallery_tests"]'
             ),
         ),
-        (asv_config_file, f"PY_VER={latest_supported}"),
+        (
+            asv_config_file,
+            f"-e py{latest_supported}",
+        ),
         (benchmark_runner_file, f'python_version = "{latest_supported}"'),
+        (tox_config_file, "[testenv:py{" + ",".join(all_supported) + "}-"),
     ]
 
     for ver in all_supported:
-        req_yaml = requirements_dir / f"py{ver.replace('.', '')}.yml"
-        text_searches.append((req_yaml, f"- python ={ver}"))
+        req_yaml = requirements_dir / f"py{ver}.yml"
+        text_searches.append((req_yaml, f"- python ={ver[:1]}.{ver[1:]}"))
 
         text_searches.append(
             (
                 ci_tests_file,
                 f'python-version: "{ver}"\n{" " * 12}session: "tests"',
+            )
+        )
+
+        text_searches.append(
+            (
+                tox_config_file,
+                f'{" " * 4}py{ver}: {{toxinidir}}{{/}}requirements',
             )
         )
 
@@ -194,7 +201,6 @@ class TestLicenseHeaders(tests.IrisTest):
     def test_license_headers(self):
         exclude_patterns = (
             "setup.py",
-            "noxfile.py",
             "build/*",
             "dist/*",
             "docs/gallery_code/*/*.py",

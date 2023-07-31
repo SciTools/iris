@@ -96,6 +96,9 @@ This document explains the changes made to Iris for this release
    `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
    (:pull:`5214`)
 
+# `@lbdreyer`_ replaced nox with tox as the automated test runner.
+  (:pull:`5184`)
+
 
 
 .. comment

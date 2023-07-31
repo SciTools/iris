@@ -20,7 +20,7 @@ exclude codecov.yml
 include COPYING
 include COPYING.LESSER
 exclude Makefile
-exclude noxfile.py
+exclude tox.ini
 
 # files required to build iris.std_names module
 include etc/cf-standard-name-table.xml

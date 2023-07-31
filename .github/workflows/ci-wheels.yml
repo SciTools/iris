@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["39", "310", "311"]
         session: ["wheel"]
     env:
       ENV_NAME: "ci-wheels"
@@ -72,7 +72,7 @@ jobs:
           CACHE_WEEKS: 2
       run: |
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
-        echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
+        echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }})-linux-64.lock" >> ${GITHUB_ENV}
 
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
@@ -93,23 +93,21 @@ jobs:
     - name: "conda environment cache"
       uses: ./.github/workflows/composite/conda-env-cache
       with:
-        cache_build: 0
+        cache_build: 1
         cache_period: ${{ env.CACHE_PERIOD }}
         env_name: ${{ env.ENV_NAME }}
-        install_packages: "nox pip"
+        install_packages: "tox'<4' pip"
 
-    - name: "nox cache"
-      uses: ./.github/workflows/composite/nox-cache
+    - name: "tox cache"
+      uses: ./.github/workflows/composite/tox-cache
       with:
         cache_build: 1
         env_name: ${{ env.ENV_NAME }}
         lock_file: ${{ env.LOCK_FILE }}
 
-    - name: "nox install and test wheel"
-      env:
-        PY_VER: ${{ matrix.python-version }}
+    - name: "tox install and test wheel"
       run: |
-        nox --session ${{ matrix.session }} -- --verbose
+        tox -e py${{ matrix.python-version }}-${{ matrix.session }}
 
   show-artifacts:
     needs: build
