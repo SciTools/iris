@@ -33,6 +33,7 @@ variables:
 	float datavar(nMesh1_edge) ;
 		datavar:mesh = "Mesh1" ;
 		datavar:location = "edge" ;
+		datavar:coordinates = "Mesh1_edge_x Mesh1_edge_y" ;
 
 // global attributes:
 		:Conventions = "CF-1.7" ;

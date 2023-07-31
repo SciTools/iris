@@ -267,6 +267,7 @@ saves the file in a UGRID-conformant format:
                 edge_data:units = "K" ;
                 edge_data:mesh = "my_mesh" ;
                 edge_data:location = "edge" ;
+                edge_data:coordinates = "latitude_0 longitude_0" ;
             int64 height(height) ;
                 height:standard_name = "height" ;
             int64 face_data(Mesh2d_face, height) ;
@@ -274,6 +275,7 @@ saves the file in a UGRID-conformant format:
                 face_data:units = "K" ;
                 face_data:mesh = "my_mesh" ;
                 face_data:location = "face" ;
+                face_data:coordinates = "latitude_1 longitude_1" ;
         <BLANKLINE>
         // global attributes:
                 :Conventions = "CF-1.7" ;

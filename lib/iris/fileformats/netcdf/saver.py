@@ -895,6 +895,9 @@ class Saver:
                                 coord,
                                 element_dims=(mesh_dims[location],),
                             )
+                            # Only created once per file, but need to fetch the
+                            #  name later in _add_inner_related_vars().
+                            self._name_coord_map.append(coord_name, coord)
                             coord_names.append(coord_name)
                         # Record the coordinates (if any) on the mesh variable.
                         if coord_names:
@@ -1024,15 +1027,32 @@ class Saver:
             Names associated with the dimensions of the cube.
 
         """
+        from iris.experimental.ugrid.mesh import (
+            Mesh,
+            MeshEdgeCoords,
+            MeshFaceCoords,
+            MeshNodeCoords,
+        )
+
         # Exclude any mesh coords, which are bundled in with the aux-coords.
-        aux_coords_no_mesh = [
+        coords_to_add = [
             coord for coord in cube.aux_coords if not hasattr(coord, "mesh")
         ]
+
+        # Include any relevant mesh location coordinates.
+        mesh: Mesh = getattr(cube, "mesh")
+        mesh_location: str = getattr(cube, "location")
+        if mesh and mesh_location:
+            location_coords: MeshNodeCoords | MeshEdgeCoords | MeshFaceCoords = getattr(
+                mesh, f"{mesh_location}_coords"
+            )
+            coords_to_add.extend(list(location_coords))
+
         return self._add_inner_related_vars(
             cube,
             cf_var_cube,
             dimension_names,
-            aux_coords_no_mesh,
+            coords_to_add,
         )
 
     def _add_cell_measures(self, cube, cf_var_cube, dimension_names):

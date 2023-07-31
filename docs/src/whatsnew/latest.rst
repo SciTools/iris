@@ -36,6 +36,11 @@ This document explains the changes made to Iris for this release
 #. `@acchamber`_   added error and warning messages about coordinate overlaps to 
    :func:`~iris.cube.concatenate` to improve the concatenation process. (:pull:`5382`)
 
+#. `@trexfeathers`_ included mesh location coordinates
+   (e.g. :attr:`~iris.experimental.ugrid.Mesh.face_coords`) in
+   the data variable's ``coordinates`` attribute when saving to NetCDF.
+   (:issue:`5206`, :pull:`5389`)
+
 
 🐛 Bugs Fixed
 =============
