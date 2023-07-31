@@ -45,7 +45,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@acchamber`_ removed some obsolete code that prevented extraction of time points
+   from cubes with bounded times (:pull:`5175`)
 
 
 💣 Incompatible Changes
@@ -94,6 +95,7 @@ This document explains the changes made to Iris for this release
    objects in place of file-paths, as hooks for a forthcoming
    `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
    (:pull:`5214`)
+
 
 
 .. comment

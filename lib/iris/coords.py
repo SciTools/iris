@@ -1464,12 +1464,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
                 # - Simple matching
                 me = self.point
             else:
-                if hasattr(other, "timetuple"):
-                    raise TypeError(
-                        "Cannot determine whether a point lies "
-                        "within a bounded region for "
-                        "datetime-like objects."
-                    )
                 # Point-and-bound vs number
                 # - Match if "within" the Cell
                 if operator_method in [operator.gt, operator.le]:
@@ -1510,14 +1504,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         """
         if self.bound is None:
             raise ValueError("Point cannot exist inside an unbounded cell.")
-        if hasattr(point, "timetuple") or np.any(
-            [hasattr(val, "timetuple") for val in self.bound]
-        ):
-            raise TypeError(
-                "Cannot determine whether a point lies within "
-                "a bounded region for datetime-like objects."
-            )
-
         return np.min(self.bound) <= point <= np.max(self.bound)
 
 
