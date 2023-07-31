@@ -226,6 +226,17 @@ class Test_contains_point(tests.IrisTest):
         with self.assertRaisesRegex(TypeError, "different calendars"):
             cell.contains_point(point)
 
+    def test_cftime_360_day_cftime_360day_point(self):
+        point = cftime.datetime(2010, 6, 15, calendar="360_day")
+        cell = Cell(
+            cftime.datetime(2010, 1, 1, calendar="360_day"),
+            bound=[
+                cftime.datetime(2010, 1, 1, calendar="360_day"),
+                cftime.datetime(2011, 1, 1, calendar="360_day"),
+            ],
+        )
+        self.assertTrue(cell.contains_point(point))
+
 
 class Test_numpy_comparison(tests.IrisTest):
     """

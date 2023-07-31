@@ -1464,12 +1464,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
                 # - Simple matching
                 me = self.point
             else:
-                # if hasattr(other, "timetuple"):
-                #     raise TypeError(
-                #         "Cannot determine whether a point lies "
-                #         "within a bounded region for "
-                #         "datetime-like objects."
-                #     )
                 # Point-and-bound vs number
                 # - Match if "within" the Cell
                 if operator_method in [operator.gt, operator.le]:
