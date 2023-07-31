@@ -78,6 +78,9 @@ This document explains the changes made to Iris for this release
    section into the user guide, containing advice and use cases to help users
    get the best out of Dask with Iris.
 
+#. `@acchamber`_ improved documentation for :meth:`~iris.cube.Cube.convert_units`
+   and :meth:`~iris.coords.Coord.convert_units` by including a link to the UDUNITS-2
+   documentation which contains lists of compatible units and aliases for them.
 
 💼 Internal
 ===========
@@ -93,6 +96,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 .. _@rsdavies: https://github.com/rsdavies
 .. _@acchamber: https://github.com/acchamber
+
 
 
 .. comment
