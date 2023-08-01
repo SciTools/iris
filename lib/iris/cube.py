@@ -776,7 +776,7 @@ class CubeList(list):
         """
         Return a CubeList when CubeList.copy() is called.
         """
-        if type(self) == CubeList:
+        if isinstance(self, CubeList):
             return deepcopy(self)
 
 
