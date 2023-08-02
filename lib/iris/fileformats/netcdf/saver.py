@@ -540,7 +540,9 @@ class Saver:
             An interable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
             than global attributes.
-            .. note:
+
+            .. Note::
+
                 Has no effect if :attr:`iris.FUTURE.save_split_attrs` is ``True``.
 
         * unlimited_dimensions (iterable of strings and/or
