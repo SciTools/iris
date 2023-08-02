@@ -1492,6 +1492,11 @@ def unify_time_units(cubes):
     for cube in cubes:
         for time_coord in cube.coords():
             if time_coord.units.is_time_reference():
+                time_coord.points = time_coord.core_points().astype("float64")
+                if time_coord.bounds is not None:
+                    time_coord.bounds = time_coord.core_bounds().astype(
+                        "float64"
+                    )
                 epoch = epochs.setdefault(
                     time_coord.units.calendar, time_coord.units.origin
                 )
