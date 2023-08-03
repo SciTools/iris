@@ -724,10 +724,6 @@ class Saver:
 
             # Add global attributes taking into account local_keys.
             cube_attributes = cube.attributes
-            if iris.FUTURE.save_split_attrs:
-                # In this case, do *not* promote any 'local' attributes to global ones,
-                # only "global" cube attrs may be written as global file attributes
-                cube_attributes = cube_attributes.globals
             global_attributes = {
                 k: v
                 for k, v in cube_attributes.items()
