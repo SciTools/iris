@@ -36,11 +36,17 @@ This document explains the changes made to Iris for this release
 #. `@acchamber`_   added error and warning messages about coordinate overlaps to 
    :func:`~iris.cube.concatenate` to improve the concatenation process. (:pull:`5382`)
 
+#. `@trexfeathers`_ included mesh location coordinates
+   (e.g. :attr:`~iris.experimental.ugrid.Mesh.face_coords`) in
+   the data variable's ``coordinates`` attribute when saving to NetCDF.
+   (:issue:`5206`, :pull:`5389`)
+
 
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@acchamber`_ removed some obsolete code that prevented extraction of time points
+   from cubes with bounded times (:pull:`5175`)
 
 
 💣 Incompatible Changes
@@ -78,6 +84,9 @@ This document explains the changes made to Iris for this release
    section into the user guide, containing advice and use cases to help users
    get the best out of Dask with Iris.
 
+#. `@acchamber`_ improved documentation for :meth:`~iris.cube.Cube.convert_units`
+   and :meth:`~iris.coords.Coord.convert_units` by including a link to the UDUNITS-2
+   documentation which contains lists of compatible units and aliases for them.
 
 💼 Internal
 ===========
@@ -87,12 +96,17 @@ This document explains the changes made to Iris for this release
    `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
    (:pull:`5214`)
 
+#. `@rcomer`_ updated :func:`~iris.plot.contourf` to avoid using functionality
+   that is deprecated in Matplotlib v3.8 (:pull:`5405`)
+
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 .. _@rsdavies: https://github.com/rsdavies
 .. _@acchamber: https://github.com/acchamber
+
 
 
 .. comment

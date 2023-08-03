@@ -776,7 +776,7 @@ class CubeList(list):
         """
         Return a CubeList when CubeList.copy() is called.
         """
-        if type(self) == CubeList:
+        if isinstance(self, CubeList):
             return deepcopy(self)
 
 
@@ -1133,6 +1133,9 @@ class Cube(CFVariableMixin):
         will change the cube's :attr:`~iris.cube.Cube.units` attribute to
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
+
+        Full list of supported units can be found in the UDUNITS-2 documentation
+        https://docs.unidata.ucar.edu/udunits/current/#Database
 
         This operation preserves lazy data.
 
