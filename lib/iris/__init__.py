@@ -182,7 +182,7 @@ class Future(threading.local):
         # self.__dict__['example_future_flag'] = example_future_flag
         self.__dict__["datum_support"] = datum_support
         self.__dict__["pandas_ndim"] = pandas_ndim
-        self.__dict__["save_split_attrs"] = pandas_ndim
+        self.__dict__["save_split_attrs"] = save_split_attrs
 
     def __repr__(self):
         # msg = ('Future(example_future_flag={})')
