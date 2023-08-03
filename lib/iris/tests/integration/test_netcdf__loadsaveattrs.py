@@ -19,7 +19,7 @@ might be recorded either globally or locally.
 
 """
 import inspect
-from typing import Optional, Union
+from typing import Iterable, List, Optional, Union
 
 import numpy as np
 import pytest
@@ -138,14 +138,15 @@ class MixinAttrsTesting:
         var_values_file1: Union[None, str, dict] = None,
         global_value_file2: Optional[str] = None,
         var_values_file2: Union[None, str, dict] = None,
-        cubes=False,
+        cubes: bool = False,
     ):
         """
-        Create temporary input netcdf files with specific content.
+        Create temporary input netcdf files, or cubes, with specific content.
 
         Creates a temporary netcdf test file (or two) with the given global and
-        variable-local attributes.
-        The file(s) are used to test the behaviour of the attribute.
+        variable-local attributes.  Or build cubes, similarly.
+        If ``cubes`` is ``True``, save cubes in ``self.input_cubes``.
+        Else save filepaths in ``self.input_filepaths``.
 
         Note: 'var_values_file<X>' args are dictionaries.  The named variables are
         created, with an attribute = the dictionary value, *except* that a dictionary
@@ -213,7 +214,32 @@ class MixinAttrsTesting:
             self.input_filepaths = results
         return results
 
-    def run_testcase(self, attr_name, values, create_cubes_or_files="files"):
+    def run_testcase(
+        self,
+        attr_name: str,
+        values: Union[List, List[List]],
+        create_cubes_or_files: str = "files",
+    ) -> None:
+        """
+        Create testcase inputs (files or cubes) with specified attributes.
+
+        Parameters
+        ----------
+        attr_name : str
+            name for all attributes created in this testcase.
+            Also saved as ``self.attrname``, as used by ``fetch_results``.
+        values : list
+            list, or lists, of values for created attributes, each containing one global
+            and one-or-more local attribute values as [global, local1, local2...]
+        create_cubes_or_files : str, default "files"
+            create either cubes or testfiles.
+
+        If ``create_cubes_or_files`` == "files", create one temporary netCDF file per
+        values-list, and record in ``self.input_filepaths``.
+        Else if ``create_cubes_or_files`` == "cubes", create sets of cubes with common
+        global values and store all of them to ``self.input_cubes``.
+
+        """
         # Save common attribute-name on the instance
         self.attrname = attr_name
 
@@ -255,19 +281,25 @@ class MixinAttrsTesting:
         )
 
     def fetch_results(
-        self, filepath=None, cubes=None, oldstyle_combined=False
+        self,
+        filepath: str = None,
+        cubes: Iterable[Cube] = None,
+        oldstyle_combined: bool = False,
     ):
         """
         Return testcase results from an output file or cubes in a standardised form.
 
-        Unpick the global+local values of an attribute resulting from an operation.
+        Unpick the global+local values of the attribute ``self.attrname``, resulting
+        from a test operation.
         A file result is always [global_value, *local_values]
         A cubes result is [*[global_value, *local_values]] (over different global vals)
 
-        When "oldstyle_combined" simulate the "legacy" result, when each cube had a
-        single combined attribute dictionary.  This enables us to check against former
-        behaviour (and behaviour of results treated as a single dictionary).
-        If results are from a *file*, this has no effect.
+        When ``oldstyle_combined`` is ``True``, simulate the "legacy" style results,
+        that is when each cube had a single combined attribute dictionary.
+        This enables us to check against former behaviour, by combining results into a
+        single dictionary.  N.B. per-cube single results are then returned in the form:
+        [None, cube1, cube2...].
+        N.B. if results are from a *file*, this key has **no effect**.
 
         """
         attr_name = self.attrname
@@ -365,7 +397,7 @@ class TestRoundtrip(MixinAttrsTesting):
         """
         Run checks on the generated output file.
 
-        The counterpart to create_roundtrip_testcase_OLDSTYLE, with similar control arguments.
+        The counterpart to :meth:`run_roundtrip_testcase`, with similar arguments.
         Check existence (or not) of a global attribute, and a number of local
         (variable) attributes.
         Values of 'None' mean to check that the relevant global/local attribute does
@@ -631,6 +663,7 @@ class TestLoad(MixinAttrsTesting):
         results = self.fetch_results(
             cubes=result_cubes, oldstyle_combined=oldstyle_combined
         )
+        # Standardise expected form to list(lists).
         assert isinstance(expected, list)
         if not isinstance(expected[0], list):
             expected = [expected]
@@ -872,9 +905,11 @@ class TestSave(MixinAttrsTesting):
     """
 
     def run_save_testcase(self, attr_name, values):
+        # Create input cubes.
         self.run_testcase(
             attr_name=attr_name, values=values, create_cubes_or_files="cubes"
         )
+        # Save input cubes to a temporary result file.
         self.result_filepath = self._testfile_path("result")
         iris.save(self.input_cubes, self.result_filepath)
 
