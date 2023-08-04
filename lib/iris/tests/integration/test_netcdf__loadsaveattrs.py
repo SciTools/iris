@@ -383,7 +383,7 @@ class TestRoundtrip(MixinAttrsTesting):
         files and run a save-load roundtrip to produce the output file.
 
         The name of the attribute, and the input and output temporary filepaths are
-        stored on the instance, where "self.check_roundtrip_results_OLDSTYLE()" can get them.
+        stored on the instance, where "self.check_roundtrip_results()" can get them.
 
         """
         self.run_testcase(
@@ -859,16 +859,10 @@ class TestLoad(MixinAttrsTesting):
         if origin_style == "input_global":
             # Record in source as a global attribute
             values = [attrval, None]
-            # (cube,) = self.create_load_testcase_OLDSTYLE(
-            #     attr_name=local_attr, global_value_file1=attrval
-            # )
         else:
             assert origin_style == "input_local"
             # Record in source as a variable-local attribute
             values = [None, attrval]
-            # (cube,) = self.create_load_testcase_OLDSTYLE(
-            #     attr_name=local_attr, vars_values_file1=attrval
-            # )
 
         self.run_load_testcase(attr_name=local_attr, values=values)
 
@@ -935,7 +929,7 @@ class TestSave(MixinAttrsTesting):
         # It is stored as a *global* by default.
         self.check_save_results(["value-x", None])
 
-    def test_02_userstyle__multiple_same_NEWSTYLE(self):
+    def test_02_userstyle__multiple_same(self):
         self.run_save_testcase_legacytype("random", ["value-x", "value-x"])
         self.check_save_results(["value-x", None, None])
 
