@@ -964,52 +964,52 @@ class TestSave(MixinAttrsTesting):
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
 
-    def test_01_userstyle__single(self):
+    def test_userstyle__single(self):
         self.run_save_testcase_legacytype("random", "value-x")
         # It is stored as a *global* by default.
         self.check_save_results(["value-x", None])
 
-    def test_02_userstyle__multiple_same(self):
+    def test_userstyle__multiple_same(self):
         self.run_save_testcase_legacytype("random", ["value-x", "value-x"])
         self.check_save_results(["value-x", None, None])
 
-    def test_03_userstyle__multiple_different(self):
+    def test_userstyle__multiple_different(self):
         # Clashing values are stored as locals on the individual variables.
         self.run_save_testcase_legacytype("random", ["value-A", "value-B"])
         self.check_save_results([None, "value-A", "value-B"])
 
-    def test_04_Conventions__single(self):
+    def test_Conventions__single(self):
         self.run_save_testcase_legacytype("Conventions", "x")
         # Always discarded + replaced by a single global setting.
         self.check_save_results(["CF-1.7", None])
 
-    def test_05_Conventions__multiple_same(self):
+    def test_Conventions__multiple_same(self):
         self.run_save_testcase_legacytype(
             "Conventions", ["same-value", "same-value"]
         )
         # Always discarded + replaced by a single global setting.
         self.check_save_results(["CF-1.7", None, None])
 
-    def test_06_Conventions__multiple_different(self):
+    def test_Conventions__multiple_different(self):
         self.run_save_testcase_legacytype(
             "Conventions", ["value-A", "value-B"]
         )
         # Always discarded + replaced by a single global setting.
         self.check_save_results(["CF-1.7", None, None])
 
-    def test_07_globalstyle__single(self, global_attr):
+    def test_globalstyle__single(self, global_attr):
         self.run_save_testcase_legacytype(global_attr, ["value"])
         # Defaults to global
         self.check_save_results(["value", None])
 
-    def test_08_globalstyle__multiple_same(self, global_attr):
+    def test_globalstyle__multiple_same(self, global_attr):
         # Multiple user-type with same values are promoted to global.
         self.run_save_testcase_legacytype(
             global_attr, ["value-same", "value-same"]
         )
         self.check_save_results(["value-same", None, None])
 
-    def test_09_globalstyle__multiple_different(self, global_attr):
+    def test_globalstyle__multiple_different(self, global_attr):
         # Multiple user-type with different values remain local.
         msg_regexp = (
             f"'{global_attr}' is being added as CF data variable attribute,"
@@ -1021,7 +1021,7 @@ class TestSave(MixinAttrsTesting):
         # *Only* stored as locals when there are differing values.
         self.check_save_results([None, "value-A", "value-B"])
 
-    def test_10_localstyle__single(self, local_attr):
+    def test_localstyle__single(self, local_attr):
         self.run_save_testcase_legacytype(local_attr, ["value"])
 
         # Defaults to local
@@ -1036,7 +1036,7 @@ class TestSave(MixinAttrsTesting):
 
         self.check_save_results(expected_results)
 
-    def test_11_localstyle__multiple_same(self, local_attr):
+    def test_localstyle__multiple_same(self, local_attr):
         self.run_save_testcase_legacytype(
             local_attr, ["value-same", "value-same"]
         )
@@ -1056,7 +1056,7 @@ class TestSave(MixinAttrsTesting):
 
         self.check_save_results(expected_results)
 
-    def test_12_localstyle__multiple_different(self, local_attr):
+    def test_localstyle__multiple_different(self, local_attr):
         self.run_save_testcase_legacytype(local_attr, ["value-A", "value-B"])
         # Different values are treated just the same as matching ones.
         expected_results = [None, "value-A", "value-B"]
