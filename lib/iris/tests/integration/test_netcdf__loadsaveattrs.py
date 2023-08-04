@@ -19,7 +19,9 @@ might be recorded either globally or locally.
 
 """
 import inspect
+import re
 from typing import Iterable, List, Optional, Union
+import warnings
 
 import numpy as np
 import pytest
@@ -71,6 +73,30 @@ _LOCAL_TEST_ATTRS = (
 def local_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
+
+
+def check_captured_warnings(
+    expected_keys: List[str], captured_warnings: List[warnings]
+):
+    if expected_keys is None:
+        expected_keys = []
+    elif hasattr(expected_keys, "upper"):
+        # Handle a single string
+        expected_keys = [expected_keys]
+    expected_keys = [re.compile(key) for key in expected_keys]
+    found_results = [str(warning.message) for warning in captured_warnings]
+    remaining_keys = expected_keys.copy()
+    for i_message, message in enumerate(found_results.copy()):
+        i_found = None
+        for i_key, key in enumerate(remaining_keys):
+            if key.search(message):
+                # Hit : remove one + only one matching warning from the list
+                i_found = i_message
+                break
+        if i_found is not None:
+            found_results[i_found] = key
+            remaining_keys.remove(key)
+    assert found_results == expected_keys
 
 
 class MixinAttrsTesting:
@@ -377,7 +403,7 @@ class TestRoundtrip(MixinAttrsTesting):
 
     """
 
-    def run_roundtrip_testcase(self, attr_name, values):
+    def run_roundtrip_testcase(self, attr_name, values, expect_warnings=None):
         """
         Initialise the testcase from the passed-in controls, configure the input
         files and run a save-load roundtrip to produce the output file.
@@ -390,9 +416,13 @@ class TestRoundtrip(MixinAttrsTesting):
             attr_name=attr_name, values=values, create_cubes_or_files="files"
         )
         self.result_filepath = self._testfile_path("result")
-        # Do a load+save to produce a testable output result in a new file.
-        cubes = iris.load(self.input_filepaths)
-        iris.save(cubes, self.result_filepath)
+
+        with warnings.catch_warnings(record=True) as captured_warnings:
+            # Do a load+save to produce a testable output result in a new file.
+            cubes = iris.load(self.input_filepaths)
+            iris.save(cubes, self.result_filepath)
+
+        check_captured_warnings(expect_warnings, captured_warnings)
 
     def check_roundtrip_results(self, expected):
         """
@@ -533,14 +563,13 @@ class TestRoundtrip(MixinAttrsTesting):
         # Multiple *different* local settings are retained, not promoted
         attr_1 = f"Local-{global_attr}-1"
         attr_2 = f"Local-{global_attr}-2"
-        with pytest.warns(
-            UserWarning, match="should only be a CF global attribute"
-        ):
-            # A warning should be raised when writing the result.
-            self.run_roundtrip_testcase(
-                attr_name=global_attr,
-                values=[None, attr_1, attr_2],
-            )
+        expect_warning = "should only be a CF global attribute"
+        # A warning should be raised when writing the result.
+        self.run_roundtrip_testcase(
+            attr_name=global_attr,
+            values=[None, attr_1, attr_2],
+            expect_warnings=expect_warning,
+        )
         self.check_roundtrip_results([None, attr_1, attr_2])
 
     def test_13_globalstyle__multivar_same(self, global_attr):
@@ -556,13 +585,13 @@ class TestRoundtrip(MixinAttrsTesting):
         # Different global attributes from multiple files are retained as local ones
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
-        with pytest.warns(
-            UserWarning, match="should only be a CF global attribute"
-        ):
-            # A warning should be raised when writing the result.
-            self.run_roundtrip_testcase(
-                attr_name=global_attr, values=[[attr_1, None], [attr_2, None]]
-            )
+        expect_warning = "should only be a CF global attribute"
+        # A warning should be raised when writing the result.
+        self.run_roundtrip_testcase(
+            attr_name=global_attr,
+            values=[[attr_1, None], [attr_2, None]],
+            expect_warnings=expect_warning,
+        )
         self.check_roundtrip_results([None, attr_1, attr_2])
 
     def test_15_globalstyle__multifile_same(self, global_attr):
@@ -899,16 +928,26 @@ class TestSave(MixinAttrsTesting):
 
     """
 
-    def run_save_testcase(self, attr_name, values):
+    def run_save_testcase(
+        self, attr_name: str, values: list, expect_warnings: List[str] = None
+    ):
         # Create input cubes.
         self.run_testcase(
-            attr_name=attr_name, values=values, create_cubes_or_files="cubes"
+            attr_name=attr_name,
+            values=values,
+            create_cubes_or_files="cubes",
         )
-        # Save input cubes to a temporary result file.
-        self.result_filepath = self._testfile_path("result")
-        iris.save(self.input_cubes, self.result_filepath)
 
-    def run_save_testcase_legacytype(self, attr_name: str, values: list):
+        # Save input cubes to a temporary result file.
+        with warnings.catch_warnings(record=True) as captured_warnings:
+            self.result_filepath = self._testfile_path("result")
+            iris.save(self.input_cubes, self.result_filepath)
+
+        check_captured_warnings(expect_warnings, captured_warnings)
+
+    def run_save_testcase_legacytype(
+        self, attr_name: str, values: list, expect_warnings: List[str] = None
+    ):
         """
         Legacy-type means : before cubes had split attributes.
 
@@ -918,7 +957,8 @@ class TestSave(MixinAttrsTesting):
         if not isinstance(values, list):
             # Translate single input value to list-of-1
             values = [values]
-        self.run_save_testcase(attr_name, [None] + values)
+
+        self.run_save_testcase(attr_name, [None] + values, expect_warnings)
 
     def check_save_results(self, expected: list):
         results = self.fetch_results(filepath=self.result_filepath)
@@ -975,12 +1015,10 @@ class TestSave(MixinAttrsTesting):
             f"'{global_attr}' is being added as CF data variable attribute,"
             f".* should only be a CF global attribute."
         )
-        with pytest.warns(UserWarning, match=msg_regexp):
-            self.run_save_testcase_legacytype(
-                global_attr, ["value-A", "value-B"]
-            )
+        self.run_save_testcase_legacytype(
+            global_attr, ["value-A", "value-B"], expect_warnings=msg_regexp
+        )
         # *Only* stored as locals when there are differing values.
-        # assert results == [None, "value-A", "value-B"]
         self.check_save_results([None, "value-A", "value-B"])
 
     def test_10_localstyle__single(self, local_attr):
