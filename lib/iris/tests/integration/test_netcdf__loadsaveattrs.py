@@ -186,7 +186,8 @@ class MixinAttrsTesting:
                 cubes.append(cube)
                 dimco = DimCoord(np.arange(3.0), var_name="x")
                 cube.add_dim_coord(dimco, 0)
-                cube.attributes.globals[attr_name] = global_value
+                if global_value is not None:
+                    cube.attributes.globals[attr_name] = global_value
                 if local_value is not None:
                     cube.attributes.locals[attr_name] = local_value
             return cubes
