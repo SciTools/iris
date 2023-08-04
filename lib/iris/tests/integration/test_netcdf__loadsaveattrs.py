@@ -978,6 +978,16 @@ class TestSave(MixinAttrsTesting):
         self.run_save_testcase_legacytype("random", ["value-A", "value-B"])
         self.check_save_results([None, "value-A", "value-B"])
 
+    def test_userstyle__multiple_onemissing(self, global_attr):
+        # Multiple user-type, with one missing, behave like different values.
+        self.run_save_testcase_legacytype(
+            global_attr,
+            ["value", None],
+            expect_warnings="should only be a CF global attribute",
+        )
+        # Stored as locals when there are differing values.
+        self.check_save_results([None, "value", None])
+
     def test_Conventions__single(self):
         self.run_save_testcase_legacytype("Conventions", "x")
         # Always discarded + replaced by a single global setting.
@@ -1003,14 +1013,14 @@ class TestSave(MixinAttrsTesting):
         self.check_save_results(["value", None])
 
     def test_globalstyle__multiple_same(self, global_attr):
-        # Multiple user-type with same values are promoted to global.
+        # Multiple global-type with same values are made global.
         self.run_save_testcase_legacytype(
             global_attr, ["value-same", "value-same"]
         )
         self.check_save_results(["value-same", None, None])
 
     def test_globalstyle__multiple_different(self, global_attr):
-        # Multiple user-type with different values remain local.
+        # Multiple global-type with different values become local, with warning.
         msg_regexp = (
             f"'{global_attr}' is being added as CF data variable attribute,"
             f".* should only be a CF global attribute."
@@ -1020,6 +1030,18 @@ class TestSave(MixinAttrsTesting):
         )
         # *Only* stored as locals when there are differing values.
         self.check_save_results([None, "value-A", "value-B"])
+
+    def test_globalstyle__multiple_onemissing(self, global_attr):
+        # Multiple global-type, with one missing, behave like different values.
+        msg_regexp = (
+            f"'{global_attr}' is being added as CF data variable attribute,"
+            f".* should only be a CF global attribute."
+        )
+        self.run_save_testcase_legacytype(
+            global_attr, ["value", "value", None], expect_warnings=msg_regexp
+        )
+        # Stored as locals when there are differing values.
+        self.check_save_results([None, "value", "value", None])
 
     def test_localstyle__single(self, local_attr):
         self.run_save_testcase_legacytype(local_attr, ["value"])
@@ -1071,3 +1093,52 @@ class TestSave(MixinAttrsTesting):
             # A special case : the stored name is different
             self.attrname = "um_stash_source"
         self.check_save_results(expected_results)
+
+    #
+    # Test handling of newstyle independent global+local cube attributes.
+    #
+    def test_globallocal_clashing(self):
+        # A cube has clashing local + global attrs.
+        self.run_save_testcase(
+            "userattr", ["valueA", "valueB"], expect_warnings=[]
+        )
+        # N.B. legacy code sees only the local value, and promotes it.
+        self.check_save_results(["valueB", None])
+
+    def test_globallocal_oneeach_same(self):
+        # One cube with global attr, another with identical local one.
+        self.run_save_testcase(
+            "userattr", [[None, "value"], ["value", None]], expect_warnings=[]
+        )
+        # N.B. legacy code sees only two equal values (and promotes).
+        self.check_save_results(["value", None, None])
+
+    def test_globallocal_oneeach_different(self):
+        # One cube with global attr, another with different local one.
+        self.run_save_testcase(
+            "userattr",
+            [[None, "valueA"], ["valueB", None]],
+            expect_warnings=[],
+        )
+        # N.B. legacy code does not warn of global-to-local "demotion".
+        self.check_save_results([None, "valueA", "valueB"])
+
+    def test_globallocal_one_other_clashingglobals(self):
+        # Two cubes with both, second cube has a clashing global attribute.
+        self.run_save_testcase(
+            "userattr",
+            [["valueA", "valueB"], ["valueXXX", "valueB"]],
+            expect_warnings=[],
+        )
+        # N.B. legacy code sees only the locals, and promotes them.
+        self.check_save_results(["valueB", None, None])
+
+    def test_globallocal_one_other_clashinglocals(self):
+        # Two cubes with both, second cube has a clashing local attribute.
+        self.run_save_testcase(
+            "userattr",
+            [["valueA", "valueB"], ["valueA", "valueXXX"]],
+            expect_warnings=[],
+        )
+        # N.B. legacy code sees only the locals.
+        self.check_save_results([None, "valueB", "valueXXX"])
