@@ -2826,7 +2826,8 @@ def save(
             for attrname in global_names
             if not all(
                 attr_values_equal(
-                    cube.attributes[attrname], cube0.attributes[attrname]
+                    cube.attributes.globals.get(attrname),
+                    cube0.attributes.globals.get(attrname),
                 )
                 for cube in cubes[1:]
             )
@@ -2834,7 +2835,7 @@ def save(
 
         # Establish all the global attributes which we will write to the file (at end).
         global_attributes = {
-            attr: cube0.attributes.globals[attr]
+            attr: cube0.attributes.globals.get(attr)
             for attr in global_names
             if attr not in invalid_globals
         }
@@ -2842,7 +2843,7 @@ def save(
             # Some cubes have different global attributes: modify cubes as required.
             warnings.warn(
                 f"Saving the cube global attributes {invalid_globals} as local"
-                "(i.e. data-variable) attributes, where possible, since they are not '"
+                "(i.e. data-variable) attributes, where possible, since they are not "
                 "the same on all input cubes."
             )
             cubes = list(cubes)  # avoiding modifying the actual input arg.
