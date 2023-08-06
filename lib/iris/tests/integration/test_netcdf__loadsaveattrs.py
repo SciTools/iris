@@ -76,7 +76,7 @@ def local_attr(request):
 
 
 def check_captured_warnings(
-    expected_keys: List[str], captured_warnings: List[warnings]
+    expected_keys: List[str], captured_warnings: List[warnings.WarningMessage]
 ):
     if expected_keys is None:
         expected_keys = []
