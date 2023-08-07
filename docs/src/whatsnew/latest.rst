@@ -40,7 +40,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@acchamber`_ fixed a bug with :func:`~iris.util.unify_time_units` so it does not block
+   concatenation through different data types in rare instances. (:pull:`5372`) 
 
 
 💣 Incompatible Changes
