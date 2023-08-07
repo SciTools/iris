@@ -294,7 +294,9 @@ html_theme_options = {
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,
-    "navbar_align": "content",
+    "navbar_align": "left",
+    # TODO: review if 6 links is too crowded.
+    "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
     "twitter_url": "https://twitter.com/scitools_iris",
     # icons available: https://fontawesome.com/v5.15/icons?d=gallery&m=free
