@@ -70,7 +70,7 @@ variables:
 	float datavar(Mesh2_layers, nMesh2_face) ;
 		datavar:mesh = "Mesh2" ;
 		datavar:location = "face" ;
-		datavar:coordinates = "Mesh2_depth Mesh2_surface" ;
+		datavar:coordinates = "Mesh2_depth Mesh2_face_x Mesh2_face_y Mesh2_surface" ;
 	double Mesh2_layers(Mesh2_layers) ;
 		Mesh2_layers:axis = "Z" ;
 		Mesh2_layers:units = "1" ;
