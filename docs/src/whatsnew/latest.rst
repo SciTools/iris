@@ -45,6 +45,9 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
+#. `@acchamber`_ fixed a bug with :func:`~iris.util.unify_time_units` so it does not block
+   concatenation through different data types in rare instances. (:pull:`5372`) 
+
 #. `@acchamber`_ removed some obsolete code that prevented extraction of time points
    from cubes with bounded times (:pull:`5175`)
 
