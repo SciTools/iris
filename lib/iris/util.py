@@ -1472,7 +1472,7 @@ def unify_time_units(cubes):
     cubes in a given iterable. One common epoch is defined for each calendar
     found in the cubes to prevent units being defined with inconsistencies
     between epoch and calendar. During this process, all time coordinates have
-    their data type converted to 64-bit floats.
+    their data type converted to 64-bit floats to allow for smooth concatenation.
 
     Each epoch is defined from the first suitable time coordinate found in the
     input cubes.
