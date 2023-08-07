@@ -339,7 +339,8 @@ class MixinAttrsTesting:
                     if attr_name in ds.ncattrs()
                     else None
                 )
-                # Fetch local attr value from all data variables (except dimcoord vars)
+                # Fetch local attr value from all data variables :  In our testcases,
+                # that is all *except* dimcoords (ones named after dimensions).
                 local_vars_results = [
                     (
                         var.name,
@@ -688,11 +689,6 @@ class TestRoundtrip(MixinAttrsTesting):
         self.run_roundtrip_testcase(
             attr_name=global_attr, values=[[attrval, None], [attrval, None]]
         )
-        #     # The attribute remains as a common global setting
-        #     global_attr_value=attrval,
-        #     # The individual variables do *not* have an attribute of this name
-        #     var_attr_vals={"v1": None, "v2": None},
-        # )
         self.check_roundtrip_results([attrval, None, None])
 
     #######################################################

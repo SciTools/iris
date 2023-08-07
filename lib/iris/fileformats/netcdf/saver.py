@@ -637,6 +637,9 @@ class Saver:
             3 files that do not use HDF5.
 
         """
+        # TODO: when iris.FUTURE.save_split_attrs defaults to True, we can deprecate the
+        #  "local_keys" arg, and finally remove it when we finally remove the
+        #  save_split_attrs switch.
         if unlimited_dimensions is None:
             unlimited_dimensions = []
 
@@ -785,7 +788,7 @@ class Saver:
             CF global attributes to be updated.
 
         """
-        # TODO: when we no longer support combined attribute saving, this routine will
+        # TODO: when when iris.FUTURE.save_split_attrs is removed, this routine will
         # only be called once: it can reasonably be renamed "_set_global_attributes",
         # and the 'kwargs' argument can be removed.
         if attributes is not None:
@@ -2205,6 +2208,8 @@ class Saver:
         """
         Create CF-netCDF data variable for the cube and any associated grid
         mapping.
+        # TODO: when iris.FUTURE.save_split_attrs is removed, the 'local_keys' arg can
+        # be removed.
 
         Args:
 
@@ -2616,12 +2621,12 @@ def save(
     Save cube(s) to a netCDF file, given the cube and the filename.
 
     * Iris will write CF 1.7 compliant NetCDF files.
-    * If **split-attribute saving is disabled**, i.e.
-      :attr:`iris.FUTURE.save_split_attrs` is ``False``, then attributes dictionaries
-      on each cube in the saved cube list will be compared and common attributes saved
-      as NetCDF global attributes where appropriate.
+    * **If split-attribute saving is disabled**, i.e.
+      :data:`iris.FUTURE`\\ ``.save_split_attrs`` is ``False``, then attributes
+      dictionaries on each cube in the saved cube list will be compared, and common
+      attributes saved as NetCDF global attributes where appropriate.
 
-      Or, **when **split-attribute saving is enabled**, then `cube.attributes.locals``
+      Or, **when split-attribute saving is enabled**, then `cube.attributes.locals``
       are always saved as attributes of data-variables, and ``cube.attributes.globals``
       are saved as global (dataset) attributes, where possible.
       Since the 2 types are now distinguished : see :class:`~iris.cube.CubeAttrsDict`.
@@ -2797,6 +2802,15 @@ def save(
     else:
         cubes = cube
 
+    # Decide which cube attributes will be saved as "global" attributes
+    # NOTE: in 'legacy' mode, when iris.FUTURE.save_split_attrs == False, this code
+    # section derives a common value for 'local_keys', which is passed to 'Saver.write'
+    # when saving each input cube.  The global attributes are then created by a call
+    # to "Saver.update_global_attributes" within each 'Saver.write' call (which is
+    # obviously a bit redundant!), plus an extra one to add 'Conventions'.
+    # HOWEVER, in `split_attrs` mode (iris.FUTURE.save_split_attrs == False), this code
+    # instead constructs a 'global_attributes' dictionary, and outputs that just once,
+    # after writing all the input cubes.
     if iris.FUTURE.save_split_attrs:
         # We don't actually use 'local_keys' in this case.
         # TODO: can remove this when the iris.FUTURE.save_split_attrs is removed.
@@ -2846,7 +2860,7 @@ def save(
                 "(i.e. data-variable) attributes, where possible, since they are not "
                 "the same on all input cubes."
             )
-            cubes = list(cubes)  # avoiding modifying the actual input arg.
+            cubes = cubes.copy()  # avoiding modifying the actual input arg.
             for i_cube in range(len(cubes)):
                 # We iterate over cube *index*, so we can replace the list entries with
                 # with cube *copies* -- just to avoid changing our call args.
@@ -2870,7 +2884,7 @@ def save(
                     if blocked_attrs:
                         warnings.warn(
                             f"Global cube attributes {blocked_attrs} "
-                            f'of cube "{cube.name()}" have been lost, overlaid '
+                            f'of cube "{cube.name()}" were not saved, overlaid '
                             "by existing local attributes with the same names."
                         )
                     for attr in demote_attrs:
@@ -2884,15 +2898,26 @@ def save(
         # Determine the attribute keys that are common across all cubes and
         # thereby extend the collection of local_keys for attributes
         # that should be attributes on data variables.
-        # NOTE: in 'legacy' mode, this code derives a common value for 'local_keys', which
-        # is employed in saving each cube.
-        # However, in `split_attrs` mode, this considers ONLY global attributes, and the
-        # resulting 'common_keys' is the fixed result : each cube is then saved like ...
-        # "sman.write(... localkeys=list(cube.attributes) - common_keys, ...)"
         if local_keys is None:
             local_keys = set()
         else:
             local_keys = set(local_keys)
+
+        # Determine the attribute keys that are common across all cubes and
+        # thereby extend the collection of local_keys for attributes
+        # that should be attributes on data variables.
+        attributes = cubes[0].attributes
+        common_keys = set(attributes)
+        for cube in cubes[1:]:
+            keys = set(cube.attributes)
+            local_keys.update(keys.symmetric_difference(common_keys))
+            common_keys.intersection_update(keys)
+            different_value_keys = []
+            for key in common_keys:
+                if np.any(attributes[key] != cube.attributes[key]):
+                    different_value_keys.append(key)
+            common_keys.difference_update(different_value_keys)
+            local_keys.update(different_value_keys)
 
         common_attr_values = None
         for cube in cubes:
