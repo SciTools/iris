@@ -2835,28 +2835,29 @@ def save(
             return match
 
         cube0 = cubes[0]
-        invalid_globals = [
-            attrname
-            for attrname in global_names
-            if not all(
-                attr_values_equal(
-                    cube.attributes.globals.get(attrname),
-                    cube0.attributes.globals.get(attrname),
+        invalid_globals = set(
+            [
+                attrname
+                for attrname in global_names
+                if not all(
+                    attr_values_equal(
+                        cube.attributes.globals.get(attrname),
+                        cube0.attributes.globals.get(attrname),
+                    )
+                    for cube in cubes[1:]
                 )
-                for cube in cubes[1:]
-            )
-        ]
+            ]
+        )
 
         # Establish all the global attributes which we will write to the file (at end).
         global_attributes = {
             attr: cube0.attributes.globals.get(attr)
-            for attr in global_names
-            if attr not in invalid_globals
+            for attr in global_names - invalid_globals
         }
         if invalid_globals:
             # Some cubes have different global attributes: modify cubes as required.
             warnings.warn(
-                f"Saving the cube global attributes {invalid_globals} as local "
+                f"Saving the cube global attributes {sorted(invalid_globals)} as local "
                 "(i.e. data-variable) attributes, where possible, since they are not "
                 "the same on all input cubes."
             )
@@ -2865,32 +2866,26 @@ def save(
                 # We iterate over cube *index*, so we can replace the list entries with
                 # with cube *copies* -- just to avoid changing our call args.
                 cube = cubes[i_cube]
-                demote_attrs = [
-                    attr
-                    for attr in cube.attributes.globals
-                    if attr in invalid_globals
-                ]
+                demote_attrs = set(cube.attributes.globals) & invalid_globals
                 if any(demote_attrs):
-                    # This cube contains some 'demoted' global attributes.
-                    # Replace the input cube with a copy, so we can modify attributes.
-                    cube = cube.copy()
-                    cubes[i_cube] = cube
                     # Catch any demoted attrs where there is already a local version
-                    blocked_attrs = [
-                        attrname
-                        for attrname in demote_attrs
-                        if attrname in cube.attributes.locals
-                    ]
+                    blocked_attrs = demote_attrs & set(cube.attributes.locals)
                     if blocked_attrs:
                         warnings.warn(
-                            f"Global cube attributes {blocked_attrs} "
+                            f"Global cube attributes {sorted(blocked_attrs)} "
                             f'of cube "{cube.name()}" were not saved, overlaid '
                             "by existing local attributes with the same names."
                         )
-                    for attr in set(demote_attrs) - set(blocked_attrs):
-                        # move global to local
-                        value = cube.attributes.globals.pop(attr)
-                        cube.attributes.locals[attr] = value
+                    demote_attrs -= blocked_attrs
+                    if demote_attrs:
+                        # This cube contains some 'demoted' global attributes.
+                        # Replace input cube with a copy, so we can modify attributes.
+                        cube = cube.copy()
+                        cubes[i_cube] = cube
+                        for attr in demote_attrs:
+                            # move global to local
+                            value = cube.attributes.globals.pop(attr)
+                            cube.attributes.locals[attr] = value
 
     else:
         # Legacy mode: calculate "local_keys" to control which attributes are local
