@@ -844,6 +844,9 @@ class CubeAttrsDict(MutableMapping):
 
     """
 
+    # TODO: Create a 'further topic' / 'tech paper' on NetCDF I/O, including
+    #  discussion of attribute handling.
+
     def __init__(
         self,
         combined: Optional[Union[Mapping, str]] = "__unspecified",
