@@ -82,7 +82,8 @@ def check_captured_warnings(
     Compare captured warning messages with a list of regexp-matches.
 
     We allow them to occur in any order, and replace each actual result in the list
-    with the matching regexp as this makes failure reports much easier to comprehend.
+    with its matching regexp, if any, as this makes failure results much easier to
+    comprehend.
 
     """
     if expected_keys is None:
@@ -94,16 +95,16 @@ def check_captured_warnings(
     found_results = [str(warning.message) for warning in captured_warnings]
     remaining_keys = expected_keys.copy()
     for i_message, message in enumerate(found_results.copy()):
-        i_found = None
-        for i_key, key in enumerate(remaining_keys):
+        for key in remaining_keys:
             if key.search(message):
-                # Hit : remove one + only one matching warning from the list
-                i_found = i_message
+                # Hit : replace one message in the list with its matching "key"
+                found_results[i_message] = key
+                # remove the matching key
+                remaining_keys.remove(key)
+                # skip on to next message
                 break
-        if i_found is not None:
-            found_results[i_found] = key
-            remaining_keys.remove(key)
-    assert found_results == expected_keys
+
+    assert set(found_results) == set(expected_keys)
 
 
 class MixinAttrsTesting:
