@@ -2626,7 +2626,7 @@ def save(
       dictionaries on each cube in the saved cube list will be compared, and common
       attributes saved as NetCDF global attributes where appropriate.
 
-      Or, **when split-attribute saving is enabled**, then `cube.attributes.locals``
+      Or, **when split-attribute saving is enabled**, then ``cube.attributes.locals``
       are always saved as attributes of data-variables, and ``cube.attributes.globals``
       are saved as global (dataset) attributes, where possible.
       Since the 2 types are now distinguished : see :class:`~iris.cube.CubeAttrsDict`.
@@ -2887,12 +2887,10 @@ def save(
                             f'of cube "{cube.name()}" were not saved, overlaid '
                             "by existing local attributes with the same names."
                         )
-                    for attr in demote_attrs:
-                        if attr not in blocked_attrs:
-                            cube.attributes.locals[
-                                attr
-                            ] = cube.attributes.globals[attr]
-                        cube.attributes.globals.pop(attr)
+                    for attr in set(demote_attrs) - set(blocked_attrs):
+                        # move global to local
+                        value = cube.attributes.globals.pop(attr)
+                        cube.attributes.locals[attr] = value
 
     else:
         # Determine the attribute keys that are common across all cubes and

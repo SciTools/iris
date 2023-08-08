@@ -1250,7 +1250,7 @@ class TestSave(MixinAttrsTesting):
         if do_split:
             expected = [None, "value", "value"]
             expected_warning = (
-                "Saving the cube global attributes \\['userattr'\\] as local"
+                r"Saving the cube global attributes \['userattr'\] as local"
             )
         else:
             # N.B. legacy code sees only two equal values (and promotes).
@@ -1266,7 +1266,7 @@ class TestSave(MixinAttrsTesting):
         )
         if do_split:
             warning = (
-                "Saving the cube global attributes \\['userattr'\\] as local"
+                r"Saving the cube global attributes \['userattr'\] as local"
             )
         else:
             # N.B. legacy code does not warn of global-to-local "demotion".
