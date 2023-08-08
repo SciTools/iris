@@ -825,6 +825,7 @@ class CubeAttrsDict(MutableMapping):
 
         >>> from iris.cube import Cube
         >>> cube = Cube([0])
+        >>> # CF defines 'history' as global by default.
         >>> cube.attributes.update({"history": "from test-123", "mycode": 3})
         >>> print(cube.attributes)
         {'history': 'from test-123', 'mycode': 3}
@@ -878,6 +879,7 @@ class CubeAttrsDict(MutableMapping):
         --------
 
             >>> from iris.cube import CubeAttrsDict
+            >>> # CF defines 'history' as global by default.
             >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
             CubeAttrsDict(globals={'history': 'data-story'}, locals={'comment': 'this-cube'})
 
