@@ -854,7 +854,7 @@ class CubeAttrsDict(MutableMapping):
         Create a cube attributes dictionary.
 
         We support initialisation from a single generic mapping input, using the default
-        global/local assignment rules explained at :meth:`__setatrr__`, or from
+        global/local assignment rules explained at :meth:`__setattr__`, or from
         two separate mappings.  Two separate dicts can be passed in the ``locals``
         and ``globals`` args, **or** via a ``combined`` arg which has its own
         ``.globals`` and ``.locals`` properties -- so this allows passing an existing
