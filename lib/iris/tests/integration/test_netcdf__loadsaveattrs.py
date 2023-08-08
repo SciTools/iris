@@ -78,6 +78,13 @@ def local_attr(request):
 def check_captured_warnings(
     expected_keys: List[str], captured_warnings: List[warnings.WarningMessage]
 ):
+    """
+    Compare captured warning messages with a list of regexp-matches.
+
+    We allow them to occur in any order, and replace each actual result in the list
+    with the matching regexp as this makes failure reports much easier to comprehend.
+
+    """
     if expected_keys is None:
         expected_keys = []
     elif hasattr(expected_keys, "upper"):
@@ -413,7 +420,7 @@ class TestRoundtrip(MixinAttrsTesting):
         self.save_split_attrs = do_split
         return do_split
 
-    def run_roundtrip_testcase(self, attr_name, values, expect_warnings=None):
+    def run_roundtrip_testcase(self, attr_name, values):
         """
         Initialise the testcase from the passed-in controls, configure the input
         files and run a save-load roundtrip to produce the output file.
@@ -436,9 +443,9 @@ class TestRoundtrip(MixinAttrsTesting):
             with iris.FUTURE.context(save_split_attrs=do_split):
                 iris.save(cubes, self.result_filepath)
 
-        check_captured_warnings(expect_warnings, captured_warnings)
+        self.captured_warnings = captured_warnings
 
-    def check_roundtrip_results(self, expected):
+    def check_roundtrip_results(self, expected, expected_warnings=None):
         """
         Run checks on the generated output file.
 
@@ -447,11 +454,14 @@ class TestRoundtrip(MixinAttrsTesting):
         (variable) attributes.
         Values of 'None' mean to check that the relevant global/local attribute does
         *not* exist.
+
+        Also check the warnings captured during the testcase run.
         """
         # N.B. there is only ever one result-file, but it can contain various variables
         # which came from different input files.
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
+        check_captured_warnings(expected_warnings, self.captured_warnings)
 
     #######################################################
     # Tests on "user-style" attributes.
@@ -514,10 +524,13 @@ class TestRoundtrip(MixinAttrsTesting):
     def test_05_userstyle_matching_crossfile_promoted(self, do_split):
         # matching user-attributes are promoted, even across input files.
         # (but not when saving split attributes)
-        input_values = [
-            ["global_file1", "same-value", "same-value"],
-            [None, "same-value", "same-value"],
-        ]
+        self.run_roundtrip_testcase(
+            attr_name="random",
+            values=[
+                ["global_file1", "same-value", "same-value"],
+                [None, "same-value", "same-value"],
+            ],
+        )
         if do_split:
             # newstyle saves: locals are preserved, mismathced global is *lost*
             expected_result = [
@@ -538,12 +551,7 @@ class TestRoundtrip(MixinAttrsTesting):
             expected_result = ["same-value", None, None, None, None]
             expected_warnings = None
 
-        self.run_roundtrip_testcase(
-            attr_name="random",
-            values=input_values,
-            expect_warnings=expected_warnings,
-        )
-        self.check_roundtrip_results(expected_result)
+        self.check_roundtrip_results(expected_result, expected_warnings)
 
     def test_06_userstyle_nonmatching_remainlocal(self, do_split):
         # Non-matching user attributes remain 'local' to the individual variables.
@@ -601,6 +609,10 @@ class TestRoundtrip(MixinAttrsTesting):
         # Strictly, not correct CF, but let's see what it does with it.
         attr_content = f"Local tracked {global_attr}"
         input_values = [None, attr_content]
+        self.run_roundtrip_testcase(
+            attr_name=global_attr,
+            values=input_values,
+        )
         if do_split:
             # remains local as supplied, but there is a warning
             expected_result = input_values
@@ -609,17 +621,16 @@ class TestRoundtrip(MixinAttrsTesting):
             # promoted to global
             expected_result = [attr_content, None]
             expected_warning = None
-        self.run_roundtrip_testcase(
-            attr_name=global_attr,
-            values=input_values,
-            expect_warnings=expected_warning,
-        )
-        self.check_roundtrip_results(expected_result)
+        self.check_roundtrip_results(expected_result, expected_warning)
 
     def test_11_globalstyle__both(self, global_attr, do_split):
         attr_global = f"Global-{global_attr}"
         attr_local = f"Local-{global_attr}"
         input_values = [attr_global, attr_local]
+        self.run_roundtrip_testcase(
+            attr_name=global_attr,
+            values=input_values,
+        )
         if do_split:
             # remains local as supplied, but there is a warning
             expected_result = input_values
@@ -628,12 +639,7 @@ class TestRoundtrip(MixinAttrsTesting):
             # promoted to global, no local value, original global lost
             expected_result = [attr_local, None]
             expected_warning = None
-        self.run_roundtrip_testcase(
-            attr_name=global_attr,
-            values=input_values,
-            expect_warnings=expected_warning,
-        )
-        self.check_roundtrip_results(expected_result)
+        self.check_roundtrip_results(expected_result, expected_warning)
 
     def test_12_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained, not promoted
@@ -644,14 +650,17 @@ class TestRoundtrip(MixinAttrsTesting):
         self.run_roundtrip_testcase(
             attr_name=global_attr,
             values=[None, attr_1, attr_2],
-            expect_warnings=expect_warning,
         )
-        self.check_roundtrip_results([None, attr_1, attr_2])
+        self.check_roundtrip_results([None, attr_1, attr_2], expect_warning)
 
     def test_13_globalstyle__multivar_same(self, global_attr, do_split):
         # Multiple *same* local settings are promoted to a common global one
         attrval = f"Locally-defined-{global_attr}"
         input_values = [None, attrval, attrval]
+        self.run_roundtrip_testcase(
+            attr_name=global_attr,
+            values=input_values,
+        )
         if do_split:
             # remains local, but with a warning
             expected_warning = "should only be a CF global"
@@ -660,28 +669,22 @@ class TestRoundtrip(MixinAttrsTesting):
             # promoted to global
             expected_warning = None
             expected_result = [attrval, None, None]
-        self.run_roundtrip_testcase(
-            attr_name=global_attr,
-            values=input_values,
-            expect_warnings=expected_warning,
-        )
-        self.check_roundtrip_results(expected_result)
+        self.check_roundtrip_results(expected_result, expected_warning)
 
     def test_14_globalstyle__multifile_different(self, global_attr, do_split):
         # Different global attributes from multiple files are retained as local ones
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
-        # A warning should be raised when writing the result.
-        expect_warnings = ["should only be a CF global attribute"]
-        if do_split:
-            # An extra warning, only when saving with split-attributes.
-            expect_warnings = ["Saving.* as local"] + expect_warnings
         self.run_roundtrip_testcase(
             attr_name=global_attr,
             values=[[attr_1, None], [attr_2, None]],
-            expect_warnings=expect_warnings,
         )
-        self.check_roundtrip_results([None, attr_1, attr_2])
+        # A warning should be raised when writing the result.
+        expected_warnings = ["should only be a CF global attribute"]
+        if do_split:
+            # An extra warning, only when saving with split-attributes.
+            expected_warnings = ["Saving.* as local"] + expected_warnings
+        self.check_roundtrip_results([None, attr_1, attr_2], expected_warnings)
 
     def test_15_globalstyle__multifile_same(self, global_attr):
         # Matching global-type attributes in multiple files are retained as global
@@ -1029,9 +1032,7 @@ class TestSave(MixinAttrsTesting):
         self.save_split_attrs = do_split
         return do_split
 
-    def run_save_testcase(
-        self, attr_name: str, values: list, expect_warnings: List[str] = None
-    ):
+    def run_save_testcase(self, attr_name: str, values: list):
         # Create input cubes.
         self.run_testcase(
             attr_name=attr_name,
@@ -1046,11 +1047,9 @@ class TestSave(MixinAttrsTesting):
             with iris.FUTURE.context(save_split_attrs=do_split):
                 iris.save(self.input_cubes, self.result_filepath)
 
-        check_captured_warnings(expect_warnings, captured_warnings)
+        self.captured_warnings = captured_warnings
 
-    def run_save_testcase_legacytype(
-        self, attr_name: str, values: list, expect_warnings: List[str] = None
-    ):
+    def run_save_testcase_legacytype(self, attr_name: str, values: list):
         """
         Legacy-type means : before cubes had split attributes.
 
@@ -1061,11 +1060,14 @@ class TestSave(MixinAttrsTesting):
             # Translate single input value to list-of-1
             values = [values]
 
-        self.run_save_testcase(attr_name, [None] + values, expect_warnings)
+        self.run_save_testcase(attr_name, [None] + values)
 
-    def check_save_results(self, expected: list):
+    def check_save_results(
+        self, expected: list, expected_warnings: List[str] = None
+    ):
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
+        check_captured_warnings(expected_warnings, self.captured_warnings)
 
     def test_userstyle__single(self, do_split):
         self.run_save_testcase_legacytype("random", "value-x")
@@ -1097,10 +1099,12 @@ class TestSave(MixinAttrsTesting):
         self.run_save_testcase_legacytype(
             global_attr,
             ["value", None],
-            expect_warnings="should only be a CF global attribute",
         )
         # Stored as locals when there are differing values.
-        self.check_save_results([None, "value", None])
+        self.check_save_results(
+            [None, "value", None],
+            expected_warnings="should only be a CF global attribute",
+        )
 
     def test_Conventions__single(self):
         self.run_save_testcase_legacytype("Conventions", "x")
@@ -1122,6 +1126,7 @@ class TestSave(MixinAttrsTesting):
         self.check_save_results(["CF-1.7", None, None])
 
     def test_globalstyle__single(self, global_attr, do_split):
+        self.run_save_testcase_legacytype(global_attr, ["value"])
         if do_split:
             # result as input values
             expected_warning = "should only be a CF global"
@@ -1130,52 +1135,49 @@ class TestSave(MixinAttrsTesting):
             # in legacy mode, promoted
             expected_warning = None
             expected_result = ["value", None]
-
-        self.run_save_testcase_legacytype(
-            global_attr, ["value"], expect_warnings=expected_warning
-        )
-        self.check_save_results(expected_result)
+        self.check_save_results(expected_result, expected_warning)
 
     def test_globalstyle__multiple_same(self, global_attr, do_split):
         # Multiple global-type with same values are made global.
-        if do_split:
-            # result as input values
-            expected_warning = "should only be a CF global attribute"
-            expected_result = [None, "value-same", "value-same"]
-        else:
-            # in legacy mode, promoted
-            expected_warning = None
-            expected_result = ["value-same", None, None]
         self.run_save_testcase_legacytype(
             global_attr,
             ["value-same", "value-same"],
-            expect_warnings=expected_warning,
         )
-        self.check_save_results(expected_result)
+        if do_split:
+            # result as input values
+            expected_result = [None, "value-same", "value-same"]
+            expected_warning = "should only be a CF global attribute"
+        else:
+            # in legacy mode, promoted
+            expected_result = ["value-same", None, None]
+            expected_warning = None
+        self.check_save_results(expected_result, expected_warning)
 
     def test_globalstyle__multiple_different(self, global_attr):
         # Multiple global-type with different values become local, with warning.
+        self.run_save_testcase_legacytype(global_attr, ["value-A", "value-B"])
+        # *Only* stored as locals when there are differing values.
         msg_regexp = (
             f"'{global_attr}' is being added as CF data variable attribute,"
             f".* should only be a CF global attribute."
         )
-        self.run_save_testcase_legacytype(
-            global_attr, ["value-A", "value-B"], expect_warnings=msg_regexp
+        self.check_save_results(
+            [None, "value-A", "value-B"], expected_warnings=msg_regexp
         )
-        # *Only* stored as locals when there are differing values.
-        self.check_save_results([None, "value-A", "value-B"])
 
     def test_globalstyle__multiple_onemissing(self, global_attr):
         # Multiple global-type, with one missing, behave like different values.
+        self.run_save_testcase_legacytype(
+            global_attr, ["value", "value", None]
+        )
+        # Stored as locals when there are differing values.
         msg_regexp = (
             f"'{global_attr}' is being added as CF data variable attribute,"
             f".* should only be a CF global attribute."
         )
-        self.run_save_testcase_legacytype(
-            global_attr, ["value", "value", None], expect_warnings=msg_regexp
+        self.check_save_results(
+            [None, "value", "value", None], expected_warnings=msg_regexp
         )
-        # Stored as locals when there are differing values.
-        self.check_save_results([None, "value", "value", None])
 
     def test_localstyle__single(self, local_attr):
         self.run_save_testcase_legacytype(local_attr, ["value"])
@@ -1234,7 +1236,7 @@ class TestSave(MixinAttrsTesting):
     def test_globallocal_clashing(self, do_split):
         # A cube has clashing local + global attrs.
         original_values = ["valueA", "valueB"]
-        self.run_save_testcase("userattr", original_values, expect_warnings=[])
+        self.run_save_testcase("userattr", original_values)
         expected_result = original_values.copy()
         if not do_split:
             # in legacy mode, "promote" = lose the local one
@@ -1244,25 +1246,26 @@ class TestSave(MixinAttrsTesting):
 
     def test_globallocal_oneeach_same(self, do_split):
         # One cube with global attr, another with identical local one.
-        inputs = [[None, "value"], ["value", None]]
+        self.run_save_testcase(
+            "userattr", values=[[None, "value"], ["value", None]]
+        )
         if do_split:
             expected = [None, "value", "value"]
-            warning = (
+            expected_warning = (
                 "Saving the cube global attributes \\['userattr'\\] as local"
             )
         else:
             # N.B. legacy code sees only two equal values (and promotes).
             expected = ["value", None, None]
-            warning = None
+            expected_warning = None
 
-        self.run_save_testcase(
-            "userattr", values=inputs, expect_warnings=warning
-        )
-        self.check_save_results(expected)
+        self.check_save_results(expected, expected_warning)
 
     def test_globallocal_oneeach_different(self, do_split):
         # One cube with global attr, another with a *different* local one.
-        inputs = [[None, "valueA"], ["valueB", None]]
+        self.run_save_testcase(
+            "userattr", [[None, "valueA"], ["valueB", None]]
+        )
         if do_split:
             warning = (
                 "Saving the cube global attributes \\['userattr'\\] as local"
@@ -1270,12 +1273,14 @@ class TestSave(MixinAttrsTesting):
         else:
             # N.B. legacy code does not warn of global-to-local "demotion".
             warning = None
-        self.run_save_testcase("userattr", inputs, expect_warnings=warning)
-        self.check_save_results([None, "valueA", "valueB"])
+        self.check_save_results([None, "valueA", "valueB"], warning)
 
     def test_globallocal_one_other_clashingglobals(self, do_split):
         # Two cubes with both, second cube has a clashing global attribute.
-        inputs = [["valueA", "valueB"], ["valueXXX", "valueB"]]
+        self.run_save_testcase(
+            "userattr",
+            values=[["valueA", "valueB"], ["valueXXX", "valueB"]],
+        )
         if do_split:
             expected = [None, "valueB", "valueB"]
             expected_warnings = [
@@ -1287,12 +1292,7 @@ class TestSave(MixinAttrsTesting):
             # N.B. legacy code sees only the locals, and promotes them.
             expected = ["valueB", None, None]
             expected_warnings = None
-        self.run_save_testcase(
-            "userattr",
-            values=inputs,
-            expect_warnings=expected_warnings,
-        )
-        self.check_save_results(expected)
+        self.check_save_results(expected, expected_warnings)
 
     def test_globallocal_one_other_clashinglocals(self, do_split):
         # Two cubes with both, second cube has a clashing local attribute.
