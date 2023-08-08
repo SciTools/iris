@@ -1095,17 +1095,14 @@ class TestSave(MixinAttrsTesting):
         self.run_save_testcase_legacytype("random", ["value-A", "value-B"])
         self.check_save_results([None, "value-A", "value-B"])
 
-    def test_userstyle__multiple_onemissing(self, global_attr):
+    def test_userstyle__multiple_onemissing(self):
         # Multiple user-type, with one missing, behave like different values.
         self.run_save_testcase_legacytype(
-            global_attr,
+            "random",
             ["value", None],
         )
         # Stored as locals when there are differing values.
-        self.check_save_results(
-            [None, "value", None],
-            expected_warnings="should only be a CF global attribute",
-        )
+        self.check_save_results([None, "value", None])
 
     def test_Conventions__single(self):
         self.run_save_testcase_legacytype("Conventions", "x")
