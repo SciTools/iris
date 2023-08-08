@@ -530,8 +530,8 @@ class TestRoundtrip(MixinAttrsTesting):
             # warnings about the clash
             expected_warnings = [
                 "Saving.* global attributes.* as local",
-                'attributes.* of cube "var_0" have been lost',
-                'attributes.* of cube "var_1" have been lost',
+                'attributes.* of cube "var_0" were not saved',
+                'attributes.* of cube "var_1" were not saved',
             ]
         else:
             # oldstyle saves: matching locals promoted, override original global
@@ -1280,8 +1280,8 @@ class TestSave(MixinAttrsTesting):
             expected = [None, "valueB", "valueB"]
             expected_warnings = [
                 "Saving.* global attributes.* as local",
-                'attributes.* of cube "v1" have been lost',
-                'attributes.* of cube "v2" have been lost',
+                'attributes.* of cube "v1" were not saved',
+                'attributes.* of cube "v2" were not saved',
             ]
         else:
             # N.B. legacy code sees only the locals, and promotes them.
