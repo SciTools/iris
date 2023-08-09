@@ -50,6 +50,9 @@ This document explains the changes made to Iris for this release
 
 #. `@acchamber`_ removed some obsolete code that prevented extraction of time points
    from cubes with bounded times (:pull:`5175`)
+   
+#. `@rcomer`_ modified pp-loading to avoid a ``cftime`` warning for non-standard
+   calendars. (:pull:`5357`)
 
 
 💣 Incompatible Changes
