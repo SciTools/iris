@@ -140,6 +140,97 @@ class _NamedTupleMeta(ABCMeta):
         return super().__new__(mcs, name, bases, namespace)
 
 
+#
+# "Extended" dictionary access, for dict-like operations which work with regular dicts,
+#  but in specific extended ways for 'CubeAttrsDict' style split dictionaries
+#
+# The idea here is to convert a split-dictionary into a "plain" one for calculations,
+#  whose keys are all pairs of the form ('global', <keyname>) or ('local', <keyname>).
+# And to convert back again after the operation, if the result is a dictionary.
+# For "strict" operations this probably does all that is needed.  For lenient ones,
+#  it's not so clear whether local+global keys with the same attribute name "should",
+#  in some cases, affect one another in some ways
+#
+def xd_is_split(dic):
+    """Detect whether a dictionary is a "split-attribute" type."""
+    return hasattr(dic, "globals") and hasattr(dic, "locals")
+
+
+def _global_local_items(dic):
+    for key, value in dic.globals.items():
+        yield ("global", key), value
+    for key, value in dic.locals.items():
+        yield ("local", key), value
+
+
+def xd_to_normal(dic):
+    """
+    Convert the input to a 'normal' dict with paired keys, if it is split-attrs type
+    """
+    if xd_is_split(dic):
+        result = dict(_global_local_items(dic))
+    else:
+        result = dic
+    return result
+
+
+def xd_from_normal(dic):
+    """
+    Convert the input to a split-attrs dict, if it has global//local paired keys.
+    """
+    result = dic
+    is_first_key = True
+    for key, value in dic.items():
+        if is_first_key:
+            if (
+                isinstance(key, tuple)
+                and len(key) == 2
+                and key[0] in ("global", "local")
+            ):
+                # Input passes a "duck type" test for being a split dictionary.
+                # For now at least, this can *only* be a CubeAttrsDict.
+                from iris.cube import CubeAttrsDict
+
+                # produce a split result
+                result = CubeAttrsDict()
+                # expect all keys to be 'split type'
+                is_first_key = False
+            else:
+                # Input is a "normal" dict : return it unchanged
+                break
+
+        # From here on, we are converting items to a 'split' dict.
+        # Assign the items with paired keys into global+local parts.
+        keytype, keyname = key
+        if keytype == "global":
+            result.globals[keyname] = value
+        else:
+            assert keytype == "local"
+            result.locals[keyname] = value
+
+    return result
+
+
+def xd_normalise_input_pair(left, right):
+    """Work out whether inputs are "split" type, and convert if so."""
+    is_split = xd_is_split(left)
+    if is_split:
+        assert xd_is_split(right)
+        left = xd_to_normal(left)
+        right = xd_to_normal(right)
+    else:
+        assert not xd_is_split(right)
+
+    return is_split, left, right
+
+
+def xd_reconvert_output(is_split, result):
+    """Re-form a 'split dict' result from a dict with paired keys, if needed."""
+    if is_split:
+        result = xd_from_normal(result)
+    return result
+
+
 class BaseMetadata(metaclass=_NamedTupleMeta):
     """
     Container for common metadata.
@@ -370,9 +461,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _combine_lenient_attributes(left, right):
         """Leniently combine the dictionary members together."""
-        # Copy the dictionaries.
+        # Copy the dictionaries, convert from split form if required
         left = deepcopy(left)
         right = deepcopy(right)
+        is_split, left, right = xd_normalise_input_pair(left, right)
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
@@ -393,15 +485,17 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         result = {k: left[k] for k, _ in common}
         result.update({k: left[k] for k in dsleft.keys()})
         result.update({k: right[k] for k in dsright.keys()})
-
+        # Convert result back to split-attrs dict, if original inputs were
+        result = xd_reconvert_output(is_split, result)
         return result
 
     @staticmethod
     def _combine_strict_attributes(left, right):
         """Perform strict combination of the dictionary members."""
-        # Copy the dictionaries.
+        # Copy the dictionaries, convert from split form if required
         left = deepcopy(left)
         right = deepcopy(right)
+        is_split, left, right = xd_normalise_input_pair(left, right)
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
@@ -411,7 +505,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         common = sleft & sright
         # Now bring the result together.
         result = {k: left[k] for k, _ in common}
-
+        # Convert result back to split-attrs dict, if original inputs were
+        result = xd_reconvert_output(is_split, result)
         return result
 
     def _compare_lenient(self, other):
@@ -464,6 +559,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
+
+        # Convert from split if required --> i.e. all distinct keys (global+local)
+        _, left, right = xd_normalise_input_pair(left, right)
+        # TODO: ?maybe? global + local versions of an attr SHOULD conflict
+        #  -- this way treats them as entirely separate entries, for now.
+
         sleft = {(k, hexdigest(v)) for k, v in left.items()}
         sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
@@ -472,7 +573,6 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         dsright = dict(sright - sleft)
         # Intersection of common item keys with different values.
         keys = set(dsleft.keys()) & set(dsright.keys())
-
         return not bool(keys)
 
     @staticmethod
@@ -481,6 +581,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
+
+        # Convert from split if required --> i.e. all distinct keys (global+local)
+        _, left, right = xd_normalise_input_pair(left, right)
+
         sleft = {(k, hexdigest(v)) for k, v in left.items()}
         sright = {(k, hexdigest(v)) for k, v in right.items()}
 
@@ -550,6 +654,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
+
+        # Convert from split if required --> i.e. all distinct keys (global+local)
+        is_split, left, right = xd_normalise_input_pair(left, right)
+        # TODO: ?maybe? consider if we flag different global+local values of a
+        #  given attr (name).  BUT not clear how we would report that, anyway.
+
         sleft = {(k, hexdigest(v)) for k, v in left.items()}
         sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
@@ -568,6 +678,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             # Replace hash-rvalue with original rvalue.
             dsleft = {k: left[k] for k in dsleft.keys()}
             dsright = {k: right[k] for k in dsright.keys()}
+            if is_split:
+                # Convert results back to split-attrs dicts, if originals were.
+                dsleft, dsright = (
+                    xd_from_normal(dic) for dic in (dsleft, dsright)
+                )
             result = (dsleft, dsright)
 
         return result
@@ -578,6 +693,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
+
+        # Convert from split if required --> i.e. all distinct keys (global+local)
+        is_split, left, right = xd_normalise_input_pair(left, right)
+
         sleft = {(k, hexdigest(v)) for k, v in left.items()}
         sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
@@ -591,6 +710,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             # Replace hash-rvalue with original rvalue.
             dsleft = {k: left[k] for k in dsleft.keys()}
             dsright = {k: right[k] for k in dsright.keys()}
+            if is_split:
+                # Convert results back to split-attrs dicts, if originals were.
+                dsleft, dsright = (
+                    xd_from_normal(dic) for dic in (dsleft, dsright)
+                )
             result = (dsleft, dsright)
 
         return result
