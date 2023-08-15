@@ -94,6 +94,9 @@ This document explains the changes made to Iris for this release
    and :meth:`~iris.coords.Coord.convert_units` by including a link to the UDUNITS-2
    documentation which contains lists of compatible units and aliases for them.
 
+#. `@rcomer`_ updated the :ref:`Installation Guide<installing_iris>` to reflect
+   that some things are now simpler.  (:pull:`5416`)
+
 💼 Internal
 ===========
 
