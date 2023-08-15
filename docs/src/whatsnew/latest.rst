@@ -41,6 +41,10 @@ This document explains the changes made to Iris for this release
    the data variable's ``coordinates`` attribute when saving to NetCDF.
    (:issue:`5206`, :pull:`5389`)
 
+#. `@pp-mo`_ record the release version of the standard-names table, and provide as
+   ``iris.std_names.CF_STANDARD_NAMES_TABLE_VERSION``.
+   (:pull:`5423`)
+
 
 🐛 Bugs Fixed
 =============
