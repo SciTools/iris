@@ -71,7 +71,7 @@ This document explains the changes made to Iris for this release
 ===========================
 
 #. `@rcomer`_ made :meth:`~iris.cube.Cube.aggregated_by` faster. (:pull:`4970`)
-#. `@rsdavies`_ modified the CF compliant standard name for m01s00i023 :issue:`4566`
+#. `@rsdavies`_ modified the CF compliant standard name for m01s00i023 (:issue:`4566`)
 
 🔥 Deprecations
 ===============
@@ -94,11 +94,13 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ added a :doc:`/further_topics/dask_best_practices/index`
    section into the user guide, containing advice and use cases to help users
-   get the best out of Dask with Iris.
+   get the best out of Dask with Iris.  (:pull:`5190`)
 
 #. `@acchamber`_ improved documentation for :meth:`~iris.cube.Cube.convert_units`
    and :meth:`~iris.coords.Coord.convert_units` by including a link to the UDUNITS-2
    documentation which contains lists of compatible units and aliases for them.
+  (:pull:`5388`)
+
 
 #. `@rcomer`_ updated the :ref:`Installation Guide<installing_iris>` to reflect
    that some things are now simpler.  (:pull:`5416`)
@@ -109,7 +111,7 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ supported loading and saving netcdf :class:`netCDF4.Dataset` compatible
    objects in place of file-paths, as hooks for a forthcoming
    `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
-   (:pull:`5214`)
+   (:pull:`5214`, :pull:`5212`)
 
 #. `@rcomer`_ updated :func:`~iris.plot.contourf` to avoid using functionality
    that is deprecated in Matplotlib v3.8 (:pull:`5405`)
