@@ -1,23 +1,22 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+v3.7 (16 Aug 2023) [release candidate]
+**************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: v3.7 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
    :open:
 
-   The highlights for this major/minor release of Iris include:
+   There are no major highlights for this release of Iris, but a selection of various
+   bug-fixes, features and improvements.  Please see below.
 
-   * N/A
-
-   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
+   Please do get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
 
 
@@ -99,7 +98,7 @@ This document explains the changes made to Iris for this release
 #. `@acchamber`_ improved documentation for :meth:`~iris.cube.Cube.convert_units`
    and :meth:`~iris.coords.Coord.convert_units` by including a link to the UDUNITS-2
    documentation which contains lists of compatible units and aliases for them.
-  (:pull:`5388`)
+   (:pull:`5388`)
 
 
 #. `@rcomer`_ updated the :ref:`Installation Guide<installing_iris>` to reflect
