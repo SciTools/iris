@@ -21,7 +21,7 @@ from .generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
 class NetcdfSave:
-    params = [[1, 600], [False, True]]
+    params = [[50, 600], [False, True]]
     param_names = ["cubesphere-N", "is_unstructured"]
 
     def setup(self, n_cubesphere, is_unstructured):
