@@ -293,7 +293,7 @@ def _gh_create_reports(
             f"--repo {repo}"
         )
         if assignee:
-            command += f"--assignee {assignee}"
+            command += f" --assignee {assignee}"
         command_path.write_text(command)
 
 
