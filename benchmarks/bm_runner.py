@@ -51,6 +51,7 @@ def _subprocess_runner(args, asv=False, **kwargs):
         args.insert(0, "asv")
         kwargs["cwd"] = BENCHMARKS_DIR
     echo(" ".join(args))
+    kwargs.setdefault("check", True)
     return subprocess.run(args, **kwargs)
 
 
