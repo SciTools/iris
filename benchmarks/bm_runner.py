@@ -39,6 +39,9 @@ def echo(echo_string: str):
 
 
 def _subprocess_runner(args, asv=False, **kwargs):
+    # Avoid permanent modifications if the same arguments are used more than once.
+    args = args.copy()
+    kwargs = kwargs.copy()
     if asv:
         args.insert(0, "asv")
         kwargs["cwd"] = BENCHMARKS_DIR
