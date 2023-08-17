@@ -81,7 +81,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
-          git checkout ${{ github.head_ref }}
           python benchmarks/bm_runner.py branch origin/${{ github.base_ref }}
 
       - name: Run overnight benchmarks
