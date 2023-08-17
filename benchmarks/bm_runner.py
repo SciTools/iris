@@ -344,7 +344,7 @@ class _SubParserGenerator(ABC):
         self.subparser.add_argument(
             "asv_args",
             nargs=argparse.REMAINDER,
-            help="Any number of arguments to pass down to ASV.",
+            help="Any number of arguments to pass down to the ASV benchmark command.",
         )
 
     @staticmethod
@@ -364,10 +364,11 @@ class Overnight(_SubParserGenerator):
     name = "overnight"
     description = (
         "Benchmarks all commits between the input **first_commit** to ``HEAD``, "
-        "comparing each to its parent for performance shifts. If running on"
+        "comparing each to its parent for performance shifts. If running on "
         "GitHub Actions: performance shift(s) will be reported in a new issue.\n"
         "Designed for checking the previous 24 hours' commits, typically in a "
-        "scheduled script."
+        "scheduled script.\n"
+        "Uses `asv run`."
     )
     epilog = (
         "e.g. python bm_runner.py overnight a1b23d4\n"
@@ -410,7 +411,8 @@ class Branch(_SubParserGenerator):
         "for testing if the active branch's changes cause performance shifts - "
         "anticipating what would be caught by ``overnight`` once merged.\n\n"
         "**For maximum accuracy, avoid using the machine that is running this "
-        "session. Run time could be >1 hour for the full benchmark suite.**"
+        "session. Run time could be >1 hour for the full benchmark suite.**\n"
+        "Uses `asv run`."
     )
     epilog = (
         "e.g. python bm_runner.py branch upstream/main\n"
@@ -453,7 +455,8 @@ class _CSPerf(_SubParserGenerator, ABC):
         "Run the on-demand {} suite of benchmarks (part of the UK Met "
         "Office NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, "
         "and publish the results to the input **publish_dir**, within a "
-        "unique subdirectory for this run."
+        "unique subdirectory for this run.\n"
+        "Uses `asv run`."
     )
     epilog = (
         "e.g. python bm_runner.py {0} my_publish_dir\n"
