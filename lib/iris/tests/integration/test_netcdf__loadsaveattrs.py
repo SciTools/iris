@@ -78,9 +78,11 @@ def local_attr(request):
 # Define whether to parametrise over split-attribute saving
 # Just for now, so that we can run against legacy code.
 _SPLIT_SAVE_SUPPORTED = hasattr(iris.FUTURE, "save_split_attrs")
-_SPLIT_OPTS = ["nosplit", "split"]
+_SPLIT_PARAM_VALUES = [False, True]
+_SPLIT_PARAM_IDS = ["nosplit", "split"]
 if not _SPLIT_SAVE_SUPPORTED:
-    _SPLIT_OPTS.remove("split")
+    _SPLIT_PARAM_VALUES.remove(True)
+    _SPLIT_PARAM_IDS.remove("split")
 
 
 def check_captured_warnings(
@@ -391,7 +393,7 @@ class MixinAttrsTesting:
             cubes = sorted(cubes, key=lambda cube: cube.name())
             # Fetch globals and locals from cubes.
             # This way returns *multiple* result 'sets', one for each global value
-            if oldstyle_combined:
+            if oldstyle_combined or not _SPLIT_SAVE_SUPPORTED:
                 # Use all-combined dictionaries in place of actual cubes' attributes
                 cube_attr_dicts = [dict(cube.attributes) for cube in cubes]
                 # Return results as if all cubes had global=None
@@ -439,7 +441,9 @@ class TestRoundtrip(MixinAttrsTesting):
     """
 
     # Parametrise all tests over split/unsplit saving.
-    @pytest.fixture(params=[False, True], ids=_SPLIT_OPTS, autouse=True)
+    @pytest.fixture(
+        params=_SPLIT_PARAM_VALUES, ids=_SPLIT_PARAM_IDS, autouse=True
+    )
     def do_split(self, request):
         do_split = request.param
         self.save_split_attrs = do_split
@@ -1054,7 +1058,9 @@ class TestSave(MixinAttrsTesting):
     """
 
     # Parametrise all tests over split/unsplit saving.
-    @pytest.fixture(params=[False, True], ids=_SPLIT_OPTS, autouse=True)
+    @pytest.fixture(
+        params=_SPLIT_PARAM_VALUES, ids=_SPLIT_PARAM_IDS, autouse=True
+    )
     def do_split(self, request):
         do_split = request.param
         self.save_split_attrs = do_split
