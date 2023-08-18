@@ -112,6 +112,7 @@ jobs:
           gh issue create --title "$title" --body "$body" --label "Bot" --label "Type: Performance" --repo $GITHUB_REPOSITORY
 
       - name: Upload any benchmark reports
+        if: success() || steps.overnight.outcome == 'failure'
         uses: actions/upload-artifact@v3
         with:
           name: benchmark_reports
