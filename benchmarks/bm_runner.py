@@ -403,7 +403,8 @@ class Branch(_SubParserGenerator):
     description = (
         "Performs the same operations as ``overnight``, but always on two commits "
         "only - ``HEAD``, and ``HEAD``'s merge-base with the input "
-        "**base_branch**. If running on GitHub Actions: performance "
+        "**base_branch**. If running on GitHub Actions: HEAD will be GitHub's "
+        "merge commit and merge-base will be the merge target. Performance "
         "comparisons will be posted in a comment on the relevant pull request.\n"
         "Designed "
         "for testing if the active branch's changes cause performance shifts - "

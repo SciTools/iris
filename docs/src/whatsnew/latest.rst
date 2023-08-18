@@ -83,6 +83,12 @@ This document explains the changes made to Iris for this release
    benchmarking of pull requests. Results are now posted as a new comment.
    (feature branch: :pull:`5430`)
 
+#. `@trexfeathers`_ changed pull request benchmarking to compare: GitHub's
+   simulated merge-commit (which it uses for all PR CI by default) versus the
+   merge target (e.g. `main`). This should provide the most 'atomic' account
+   of how the pull request changes affect performance. (feature branch:
+   :pull:`5431`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
