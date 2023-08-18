@@ -79,6 +79,10 @@ This document explains the changes made to Iris for this release
    `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
    (:pull:`5214`)
 
+#. `@trexfeathers`_ refactored benchmarking scripts to better support on-demand
+   benchmarking of pull requests. Results are now posted as a new comment.
+   (feature branch: :pull:`5430`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
