@@ -72,29 +72,11 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
-
-
-#. `@trexfeathers`_ refactored benchmarking scripts to better support on-demand
-   benchmarking of pull requests. Results are now posted as a new comment.
-   (feature branch: :pull:`5430`)
-
-#. `@trexfeathers`_ changed pull request benchmarking to compare: GitHub's
-   simulated merge-commit (which it uses for all PR CI by default) versus the
-   merge target (e.g. `main`). This should provide the most 'atomic' account
-   of how the pull request changes affect performance. (feature branch:
-   :pull:`5431`)
-
-#. `@trexfeathers`_ added a catch to the overnight benchmark workflow to raise
-   an issue if the overnight run fails - this was previously an 'invisible'
-   problem. (feature branch: :pull:`5432`)
-
-#. `@trexfeathers`_ set `bm_runner.py` to error when the called processes
-   error. This fixes an oversight introduced in :pull:`5215`. (feature branch:
-   :pull`5434`)
-
-#. `@trexfeathers`_ inflated some benchmark data sizes to compensate for
-   :pull:`5229`. (feature branch: :pull:`5436`)
+#. `@trexfeathers`_ and `@ESadek-MO`_ (reviewer) performed a suite of fixes and
+   improvements for benchmarking, primarily to get
+   :ref:`on demand pull request benchmarking <on_demand_pr_benchmark>`
+   working properly. (Main pull request: :pull:`5437`, more detail:
+   :pull:`5430`, :pull:`5431`, :pull:`5432`, :pull:`5434`, :pull:`5436`)
 
 
 .. comment
