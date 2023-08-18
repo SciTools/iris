@@ -388,16 +388,20 @@ class Overnight(_SubParserGenerator):
         _setup_common()
 
         commit_range = f"{args.first_commit}^^.."
-        asv_command = shlex.split(ASV_HARNESS.format(posargs=commit_range))
-        _subprocess_runner([*asv_command, *args.asv_args], asv=True)
-
         # git rev-list --first-parent is the command ASV uses.
         git_command = shlex.split(
             f"git rev-list --first-parent {commit_range}"
         )
         commit_string = _subprocess_runner_capture(git_command)
         commit_list = commit_string.split("\n")
-        _asv_compare(*reversed(commit_list), overnight_mode=True)
+
+        asv_command = shlex.split(ASV_HARNESS.format(posargs=commit_range))
+        try:
+            _subprocess_runner([*asv_command, *args.asv_args], asv=True)
+        finally:
+            # Designed for long running - want to compare/post any valid
+            #  results even if some are broken.
+            _asv_compare(*reversed(commit_list), overnight_mode=True)
 
 
 class Branch(_SubParserGenerator):
