@@ -97,6 +97,9 @@ This document explains the changes made to Iris for this release
    error. This fixes an oversight introduced in :pull:`5215`. (feature branch:
    :pull`5434`)
 
+#. `@trexfeathers`_ inflated some benchmark data sizes to compensate for
+   :pull:`5229`. (feature branch: :pull:`5436`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
