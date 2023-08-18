@@ -14,6 +14,8 @@ from itertools import permutations
 from unittest import mock
 
 from cf_units import Unit
+import dask.array as da
+from distributed import Client
 import numpy as np
 import numpy.ma as ma
 import pytest
@@ -365,14 +367,13 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.data = np.arange(6.0).reshape((2, 3))
         self.lazydata = as_lazy_data(self.data)
         # Test cubes with (same-valued) real and lazy data
-        cube_real = Cube(self.data, units="m")
+        cube_real = Cube(self.data, units="kg m-2 s-1")
         for i_dim, name in enumerate(("y", "x")):
             npts = cube_real.shape[i_dim]
             coord = DimCoord(np.arange(npts), long_name=name)
             cube_real.add_dim_coord(coord, i_dim)
         self.cube_real = cube_real
         self.cube_lazy = cube_real.copy(data=self.lazydata)
-        self.cube_lazy.units = "kg"
         # Test weights and expected result for a y-collapse
         self.y_weights = np.array([0.3, 0.5])
         self.full_weights_y = np.broadcast_to(
@@ -394,7 +395,8 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_y
         )
-        self.assertEqual(cube_collapsed.units, "m")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_fullweights_lazy_y(self):
         # Full-shape weights, lazy data :  Check lazy result, same values as real calc.
@@ -405,7 +407,7 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_y
         )
-        self.assertEqual(cube_collapsed.units, "kg")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
 
     def test_weighted_1dweights_real_y(self):
         # 1-D weights, real data :  Check same results as full-shape.
@@ -415,7 +417,8 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_y
         )
-        self.assertEqual(cube_collapsed.units, "m")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_1dweights_lazy_y(self):
         # 1-D weights, lazy data :  Check lazy result, same values as real calc.
@@ -426,7 +429,7 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_y
         )
-        self.assertEqual(cube_collapsed.units, "kg")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
 
     def test_weighted_fullweights_real_x(self):
         # Full weights, real data, ** collapse X ** :  as for 'y' case above
@@ -436,7 +439,8 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_x
         )
-        self.assertEqual(cube_collapsed.units, "m")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_fullweights_lazy_x(self):
         # Full weights, lazy data, ** collapse X ** :  as for 'y' case above
@@ -447,7 +451,8 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_x
         )
-        self.assertEqual(cube_collapsed.units, "kg")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_1dweights_real_x(self):
         # 1-D weights, real data, ** collapse X ** :  as for 'y' case above
@@ -457,7 +462,8 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_x
         )
-        self.assertEqual(cube_collapsed.units, "m")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_1dweights_lazy_x(self):
         # 1-D weights, lazy data, ** collapse X ** :  as for 'y' case above
@@ -468,30 +474,34 @@ class Test_collapsed__multidim_weighted_with_arr(tests.IrisTest):
         self.assertArrayAlmostEqual(
             cube_collapsed.data, self.expected_result_x
         )
-        self.assertEqual(cube_collapsed.units, "kg")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_sum_fullweights_adapt_units_real_y(self):
-        # Check that units are adapted correctly ('m' * '1' = 'm')
+        # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
         cube_collapsed = self.cube_real.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
-        self.assertEqual(cube_collapsed.units, "m")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_sum_fullweights_adapt_units_lazy_y(self):
-        # Check that units are adapted correctly ('kg' * '1' = 'kg')
+        # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
         cube_collapsed = self.cube_lazy.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
-        self.assertEqual(cube_collapsed.units, "kg")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_sum_1dweights_adapt_units_real_y(self):
-        # Check that units are adapted correctly ('m' * '1' = 'm')
+        # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
         # Note: the same test with lazy data fails:
         # https://github.com/SciTools/iris/issues/5083
         cube_collapsed = self.cube_real.collapsed(
             "y", SUM, weights=self.y_weights
         )
-        self.assertEqual(cube_collapsed.units, "m")
+        self.assertEqual(cube_collapsed.units, "kg m-2 s-1")
+        self.assertEqual(cube_collapsed.units.origin, "kg m-2 s-1")
 
     def test_weighted_sum_with_unknown_units_real_y(self):
         # Check that units are adapted correctly ('unknown' * '1' = 'unknown')
@@ -541,27 +551,27 @@ class Test_collapsed__multidim_weighted_with_cube(
         self.full_weights_x = self.cube_real.copy(self.full_weights_x_original)
 
     def test_weighted_sum_fullweights_adapt_units_real_y(self):
-        # Check that units are adapted correctly ('m' * 'm2' = 'm3')
+        # Check that units are adapted correctly (kg m-2 s-1 * m2 = kg s-1)
         cube_collapsed = self.cube_real.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
-        self.assertEqual(cube_collapsed.units, "m3")
+        self.assertEqual(cube_collapsed.units, "kg s-1")
 
     def test_weighted_sum_fullweights_adapt_units_lazy_y(self):
-        # Check that units are adapted correctly ('kg' * 'm2' = 'kg m2')
+        # Check that units are adapted correctly (kg m-2 s-1 * m2 = kg s-1)
         cube_collapsed = self.cube_lazy.collapsed(
             "y", SUM, weights=self.full_weights_y
         )
-        self.assertEqual(cube_collapsed.units, "kg m2")
+        self.assertEqual(cube_collapsed.units, "kg s-1")
 
     def test_weighted_sum_1dweights_adapt_units_real_y(self):
-        # Check that units are adapted correctly ('m' * 'm2' = 'm3')
+        # Check that units are adapted correctly (kg m-2 s-1 * m2 = kg s-1)
         # Note: the same test with lazy data fails:
         # https://github.com/SciTools/iris/issues/5083
         cube_collapsed = self.cube_real.collapsed(
             "y", SUM, weights=self.y_weights
         )
-        self.assertEqual(cube_collapsed.units, "m3")
+        self.assertEqual(cube_collapsed.units, "kg s-1")
 
 
 class Test_collapsed__multidim_weighted_with_str(
@@ -986,7 +996,7 @@ class Test_rolling_window(tests.IrisTest):
         self.assertEqual(res_cube.cell_measures(), [])
 
     def test_weights_arr(self):
-        weights = [0, 0, 1, 0, 2]
+        weights = np.array([0, 0, 1, 0, 2])
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
         np.testing.assert_array_equal(res_cube.data, [10, 13])
         self.assertEqual(res_cube.units, "kg")
@@ -3011,6 +3021,14 @@ class Test_convert_units(tests.IrisTest):
         cube.convert_units("ft")
         self.assertTrue(cube.has_lazy_data())
         self.assertArrayAllClose(cube.data, real_data_ft)
+
+    def test_unit_multiply(self):
+        _client = Client()
+        cube = iris.cube.Cube(da.arange(1), units="m")
+        cube.units *= "s-1"
+        cube.convert_units("m s-1")
+        cube.data
+        _client.close()
 
 
 class Test__eq__data(tests.IrisTest):

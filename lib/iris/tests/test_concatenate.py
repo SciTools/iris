@@ -12,8 +12,10 @@ Test the cube concatenate mechanism.
 # before importing anything else.
 import iris.tests as tests  # isort:skip
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
@@ -337,7 +339,10 @@ class TestNoConcat(tests.IrisTest):
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
         cubes.append(_make_cube((1, 3), y, 2))
-        result = concatenate(cubes)
+        with pytest.warns(
+            UserWarning, match="Found cubes with overlap on concatenate axis"
+        ):
+            result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
     def test_points_overlap_decreasing(self):
@@ -345,7 +350,10 @@ class TestNoConcat(tests.IrisTest):
         x = (0, 2)
         cubes.append(_make_cube(x, (3, 0, -1), 1))
         cubes.append(_make_cube(x, (1, -1, -1), 2))
-        result = concatenate(cubes)
+        with pytest.warns(
+            UserWarning, match="Found cubes with overlap on concatenate axis"
+        ):
+            result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
     def test_bounds_overlap_increasing(self):
@@ -353,9 +361,14 @@ class TestNoConcat(tests.IrisTest):
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
         cube = _make_cube((2, 4), y, 1)
-        cube.coord("x").bounds = np.array([[0.5, 2.5], [2.5, 3.5]])
+        cube.coord("x").bounds = np.array(
+            [[0.5, 2.5], [2.5, 3.5]], dtype=np.float32
+        )
         cubes.append(cube)
-        result = concatenate(cubes)
+        with pytest.warns(
+            UserWarning, match="Found cubes with overlap on concatenate axis"
+        ):
+            result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
     def test_bounds_overlap_decreasing(self):
@@ -363,9 +376,14 @@ class TestNoConcat(tests.IrisTest):
         y = (0, 2)
         cubes.append(_make_cube((3, 1, -1), y, 1))
         cube = _make_cube((1, -1, -1), y, 2)
-        cube.coord("x").bounds = np.array([[2.5, 0.5], [0.5, -0.5]])
+        cube.coord("x").bounds = np.array(
+            [[2.5, 0.5], [0.5, -0.5]], dtype=np.float32
+        )
         cubes.append(cube)
-        result = concatenate(cubes)
+        with pytest.warns(
+            UserWarning, match="Found cubes with overlap on concatenate axis"
+        ):
+            result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
     def test_scalar_difference(self):
@@ -799,6 +817,30 @@ class Test2D(tests.IrisTest):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (6, 2))
         self.assertEqual(result[0], com)
+
+    def test_concat_lazy_aux_coords(self):
+        cubes = []
+        y = (0, 2)
+        cube = _make_cube((2, 4), y, 2, aux="xy")
+        cubes.append(cube)
+        cubes.append(_make_cube((0, 2), y, 1, aux="xy"))
+        for cube in cubes:
+            cube.data = cube.lazy_data()
+            cube.coord("xy-aux").points = cube.coord("xy-aux").lazy_points()
+            bounds = da.arange(
+                4 * cube.coord("xy-aux").core_points().size
+            ).reshape(cube.shape + (4,))
+            cube.coord("xy-aux").bounds = bounds
+        result = concatenate(cubes)
+
+        self.assertTrue(cubes[0].coord("xy-aux").has_lazy_points())
+        self.assertTrue(cubes[0].coord("xy-aux").has_lazy_bounds())
+
+        self.assertTrue(cubes[1].coord("xy-aux").has_lazy_points())
+        self.assertTrue(cubes[1].coord("xy-aux").has_lazy_bounds())
+
+        self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
+        self.assertTrue(result[0].coord("xy-aux").has_lazy_bounds())
 
 
 class TestMulti2D(tests.IrisTest):

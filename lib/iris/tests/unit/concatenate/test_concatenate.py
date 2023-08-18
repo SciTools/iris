@@ -242,6 +242,14 @@ class TestMessages(tests.IrisTest):
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 
+    def test_dim_coords_overlap_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.coord("time").points = np.arange(1, 3, dtype=np.float32)
+        exc_regexp = "Found cubes with overlap on concatenate axis"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
 
 class TestOrder(tests.IrisTest):
     def _make_cube(self, points, bounds=None):
@@ -355,7 +363,7 @@ class TestOrder(tests.IrisTest):
 
 
 class TestConcatenate__dask(tests.IrisTest):
-    def build_lazy_cube(self, points, bounds=None, nx=4):
+    def build_lazy_cube(self, points, bounds=None, nx=4, aux_coords=False):
         data = np.arange(len(points) * nx).reshape(len(points), nx)
         data = as_lazy_data(data)
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -363,6 +371,15 @@ class TestConcatenate__dask(tests.IrisTest):
         lon = iris.coords.DimCoord(np.arange(nx), "longitude")
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
+        if aux_coords:
+            bounds = np.arange(len(points) * nx * 4).reshape(
+                len(points), nx, 4
+            )
+            bounds = as_lazy_data(bounds)
+            aux_coord = iris.coords.AuxCoord(
+                data, var_name="aux_coord", bounds=bounds
+            )
+            cube.add_aux_coord(aux_coord, (0, 1))
         return cube
 
     def test_lazy_concatenate(self):
@@ -371,6 +388,20 @@ class TestConcatenate__dask(tests.IrisTest):
         (cube,) = concatenate([c1, c2])
         self.assertTrue(cube.has_lazy_data())
         self.assertFalse(ma.isMaskedArray(cube.data))
+
+    def test_lazy_concatenate_aux_coords(self):
+        c1 = self.build_lazy_cube([1, 2], aux_coords=True)
+        c2 = self.build_lazy_cube([3, 4, 5], aux_coords=True)
+        (result,) = concatenate([c1, c2])
+
+        self.assertTrue(c1.coord("aux_coord").has_lazy_points())
+        self.assertTrue(c1.coord("aux_coord").has_lazy_bounds())
+
+        self.assertTrue(c2.coord("aux_coord").has_lazy_points())
+        self.assertTrue(c2.coord("aux_coord").has_lazy_bounds())
+
+        self.assertTrue(result.coord("aux_coord").has_lazy_points())
+        self.assertTrue(result.coord("aux_coord").has_lazy_bounds())
 
     def test_lazy_concatenate_masked_array_mixed_deferred(self):
         c1 = self.build_lazy_cube([1, 2])

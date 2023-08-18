@@ -55,6 +55,56 @@ This document explains the changes made to Iris for this release
     or feature requests for improving Iris. Enjoy!
 
 
+v3.6.1 (26 June 2023)
+=====================
+
+.. dropdown:: v3.6.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+
+   📢 **Announcements**
+
+   Welcome and congratulations to `@sloosvel`_ who made their first contribution to
+   Iris! 🎉
+
+   The patches in this release of Iris include:
+
+   ✨ **Features**
+
+   #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
+      lazy data. This pull-request has been included to support :pull:`5341`.
+      (:pull:`5307`) [``pre-v3.7.0``]
+
+   🐛 **Bugs Fixed**
+
+   #. `@stephenworsley`_ fixed :meth:`~iris.cube.Cube.convert_units` to allow unit
+      conversion of lazy data when using a `Distributed`_ scheduler.
+      (:issue:`5347`, :pull:`5349`)
+
+   #. `@schlunma`_ fixed a bug in the concatenation of cubes with aux factories
+      which could lead to a `KeyError` due to dependencies that have not been
+      properly updated.
+      (:issue:`5339`, :pull:`5340`)
+
+   #. `@schlunma`_ fixed a bug which realized all weights during weighted
+      aggregation. Now weighted aggregation is fully lazy again.
+      (:issue:`5338`, :pull:`5341`)
+
+   🚀 **Performance Enhancements**
+
+   #. `@sloosvel`_ improved :meth:`~iris.cube.CubeList.concatenate_cube` and
+      :meth:`~iris.cube.CubeList.concatenate` to ensure that lazy auxiliary coordinate
+      points and bounds are not realized. This change now allows cubes with
+      high-resolution auxiliary coordinates to concatenate successfully whilst using a
+      minimal in-core memory footprint.
+      (:issue:`5115`, :pull:`5142`)
+
+   Note that, the above contribution labelled with ``pre-v3.7.0`` is part of the
+   forthcoming Iris ``v3.7.0`` release, but requires to be included in this patch
+   release.
+
+
 📢 Announcements
 ================
 
@@ -169,6 +219,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@fnattino: https://github.com/fnattino
+.. _@sloosvel: https://github.com/sloosvel
 
 
 .. comment
@@ -181,3 +232,4 @@ This document explains the changes made to Iris for this release
 .. _pypa/build: https://pypa-build.readthedocs.io/en/stable/
 .. _NEP29: https://numpy.org/neps/nep-0029-deprecation_policy.html
 .. _Contributor Covenant: https://www.contributor-covenant.org/version/2/1/code_of_conduct/
+.. _Distributed: https://distributed.dask.org/en/stable/
