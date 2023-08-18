@@ -89,6 +89,10 @@ This document explains the changes made to Iris for this release
    of how the pull request changes affect performance. (feature branch:
    :pull:`5431`)
 
+#. `@trexfeathers`_ added a catch to the overnight benchmark workflow to raise
+   an issue if the overnight run fails - this was previously an 'invisible'
+   problem. (feature branch: :pull:`5432`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
