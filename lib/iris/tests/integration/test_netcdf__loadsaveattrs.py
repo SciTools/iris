@@ -75,6 +75,14 @@ def local_attr(request):
     return request.param  # Return the name of the attribute to test.
 
 
+# Define whether to parametrise over split-attribute saving
+# Just for now, so that we can run against legacy code.
+_SPLIT_SAVE_SUPPORTED = hasattr(iris.FUTURE, "save_split_attrs")
+_SPLIT_OPTS = ["nosplit", "split"]
+if not _SPLIT_SAVE_SUPPORTED:
+    _SPLIT_OPTS.remove("split")
+
+
 def check_captured_warnings(
     expected_keys: List[str], captured_warnings: List[warnings.WarningMessage]
 ):
@@ -220,10 +228,20 @@ class MixinAttrsTesting:
                 cubes.append(cube)
                 dimco = DimCoord(np.arange(3.0), var_name="x")
                 cube.add_dim_coord(dimco, 0)
-                if global_value is not None:
-                    cube.attributes.globals[attr_name] = global_value
-                if local_value is not None:
-                    cube.attributes.locals[attr_name] = local_value
+                if not hasattr(cube.attributes, "globals"):
+                    # N.B. For now, also support oldstyle "single" cube attribute
+                    # dictionaries, so that we can generate legacy results to compore
+                    # with the "new world" results.
+                    single_value = global_value
+                    if local_value is not None:
+                        single_value = local_value
+                    if single_value is not None:
+                        cube.attributes[attr_name] = single_value
+                else:
+                    if global_value is not None:
+                        cube.attributes.globals[attr_name] = global_value
+                    if local_value is not None:
+                        cube.attributes.locals[attr_name] = local_value
             return cubes
 
         if cubes:
@@ -372,27 +390,35 @@ class MixinAttrsTesting:
             # Sort result cubes according to a standard ordering.
             cubes = sorted(cubes, key=lambda cube: cube.name())
             # Fetch globals and locals from cubes.
-            if oldstyle_combined:
-                # Replace cubes attributes with all-combined dictionaries
-                cubes = [cube.copy() for cube in cubes]
-                for cube in cubes:
-                    combined = dict(cube.attributes)
-                    cube.attributes.clear()
-                    cube.attributes.locals = combined
-            global_values = set(
-                cube.attributes.globals.get(attr_name, None) for cube in cubes
-            )
             # This way returns *multiple* result 'sets', one for each global value
-            results = [
-                [globalval]
-                + [
-                    cube.attributes.locals.get(attr_name, None)
-                    for cube in cubes
-                    if cube.attributes.globals.get(attr_name, None)
-                    == globalval
+            if oldstyle_combined:
+                # Use all-combined dictionaries in place of actual cubes' attributes
+                cube_attr_dicts = [dict(cube.attributes) for cube in cubes]
+                # Return results as if all cubes had global=None
+                results = [
+                    [None]
+                    + [
+                        cube_attr_dict.get(attr_name, None)
+                        for cube_attr_dict in cube_attr_dicts
+                    ]
                 ]
-                for globalval in sorted(global_values)
-            ]
+            else:
+                # Return a result-set for each occurring global value (possibly
+                # including a 'None').
+                global_values = set(
+                    cube.attributes.globals.get(attr_name, None)
+                    for cube in cubes
+                )
+                results = [
+                    [globalval]
+                    + [
+                        cube.attributes.locals.get(attr_name, None)
+                        for cube in cubes
+                        if cube.attributes.globals.get(attr_name, None)
+                        == globalval
+                    ]
+                    for globalval in sorted(global_values)
+                ]
         return results
 
 
@@ -413,9 +439,7 @@ class TestRoundtrip(MixinAttrsTesting):
     """
 
     # Parametrise all tests over split/unsplit saving.
-    @pytest.fixture(
-        params=[False, True], ids=["nosplit", "split"], autouse=True
-    )
+    @pytest.fixture(params=[False, True], ids=_SPLIT_OPTS, autouse=True)
     def do_split(self, request):
         do_split = request.param
         self.save_split_attrs = do_split
@@ -441,7 +465,12 @@ class TestRoundtrip(MixinAttrsTesting):
             # Ensure stable result order.
             cubes = sorted(cubes, key=lambda cube: cube.name())
             do_split = getattr(self, "save_split_attrs", False)
-            with iris.FUTURE.context(save_split_attrs=do_split):
+            kwargs = (
+                dict(save_split_attrs=do_split)
+                if _SPLIT_SAVE_SUPPORTED
+                else dict()
+            )
+            with iris.FUTURE.context(**kwargs):
                 iris.save(cubes, self.result_filepath)
 
         self.captured_warnings = captured_warnings
@@ -1025,9 +1054,7 @@ class TestSave(MixinAttrsTesting):
     """
 
     # Parametrise all tests over split/unsplit saving.
-    @pytest.fixture(
-        params=[False, True], ids=["nosplit", "split"], autouse=True
-    )
+    @pytest.fixture(params=[False, True], ids=_SPLIT_OPTS, autouse=True)
     def do_split(self, request):
         do_split = request.param
         self.save_split_attrs = do_split
@@ -1045,7 +1072,12 @@ class TestSave(MixinAttrsTesting):
         with warnings.catch_warnings(record=True) as captured_warnings:
             self.result_filepath = self._testfile_path("result")
             do_split = getattr(self, "save_split_attrs", False)
-            with iris.FUTURE.context(save_split_attrs=do_split):
+            kwargs = (
+                dict(save_split_attrs=do_split)
+                if _SPLIT_SAVE_SUPPORTED
+                else dict()
+            )
+            with iris.FUTURE.context(**kwargs):
                 iris.save(self.input_cubes, self.result_filepath)
 
         self.captured_warnings = captured_warnings
