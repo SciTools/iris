@@ -143,16 +143,14 @@ def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
     for i in range(len(commits) - 1):
         before = commits[i]
         after = commits[i + 1]
-        asv_command = (
+        asv_command = shlex.split(
             f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
         )
 
-        comparison = _subprocess_runner_capture(
-            asv_command.split(" "), asv=True
-        )
+        comparison = _subprocess_runner_capture(asv_command, asv=True)
         echo(comparison)
         shifts = _subprocess_runner_capture(
-            [*asv_command.split(" "), "--only-changed"], asv=True
+            [*asv_command, "--only-changed"], asv=True
         )
 
         if shifts or (not overnight_mode):
@@ -247,12 +245,12 @@ def _gh_create_reports(
 
             for login_type in ("author", "mergedBy"):
                 gh_query = f'.["{login_type}"]["login"]'
-                command = (
+                command = shlex.split(
                     f"gh pr view {pr_tag[1:]} "
                     f"--json {login_type} -q '{gh_query}' "
                     f"--repo {repo}"
                 )
-                login = _subprocess_runner_capture(command.split(" "))
+                login = _subprocess_runner_capture(command)
 
                 command = [
                     "curl",
@@ -346,7 +344,7 @@ class _SubParserGenerator(ABC):
         self.subparser.add_argument(
             "asv_args",
             nargs=argparse.REMAINDER,
-            help="Any number of arguments to pass down to ASV.",
+            help="Any number of arguments to pass down to the ASV benchmark command.",
         )
 
     @staticmethod
@@ -366,10 +364,11 @@ class Overnight(_SubParserGenerator):
     name = "overnight"
     description = (
         "Benchmarks all commits between the input **first_commit** to ``HEAD``, "
-        "comparing each to its parent for performance shifts. If running on"
+        "comparing each to its parent for performance shifts. If running on "
         "GitHub Actions: performance shift(s) will be reported in a new issue.\n"
         "Designed for checking the previous 24 hours' commits, typically in a "
-        "scheduled script."
+        "scheduled script.\n"
+        "Uses `asv run`."
     )
     epilog = (
         "e.g. python bm_runner.py overnight a1b23d4\n"
@@ -388,12 +387,14 @@ class Overnight(_SubParserGenerator):
         _setup_common()
 
         commit_range = f"{args.first_commit}^^.."
-        asv_command = ASV_HARNESS.format(posargs=commit_range)
-        _subprocess_runner([*asv_command.split(" "), *args.asv_args], asv=True)
+        asv_command = shlex.split(ASV_HARNESS.format(posargs=commit_range))
+        _subprocess_runner([*asv_command, *args.asv_args], asv=True)
 
         # git rev-list --first-parent is the command ASV uses.
-        git_command = f"git rev-list --first-parent {commit_range}"
-        commit_string = _subprocess_runner_capture(git_command.split(" "))
+        git_command = shlex.split(
+            f"git rev-list --first-parent {commit_range}"
+        )
+        commit_string = _subprocess_runner_capture(git_command)
         commit_list = commit_string.split("\n")
         _asv_compare(*reversed(commit_list), overnight_mode=True)
 
@@ -410,7 +411,8 @@ class Branch(_SubParserGenerator):
         "for testing if the active branch's changes cause performance shifts - "
         "anticipating what would be caught by ``overnight`` once merged.\n\n"
         "**For maximum accuracy, avoid using the machine that is running this "
-        "session. Run time could be >1 hour for the full benchmark suite.**"
+        "session. Run time could be >1 hour for the full benchmark suite.**\n"
+        "Uses `asv run`."
     )
     epilog = (
         "e.g. python bm_runner.py branch upstream/main\n"
@@ -428,20 +430,20 @@ class Branch(_SubParserGenerator):
     def func(args: argparse.Namespace) -> None:
         _setup_common()
 
-        git_command = "git rev-parse HEAD"
-        head_sha = _subprocess_runner_capture(git_command.split(" "))[:8]
+        git_command = shlex.split("git rev-parse HEAD")
+        head_sha = _subprocess_runner_capture(git_command)[:8]
 
-        git_command = f"git merge-base {head_sha} {args.base_branch}"
-        merge_base = _subprocess_runner_capture(git_command.split(" "))[:8]
+        git_command = shlex.split(
+            f"git merge-base {head_sha} {args.base_branch}"
+        )
+        merge_base = _subprocess_runner_capture(git_command)[:8]
 
         with NamedTemporaryFile("w") as hashfile:
             hashfile.writelines([merge_base, "\n", head_sha])
             hashfile.flush()
             commit_range = f"HASHFILE:{hashfile.name}"
-            asv_command = ASV_HARNESS.format(posargs=commit_range)
-            _subprocess_runner(
-                [*asv_command.split(" "), *args.asv_args], asv=True
-            )
+            asv_command = shlex.split(ASV_HARNESS.format(posargs=commit_range))
+            _subprocess_runner([*asv_command, *args.asv_args], asv=True)
 
         _asv_compare(merge_base, head_sha)
 
@@ -453,7 +455,8 @@ class _CSPerf(_SubParserGenerator, ABC):
         "Run the on-demand {} suite of benchmarks (part of the UK Met "
         "Office NG-VAT project) for the ``HEAD`` of ``upstream/main`` only, "
         "and publish the results to the input **publish_dir**, within a "
-        "unique subdirectory for this run."
+        "unique subdirectory for this run.\n"
+        "Uses `asv run`."
     )
     epilog = (
         "e.g. python bm_runner.py {0} my_publish_dir\n"
@@ -497,11 +500,15 @@ class _CSPerf(_SubParserGenerator, ABC):
         # Don't fail the whole run if memory blows on 1 benchmark.
         asv_command = asv_command.replace(" --strict", "")
         # Only do a single round.
-        asv_command = re.sub(r"rounds=\d", "rounds=1", asv_command)
-        _subprocess_runner([*asv_command.split(" "), *args.asv_args], asv=True)
+        asv_command = shlex.split(
+            re.sub(r"rounds=\d", "rounds=1", asv_command)
+        )
+        _subprocess_runner([*asv_command, *args.asv_args], asv=True)
 
-        asv_command = f"publish {commit_range} --html-dir={publish_subdir}"
-        _subprocess_runner(asv_command.split(" "), asv=True)
+        asv_command = shlex.split(
+            f"publish {commit_range} --html-dir={publish_subdir}"
+        )
+        _subprocess_runner(asv_command, asv=True)
 
         # Print completion message.
         location = BENCHMARKS_DIR / ".asv"

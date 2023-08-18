@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       first_commit:
-        description: "Argument to be passed to the overnight benchmark script."
+        description: "First commit to benchmark (see bm_runner.py > Overnight)."
         required: false
         type: string
   pull_request:
