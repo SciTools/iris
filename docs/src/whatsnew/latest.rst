@@ -97,6 +97,9 @@ This document explains the changes made to Iris for this release
    error. This fixes an oversight introduced in :pull:`5215`. (feature branch:
    :pull`5434`)
 
+#. `@trexfeathers`_ set `bm_runner.py` to error when the called processes
+   error. This fixes an oversight introduced in :pull:`5215`. (feature branch:
+   :pull`5434`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
