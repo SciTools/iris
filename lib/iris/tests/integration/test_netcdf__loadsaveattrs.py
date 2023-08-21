@@ -441,10 +441,10 @@ class MixinAttrsTesting:
 #   - combinations of matching+differing, global+local params
 #   - these are interpreted differently for the 3 main test types : Load/Save/Roundtrip
 _MATRIX_TESTCASE_INPUTS = {
-    "case_single_localonly": "G-La",
-    "case_single_globalonly": "GaL-",
-    "case_single_glsame": "GaLa",
-    "case_single_gldiffer": "GaLb",
+    "case_singlevar_localonly": "G-La",
+    "case_singlevar_globalonly": "GaL-",
+    "case_singlevar_glsame": "GaLa",
+    "case_singlevar_gldiffer": "GaLb",
     "case_multivar_same_noglobal": "G-Laa",
     "case_multivar_same_sameglobal": "GaLaa",
     "case_multivar_same_diffglobal": "GaLbb",
@@ -458,7 +458,7 @@ _MATRIX_TESTCASE_INPUTS = {
     # These are encoded as *pairs* of specs, for 2 different files, or cubes with
     #  independent global values.
     # We assume that there can be nothing "special" about a var's interaction with
-    #  another one from the *same file* ??
+    #  another one from the same (as opposed to the "other") file.
     "case_multisource_gsame_lnone": ["GaL-", "GaL-"],
     "case_multisource_gsame_lallsame": ["GaLa", "GaLa"],
     "case_multisource_gsame_l1same1none": ["GaLa", "GaL-"],
@@ -468,15 +468,18 @@ _MATRIX_TESTCASE_INPUTS = {
     "case_multisource_gnone_l1same1none": ["G-La", "G-L-"],
     "case_multisource_gnone_l1same1same": ["G-La", "G-La"],
     "case_multisource_gnone_l1same1other": ["G-La", "G-Lb"],
+    "case_multisource_g1none_lnone": ["GaL-", "G-L-"],
+    "case_multisource_g1none_l1same1none": ["GaLa", "G-L-"],
+    "case_multisource_g1none_l1none1same": ["GaL-", "G-La"],
+    "case_multisource_g1none_l1diff1none": ["GaLb", "G-L-"],
+    "case_multisource_g1none_l1none1diff": ["GaL-", "G-Lb"],
+    "case_multisource_g1none_lallsame": ["GaLa", "G-La"],
+    "case_multisource_g1none_lallother": ["GaLc", "G-Lc"],
     "case_multisource_gdiff_lnone": ["GaL-", "GbL-"],
     "case_multisource_gdiff_l1same1none": ["GaLa", "GbL-"],
     "case_multisource_gdiff_l1diff1none": ["GaLb", "GcL-"],
     "case_multisource_gdiff_lallsame": ["GaLa", "GbLb"],
     "case_multisource_gdiff_lallother": ["GaLc", "GbLc"],
-    #
-    # TODO: improvements needed here -- ordering can be more consistent, missed checking
-    #  "gdiff" multi-cases where one global is None, rather than a different value.
-    #
 }
 _MATRIX_TESTCASES = list(_MATRIX_TESTCASE_INPUTS.keys())
 
