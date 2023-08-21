@@ -494,7 +494,7 @@ _MATRIX_ATTRNAMES += ["user"]
 # "globalstyle", or "localstyle" generic cases).
 # N.B. not including "Conventions", which is not in the globals list, so won't be
 # matrix-tested unless we add it specifically.
-# TODO: decide if any of these need to be tested, with their own testcases.
+# TODO: decide if any of these need to be tested, as separate test-styles.
 _SPECIAL_ATTRS = [
     "ukmo__process_flags",
     "missing_value",
@@ -530,7 +530,7 @@ def deduce_attr_style(attrname: str) -> str:
 # Decode a matrix "input spec" to codes for global + local values.
 #
 def decode_matrix_input(input_spec):
-    # Decode a matrix-test input specifications, like "GaLbc" into lists of values.
+    # Decode a matrix-test input specification, like "GaLbc", into lists of values.
     # E.G. "GaLbc" -> ["a", "b", "c"]
     # ["GaLbc", "GbLbc"] -> [["a", "b", "c"], ["b", "b", c"]]
     # N.B. in this form "values" are all one-character strings.
@@ -586,10 +586,12 @@ _MATRIX_TESTTYPES = ("load", "save", "roundtrip")
 @pytest.fixture(autouse=True, scope="session")
 def matrix_results():
     matrix_filepaths = {
-        testtype: Path(__file__).parent
-        / f"attrs_matrix_results_{testtype}.json"
+        testtype: (
+            Path(__file__).parent / f"attrs_matrix_results_{testtype}.json"
+        )
         for testtype in _MATRIX_TESTTYPES
     }
+    # An environment variable can trigger saving of the results.
     save_matrix_results = bool(
         int(os.environ.get("SAVEALL_MATRIX_RESULTS", "0"))
     )
@@ -620,8 +622,9 @@ def matrix_results():
                 test_case_results["input"] = _MATRIX_TESTCASE_INPUTS[testcase]
                 for attrstyle in _ATTR_STYLES:
                     if testtype == "load":
-                        # "Load" results record a "legacy" result, and a "newstyle"
-                        # result.
+                        # "load" test results have a "legacy" result (as for a single
+                        # combined attrs dictionary), and a "newstyle" result (with
+                        # the new split dictionary).
                         test_case_results[attrstyle] = {
                             "legacy": None,
                             "newstyle": None,
@@ -635,8 +638,8 @@ def matrix_results():
                             "split": None,
                         }
 
+        # Build complete data: matrix_results[TESTTYPES][TESTCASES][ATTR_STYLES]
         matrix_results[testtype] = testtype_results
-        # Overall structure, matrix_results[TESTTYPES][TESTCASES][ATTR_STYLES]
 
     # Pass through to all the tests : they can also update it, if enabled.
     yield save_matrix_results, matrix_results
