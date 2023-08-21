@@ -483,15 +483,19 @@ _MATRIX_TESTCASES = list(_MATRIX_TESTCASE_INPUTS.keys())
 #
 # Define the attrs against which all matrix tests are run
 #
-max_param_attrs = -1
+max_param_attrs = None
 # max_param_attrs = 5
 
 _MATRIX_ATTRNAMES = _LOCAL_TEST_ATTRS[:max_param_attrs]
 _MATRIX_ATTRNAMES += _GLOBAL_TEST_ATTRS[:max_param_attrs]
 _MATRIX_ATTRNAMES += ["user"]
-# remove special-cases, for now
+
+# remove special-cases, for now : all these behave irregularly (i.e. unlike the known
+# "globalstyle", or "localstyle" generic cases).
+# N.B. not including "Conventions", which is not in the globals list, so won't be
+# matrix-tested unless we add it specifically.
+# TODO: decide if any of these need to be tested, with their own testcases.
 _SPECIAL_ATTRS = [
-    "Conventions",
     "ukmo__process_flags",
     "missing_value",
     "standard_error_multiplier",
