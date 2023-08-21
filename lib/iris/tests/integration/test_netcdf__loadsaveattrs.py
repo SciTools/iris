@@ -52,11 +52,12 @@ _GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
 # one is processed.
 _GLOBAL_TEST_ATTRS -= set(["conventions"])
+_GLOBAL_TEST_ATTRS = sorted(_GLOBAL_TEST_ATTRS)
 
 
 # Define a fixture to parametrise tests over the 'global-style' test attributes.
 # This just provides a more concise way of writing parametrised tests.
-@pytest.fixture(params=sorted(_GLOBAL_TEST_ATTRS))
+@pytest.fixture(params=_GLOBAL_TEST_ATTRS)
 def global_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
@@ -72,7 +73,7 @@ _LOCAL_TEST_ATTRS = (
 
 # Define a fixture to parametrise over the 'local-style' test attributes.
 # This just provides a more concise way of writing parametrised tests.
-@pytest.fixture(params=sorted(_LOCAL_TEST_ATTRS))
+@pytest.fixture(params=_LOCAL_TEST_ATTRS)
 def local_attr(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
@@ -480,7 +481,7 @@ max_param_attrs = -1
 # max_param_attrs = 5
 
 _MATRIX_ATTRNAMES = _LOCAL_TEST_ATTRS[:max_param_attrs]
-_MATRIX_ATTRNAMES += list(_GLOBAL_TEST_ATTRS)[:max_param_attrs]
+_MATRIX_ATTRNAMES += _GLOBAL_TEST_ATTRS[:max_param_attrs]
 _MATRIX_ATTRNAMES += ["user"]
 # remove special-cases, for now
 _SPECIAL_ATTRS = [
