@@ -72,8 +72,11 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
-
+#. `@trexfeathers`_ and `@ESadek-MO`_ (reviewer) performed a suite of fixes and
+   improvements for benchmarking, primarily to get
+   :ref:`on demand pull request benchmarking <on_demand_pr_benchmark>`
+   working properly. (Main pull request: :pull:`5437`, more detail:
+   :pull:`5430`, :pull:`5431`, :pull:`5432`, :pull:`5434`, :pull:`5436`)
 
 
 .. comment
