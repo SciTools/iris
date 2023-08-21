@@ -102,8 +102,8 @@ def check_captured_warnings(
     comprehend.
 
     """
-    if expected_keys == _SKIP_WARNCHECK:
-        return
+    if expected_keys is None:
+        expected_keys = []
     elif hasattr(expected_keys, "upper"):
         # Handle a single string
         if expected_keys == _SKIP_WARNCHECK:
@@ -476,13 +476,20 @@ _MATRIX_TESTCASES = list(_MATRIX_TESTCASE_INPUTS.keys())
 #
 # Define the attrs against which all matrix tests are run
 #
-_MATRIX_ATTRNAMES = _LOCAL_TEST_ATTRS + list(_GLOBAL_TEST_ATTRS) + ["user"]
+max_param_attrs = -1
+# max_param_attrs = 5
+
+_MATRIX_ATTRNAMES = _LOCAL_TEST_ATTRS[:max_param_attrs]
+_MATRIX_ATTRNAMES += list(_GLOBAL_TEST_ATTRS)[:max_param_attrs]
+_MATRIX_ATTRNAMES += ["user"]
 # remove special-cases, for now
 _SPECIAL_ATTRS = [
     "Conventions",
     "ukmo__process_flags",
     "missing_value",
     "standard_error_multiplier",
+    "STASH",
+    "um_stash_source",
 ]
 _MATRIX_ATTRNAMES = [
     attr for attr in _MATRIX_ATTRNAMES if attr not in _SPECIAL_ATTRS
@@ -490,8 +497,8 @@ _MATRIX_ATTRNAMES = [
 
 
 #
-# A routine to work "backwards" from am attribute name to its "style", i.e. type category.
-# Possible ones are "globalstyle", "localstyle", "userstyle".
+# A routine to work "backwards" from an attribute name to its "style", i.e. type category.
+# Possible styles are "globalstyle", "localstyle", "userstyle".
 #
 _ATTR_STYLES = ["localstyle", "globalstyle", "userstyle"]
 
@@ -511,9 +518,11 @@ def deduce_attr_style(attrname: str) -> str:
 #
 # Decode a matrix "input spec" to codes for global + local values.
 #
-
-
 def decode_matrix_input(input_spec):
+    # Decode a matrix-test input specifications, like "GaLbc" into lists of values.
+    # E.G. "GaLbc" -> ["a", "b", "c"]
+    # ["GaLbc", "GbLbc"] -> [["a", "b", "c"], ["b", "b", c"]]
+    # N.B. in this form "values" are all one-character strings.
     def decode_specstring(spec: str) -> List[Union[str, None]]:
         # Decode an input spec-string to input/output attribute values
         assert spec[0] == "G" and spec[2] == "L"
@@ -523,65 +532,98 @@ def decode_matrix_input(input_spec):
 
     if isinstance(input_spec, str):
         # Single-source spec (one cube or one file)
-        gA, vA = decode_specstring(input_spec)
-        result = [[gA, vA]]
+        vals = decode_specstring(input_spec)
+        result = [vals]
     else:
-        # Dual-source spec (two files, or sets of cubes with common global)
-        gA, vA = decode_specstring(input_spec[0])
-        gB, vB = decode_specstring(input_spec[1])
-        result = [[gA, vA], [gB, vB]]
+        # Dual-source spec (two files, or sets of cubes with a common global value)
+        vals_A = decode_specstring(input_spec[0])
+        vals_B = decode_specstring(input_spec[1])
+        result = [vals_A, vals_B]
 
     return result
 
 
-def encode_matrix_result(results: List[List[str]]):
-    # result
+def encode_matrix_result(results: List[List[str]]) -> List[str]:
+    # Re-code a set of output results, [*[global-value, *local-values]] as a list of
+    # strings, like ["GaL-b"] or ["GaLabc", "GbLabc"].
+    # N.B. again assuming that all values are just one-character strings, or None.
     assert isinstance(results, Iterable) and len(results) >= 1
-    if isinstance(results[0], str):
+    if not isinstance(results[0], list):
         results = [results]
     assert all(
         all(val is None or len(val) == 1 for val in vals) for vals in results
     )
 
+    # Translate "None" values to "-"
     def valrep(val):
         return "-" if val is None else val
 
-    return list(
+    results = list(
         "".join(["G", valrep(vals[0]), "L"] + list(map(valrep, vals[1:])))
         for vals in results
     )
+    return results
 
 
 #
-# All the matrix test results are stored in a JSON file.
-# We have the technology to save the found results also.
+# The "expected" matrix test results are stored in JSON files (one for each test-type).
+# We can also save the found results.
 #
+_MATRIX_TESTTYPES = ("load", "save", "roundtrip")
 
 
 @pytest.fixture(autouse=True, scope="session")
 def matrix_results():
-    matrix_filepath = Path(__file__).parent / "_testattrs_matrix_results.json"
+    matrix_filepaths = {
+        testtype: Path(__file__).parent
+        / f"attrs_matrix_results_{testtype}.json"
+        for testtype in _MATRIX_TESTTYPES
+    }
     save_matrix_results = os.environ.get("SAVEALL_MATRIX_RESULTS", False)
 
-    if matrix_filepath.exists():
-        # use json ...
-        matrix_results = json.load(matrix_filepath)
-    else:
-        # Initialise empty matrix results content
-        matrix_results = {}
-        for testtype in ("load", "save", "roundtrip"):
-            test_specs = matrix_results.setdefault(testtype, {})
+    matrix_results = {}
+    for testtype in _MATRIX_TESTTYPES:
+        # Either fetch from file, or initialise, a results matrix for each test type
+        # (load/save/roundtrip).
+        input_path = matrix_filepaths[testtype]
+        if input_path.exists():
+            # Load from file with json.
+            with open(input_path) as file_in:
+                testtype_results = json.load(file_in)
+        else:
+            # Create empty matrix results content (for one test-type)
+            testtype_results = {}
             for testcase in _MATRIX_TESTCASES:
-                test_case_spec = test_specs.setdefault(testcase, {})
-                test_case_spec["input"] = _MATRIX_TESTCASE_INPUTS[testcase]
+                test_case_results = {}
+                testtype_results[testcase] = test_case_results
+                # Every testcase dict has an "input" slot with the test input spec,
+                # basically just to help human readability.
+                test_case_results["input"] = _MATRIX_TESTCASE_INPUTS[testcase]
                 for attrstyle in _ATTR_STYLES:
-                    test_case_spec[attrstyle] = None  # empty
+                    # "Load"-type results have a single result per attribute-style
+                    if testtype == "load":
+                        test_case_results[attrstyle] = None  # empty
+                    else:
+                        # "save"/"roundtrip"-type results record 2 result sets,
+                        # (unsplit/split) for each attribute-style
+                        # - i.e. when saved without/with split_attrs_saving enabled.
+                        test_case_results[attrstyle] = {
+                            "unsplit": None,
+                            "split": None,
+                        }
+
+        matrix_results[testtype] = testtype_results
+        # Overall structure, matrix_results[TESTTYPES][TESTCASES][ATTR_STYLES]
 
     # Pass through to all the tests : they can also update it, if enabled.
     yield save_matrix_results, matrix_results
 
     if save_matrix_results:
-        json.dump(matrix_results, matrix_filepath)
+        for testtype in _MATRIX_TESTTYPES:
+            output_path = matrix_filepaths[testtype]
+            results = matrix_results[testtype]
+            with open(output_path, "w") as file_out:
+                json.dump(results, file_out, indent=2)
 
 
 class TestRoundtrip(MixinAttrsTesting):
@@ -957,10 +999,11 @@ class TestRoundtrip(MixinAttrsTesting):
             expected_result = expected_result[::-1]
         self.check_roundtrip_results(expected_result)
 
-    @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES)
+    @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
     @pytest.mark.parametrize("attrname", _MATRIX_ATTRNAMES)
-    def test_matrix(self, testcase, attrname, matrix_results):
+    def test_matrix(self, testcase, attrname, matrix_results, do_split):
         do_saves, matrix_results = matrix_results
+        split_param = "split" if do_split else "unsplit"
         test_spec = matrix_results["roundtrip"][testcase]
         input_spec = test_spec["input"]
         values = decode_matrix_input(input_spec)
@@ -970,11 +1013,12 @@ class TestRoundtrip(MixinAttrsTesting):
         result_spec = encode_matrix_result(results)
 
         attr_style = deduce_attr_style(attrname)
-        expected = test_spec[attr_style]
+        expected = test_spec[attr_style][split_param]
 
         if do_saves:
-            test_spec[attr_style] = result_spec
-        assert result_spec == expected
+            test_spec[attr_style][split_param] = result_spec
+        if expected is not None:
+            assert result_spec == expected
 
 
 class TestLoad(MixinAttrsTesting):
