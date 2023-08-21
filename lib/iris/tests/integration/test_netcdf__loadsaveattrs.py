@@ -84,9 +84,11 @@ def local_attr(request):
 _SPLIT_SAVE_SUPPORTED = hasattr(iris.FUTURE, "save_split_attrs")
 _SPLIT_PARAM_VALUES = [False, True]
 _SPLIT_PARAM_IDS = ["nosplit", "split"]
+_MATRIX_LOAD_RESULTSTYLES = ["legacy", "newstyle"]
 if not _SPLIT_SAVE_SUPPORTED:
     _SPLIT_PARAM_VALUES.remove(True)
     _SPLIT_PARAM_IDS.remove("split")
+    _MATRIX_LOAD_RESULTSTYLES.remove("newstyle")
 
 
 _SKIP_WARNCHECK = "_no_warnings_check"
@@ -584,7 +586,9 @@ def matrix_results():
         / f"attrs_matrix_results_{testtype}.json"
         for testtype in _MATRIX_TESTTYPES
     }
-    save_matrix_results = os.environ.get("SAVEALL_MATRIX_RESULTS", False)
+    save_matrix_results = bool(
+        int(os.environ.get("SAVEALL_MATRIX_RESULTS", "0"))
+    )
 
     matrix_results = {}
     for testtype in _MATRIX_TESTTYPES:
@@ -611,9 +615,13 @@ def matrix_results():
                 # basically just to help human readability.
                 test_case_results["input"] = _MATRIX_TESTCASE_INPUTS[testcase]
                 for attrstyle in _ATTR_STYLES:
-                    # "Load"-type results have a single result per attribute-style
                     if testtype == "load":
-                        test_case_results[attrstyle] = None  # empty
+                        # "Load" results record a "legacy" result, and a "newstyle"
+                        # result.
+                        test_case_results[attrstyle] = {
+                            "legacy": None,
+                            "newstyle": None,
+                        }
                     else:
                         # "save"/"roundtrip"-type results record 2 result sets,
                         # (unsplit/split) for each attribute-style
@@ -1288,6 +1296,34 @@ class TestLoad(MixinAttrsTesting):
         self.check_load_results(expected_result_legacy, oldstyle_combined=True)
         # (#2): exact results, with newstyle "split" cube attrs
         self.check_load_results(expected_result_newstyle)
+
+    @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
+    @pytest.mark.parametrize("attrname", _MATRIX_ATTRNAMES)
+    @pytest.mark.parametrize("resultstyle", _MATRIX_LOAD_RESULTSTYLES)
+    def test_load_matrix(
+        self, testcase, attrname, matrix_results, resultstyle
+    ):
+        do_saves, matrix_results = matrix_results
+        testcase_spec = matrix_results["load"][testcase]
+        input_spec = testcase_spec["input"]
+        values = decode_matrix_input(input_spec)
+
+        self.run_load_testcase(attrname, values)
+
+        result_cubes = iris.load(self.input_filepaths)
+        do_combined = resultstyle == "legacy"
+        results = self.fetch_results(
+            cubes=result_cubes, oldstyle_combined=do_combined
+        )
+        result_spec = encode_matrix_result(results)
+
+        attr_style = deduce_attr_style(attrname)
+        expected = testcase_spec[attr_style][resultstyle]
+
+        if do_saves:
+            testcase_spec[attr_style][resultstyle] = result_spec
+        if expected is not None:
+            assert result_spec == expected
 
 
 class TestSave(MixinAttrsTesting):
