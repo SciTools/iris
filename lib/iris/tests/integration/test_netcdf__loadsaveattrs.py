@@ -432,7 +432,7 @@ class MixinAttrsTesting:
                         if cube.attributes.globals.get(attr_name, None)
                         == globalval
                     ]
-                    for globalval in sorted(global_values)
+                    for globalval in sorted(global_values, key=str)
                 ]
         return results
 
