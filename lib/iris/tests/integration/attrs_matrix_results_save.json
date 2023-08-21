@@ -5,19 +5,25 @@
       "unsplit": [
         "G-La"
       ],
-      "split": null
+      "split": [
+        "G-La"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL-"
       ],
-      "split": null
+      "split": [
+        "G-La"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL-"
       ],
-      "split": null
+      "split": [
+        "G-La"
+      ]
     }
   },
   "case_singlevar_globalonly": {
@@ -26,19 +32,25 @@
       "unsplit": [
         "G-La"
       ],
-      "split": null
+      "split": [
+        "GaL-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL-"
       ],
-      "split": null
+      "split": [
+        "GaL-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL-"
       ],
-      "split": null
+      "split": [
+        "GaL-"
+      ]
     }
   },
   "case_singlevar_glsame": {
@@ -47,19 +59,25 @@
       "unsplit": [
         "G-La"
       ],
-      "split": null
+      "split": [
+        "GaLa"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL-"
       ],
-      "split": null
+      "split": [
+        "GaLa"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL-"
       ],
-      "split": null
+      "split": [
+        "GaLa"
+      ]
     }
   },
   "case_singlevar_gldiffer": {
@@ -68,19 +86,25 @@
       "unsplit": [
         "G-Lb"
       ],
-      "split": null
+      "split": [
+        "GaLb"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GbL-"
       ],
-      "split": null
+      "split": [
+        "GaLb"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GbL-"
       ],
-      "split": null
+      "split": [
+        "GaLb"
+      ]
     }
   },
   "case_multivar_same_noglobal": {
@@ -89,19 +113,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     }
   },
   "case_multivar_same_sameglobal": {
@@ -110,19 +140,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "GaLaa"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLaa"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLaa"
+      ]
     }
   },
   "case_multivar_same_diffglobal": {
@@ -131,19 +167,25 @@
       "unsplit": [
         "G-Lbb"
       ],
-      "split": null
+      "split": [
+        "GaLbb"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GbL--"
       ],
-      "split": null
+      "split": [
+        "GaLbb"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GbL--"
       ],
-      "split": null
+      "split": [
+        "GaLbb"
+      ]
     }
   },
   "case_multivar_differ_noglobal": {
@@ -152,19 +194,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     }
   },
   "case_multivar_differ_diffglobal": {
@@ -173,19 +221,25 @@
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "GaLbc"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "GaLbc"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "GaLbc"
+      ]
     }
   },
   "case_multivar_differ_sameglobal": {
@@ -194,19 +248,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "GaLab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "GaLab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "GaLab"
+      ]
     }
   },
   "case_multivar_1none_noglobal": {
@@ -215,19 +275,25 @@
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     }
   },
   "case_multivar_1none_diffglobal": {
@@ -236,19 +302,25 @@
       "unsplit": [
         "G-Lba"
       ],
-      "split": null
+      "split": [
+        "GaLb-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lba"
       ],
-      "split": null
+      "split": [
+        "GaLb-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lba"
       ],
-      "split": null
+      "split": [
+        "GaLb-"
+      ]
     }
   },
   "case_multivar_1none_sameglobal": {
@@ -257,19 +329,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "GaLa-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLa-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLa-"
+      ]
     }
   },
   "case_multisource_gsame_lnone": {
@@ -281,19 +359,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "GaL--"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaL--"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaL--"
+      ]
     }
   },
   "case_multisource_gsame_lallsame": {
@@ -305,19 +389,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "GaLaa"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLaa"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLaa"
+      ]
     }
   },
   "case_multisource_gsame_l1same1none": {
@@ -329,19 +419,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "GaLa-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLa-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "GaLa-"
+      ]
     }
   },
   "case_multisource_gsame_l1same1other": {
@@ -353,19 +449,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "GaLab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "GaLab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "GaLab"
+      ]
     }
   },
   "case_multisource_gsame_lallother": {
@@ -377,19 +479,25 @@
       "unsplit": [
         "G-Lbb"
       ],
-      "split": null
+      "split": [
+        "GaLbb"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GbL--"
       ],
-      "split": null
+      "split": [
+        "GaLbb"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GbL--"
       ],
-      "split": null
+      "split": [
+        "GaLbb"
+      ]
     }
   },
   "case_multisource_gsame_lalldiffer": {
@@ -401,19 +509,25 @@
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "GaLbc"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "GaLbc"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "GaLbc"
+      ]
     }
   },
   "case_multisource_gnone_l1same1none": {
@@ -425,19 +539,25 @@
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     }
   },
   "case_multisource_gnone_l1same1same": {
@@ -449,19 +569,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     }
   },
   "case_multisource_gnone_l1same1other": {
@@ -473,19 +599,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     }
   },
   "case_multisource_g1none_lnone": {
@@ -497,19 +629,25 @@
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     }
   },
   "case_multisource_g1none_l1same1none": {
@@ -521,19 +659,25 @@
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-La-"
       ],
-      "split": null
+      "split": [
+        "G-La-"
+      ]
     }
   },
   "case_multisource_g1none_l1none1same": {
@@ -545,19 +689,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     }
   },
   "case_multisource_g1none_l1diff1none": {
@@ -569,19 +719,25 @@
       "unsplit": [
         "G-Lb-"
       ],
-      "split": null
+      "split": [
+        "G-Lb-"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lb-"
       ],
-      "split": null
+      "split": [
+        "G-Lb-"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lb-"
       ],
-      "split": null
+      "split": [
+        "G-Lb-"
+      ]
     }
   },
   "case_multisource_g1none_l1none1diff": {
@@ -593,19 +749,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     }
   },
   "case_multisource_g1none_lallsame": {
@@ -617,19 +779,25 @@
       "unsplit": [
         "G-Laa"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GaL--"
       ],
-      "split": null
+      "split": [
+        "G-Laa"
+      ]
     }
   },
   "case_multisource_g1none_lallother": {
@@ -641,19 +809,25 @@
       "unsplit": [
         "G-Lcc"
       ],
-      "split": null
+      "split": [
+        "G-Lcc"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GcL--"
       ],
-      "split": null
+      "split": [
+        "G-Lcc"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GcL--"
       ],
-      "split": null
+      "split": [
+        "G-Lcc"
+      ]
     }
   },
   "case_multisource_gdiff_lnone": {
@@ -665,19 +839,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     }
   },
   "case_multisource_gdiff_l1same1none": {
@@ -689,19 +869,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     }
   },
   "case_multisource_gdiff_l1diff1none": {
@@ -713,19 +899,25 @@
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "G-Lbc"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "G-Lbc"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lbc"
       ],
-      "split": null
+      "split": [
+        "G-Lbc"
+      ]
     }
   },
   "case_multisource_gdiff_lallsame": {
@@ -737,19 +929,25 @@
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "G-Lab"
       ],
-      "split": null
+      "split": [
+        "G-Lab"
+      ]
     }
   },
   "case_multisource_gdiff_lallother": {
@@ -761,19 +959,25 @@
       "unsplit": [
         "G-Lcc"
       ],
-      "split": null
+      "split": [
+        "G-Lcc"
+      ]
     },
     "globalstyle": {
       "unsplit": [
         "GcL--"
       ],
-      "split": null
+      "split": [
+        "G-Lcc"
+      ]
     },
     "userstyle": {
       "unsplit": [
         "GcL--"
       ],
-      "split": null
+      "split": [
+        "G-Lcc"
+      ]
     }
   }
 }
