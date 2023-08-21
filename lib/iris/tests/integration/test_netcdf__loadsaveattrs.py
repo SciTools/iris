@@ -457,20 +457,24 @@ _MATRIX_TESTCASE_INPUTS = {
     #  independent global values.
     # We assume that there can be nothing "special" about a var's interaction with
     #  another one from the *same file* ??
-    "case_multisource_gsame_lnone": ("GaL-", "GaL-"),
-    "case_multisource_gsame_lallsame": ("GaLa", "GaLa"),
-    "case_multisource_gsame_l1same1none": ("GaLa", "GaL-"),
-    "case_multisource_gsame_l1same1other": ("GaLa", "GaLb"),
-    "case_multisource_gsame_lallother": ("GaLb", "GaLb"),
-    "case_multisource_gsame_lalldiffer": ("GaLb", "GaLc"),
-    "case_multisource_gnone_l1same1none": ("G-La", "G-L-"),
-    "case_multisource_gnone_l1same1same": ("G-La", "G-La"),
-    "case_multisource_gnone_l1same1other": ("G-La", "G-Lb"),
-    "case_multisource_gdiff_lnone": ("GaL-", "GbL-"),
-    "case_multisource_gdiff_l1same1none": ("GaLa", "GbL-"),
-    "case_multisource_gdiff_l1diff1none": ("GaLb", "GcL-"),
-    "case_multisource_gdiff_lallsame": ("GaLa", "GbLb"),
-    "case_multisource_gdiff_lallother": ("GaLc", "GbLc"),
+    "case_multisource_gsame_lnone": ["GaL-", "GaL-"],
+    "case_multisource_gsame_lallsame": ["GaLa", "GaLa"],
+    "case_multisource_gsame_l1same1none": ["GaLa", "GaL-"],
+    "case_multisource_gsame_l1same1other": ["GaLa", "GaLb"],
+    "case_multisource_gsame_lallother": ["GaLb", "GaLb"],
+    "case_multisource_gsame_lalldiffer": ["GaLb", "GaLc"],
+    "case_multisource_gnone_l1same1none": ["G-La", "G-L-"],
+    "case_multisource_gnone_l1same1same": ["G-La", "G-La"],
+    "case_multisource_gnone_l1same1other": ["G-La", "G-Lb"],
+    "case_multisource_gdiff_lnone": ["GaL-", "GbL-"],
+    "case_multisource_gdiff_l1same1none": ["GaLa", "GbL-"],
+    "case_multisource_gdiff_l1diff1none": ["GaLb", "GcL-"],
+    "case_multisource_gdiff_lallsame": ["GaLa", "GbLb"],
+    "case_multisource_gdiff_lallother": ["GaLc", "GbLc"],
+    #
+    # TODO: improvements needed here -- ordering can be more consistent, missed checking
+    #  "gdiff" multi-cases where one global is None, rather than a different value.
+    #
 }
 _MATRIX_TESTCASES = list(_MATRIX_TESTCASE_INPUTS.keys())
 
@@ -591,6 +595,12 @@ def matrix_results():
             # Load from file with json.
             with open(input_path) as file_in:
                 testtype_results = json.load(file_in)
+            # Check compatibility (in case we changed the test-specs list)
+            assert set(testtype_results.keys()) == set(_MATRIX_TESTCASES)
+            assert all(
+                testtype_results[key]["input"] == _MATRIX_TESTCASE_INPUTS[key]
+                for key in _MATRIX_TESTCASES
+            )
         else:
             # Create empty matrix results content (for one test-type)
             testtype_results = {}
@@ -1002,11 +1012,13 @@ class TestRoundtrip(MixinAttrsTesting):
 
     @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
     @pytest.mark.parametrize("attrname", _MATRIX_ATTRNAMES)
-    def test_matrix(self, testcase, attrname, matrix_results, do_split):
+    def test_roundtrip_matrix(
+        self, testcase, attrname, matrix_results, do_split
+    ):
         do_saves, matrix_results = matrix_results
         split_param = "split" if do_split else "unsplit"
-        test_spec = matrix_results["roundtrip"][testcase]
-        input_spec = test_spec["input"]
+        testcase_spec = matrix_results["roundtrip"][testcase]
+        input_spec = testcase_spec["input"]
         values = decode_matrix_input(input_spec)
 
         self.run_roundtrip_testcase(attrname, values)
@@ -1014,10 +1026,10 @@ class TestRoundtrip(MixinAttrsTesting):
         result_spec = encode_matrix_result(results)
 
         attr_style = deduce_attr_style(attrname)
-        expected = test_spec[attr_style][split_param]
+        expected = testcase_spec[attr_style][split_param]
 
         if do_saves:
-            test_spec[attr_style][split_param] = result_spec
+            testcase_spec[attr_style][split_param] = result_spec
         if expected is not None:
             assert result_spec == expected
 
@@ -1567,3 +1579,24 @@ class TestSave(MixinAttrsTesting):
             expected = [None, "valueB", "valueXXX"]
         self.run_save_testcase("userattr", values=inputs)
         self.check_save_results(expected)
+
+    @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
+    @pytest.mark.parametrize("attrname", _MATRIX_ATTRNAMES)
+    def test_save_matrix(self, testcase, attrname, matrix_results, do_split):
+        do_saves, matrix_results = matrix_results
+        split_param = "split" if do_split else "unsplit"
+        testcase_spec = matrix_results["save"][testcase]
+        input_spec = testcase_spec["input"]
+        values = decode_matrix_input(input_spec)
+
+        self.run_save_testcase(attrname, values)
+        results = self.fetch_results(filepath=self.result_filepath)
+        result_spec = encode_matrix_result(results)
+
+        attr_style = deduce_attr_style(attrname)
+        expected = testcase_spec[attr_style][split_param]
+
+        if do_saves:
+            testcase_spec[attr_style][split_param] = result_spec
+        if expected is not None:
+            assert result_spec == expected
