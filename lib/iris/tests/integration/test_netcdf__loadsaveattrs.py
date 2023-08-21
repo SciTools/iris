@@ -19,6 +19,9 @@ might be recorded either globally or locally.
 
 """
 import inspect
+import json
+import os
+from pathlib import Path
 import re
 from typing import Iterable, List, Optional, Union
 import warnings
@@ -85,6 +88,9 @@ if not _SPLIT_SAVE_SUPPORTED:
     _SPLIT_PARAM_IDS.remove("split")
 
 
+_SKIP_WARNCHECK = "_no_warnings_check"
+
+
 def check_captured_warnings(
     expected_keys: List[str], captured_warnings: List[warnings.WarningMessage]
 ):
@@ -96,11 +102,15 @@ def check_captured_warnings(
     comprehend.
 
     """
-    if expected_keys is None:
-        expected_keys = []
+    if expected_keys == _SKIP_WARNCHECK:
+        return
     elif hasattr(expected_keys, "upper"):
         # Handle a single string
+        if expected_keys == _SKIP_WARNCHECK:
+            # No check at all in this case
+            return
         expected_keys = [expected_keys]
+
     expected_keys = [re.compile(key) for key in expected_keys]
     found_results = [str(warning.message) for warning in captured_warnings]
     remaining_keys = expected_keys.copy()
@@ -422,6 +432,156 @@ class MixinAttrsTesting:
                     for globalval in sorted(global_values)
                 ]
         return results
+
+
+# Define all the testcases for different parameter input structures :
+#   - combinations of matching+differing, global+local params
+#   - these are interpreted differently for the 3 main test types : Load/Save/Roundtrip
+_MATRIX_TESTCASE_INPUTS = {
+    "case_single_localonly": "G-La",
+    "case_single_globalonly": "GaL-",
+    "case_single_glsame": "GaLa",
+    "case_single_gldiffer": "GaLb",
+    "case_multivar_same_noglobal": "G-Laa",
+    "case_multivar_same_sameglobal": "GaLaa",
+    "case_multivar_same_diffglobal": "GaLbb",
+    "case_multivar_differ_noglobal": "G-Lab",
+    "case_multivar_differ_diffglobal": "GaLbc",
+    "case_multivar_differ_sameglobal": "GaLab",
+    "case_multivar_1none_noglobal": "G-La-",
+    "case_multivar_1none_diffglobal": "GaLb-",
+    "case_multivar_1none_sameglobal": "GaLa-",
+    # Note: the multi-set input cases are more complex.
+    # These are encoded as *pairs* of specs, for 2 different files, or cubes with
+    #  independent global values.
+    # We assume that there can be nothing "special" about a var's interaction with
+    #  another one from the *same file* ??
+    "case_multisource_gsame_lnone": ("GaL-", "GaL-"),
+    "case_multisource_gsame_lallsame": ("GaLa", "GaLa"),
+    "case_multisource_gsame_l1same1none": ("GaLa", "GaL-"),
+    "case_multisource_gsame_l1same1other": ("GaLa", "GaLb"),
+    "case_multisource_gsame_lallother": ("GaLb", "GaLb"),
+    "case_multisource_gsame_lalldiffer": ("GaLb", "GaLc"),
+    "case_multisource_gnone_l1same1none": ("G-La", "G-L-"),
+    "case_multisource_gnone_l1same1same": ("G-La", "G-La"),
+    "case_multisource_gnone_l1same1other": ("G-La", "G-Lb"),
+    "case_multisource_gdiff_lnone": ("GaL-", "GbL-"),
+    "case_multisource_gdiff_l1same1none": ("GaLa", "GbL-"),
+    "case_multisource_gdiff_l1diff1none": ("GaLb", "GcL-"),
+    "case_multisource_gdiff_lallsame": ("GaLa", "GbLb"),
+    "case_multisource_gdiff_lallother": ("GaLc", "GbLc"),
+}
+_MATRIX_TESTCASES = list(_MATRIX_TESTCASE_INPUTS.keys())
+
+#
+# Define the attrs against which all matrix tests are run
+#
+_MATRIX_ATTRNAMES = _LOCAL_TEST_ATTRS + list(_GLOBAL_TEST_ATTRS) + ["user"]
+# remove special-cases, for now
+_SPECIAL_ATTRS = [
+    "Conventions",
+    "ukmo__process_flags",
+    "missing_value",
+    "standard_error_multiplier",
+]
+_MATRIX_ATTRNAMES = [
+    attr for attr in _MATRIX_ATTRNAMES if attr not in _SPECIAL_ATTRS
+]
+
+
+#
+# A routine to work "backwards" from am attribute name to its "style", i.e. type category.
+# Possible ones are "globalstyle", "localstyle", "userstyle".
+#
+_ATTR_STYLES = ["localstyle", "globalstyle", "userstyle"]
+
+
+def deduce_attr_style(attrname: str) -> str:
+    # Extract the attribute "style type" from an attr_param name
+    if attrname in _LOCAL_TEST_ATTRS:
+        style = "localstyle"
+    elif attrname in _GLOBAL_TEST_ATTRS:
+        style = "globalstyle"
+    else:
+        assert attrname == "user"
+        style = "userstyle"
+    return style
+
+
+#
+# Decode a matrix "input spec" to codes for global + local values.
+#
+
+
+def decode_matrix_input(input_spec):
+    def decode_specstring(spec: str) -> List[Union[str, None]]:
+        # Decode an input spec-string to input/output attribute values
+        assert spec[0] == "G" and spec[2] == "L"
+        allvals = spec[1] + spec[3:]
+        result = [None if valchar == "-" else valchar for valchar in allvals]
+        return result
+
+    if isinstance(input_spec, str):
+        # Single-source spec (one cube or one file)
+        gA, vA = decode_specstring(input_spec)
+        result = [[gA, vA]]
+    else:
+        # Dual-source spec (two files, or sets of cubes with common global)
+        gA, vA = decode_specstring(input_spec[0])
+        gB, vB = decode_specstring(input_spec[1])
+        result = [[gA, vA], [gB, vB]]
+
+    return result
+
+
+def encode_matrix_result(results: List[List[str]]):
+    # result
+    assert isinstance(results, Iterable) and len(results) >= 1
+    if isinstance(results[0], str):
+        results = [results]
+    assert all(
+        all(val is None or len(val) == 1 for val in vals) for vals in results
+    )
+
+    def valrep(val):
+        return "-" if val is None else val
+
+    return list(
+        "".join(["G", valrep(vals[0]), "L"] + list(map(valrep, vals[1:])))
+        for vals in results
+    )
+
+
+#
+# All the matrix test results are stored in a JSON file.
+# We have the technology to save the found results also.
+#
+
+
+@pytest.fixture(autouse=True, scope="session")
+def matrix_results():
+    matrix_filepath = Path(__file__).parent / "_testattrs_matrix_results.json"
+    save_matrix_results = os.environ.get("SAVEALL_MATRIX_RESULTS", False)
+
+    if matrix_filepath.exists():
+        # use json ...
+        matrix_results = json.load(matrix_filepath)
+    else:
+        # Initialise empty matrix results content
+        matrix_results = {}
+        for testtype in ("load", "save", "roundtrip"):
+            test_specs = matrix_results.setdefault(testtype, {})
+            for testcase in _MATRIX_TESTCASES:
+                test_case_spec = test_specs.setdefault(testcase, {})
+                test_case_spec["input"] = _MATRIX_TESTCASE_INPUTS[testcase]
+                for attrstyle in _ATTR_STYLES:
+                    test_case_spec[attrstyle] = None  # empty
+
+    # Pass through to all the tests : they can also update it, if enabled.
+    yield save_matrix_results, matrix_results
+
+    if save_matrix_results:
+        json.dump(matrix_results, matrix_filepath)
 
 
 class TestRoundtrip(MixinAttrsTesting):
@@ -797,6 +957,25 @@ class TestRoundtrip(MixinAttrsTesting):
             expected_result = expected_result[::-1]
         self.check_roundtrip_results(expected_result)
 
+    @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES)
+    @pytest.mark.parametrize("attrname", _MATRIX_ATTRNAMES)
+    def test_matrix(self, testcase, attrname, matrix_results):
+        do_saves, matrix_results = matrix_results
+        test_spec = matrix_results["roundtrip"][testcase]
+        input_spec = test_spec["input"]
+        values = decode_matrix_input(input_spec)
+
+        self.run_roundtrip_testcase(attrname, values)
+        results = self.fetch_results(filepath=self.result_filepath)
+        result_spec = encode_matrix_result(results)
+
+        attr_style = deduce_attr_style(attrname)
+        expected = test_spec[attr_style]
+
+        if do_saves:
+            test_spec[attr_style] = result_spec
+        assert result_spec == expected
+
 
 class TestLoad(MixinAttrsTesting):
     """
@@ -818,6 +997,9 @@ class TestLoad(MixinAttrsTesting):
         )
 
     def check_load_results(self, expected, oldstyle_combined=False):
+        if not _SPLIT_SAVE_SUPPORTED and not oldstyle_combined:
+            # Don't check "newstyle" in the old world -- just skip it.
+            return
         result_cubes = iris.load(self.input_filepaths)
         results = self.fetch_results(
             cubes=result_cubes, oldstyle_combined=oldstyle_combined
