@@ -1,0 +1,779 @@
+{
+  "case_singlevar_localonly": {
+    "input": "G-La",
+    "localstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_singlevar_globalonly": {
+    "input": "GaL-",
+    "localstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_singlevar_glsame": {
+    "input": "GaLa",
+    "localstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-La"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_singlevar_gldiffer": {
+    "input": "GaLb",
+    "localstyle": {
+      "legacy": [
+        "G-Lb"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lb"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lb"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_same_noglobal": {
+    "input": "G-Laa",
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_same_sameglobal": {
+    "input": "GaLaa",
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_same_diffglobal": {
+    "input": "GaLbb",
+    "localstyle": {
+      "legacy": [
+        "G-Lbb"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lbb"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lbb"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_differ_noglobal": {
+    "input": "G-Lab",
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_differ_diffglobal": {
+    "input": "GaLbc",
+    "localstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_differ_sameglobal": {
+    "input": "GaLab",
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_1none_noglobal": {
+    "input": "G-La-",
+    "localstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_1none_diffglobal": {
+    "input": "GaLb-",
+    "localstyle": {
+      "legacy": [
+        "G-Lba"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lba"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lba"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multivar_1none_sameglobal": {
+    "input": "GaLa-",
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gsame_lnone": {
+    "input": [
+      "GaL-",
+      "GaL-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gsame_lallsame": {
+    "input": [
+      "GaLa",
+      "GaLa"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gsame_l1same1none": {
+    "input": [
+      "GaLa",
+      "GaL-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gsame_l1same1other": {
+    "input": [
+      "GaLa",
+      "GaLb"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gsame_lallother": {
+    "input": [
+      "GaLb",
+      "GaLb"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lbb"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lbb"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lbb"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gsame_lalldiffer": {
+    "input": [
+      "GaLb",
+      "GaLc"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gnone_l1same1none": {
+    "input": [
+      "G-La",
+      "G-L-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gnone_l1same1same": {
+    "input": [
+      "G-La",
+      "G-La"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gnone_l1same1other": {
+    "input": [
+      "G-La",
+      "G-Lb"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_g1none_lnone": {
+    "input": [
+      "GaL-",
+      "G-L-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_g1none_l1same1none": {
+    "input": [
+      "GaLa",
+      "G-L-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-La-"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_g1none_l1none1same": {
+    "input": [
+      "GaL-",
+      "G-La"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_g1none_l1diff1none": {
+    "input": [
+      "GaLb",
+      "G-L-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lb-"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lb-"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lb-"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_g1none_l1none1diff": {
+    "input": [
+      "GaL-",
+      "G-Lb"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_g1none_lallsame": {
+    "input": [
+      "GaLa",
+      "G-La"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Laa"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_g1none_lallother": {
+    "input": [
+      "GaLc",
+      "G-Lc"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lcc"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lcc"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lcc"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gdiff_lnone": {
+    "input": [
+      "GaL-",
+      "GbL-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gdiff_l1same1none": {
+    "input": [
+      "GaLa",
+      "GbL-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gdiff_l1diff1none": {
+    "input": [
+      "GaLb",
+      "GcL-"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lbc"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gdiff_lallsame": {
+    "input": [
+      "GaLa",
+      "GbLb"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lab"
+      ],
+      "newstyle": null
+    }
+  },
+  "case_multisource_gdiff_lallother": {
+    "input": [
+      "GaLc",
+      "GbLc"
+    ],
+    "localstyle": {
+      "legacy": [
+        "G-Lcc"
+      ],
+      "newstyle": null
+    },
+    "globalstyle": {
+      "legacy": [
+        "G-Lcc"
+      ],
+      "newstyle": null
+    },
+    "userstyle": {
+      "legacy": [
+        "G-Lcc"
+      ],
+      "newstyle": null
+    }
+  }
+}
