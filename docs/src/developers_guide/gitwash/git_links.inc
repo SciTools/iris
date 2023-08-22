@@ -28,6 +28,5 @@
 .. _git config: http://schacon.github.com/git/git-config.html
 
 .. _linux git workflow: http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html
-.. _deleting master on github: https://matthew-brett.github.io/pydagogue/gh_delete_master.html
 
 .. |emdash| unicode:: U+02014
