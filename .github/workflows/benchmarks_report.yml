@@ -75,7 +75,7 @@ jobs:
 
       - name: Set up Python
         # benchmarks/bm_runner.py only needs builtins to run.
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
 
       - name: Post reports
         env:
