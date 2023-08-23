@@ -176,38 +176,18 @@ def xd_to_normal(dic):
 
 def xd_from_normal(dic):
     """
-    Convert the input to a split-attrs dict, if it has global//local paired keys.
+    Convert an input with global//local paired keys back into a split-attrs dict.
     """
-    result = dic
-    is_first_key = True
+    from iris.cube import CubeAttrsDict
+
+    result = CubeAttrsDict()
     for key, value in dic.items():
-        if is_first_key:
-            if (
-                isinstance(key, tuple)
-                and len(key) == 2
-                and key[0] in ("global", "local")
-            ):
-                # Input passes a "duck type" test for being a split dictionary.
-                # For now at least, this can *only* be a CubeAttrsDict.
-                from iris.cube import CubeAttrsDict
-
-                # produce a split result
-                result = CubeAttrsDict()
-                # expect all keys to be 'split type'
-                is_first_key = False
-            else:
-                # Input is a "normal" dict : return it unchanged
-                break
-
-        # From here on, we are converting items to a 'split' dict.
-        # Assign the items with paired keys into global+local parts.
         keytype, keyname = key
         if keytype == "global":
             result.globals[keyname] = value
         else:
             assert keytype == "local"
             result.locals[keyname] = value
-
     return result
 
 
