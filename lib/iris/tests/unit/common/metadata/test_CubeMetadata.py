@@ -127,7 +127,7 @@ def attrs_check(
     check_testcase: str, check_lenient: bool, op: str, cases: dict
 ):
     """
-    Check the attributes handling of a metadata operation.
+    Check the split-attributes handling of a metadata operation.
 
     Testcases are the ones already listed in _ATTRS_TESTCASE_INPUTS, where they are
     coded strings, as used in iris.tests.integration.test_netcdf_loadsaveattrs.
@@ -135,29 +135,30 @@ def attrs_check(
     * construct the 2 inputs from _ATTRS_TESTCASE_INPUTS[check_testcase],
     * then perform
         result = op(*inputs, lenient=check_lenient).
-    * convert the result to a result-code string, again like test_netcdf_loadsaveattrs.
+    * (except for equality) convert the result to a "result-code string",
+      again like in test_netcdf_loadsaveattrs.
     * assert that the (encoded) results match the expected
 
     The 'cases' args specifies the "expected" result-code answers for each testcase :
-    either two result-codes for 'strict' and 'lenient' cases, when those are different,
-    or a single result-code if strict and lenient results are the same.
+    either two results for 'strict' and 'lenient' cases, when those are different,
+    or a single result if strict and lenient results are the same.
 
     """
     # cases.keys() are the testcase names -- should match the master table
     assert cases.keys() == _ATTRS_TESTCASE_INPUTS.keys()
     # Each case is recorded as testcase: (<input>, [*output-codes])
-    # The 'input' is just for readability: it should match that in the master table.
+    # The "input"s are only for readability, and should match those in the master table.
     assert all(
         cases[key][0] == _ATTRS_TESTCASE_INPUTS[key]
         for key in _ATTRS_TESTCASE_INPUTS
     )
     # Perform the configured check, and check that the results are as expected.
-    testcase = cases[check_testcase]
-    input_spec, result_specs = testcase
+    input_spec, result_specs = cases[check_testcase]
     input_spec = input_spec.split(
         ":"
     )  # make a list from the two sides of the ":"
     assert len(input_spec) == 2
+
     # convert to a list of (global, *locals) value sets
     input_values = decode_matrix_input(input_spec)
 
@@ -195,7 +196,7 @@ def attrs_check(
     result = getattr(input_l, op)(input_r, lenient=check_lenient)
 
     # Convert the result to the form of the recorded "expected" output.
-    # This depends on the test operation...
+    # The expected-result format depends on the operation under test.
     assert op in ("combine", "equal", "difference")
     if op == "combine":
         # "combine" result is CubeMetadata
@@ -204,9 +205,8 @@ def attrs_check(
             result.attributes.globals.get("_testattr_", None),
             result.attributes.locals.get("_testattr_", None),
         ]
-        (result,) = encode_matrix_result(
-            values
-        )  # NB always a list of 1 spec (string)
+        # N.B. encode_matrix_result returns a list of results (always 1 in this case).
+        (result,) = encode_matrix_result(values)
 
     elif op == "difference":
         #   "difference" op result is a CubeMetadata, its values are difference-pairs.
@@ -256,6 +256,7 @@ def attrs_check(
             # (value-pairs) == [[None, "a"], [None, None]]
             #   --> (value-codes) ["-a", "--"]
             #   --> (result) "G-aL--"
+            # N.B. encode_matrix_result returns a list of results (1 in this case).
             (result,) = encode_matrix_result(global_local_valuecodes)
 
     else:

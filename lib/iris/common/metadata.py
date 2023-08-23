@@ -141,15 +141,19 @@ class _NamedTupleMeta(ABCMeta):
 
 
 #
-# "Extended" dictionary access, for dict-like operations which work with regular dicts,
-#  but in specific extended ways for 'CubeAttrsDict' style split dictionaries
+# Dictionary operations for dealing with the CubeAttrsDict "split"-style attribute
+# dictionaries.
 #
 # The idea here is to convert a split-dictionary into a "plain" one for calculations,
-#  whose keys are all pairs of the form ('global', <keyname>) or ('local', <keyname>).
+# whose keys are all pairs of the form ('global', <keyname>) or ('local', <keyname>).
 # And to convert back again after the operation, if the result is a dictionary.
-# For "strict" operations this probably does all that is needed.  For lenient ones,
-#  it's not so clear whether local+global keys with the same attribute name "should",
-#  in some cases, affect one another in some ways
+#
+# For "strict" operations this clearly does all that is needed.  For lenient ones,
+# we _might_ want for local+global attributes of the same name to interact.
+# However, on careful consideration, it seems that this is not actually desirable for
+# any of the common-metadata operations.
+# So, we simply treat "global" and "local" attributes of the same name as entirely
+# independent. Which happily is also the easiest to code, and to explain.
 #
 def xd_is_split(dic):
     """Detect whether a dictionary is a "split-attribute" type."""
@@ -167,16 +171,14 @@ def xd_to_normal(dic):
     """
     Convert the input to a 'normal' dict with paired keys, if it is split-attrs type
     """
-    if xd_is_split(dic):
-        result = dict(_global_local_items(dic))
-    else:
-        result = dic
-    return result
+    return dict(_global_local_items(dic))
 
 
 def xd_from_normal(dic):
     """
-    Convert an input with global//local paired keys back into a split-attrs dict.
+    Convert an input with global/local paired keys back into a split-attrs dict.
+
+    For now, this is always+only a CubeAttrsDict.
     """
     from iris.cube import CubeAttrsDict
 
@@ -441,9 +443,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _combine_lenient_attributes(left, right):
         """Leniently combine the dictionary members together."""
-        # Copy the dictionaries, convert from split form if required
+        # Copy the dictionaries.
         left = deepcopy(left)
         right = deepcopy(right)
+        # convert from split form if required
         is_split, left, right = xd_normalise_input_pair(left, right)
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
@@ -472,9 +475,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _combine_strict_attributes(left, right):
         """Perform strict combination of the dictionary members."""
-        # Copy the dictionaries, convert from split form if required
+        # Copy the dictionaries.
         left = deepcopy(left)
         right = deepcopy(right)
+        # convert from split form if required
         is_split, left, right = xd_normalise_input_pair(left, right)
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
@@ -542,8 +546,6 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         # Convert from split if required --> i.e. all distinct keys (global+local)
         _, left, right = xd_normalise_input_pair(left, right)
-        # TODO: ?maybe? global + local versions of an attr SHOULD conflict
-        #  -- this way treats them as entirely separate entries, for now.
 
         sleft = {(k, hexdigest(v)) for k, v in left.items()}
         sright = {(k, hexdigest(v)) for k, v in right.items()}
@@ -553,6 +555,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         dsright = dict(sright - sleft)
         # Intersection of common item keys with different values.
         keys = set(dsleft.keys()) & set(dsright.keys())
+
         return not bool(keys)
 
     @staticmethod
