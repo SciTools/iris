@@ -20,6 +20,11 @@ import pytest
 
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata
+from iris.cube import CubeAttrsDict
+from iris.tests.integration.test_netcdf__loadsaveattrs import (
+    decode_matrix_input,
+    encode_matrix_result,
+)
 
 
 def _make_metadata(
@@ -101,6 +106,163 @@ def fieldname(request):
 @pytest.fixture(params=["strict", "lenient"])
 def op_leniency(request):
     return request.param
+
+
+_ATTRS_TESTCASE_INPUTS = {
+    "same": "GaLb:GaLb",
+    "extra_global": "GaL-:G-L-",
+    "extra_local": "G-La:G-L-",
+    "same_global_local": "GaL-:G-La",
+    "diff_global_local": "GaL-:G-Lb",
+    "diffglobal_nolocal": "GaL-:GbL-",
+    "diffglobal_samelocal": "GaLc:GbLc",
+    "difflocal_noglobal": "G-La:G-Lb",
+    "difflocal_sameglobal": "GaLc:GaLd",
+    "diff_local_and_global": "GaLc:GbLd",
+}
+_ATTRS_TESTCASE_NAMES = list(_ATTRS_TESTCASE_INPUTS)
+
+
+def attrs_check(
+    check_testcase: str, check_lenient: bool, op: str, cases: dict
+):
+    """
+    Check the attributes handling of a metadata operation.
+
+    Testcases are the ones already listed in _ATTRS_TESTCASE_INPUTS, where they are
+    coded strings, as used in iris.tests.integration.test_netcdf_loadsaveattrs.
+
+    * construct the 2 inputs from _ATTRS_TESTCASE_INPUTS[check_testcase],
+    * then perform
+        result = op(*inputs, lenient=check_lenient).
+    * convert the result to a result-code string, again like test_netcdf_loadsaveattrs.
+    * assert that the (encoded) results match the expected
+
+    The 'cases' args specifies the "expected" result-code answers for each testcase :
+    either two result-codes for 'strict' and 'lenient' cases, when those are different,
+    or a single result-code if strict and lenient results are the same.
+
+    """
+    # cases.keys() are the testcase names -- should match the master table
+    assert cases.keys() == _ATTRS_TESTCASE_INPUTS.keys()
+    # Each case is recorded as testcase: (<input>, [*output-codes])
+    # The 'input' is just for readability: it should match that in the master table.
+    assert all(
+        cases[key][0] == _ATTRS_TESTCASE_INPUTS[key]
+        for key in _ATTRS_TESTCASE_INPUTS
+    )
+    # Perform the configured check, and check that the results are as expected.
+    testcase = cases[check_testcase]
+    input_spec, result_specs = testcase
+    input_spec = input_spec.split(
+        ":"
+    )  # make a list from the two sides of the ":"
+    assert len(input_spec) == 2
+    # convert to a list of (global, *locals) value sets
+    input_values = decode_matrix_input(input_spec)
+
+    # get the expected result, select strict/lenient if required
+    if len(result_specs) == 1:
+        expected_spec = result_specs[0]
+    else:
+        expected_spec = result_specs[1 if check_lenient else 0]
+
+    # form 2 inputs to the operation
+    def attrsdict(value):
+        if value is None:
+            result = {}
+        else:
+            result = {"_testattr_": value}
+        return result
+
+    input_attributes = (
+        CubeAttrsDict(
+            globals=attrsdict(values[0]), locals=attrsdict(values[1])
+        )
+        for values in input_values
+    )
+    input_l, input_r = [
+        CubeMetadata(
+            **{
+                field: attrs if field == "attributes" else None
+                for field in CubeMetadata._fields
+            }
+        )
+        for attrs in input_attributes
+    ]
+
+    # Run the actual operation
+    result = getattr(input_l, op)(input_r, lenient=check_lenient)
+
+    # Convert the result to the form of the recorded "expected" output.
+    # This depends on the test operation...
+    assert op in ("combine", "equal", "difference")
+    if op == "combine":
+        # "combine" result is CubeMetadata
+        # convert global+local values to a result-code string
+        values = [
+            result.attributes.globals.get("_testattr_", None),
+            result.attributes.locals.get("_testattr_", None),
+        ]
+        (result,) = encode_matrix_result(
+            values
+        )  # NB always a list of 1 spec (string)
+
+    elif op == "difference":
+        #   "difference" op result is a CubeMetadata, its values are difference-pairs.
+        if result is None:
+            # Use a unique string to indicate a null result
+            result = "-"
+        else:
+            # result is a CubeMetadata whose .attributes is a pair of CubeAttrsDict
+            assert isinstance(result, CubeMetadata)
+            assert isinstance(result.attributes, tuple)
+            assert len(result.attributes) == 2
+            assert all(
+                isinstance(dic, CubeAttrsDict) for dic in result.attributes
+            )
+
+            # calculate value-pairs in each section, where present
+            global_local_valuepairs = [
+                [
+                    val.globals.get("_testattr_", None)
+                    for val in result.attributes
+                ],
+                [
+                    val.locals.get("_testattr_", None)
+                    for val in result.attributes
+                ],
+            ]
+            # E.G. [[None, "a"], [None, None]], or [["a", "b"], [None, "c"]]
+
+            # convert these difference-value-pairs to coded strings, which we will
+            # treat as "global and local values" for conversion into a spec string
+            # E.G. ["a", "b"] --> "ab""
+            # E.G. [None, "a"] --> "-a"
+            # E.G. [None, None] --> "--"
+            def valrep_single(val):
+                return "-" if val is None else val
+
+            def valrep_pair(val):
+                assert len(val) == 2
+                return valrep_single(val[0]) + valrep_single(val[1])
+
+            global_local_valuecodes = [
+                valrep_pair(val) for val in global_local_valuepairs
+            ]
+
+            # Encode those "value-codes" as a result-code string
+            # E.G. converting
+            # (value-pairs) == [[None, "a"], [None, None]]
+            #   --> (value-codes) ["-a", "--"]
+            #   --> (result) "G-aL--"
+            (result,) = encode_matrix_result(global_local_valuecodes)
+
+    else:
+        # "equal" op result is a boolean : needs no further conversion
+        assert op == "equal"
+
+    assert result == expected_spec
 
 
 class Test___eq__:
@@ -246,6 +408,26 @@ class Test___eq__:
             # This should ALWAYS fail.
             assert not lmetadata.__eq__(rmetadata)
             assert not rmetadata.__eq__(lmetadata)
+
+    @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
+    def test_op__attributes_cases(self, op_leniency, testcase):
+        attrs_check(
+            check_testcase=testcase,
+            check_lenient=op_leniency == "lenient",
+            op="equal",
+            cases={
+                "same": ("GaLb:GaLb", [True]),
+                "extra_global": ("GaL-:G-L-", [False, True]),
+                "extra_local": ("G-La:G-L-", [False, True]),
+                "same_global_local": ("GaL-:G-La", [False, True]),
+                "diff_global_local": ("GaL-:G-Lb", [False, True]),
+                "diffglobal_nolocal": ("GaL-:GbL-", [False]),
+                "diffglobal_samelocal": ("GaLc:GbLc", [False]),
+                "difflocal_noglobal": ("G-La:G-Lb", [False]),
+                "difflocal_sameglobal": ("GaLc:GaLd", [False]),
+                "diff_local_and_global": ("GaLc:GbLd", [False]),
+            },
+        )
 
 
 class Test___lt__(tests.IrisTest):
@@ -456,6 +638,113 @@ class Test_combine:
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
+    def test_op_different__attribute_extra_global(self, op_leniency):
+        # One field has an extra attribute, both strict + lenient.
+        is_lenient = op_leniency == "lenient"
+
+        self.lvalues["attributes"] = CubeAttrsDict(
+            globals={"_a_common_": mock.sentinel.dummy_a},
+            locals={"_b_common_": mock.sentinel.dummy_b},
+        )
+        self.rvalues["attributes"] = self.lvalues["attributes"].copy()
+        self.rvalues["attributes"].globals["_extra_"] = mock.sentinel.testvalue
+        lmetadata = self.cls(**self.lvalues)
+        rmetadata = self.cls(**self.rvalues)
+
+        if is_lenient:
+            # the extra attribute should appear in the result ..
+            expected = self.rvalues
+        else:
+            # .. it should not
+            expected = self.lvalues
+
+        with mock.patch(
+            "iris.common.metadata._LENIENT", return_value=is_lenient
+        ):
+            # Check both l+r and r+l
+            assert lmetadata.combine(rmetadata)._asdict() == expected
+            assert rmetadata.combine(lmetadata)._asdict() == expected
+
+    def test_op_different__attribute_extra_local(self, op_leniency):
+        # One field has an extra attribute, both strict + lenient.
+        is_lenient = op_leniency == "lenient"
+
+        self.lvalues["attributes"] = CubeAttrsDict(
+            globals={"_a_common_": mock.sentinel.dummy_a},
+            locals={"_b_common_": mock.sentinel.dummy_b},
+        )
+        self.rvalues["attributes"] = self.lvalues["attributes"].copy()
+        self.rvalues["attributes"].locals["_extra_"] = mock.sentinel.testvalue
+        lmetadata = self.cls(**self.lvalues)
+        rmetadata = self.cls(**self.rvalues)
+
+        if is_lenient:
+            # the extra attribute should appear in the result ..
+            expected = self.rvalues
+        else:
+            # .. it should not
+            expected = self.lvalues
+
+        with mock.patch(
+            "iris.common.metadata._LENIENT", return_value=is_lenient
+        ):
+            # Check both l+r and r+l
+            assert lmetadata.combine(rmetadata)._asdict() == expected
+            assert rmetadata.combine(lmetadata)._asdict() == expected
+
+    def test_op_different__attribute_same_global_local(self, op_leniency):
+        # One field has an extra attribute, both strict + lenient.
+        is_lenient = op_leniency == "lenient"
+
+        common_attrs = CubeAttrsDict(
+            globals={"_a_common_": mock.sentinel.dummy_a},
+            locals={"_b_common_": mock.sentinel.dummy_b},
+        )
+        self.lvalues["attributes"] = deepcopy(common_attrs)
+        self.rvalues["attributes"] = deepcopy(common_attrs)
+        basis_metadata = self.cls(**deepcopy(self.lvalues))
+        self.lvalues["attributes"].globals["_extra_"] = mock.sentinel.v1
+        self.rvalues["attributes"].locals["_extra_"] = mock.sentinel.v2
+        lmetadata = self.cls(**self.lvalues)
+        rmetadata = self.cls(**self.rvalues)
+
+        expected = basis_metadata._asdict()
+        if is_lenient:
+            # BOTH extra attributes should appear in the result ..
+            expected["attributes"].globals.update(
+                self.lvalues["attributes"].globals
+            )
+            expected["attributes"].locals.update(
+                self.rvalues["attributes"].locals
+            )
+
+        with mock.patch(
+            "iris.common.metadata._LENIENT", return_value=is_lenient
+        ):
+            # Check both l+r and r+l
+            assert lmetadata.combine(rmetadata)._asdict() == expected
+            assert rmetadata.combine(lmetadata)._asdict() == expected
+
+    @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
+    def test_op__attributes_cases(self, op_leniency, testcase):
+        attrs_check(
+            check_testcase=testcase,
+            check_lenient=op_leniency == "lenient",
+            op="combine",
+            cases={
+                "same": ("GaLb:GaLb", ["GaLb"]),
+                "extra_global": ("GaL-:G-L-", ["G-L-", "GaL-"]),
+                "extra_local": ("G-La:G-L-", ["G-L-", "G-La"]),
+                "same_global_local": ("GaL-:G-La", ["G-L-", "GaLa"]),
+                "diff_global_local": ("GaL-:G-Lb", ["G-L-", "GaLb"]),
+                "diffglobal_nolocal": ("GaL-:GbL-", ["G-L-"]),
+                "diffglobal_samelocal": ("GaLc:GbLc", ["G-Lc"]),
+                "difflocal_noglobal": ("G-La:G-Lb", ["G-L-"]),
+                "difflocal_sameglobal": ("GaLc:GaLd", ["GaL-"]),
+                "diff_local_and_global": ("GaLc:GbLd", ["G-L-"]),
+            },
+        )
+
 
 class Test_difference:
     @pytest.fixture(autouse=True)
@@ -646,6 +935,26 @@ class Test_difference:
             # As calculated above -- same for both strict + lenient
             assert lmetadata.difference(rmetadata)._asdict() == lexpected
             assert rmetadata.difference(lmetadata)._asdict() == rexpected
+
+    @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
+    def test_op__attributes_cases(self, op_leniency, testcase):
+        attrs_check(
+            check_testcase=testcase,
+            check_lenient=op_leniency == "lenient",
+            op="difference",
+            cases={
+                "same": ("GaLb:GaLb", ["-"]),
+                "extra_global": ("GaL-:G-L-", ["Ga-L--", "-"]),
+                "extra_local": ("G-La:G-L-", ["G--La-", "-"]),
+                "same_global_local": ("GaL-:G-La", ["Ga-L-a", "-"]),
+                "diff_global_local": ("GaL-:G-Lb", ["Ga-L-b", "-"]),
+                "diffglobal_nolocal": ("GaL-:GbL-", ["GabL--"]),
+                "diffglobal_samelocal": ("GaLc:GbLc", ["GabL--"]),
+                "difflocal_noglobal": ("G-La:G-Lb", ["G--Lab"]),
+                "difflocal_sameglobal": ("GaLc:GaLd", ["G--Lcd"]),
+                "diff_local_and_global": ("GaLc:GbLd", ["GabLcd"]),
+            },
+        )
 
 
 class Test_equal(tests.IrisTest):
