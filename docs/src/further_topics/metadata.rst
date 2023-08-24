@@ -724,7 +724,7 @@ Let's reinforce this behaviour, but this time by combining metadata where the
     >>> metadata != cube.metadata
     True
     >>> metadata.combine(cube.metadata).attributes
-    {'Model scenario': 'A1B'}
+    CubeAttrsDict(globals={}, locals={'Model scenario': 'A1B'})
 
 The combined result for the ``attributes`` member only contains those
 **common keys** with **common values**.

@@ -195,13 +195,20 @@ def xd_from_normal(dic):
 
 def xd_normalise_input_pair(left, right):
     """Work out whether inputs are "split" type, and convert if so."""
-    is_split = xd_is_split(left)
+    from iris.cube import CubeAttrsDict
+
+    left_split, right_split = xd_is_split(left), xd_is_split(right)
+    is_split = left_split or right_split
     if is_split:
-        assert xd_is_split(right)
+        # Convert any "normal" dicts to split equivalents first
+        # - this divides contents into global+local according to default rules
+        if not left_split:
+            left = CubeAttrsDict(left)
+        if not right_split:
+            right = CubeAttrsDict(right)
+        # convert both to paired-key form for calculations
         left = xd_to_normal(left)
         right = xd_to_normal(right)
-    else:
-        assert not xd_is_split(right)
 
     return is_split, left, right
 
