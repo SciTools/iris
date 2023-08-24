@@ -825,6 +825,7 @@ class CubeAttrsDict(MutableMapping):
 
         >>> from iris.cube import Cube
         >>> cube = Cube([0])
+        >>> # CF defines 'history' as global by default.
         >>> cube.attributes.update({"history": "from test-123", "mycode": 3})
         >>> print(cube.attributes)
         {'history': 'from test-123', 'mycode': 3}
@@ -843,6 +844,9 @@ class CubeAttrsDict(MutableMapping):
 
     """
 
+    # TODO: Create a 'further topic' / 'tech paper' on NetCDF I/O, including
+    #  discussion of attribute handling.
+
     def __init__(
         self,
         combined: Optional[Union[Mapping, str]] = "__unspecified",
@@ -853,7 +857,7 @@ class CubeAttrsDict(MutableMapping):
         Create a cube attributes dictionary.
 
         We support initialisation from a single generic mapping input, using the default
-        global/local assignment rules explained at :meth:`__setatrr__`, or from
+        global/local assignment rules explained at :meth:`__setattr__`, or from
         two separate mappings.  Two separate dicts can be passed in the ``locals``
         and ``globals`` args, **or** via a ``combined`` arg which has its own
         ``.globals`` and ``.locals`` properties -- so this allows passing an existing
@@ -878,6 +882,7 @@ class CubeAttrsDict(MutableMapping):
         --------
 
             >>> from iris.cube import CubeAttrsDict
+            >>> # CF defines 'history' as global by default.
             >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
             CubeAttrsDict(globals={'history': 'data-story'}, locals={'comment': 'this-cube'})
 

@@ -85,7 +85,10 @@ A cube consists of:
     data dimensions as the coordinate has dimensions.
 
 * an attributes dictionary which, other than some protected CF names, can
-  hold arbitrary extra metadata.
+  hold arbitrary extra metadata. This implements the concept of dataset-level
+  and variable-level attributes when loading and and saving NetCDF files (see
+  :class:`~iris.cube.CubeAttrsDict` and NetCDF
+  :func:`~iris.fileformats.netcdf.saver.save` for more).
 * a list of cell methods to represent operations which have already been
   applied to the data (e.g. "mean over time")
 * a list of coordinate "factories" used for deriving coordinates from the

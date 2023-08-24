@@ -91,6 +91,16 @@ actual `data attribute`_ names of the metadata members on the Iris class.
    metadata members are Iris specific terms, rather than recognised `CF Conventions`_
    terms.
 
+.. note::
+
+    :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` implement the
+    concept of dataset-level and variable-level attributes, to enable correct
+    NetCDF loading and saving (see :class:`~iris.cube.CubeAttrsDict` and NetCDF
+    :func:`~iris.fileformats.netcdf.saver.save` for more). ``attributes`` on
+    the other classes do not have this distinction, but the ``attributes``
+    members of ALL the classes still have the same interface, and can be
+    compared.
+
 
 Common Metadata API
 ===================
@@ -128,7 +138,9 @@ For example, given the following :class:`~iris.cube.Cube`,
             source                      'Data from Met Office Unified Model 6.05'
 
 We can easily get all of the associated metadata of the :class:`~iris.cube.Cube`
-using the ``metadata`` property:
+using the ``metadata`` property (note the specialised
+:class:`~iris.cube.CubeAttrsDict` for the :attr:`~iris.cube.Cube.attributes`,
+as mentioned earlier):
 
     >>> cube.metadata
     CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes=CubeAttrsDict(globals={'Conventions': 'CF-1.5'}, locals={'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}), cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
@@ -701,7 +713,7 @@ which is replaced with a **different value**,
     >>> metadata != cube.metadata
     True
     >>> metadata.combine(cube.metadata)  # doctest: +SKIP
-    CubeMetadata(standard_name=None, long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'Model scenario': 'A1B', 'STASH': STASH(model=1, section=3, item=236), 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    CubeMetadata(standard_name=None, long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05', 'Conventions': 'CF-1.5'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 The ``combine`` method combines metadata by performing a **strict** comparison
 between each of the associated metadata member values,

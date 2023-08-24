@@ -30,6 +30,14 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
+#. `@pp-mo`_, `@lbdreyer`_ and `@trexfeathers`_ improved
+   :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` handling to
+   better preserve the distinction between dataset-level and variable-level
+   attributes, allowing file-Cube-file round-tripping of NetCDF attributes. See
+   :class:`~iris.cube.CubeAttrsDict` and NetCDF
+   :func:`~iris.fileformats.netcdf.saver.save` for more. (:pull:`5152`,
+   `split attributes project`_)
+
 #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
    lazy data. (:pull:`5307`)
 
@@ -94,3 +102,4 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+.. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info
