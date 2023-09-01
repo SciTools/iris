@@ -24,9 +24,12 @@ import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data, is_lazy_masked_data
+from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
+
+# from iris._shapefiles import create_shapefile_mask
 
 
 def broadcast_to_shape(array, shape, dim_map):
@@ -2139,3 +2142,17 @@ def _strip_metadata_from_dims(cube, dims):
             reduced_cube.remove_cell_measure(cm)
 
     return reduced_cube
+
+
+def apply_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
+    # Some amount of verification
+    # tell user shape assumed to use standard lat/lon coord system
+    try:
+        if shape.is_valid is False:
+            raise TypeError("Geometry is not a valid Shapely object")
+    except Exception:
+        raise TypeError("Geometry is not a valid Shapely object")
+
+    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
+    masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
+    return masked_cube
