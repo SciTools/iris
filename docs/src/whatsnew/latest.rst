@@ -36,7 +36,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@scottrobinson02`_ fixed the output units when dividing a coordinate by a
+   cube. (:issue:`5305`, :pull:`5331`)
 
 
 💣 Incompatible Changes
@@ -83,6 +84,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@scottrobinson02: https://github.com/scottrobinson02
 
 .. comment
     Whatsnew resources in alphabetical order:
