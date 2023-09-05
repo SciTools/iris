@@ -22,6 +22,7 @@ from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
+# from iris.cube import Cube, CubeList
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data, is_lazy_masked_data
 from iris._shapefiles import create_shapefile_mask
@@ -2145,8 +2146,44 @@ def _strip_metadata_from_dims(cube, dims):
 
 
 def apply_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
-    # Some amount of verification
-    # tell user shape assumed to use standard lat/lon coord system
+    """Takes a shapefile and masks all points not touching it in a cube
+
+    Finds the overlap between the `shape` and the `cube` in 2D xy space, and creates a mask
+    to mask out any cells with no overlap. `minimum_weight' can set a minimum overlap required.
+
+    Parameters
+    -----------
+
+    shape : Shapely.Geometry object
+        A single `shape` of the area to remain unmasked on the `cube`. If it a line object of some kind
+        then minimum_weight will be ignored as you cannot compare the area of a 1D line and 2D Cell
+    cube : iris.Cube object
+        The `Cube` object to masked. Must be singular, rather than a `CubeList`
+    minimum_weight : float , optional
+        A number between 0-1 describing how much of a cube cell must overlap with the shape
+        defaults to 0.0
+    in_place : bool, default=False
+        Whether to mask the `cube` in-place or return a newly masked `cube`. Defaults to False.
+
+    Returns
+    --------
+
+    iris.Cube
+        A masked version of the input cube
+
+    Notes
+    -------
+
+    Examples
+    ----------
+    >>>
+    ...
+
+    explanation
+
+    >>>
+    ...
+    """
     try:
         if shape.is_valid is False:
             raise TypeError("Geometry is not a valid Shapely object")
