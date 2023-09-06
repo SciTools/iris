@@ -14,9 +14,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 import cf_units
-from matplotlib import __version__ as _mpl_version
 import matplotlib.pyplot as plt
-from packaging import version
 
 import iris.config
 import iris.coords
@@ -44,18 +42,11 @@ def _title(cube_or_coord, with_units):
             units.is_unknown()
             or units.is_no_unit()
             or units == cf_units.Unit("1")
+            or units.is_time_reference()
         ):
             if _use_symbol(units):
                 units = units.symbol
-            elif units.is_time_reference():
-                # iris.plot uses matplotlib.dates.date2num, which is fixed to the below unit.
-                if version.parse(_mpl_version) >= version.parse("3.3"):
-                    days_since = "1970-01-01"
-                else:
-                    days_since = "0001-01-01"
-                units = "days since {}".format(days_since)
             title += " / {}".format(units)
-
     return title
 
 
