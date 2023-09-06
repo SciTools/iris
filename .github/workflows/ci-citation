@@ -1,0 +1,30 @@
+name: ci-citation
+
+on:
+  pull_request:
+    paths:
+      - "CITATION.cff"
+
+  push:
+    paths:
+      - "CITATION.cff"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: "validate"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: "check CITATION.cff"
+        uses: citation-file-format/cffconvert-github-action@2.0.0
+        with:
+          args: "--validate"

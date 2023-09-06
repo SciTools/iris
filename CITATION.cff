@@ -1,0 +1,11 @@
+                cff-version: 1.2.0
+message: "If Iris played an important part in your research then please add us to your reference list by using the references below."
+title: "Iris"
+authors:
+    - "The Iris development team"
+abstract: "A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data"
+license: "LGPL-3.0"
+doi: "10.5281/zenodo.595182"
+url: "http://scitools.org.uk/"
+repository-code: "https://github.com/SciTools/iris"
+type: "software"
