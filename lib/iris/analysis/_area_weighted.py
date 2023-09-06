@@ -247,8 +247,8 @@ def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
         extremes of the source bounds.
 
     """
-    min_bound = np.min(src_bounds) - 1e-14
-    max_bound = np.max(src_bounds) + 1e-14
+    min_bound = np.min(src_bounds)
+    max_bound = np.max(src_bounds)
 
     # Swap upper-lower is necessary.
     if orderswap is True:
@@ -256,8 +256,8 @@ def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
     else:
         lower, upper = tgt_bounds.T
 
-    return ((lower <= max_bound) * (lower >= min_bound)) | (
-        (upper <= max_bound) * (upper >= min_bound)
+    return ((lower < max_bound) * (lower > min_bound)) | (
+        (upper < max_bound) * (upper > min_bound)
     )
 
 
