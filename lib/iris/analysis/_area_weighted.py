@@ -256,9 +256,11 @@ def _within_bounds(src_bounds, tgt_bounds, orderswap=False):
     else:
         lower, upper = tgt_bounds.T
 
-    return ((lower < max_bound) * (lower > min_bound)) | (
-        (upper < max_bound) * (upper > min_bound)
-    ) | ((lower <= min_bound) * (upper >= max_bound))
+    return (
+        ((lower < max_bound) * (lower > min_bound))
+        | ((upper < max_bound) * (upper > min_bound))
+        | ((lower <= min_bound) * (upper >= max_bound))
+    )
 
 
 def _cropped_bounds(bounds, lower, upper):
