@@ -264,6 +264,11 @@ def linkcheck(session: nox.sessions.Session):
         "html",
         external=True,
     )
+
+    print("----------------------------------------------------------")
+    print("- TIP: If the link check fails, look for text 'broken'.  -")
+    print("----------------------------------------------------------")
+
     session.run(
         "make",
         "linkcheck",
