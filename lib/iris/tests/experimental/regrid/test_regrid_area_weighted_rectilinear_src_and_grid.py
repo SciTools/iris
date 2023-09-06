@@ -521,7 +521,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         # Extend dest beyond src grid
         dest = src.copy()
         dest.coord("latitude").bounds = np.array([[-0.5, 1.5]])
-        res = regrid_area_weighted(src, dest)
+        res = regrid_area_weighted(src, dest, mdtol=0)
         self.assertTrue(res.data.mask.all())
         # Shrink dest to 1/4 of src
         dest = src.copy()
