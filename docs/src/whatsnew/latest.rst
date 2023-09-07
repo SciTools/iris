@@ -36,7 +36,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@ESadek-MO`_ has updated :ref:`~iris.tests.graphics.idiff.py` to stop duplicated file names
+   preventing acceptance. (:issue:`5098`, :pull:`5482`)
 
 
 💣 Incompatible Changes
