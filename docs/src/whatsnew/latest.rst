@@ -79,6 +79,9 @@ This document explains the changes made to Iris for this release
    working properly. (Main pull request: :pull:`5437`, more detail:
    :pull:`5430`, :pull:`5431`, :pull:`5432`, :pull:`5434`, :pull:`5436`)
 
+#. `@trexfeathers`_ set a number of memory benchmarks to be on-demand, as they
+   were vulnerable to false positives in CI runs. (:pull:`5481`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
