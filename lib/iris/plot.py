@@ -1155,16 +1155,26 @@ def contourf(cube, *args, **kwargs):
     # But if the polygons are virtually opaque then we can cover the seams
     # by drawing anti-aliased lines *underneath* the polygon joins.
 
-    # Figure out the alpha level for the contour plot
-    if result.alpha is None:
-        alpha = result.collections[0].get_facecolor()[0][3]
+    if hasattr(result, "get_antialiased"):
+        # Matplotlib v3.8 onwards.
+        antialiased = any(result.get_antialiased())
+        # Figure out the colours and alpha level for the contour plot
+        colors = result.get_facecolor()
+        alpha = result.alpha or colors[0][3]
+        # Define a zorder just *below* the polygons to ensure we minimise any boundary shift.
+        zorder = result.zorder - 0.1
     else:
-        alpha = result.alpha
+        antialiased = result.antialiased
+        # Figure out the alpha level for the contour plot
+        alpha = result.alpha or result.collections[0].get_facecolor()[0][3]
+        colors = [c[0] for c in result.tcolors]
+        # Define a zorder just *below* the polygons to ensure we minimise any boundary shift.
+        zorder = result.collections[0].zorder - 0.1
+
     # If the contours are anti-aliased and mostly opaque then draw lines under
     # the seams.
-    if result.antialiased and alpha > 0.95:
+    if antialiased and alpha > 0.95:
         levels = result.levels
-        colors = [c[0] for c in result.tcolors]
         if result.extend == "neither":
             levels = levels[1:-1]
             colors = colors[:-1]
@@ -1177,11 +1187,7 @@ def contourf(cube, *args, **kwargs):
         else:
             colors = colors[:-1]
         if len(levels) > 0 and np.nanmax(cube.data) > levels[0]:
-            # Draw the lines just *below* the polygons to ensure we minimise
-            # any boundary shift.
-            zorder = result.collections[0].zorder - 0.1
             axes = kwargs.get("axes", None)
-
             contour(
                 cube,
                 levels=levels,

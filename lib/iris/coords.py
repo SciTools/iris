@@ -1464,12 +1464,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
                 # - Simple matching
                 me = self.point
             else:
-                if hasattr(other, "timetuple"):
-                    raise TypeError(
-                        "Cannot determine whether a point lies "
-                        "within a bounded region for "
-                        "datetime-like objects."
-                    )
                 # Point-and-bound vs number
                 # - Match if "within" the Cell
                 if operator_method in [operator.gt, operator.le]:
@@ -1510,14 +1504,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         """
         if self.bound is None:
             raise ValueError("Point cannot exist inside an unbounded cell.")
-        if hasattr(point, "timetuple") or np.any(
-            [hasattr(val, "timetuple") for val in self.bound]
-        ):
-            raise TypeError(
-                "Cannot determine whether a point lies within "
-                "a bounded region for datetime-like objects."
-            )
-
         return np.min(self.bound) <= point <= np.max(self.bound)
 
 
@@ -1862,6 +1848,8 @@ class Coord(_DimensionalMetadata):
         multiply each value in :attr:`~iris.coords.Coord.points` and
         :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
 
+        Full list of supported units can be found in the UDUNITS-2 documentation
+        https://docs.unidata.ucar.edu/udunits/current/#Database
         """
         super().convert_units(unit=unit)
 

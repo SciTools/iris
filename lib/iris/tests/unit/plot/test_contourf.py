@@ -69,10 +69,8 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(self.bar.size)
         self.data = self.cube.data
         self.dataT = self.data.T
-        mocker = mock.Mock(alpha=0, antialiased=False)
-        self.mpl_patch = self.patch(
-            "matplotlib.pyplot.contourf", return_value=mocker
-        )
+        mocker = mock.Mock(wraps=plt.contourf)
+        self.mpl_patch = self.patch("matplotlib.pyplot.contourf", mocker)
         self.draw_func = iplt.contourf
 
 

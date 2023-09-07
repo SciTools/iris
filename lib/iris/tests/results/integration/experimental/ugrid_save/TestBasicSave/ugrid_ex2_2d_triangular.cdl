@@ -69,6 +69,7 @@ variables:
 	float datavar(nMesh2_face) ;
 		datavar:mesh = "Mesh2" ;
 		datavar:location = "face" ;
+		datavar:coordinates = "Mesh2_face_x Mesh2_face_y" ;
 
 // global attributes:
 		:Conventions = "CF-1.7" ;

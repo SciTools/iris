@@ -30,7 +30,7 @@ from ...generate_data.ugrid import make_cube_like_2d_cubesphere
 class MixinCombineRegions:
     # Characterise time taken + memory-allocated, for various stages of combine
     # operations on cubesphere-like test data.
-    params = [4, 500]
+    params = [50, 500]
     param_names = ["cubesphere-N"]
 
     def _parametrised_cache_filename(self, n_cubesphere, content_name):
