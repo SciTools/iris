@@ -27,7 +27,7 @@ class LoadAndRealise:
     # For data generation
     timeout = 600.0
     params = [
-        [(2, 2, 2), (1280, 960, 5), (2, 2, 1000)],
+        [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
         ["FF", "PP", "NetCDF"],
     ]

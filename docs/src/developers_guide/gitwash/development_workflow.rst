@@ -14,8 +14,7 @@ Workflow Summary
 In what follows we'll refer to the upstream iris ``main`` branch, as
 "trunk".
 
-* Don't use your ``main`` (that is on your fork) branch for anything.
-  Consider deleting it.
+* Don't use your ``main`` (that is on your fork) branch for development.
 * When you are starting a new set of changes, fetch any changes from trunk,
   and start a new *feature branch* from that.
 * Make a new branch for each separable set of changes |emdash| "one task, one
@@ -33,13 +32,6 @@ This in turn makes it easier for project maintainers (that might be you) to see
 what you've done, and why you did it.
 
 See `linux git workflow`_ for some explanation.
-
-Consider Deleting Your Main Branch
-==================================
-
-It may sound strange, but deleting your own ``main`` branch can help reduce
-confusion about which branch you are on.  See `deleting master on github`_ for
-details.
 
 .. _update-mirror-trunk:
 
