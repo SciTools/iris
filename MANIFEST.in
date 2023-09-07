@@ -19,6 +19,7 @@ exclude CODE_OF_CONDUCT.md
 exclude codecov.yml
 include COPYING
 include COPYING.LESSER
+include CITATION.cff
 exclude Makefile
 exclude noxfile.py
 
