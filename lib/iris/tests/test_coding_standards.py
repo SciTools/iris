@@ -13,8 +13,9 @@ from fnmatch import fnmatch
 from glob import glob
 import os
 from pathlib import Path
+import re
 import subprocess
-from typing import List, Tuple
+from typing import List, NamedTuple, Tuple
 
 import iris
 from iris.fileformats.netcdf import _thread_safe_nc
@@ -131,6 +132,46 @@ def test_python_versions():
 
     for path, search in text_searches:
         assert search in path.read_text()
+
+
+def test_categorised_warnings():
+    """
+    To ensure that all warnings raised by Iris are categorised, for ease of use.
+    """
+    warn_regex = re.compile(r"(?s)warn\(.*?\)")
+
+    class ResultTuple(NamedTuple):
+        file_path: Path
+        line_number: int
+        match_string: str
+
+    warns_without_category: list[ResultTuple] = []
+    warns_with_user_warning: list[ResultTuple] = []
+
+    for file_path in Path(IRIS_DIR).rglob("*.py"):
+        file_text = file_path.read_text()
+
+        matched = warn_regex.search(file_text)
+        while matched:
+            start, end = matched.span()
+            result_tuple = ResultTuple(
+                file_path=file_path,
+                line_number=file_text[:start].count("\n") + 1,
+                match_string=file_text[start:end],
+            )
+            if "category=" not in result_tuple.match_string:
+                warns_without_category.append(result_tuple)
+            if "UserWarning" in result_tuple.match_string:
+                warns_with_user_warning.append(result_tuple)
+
+            matched = warn_regex.search(file_text, start + 1)
+
+    # All warnings raised by Iris must be raised with a category kwarg.
+    #  (This avoids UserWarnings being raised by unwritten default behaviour).
+    assert warns_without_category == []
+
+    # No warnings raised by Iris can be the base UserWarning class.
+    assert warns_with_user_warning == []
 
 
 class TestLicenseHeaders(tests.IrisTest):
