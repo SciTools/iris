@@ -12,7 +12,13 @@ import warnings
 
 
 class IrisDeprecation(UserWarning):
-    """An Iris deprecation warning."""
+    """
+    An Iris deprecation warning.
+
+    Note this subclasses UserWarning for backwards compatibility with Iris'
+    original deprection warnings. Should subclass DeprecationWarning at the
+    next major release.
+    """
 
     pass
 
