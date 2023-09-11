@@ -16,7 +16,11 @@ import numpy as np
 import iris
 import iris.coord_systems
 from iris.coords import DimCoord
-from iris.exceptions import CoordinateNotFoundError, TranslationError
+from iris.exceptions import (
+    CoordinateNotFoundError,
+    IrisNimrodTranslationWarning,
+    TranslationError,
+)
 
 __all__ = ["run"]
 
@@ -28,7 +32,11 @@ TIME_UNIT = cf_units.Unit(
 )
 
 
-class TranslationWarning(Warning):
+class TranslationWarning(IrisNimrodTranslationWarning):
+    """
+    Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`.
+    """
+
     pass
 
 
@@ -586,7 +594,7 @@ def vertical_coord(cube, field):
     warnings.warn(
         "Vertical coord {!r} not yet handled"
         "".format(field.vertical_coord_type),
-        TranslationWarning,
+        IrisNimrodTranslationWarning,
     )
 
 

@@ -34,6 +34,8 @@ from iris.fileformats.netcdf.loader import _get_cf_var_data
 import iris.std_names
 import iris.util
 
+IrisUnknownCellMethodWarning = iris.exceptions.IrisUnknownCellMethodWarning
+
 # TODO: should un-addable coords / cell measures / etcetera be skipped? iris#5068.
 
 #
@@ -282,7 +284,11 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     return nc_cell_methods_matches
 
 
-class UnknownCellMethodWarning(Warning):
+class UnknownCellMethodWarning(iris.exceptions.IrisUnknownCellMethodWarning):
+    """
+    Backwards compatible form of :class:`iris.exceptions.IrisUnknownCellMethodWarning`.
+    """
+
     pass
 
 
@@ -320,7 +326,7 @@ def parse_cell_methods(nc_cell_methods):
                 msg = "NetCDF variable contains unknown cell method {!r}"
                 warnings.warn(
                     msg.format("{}".format(method_words[0])),
-                    UnknownCellMethodWarning,
+                    IrisUnknownCellMethodWarning,
                 )
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
@@ -420,7 +426,7 @@ def build_cube_metadata(engine):
     warning_records = [
         record
         for record in warning_records
-        if issubclass(record.category, UnknownCellMethodWarning)
+        if issubclass(record.category, IrisUnknownCellMethodWarning)
     ]
     if len(warning_records) > 0:
         # Output an enhanced warning message.
@@ -428,7 +434,7 @@ def build_cube_metadata(engine):
         name = "{}".format(cf_var.cf_name)
         msg = warn_record.message.args[0]
         msg = msg.replace("variable", "variable {!r}".format(name))
-        warnings.warn(message=msg, category=UnknownCellMethodWarning)
+        warnings.warn(message=msg, category=IrisUnknownCellMethodWarning)
 
     # Set the cube global attributes.
     for attr_name, attr_value in cf_var.cf_group.global_attributes.items():

@@ -193,3 +193,27 @@ class IrisUserWarning(UserWarning):
     """
 
     pass
+
+
+class IrisNimrodTranslationWarning(IrisUserWarning):
+    """
+    For unsupported vertical coord types in :mod:`iris.file_formats.nimrod_load_rules`.
+    """
+
+    pass
+
+
+class IrisUnknownCellMethodWarning(IrisUserWarning):
+    """
+    If a loaded cell method is not one the method names known to Iris.
+    """
+
+    pass
+
+
+class IrisSaverFillValueWarning(IrisUserWarning):
+    """
+    For fill value complications during Iris file saving.
+    """
+
+    pass
