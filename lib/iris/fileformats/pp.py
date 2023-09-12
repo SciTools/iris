@@ -1486,7 +1486,7 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t1"):
-            has_year_zero = self.lbyr == 0
+            has_year_zero = self.lbyr == 0 or None
             calendar = (
                 None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
             )
@@ -1520,7 +1520,7 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t2"):
-            has_year_zero = self.lbyrd == 0
+            has_year_zero = self.lbyrd == 0 or None
             calendar = (
                 None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
             )
@@ -1567,7 +1567,7 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t1"):
-            has_year_zero = self.lbyr == 0
+            has_year_zero = self.lbyr == 0 or None
             calendar = (
                 None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
             )
@@ -1602,7 +1602,7 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t2"):
-            has_year_zero = self.lbyrd == 0
+            has_year_zero = self.lbyrd == 0 or None
             calendar = (
                 None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
             )

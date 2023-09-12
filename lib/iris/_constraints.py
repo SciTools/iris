@@ -137,7 +137,7 @@ class Constraint:
         # attributes/names/coords :  These can only be == if they contain the
         # *same* callable object (i.e. same object identity).
         eq = (
-            type(other) == Constraint
+            isinstance(other, Constraint)
             and self._name == other._name
             and self._cube_func == other._cube_func
             and self._coord_constraints == other._coord_constraints
@@ -244,7 +244,7 @@ class ConstraintCombination(Constraint):
 
     def __eq__(self, other):
         eq = (
-            type(other) == ConstraintCombination
+            isinstance(other, ConstraintCombination)
             and self.lhs == other.lhs
             and self.rhs == other.rhs
             and self.operator == other.operator
@@ -300,7 +300,7 @@ class _CoordConstraint:
 
     def __eq__(self, other):
         eq = (
-            type(other) == _CoordConstraint
+            isinstance(other, _CoordConstraint)
             and self.coord_name == other.coord_name
             and self._coord_thing == other._coord_thing
         )
@@ -544,7 +544,7 @@ class AttributeConstraint(Constraint):
 
     def __eq__(self, other):
         eq = (
-            type(other) == AttributeConstraint
+            isinstance(other, AttributeConstraint)
             and self._attributes == other._attributes
         )
         return eq
@@ -638,7 +638,7 @@ class NameConstraint(Constraint):
         super().__init__(cube_func=self._cube_func)
 
     def __eq__(self, other):
-        eq = type(other) == NameConstraint and all(
+        eq = isinstance(other, NameConstraint) and all(
             getattr(self, attname) == getattr(other, attname)
             for attname in self._names
         )

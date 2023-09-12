@@ -77,7 +77,7 @@ class DataRealisation:
     warmup_time = 0.0
     timeout = 300.0
 
-    params = [1, int(2e5)]
+    params = [int(1e4), int(2e5)]
     param_names = ["number of faces"]
 
     def setup_common(self, **kwargs):
