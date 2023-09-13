@@ -32,8 +32,7 @@ GH_REPORT_DIR = ROOT_DIR.joinpath(".github", "workflows", "benchmark_reports")
 
 # Common ASV arguments for all run_types except `custom`.
 ASV_HARNESS = (
-    "run {posargs} --attribute rounds=4 --interleave-rounds --strict "
-    "--show-stderr"
+    "run {posargs} --attribute rounds=4 --interleave-rounds --show-stderr"
 )
 
 
@@ -501,14 +500,19 @@ class _CSPerf(_SubParserGenerator, ABC):
         asv_command = (
             ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
         )
-        # C/SPerf benchmarks are much bigger than the CI ones:
-        # Don't fail the whole run if memory blows on 1 benchmark.
-        asv_command = asv_command.replace(" --strict", "")
+
         # Only do a single round.
         asv_command = shlex.split(
             re.sub(r"rounds=\d", "rounds=1", asv_command)
         )
-        _subprocess_runner([*asv_command, *args.asv_args], asv=True)
+        try:
+            _subprocess_runner([*asv_command, *args.asv_args], asv=True)
+        except subprocess.CalledProcessError as err:
+            # C/SPerf benchmarks are much bigger than the CI ones:
+            # Don't fail the whole run if memory blows on 1 benchmark.
+            # ASV produces return code of 2 if the run includes crashes.
+            if err.returncode != 2:
+                raise
 
         asv_command = shlex.split(
             f"publish {commit_range} --html-dir={publish_subdir}"
