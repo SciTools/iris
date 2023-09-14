@@ -37,6 +37,7 @@ class TranslationWarning(IrisNimrodTranslationWarning):
     Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`.
     """
 
+    # TODO: remove at the next major release.
     pass
 
 
@@ -594,7 +595,7 @@ def vertical_coord(cube, field):
     warnings.warn(
         "Vertical coord {!r} not yet handled"
         "".format(field.vertical_coord_type),
-        IrisNimrodTranslationWarning,
+        TranslationWarning,
     )
 
 

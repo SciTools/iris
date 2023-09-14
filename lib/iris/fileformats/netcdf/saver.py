@@ -49,8 +49,6 @@ from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
 import iris.util
 
-IrisSaverFillValueWarning = iris.exceptions.IrisSaverFillValueWarning
-
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
@@ -310,11 +308,12 @@ def _data_fillvalue_check(arraylib, data, check_value):
     return is_masked, contains_value
 
 
-class SaverFillValueWarning(IrisSaverFillValueWarning):
+class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
     """
     Backwards compatible form of :class:`iris.exceptions.IrisSaverFillValueWarning`.
     """
 
+    # TODO: remove at the next major release.
     pass
 
 
@@ -346,7 +345,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     is_byte_data = fill_info.dtype.itemsize == 1
     result = None
     if is_byte_data and is_masked and user_value is None:
-        result = IrisSaverFillValueWarning(
+        result = SaverFillValueWarning(
             f"CF var '{varname}' contains byte data with masked points, but "
             "no fill_value keyword was given. As saved, these "
             "points will read back as valid values. To save as "
@@ -355,7 +354,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
             "keyword during saving, otherwise use ncedit/equivalent."
         )
     elif contains_fill_value:
-        result = IrisSaverFillValueWarning(
+        result = SaverFillValueWarning(
             f"CF var '{varname}' contains unmasked data points equal to the "
             f"fill-value, {check_value}. As saved, these points will read back "
             "as missing data. To save these as normal values, "
