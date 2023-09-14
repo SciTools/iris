@@ -39,7 +39,7 @@ This document explains the changes made to Iris for this release
 #. `@scottrobinson02`_ fixed the output units when dividing a coordinate by a
    cube. (:issue:`5305`, :pull:`5331`)
    
-#. `@ESadek-MO`_ has updated :ref:`~iris.tests.graphics.idiff.py` to stop duplicated file names
+#. `@ESadek-MO`_ has updated :ref:`~iris.tests.graphics.idiff.` to stop duplicated file names
    preventing acceptance. (:issue:`5098`, :pull:`5482`)
 
 
