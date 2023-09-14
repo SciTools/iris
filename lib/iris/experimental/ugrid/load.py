@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
 import threading
+import warnings
 
 from ...config import get_logger
 from ...coords import AuxCoord
@@ -350,8 +351,7 @@ def _build_mesh(cf, mesh_var, file_path):
         )
     if cf_role_message:
         cf_role_message += " Correcting to 'mesh_topology'."
-        # TODO: reconsider logging level when we have consistent practice.
-        logger.warning(cf_role_message, extra=dict(cls=None))
+        warnings.warn(cf_role_message)
 
     if hasattr(mesh_var, "volume_node_connectivity"):
         topology_dimension = 3
@@ -369,8 +369,7 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        # TODO: reconsider logging level when we have consistent practice.
-        logger.warning(msg, extra=dict(cls=None))
+        warnings.warn(msg)
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -382,8 +381,7 @@ def _build_mesh(cf, mesh_var, file_path):
                 f"{quoted_topology_dimension}"
                 " -- ignoring this as it is inconsistent."
             )
-            # TODO: reconsider logging level when we have consistent practice.
-            logger.warning(msg=msg, extra=dict(cls=None))
+            warnings.warn(msg)
 
     node_dimension = None
     edge_dimension = getattr(mesh_var, "edge_dimension", None)

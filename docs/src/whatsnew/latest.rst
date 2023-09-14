@@ -79,8 +79,12 @@ This document explains the changes made to Iris for this release
    working properly. (Main pull request: :pull:`5437`, more detail:
    :pull:`5430`, :pull:`5431`, :pull:`5432`, :pull:`5434`, :pull:`5436`)
 
+#. `@trexfeathers`_ replaced all uses of the ``logging.WARNING`` level, in
+   favour of using Python warnings, following team agreement. (:pull:`5488`)
+   
 #. `@trexfeathers`_ adapted benchmarking to work with ASV ``>=v0.6`` by no
    longer using the ``--strict`` argument. (:pull:`5496`)
+
 
 
 .. comment
