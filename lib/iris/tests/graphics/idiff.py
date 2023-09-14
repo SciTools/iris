@@ -73,17 +73,12 @@ def diff_viewer(
     repo = graphics.read_repo_json()
 
     def accept(event):
-        if test_id not in repo:
-            repo[test_id] = phash
-            graphics.write_repo_json(repo)
-            out_file = result_dir / (test_id + ".png")
-            result_path.rename(out_file)
-            msg = f"ACCEPTED:  {result_path.name} -> {out_file.name}"
-            print(msg)
-        else:
-            msg = f"DUPLICATE: {result_path.name} -> {expected_path.name} (ignored)"
-            print(msg)
-            result_path.unlink()
+        repo[test_id] = phash
+        graphics.write_repo_json(repo)
+        out_file = result_dir / (test_id + ".png")
+        result_path.rename(out_file)
+        msg = f"ACCEPTED:  {result_path.name} -> {out_file.name}"
+        print(msg)
         diff_fname.unlink()
         plt.close()
 
