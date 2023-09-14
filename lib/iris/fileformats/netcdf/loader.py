@@ -33,6 +33,7 @@ import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris.exceptions import warning_combo
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
@@ -352,7 +353,8 @@ def _load_aux_factory(engine, cube):
                         return coord
                 warnings.warn(
                     "Unable to find coordinate for variable "
-                    "{!r}".format(name)
+                    "{!r}".format(name),
+                    category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
                 )
 
         if formula_type == "atmosphere_sigma_coordinate":
@@ -393,7 +395,13 @@ def _load_aux_factory(engine, cube):
                                 coord_p0.name()
                             )
                         )
-                        warnings.warn(msg)
+                        warnings.warn(
+                            msg,
+                            category=warning_combo(
+                                iris.exceptions.IrisIgnoringBoundsWarning,
+                                iris.exceptions.IrisLoadWarning,
+                            ),
+                        )
                     coord_a = coord_from_term("a")
                     if coord_a is not None:
                         if coord_a.units.is_unknown():
@@ -584,7 +592,10 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 try:
                     _load_aux_factory(engine, cube)
                 except ValueError as e:
-                    warnings.warn("{}".format(e))
+                    warnings.warn(
+                        "{}".format(e),
+                        category=iris.exceptions.IrisLoadWarning,
+                    )
 
                 # Perform any user registered callback function.
                 cube = run_callback(callback, cube, cf_var, file_source)

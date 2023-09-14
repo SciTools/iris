@@ -44,6 +44,8 @@ from functools import wraps
 import warnings
 
 from iris.config import get_logger
+import iris.exceptions
+from iris.exceptions import warning_combo
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 
@@ -471,7 +473,13 @@ def action_formula_type(engine, formula_root_fact):
         succeed = False
         rule_name += f"(FAILED - unrecognised formula type = {formula_type!r})"
         msg = f"Ignored formula of unrecognised type: {formula_type!r}."
-        warnings.warn(msg)
+        warnings.warn(
+            msg,
+            category=warning_combo(
+                iris.exceptions.IrisCfLoadWarning,
+                iris.exceptions.IrisIgnoringWarning,
+            ),
+        )
     if succeed:
         # Check we don't already have one.
         existing_type = engine.requires.get("formula_type")
@@ -486,7 +494,13 @@ def action_formula_type(engine, formula_root_fact):
                 f"Formula of type ={formula_type!r} "
                 f"overrides another of type ={existing_type!r}.)"
             )
-            warnings.warn(msg)
+            warnings.warn(
+                msg,
+                category=warning_combo(
+                    iris.exceptions.IrisLoadWarning,
+                    iris.exceptions.IrisIgnoringWarning,
+                ),
+            )
         rule_name += f"_{formula_type}"
         # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
         engine.requires["formula_type"] = formula_type

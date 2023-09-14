@@ -17,7 +17,7 @@ import numpy as np
 import iris.coord_systems
 from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
-from iris.exceptions import TranslationError
+from iris.exceptions import IrisLoadWarning, TranslationError
 import iris.util
 
 EARTH_RADIUS = 6371229.0
@@ -273,7 +273,7 @@ def _parse_units(units):
     try:
         units = cf_units.Unit(units)
     except ValueError:
-        warnings.warn("Unknown units: {!r}".format(units))
+        warnings.warn("Unknown units: {!r}".format(units), IrisLoadWarning)
         units = cf_units.Unit(None)
 
     return units

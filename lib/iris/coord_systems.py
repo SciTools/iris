@@ -15,6 +15,8 @@ import warnings
 import cartopy.crs as ccrs
 import numpy as np
 
+import iris.exceptions
+
 
 def _arg_default(value, default, cast_as=float):
     """Apply a default value and type for an optional kwarg."""
@@ -449,7 +451,7 @@ class GeogCS(CoordSystem):
             "the GeogCS object. To change other properties set them explicitly"
             " or create a new GeogCS instance."
         )
-        warnings.warn(wmsg, UserWarning)
+        warnings.warn(wmsg, iris.exceptions.IrisUserWarning)
         value = float(value)
         self._inverse_flattening = value
 
@@ -818,7 +820,8 @@ class Orthographic(CoordSystem):
 
         warnings.warn(
             "Discarding false_easting and false_northing that are "
-            "not used by Cartopy."
+            "not used by Cartopy.",
+            category=iris.exceptions.IrisDefaultingWarning,
         )
 
         return ccrs.Orthographic(

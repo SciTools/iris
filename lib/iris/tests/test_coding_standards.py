@@ -136,7 +136,14 @@ def test_python_versions():
 
 def test_categorised_warnings():
     """
-    To ensure that all warnings raised by Iris are categorised, for ease of use.
+    To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
+
+    No obvious category? use the parent:
+    :class:`iris.exceptions.IrisUserWarning`.
+
+    Need a unique combination of categories?
+    Use :func:`~iris.exceptions.warning_combo` .
+
     """
     warn_regex = re.compile(r"(?s)warn\(.*?\)")
 
@@ -159,9 +166,9 @@ def test_categorised_warnings():
                 line_number=file_text[:start].count("\n") + 1,
                 match_string=file_text[start:end],
             )
-            if "category=" not in result_tuple.match_string:
+            if not re.search(r"category=", result_tuple.match_string):
                 warns_without_category.append(result_tuple)
-            if "UserWarning" in result_tuple.match_string:
+            if re.search(r"\bUserWarning\b", result_tuple.match_string):
                 warns_with_user_warning.append(result_tuple)
 
             matched = warn_regex.search(file_text, start + 1)

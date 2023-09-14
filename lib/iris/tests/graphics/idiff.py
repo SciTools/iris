@@ -28,6 +28,7 @@ import matplotlib.testing.compare as mcompare  # noqa
 from matplotlib.testing.exceptions import ImageComparisonFailure  # noqa
 import matplotlib.widgets as mwidget  # noqa
 
+from iris.exceptions import IrisIgnoringWarning  # noqa
 import iris.tests  # noqa
 import iris.tests.graphics as graphics  # noqa
 
@@ -156,7 +157,7 @@ def step_over_diffs(result_dir, display=True):
             distance = graphics.get_phash(reference_image_path) - phash
         except FileNotFoundError:
             wmsg = "Ignoring unregistered test result {!r}."
-            warnings.warn(wmsg.format(test_key))
+            warnings.warn(wmsg.format(test_key), category=IrisIgnoringWarning)
             continue
 
         processed = True

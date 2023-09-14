@@ -13,7 +13,12 @@ import warnings
 
 import numpy as np
 
-from iris.exceptions import NotYetImplementedError
+from iris.exceptions import (
+    IrisDefaultingWarning,
+    IrisLoadWarning,
+    NotYetImplementedError,
+    warning_combo,
+)
 from iris.fileformats._ff_cross_references import STASH_TRANS
 
 from . import pp
@@ -431,7 +436,8 @@ class FFHeader:
             grid_class = NewDynamics
             warnings.warn(
                 "Staggered grid type: {} not currently interpreted, assuming "
-                "standard C-grid".format(self.grid_staggering)
+                "standard C-grid".format(self.grid_staggering),
+                category=warning_combo(IrisDefaultingWarning, IrisLoadWarning),
             )
         grid = grid_class(
             self.column_dependent_constants,
@@ -554,7 +560,7 @@ class FF2PP:
                 "may be incorrect, not having taken into account the "
                 "boundary size."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, IrisLoadWarning)
         else:
             range2 = field_dim[0] - res_low
             range1 = field_dim[0] - halo_dim * res_low
@@ -628,7 +634,8 @@ class FF2PP:
                     "The LBC has a bdy less than 0. No "
                     "case has previously been seen of "
                     "this, and the decompression may be "
-                    "erroneous."
+                    "erroneous.",
+                    category=IrisLoadWarning,
                 )
             field.bzx -= field.bdx * boundary_packing.x_halo
             field.bzy -= field.bdy * boundary_packing.y_halo
@@ -741,7 +748,10 @@ class FF2PP:
                                 "which has not been explicitly "
                                 "handled by the fieldsfile loader."
                                 " Assuming the data is on a P grid"
-                                ".".format(stash, subgrid)
+                                ".".format(stash, subgrid),
+                                category=warning_combo(
+                                    IrisDefaultingWarning, IrisLoadWarning
+                                ),
                             )
 
                     field.x, field.y = grid.vectors(subgrid)
@@ -757,14 +767,20 @@ class FF2PP:
                                 "STASH to grid type mapping. Picking the P "
                                 "position as the cell type".format(stash)
                             )
-                            warnings.warn(msg)
+                            warnings.warn(
+                                msg,
+                                category=warning_combo(
+                                    IrisDefaultingWarning, IrisLoadWarning
+                                ),
+                            )
                         field.bzx, field.bdx = grid.regular_x(subgrid)
                         field.bzy, field.bdy = grid.regular_y(subgrid)
                         field.bplat = grid.pole_lat
                         field.bplon = grid.pole_lon
                     elif no_x or no_y:
                         warnings.warn(
-                            "Partially missing X or Y coordinate values."
+                            "Partially missing X or Y coordinate values.",
+                            category=IrisLoadWarning,
                         )
 
                     # Check for LBC fields.
@@ -810,7 +826,9 @@ class FF2PP:
                         "Input field skipped as PPField creation failed :"
                         " error = {!r}"
                     )
-                    warnings.warn(msg.format(str(valerr)))
+                    warnings.warn(
+                        msg.format(str(valerr)), category=IrisLoadWarning
+                    )
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())

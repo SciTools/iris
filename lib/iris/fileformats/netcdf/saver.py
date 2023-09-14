@@ -44,6 +44,7 @@ import iris.coord_systems
 import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
+from iris.exceptions import warning_combo
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
@@ -364,7 +365,13 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
         )
 
     if warn and result is not None:
-        warnings.warn(result)
+        warnings.warn(
+            result,
+            category=warning_combo(
+                iris.exceptions.IrisMaskValueMatchWarning,
+                iris.exceptions.IrisSaveWarning,
+            ),
+        )
     return result
 
 
@@ -738,7 +745,7 @@ class Saver:
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch"
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, iris.exceptions.IrisCfSaveWarning)
 
     @staticmethod
     def check_attribute_compliance(container, data_dtype):
@@ -1149,7 +1156,7 @@ class Saver:
                     "Unable to determine formula terms "
                     "for AuxFactory: {!r}".format(factory)
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, iris.exceptions.IrisSaveWarning)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
                 # primary coord that signals the presence of a dimensionless
@@ -2131,7 +2138,10 @@ class Saver:
 
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
-                    warnings.warn("OSGB coordinate system not yet handled")
+                    warnings.warn(
+                        "OSGB coordinate system not yet handled",
+                        iris.exceptions.IrisSaveWarning,
+                    )
 
                 # lambert azimuthal equal area
                 elif isinstance(
@@ -2200,7 +2210,8 @@ class Saver:
                     warnings.warn(
                         "Unable to represent the horizontal "
                         "coordinate system. The coordinate system "
-                        "type %r is not yet implemented." % type(cs)
+                        "type %r is not yet implemented." % type(cs),
+                        category=iris.exceptions.IrisSaveWarning,
                     )
 
                 self._coord_systems.append(cs)
@@ -2364,7 +2375,7 @@ class Saver:
                     "attribute, but {attr_name!r} should only be a CF "
                     "global attribute.".format(attr_name=attr_name)
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
             _setncattr(cf_var, attr_name, value)
 
@@ -2598,7 +2609,9 @@ class Saver:
         if issue_warnings:
             # Issue any delayed warnings from the compute.
             for delayed_warning in result_warnings:
-                warnings.warn(delayed_warning)
+                warnings.warn(
+                    delayed_warning, category=iris.exceptions.IrisSaveWarning
+                )
 
         return result_warnings
 
@@ -2916,7 +2929,7 @@ def save(
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch_conventions"
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
         # Add conventions attribute.
         sman.update_global_attributes(Conventions=conventions)

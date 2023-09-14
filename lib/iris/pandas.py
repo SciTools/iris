@@ -29,6 +29,7 @@ import iris
 from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
+from iris.exceptions import IrisIgnoringWarning
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
@@ -446,7 +447,7 @@ def as_cubes(
         if columns_ignored:
             ignored_args = ", ".join([t[2] for t in class_arg_mapping])
             message = f"The input pandas_structure is a Series; ignoring arguments: {ignored_args} ."
-            warnings.warn(message)
+            warnings.warn(message, category=IrisIgnoringWarning)
         class_arg_mapping = []
 
     non_data_names = []

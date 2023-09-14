@@ -190,7 +190,8 @@ def units(cube, field):
         warnings.warn(
             "Unhandled units '{0}' recorded in cube attributes.".format(
                 field_units
-            )
+            ),
+            category=IrisNimrodTranslationWarning,
         )
         cube.attributes["invalid_units"] = field_units
 
@@ -426,7 +427,8 @@ def coord_system(field, handle_metadata_errors):
         if any([is_missing(field, v) for v in crs_args]):
             warnings.warn(
                 "Coordinate Reference System is not completely defined. "
-                "Plotting and reprojection may be impaired."
+                "Plotting and reprojection may be impaired.",
+                category=IrisNimrodTranslationWarning,
             )
         coord_sys = iris.coord_systems.TransverseMercator(
             *crs_args, iris.coord_systems.GeogCS(**ellipsoid)
@@ -548,7 +550,7 @@ def vertical_coord(cube, field):
             f"{field.vertical_coord_type} != {field.reference_vertical_coord_type}. "
             f"Assuming {field.vertical_coord_type}"
         )
-        warnings.warn(msg)
+        warnings.warn(msg, category=IrisNimrodTranslationWarning)
 
     coord_point = field.vertical_coord
     if coord_point == 8888.0:
@@ -840,7 +842,8 @@ def probability_coord(cube, field, handle_metadata_errors):
             )
             warnings.warn(
                 f"No default units for {coord_name} coord of {cube.name()}. "
-                "Meta-data may be incomplete."
+                "Meta-data may be incomplete.",
+                category=IrisNimrodTranslationWarning,
             )
         new_coord = iris.coords.AuxCoord(
             np.array(coord_val, dtype=np.float32), bounds=bounds, **coord_keys
