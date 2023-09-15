@@ -79,8 +79,8 @@ This document explains the changes made to Iris for this release
    working properly. (Main pull request: :pull:`5437`, more detail:
    :pull:`5430`, :pull:`5431`, :pull:`5432`, :pull:`5434`, :pull:`5436`)
 
-#. `@acchamber` removed several depreication warnings from iris related to Numpy 1.25 depreications
-   :pull:`#5493`
+#. `@acchamber` removed several warnings from iris related to Numpy 1.25 depreications
+   (:pull:`#5493`)
 
 
 .. comment
