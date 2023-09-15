@@ -483,16 +483,32 @@ earlier:
 
     .. code-block:: python
 
+        >>> import iris
+        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+        >>>
         >>> from geovista import GeoPlotter, Transform
-        >>> from geovista.common import to_xyz
-
-
-        # We'll re-use this to plot some real global data later.
+        >>> from geovista.common import to_cartesian as to_xyz
+        >>>
+        >>> testdata_path = iris.sample_data_path("mesh_C4_synthetic_float.nc")
+        >>> with PARSE_UGRID_ON_LOAD.context():
+        ...     cube = iris.load_cube(testdata_path)
+        ...
+        >>> print(cube)
+        synthetic / (1)                     (-- : 96)
+            Mesh coordinates:
+                latitude                        x
+                longitude                       x
+            Mesh:
+                name                        Topology data of 2D unstructured mesh
+                location                    face
+            Attributes:
+                NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
+                history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
+                nco_openmp_thread_number    1
         >>> def cube_faces_to_polydata(cube):
         ...     lons, lats = cube.mesh.node_coords
         ...     face_node = cube.mesh.face_node_connectivity
         ...     indices = face_node.indices_by_location()
-        ...
         ...     mesh = Transform.from_unstructured(
         ...         lons.points,
         ...         lats.points,
@@ -502,50 +518,29 @@ earlier:
         ...         start_index=face_node.start_index,
         ...     )
         ...     return mesh
-
-        >>> print(face_cube)
-        face_data / (K)                     (-- : 2; height: 3)
-            Dimension coordinates:
-                height                          -          x
-            Mesh coordinates:
-                latitude                        x          -
-                longitude                       x          -
-            Attributes:
-                Conventions                 'CF-1.7'
-
-        # Convert our mesh+data to a PolyData object.
-        # Just plotting a single height level.
-        >>> face_polydata = cube_faces_to_polydata(face_cube[:, 0])
+        ...
+        >>> face_polydata = cube_faces_to_polydata(cube)
         >>> print(face_polydata)
-        PolyData (0x7ff4861ff4c0)
-          N Cells:	2
-          N Points:	5
-          X Bounds:	9.903e-01, 1.000e+00
-          Y Bounds:	0.000e+00, 1.392e-01
-          Z Bounds:	6.123e-17, 5.234e-02
-          N Arrays:	2
-
-        # Create the GeoVista plotter and add our mesh+data to it.
+        PolyData (0x7f179a6b2800)
+          N Cells:    96
+          N Points:   98
+          N Strips:   0
+          X Bounds:   -1.000e+00, 1.000e+00
+          Y Bounds:   -1.000e+00, 1.000e+00
+          Z Bounds:   -1.000e+00, 1.000e+00
+          N Arrays:   4
+        >>>
         >>> my_plotter = GeoPlotter()
-        >>> my_plotter.add_coastlines(color="black")
-        >>> my_plotter.add_base_layer(color="grey")
-        >>> my_plotter.add_mesh(face_polydata)
-
-        # Centre the camera on the data.
-        >>> camera_region = to_xyz(
-        ...     face_cube.coord("longitude").points,
-        ...     face_cube.coord("latitude").points,
-        ...     radius=3,
-        ... )
-        >>> camera_pos = camera_region.mean(axis=0)
-        >>> my_plotter.camera.position = camera_pos
-
+        >>> my_plotter.background_color = "#502020ff"
+        >>> _ = my_plotter.add_coastlines(color="white", radius=1.01)
+        >>> _ = my_plotter.add_mesh(face_polydata, radius=1.0)
+        >>>
         >>> my_plotter.show()
 
     ..  image:: images/plotting_basic.png
         :alt: A GeoVista plot of the basic example Mesh.
 
-    This artificial data makes West Africa rather chilly!
+    This artificial data is very low resolution !
 
 Here's another example using a global cubed-sphere data set:
 
