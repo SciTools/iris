@@ -80,7 +80,7 @@ This document explains the changes made to Iris for this release
    :pull:`5430`, :pull:`5431`, :pull:`5432`, :pull:`5434`, :pull:`5436`)
 
 #. `@acchamber`_ removed several warnings from iris related to Numpy 1.25 deprecations
-   (:pull:`#5493`)
+   (:pull:`5493`)
 
 
 .. comment
