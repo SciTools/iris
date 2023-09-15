@@ -88,6 +88,8 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@scottrobinson02: https://github.com/scottrobinson02
+.. _@acchamber: https://github.com/acchamber
+
 
 .. comment
     Whatsnew resources in alphabetical order:
