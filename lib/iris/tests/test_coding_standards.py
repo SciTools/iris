@@ -8,14 +8,14 @@
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+import ast
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
 import os
 from pathlib import Path
-import re
 import subprocess
-from typing import List, NamedTuple, Tuple
+from typing import List, Tuple
 
 import iris
 from iris.fileformats.netcdf import _thread_safe_nc
@@ -145,40 +145,45 @@ def test_categorised_warnings():
     Use :func:`~iris.exceptions.warning_combo` .
 
     """
-    warn_regex = re.compile(r"(?s)warn\(.*?\)")
-
-    class ResultTuple(NamedTuple):
-        file_path: Path
-        line_number: int
-        match_string: str
-
-    warns_without_category: list[ResultTuple] = []
-    warns_with_user_warning: list[ResultTuple] = []
+    warns_without_category = []
+    warns_with_user_warning = []
+    tmp_list = []
 
     for file_path in Path(IRIS_DIR).rglob("*.py"):
         file_text = file_path.read_text()
+        parsed = ast.parse(source=file_text)
+        calls = filter(lambda node: hasattr(node, "func"), ast.walk(parsed))
+        warn_calls = filter(
+            lambda c: getattr(c.func, "attr", None) == "warn", calls
+        )
 
-        matched = warn_regex.search(file_text)
-        while matched:
-            start, end = matched.span()
-            result_tuple = ResultTuple(
-                file_path=file_path,
-                line_number=file_text[:start].count("\n") + 1,
-                match_string=file_text[start:end],
+        warn_call: ast.Call
+        for warn_call in warn_calls:
+            warn_ref = f"{file_path}:{warn_call.lineno}"
+            tmp_list.append(warn_ref)
+
+            category_kwargs = filter(
+                lambda k: k.arg == "category", warn_call.keywords
             )
-            if not re.search(r"category=", result_tuple.match_string):
-                warns_without_category.append(result_tuple)
-            if re.search(r"\bUserWarning\b", result_tuple.match_string):
-                warns_with_user_warning.append(result_tuple)
+            category_kwarg: ast.keyword = next(category_kwargs, None)
 
-            matched = warn_regex.search(file_text, start + 1)
+            if category_kwarg is None:
+                warns_without_category.append(warn_ref)
+            # Work with Attribute or Name instances.
+            elif (
+                getattr(category_kwarg.value, "attr", None)
+                or getattr(category_kwarg.value, "id", None)
+            ) == "UserWarning":
+                warns_with_user_warning.append(warn_ref)
 
-    # All warnings raised by Iris must be raised with a category kwarg.
-    #  (This avoids UserWarnings being raised by unwritten default behaviour).
-    assert warns_without_category == []
+    # This avoids UserWarnings being raised by unwritten default behaviour.
+    assert (
+        warns_without_category == []
+    ), "All warnings raised by Iris must be raised with the category kwarg."
 
-    # No warnings raised by Iris can be the base UserWarning class.
-    assert warns_with_user_warning == []
+    assert (
+        warns_with_user_warning == []
+    ), "No warnings raised by Iris can be the base UserWarning class."
 
 
 class TestLicenseHeaders(tests.IrisTest):
