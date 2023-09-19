@@ -1091,7 +1091,7 @@ class CFReader:
             warnings.warn(
                 "Optimise CF-netCDF loading by converting data from NetCDF3 "
                 'to NetCDF4 file format using the "nccopy" command.',
-                iris.exceptions.IrisLoadWarning,
+                category=iris.exceptions.IrisLoadWarning,
             )
 
         self._check_monotonic = monotonic

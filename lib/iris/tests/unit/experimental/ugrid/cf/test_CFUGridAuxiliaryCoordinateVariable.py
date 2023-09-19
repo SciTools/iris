@@ -20,6 +20,7 @@ import warnings
 import numpy as np
 import pytest
 
+import iris.exceptions
 from iris.experimental.ugrid.cf import CFUGridAuxiliaryCoordinateVariable
 from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
@@ -215,7 +216,10 @@ class TestIdentify(tests.IrisTest):
         }
 
         def operation(warn: bool):
-            warnings.warn("emit at least 1 warning")
+            warnings.warn(
+                "emit at least 1 warning",
+                category=iris.exceptions.IrisUserWarning,
+            )
             result = CFUGridAuxiliaryCoordinateVariable.identify(
                 vars_all, warn=warn
             )

@@ -560,7 +560,7 @@ class FF2PP:
                 "may be incorrect, not having taken into account the "
                 "boundary size."
             )
-            warnings.warn(msg, IrisLoadWarning)
+            warnings.warn(msg, category=IrisLoadWarning)
         else:
             range2 = field_dim[0] - res_low
             range1 = field_dim[0] - halo_dim * res_low

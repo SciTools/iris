@@ -451,7 +451,7 @@ class GeogCS(CoordSystem):
             "the GeogCS object. To change other properties set them explicitly"
             " or create a new GeogCS instance."
         )
-        warnings.warn(wmsg, iris.exceptions.IrisUserWarning)
+        warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
         value = float(value)
         self._inverse_flattening = value
 

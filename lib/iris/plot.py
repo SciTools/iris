@@ -2023,7 +2023,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
             "use: {}."
         )
         msg = msg.format(plot_func.__module__, supported)
-        warnings.warn(msg, IrisUnsupportedPlottingWarning)
+        warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 
     supported = ["contour", "contourf", "pcolor", "pcolormesh"]
     if plot_func.__name__ not in supported:
@@ -2032,7 +2032,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
             "use: {}."
         )
         msg = msg.format(plot_func.__name__, supported)
-        warnings.warn(msg, IrisUnsupportedPlottingWarning)
+        warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 
     # Determine plot range.
     vmin = kwargs.pop("vmin", min([cc.data.min() for cc in cubes]))

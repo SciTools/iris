@@ -332,7 +332,7 @@ def parse_cell_methods(nc_cell_methods):
                 msg = "NetCDF variable contains unknown cell method {!r}"
                 warnings.warn(
                     msg.format("{}".format(method_words[0])),
-                    UnknownCellMethodWarning,
+                    category=UnknownCellMethodWarning,
                 )
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
@@ -496,7 +496,7 @@ def _get_ellipsoid(cf_grid_var):
             "applied. To apply the datum when loading, use the "
             "iris.FUTURE.datum_support flag."
         )
-        warnings.warn(wmsg, FutureWarning, stacklevel=14)
+        warnings.warn(wmsg, category=FutureWarning, stacklevel=14)
         datum = None
 
     if datum is not None:
@@ -881,7 +881,7 @@ def get_attr_units(cf_var, attributes):
         )
         warnings.warn(
             msg,
-            warning_combo(
+            category=warning_combo(
                 iris.exceptions.IrisIgnoringWarning,
                 iris.exceptions.IrisCfLoadWarning,
             ),

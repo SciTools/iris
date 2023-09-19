@@ -597,7 +597,7 @@ def vertical_coord(cube, field):
     warnings.warn(
         "Vertical coord {!r} not yet handled"
         "".format(field.vertical_coord_type),
-        TranslationWarning,
+        category=TranslationWarning,
     )
 
 

@@ -359,7 +359,7 @@ def _build_mesh(cf, mesh_var, file_path):
         cf_role_message += " Correcting to 'mesh_topology'."
         warnings.warn(
             cf_role_message,
-            warning_combo(IrisCfWarning, IrisDefaultingWarning),
+            category=warning_combo(IrisCfWarning, IrisDefaultingWarning),
         )
 
     if hasattr(mesh_var, "volume_node_connectivity"):
@@ -378,7 +378,9 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        warnings.warn(msg, warning_combo(IrisCfWarning, IrisDefaultingWarning))
+        warnings.warn(
+            msg, category=warning_combo(IrisCfWarning, IrisDefaultingWarning)
+        )
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -392,7 +394,7 @@ def _build_mesh(cf, mesh_var, file_path):
             )
             warnings.warn(
                 msg,
-                warning_combo(
+                category=warning_combo(
                     IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
                 ),
             )

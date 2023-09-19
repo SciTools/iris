@@ -897,7 +897,7 @@ def as_data_frame(
             "'iris.FUTURE.pandas_ndim = True'. More info is in the "
             "documentation."
         )
-        warnings.warn(message, FutureWarning)
+        warnings.warn(message, category=FutureWarning)
 
         # The legacy behaviour.
         data = cube.data

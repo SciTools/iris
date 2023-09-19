@@ -50,7 +50,7 @@ def warn_deprecated(msg, stacklevel=2):
         >>>
 
     """
-    warnings.warn(msg, IrisDeprecation, stacklevel=stacklevel)
+    warnings.warn(msg, category=IrisDeprecation, stacklevel=stacklevel)
 
 
 # A Mixin for a wrapper class that copies the docstring of the wrapped class

@@ -745,7 +745,7 @@ class Saver:
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch"
                 )
-                warnings.warn(msg, iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
     @staticmethod
     def check_attribute_compliance(container, data_dtype):
@@ -1156,7 +1156,7 @@ class Saver:
                     "Unable to determine formula terms "
                     "for AuxFactory: {!r}".format(factory)
                 )
-                warnings.warn(msg, iris.exceptions.IrisSaveWarning)
+                warnings.warn(msg, category=iris.exceptions.IrisSaveWarning)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
                 # primary coord that signals the presence of a dimensionless
@@ -2140,7 +2140,7 @@ class Saver:
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn(
                         "OSGB coordinate system not yet handled",
-                        iris.exceptions.IrisSaveWarning,
+                        category=iris.exceptions.IrisSaveWarning,
                     )
 
                 # lambert azimuthal equal area
