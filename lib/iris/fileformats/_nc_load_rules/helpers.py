@@ -520,7 +520,7 @@ def _get_ellipsoid(cf_grid_var):
             "applied. To apply the datum when loading, use the "
             "iris.FUTURE.datum_support flag."
         )
-        warnings.warn(wmsg, category=FutureWarning, stacklevel=14)
+        iris.exceptions.warn_once_at_level(wmsg, FutureWarning, category=FutureWarning, stacklevel=14)
         datum = None
 
     if datum is not None:

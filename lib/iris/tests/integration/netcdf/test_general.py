@@ -505,7 +505,7 @@ class TestWarningRepeats(tests.IrisTest):
         fnames = [
             "false_east_north_merc.nc",
             "non_unit_scale_factor_merc.nc",
-            # toa_brightness_temperature.nc,
+            "toa_brightness_temperature.nc",
         ]
         fpaths = [
             tests.get_data_path(("NetCDF", "mercator", fname)) for fname in fnames
@@ -517,6 +517,13 @@ class TestWarningRepeats(tests.IrisTest):
                 iris.load(fpath)
                 warnings.warn("Dummy warning", category=iris.exceptions.IrisUserWarning)
         assert len(record) == 2
+
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("default")
+            iris.load_cube(fpaths[0])
+            iris.load_cube(fpaths[1])
+            iris.load_cube(fpaths[2])
+        assert len(record) == 3
 
 
 if __name__ == "__main__":

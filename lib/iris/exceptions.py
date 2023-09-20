@@ -3,6 +3,9 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Exceptions specific to the Iris package."""
+from functools import lru_cache
+import traceback
+import warnings
 
 
 class IrisError(Exception):
@@ -344,3 +347,19 @@ class IrisSaverFillValueWarning(IrisMaskValueMatchWarning, IrisSaveWarning):
     """
 
     pass
+
+
+@lru_cache(None)
+def warn_once(msg, type, stacklevel, frame):
+    """Raise a warning only if a similar one has not been raised before."""
+    warnings.warn(msg, type, stacklevel=stacklevel)
+
+
+def warn_once_at_level(msg, type, stacklevel):
+    """
+    Raise a warning only if a similar one hasn't been raised from the same line
+    for a given stack level.
+    """
+    stacklevel += 1
+    frame = traceback.format_stack()[-stacklevel]
+    warn_once(msg, type, stacklevel + 1, frame)
