@@ -216,7 +216,9 @@ class TestIdentify(tests.IrisTest):
         warn_regex = (
             rf"Missing CF-UGRID connectivity variable {subject_name}.*"
         )
-        with pytest.warns(UserWarning, match=warn_regex):
+        with pytest.warns(
+            iris.exceptions.IrisCfMissingVarWarning, match=warn_regex
+        ):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)
@@ -228,7 +230,9 @@ class TestIdentify(tests.IrisTest):
         vars_all[subject_name] = netcdf_ugrid_variable(
             subject_name, "", np.bytes_
         )
-        with pytest.warns(UserWarning, match=warn_regex):
+        with pytest.warns(
+            iris.exceptions.IrisCfLabelVarWarning, match=warn_regex
+        ):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)
