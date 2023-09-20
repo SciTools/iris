@@ -157,10 +157,12 @@ _FACTORY_DEFNS = {
 }
 
 
-class _MaskSaveCombo(
+class _WarnComboMaskSave(
     iris.exceptions.IrisMaskValueMatchWarning,
     iris.exceptions.IrisSaveWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
@@ -373,7 +375,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     if warn and result is not None:
         warnings.warn(
             result,
-            category=_MaskSaveCombo,
+            category=_WarnComboMaskSave,
         )
     return result
 

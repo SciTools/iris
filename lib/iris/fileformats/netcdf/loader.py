@@ -50,10 +50,12 @@ from . import logger
 NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
 
 
-class _IgnoringBoundsLoadCombo(
+class _WarnComboIgnoringBoundsLoad(
     iris.exceptions.IrisIgnoringBoundsWarning,
     iris.exceptions.IrisLoadWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
@@ -403,7 +405,7 @@ def _load_aux_factory(engine, cube):
                         )
                         warnings.warn(
                             msg,
-                            category=_IgnoringBoundsLoadCombo,
+                            category=_WarnComboIgnoringBoundsLoad,
                         )
                     coord_a = coord_from_term("a")
                     if coord_a is not None:

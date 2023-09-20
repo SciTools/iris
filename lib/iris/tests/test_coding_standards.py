@@ -138,11 +138,19 @@ def test_categorised_warnings():
     """
     To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
-    No obvious category? use the parent:
+    No obvious category? Use the parent:
     :class:`iris.exceptions.IrisUserWarning`.
 
-    .. todo:
-        Advice on combining warning classes
+    Warning matches multiple categories? Create a one-off combo class. For
+    example:
+
+    .. code-block:: python
+
+        class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
+            \"""
+            One-off combination of warning classes - enhances user filtering.
+            \"""
+            pass
 
     """
     warns_without_category = []

@@ -122,7 +122,9 @@ REAL_POLE_LAT = 4
 REAL_POLE_LON = 5
 
 
-class _LoadingDefaultingCombo(IrisDefaultingWarning, IrisLoadWarning):
+class _WarnComboLoadingDefaulting(IrisDefaultingWarning, IrisLoadWarning):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
@@ -440,7 +442,7 @@ class FFHeader:
             warnings.warn(
                 "Staggered grid type: {} not currently interpreted, assuming "
                 "standard C-grid".format(self.grid_staggering),
-                category=_LoadingDefaultingCombo,
+                category=_WarnComboLoadingDefaulting,
             )
         grid = grid_class(
             self.column_dependent_constants,
@@ -752,7 +754,7 @@ class FF2PP:
                                 "handled by the fieldsfile loader."
                                 " Assuming the data is on a P grid"
                                 ".".format(stash, subgrid),
-                                category=_LoadingDefaultingCombo,
+                                category=_WarnComboLoadingDefaulting,
                             )
 
                     field.x, field.y = grid.vectors(subgrid)
@@ -770,7 +772,7 @@ class FF2PP:
                             )
                             warnings.warn(
                                 msg,
-                                category=_LoadingDefaultingCombo,
+                                category=_WarnComboLoadingDefaulting,
                             )
                         field.bzx, field.bdx = grid.regular_x(subgrid)
                         field.bzy, field.bdy = grid.regular_y(subgrid)

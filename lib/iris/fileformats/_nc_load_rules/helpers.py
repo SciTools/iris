@@ -219,31 +219,39 @@ _CM_KNOWN_METHODS = [
 ]
 
 
-class _IgnoringLoadCombo(
+class _WarnComboIgnoringLoad(
     iris.exceptions.IrisIgnoringWarning,
     iris.exceptions.IrisLoadWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
-class _DefaultingLoadCombo(
+class _WarnComboDefaultingLoad(
     iris.exceptions.IrisDefaultingWarning,
     iris.exceptions.IrisLoadWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
-class _DefaultingCfLoadCombo(
+class _WarnComboDefaultingCfLoad(
     iris.exceptions.IrisCfLoadWarning,
     iris.exceptions.IrisDefaultingWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
-class _IgnoringCfLoadCombo(
+class _WarnComboIgnoringCfLoad(
     iris.exceptions.IrisIgnoringWarning,
     iris.exceptions.IrisCfLoadWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
@@ -476,7 +484,7 @@ def build_cube_metadata(engine):
             msg = "Skipping global attribute {!r}: {}"
             warnings.warn(
                 msg.format(attr_name, str(e)),
-                category=_IgnoringLoadCombo,
+                category=_WarnComboIgnoringLoad,
             )
 
 
@@ -905,7 +913,7 @@ def get_attr_units(cf_var, attributes):
         )
         warnings.warn(
             msg,
-            category=_IgnoringCfLoadCombo,
+            category=_WarnComboIgnoringCfLoad,
         )
         attributes["invalid_units"] = attr_units
         attr_units = UNKNOWN_UNIT_STRING
@@ -996,7 +1004,7 @@ def get_cf_bounds_var(cf_coord_var):
         warnings.warn(
             "Ignoring climatology in favour of bounds attribute "
             "on NetCDF variable {!r}.".format(cf_coord_var.cf_name),
-            category=_IgnoringCfLoadCombo,
+            category=_WarnComboIgnoringCfLoad,
         )
 
     return cf_bounds_var, climatological
@@ -1057,7 +1065,7 @@ def build_dimension_coordinate(
         msg = "Gracefully filling {!r} dimension coordinate masked points"
         warnings.warn(
             msg.format(str(cf_coord_var.cf_name)),
-            category=_DefaultingLoadCombo,
+            category=_WarnComboDefaultingLoad,
         )
 
     # Get any coordinate bounds.
@@ -1070,7 +1078,7 @@ def build_dimension_coordinate(
             msg = "Gracefully filling {!r} dimension coordinate masked bounds"
             warnings.warn(
                 msg.format(str(cf_coord_var.cf_name)),
-                category=_DefaultingLoadCombo,
+                category=_WarnComboDefaultingLoad,
             )
         # Handle transposed bounds where the vertex dimension is not
         # the last one. Test based on shape to support different
@@ -1138,7 +1146,7 @@ def build_dimension_coordinate(
         )
         warnings.warn(
             msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
-            category=_DefaultingCfLoadCombo,
+            category=_WarnComboDefaultingCfLoad,
         )
         coord = iris.coords.AuxCoord(
             points_data,

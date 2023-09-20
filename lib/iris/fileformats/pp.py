@@ -221,24 +221,30 @@ LBUSER_DTYPE_LOOKUP = {
 }
 
 
-class _LoadingMaskCombo(
+class _WarnComboLoadingMask(
     iris.exceptions.IrisLoadWarning,
     iris.exceptions.IrisMaskValueMatchWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
-class _LoadingDefaultingCombo(
+class _WarnComboLoadingDefaulting(
     iris.exceptions.IrisDefaultingWarning,
     iris.exceptions.IrisLoadWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
-class _IgnoringLoadCombo(
+class _WarnComboIgnoringLoad(
     iris.exceptions.IrisIgnoringWarning,
     iris.exceptions.IrisLoadWarning,
 ):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
@@ -1189,7 +1195,7 @@ class PPField(metaclass=ABCMeta):
             )
             warnings.warn(
                 msg.format(mdi),
-                category=_LoadingMaskCombo,
+                category=_WarnComboLoadingMask,
             )
         if isinstance(data, ma.MaskedArray):
             if ma.is_masked(data):
@@ -1316,7 +1322,7 @@ class PPField(metaclass=ABCMeta):
                 "Downcasting array precision from float64 to float32"
                 " for save.If float64 precision is required then"
                 " please save in a different format",
-                category=_LoadingDefaultingCombo,
+                category=_WarnComboLoadingDefaulting,
             )
             data = data.astype(">f4")
             lb[self.HEADER_DICT["lbuser"][0]] = 1
@@ -1930,7 +1936,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 )
                 warnings.warn(
                     msg,
-                    category=_IgnoringLoadCombo,
+                    category=_WarnComboIgnoringLoad,
                 )
                 break
 
@@ -1952,7 +1958,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                     wmsg.format(
                         pp_field.lblrec * PP_WORD_DEPTH, len_of_data_plus_extra
                     ),
-                    category=_IgnoringLoadCombo,
+                    category=_WarnComboIgnoringLoad,
                 )
                 break
 

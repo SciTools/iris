@@ -40,11 +40,17 @@ from .mesh import Connectivity, Mesh
 logger = get_logger(__name__, propagate=True, handler=False)
 
 
-class _CfDefaultingCombo(IrisCfWarning, IrisDefaultingWarning):
+class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
-class _CfDefaultingIgnoringCombo(_CfDefaultingCombo, IrisIgnoringWarning):
+class _WarnComboCfDefaultingIgnoring(
+    _WarnComboCfDefaulting, IrisIgnoringWarning
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
     pass
 
 
@@ -366,7 +372,7 @@ def _build_mesh(cf, mesh_var, file_path):
         cf_role_message += " Correcting to 'mesh_topology'."
         warnings.warn(
             cf_role_message,
-            category=_CfDefaultingCombo,
+            category=_WarnComboCfDefaulting,
         )
 
     if hasattr(mesh_var, "volume_node_connectivity"):
@@ -385,7 +391,7 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        warnings.warn(msg, category=_CfDefaultingCombo)
+        warnings.warn(msg, category=_WarnComboCfDefaulting)
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -399,7 +405,7 @@ def _build_mesh(cf, mesh_var, file_path):
             )
             warnings.warn(
                 msg,
-                category=_CfDefaultingIgnoringCombo,
+                category=_WarnComboCfDefaultingIgnoring,
             )
 
     node_dimension = None
