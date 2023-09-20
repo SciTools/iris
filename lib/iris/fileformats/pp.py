@@ -28,7 +28,6 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
 import iris.coord_systems
 import iris.exceptions
-from iris.exceptions import warning_combo
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
@@ -220,6 +219,27 @@ LBUSER_DTYPE_LOOKUP = {
     -3: np.dtype(">i4"),
     "default": np.dtype(">f4"),
 }
+
+
+class _LoadingMaskCombo(
+    iris.exceptions.IrisLoadWarning,
+    iris.exceptions.IrisMaskValueMatchWarning,
+):
+    pass
+
+
+class _LoadingDefaultingCombo(
+    iris.exceptions.IrisDefaultingWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    pass
+
+
+class _IgnoringLoadCombo(
+    iris.exceptions.IrisIgnoringWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    pass
 
 
 class STASH(collections.namedtuple("STASH", "model section item")):
@@ -1169,10 +1189,7 @@ class PPField(metaclass=ABCMeta):
             )
             warnings.warn(
                 msg.format(mdi),
-                category=warning_combo(
-                    iris.exceptions.IrisLoadWarning,
-                    iris.exceptions.IrisMaskValueMatchWarning,
-                ),
+                category=_LoadingMaskCombo,
             )
         if isinstance(data, ma.MaskedArray):
             if ma.is_masked(data):
@@ -1299,10 +1316,7 @@ class PPField(metaclass=ABCMeta):
                 "Downcasting array precision from float64 to float32"
                 " for save.If float64 precision is required then"
                 " please save in a different format",
-                category=warning_combo(
-                    iris.exceptions.IrisDefaultingWarning,
-                    iris.exceptions.IrisLoadWarning,
-                ),
+                category=_LoadingDefaultingCombo,
             )
             data = data.astype(">f4")
             lb[self.HEADER_DICT["lbuser"][0]] = 1
@@ -1916,10 +1930,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 )
                 warnings.warn(
                     msg,
-                    category=warning_combo(
-                        iris.exceptions.IrisIgnoringWarning,
-                        iris.exceptions.IrisLoadWarning,
-                    ),
+                    category=_IgnoringLoadCombo,
                 )
                 break
 
@@ -1941,10 +1952,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                     wmsg.format(
                         pp_field.lblrec * PP_WORD_DEPTH, len_of_data_plus_extra
                     ),
-                    category=warning_combo(
-                        iris.exceptions.IrisIgnoringWarning,
-                        iris.exceptions.IrisLoadWarning,
-                    ),
+                    category=_IgnoringLoadCombo,
                 )
                 break
 

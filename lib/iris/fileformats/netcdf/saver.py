@@ -44,7 +44,6 @@ import iris.coord_systems
 import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
-from iris.exceptions import warning_combo
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
@@ -156,6 +155,13 @@ _FACTORY_DEFNS = {
         "depth_c: {depth_c}",
     ),
 }
+
+
+class _MaskSaveCombo(
+    iris.exceptions.IrisMaskValueMatchWarning,
+    iris.exceptions.IrisSaveWarning,
+):
+    pass
 
 
 class CFNameCoordMap:
@@ -367,10 +373,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     if warn and result is not None:
         warnings.warn(
             result,
-            category=warning_combo(
-                iris.exceptions.IrisMaskValueMatchWarning,
-                iris.exceptions.IrisSaveWarning,
-            ),
+            category=_MaskSaveCombo,
         )
     return result
 

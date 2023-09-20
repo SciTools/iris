@@ -28,7 +28,6 @@ from iris.common.mixin import _get_valid_standard_name
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris.exceptions import warning_combo
 import iris.fileformats.cf as cf
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
@@ -218,6 +217,34 @@ _CM_KNOWN_METHODS = [
     "mode",
     "median",
 ]
+
+
+class _IgnoringLoadCombo(
+    iris.exceptions.IrisIgnoringWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    pass
+
+
+class _DefaultingLoadCombo(
+    iris.exceptions.IrisDefaultingWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    pass
+
+
+class _DefaultingCfLoadCombo(
+    iris.exceptions.IrisCfLoadWarning,
+    iris.exceptions.IrisDefaultingWarning,
+):
+    pass
+
+
+class _IgnoringCfLoadCombo(
+    iris.exceptions.IrisIgnoringWarning,
+    iris.exceptions.IrisCfLoadWarning,
+):
+    pass
 
 
 def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
@@ -449,10 +476,7 @@ def build_cube_metadata(engine):
             msg = "Skipping global attribute {!r}: {}"
             warnings.warn(
                 msg.format(attr_name, str(e)),
-                category=warning_combo(
-                    iris.exceptions.IrisIgnoringWarning,
-                    iris.exceptions.IrisLoadWarning,
-                ),
+                category=_IgnoringLoadCombo,
             )
 
 
@@ -881,10 +905,7 @@ def get_attr_units(cf_var, attributes):
         )
         warnings.warn(
             msg,
-            category=warning_combo(
-                iris.exceptions.IrisIgnoringWarning,
-                iris.exceptions.IrisCfLoadWarning,
-            ),
+            category=_IgnoringCfLoadCombo,
         )
         attributes["invalid_units"] = attr_units
         attr_units = UNKNOWN_UNIT_STRING
@@ -975,10 +996,7 @@ def get_cf_bounds_var(cf_coord_var):
         warnings.warn(
             "Ignoring climatology in favour of bounds attribute "
             "on NetCDF variable {!r}.".format(cf_coord_var.cf_name),
-            category=warning_combo(
-                iris.exceptions.IrisCfLoadWarning,
-                iris.exceptions.IrisIgnoringWarning,
-            ),
+            category=_IgnoringCfLoadCombo,
         )
 
     return cf_bounds_var, climatological
@@ -1039,10 +1057,7 @@ def build_dimension_coordinate(
         msg = "Gracefully filling {!r} dimension coordinate masked points"
         warnings.warn(
             msg.format(str(cf_coord_var.cf_name)),
-            category=warning_combo(
-                iris.exceptions.IrisDefaultingWarning,
-                iris.exceptions.IrisLoadWarning,
-            ),
+            category=_DefaultingLoadCombo,
         )
 
     # Get any coordinate bounds.
@@ -1055,10 +1070,7 @@ def build_dimension_coordinate(
             msg = "Gracefully filling {!r} dimension coordinate masked bounds"
             warnings.warn(
                 msg.format(str(cf_coord_var.cf_name)),
-                category=warning_combo(
-                    iris.exceptions.IrisDefaultingWarning,
-                    iris.exceptions.IrisLoadWarning,
-                ),
+                category=_DefaultingLoadCombo,
             )
         # Handle transposed bounds where the vertex dimension is not
         # the last one. Test based on shape to support different
@@ -1126,10 +1138,7 @@ def build_dimension_coordinate(
         )
         warnings.warn(
             msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
-            category=warning_combo(
-                iris.exceptions.IrisCfLoadWarning,
-                iris.exceptions.IrisDefaultingWarning,
-            ),
+            category=_DefaultingCfLoadCombo,
         )
         coord = iris.coords.AuxCoord(
             points_data,

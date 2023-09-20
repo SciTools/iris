@@ -45,7 +45,6 @@ import warnings
 
 from iris.config import get_logger
 import iris.exceptions
-from iris.exceptions import warning_combo
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 
@@ -53,6 +52,20 @@ from . import helpers as hh
 
 # Configure the logger.
 logger = get_logger(__name__, fmt="[%(funcName)s]")
+
+
+class _CfLoadIgnoringCombo(
+    iris.exceptions.IrisCfLoadWarning,
+    iris.exceptions.IrisIgnoringWarning,
+):
+    pass
+
+
+class _LoadIgnoringCombo(
+    iris.exceptions.IrisLoadWarning,
+    iris.exceptions.IrisIgnoringWarning,
+):
+    pass
 
 
 def _default_rulenamesfunc(func_name):
@@ -475,10 +488,7 @@ def action_formula_type(engine, formula_root_fact):
         msg = f"Ignored formula of unrecognised type: {formula_type!r}."
         warnings.warn(
             msg,
-            category=warning_combo(
-                iris.exceptions.IrisCfLoadWarning,
-                iris.exceptions.IrisIgnoringWarning,
-            ),
+            category=_CfLoadIgnoringCombo,
         )
     if succeed:
         # Check we don't already have one.
@@ -496,10 +506,7 @@ def action_formula_type(engine, formula_root_fact):
             )
             warnings.warn(
                 msg,
-                category=warning_combo(
-                    iris.exceptions.IrisLoadWarning,
-                    iris.exceptions.IrisIgnoringWarning,
-                ),
+                category=_LoadIgnoringCombo,
             )
         rule_name += f"_{formula_type}"
         # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.

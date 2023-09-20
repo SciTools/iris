@@ -141,8 +141,8 @@ def test_categorised_warnings():
     No obvious category? use the parent:
     :class:`iris.exceptions.IrisUserWarning`.
 
-    Need a unique combination of categories?
-    Use :func:`~iris.exceptions.warning_combo` .
+    .. todo:
+        Advice on combining warning classes
 
     """
     warns_without_category = []

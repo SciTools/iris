@@ -389,17 +389,3 @@ class IrisSaverFillValueWarning(IrisMaskValueMatchWarning, IrisSaveWarning):
     """
 
     pass
-
-
-########
-
-
-def warning_combo(*warning_classes):
-    """Return a one-off combination of warning classes to help user filtering."""
-
-    # TODO: full docstring (with example?)
-    # TODO: type hinting
-    class _WarningCombo(*warning_classes):
-        pass
-
-    return _WarningCombo

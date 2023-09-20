@@ -23,7 +23,6 @@ from ...exceptions import (
     IrisCfWarning,
     IrisDefaultingWarning,
     IrisIgnoringWarning,
-    warning_combo,
 )
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...fileformats.netcdf import loader as nc_loader
@@ -39,6 +38,14 @@ from .mesh import Connectivity, Mesh
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
+
+
+class _CfDefaultingCombo(IrisCfWarning, IrisDefaultingWarning):
+    pass
+
+
+class _CfDefaultingIgnoringCombo(_CfDefaultingCombo, IrisIgnoringWarning):
+    pass
 
 
 class ParseUGridOnLoad(threading.local):
@@ -359,7 +366,7 @@ def _build_mesh(cf, mesh_var, file_path):
         cf_role_message += " Correcting to 'mesh_topology'."
         warnings.warn(
             cf_role_message,
-            category=warning_combo(IrisCfWarning, IrisDefaultingWarning),
+            category=_CfDefaultingCombo,
         )
 
     if hasattr(mesh_var, "volume_node_connectivity"):
@@ -378,9 +385,7 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        warnings.warn(
-            msg, category=warning_combo(IrisCfWarning, IrisDefaultingWarning)
-        )
+        warnings.warn(msg, category=_CfDefaultingCombo)
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -394,9 +399,7 @@ def _build_mesh(cf, mesh_var, file_path):
             )
             warnings.warn(
                 msg,
-                category=warning_combo(
-                    IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
-                ),
+                category=_CfDefaultingIgnoringCombo,
             )
 
     node_dimension = None

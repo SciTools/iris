@@ -33,7 +33,6 @@ import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris.exceptions import warning_combo
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
@@ -49,6 +48,13 @@ from . import logger
 # An expected part of the public loader API, but includes thread safety
 #  concerns so is housed in _thread_safe_nc.
 NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
+
+
+class _IgnoringBoundsLoadCombo(
+    iris.exceptions.IrisIgnoringBoundsWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    pass
 
 
 def _actions_engine():
@@ -397,10 +403,7 @@ def _load_aux_factory(engine, cube):
                         )
                         warnings.warn(
                             msg,
-                            category=warning_combo(
-                                iris.exceptions.IrisIgnoringBoundsWarning,
-                                iris.exceptions.IrisLoadWarning,
-                            ),
+                            category=_IgnoringBoundsLoadCombo,
                         )
                     coord_a = coord_from_term("a")
                     if coord_a is not None:
