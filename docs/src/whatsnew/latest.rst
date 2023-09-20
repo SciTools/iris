@@ -30,7 +30,9 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
+   :class:`UserWarning`\s for richer filtering. The full index of
+   sub-categories can be seen here: :mod:`iris.exceptions` . (:pull:`5498`)
 
 
 🐛 Bugs Fixed
@@ -38,7 +40,7 @@ This document explains the changes made to Iris for this release
 
 #. `@scottrobinson02`_ fixed the output units when dividing a coordinate by a
    cube. (:issue:`5305`, :pull:`5331`)
-   
+
 #. `@ESadek-MO`_ has updated :mod:`iris.tests.graphics.idiff` to stop duplicated file names
    preventing acceptance. (:issue:`5098`, :pull:`5482`)
 
@@ -84,7 +86,7 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ replaced all uses of the ``logging.WARNING`` level, in
    favour of using Python warnings, following team agreement. (:pull:`5488`)
-   
+
 #. `@trexfeathers`_ adapted benchmarking to work with ASV ``>=v0.6`` by no
    longer using the ``--strict`` argument. (:pull:`5496`)
 
