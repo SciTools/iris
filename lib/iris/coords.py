@@ -2223,7 +2223,7 @@ class Coord(_DimensionalMetadata):
             if self.ndim > 1:
                 msg = (
                     "Collapsing a multi-dimensional coordinate. "
-                    "Metadata may not be fully descriptive for {!r}.",
+                    "Metadata may not be fully descriptive for {!r}."
                 )
                 warnings.warn(
                     msg.format(self.name()),
