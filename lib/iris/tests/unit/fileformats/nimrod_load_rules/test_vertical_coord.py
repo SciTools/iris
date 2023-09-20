@@ -15,9 +15,12 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.exceptions import IrisNimrodTranslationWarning
 from iris.fileformats.nimrod import NimrodField
-from iris.fileformats.nimrod_load_rules import NIMROD_DEFAULT, vertical_coord
+from iris.fileformats.nimrod_load_rules import (
+    NIMROD_DEFAULT,
+    TranslationWarning,
+    vertical_coord,
+)
 
 
 class Test(tests.IrisTest):
@@ -60,7 +63,7 @@ class Test(tests.IrisTest):
                 vertical_coord_val=1.0, vertical_coord_type=-1
             )
         warn.assert_called_once_with(
-            "Vertical coord -1 not yet handled", IrisNimrodTranslationWarning
+            "Vertical coord -1 not yet handled", category=TranslationWarning
         )
 
     def test_null(self):

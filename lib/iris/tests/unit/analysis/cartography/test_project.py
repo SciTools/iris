@@ -16,6 +16,7 @@ from iris.analysis.cartography import project
 import iris.coord_systems
 import iris.coords
 import iris.cube
+from iris.exceptions import IrisDefaultingWarning
 import iris.tests
 import iris.tests.stock
 
@@ -161,7 +162,8 @@ class TestAll(tests.IrisTest):
         warn.assert_called_once_with(
             "Coordinate system of latitude and "
             "longitude coordinates is not specified. "
-            "Assuming WGS84 Geodetic."
+            "Assuming WGS84 Geodetic.",
+            category=IrisDefaultingWarning,
         )
 
 
