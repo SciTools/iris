@@ -294,7 +294,9 @@ html_theme_options = {
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,
-    "navbar_align": "left",
+    "navbar_align": "content",
+    # removes the search box from the top bar
+    "navbar_persistent": [],
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
