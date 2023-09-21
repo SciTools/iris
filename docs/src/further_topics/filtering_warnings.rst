@@ -10,15 +10,23 @@ you to ``ignore`` Warnings which you do not find helpful.
 
 .. testsetup:: filtering_warnings
 
+    from pathlib import Path
     import sys
     import warnings
 
+    import iris
     import iris.coord_systems
     import iris.exceptions
 
-    # Make sure doctests actually see Warnings that are raised.
+    # Hack to ensure doctests actually see Warnings that are raised, and that
+    #  they have a relative path (so a test pass is not machine-dependent).
     warnings.filterwarnings("default")
-    sys.stderr = sys.stdout
+    IRIS_FILE = Path(iris.__file__)
+    def custom_warn(message, category, filename, lineno, file=None, line=None):
+        filepath = Path(filename)
+        filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
+        sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
+    warnings.showwarning = custom_warn
 
     geog_cs_globe = iris.coord_systems.GeogCS(6400000)
     orthographic_coord_system = iris.coord_systems.Orthographic(
@@ -39,9 +47,9 @@ Warnings:
 
     >>> my_operation()
     ...
-    /net/home/h01/myeo/repos/iris/lib/iris/coord_systems.py:454: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
+    iris/coord_systems.py:454: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
       warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
-    /net/home/h01/myeo/repos/iris/lib/iris/coord_systems.py:821: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
+    iris/coord_systems.py:821: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
       warnings.warn(
 
 Warnings can be suppressed using the Python warnings filter with the ``ignore``
@@ -102,7 +110,7 @@ You can target specific Warning messages, e.g.
     ...     warnings.filterwarnings("ignore", message="Discarding false_easting")
     ...     my_operation()
     ...
-    /net/home/h01/myeo/repos/iris/lib/iris/coord_systems.py:454: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
+    iris/coord_systems.py:454: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
       warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
 
 ::
@@ -120,7 +128,7 @@ Or you can target Warnings raised by specific lines of specific modules, e.g.
     ...     warnings.filterwarnings("ignore", module="iris.coord_systems", lineno=454)
     ...     my_operation()
     ...
-    /net/home/h01/myeo/repos/iris/lib/iris/coord_systems.py:821: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
+    iris/coord_systems.py:821: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
       warnings.warn(
 
 ::
@@ -182,7 +190,7 @@ module during execution:
     ...     )
     ...     my_operation()
     ...
-    /net/home/h01/myeo/repos/iris/lib/iris/coord_systems.py:454: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
+    iris/coord_systems.py:454: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
       warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
 
 ::
@@ -263,6 +271,11 @@ Examples of Iris Warnings
   its data model, but without this reference relationship. You are warned since
   the file includes an error and the loaded result might therefore not be as
   expected.
+
+
+.. testcleanup:: filtering_warnings
+
+    warnings.filterwarnings("ignore")
 
 
 .. _cpython#66733: https://github.com/python/cpython/issues/66733
