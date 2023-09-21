@@ -398,7 +398,7 @@ def as_cubes(
 
     cube_shape = getattr(pandas_index, "levshape", (pandas_index.nunique(),))
     n_rows = len(pandas_structure)
-    if np.product(cube_shape) > n_rows:
+    if np.prod(cube_shape) > n_rows:
         message = (
             f"Not all index values have a corresponding row - {n_rows} rows "
             f"cannot be reshaped into {cube_shape}. Consider padding with NaN "

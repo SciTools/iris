@@ -1075,7 +1075,7 @@ class TestPandasAsCubes(tests.IrisTest):
     def test_3d_with_2d_coord(self):
         df = self._create_pandas(index_levels=3)
         coord_shape = df.index.levshape[:2]
-        coord_values = np.arange(np.product(coord_shape))
+        coord_values = np.arange(np.prod(coord_shape))
         coord_name = "foo"
         df[coord_name] = coord_values.repeat(df.index.levshape[-1])
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
@@ -1089,7 +1089,7 @@ class TestPandasAsCubes(tests.IrisTest):
     def test_coord_varies_all_indices(self):
         df = self._create_pandas(index_levels=3)
         coord_shape = df.index.levshape
-        coord_values = np.arange(np.product(coord_shape))
+        coord_values = np.arange(np.prod(coord_shape))
         coord_name = "foo"
         df[coord_name] = coord_values
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
@@ -1105,7 +1105,7 @@ class TestPandasAsCubes(tests.IrisTest):
         #  increment.
         df = self._create_pandas(index_levels=2)
         coord_shape = df.index.levshape
-        coord_values = np.arange(np.product(coord_shape))
+        coord_values = np.arange(np.prod(coord_shape))
         coord_name = "foo"
 
         # Create a repeating value along a dimension.
