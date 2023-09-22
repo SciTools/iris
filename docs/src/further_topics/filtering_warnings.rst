@@ -158,7 +158,7 @@ E.g. filtering the ``coord_systems`` module:
 ----
 
 If using :func:`warnings.filterwarnings` , you can also use partial
-definitions. The below example ``ignore``s all Warnings from ``iris`` as a
+definitions. The below example will ``ignore`` all Warnings from ``iris`` as a
 whole.
 
 .. doctest:: filtering_warnings
