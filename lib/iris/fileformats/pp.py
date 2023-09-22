@@ -1227,13 +1227,12 @@ class PPField(metaclass=ABCMeta):
                 index = slice(pos[0], pos[-1] + 1)
                 if isinstance(header_elem, SplittableInt):
                     header_elem = int(header_elem)
-                lb[index] = header_elem
+                lb[index] = np.array(header_elem).astype("uint32")
             else:
                 index = slice(
                     pos[0] - NUM_LONG_HEADERS, pos[-1] - NUM_LONG_HEADERS + 1
                 )
-                b[index] = header_elem
-
+                b[index] = np.array(header_elem).astype("uint32")
         # Although all of the elements are now populated, we still need to
         # update some of the elements in case
         # things have changed (for example, the data length etc.)
