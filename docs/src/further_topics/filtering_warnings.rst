@@ -136,7 +136,6 @@ Or you can target Warnings raised by specific lines of specific modules, e.g.
     python -W ignore:::iris.coord_systems:454
     export PYTHONWARNINGS=ignore:::iris.coord_systems:454
 
-
 Warnings from a Common Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -158,7 +157,9 @@ E.g. filtering the ``coord_systems`` module:
 
 ----
 
-It also works to ``ignore`` all warnings from ``iris`` as a whole:
+If using :func:`warnings.filterwarnings` , you can also use partial
+definitions. The below example ``ignore``s all Warnings from ``iris`` as a
+whole.
 
 .. doctest:: filtering_warnings
 
@@ -166,10 +167,7 @@ It also works to ``ignore`` all warnings from ``iris`` as a whole:
     ...     warnings.filterwarnings("ignore", module="iris")
     ...     my_operation()
 
-::
-
-    python -W ignore:::iris
-    export PYTHONWARNINGS=ignore:::iris
+The above 'partial' filter is not available with the command line approaches.
 
 Warnings of a Common Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,14 +191,6 @@ module during execution:
     iris/coord_systems.py:454: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
       warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
 
-::
-
-    export PYTHONWARNINGS=ignore::iris.exceptions.IrisDefaultingWarning
-
-This example is not possible using ``python -W`` on the command line, which
-can only handle the built-in Warning categories
-(`cpython#66733`_).
-
 ----
 
 Using :class:`~iris.exceptions.IrisUserWarning` in the filter will ``ignore``
@@ -216,13 +206,13 @@ both Warnings, since :class:`~iris.exceptions.IrisDefaultingWarning` subclasses
     ...     )
     ...     my_operation()
 
-::
+----
 
-    export PYTHONWARNINGS=ignore::iris.exceptions.IrisUserWarning
+The command line approaches can only handle the built-in Warning
+categories (`cpython#66733`_)::
 
-This example is not possible using ``python -W`` on the command line, which
-can only handle the built-in Warning categories
-(`cpython#66733`_).
+    python -W ignore::UserWarning
+    export PYTHONWARNINGS=ignore::UserWarning
 
 ----
 
