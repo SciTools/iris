@@ -86,7 +86,7 @@ This document explains the changes made to Iris for this release
 
 #. `@acchamber`_ and `@ESadek-MO`_ resolved several deprecation to reduce
    number of warnings raised during tests.
-   (:pull:`5493`, :pull:`5511`)
+   (:pull:`5493`, :pull:`5511`, :pull:`5512`)
 
 #. `@trexfeathers`_ replaced all uses of the ``logging.WARNING`` level, in
    favour of using Python warnings, following team agreement. (:pull:`5488`)
