@@ -44,6 +44,7 @@ from functools import wraps
 import warnings
 
 from iris.config import get_logger
+import iris.exceptions
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 
@@ -51,6 +52,24 @@ from . import helpers as hh
 
 # Configure the logger.
 logger = get_logger(__name__, fmt="[%(funcName)s]")
+
+
+class _WarnComboCfLoadIgnoring(
+    iris.exceptions.IrisCfLoadWarning,
+    iris.exceptions.IrisIgnoringWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
+class _WarnComboLoadIgnoring(
+    iris.exceptions.IrisLoadWarning,
+    iris.exceptions.IrisIgnoringWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
 
 
 def _default_rulenamesfunc(func_name):
@@ -471,7 +490,10 @@ def action_formula_type(engine, formula_root_fact):
         succeed = False
         rule_name += f"(FAILED - unrecognised formula type = {formula_type!r})"
         msg = f"Ignored formula of unrecognised type: {formula_type!r}."
-        warnings.warn(msg)
+        warnings.warn(
+            msg,
+            category=_WarnComboCfLoadIgnoring,
+        )
     if succeed:
         # Check we don't already have one.
         existing_type = engine.requires.get("formula_type")
@@ -486,7 +508,10 @@ def action_formula_type(engine, formula_root_fact):
                 f"Formula of type ={formula_type!r} "
                 f"overrides another of type ={existing_type!r}.)"
             )
-            warnings.warn(msg)
+            warnings.warn(
+                msg,
+                category=_WarnComboLoadIgnoring,
+            )
         rule_name += f"_{formula_type}"
         # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
         engine.requires["formula_type"] = formula_type

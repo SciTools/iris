@@ -19,6 +19,11 @@ import warnings
 
 from ...config import get_logger
 from ...coords import AuxCoord
+from ...exceptions import (
+    IrisCfWarning,
+    IrisDefaultingWarning,
+    IrisIgnoringWarning,
+)
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...fileformats.netcdf import loader as nc_loader
 from ...io import decode_uri, expand_filespecs
@@ -33,6 +38,20 @@ from .mesh import Connectivity, Mesh
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
+
+
+class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
+class _WarnComboCfDefaultingIgnoring(
+    _WarnComboCfDefaulting, IrisIgnoringWarning
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
 
 
 class ParseUGridOnLoad(threading.local):
@@ -351,7 +370,10 @@ def _build_mesh(cf, mesh_var, file_path):
         )
     if cf_role_message:
         cf_role_message += " Correcting to 'mesh_topology'."
-        warnings.warn(cf_role_message)
+        warnings.warn(
+            cf_role_message,
+            category=_WarnComboCfDefaulting,
+        )
 
     if hasattr(mesh_var, "volume_node_connectivity"):
         topology_dimension = 3
@@ -369,7 +391,7 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        warnings.warn(msg)
+        warnings.warn(msg, category=_WarnComboCfDefaulting)
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -381,7 +403,10 @@ def _build_mesh(cf, mesh_var, file_path):
                 f"{quoted_topology_dimension}"
                 " -- ignoring this as it is inconsistent."
             )
-            warnings.warn(msg)
+            warnings.warn(
+                msg,
+                category=_WarnComboCfDefaultingIgnoring,
+            )
 
     node_dimension = None
     edge_dimension = getattr(mesh_var, "edge_dimension", None)

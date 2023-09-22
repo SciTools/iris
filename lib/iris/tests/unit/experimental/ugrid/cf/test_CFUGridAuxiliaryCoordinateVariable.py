@@ -20,6 +20,7 @@ import warnings
 import numpy as np
 import pytest
 
+import iris.exceptions
 from iris.experimental.ugrid.cf import CFUGridAuxiliaryCoordinateVariable
 from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
@@ -215,7 +216,10 @@ class TestIdentify(tests.IrisTest):
         }
 
         def operation(warn: bool):
-            warnings.warn("emit at least 1 warning")
+            warnings.warn(
+                "emit at least 1 warning",
+                category=iris.exceptions.IrisUserWarning,
+            )
             result = CFUGridAuxiliaryCoordinateVariable.identify(
                 vars_all, warn=warn
             )
@@ -223,7 +227,9 @@ class TestIdentify(tests.IrisTest):
 
         # Missing warning.
         warn_regex = rf"Missing CF-netCDF auxiliary coordinate variable {subject_name}.*"
-        with pytest.warns(UserWarning, match=warn_regex):
+        with pytest.warns(
+            iris.exceptions.IrisCfMissingVarWarning, match=warn_regex
+        ):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)
@@ -235,7 +241,9 @@ class TestIdentify(tests.IrisTest):
         vars_all[subject_name] = netcdf_ugrid_variable(
             subject_name, "", np.bytes_
         )
-        with pytest.warns(UserWarning, match=warn_regex):
+        with pytest.warns(
+            iris.exceptions.IrisCfLabelVarWarning, match=warn_regex
+        ):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)

@@ -15,6 +15,7 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 from iris.coords import CellMethod
+from iris.exceptions import IrisCfLoadWarning
 from iris.fileformats._nc_load_rules.helpers import parse_cell_methods
 
 
@@ -123,7 +124,7 @@ class Test(tests.IrisTest):
         ]
         for cell_method_str in cell_method_strings:
             with self.assertWarns(
-                UserWarning,
+                IrisCfLoadWarning,
                 msg="Cell methods may be incorrectly parsed due to mismatched brackets",
             ):
                 _ = parse_cell_methods(cell_method_str)
@@ -139,7 +140,7 @@ class Test(tests.IrisTest):
         ]
         for cell_method_str in cell_method_strings:
             with self.assertWarns(
-                UserWarning,
+                IrisCfLoadWarning,
                 msg=f"Failed to fully parse cell method string: {cell_method_str}",
             ):
                 _ = parse_cell_methods(cell_method_str)

@@ -18,6 +18,7 @@ import dask.array as da
 import numpy as np
 import pytest
 
+from iris.exceptions import IrisMaskValueMatchWarning
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf.saver import Saver, _FillvalueCheckInfo
 
@@ -183,5 +184,5 @@ class Test__lazy_stream_data:
         if n_expected_warnings > 0:
             warning = issued_warnings[0]
             msg = "contains unmasked data points equal to the fill-value, 2.0"
-            assert isinstance(warning, UserWarning)
+            assert isinstance(warning, IrisMaskValueMatchWarning)
             assert msg in warning.args[0]

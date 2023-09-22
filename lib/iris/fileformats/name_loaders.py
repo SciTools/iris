@@ -17,7 +17,7 @@ import numpy as np
 import iris.coord_systems
 from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
-from iris.exceptions import TranslationError
+from iris.exceptions import IrisLoadWarning, TranslationError
 import iris.util
 
 EARTH_RADIUS = 6371229.0
@@ -273,7 +273,9 @@ def _parse_units(units):
     try:
         units = cf_units.Unit(units)
     except ValueError:
-        warnings.warn("Unknown units: {!r}".format(units))
+        warnings.warn(
+            "Unknown units: {!r}".format(units), category=IrisLoadWarning
+        )
         units = cf_units.Unit(None)
 
     return units
@@ -611,7 +613,9 @@ def _build_cell_methods(av_or_ints, coord):
         else:
             cell_method = None
             msg = "Unknown {} statistic: {!r}. Unable to create cell method."
-            warnings.warn(msg.format(coord, av_or_int))
+            warnings.warn(
+                msg.format(coord, av_or_int), category=IrisLoadWarning
+            )
         cell_methods.append(cell_method)  # NOTE: this can be a None
     return cell_methods
 

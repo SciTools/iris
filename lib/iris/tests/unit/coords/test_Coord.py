@@ -19,7 +19,7 @@ import numpy as np
 import iris
 from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
-from iris.exceptions import UnitConversionError
+from iris.exceptions import IrisVagueMetadataWarning, UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
 
 Pair = collections.namedtuple("Pair", "points bounds")
@@ -482,7 +482,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "Collapsing a multi-dimensional coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
             coord.collapsed()
 
     def test_lazy_nd_multidim_bounds_warning(self):
@@ -493,7 +493,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "Collapsing a multi-dimensional coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
             coord.collapsed()
 
     def test_numeric_nd_noncontiguous_bounds_warning(self):
@@ -504,7 +504,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "Collapsing a non-contiguous coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
             coord.collapsed()
 
     def test_lazy_nd_noncontiguous_bounds_warning(self):
@@ -515,7 +515,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "Collapsing a non-contiguous coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
             coord.collapsed()
 
     def test_numeric_3_bounds(self):
@@ -530,7 +530,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             r"1D coordinates with 2 bounds. Metadata may not be fully "
             r"descriptive for 'x'. Ignoring bounds."
         )
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
             collapsed_coord = coord.collapsed()
 
         self.assertFalse(collapsed_coord.has_lazy_points())
@@ -553,7 +553,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             r"1D coordinates with 2 bounds. Metadata may not be fully "
             r"descriptive for 'x'. Ignoring bounds."
         )
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
             collapsed_coord = coord.collapsed()
 
         self.assertTrue(collapsed_coord.has_lazy_points())
