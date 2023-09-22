@@ -17,7 +17,7 @@ import unittest.mock as mock
 
 import dask.array as da
 import numpy as np
-from pkg_resources import parse_version
+from packaging import version
 import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
@@ -79,7 +79,7 @@ class Test__readonly_properties(tests.IrisTest):
     def test_fixed_metadata(self):
         # Check that you cannot set any of these on an existing MeshCoord.
         meshcoord = self.meshcoord
-        if parse_version(python_version()) >= parse_version("3.11"):
+        if version.parse(python_version()) >= version.parse("3.11"):
             msg = "object has no setter"
         else:
             msg = "can't set attribute"
