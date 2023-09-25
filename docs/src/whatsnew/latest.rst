@@ -72,7 +72,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ documented the intended use of warnings filtering with
+   Iris. See :ref:`filtering-warnings`. (:pull:`5509`)
 
 
 💼 Internal
