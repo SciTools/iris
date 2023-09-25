@@ -526,7 +526,33 @@ def update_conda_forge(
     _wait_for_done(message)
 
     if is_release_candidate:
-        upstream_branch = "release-candidate"
+        # We chose this odd handling of release candidate branches because
+        #  a persistent branch will gradually diverge as `main` receives
+        #  automatic and manual maintenance (where recreating these on another
+        #  branch is often beyond Iris dev expertise). Advised practice from
+        #  conda-forge is also liable to evolve over time. Since there is no
+        #  benefit to a continuous Git history on the release candidate branch,
+        #  the simplest way to keep it aligned with best practice is to
+        #  regularly create a fresh branch from `main`.
+
+        date_string = datetime.today().strftime("%Y%m%d")
+        message = (
+            "Visit the conda-forge feedstock branches page:\n"
+            "https://github.com/conda-forge/iris-feedstock/branches\n\n"
+            "Archive the existing release candidate (or rc) branch by "
+            f"appending _{date_string} to its name.\n"
+            f"e.g. rc_{date_string}\n\n"
+            f"({__file__} includes an explanation of this in the comments)."
+        )
+        _wait_for_done(message)
+
+        message = (
+            "Follow the latest conda-forge guidance for creating a new "
+            "release candidate branch from the `main` branch:\n"
+            "https://conda-forge.org/docs/maintainer/knowledge_base.html#pre-release-builds\n\n"
+            "Config file(s) should point to the `rc_iris` label.\n"
+        )
+        upstream_branch = _get_input(message, "Input the name of your new branch")
     else:
         upstream_branch = "main"
 

@@ -1,3 +1,4 @@
+
 .. include:: ../common_links.inc
 
 |iris_version| |build_date| [unreleased]
@@ -92,6 +93,10 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ adapted benchmarking to work with ASV ``>=v0.6`` by no
    longer using the ``--strict`` argument. (:pull:`5496`)
+
+#. `@trexfeathers`_ and `@pp-mo`_ improved how the conda-forge feedstock
+   release candidate branch is managed, via: :doc:`release_do_nothing`.
+   (:pull:`5515`)
 
 
 
