@@ -24,6 +24,7 @@ from iris.analysis.cartography import (
 import iris.analysis.maths
 import iris.coord_systems
 import iris.coords
+from iris.exceptions import IrisUserWarning
 from iris.util import delta
 
 __all__ = ["cube_delta", "curl", "differentiate"]
@@ -85,7 +86,10 @@ def _construct_midpoint_coord(coord, circular=None):
             "Construction coordinate midpoints for the '{}' coordinate, "
             "though it has the attribute 'circular'={}."
         )
-        warnings.warn(msg.format(circular, coord.circular, coord.name()))
+        warnings.warn(
+            msg.format(circular, coord.circular, coord.name()),
+            category=IrisUserWarning,
+        )
 
     if coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(coord)

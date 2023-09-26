@@ -22,6 +22,7 @@ import numpy as np
 
 import iris
 import iris.analysis
+from iris.exceptions import IrisUserWarning
 import iris.iterate
 import iris.tests.stock
 
@@ -365,12 +366,12 @@ class TestIterateFunctions(tests.IrisTest):
             warnings.simplefilter(
                 "error"
             )  # Cause all warnings to raise Exceptions
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 iris.iterate.izip(
                     self.cube_a, self.cube_b, coords=self.coord_names
                 )
             # Call with coordinates, rather than names
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisUserWarning):
                 iris.iterate.izip(
                     self.cube_a, self.cube_b, coords=[latitude, longitude]
                 )

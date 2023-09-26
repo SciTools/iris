@@ -31,6 +31,7 @@ from iris.coord_systems import (
 )
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisMaskValueMatchWarning
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
 
@@ -555,7 +556,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">f4")
         fill_value = 1
         with self.assertWarnsRegex(
-            UserWarning,
+            IrisMaskValueMatchWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
@@ -567,7 +568,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">i1")
         fill_value = 1
         with self.assertWarnsRegex(
-            UserWarning,
+            IrisMaskValueMatchWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
@@ -579,7 +580,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">f4")
         cube.data[0, 0] = _thread_safe_nc.default_fillvals["f4"]
         with self.assertWarnsRegex(
-            UserWarning,
+            IrisMaskValueMatchWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube):

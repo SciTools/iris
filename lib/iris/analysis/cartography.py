@@ -401,16 +401,25 @@ def area_weights(cube, normalize=False):
     cs = cube.coord_system("CoordSystem")
     if isinstance(cs, iris.coord_systems.GeogCS):
         if cs.inverse_flattening != 0.0:
-            warnings.warn("Assuming spherical earth from ellipsoid.")
+            warnings.warn(
+                "Assuming spherical earth from ellipsoid.",
+                category=iris.exceptions.IrisDefaultingWarning,
+            )
         radius_of_earth = cs.semi_major_axis
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS) and (
         cs.ellipsoid is not None
     ):
         if cs.ellipsoid.inverse_flattening != 0.0:
-            warnings.warn("Assuming spherical earth from ellipsoid.")
+            warnings.warn(
+                "Assuming spherical earth from ellipsoid.",
+                category=iris.exceptions.IrisDefaultingWarning,
+            )
         radius_of_earth = cs.ellipsoid.semi_major_axis
     else:
-        warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+        warnings.warn(
+            "Using DEFAULT_SPHERICAL_EARTH_RADIUS.",
+            category=iris.exceptions.IrisDefaultingWarning,
+        )
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS
 
     # Get the lon and lat coords and axes
@@ -551,7 +560,7 @@ def cosine_latitude_weights(cube):
         warnings.warn(
             "Out of range latitude values will be "
             "clipped to the valid range.",
-            UserWarning,
+            category=iris.exceptions.IrisDefaultingWarning,
         )
     points = lat.points
     l_weights = np.cos(points).clip(0.0, 1.0)
@@ -665,7 +674,8 @@ def project(cube, target_proj, nx=None, ny=None):
         # Assume WGS84 latlon if unspecified
         warnings.warn(
             "Coordinate system of latitude and longitude "
-            "coordinates is not specified. Assuming WGS84 Geodetic."
+            "coordinates is not specified. Assuming WGS84 Geodetic.",
+            category=iris.exceptions.IrisDefaultingWarning,
         )
         orig_cs = iris.coord_systems.GeogCS(
             semi_major_axis=6378137.0, inverse_flattening=298.257223563
@@ -857,7 +867,8 @@ def project(cube, target_proj, nx=None, ny=None):
                 lat_coord.name(),
                 lon_coord.name(),
                 [coord.name() for coord in discarded_coords],
-            )
+            ),
+            category=iris.exceptions.IrisIgnoringWarning,
         )
 
     # TODO handle derived coords/aux_factories

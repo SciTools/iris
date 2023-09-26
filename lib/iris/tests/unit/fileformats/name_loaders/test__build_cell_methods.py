@@ -15,6 +15,7 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import iris.coords
+from iris.exceptions import IrisLoadWarning
 from iris.fileformats.name_loaders import _build_cell_methods
 
 
@@ -104,7 +105,7 @@ class Tests(tests.IrisTest):
             "Unknown {} statistic: {!r}. Unable to "
             "create cell method.".format(coord_name, unrecognised_heading)
         )
-        warn.assert_called_with(expected_msg)
+        warn.assert_called_with(expected_msg, category=IrisLoadWarning)
 
     def test_unrecognised_similar_to_no_averaging(self):
         unrecognised_headings = [
@@ -129,7 +130,7 @@ class Tests(tests.IrisTest):
                 "Unknown {} statistic: {!r}. Unable to "
                 "create cell method.".format(coord_name, unrecognised_heading)
             )
-            warn.assert_called_with(expected_msg)
+            warn.assert_called_with(expected_msg, category=IrisLoadWarning)
 
 
 if __name__ == "__main__":

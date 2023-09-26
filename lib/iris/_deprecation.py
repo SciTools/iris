@@ -12,7 +12,13 @@ import warnings
 
 
 class IrisDeprecation(UserWarning):
-    """An Iris deprecation warning."""
+    """
+    An Iris deprecation warning.
+
+    Note this subclasses UserWarning for backwards compatibility with Iris'
+    original deprection warnings. Should subclass DeprecationWarning at the
+    next major release.
+    """
 
     pass
 
@@ -44,7 +50,7 @@ def warn_deprecated(msg, stacklevel=2):
         >>>
 
     """
-    warnings.warn(msg, IrisDeprecation, stacklevel=stacklevel)
+    warnings.warn(msg, category=IrisDeprecation, stacklevel=stacklevel)
 
 
 # A Mixin for a wrapper class that copies the docstring of the wrapped class

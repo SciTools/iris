@@ -16,6 +16,7 @@ from unittest import mock
 import numpy as np
 
 import iris
+from iris.exceptions import IrisCfMissingVarWarning
 from iris.fileformats.netcdf import _thread_safe_nc
 
 
@@ -46,7 +47,9 @@ class TestCMIP6VolcelloLoad(tests.IrisTest):
         with mock.patch("warnings.warn") as warn:
             # ensure file loads without failure
             cube = iris.load_cube(self.fname)
-            warn.assert_has_calls([mock.call(expected_msg)])
+            warn.assert_has_calls(
+                [mock.call(expected_msg, category=IrisCfMissingVarWarning)]
+            )
 
         # extra check to ensure correct variable was found
         assert cube.standard_name == "ocean_volume"
@@ -113,7 +116,9 @@ class TestSelfReferencingVarLoad(tests.IrisTest):
         with mock.patch("warnings.warn") as warn:
             # ensure file loads without failure
             cube = iris.load_cube(self.temp_dir_path)
-            warn.assert_called_with(expected_msg)
+            warn.assert_called_with(
+                expected_msg, category=IrisCfMissingVarWarning
+            )
 
         # extra check to ensure correct variable was found
         assert cube.standard_name == "ocean_volume"

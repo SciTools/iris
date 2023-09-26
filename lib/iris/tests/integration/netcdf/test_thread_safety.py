@@ -38,7 +38,7 @@ def tiny_chunks():
     def _check_tiny_loaded_chunks(cube: Cube):
         assert cube.has_lazy_data()
         cube_lazy_data = cube.core_data()
-        assert np.product(cube_lazy_data.chunksize) < cube_lazy_data.size
+        assert np.prod(cube_lazy_data.chunksize) < cube_lazy_data.size
 
     with dask.config.set({"array.chunk-size": "1KiB"}):
         yield _check_tiny_loaded_chunks

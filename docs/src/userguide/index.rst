@@ -42,6 +42,7 @@ they may serve as a useful reference for future exploration.
    :maxdepth: 2
    :caption: Further Topics
 
+   ../further_topics/filtering_warnings
    ../further_topics/metadata
    ../further_topics/lenient_metadata
    ../further_topics/lenient_maths

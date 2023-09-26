@@ -12,6 +12,7 @@ import shutil
 import tempfile
 import warnings
 
+from iris.exceptions import IrisLoadWarning
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
@@ -138,7 +139,7 @@ class Mixin__nc_load_actions:
         if warning_regex is None:
             context = self.assertNoWarningsRegexp()
         else:
-            context = self.assertWarnsRegex(UserWarning, warning_regex)
+            context = self.assertWarnsRegex(IrisLoadWarning, warning_regex)
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
 
