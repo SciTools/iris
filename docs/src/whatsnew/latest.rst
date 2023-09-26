@@ -95,7 +95,8 @@ This document explains the changes made to Iris for this release
    longer using the ``--strict`` argument. (:pull:`5496`)
 
 #. `@trexfeathers`_ and `@pp-mo`_ improved how the conda-forge feedstock
-   release candidate branch is managed, via: :doc:`release_do_nothing`.
+   release candidate branch is managed, via:
+   :doc:`../developers_guide/release_do_nothing`.
    (:pull:`5515`)
 
 
