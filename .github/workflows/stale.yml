@@ -46,7 +46,7 @@ jobs:
             
             If you still care about this issue, then please either:
               * Re-open this issue, if you have sufficient permissions, or
-              * Add a comment pinging `@SciTools/iris-devs` who will re-open on your behalf.
+              * Add a comment stating that this is still relevant and someone will re-open it on your behalf.
 
           # Comment on the staled prs while closed.
           close-pr-message: |
