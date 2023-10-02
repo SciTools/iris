@@ -18,6 +18,7 @@ import numpy as np
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
+from iris.exceptions import IrisIgnoringBoundsWarning
 import iris.tests.stock
 
 
@@ -136,7 +137,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisIgnoringBoundsWarning):
                 _ = HybridHeightFactory(orography=sigma)
 
     def test_bounded_orography(self):
@@ -154,7 +155,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegex(UserWarning, msg):
+            with self.assertRaisesRegex(IrisIgnoringBoundsWarning, msg):
                 self.cube.coord("altitude")
 
 
@@ -215,7 +216,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisIgnoringBoundsWarning):
                 _ = HybridPressureFactory(
                     sigma=sigma, surface_air_pressure=sigma
                 )
@@ -235,7 +236,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegex(UserWarning, msg):
+            with self.assertRaisesRegex(IrisIgnoringBoundsWarning, msg):
                 self.cube.coord("air_pressure")
 
 

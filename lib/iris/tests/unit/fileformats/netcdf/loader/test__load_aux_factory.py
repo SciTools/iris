@@ -16,6 +16,7 @@ import numpy as np
 
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisFactoryCoordNotFoundWarning
 from iris.fileformats.netcdf.loader import _load_aux_factory
 
 
@@ -165,7 +166,8 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         with mock.patch("warnings.warn") as warn:
             _load_aux_factory(self.engine, self.cube)
         warn.assert_called_once_with(
-            "Unable to find coordinate for variable " "'ap'"
+            "Unable to find coordinate for variable " "'ap'",
+            category=IrisFactoryCoordNotFoundWarning,
         )
         self._check_no_delta()
 

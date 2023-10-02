@@ -14,6 +14,8 @@ import warnings
 
 import numpy as np
 
+from iris.exceptions import IrisUserWarning
+
 __all__ = ["izip"]
 
 
@@ -164,7 +166,8 @@ def izip(*cubes, **kwargs):
                 warnings.warn(
                     "Iterating over coordinate '%s' in step whose "
                     "definitions match but whose values "
-                    "differ." % coord_a.name()
+                    "differ." % coord_a.name(),
+                    category=IrisUserWarning,
                 )
 
     return _ZipSlicesIterator(

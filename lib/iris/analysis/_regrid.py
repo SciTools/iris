@@ -20,6 +20,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid, guess_coord_axis
 
 
@@ -1136,6 +1137,6 @@ def _create_cube(
                 "Cannot update aux_factory {!r} because of dropped"
                 " coordinates.".format(factory.name())
             )
-            warnings.warn(msg)
+            warnings.warn(msg, category=IrisImpossibleUpdateWarning)
 
     return result

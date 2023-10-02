@@ -43,6 +43,7 @@ from iris.analysis._regrid import (
 import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
+from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid
 
 wmsg = (
@@ -538,7 +539,7 @@ class _ProjectedUnstructuredRegridder:
                     "Cannot update aux_factory {!r} because of dropped"
                     " coordinates.".format(factory.name())
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=IrisImpossibleUpdateWarning)
         return result
 
     def __call__(self, src_cube):

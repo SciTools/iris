@@ -2057,7 +2057,8 @@ class Coord(_DimensionalMetadata):
             if self.ndim == 1:
                 warnings.warn(
                     "Coordinate {!r} is not bounded, guessing "
-                    "contiguous bounds.".format(self.name())
+                    "contiguous bounds.".format(self.name()),
+                    category=iris.exceptions.IrisGuessBoundsWarning,
                 )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
@@ -2224,7 +2225,10 @@ class Coord(_DimensionalMetadata):
                     "Collapsing a multi-dimensional coordinate. "
                     "Metadata may not be fully descriptive for {!r}."
                 )
-                warnings.warn(msg.format(self.name()))
+                warnings.warn(
+                    msg.format(self.name()),
+                    category=iris.exceptions.IrisVagueMetadataWarning,
+                )
             else:
                 try:
                     self._sanity_check_bounds()
@@ -2234,7 +2238,10 @@ class Coord(_DimensionalMetadata):
                         "Metadata may not be fully descriptive for {!r}. "
                         "Ignoring bounds."
                     )
-                    warnings.warn(msg.format(str(exc), self.name()))
+                    warnings.warn(
+                        msg.format(str(exc), self.name()),
+                        category=iris.exceptions.IrisVagueMetadataWarning,
+                    )
                     self.bounds = None
                 else:
                     if not self.is_contiguous():
@@ -2242,7 +2249,10 @@ class Coord(_DimensionalMetadata):
                             "Collapsing a non-contiguous coordinate. "
                             "Metadata may not be fully descriptive for {!r}."
                         )
-                        warnings.warn(msg.format(self.name()))
+                        warnings.warn(
+                            msg.format(self.name()),
+                            category=iris.exceptions.IrisVagueMetadataWarning,
+                        )
 
             if self.has_bounds():
                 item = self.core_bounds()

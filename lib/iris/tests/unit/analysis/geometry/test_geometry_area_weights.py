@@ -21,6 +21,7 @@ import shapely.geometry
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisGeometryExceedWarning
 import iris.tests.stock as stock
 
 
@@ -148,7 +149,9 @@ class Test(tests.IrisTest):
                 "The geometry exceeds the "
                 "cube's y dimension at the upper end.",
             )
-            self.assertTrue(issubclass(w[-1].category, UserWarning))
+            self.assertTrue(
+                issubclass(w[-1].category, IrisGeometryExceedWarning)
+            )
         target = np.array(
             [
                 [0, top_cell_half, top_cell_half, 0],
