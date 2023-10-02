@@ -11,9 +11,9 @@ import warnings
 import numpy as np
 import pytest
 
+from iris.exceptions import IrisSaverFillValueWarning
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 from iris.fileformats.netcdf.saver import (
-    SaverFillValueWarning,
     _fillvalue_report,
     _FillvalueCheckInfo,
 )
@@ -93,12 +93,14 @@ class Test__fillvaluereport:
             expected_msg = "'<testvar>' contains unmasked data points equal to the fill-value"
             # Enter a warnings context that checks for the error.
             warning_context = pytest.warns(
-                SaverFillValueWarning, match=expected_msg
+                IrisSaverFillValueWarning, match=expected_msg
             )
             warning_context.__enter__()
         else:
             # Check that we get NO warning of the expected type.
-            warnings.filterwarnings("error", category=SaverFillValueWarning)
+            warnings.filterwarnings(
+                "error", category=IrisSaverFillValueWarning
+            )
 
         # Do call: it should raise AND return a warning, ONLY IF there was a collision.
         result = _fillvalue_report(

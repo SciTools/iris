@@ -417,7 +417,7 @@ class GroupStructure:
                 # If we are to build another dimension on top of this possible
                 # structure, we need to compute the stride that would be
                 # needed for that dimension.
-                next_stride = np.product(
+                next_stride = np.prod(
                     [struct.size for (_, struct) in potential]
                 )
 

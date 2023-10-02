@@ -14,9 +14,14 @@ todo: fold these tests into cf tests when experimental.ugrid is folded into
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import numpy as np
+import re
+import warnings
 
-from iris.experimental.ugrid.cf import CFUGridMeshVariable, logger
+import numpy as np
+import pytest
+
+import iris.exceptions
+from iris.experimental.ugrid.cf import CFUGridMeshVariable
 from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
@@ -242,22 +247,35 @@ class TestIdentify(tests.IrisTest):
             "ref_source": ref_source,
         }
 
-        # The warn kwarg and expected corresponding log level.
-        warn_and_level = {True: "WARNING", False: "DEBUG"}
+        def operation(warn: bool):
+            warnings.warn(
+                "emit at least 1 warning",
+                category=iris.exceptions.IrisUserWarning,
+            )
+            result = CFUGridMeshVariable.identify(vars_all, warn=warn)
+            self.assertDictEqual({}, result)
 
         # Missing warning.
-        log_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"
-        for warn, level in warn_and_level.items():
-            with self.assertLogs(logger, level=level, msg_regex=log_regex):
-                result = CFUGridMeshVariable.identify(vars_all, warn=warn)
-                self.assertDictEqual({}, result)
+        warn_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"
+        with pytest.warns(
+            iris.exceptions.IrisCfMissingVarWarning, match=warn_regex
+        ):
+            operation(warn=True)
+        with pytest.warns() as record:
+            operation(warn=False)
+        warn_list = [str(w.message) for w in record]
+        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
 
         # String variable warning.
-        log_regex = r".*is a CF-netCDF label variable.*"
-        for warn, level in warn_and_level.items():
-            with self.assertLogs(logger, level=level, msg_regex=log_regex):
-                vars_all[subject_name] = netcdf_ugrid_variable(
-                    subject_name, "", np.bytes_
-                )
-                result = CFUGridMeshVariable.identify(vars_all, warn=warn)
-                self.assertDictEqual({}, result)
+        warn_regex = r".*is a CF-netCDF label variable.*"
+        vars_all[subject_name] = netcdf_ugrid_variable(
+            subject_name, "", np.bytes_
+        )
+        with pytest.warns(
+            iris.exceptions.IrisCfLabelVarWarning, match=warn_regex
+        ):
+            operation(warn=True)
+        with pytest.warns() as record:
+            operation(warn=False)
+        warn_list = [str(w.message) for w in record]
+        assert list(filter(re.compile(warn_regex).match, warn_list)) == []

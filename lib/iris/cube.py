@@ -3857,7 +3857,10 @@ class Cube(CFVariableMixin):
             ]
             if lat_match:
                 for coord in lat_match:
-                    warnings.warn(msg.format(coord.name()))
+                    warnings.warn(
+                        msg.format(coord.name()),
+                        category=iris.exceptions.IrisUserWarning,
+                    )
 
         # Determine the dimensions we need to collapse (and those we don't)
         if aggregator.cell_method == "peak":
@@ -4444,7 +4447,8 @@ x            -               -
             if coord_.has_bounds():
                 warnings.warn(
                     "The bounds of coordinate %r were ignored in "
-                    "the rolling window operation." % coord_.name()
+                    "the rolling window operation." % coord_.name(),
+                    category=iris.exceptions.IrisIgnoringBoundsWarning,
                 )
 
             if coord_.ndim != 1:

@@ -63,7 +63,7 @@ class Test(tests.IrisTest):
                 vertical_coord_val=1.0, vertical_coord_type=-1
             )
         warn.assert_called_once_with(
-            "Vertical coord -1 not yet handled", TranslationWarning
+            "Vertical coord -1 not yet handled", category=TranslationWarning
         )
 
     def test_null(self):

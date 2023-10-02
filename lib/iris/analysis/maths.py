@@ -988,7 +988,8 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
     if other.has_bounds():
         warnings.warn(
             "Using {!r} with a bounded coordinate is not well "
-            "defined; ignoring bounds.".format(operation_name)
+            "defined; ignoring bounds.".format(operation_name),
+            category=iris.exceptions.IrisIgnoringBoundsWarning,
         )
 
     points = other.points

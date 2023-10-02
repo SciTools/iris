@@ -18,7 +18,7 @@ import numpy as np
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IgnoreCubeException
+from iris.exceptions import IgnoreCubeException, IrisUserWarning
 import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
@@ -290,7 +290,7 @@ class TestVertical(tests.IrisTest):
             "iris.fileformats.pp.load", new=load
         ) as load, mock.patch("warnings.warn") as warn:
             _, _, _ = iris.fileformats.pp.load_cubes("DUMMY")
-            warn.assert_called_with(msg)
+            warn.assert_called_with(msg, category=IrisUserWarning)
 
     def test_hybrid_height_with_non_standard_coords(self):
         # Check the save rules are using the AuxFactory to find the
@@ -415,7 +415,7 @@ class TestVertical(tests.IrisTest):
             "Unable to create instance of HybridHeightFactory. "
             "The source data contains no field(s) for 'orography'."
         )
-        warn.assert_called_with(msg)
+        warn.assert_called_with(msg, category=IrisUserWarning)
 
         # Check the data cube is set up to use hybrid height.
         self._test_coord(
