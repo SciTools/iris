@@ -279,6 +279,11 @@ def finalise_whats_new(
             whatsnew_title += " [release candidate]"
         # TODO: automate
         message = f"In {rsts.release.name}: set the page title to:\n{whatsnew_title}\n"
+        if not is_release_candidate:
+            message += (
+                "\nBe sure to remove any existing mentions of release "
+                "candidate from the title.\n"
+            )
         _wait_for_done(message)
 
         message = (
