@@ -76,7 +76,7 @@ This document explains the changes made to Iris for this release
    Iris. See :ref:`filtering-warnings`. (:pull:`5509`)
 
 #. `@rcomer`_ updated the "Global average annual temperature maps" to show how
-   a colourbar may steal space from multiple axes. (:pull:`5093`)
+   a colourbar may steal space from multiple axes. (:pull:`5537`)
 
 
 💼 Internal

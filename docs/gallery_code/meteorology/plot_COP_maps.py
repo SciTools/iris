@@ -24,7 +24,6 @@ References
 
 import os.path
 
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -150,9 +149,7 @@ def main():
     colors = np.stack([red, green, blue], axis=1)
 
     # Make a wider than normal figure to house two maps side-by-side.
-    fig, ax_array = plt.subplots(
-        1, 2, figsize=(12, 5), subplot_kw=dict(projection=ccrs.PlateCarree())
-    )
+    fig, ax_array = plt.subplots(1, 2, figsize=(12, 5))
 
     # Loop over our scenarios to make a plot for each.
     for ax, experiment, label in zip(
@@ -167,15 +164,20 @@ def main():
         exp_anom_cube = exp_cube - preindustrial
 
         # Plot this anomaly.
+        plt.sca(ax)
         ax.set_title(f"HadGEM2 {label} Scenario", fontsize=10)
         contour_result = iplt.contourf(
-            exp_anom_cube, levels, colors=colors, extend="both", axes=ax
+            exp_anom_cube, levels, colors=colors, extend="both"
         )
-        ax.coastlines()
+        plt.gca().coastlines()
 
-    # Now add a colour bar which spans the two plots.
+    # Now add a colour bar which spans the two plots.  Here we pass Figure.axes
+    # which is a list of all (two) axes currently on the figure.  Note that
+    # these are different to the contents of ax_array, because those were
+    # standard Matplotlib Axes that Iris automatically replaced those with
+    # Cartopy GeoAxes.
     cbar = plt.colorbar(
-        contour_result, ax=ax_array, aspect=60, orientation="horizontal"
+        contour_result, ax=fig.axes, aspect=60, orientation="horizontal"
     )
 
     # Label the colour bar and add ticks.
