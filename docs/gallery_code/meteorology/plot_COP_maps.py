@@ -174,8 +174,8 @@ def main():
     # Now add a colour bar which spans the two plots.  Here we pass Figure.axes
     # which is a list of all (two) axes currently on the figure.  Note that
     # these are different to the contents of ax_array, because those were
-    # standard Matplotlib Axes that Iris automatically replaced those with
-    # Cartopy GeoAxes.
+    # standard Matplotlib Axes that Iris automatically replaced with Cartopy
+    # GeoAxes.
     cbar = plt.colorbar(
         contour_result, ax=fig.axes, aspect=60, orientation="horizontal"
     )
