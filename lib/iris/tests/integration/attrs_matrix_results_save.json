@@ -1,0 +1,983 @@
+{
+  "case_singlevar_localonly": {
+    "input": "G-La",
+    "localstyle": {
+      "unsplit": [
+        "G-La"
+      ],
+      "split": [
+        "G-La"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL-"
+      ],
+      "split": [
+        "G-La"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL-"
+      ],
+      "split": [
+        "G-La"
+      ]
+    }
+  },
+  "case_singlevar_globalonly": {
+    "input": "GaL-",
+    "localstyle": {
+      "unsplit": [
+        "G-La"
+      ],
+      "split": [
+        "GaL-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL-"
+      ],
+      "split": [
+        "GaL-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL-"
+      ],
+      "split": [
+        "GaL-"
+      ]
+    }
+  },
+  "case_singlevar_glsame": {
+    "input": "GaLa",
+    "localstyle": {
+      "unsplit": [
+        "G-La"
+      ],
+      "split": [
+        "GaLa"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL-"
+      ],
+      "split": [
+        "GaLa"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL-"
+      ],
+      "split": [
+        "GaLa"
+      ]
+    }
+  },
+  "case_singlevar_gldiffer": {
+    "input": "GaLb",
+    "localstyle": {
+      "unsplit": [
+        "G-Lb"
+      ],
+      "split": [
+        "GaLb"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GbL-"
+      ],
+      "split": [
+        "GaLb"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GbL-"
+      ],
+      "split": [
+        "GaLb"
+      ]
+    }
+  },
+  "case_multivar_same_noglobal": {
+    "input": "G-Laa",
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    }
+  },
+  "case_multivar_same_sameglobal": {
+    "input": "GaLaa",
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "GaLaa"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLaa"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLaa"
+      ]
+    }
+  },
+  "case_multivar_same_diffglobal": {
+    "input": "GaLbb",
+    "localstyle": {
+      "unsplit": [
+        "G-Lbb"
+      ],
+      "split": [
+        "GaLbb"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GbL--"
+      ],
+      "split": [
+        "GaLbb"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GbL--"
+      ],
+      "split": [
+        "GaLbb"
+      ]
+    }
+  },
+  "case_multivar_differ_noglobal": {
+    "input": "G-Lab",
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    }
+  },
+  "case_multivar_differ_diffglobal": {
+    "input": "GaLbc",
+    "localstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "GaLbc"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "GaLbc"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "GaLbc"
+      ]
+    }
+  },
+  "case_multivar_differ_sameglobal": {
+    "input": "GaLab",
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "GaLab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "GaLab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "GaLab"
+      ]
+    }
+  },
+  "case_multivar_1none_noglobal": {
+    "input": "G-La-",
+    "localstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    }
+  },
+  "case_multivar_1none_diffglobal": {
+    "input": "GaLb-",
+    "localstyle": {
+      "unsplit": [
+        "G-Lba"
+      ],
+      "split": [
+        "GaLb-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lba"
+      ],
+      "split": [
+        "GaLb-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lba"
+      ],
+      "split": [
+        "GaLb-"
+      ]
+    }
+  },
+  "case_multivar_1none_sameglobal": {
+    "input": "GaLa-",
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "GaLa-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLa-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLa-"
+      ]
+    }
+  },
+  "case_multisource_gsame_lnone": {
+    "input": [
+      "GaL-",
+      "GaL-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "GaL--"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaL--"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaL--"
+      ]
+    }
+  },
+  "case_multisource_gsame_lallsame": {
+    "input": [
+      "GaLa",
+      "GaLa"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "GaLaa"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLaa"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLaa"
+      ]
+    }
+  },
+  "case_multisource_gsame_l1same1none": {
+    "input": [
+      "GaLa",
+      "GaL-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "GaLa-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLa-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "GaLa-"
+      ]
+    }
+  },
+  "case_multisource_gsame_l1same1other": {
+    "input": [
+      "GaLa",
+      "GaLb"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "GaLab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "GaLab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "GaLab"
+      ]
+    }
+  },
+  "case_multisource_gsame_lallother": {
+    "input": [
+      "GaLb",
+      "GaLb"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lbb"
+      ],
+      "split": [
+        "GaLbb"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GbL--"
+      ],
+      "split": [
+        "GaLbb"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GbL--"
+      ],
+      "split": [
+        "GaLbb"
+      ]
+    }
+  },
+  "case_multisource_gsame_lalldiffer": {
+    "input": [
+      "GaLb",
+      "GaLc"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "GaLbc"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "GaLbc"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "GaLbc"
+      ]
+    }
+  },
+  "case_multisource_gnone_l1one1none": {
+    "input": [
+      "G-La",
+      "G-L-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    }
+  },
+  "case_multisource_gnone_l1one1same": {
+    "input": [
+      "G-La",
+      "G-La"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    }
+  },
+  "case_multisource_gnone_l1one1other": {
+    "input": [
+      "G-La",
+      "G-Lb"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    }
+  },
+  "case_multisource_g1none_lnone": {
+    "input": [
+      "GaL-",
+      "G-L-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    }
+  },
+  "case_multisource_g1none_l1same1none": {
+    "input": [
+      "GaLa",
+      "G-L-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-La-"
+      ],
+      "split": [
+        "G-La-"
+      ]
+    }
+  },
+  "case_multisource_g1none_l1none1same": {
+    "input": [
+      "GaL-",
+      "G-La"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    }
+  },
+  "case_multisource_g1none_l1diff1none": {
+    "input": [
+      "GaLb",
+      "G-L-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lb-"
+      ],
+      "split": [
+        "G-Lb-"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lb-"
+      ],
+      "split": [
+        "G-Lb-"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lb-"
+      ],
+      "split": [
+        "G-Lb-"
+      ]
+    }
+  },
+  "case_multisource_g1none_l1none1diff": {
+    "input": [
+      "GaL-",
+      "G-Lb"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    }
+  },
+  "case_multisource_g1none_lallsame": {
+    "input": [
+      "GaLa",
+      "G-La"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Laa"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GaL--"
+      ],
+      "split": [
+        "G-Laa"
+      ]
+    }
+  },
+  "case_multisource_g1none_lallother": {
+    "input": [
+      "GaLc",
+      "G-Lc"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lcc"
+      ],
+      "split": [
+        "G-Lcc"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GcL--"
+      ],
+      "split": [
+        "G-Lcc"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GcL--"
+      ],
+      "split": [
+        "G-Lcc"
+      ]
+    }
+  },
+  "case_multisource_gdiff_lnone": {
+    "input": [
+      "GaL-",
+      "GbL-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    }
+  },
+  "case_multisource_gdiff_l1same1none": {
+    "input": [
+      "GaLa",
+      "GbL-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    }
+  },
+  "case_multisource_gdiff_l1diff1none": {
+    "input": [
+      "GaLb",
+      "GcL-"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "G-Lbc"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "G-Lbc"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lbc"
+      ],
+      "split": [
+        "G-Lbc"
+      ]
+    }
+  },
+  "case_multisource_gdiff_lallsame": {
+    "input": [
+      "GaLa",
+      "GbLb"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "G-Lab"
+      ],
+      "split": [
+        "G-Lab"
+      ]
+    }
+  },
+  "case_multisource_gdiff_lallother": {
+    "input": [
+      "GaLc",
+      "GbLc"
+    ],
+    "localstyle": {
+      "unsplit": [
+        "G-Lcc"
+      ],
+      "split": [
+        "G-Lcc"
+      ]
+    },
+    "globalstyle": {
+      "unsplit": [
+        "GcL--"
+      ],
+      "split": [
+        "G-Lcc"
+      ]
+    },
+    "userstyle": {
+      "unsplit": [
+        "GcL--"
+      ],
+      "split": [
+        "G-Lcc"
+      ]
+    }
+  }
+}
