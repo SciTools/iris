@@ -530,7 +530,7 @@
       ]
     }
   },
-  "case_multisource_gnone_l1same1none": {
+  "case_multisource_gnone_l1one1none": {
     "input": [
       "G-La",
       "G-L-"
@@ -560,7 +560,7 @@
       ]
     }
   },
-  "case_multisource_gnone_l1same1same": {
+  "case_multisource_gnone_l1one1same": {
     "input": [
       "G-La",
       "G-La"
@@ -590,7 +590,7 @@
       ]
     }
   },
-  "case_multisource_gnone_l1same1other": {
+  "case_multisource_gnone_l1one1other": {
     "input": [
       "G-La",
       "G-Lb"
