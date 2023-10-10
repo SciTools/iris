@@ -75,6 +75,10 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ documented the intended use of warnings filtering with
    Iris. See :ref:`filtering-warnings`. (:pull:`5509`)
 
+#. `@rcomer`_ updated the
+   :ref:`sphx_glr_generated_gallery_meteorology_plot_COP_maps.py` to show how
+   a colourbar may steal space from multiple axes. (:pull:`5537`)
+
 
 💼 Internal
 ===========
