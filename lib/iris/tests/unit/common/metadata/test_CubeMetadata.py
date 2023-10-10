@@ -108,6 +108,10 @@ def op_leniency(request):
     return request.param
 
 
+# Global data defining the individual split attributes "testcases".
+# Each testcase specifies two inputs, with different global+local attribute settings.
+# The same cases are tested for 3 different metadata operations : 'combine',
+#  'difference' and 'equal'.
 _ATTRS_TESTCASE_INPUTS = {
     "same": "GaLb:GaLb",
     "extra_global": "GaL-:G-L-",
@@ -123,28 +127,39 @@ _ATTRS_TESTCASE_INPUTS = {
 _ATTRS_TESTCASE_NAMES = list(_ATTRS_TESTCASE_INPUTS)
 
 
-def attrs_check(
+def check_splitattrs_op(
     check_testcase: str, check_lenient: bool, op: str, cases: dict
 ):
     """
-    Check the split-attributes handling of a metadata operation.
+    Test a common metadata operation, specifically the split-attributes handling.
 
-    Testcases are the ones already listed in _ATTRS_TESTCASE_INPUTS, where they are
-    coded strings, as used in iris.tests.integration.test_netcdf_loadsaveattrs.
+    Parameters
+    ----------
+    check_testcase : str
+        One of those listed in _ATTRS_TESTCASE_INPUTS.  These keys are coded strings,
+        as used in `iris.tests.integration.test_netcdf_loadsaveattrs`.
+    check_lenient : bool
+        Whether the test operation is performed 'lenient' or 'strict'.
+    op : {'combine', 'difference', 'equal'}
+        The operation under test
+    cases : dict
+        The "expected" result-code values for each testcase.  Values are either two
+        results for 'strict' and 'lenient' cases, when those are different, or a single
+        result if strict and lenient results are the same.
+        NOTE: this arg defines expected results for *all* testcases, even though each
+        call only tests a single testcase.  This just makes parameterisation easier.
 
-    * construct the 2 inputs from _ATTRS_TESTCASE_INPUTS[check_testcase],
-    * then perform
-        result = op(*inputs, lenient=check_lenient).
-    * (except for equality) convert the result to a "result-code string",
-      again like in test_netcdf_loadsaveattrs.
-    * assert that the (encoded) results match the expected
+    Notes
+    -----
+    Sequence of operation :
 
-    The 'cases' args specifies the "expected" result-code answers for each testcase :
-    either two results for 'strict' and 'lenient' cases, when those are different,
-    or a single result if strict and lenient results are the same.
-
+    1. construct 2 inputs from _ATTRS_TESTCASE_INPUTS[check_testcase]
+    2. perform ``result = op(*inputs, lenient=check_lenient)``
+    3. (except for equality) convert the result to a "result-code string",
+       again as in test_netcdf_loadsaveattrs.
+    4  assert that the (encoded) results match the expected
     """
-    # cases.keys() are the testcase names -- should match the master table
+    # cases.keys() are the testcase names -- these should always match the master table
     assert cases.keys() == _ATTRS_TESTCASE_INPUTS.keys()
     # Each case is recorded as testcase: (<input>, [*output-codes])
     # The "input"s are only for readability, and should match those in the master table.
@@ -152,21 +167,15 @@ def attrs_check(
         cases[key][0] == _ATTRS_TESTCASE_INPUTS[key]
         for key in _ATTRS_TESTCASE_INPUTS
     )
-    # Perform the configured check, and check that the results are as expected.
+
+    # Fetch input test-values from the common dictionary.
     input_spec, result_specs = cases[check_testcase]
     input_spec = input_spec.split(
         ":"
     )  # make a list from the two sides of the ":"
     assert len(input_spec) == 2
-
     # convert to a list of (global, *locals) value sets
     input_values = decode_matrix_input(input_spec)
-
-    # get the expected result, select strict/lenient if required
-    if len(result_specs) == 1:
-        expected_spec = result_specs[0]
-    else:
-        expected_spec = result_specs[1 if check_lenient else 0]
 
     # form 2 inputs to the operation
     def attrsdict(value):
@@ -195,11 +204,17 @@ def attrs_check(
     # Run the actual operation
     result = getattr(input_l, op)(input_r, lenient=check_lenient)
 
-    # Convert the result to the form of the recorded "expected" output.
-    # The expected-result format depends on the operation under test.
-    assert op in ("combine", "equal", "difference")
+    # Get the expected result, the strict/lenient one as required
+    if len(result_specs) == 1:
+        expected_spec = result_specs[0]
+    else:
+        expected_spec = result_specs[1 if check_lenient else 0]
+
+    # Convert the operation result to the form of the recorded "expected" output.
+    # N.B. the expected-result format depends on the operation under test.
+    assert op in ("combine", "difference", "equal")
     if op == "combine":
-        # "combine" result is CubeMetadata
+        # "combine" results are CubeMetadata objects
         # convert global+local values to a result-code string
         values = [
             result.attributes.globals.get("_testattr_", None),
@@ -209,7 +224,7 @@ def attrs_check(
         (result,) = encode_matrix_result(values)
 
     elif op == "difference":
-        #   "difference" op result is a CubeMetadata, its values are difference-pairs.
+        #   "difference" op results are CubeMetadata : its values are difference-pairs.
         if result is None:
             # Use a unique string to indicate a null result
             result = "-"
@@ -263,6 +278,7 @@ def attrs_check(
         # "equal" op result is a boolean : needs no further conversion
         assert op == "equal"
 
+    # Check that the coded result matches the expectation.
     assert result == expected_spec
 
 
@@ -411,8 +427,10 @@ class Test___eq__:
             assert not rmetadata.__eq__(lmetadata)
 
     @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
-    def test_op__attributes_cases(self, op_leniency, testcase):
-        attrs_check(
+    def test_op__splitattributes_cases(self, op_leniency, testcase):
+        # Check results for various global/local values of the same attribute.
+        # N.B. 'cases' dict specifies the expected results for each testcase.
+        check_splitattrs_op(
             check_testcase=testcase,
             check_lenient=op_leniency == "lenient",
             op="equal",
@@ -640,7 +658,7 @@ class Test_combine:
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
     def test_op_different__attribute_extra_global(self, op_leniency):
-        # One field has an extra attribute, both strict + lenient.
+        # One input has an additional attribute, specifically set as a *GLOBAL* one.
         is_lenient = op_leniency == "lenient"
 
         self.lvalues["attributes"] = CubeAttrsDict(
@@ -667,7 +685,7 @@ class Test_combine:
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
     def test_op_different__attribute_extra_local(self, op_leniency):
-        # One field has an extra attribute, both strict + lenient.
+        # One input has an additional attribute, specifically set as a *LOCAL* one.
         is_lenient = op_leniency == "lenient"
 
         self.lvalues["attributes"] = CubeAttrsDict(
@@ -694,7 +712,8 @@ class Test_combine:
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
     def test_op_different__attribute_same_global_local(self, op_leniency):
-        # One field has an extra attribute, both strict + lenient.
+        # One field has an extra specifically *LOCAL* attribute, and the other a
+        # corresponding *GLOBAL* one -- both with distinct values.
         is_lenient = op_leniency == "lenient"
 
         common_attrs = CubeAttrsDict(
@@ -718,6 +737,9 @@ class Test_combine:
             expected["attributes"].locals.update(
                 self.rvalues["attributes"].locals
             )
+        else:
+            # strict operation : neither of the "extras" appears
+            pass
 
         with mock.patch(
             "iris.common.metadata._LENIENT", return_value=is_lenient
@@ -727,8 +749,10 @@ class Test_combine:
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
     @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
-    def test_op__attributes_cases(self, op_leniency, testcase):
-        attrs_check(
+    def test_op__splitattributes_cases(self, op_leniency, testcase):
+        # Check results for various global/local values of the same attribute.
+        # N.B. 'cases' dict specifies the expected results for each testcase.
+        check_splitattrs_op(
             check_testcase=testcase,
             check_lenient=op_leniency == "lenient",
             op="combine",
@@ -938,8 +962,10 @@ class Test_difference:
             assert rmetadata.difference(lmetadata)._asdict() == rexpected
 
     @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
-    def test_op__attributes_cases(self, op_leniency, testcase):
-        attrs_check(
+    def test_op__splitattributes_cases(self, op_leniency, testcase):
+        # Check results for various global/local values of the same attribute.
+        # N.B. 'cases' dict specifies the expected results for each testcase.
+        check_splitattrs_op(
             check_testcase=testcase,
             check_lenient=op_leniency == "lenient",
             op="difference",

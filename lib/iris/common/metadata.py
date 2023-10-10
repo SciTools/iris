@@ -160,18 +160,20 @@ def xd_is_split(dic):
     return hasattr(dic, "globals") and hasattr(dic, "locals")
 
 
-def _global_local_items(dic):
-    for key, value in dic.globals.items():
-        yield ("global", key), value
-    for key, value in dic.locals.items():
-        yield ("local", key), value
-
-
 def xd_to_normal(dic):
     """
     Convert the input to a 'normal' dict with paired keys, if it is split-attrs type
     """
-    return dict(_global_local_items(dic))
+
+    def _global_then_local_items(dic):
+        # Routine to produce global, then local 'items' in order, and with all keys
+        # "labelled" as local or global type, to ensure they are all unique.
+        for key, value in dic.globals.items():
+            yield ("global", key), value
+        for key, value in dic.locals.items():
+            yield ("local", key), value
+
+    return dict(_global_then_local_items(dic))
 
 
 def xd_from_normal(dic):
