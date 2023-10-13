@@ -1634,3 +1634,181 @@ class AlbersEqualArea(CoordSystem):
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
+
+
+class ObliqueMercator(CoordSystem):
+    """
+    A cylindrical map projection, with XY coordinates measured in metres.
+
+    Designed for regions not well suited to :class:`Mercator` or
+    :class:`TransverseMercator`, as the positioning of the cylinder is more
+    customisable.
+
+    See Also
+    --------
+    :class:`RotatedMercator`
+
+    """
+
+    grid_mapping_name = "oblique_mercator"
+
+    def __init__(
+        self,
+        azimuth_of_central_line,
+        latitude_of_projection_origin,
+        longitude_of_projection_origin,
+        false_easting=None,
+        false_northing=None,
+        scale_factor_at_central_meridian=None,
+        ellipsoid=None,
+    ):
+        """
+        Constructs an ObliqueMercator object.
+
+        Parameters
+        ----------
+        azimuth_of_central_line : float
+            Azimuth of centerline clockwise from north at the center point of
+            the centre line.
+        latitude_of_projection_origin : float
+            The true longitude of the central meridian in degrees.
+        longitude_of_projection_origin: float
+            The true latitude of the planar origin in degrees.
+        false_easting: float, optional
+            X offset from the planar origin in metres.
+            Defaults to 0.0 .
+        false_northing: float, optional
+            Y offset from the planar origin in metres.
+            Defaults to 0.0 .
+        scale_factor_at_central_meridian: float, optional
+            Reduces the cylinder to slice through the ellipsoid (secant form).
+            Used to provide TWO longitudes of zero distortion in the area of
+            interest.
+            Defaults to 1.0 .
+        ellipsoid: :class:`GeogCS`, optional
+            If given, defines the ellipsoid.
+
+        Examples
+        --------
+        >>> from iris.coord_systems import GeogCS, ObliqueMercator
+        >>> my_ellipsoid = GeogCS(6371229.0, None, 0.0)
+        >>> ObliqueMercator(90.0, -22.0, -59.0, -25000.0, -25000.0, 1., my_ellipsoid)
+        ObliqueMercator(azimuth_of_central_line=90.0, latitude_of_projection_origin=-22.0, longitude_of_projection_origin=-59.0, false_easting=-25000.0, false_northing=-25000.0, scale_factor_at_central_meridian=1.0, ellipsoid=GeogCS(6371229.0))
+
+        """
+        #: Azimuth of centerline clockwise from north.
+        self.azimuth_of_central_line = float(azimuth_of_central_line)
+
+        #: True latitude of planar origin in degrees.
+        self.latitude_of_projection_origin = float(
+            latitude_of_projection_origin
+        )
+
+        #: True longitude of planar origin in degrees.
+        self.longitude_of_projection_origin = float(
+            longitude_of_projection_origin
+        )
+
+        #: X offset from planar origin in metres.
+        self.false_easting = _arg_default(false_easting, 0)
+
+        #: Y offset from planar origin in metres.
+        self.false_northing = _arg_default(false_northing, 0)
+
+        #: Scale factor at the centre longitude.
+        self.scale_factor_at_central_meridian = _arg_default(
+            scale_factor_at_central_meridian, 1.0
+        )
+
+        #: Ellipsoid definition (:class:`GeogCS` or None).
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return (
+            "ObliqueMercator(azimuth_of_central_line={!r}, "
+            "latitude_of_projection_origin={!r}, "
+            "longitude_of_projection_origin={!r}, false_easting={!r}, "
+            "false_northing={!r}, scale_factor_at_central_meridian={!r}, "
+            "ellipsoid={!r})".format(
+                self.azimuth_of_central_line,
+                self.latitude_of_projection_origin,
+                self.longitude_of_projection_origin,
+                self.false_easting,
+                self.false_northing,
+                self.scale_factor_at_central_meridian,
+                self.ellipsoid,
+            )
+        )
+
+    def as_cartopy_crs(self):
+        globe = self._ellipsoid_to_globe(self.ellipsoid, None)
+
+        return ccrs.ObliqueMercator(
+            central_longitude=self.longitude_of_projection_origin,
+            central_latitude=self.latitude_of_projection_origin,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
+            scale_factor=self.scale_factor_at_central_meridian,
+            azimuth=self.azimuth_of_central_line,
+            globe=globe,
+        )
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
+
+
+class RotatedMercator(ObliqueMercator):
+    """
+    :class:`ObliqueMercator` with ``azimuth_of_central_line=90``.
+
+    As noted in CF:
+
+        The Rotated Mercator projection is an Oblique Mercator projection
+        with azimuth = +90.
+
+    """
+
+    grid_mapping_name = "rotated_mercator"
+
+    def __init__(
+        self,
+        latitude_of_projection_origin,
+        longitude_of_projection_origin,
+        false_easting=None,
+        false_northing=None,
+        scale_factor_at_central_meridian=None,
+        ellipsoid=None,
+    ):
+        """
+        Constructs a RotatedMercator object.
+
+        Parameters
+        ----------
+        latitude_of_projection_origin : float
+            The true longitude of the central meridian in degrees.
+        longitude_of_projection_origin: float
+            The true latitude of the planar origin in degrees.
+        false_easting: float, optional
+            X offset from the planar origin in metres.
+            Defaults to 0.0 .
+        false_northing: float, optional
+            Y offset from the planar origin in metres.
+            Defaults to 0.0 .
+        scale_factor_at_central_meridian: float, optional
+            Reduces the cylinder to slice through the ellipsoid (secant form).
+            Used to provide TWO longitudes of zero distortion in the area of
+            interest.
+            Defaults to 1.0 .
+        ellipsoid: :class:`GeogCS`, optional
+            If given, defines the ellipsoid.
+
+        """
+        super().__init__(
+            90.0,
+            latitude_of_projection_origin,
+            longitude_of_projection_origin,
+            false_easting,
+            false_northing,
+            scale_factor_at_central_meridian,
+            ellipsoid,
+        )
