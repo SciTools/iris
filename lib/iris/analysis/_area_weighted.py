@@ -449,7 +449,9 @@ def _get_bounds_in_units(coord, units, dtype):
     """Return a copy of coord's bounds in the specified units and dtype."""
     # The bounds are cast to dtype before conversion to prevent issues when
     # mixing float32 and float64 types.
-    return coord.units.convert(coord.contiguous_bounds().astype(dtype), units).astype(dtype)
+    return coord.units.convert(
+        coord.contiguous_bounds().astype(dtype), units
+    ).astype(dtype)
 
 
 def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
@@ -784,14 +786,15 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
 
     # Determine whether the src_x coord has periodic boundary conditions.
     circular = getattr(src_x, "circular", False)
+
     def _calculate_regrid_area_weighted_weights(
-            src_x_bounds,
-            src_y_bounds,
-            grid_x_bounds,
-            grid_y_bounds,
-            spherical,
-            circular_x=False,
-            modulus=None,
+        src_x_bounds,
+        src_y_bounds,
+        grid_x_bounds,
+        grid_y_bounds,
+        spherical,
+        circular_x=False,
+        modulus=None,
     ):
         src_shape = (len(src_x_bounds) - 1, len(src_y_bounds) - 1)
         tgt_shape = (len(grid_x_bounds) - 1, len(grid_y_bounds) - 1)
@@ -803,7 +806,9 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_x_bounds, grid_x_bounds, circular=circular_x, mod=modulus
         )
         y_info = _get_coord_to_coord_matrix(src_y_bounds, grid_y_bounds)
-        weights_matrix = _combine_xy_weights(x_info, y_info, src_shape, tgt_shape)
+        weights_matrix = _combine_xy_weights(
+            x_info, y_info, src_shape, tgt_shape
+        )
         return weights_matrix
 
     weights = _calculate_regrid_area_weighted_weights(
@@ -941,20 +946,20 @@ def _get_coord_to_coord_matrix(
         cols.append(j)
         if tgt_bounds[i + 1] < src_bounds[j + 1]:
             weight = (tgt_bounds[i + 1] - floor) / (
-                    tgt_bounds[i + 1] - tgt_bounds[i]
+                tgt_bounds[i + 1] - tgt_bounds[i]
             )
             floor = tgt_bounds[i + 1]
             i += 1
         elif tgt_bounds[i + 1] < src_bounds[j + 1]:
             weight = (tgt_bounds[i + 1] - floor) / (
-                    tgt_bounds[i + 1] - tgt_bounds[i]
+                tgt_bounds[i + 1] - tgt_bounds[i]
             )
             floor = tgt_bounds[i + 1]
             i += 1
             j += 1
         else:
             weight = (src_bounds[j + 1] - floor) / (
-                    tgt_bounds[i + 1] - tgt_bounds[i]
+                tgt_bounds[i + 1] - tgt_bounds[i]
             )
             floor = src_bounds[j + 1]
             j += 1
