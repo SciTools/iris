@@ -124,6 +124,8 @@ CF_GRID_MAPPING_STEREO = "stereographic"
 CF_GRID_MAPPING_TRANSVERSE = "transverse_mercator"
 CF_GRID_MAPPING_VERTICAL = "vertical_perspective"
 CF_GRID_MAPPING_GEOSTATIONARY = "geostationary"
+CF_GRID_MAPPING_OBLIQUE = "oblique_mercator"
+CF_GRID_MAPPING_ROTATED_MERCATOR = "rotated_mercator"
 
 #
 # CF Attribute Names.
@@ -154,6 +156,7 @@ CF_ATTR_GRID_LON_OF_CENT_MERIDIAN = "longitude_of_central_meridian"
 CF_ATTR_GRID_STANDARD_PARALLEL = "standard_parallel"
 CF_ATTR_GRID_PERSPECTIVE_HEIGHT = "perspective_point_height"
 CF_ATTR_GRID_SWEEP_ANGLE_AXIS = "sweep_angle_axis"
+CF_ATTR_GRID_AZIMUTH_CENT_LINE = "azimuth_of_central_line"
 CF_ATTR_POSITIVE = "positive"
 CF_ATTR_STD_NAME = "standard_name"
 CF_ATTR_LONG_NAME = "long_name"
@@ -890,6 +893,56 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
         ellipsoid,
     )
 
+    return cs
+
+
+################################################################################
+def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
+    """
+    Create an oblique mercator coordinate system from the CF-netCDF
+    grid mapping variable.
+
+    """
+    ellipsoid = _get_ellipsoid(cf_grid_var)
+
+    azimuth_of_central_line = getattr(
+        cf_grid_var, CF_ATTR_GRID_AZIMUTH_CENT_LINE, None
+    )
+    latitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    )
+    longitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    )
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
+    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+    kwargs = dict(
+        azimuth_of_central_line=azimuth_of_central_line,
+        latitude_of_projection_origin=latitude_of_projection_origin,
+        longitude_of_projection_origin=longitude_of_projection_origin,
+        scale_factor_at_projection_origin=scale_factor_at_projection_origin,
+        false_easting=false_easting,
+        false_northing=false_northing,
+        ellipsoid=ellipsoid,
+    )
+
+    # Handle the alternative form noted in CF: rotated mercator.
+    grid_mapping_name = getattr(cf_grid_var, CF_ATTR_GRID_MAPPING_NAME)
+    candidate_systems = {
+        cs.grid_mapping_name: cs
+        for cs in (
+            iris.coord_systems.ObliqueMercator,
+            iris.coord_systems.RotatedMercator,
+        )
+    }
+    SelectedSystem = candidate_systems[grid_mapping_name]
+    if not hasattr(SelectedSystem, CF_ATTR_GRID_AZIMUTH_CENT_LINE):
+        del kwargs[CF_ATTR_GRID_AZIMUTH_CENT_LINE]
+
+    cs = SelectedSystem(**kwargs)
     return cs
 
 

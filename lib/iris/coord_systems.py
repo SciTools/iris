@@ -1659,7 +1659,7 @@ class ObliqueMercator(CoordSystem):
         longitude_of_projection_origin,
         false_easting=None,
         false_northing=None,
-        scale_factor_at_central_meridian=None,
+        scale_factor_at_projection_origin=None,
         ellipsoid=None,
     ):
         """
@@ -1680,10 +1680,8 @@ class ObliqueMercator(CoordSystem):
         false_northing: float, optional
             Y offset from the planar origin in metres.
             Defaults to 0.0 .
-        scale_factor_at_central_meridian: float, optional
-            Reduces the cylinder to slice through the ellipsoid (secant form).
-            Used to provide TWO longitudes of zero distortion in the area of
-            interest.
+        scale_factor_at_projection_origin: float, optional
+            TODO
             Defaults to 1.0 .
         ellipsoid: :class:`GeogCS`, optional
             If given, defines the ellipsoid.
@@ -1693,7 +1691,7 @@ class ObliqueMercator(CoordSystem):
         >>> from iris.coord_systems import GeogCS, ObliqueMercator
         >>> my_ellipsoid = GeogCS(6371229.0, None, 0.0)
         >>> ObliqueMercator(90.0, -22.0, -59.0, -25000.0, -25000.0, 1., my_ellipsoid)
-        ObliqueMercator(azimuth_of_central_line=90.0, latitude_of_projection_origin=-22.0, longitude_of_projection_origin=-59.0, false_easting=-25000.0, false_northing=-25000.0, scale_factor_at_central_meridian=1.0, ellipsoid=GeogCS(6371229.0))
+        ObliqueMercator(azimuth_of_central_line=90.0, latitude_of_projection_origin=-22.0, longitude_of_projection_origin=-59.0, false_easting=-25000.0, false_northing=-25000.0, scale_factor_at_projection_origin=1.0, ellipsoid=GeogCS(6371229.0))
 
         """
         #: Azimuth of centerline clockwise from north.
@@ -1716,8 +1714,8 @@ class ObliqueMercator(CoordSystem):
         self.false_northing = _arg_default(false_northing, 0)
 
         #: Scale factor at the centre longitude.
-        self.scale_factor_at_central_meridian = _arg_default(
-            scale_factor_at_central_meridian, 1.0
+        self.scale_factor_at_projection_origin = _arg_default(
+            scale_factor_at_projection_origin, 1.0
         )
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
@@ -1728,14 +1726,14 @@ class ObliqueMercator(CoordSystem):
             "ObliqueMercator(azimuth_of_central_line={!r}, "
             "latitude_of_projection_origin={!r}, "
             "longitude_of_projection_origin={!r}, false_easting={!r}, "
-            "false_northing={!r}, scale_factor_at_central_meridian={!r}, "
+            "false_northing={!r}, scale_factor_at_projection_origin={!r}, "
             "ellipsoid={!r})".format(
                 self.azimuth_of_central_line,
                 self.latitude_of_projection_origin,
                 self.longitude_of_projection_origin,
                 self.false_easting,
                 self.false_northing,
-                self.scale_factor_at_central_meridian,
+                self.scale_factor_at_projection_origin,
                 self.ellipsoid,
             )
         )
@@ -1748,7 +1746,7 @@ class ObliqueMercator(CoordSystem):
             central_latitude=self.latitude_of_projection_origin,
             false_easting=self.false_easting,
             false_northing=self.false_northing,
-            scale_factor=self.scale_factor_at_central_meridian,
+            scale_factor=self.scale_factor_at_projection_origin,
             azimuth=self.azimuth_of_central_line,
             globe=globe,
         )
@@ -1776,7 +1774,7 @@ class RotatedMercator(ObliqueMercator):
         longitude_of_projection_origin,
         false_easting=None,
         false_northing=None,
-        scale_factor_at_central_meridian=None,
+        scale_factor_at_projection_origin=None,
         ellipsoid=None,
     ):
         """
@@ -1794,7 +1792,7 @@ class RotatedMercator(ObliqueMercator):
         false_northing: float, optional
             Y offset from the planar origin in metres.
             Defaults to 0.0 .
-        scale_factor_at_central_meridian: float, optional
+        scale_factor_at_projection_origin: float, optional
             Reduces the cylinder to slice through the ellipsoid (secant form).
             Used to provide TWO longitudes of zero distortion in the area of
             interest.
@@ -1809,6 +1807,6 @@ class RotatedMercator(ObliqueMercator):
             longitude_of_projection_origin,
             false_easting,
             false_northing,
-            scale_factor_at_central_meridian,
+            scale_factor_at_projection_origin,
             ellipsoid,
         )
