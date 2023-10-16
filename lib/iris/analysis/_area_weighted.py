@@ -926,7 +926,7 @@ def _get_coord_to_coord_matrix(
         tgt_bounds = tgt_bounds[::-1]
 
     if circular:
-        adjust = (src_bounds.min() - tgt_bounds.min()) // mod
+        adjust = ((src_bounds.min() - tgt_bounds.min()) // mod) - 1
         src_bounds = src_bounds + (mod * adjust)
         src_bounds = np.append(src_bounds, src_bounds + mod)
         nn = (2 * n) + 1
@@ -981,7 +981,7 @@ def _get_coord_to_coord_matrix(
     if src_decreasing:
         cols = n - cols - 1
     if tgt_decreasing:
-        rows = n - rows - 1
+        rows = m - rows - 1
     return data, rows, cols
 
 
@@ -1011,12 +1011,13 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
 def _regrid_no_masks(data, weights, tgt_shape):
     extra_dims = len(data.shape) > 2
     if extra_dims:
+        extra_shape = data.shape[2:]
         result = data.reshape(np.prod(data.shape[:2]), -1)
     else:
         result = data.flatten()
     result = weights @ result
     if extra_dims:
-        result = result.reshape(*tgt_shape, -1)
+        result = result.reshape(*(tgt_shape + extra_shape))
     else:
         result = result.reshape(*tgt_shape)
     return result
@@ -1039,7 +1040,26 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
 
 def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
     # TODO: check that this is equivalent to the reordering in curvilinear regridding!
+    if x_dim is None:
+        x_none = True
+        data = np.expand_dims(data, 0)
+        x_dim = 0
+        if y_dim is not None:
+            y_dim += 1
+    else:
+        x_none = False
+    if y_dim is None:
+        y_none = True
+        data = np.expand_dims(data, 0)
+        y_dim = 0
+        x_dim += 1
+    else:
+        y_none = False
     data = np.moveaxis(data, [x_dim, y_dim], [0, 1])
     result = _standard_regrid(data, weights, tgt_shape, mdtol)
     result = np.moveaxis(result, [0, 1], [x_dim, y_dim])
+    if y_none:
+        result = result[0]
+    if x_none:
+        result = result[0]
     return result

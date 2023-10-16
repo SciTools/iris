@@ -263,7 +263,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest = _subsampled_grid(src, 2, 3)
         res = regrid_area_weighted(src, dest)
         expected_val_left = np.mean(src.data[:, 0:2])
-        self.assertEqual(expected_val_left, res.data[0])
+        self.assertAlmostEqual(expected_val_left, res.data[0])
         expected_val_right = np.mean(src.data[:, 2:4])
         self.assertAlmostEqual(expected_val_right, res.data[1])
 
