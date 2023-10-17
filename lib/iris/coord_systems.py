@@ -10,6 +10,7 @@ Definitions of coordinate systems.
 
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
+import re
 import warnings
 
 import cartopy.crs as ccrs
@@ -1723,11 +1724,12 @@ class ObliqueMercator(CoordSystem):
 
     def __repr__(self):
         return (
-            "ObliqueMercator(azimuth_of_central_line={!r}, "
+            "{!s}(azimuth_of_central_line={!r}, "
             "latitude_of_projection_origin={!r}, "
             "longitude_of_projection_origin={!r}, false_easting={!r}, "
             "false_northing={!r}, scale_factor_at_projection_origin={!r}, "
             "ellipsoid={!r})".format(
+                self.__class__.__name__,
                 self.azimuth_of_central_line,
                 self.latitude_of_projection_origin,
                 self.longitude_of_projection_origin,
@@ -1810,3 +1812,9 @@ class RotatedMercator(ObliqueMercator):
             scale_factor_at_projection_origin,
             ellipsoid,
         )
+
+    def __repr__(self):
+        # Remove the azimuth argument from the parent repr.
+        result = super().__repr__()
+        result = re.sub(r"azimuth_of_central_line=\d*\.?\d*, ", "", result)
+        return result
