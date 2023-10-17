@@ -102,6 +102,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ adapted benchmarking to work with ASV ``>=v0.6`` by no
    longer using the ``--strict`` argument. (:pull:`5496`)
 
+#. `@fazledyn-or`_ replaced ``NotImplementedError`` with ``NotImplemented`` as
+   a proper method call. (:pull:`5544`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
