@@ -1682,7 +1682,7 @@ class ObliqueMercator(CoordSystem):
             Y offset from the planar origin in metres.
             Defaults to 0.0 .
         scale_factor_at_projection_origin: float, optional
-            TODO
+            Scale factor at the central meridian.
             Defaults to 1.0 .
         ellipsoid: :class:`GeogCS`, optional
             If given, defines the ellipsoid.
@@ -1714,7 +1714,7 @@ class ObliqueMercator(CoordSystem):
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
 
-        #: Scale factor at the centre longitude.
+        #: Scale factor at the central meridian.
         self.scale_factor_at_projection_origin = _arg_default(
             scale_factor_at_projection_origin, 1.0
         )
@@ -1795,9 +1795,7 @@ class RotatedMercator(ObliqueMercator):
             Y offset from the planar origin in metres.
             Defaults to 0.0 .
         scale_factor_at_projection_origin: float, optional
-            Reduces the cylinder to slice through the ellipsoid (secant form).
-            Used to provide TWO longitudes of zero distortion in the area of
-            interest.
+            Scale factor at the central meridian.
             Defaults to 1.0 .
         ellipsoid: :class:`GeogCS`, optional
             If given, defines the ellipsoid.
