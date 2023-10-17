@@ -2210,6 +2210,32 @@ class Saver:
                     )
                     cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
 
+                # oblique mercator (and rotated variant)
+                elif isinstance(
+                    cs,
+                    (
+                        iris.coord_systems.ObliqueMercator,
+                        iris.coord_systems.RotatedMercator,
+                    ),
+                ):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    if isinstance(cs, iris.coord_systems.ObliqueMercator):
+                        cf_var_grid.azimuth_of_central_line = (
+                            cs.azimuth_of_central_line
+                        )
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin
+                    )
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin
+                    )
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.scale_factor_at_projection_origin = (
+                        cs.scale_factor_at_projection_origin
+                    )
+
                 # other
                 else:
                     warnings.warn(
