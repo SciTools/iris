@@ -939,7 +939,7 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
         )
     }
     SelectedSystem = candidate_systems[grid_mapping_name]
-    if not hasattr(SelectedSystem, CF_ATTR_GRID_AZIMUTH_CENT_LINE):
+    if SelectedSystem is iris.coord_systems.RotatedMercator:
         del kwargs[CF_ATTR_GRID_AZIMUTH_CENT_LINE]
 
     cs = SelectedSystem(**kwargs)
