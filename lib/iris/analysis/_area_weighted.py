@@ -508,188 +508,6 @@ def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
     return res
 
 
-def _regrid_area_weighted_array(
-    src_data, x_dim, y_dim, weights_info, index_info, mdtol=0
-):
-    """
-    Regrid the given data from its source grid to a new grid using
-    an area weighted mean to determine the resulting data values.
-
-    .. note::
-
-        Elements in the returned array that lie either partially
-        or entirely outside of the extent of the source grid will
-        be masked irrespective of the value of mdtol.
-
-    Args:
-
-    * src_data:
-        An N-dimensional NumPy array.
-    * x_dim:
-        The X dimension within `src_data`.
-    * y_dim:
-        The Y dimension within `src_data`.
-    * weights_info:
-        The area weights information to be used for area-weighted
-        regridding.
-
-    Kwargs:
-
-    * mdtol:
-        Tolerance of missing data. The value returned in each element of the
-        returned array will be masked if the fraction of missing data exceeds
-        mdtol. This fraction is calculated based on the area of masked cells
-        within each target cell. mdtol=0 means no missing data is tolerated
-        while mdtol=1 will mean the resulting element will be masked if and
-        only if all the overlapping elements of the source grid are masked.
-        Defaults to 0.
-
-    Returns:
-        The regridded data as an N-dimensional NumPy array. The lengths
-        of the X and Y dimensions will now match those of the target
-        grid.
-
-    """
-    (
-        blank_weights,
-        src_area_weights,
-        new_data_mask_basis,
-    ) = weights_info
-
-    (
-        result_x_extent,
-        result_y_extent,
-        square_data_indices_y,
-        square_data_indices_x,
-        src_area_datas_required,
-    ) = index_info
-
-    # Ensure we have x_dim and y_dim.
-    x_dim_orig = x_dim
-    y_dim_orig = y_dim
-    if y_dim is None:
-        src_data = np.expand_dims(src_data, axis=src_data.ndim)
-        y_dim = src_data.ndim - 1
-    if x_dim is None:
-        src_data = np.expand_dims(src_data, axis=src_data.ndim)
-        x_dim = src_data.ndim - 1
-    # Move y_dim and x_dim to last dimensions
-    if not x_dim == src_data.ndim - 1:
-        src_data = np.moveaxis(src_data, x_dim, -1)
-    if not y_dim == src_data.ndim - 2:
-        if x_dim < y_dim:
-            # note: y_dim was shifted along by one position when
-            # x_dim was moved to the last dimension
-            src_data = np.moveaxis(src_data, y_dim - 1, -2)
-        elif x_dim > y_dim:
-            src_data = np.moveaxis(src_data, y_dim, -2)
-    x_dim = src_data.ndim - 1
-    y_dim = src_data.ndim - 2
-
-    # Create empty "pre-averaging" data array that will enable the
-    # src_data data corresponding to a given target grid point,
-    # to be stacked per point.
-    # Note that dtype is not preserved and that the array mask
-    # allows for regions that do not overlap.
-    new_shape = list(src_data.shape)
-    new_shape[x_dim] = result_x_extent
-    new_shape[y_dim] = result_y_extent
-
-    # Use input cube dtype or convert values to the smallest possible float
-    # dtype when necessary.
-    dtype = np.promote_types(src_data.dtype, np.float16)
-
-    # Axes of data over which the weighted mean is calculated.
-    axis = (y_dim, x_dim)
-
-    # Use previously established indices
-
-    src_area_datas_square = src_data[
-        ..., square_data_indices_y, square_data_indices_x
-    ]
-
-    _, src_area_datas_required = np.broadcast_arrays(
-        src_area_datas_square, src_area_datas_required
-    )
-
-    src_area_datas = np.where(
-        src_area_datas_required, src_area_datas_square, 0
-    )
-
-    # Flag to indicate whether the original data was a masked array.
-    src_masked = src_data.mask.any() if ma.isMaskedArray(src_data) else False
-    if src_masked:
-        src_area_masks_square = src_data.mask[
-            ..., square_data_indices_y, square_data_indices_x
-        ]
-        src_area_masks = np.where(
-            src_area_datas_required, src_area_masks_square, True
-        )
-
-    else:
-        # If the weights were originally blank, set the weights to all 1 to
-        # avoid divide by 0 error and set the new data mask for making the
-        # values 0
-        src_area_weights = np.where(blank_weights, 1, src_area_weights)
-
-        new_data_mask = np.broadcast_to(new_data_mask_basis, new_shape)
-
-    # Broadcast the weights array to allow numpy's ma.average
-    # to be called.
-    # Assign new shape to raise error on copy.
-    src_area_weights.shape = src_area_datas.shape[-3:]
-    # Broadcast weights to match shape of data.
-    _, src_area_weights = np.broadcast_arrays(src_area_datas, src_area_weights)
-
-    # Mask the data points
-    if src_masked:
-        src_area_datas = np.ma.array(src_area_datas, mask=src_area_masks)
-
-    # Calculate weighted mean taking into account missing data.
-    new_data = _weighted_mean_with_mdtol(
-        src_area_datas, weights=src_area_weights, axis=axis, mdtol=mdtol
-    )
-    new_data = new_data.reshape(new_shape)
-    if src_masked:
-        new_data_mask = new_data.mask
-
-    # Mask the data if originally masked or if the result has masked points
-    if ma.isMaskedArray(src_data):
-        new_data = ma.array(
-            new_data,
-            mask=new_data_mask,
-            fill_value=src_data.fill_value,
-            dtype=dtype,
-        )
-    elif new_data_mask.any():
-        new_data = ma.array(new_data, mask=new_data_mask, dtype=dtype)
-    else:
-        new_data = new_data.astype(dtype)
-
-    # Restore data to original form
-    if x_dim_orig is None and y_dim_orig is None:
-        new_data = np.squeeze(new_data, axis=x_dim)
-        new_data = np.squeeze(new_data, axis=y_dim)
-    elif y_dim_orig is None:
-        new_data = np.squeeze(new_data, axis=y_dim)
-        new_data = np.moveaxis(new_data, -1, x_dim_orig)
-    elif x_dim_orig is None:
-        new_data = np.squeeze(new_data, axis=x_dim)
-        new_data = np.moveaxis(new_data, -1, y_dim_orig)
-    elif x_dim_orig < y_dim_orig:
-        # move the x_dim back first, so that the y_dim will
-        # then be moved to its original position
-        new_data = np.moveaxis(new_data, -1, x_dim_orig)
-        new_data = np.moveaxis(new_data, -1, y_dim_orig)
-    else:
-        # move the y_dim back first, so that the x_dim will
-        # then be moved to its original position
-        new_data = np.moveaxis(new_data, -2, y_dim_orig)
-        new_data = np.moveaxis(new_data, -1, x_dim_orig)
-
-    return new_data
-
-
 def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     src_cube, grid_cube
 ):
@@ -881,7 +699,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     )
     # TODO: investigate if an area weighted callback would be more appropriate.
     # _regrid_callback = functools.partial(
-    #     _regrid_area_weighted_array,
+    #     _regrid_along_dims,
     #     weights=weights,
     #     tgt_shape=tgt_shape,
     #     mdtol=mdtol,
@@ -1031,7 +849,18 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
     masked_weight_sums = weight_sums * tgt_mask
     normalisations = np.ones_like(weight_sums)
     normalisations[tgt_mask] /= masked_weight_sums[tgt_mask]
-    normalisations = ma.array(normalisations, mask=~tgt_mask)
+
+    # Use input cube dtype or convert values to the smallest possible float
+    # dtype when necessary.
+    dtype = np.promote_types(data.dtype, np.float16)
+
+    if ma.isMaskedArray(data):
+        fill_value = data.fill_value
+        normalisations = ma.array(
+            normalisations, mask=~tgt_mask, fill_value=fill_value, dtype=dtype
+        )
+    elif np.any(~tgt_mask):
+        normalisations = ma.array(normalisations, mask=~tgt_mask, dtype=dtype)
 
     result = _regrid_no_masks(ma.getdata(data), weights, tgt_shape)
     result = result * normalisations
