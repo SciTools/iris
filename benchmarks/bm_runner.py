@@ -82,7 +82,7 @@ def _prep_data_gen_env() -> None:
     else:
         echo("Setting up the data generation environment ...")
         # Get Nox to build an environment for the `tests` session, but don't
-        #  run the session. Will re-use a cached environment if appropriate.
+        #  run the session. Will reuse a cached environment if appropriate.
         _subprocess_runner(
             [
                 "nox",

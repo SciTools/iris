@@ -72,7 +72,7 @@ class TestMeshCommon(tests.IrisTest):
 
 
 class TestProperties1D(TestMeshCommon):
-    # Tests that can re-use a single instance for greater efficiency.
+    # Tests that can reuse a single instance for greater efficiency.
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -737,7 +737,7 @@ class Test__str__various(TestMeshCommon):
 
 
 class TestOperations1D(TestMeshCommon):
-    # Tests that cannot re-use an existing Mesh instance, instead need a new
+    # Tests that cannot reuse an existing Mesh instance, instead need a new
     # one each time.
     def setUp(self):
         self.mesh = mesh.Mesh(

@@ -13,7 +13,7 @@ minimum_pre_commit_version: 1.21.0
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
         # Prevent giant files from being committed.
     -   id: check-added-large-files
@@ -29,7 +29,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: "v2.2.5"
+    rev: "v2.2.6"
     hooks:
     -   id: codespell
         types_or: [asciidoc, python, markdown, rst]

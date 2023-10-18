@@ -106,6 +106,9 @@ This document explains the changes made to Iris for this release
 #. `@fazledyn-or`_ replaced ``NotImplementedError`` with ``NotImplemented`` as
    a proper method call. (:pull:`5544`)
 
+#. `@bjlittle`_ corrected various comment spelling mistakes detected by
+   `codespell`_. (:pull:`5546`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -120,4 +123,5 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
+.. _codespell: https://github.com/codespell-project/codespell
 
