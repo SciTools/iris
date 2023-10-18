@@ -618,6 +618,13 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         tgt_shape = (len(grid_x_bounds) - 1, len(grid_y_bounds) - 1)
 
         if spherical:
+            # Changing the dtype here replicates old regridding behaviour.
+            dtype = np.float64
+            src_x_bounds = src_x_bounds.astype(dtype)
+            src_y_bounds = src_y_bounds.astype(dtype)
+            grid_x_bounds = grid_x_bounds.astype(dtype)
+            grid_y_bounds = grid_y_bounds.astype(dtype)
+
             src_y_bounds = np.sin(src_y_bounds)
             grid_y_bounds = np.sin(grid_y_bounds)
         x_info = _get_coord_to_coord_matrix(
@@ -850,20 +857,21 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
     normalisations = np.ones_like(weight_sums)
     normalisations[tgt_mask] /= masked_weight_sums[tgt_mask]
 
+    if ma.isMaskedArray(data):
+        fill_value = data.fill_value
+        normalisations = ma.array(
+            normalisations, mask=~tgt_mask, fill_value=fill_value
+        )
+    elif np.any(~tgt_mask):
+        normalisations = ma.array(normalisations, mask=~tgt_mask)
+
     # Use input cube dtype or convert values to the smallest possible float
     # dtype when necessary.
     dtype = np.promote_types(data.dtype, np.float16)
 
-    if ma.isMaskedArray(data):
-        fill_value = data.fill_value
-        normalisations = ma.array(
-            normalisations, mask=~tgt_mask, fill_value=fill_value, dtype=dtype
-        )
-    elif np.any(~tgt_mask):
-        normalisations = ma.array(normalisations, mask=~tgt_mask, dtype=dtype)
-
     result = _regrid_no_masks(ma.getdata(data), weights, tgt_shape)
     result = result * normalisations
+    result = result.astype(dtype)
     return result
 
 
