@@ -578,7 +578,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         edge_xs = self.EDGECOORDS_BASENUM + np.arange(n_edges)
         face_xs = self.FACECOORDS_BASENUM + np.arange(n_faces)
 
-        # Record all these for re-use in tests
+        # Record all these for reuse in tests
         self.n_faces = n_faces
         self.n_nodes = n_nodes
         self.face_xs = face_xs

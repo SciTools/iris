@@ -83,7 +83,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
     Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array.
     """
     # Most functionality has been abstracted to _get_dimensional_metadata,
-    #  allowing re-use in as_cube() and as_cubes().
+    #  allowing reuse in as_cube() and as_cubes().
     coord = _get_dimensional_metadata(name, points, calendar)
 
     if coord.__class__ == DimCoord:
