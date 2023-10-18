@@ -75,6 +75,10 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ documented the intended use of warnings filtering with
    Iris. See :ref:`filtering-warnings`. (:pull:`5509`)
 
+#. `@rcomer`_ updated the
+   :ref:`sphx_glr_generated_gallery_meteorology_plot_COP_maps.py` to show how
+   a colourbar may steal space from multiple axes. (:pull:`5537`)
+
 
 💼 Internal
 ===========
@@ -98,6 +102,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ adapted benchmarking to work with ASV ``>=v0.6`` by no
    longer using the ``--strict`` argument. (:pull:`5496`)
 
+#. `@fazledyn-or`_ replaced ``NotImplementedError`` with ``NotImplemented`` as
+   a proper method call. (:pull:`5544`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -105,6 +112,7 @@ This document explains the changes made to Iris for this release
 
 .. _@scottrobinson02: https://github.com/scottrobinson02
 .. _@acchamber: https://github.com/acchamber
+.. _@fazledyn-or: https://github.com/fazledyn-or
 
 
 .. comment
