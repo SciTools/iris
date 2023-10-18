@@ -39,7 +39,7 @@ def _create_file__xios_common(func_name, **kwargs):
     )
     if not REUSE_DATA or not save_path.is_file():
         # The xios functions take control of save location so need to move to
-        #  a more specific name that allows re-use.
+        #  a more specific name that allows reuse.
         actual_path = run_function_elsewhere(
             _external,
             func_name_=func_name,

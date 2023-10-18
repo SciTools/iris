@@ -1009,7 +1009,7 @@ class Saver:
             for element in sorted(
                 coordlike_elements, key=lambda element: element.name()
             ):
-                # Re-use, or create, the associated CF-netCDF variable.
+                # Reuse, or create, the associated CF-netCDF variable.
                 cf_name = self._name_coord_map.name(element)
                 if cf_name is None:
                     # Not already present : create it

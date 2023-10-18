@@ -734,7 +734,7 @@ class UnstructuredNearestNeigbourRegridder:
 
     """
 
-    # TODO: cache the necessary bits of the operation so re-use can actually
+    # TODO: cache the necessary bits of the operation so reuse can actually
     # be more efficient.
     def __init__(self, src_cube, target_grid_cube):
         """
@@ -873,7 +873,7 @@ class UnstructuredNearestNeigbourRegridder:
     def __call__(self, src_cube):
         # Check the source cube X and Y coords match the original.
         # Note: for now, this is sufficient to ensure a valid trajectory
-        # interpolation, but if in future we save + re-use the cache context
+        # interpolation, but if in future we save and reuse the cache context
         # for the 'interpolate' call, we may need more checks here.
 
         # Check the given cube against the original.

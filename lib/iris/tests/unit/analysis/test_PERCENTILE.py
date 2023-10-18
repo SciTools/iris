@@ -94,7 +94,7 @@ class ScipyAggregateMixin:
     Tests for calculations specific to the default (scipy) function.  Includes
     tests on masked data and tests to verify that the function is called with
     the expected keywords.  Needs to be used with AggregateMixin, as some of
-    these tests re-use its method.
+    these tests reuse its method.
 
     """
 

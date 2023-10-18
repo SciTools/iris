@@ -37,7 +37,7 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
         )
 
     def _test(self, geostationary=True):
-        # Re-usable test for when Geostationary is present OR absent.
+        # Reusable test for when Geostationary is present OR absent.
         if geostationary:
             # A Geostationary projection WILL be processed.
             projection_spec = Geostationary
