@@ -845,7 +845,7 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
     unmasked = ~ma.getmaskarray(data)
     weight_sums = _regrid_no_masks(unmasked, weights, tgt_shape)
     mdtol = max(mdtol, 1e-8)
-    tgt_mask = weight_sums > 1 - mdtol
+    tgt_mask = weight_sums.astype(np.float64) > 1 - mdtol
     masked_weight_sums = weight_sums * tgt_mask
     normalisations = np.ones_like(weight_sums)
     normalisations[tgt_mask] /= masked_weight_sums[tgt_mask]
