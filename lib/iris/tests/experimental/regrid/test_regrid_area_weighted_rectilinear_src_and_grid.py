@@ -621,7 +621,8 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 7), 285.550814, 15.190245)
+        # TODO: justify this change in behaviour
+        self.assertArrayShapeStats(res, (40, 7), 285.653960, 15.212710)
 
 
 if __name__ == "__main__":

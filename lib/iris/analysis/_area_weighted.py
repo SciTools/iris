@@ -403,48 +403,6 @@ def _cropped_bounds(bounds, lower, upper):
     return new_bounds, indices
 
 
-def _cartesian_area(y_bounds, x_bounds):
-    """
-    Return an array of the areas of each cell given two arrays
-    of cartesian bounds.
-
-    Args:
-
-    * y_bounds:
-        An (n, 2) shaped NumPy array.
-    * x_bounds:
-        An (m, 2) shaped NumPy array.
-
-    Returns:
-        An (n, m) shaped Numpy array of areas.
-
-    """
-    heights = y_bounds[:, 1] - y_bounds[:, 0]
-    widths = x_bounds[:, 1] - x_bounds[:, 0]
-    return np.abs(np.outer(heights, widths))
-
-
-def _spherical_area(y_bounds, x_bounds, radius=1.0):
-    """
-    Return an array of the areas of each cell on a sphere
-    given two arrays of latitude and longitude bounds in radians.
-
-    Args:
-
-    * y_bounds:
-        An (n, 2) shaped NumPy array of latitude bounds in radians.
-    * x_bounds:
-        An (m, 2) shaped NumPy array of longitude bounds in radians.
-    * radius:
-        Radius of the sphere. Default is 1.0.
-
-    Returns:
-        An (n, m) shaped Numpy array of areas.
-
-    """
-    return iris.analysis.cartography._quadrant_area(y_bounds, x_bounds, radius)
-
-
 def _get_bounds_in_units(coord, units, dtype):
     """Return a copy of coord's bounds in the specified units and dtype."""
     # The bounds are cast to dtype before conversion to prevent issues when
@@ -452,60 +410,6 @@ def _get_bounds_in_units(coord, units, dtype):
     return coord.units.convert(
         coord.contiguous_bounds().astype(dtype), units
     ).astype(dtype)
-
-
-def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
-    """
-    Return the weighted mean of an array over the specified axis
-    using the provided weights (if any) and a permitted fraction of
-    masked data.
-
-    Args:
-
-    * data (array-like):
-        Data to be averaged.
-
-    * weights (array-like):
-        An array of the same shape as the data that specifies the contribution
-        of each corresponding data element to the calculated mean.
-
-    Kwargs:
-
-    * axis (int or tuple of ints):
-        Axis along which the mean is computed. The default is to compute
-        the mean of the flattened array.
-
-    * mdtol (float):
-        Tolerance of missing data. The value returned in each element of the
-        returned array will be masked if the fraction of masked data exceeds
-        mdtol. This fraction is weighted by the `weights` array if one is
-        provided. mdtol=0 means no missing data is tolerated
-        while mdtol=1 will mean the resulting element will be masked if and
-        only if all the contributing elements of data are masked.
-        Defaults to 0.
-
-    Returns:
-        Numpy array (possibly masked) or scalar.
-
-    """
-    if ma.is_masked(data):
-        res, unmasked_weights_sum = ma.average(
-            data, weights=weights, axis=axis, returned=True
-        )
-        if mdtol < 1:
-            weights_sum = weights.sum(axis=axis)
-            frac_masked = 1 - np.true_divide(unmasked_weights_sum, weights_sum)
-            mask_pt = frac_masked > mdtol
-            if np.any(mask_pt) and not isinstance(res, ma.core.MaskedConstant):
-                if np.isscalar(res):
-                    res = ma.masked
-                elif ma.isMaskedArray(res):
-                    res.mask |= mask_pt
-                else:
-                    res = ma.masked_array(res, mask=mask_pt)
-    else:
-        res = np.average(data, weights=weights, axis=axis)
-    return res
 
 
 def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
@@ -602,16 +506,12 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     else:
         modulus = None
 
-    # Determine whether the src_x coord has periodic boundary conditions.
-    circular = getattr(src_x, "circular", False)
-
     def _calculate_regrid_area_weighted_weights(
         src_x_bounds,
         src_y_bounds,
         grid_x_bounds,
         grid_y_bounds,
         spherical,
-        circular_x=False,
         modulus=None,
     ):
         src_shape = (len(src_x_bounds) - 1, len(src_y_bounds) - 1)
@@ -628,7 +528,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_y_bounds = np.sin(src_y_bounds)
             grid_y_bounds = np.sin(grid_y_bounds)
         x_info = _get_coord_to_coord_matrix(
-            src_x_bounds, grid_x_bounds, circular=circular_x, mod=modulus
+            src_x_bounds, grid_x_bounds, circular=spherical, mod=modulus
         )
         y_info = _get_coord_to_coord_matrix(src_y_bounds, grid_y_bounds)
         weights_matrix = _combine_xy_weights(
@@ -642,7 +542,6 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         grid_x_bounds,
         grid_y_bounds,
         spherical,
-        circular,
         modulus,
     )
     return (
@@ -894,6 +793,8 @@ def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
         y_none = False
     data = np.moveaxis(data, [x_dim, y_dim], [0, 1])
     result = _standard_regrid(data, weights, tgt_shape, mdtol)
+    # Ensure consistent ordering with old behaviour
+    result = ma.array(result, order="F")
     result = np.moveaxis(result, [0, 1], [x_dim, y_dim])
     if y_none:
         result = result[0]
