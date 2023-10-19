@@ -799,7 +799,10 @@ def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
     data = np.moveaxis(data, [x_dim, y_dim], [0, 1])
     result = _standard_regrid(data, weights, tgt_shape, mdtol)
     # Ensure consistent ordering with old behaviour
-    result = ma.array(result, order="F")
+    if ma.isMaskedArray(result):
+        result = ma.array(result, order="F")
+    else:
+        result = np.array(result, order="F")
     result = np.moveaxis(result, [0, 1], [x_dim, y_dim])
     if y_none:
         result = result[0]
