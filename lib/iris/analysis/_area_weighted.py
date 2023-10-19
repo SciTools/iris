@@ -506,16 +506,12 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     else:
         modulus = None
 
-    # Determine whether the src_x coord has periodic boundary conditions.
-    circular = getattr(src_x, "circular", False)
-
     def _calculate_regrid_area_weighted_weights(
         src_x_bounds,
         src_y_bounds,
         grid_x_bounds,
         grid_y_bounds,
         spherical,
-        circular_x=False,
         modulus=None,
     ):
         src_shape = (len(src_x_bounds) - 1, len(src_y_bounds) - 1)
@@ -532,7 +528,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_y_bounds = np.sin(src_y_bounds)
             grid_y_bounds = np.sin(grid_y_bounds)
         x_info = _get_coord_to_coord_matrix(
-            src_x_bounds, grid_x_bounds, circular=circular_x, mod=modulus
+            src_x_bounds, grid_x_bounds, circular=spherical, mod=modulus
         )
         y_info = _get_coord_to_coord_matrix(src_y_bounds, grid_y_bounds)
         weights_matrix = _combine_xy_weights(
@@ -546,7 +542,6 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         grid_x_bounds,
         grid_y_bounds,
         spherical,
-        circular,
         modulus,
     )
     return (
@@ -655,7 +650,7 @@ def _get_coord_to_coord_matrix(
         tgt_bounds = tgt_bounds[::-1]
 
     if circular:
-        adjust = ((src_bounds.min() - tgt_bounds.min()) // mod) - 1
+        adjust = (tgt_bounds.min() - src_bounds.min()) // mod
         src_bounds = src_bounds + (mod * adjust)
         src_bounds = np.append(src_bounds, src_bounds + mod)
         nn = (2 * n) + 1
@@ -752,11 +747,16 @@ def _regrid_no_masks(data, weights, tgt_shape):
     return result
 
 
-def _standard_regrid(data, weights, tgt_shape, mdtol):
+def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
     unmasked = ~ma.getmaskarray(data)
     weight_sums = _regrid_no_masks(unmasked, weights, tgt_shape)
     mdtol = max(mdtol, 1e-8)
-    tgt_mask = weight_sums.astype(np.float64) > 1 - mdtol
+    tgt_mask = weight_sums > 1 - mdtol
+    # TODO: make this more efficient
+    if oob_invalid:
+        inbound_sums = _regrid_no_masks(np.ones_like(data), weights, tgt_shape)
+        oob_mask = inbound_sums > 1 - 1e-8
+        tgt_mask = tgt_mask * oob_mask
     masked_weight_sums = weight_sums * tgt_mask
     normalisations = np.ones_like(weight_sums)
     normalisations[tgt_mask] /= masked_weight_sums[tgt_mask]
