@@ -506,12 +506,16 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     else:
         modulus = None
 
+    # Determine whether the src_x coord has periodic boundary conditions.
+    circular = getattr(src_x, "circular", False)
+
     def _calculate_regrid_area_weighted_weights(
         src_x_bounds,
         src_y_bounds,
         grid_x_bounds,
         grid_y_bounds,
         spherical,
+        circular_x=False,
         modulus=None,
     ):
         src_shape = (len(src_x_bounds) - 1, len(src_y_bounds) - 1)
@@ -528,7 +532,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_y_bounds = np.sin(src_y_bounds)
             grid_y_bounds = np.sin(grid_y_bounds)
         x_info = _get_coord_to_coord_matrix(
-            src_x_bounds, grid_x_bounds, circular=spherical, mod=modulus
+            src_x_bounds, grid_x_bounds, circular=circular_x, mod=modulus
         )
         y_info = _get_coord_to_coord_matrix(src_y_bounds, grid_y_bounds)
         weights_matrix = _combine_xy_weights(
@@ -542,6 +546,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         grid_x_bounds,
         grid_y_bounds,
         spherical,
+        circular,
         modulus,
     )
     return (
