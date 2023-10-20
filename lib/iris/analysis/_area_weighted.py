@@ -748,15 +748,21 @@ def _regrid_no_masks(data, weights, tgt_shape):
 
 
 def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
-    unmasked = ~ma.getmaskarray(data)
-    weight_sums = _regrid_no_masks(unmasked, weights, tgt_shape)
+    data_shape = data.shape
+    if ma.is_masked(data):
+        unmasked = ~ma.getmaskarray(data)
+        weight_sums = _regrid_no_masks(unmasked, weights, tgt_shape)
+    else:
+        weight_sums = np.ones(tgt_shape + data_shape[2:])
     mdtol = max(mdtol, 1e-8)
     tgt_mask = weight_sums > 1 - mdtol
-    # TODO: make this more efficient
     if oob_invalid:
-        inbound_sums = _regrid_no_masks(np.ones_like(data), weights, tgt_shape)
+        inbound_sums = _regrid_no_masks(
+            np.ones(data_shape[:2]), weights, tgt_shape
+        )
         oob_mask = inbound_sums > 1 - 1e-8
-        tgt_mask = tgt_mask * oob_mask
+        oob_slice = np.s_[:, :] + ((np.newaxis,) * len(data.shape[2:]))
+        tgt_mask = tgt_mask * oob_mask[oob_slice]
     masked_weight_sums = weight_sums * tgt_mask
     normalisations = np.ones_like(weight_sums)
     normalisations[tgt_mask] /= masked_weight_sums[tgt_mask]

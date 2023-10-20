@@ -602,6 +602,20 @@ class TestAreaWeightedRegrid(tests.IrisTest):
 
     @tests.skip_data
     def test_non_circular_subset(self):
+        """
+        Test regridding behaviour when the source grid has circular latitude.
+
+        This tests the specific case when the longitude coordinate of the
+        source grid has the `circular` attribute as `False` but otherwise spans
+        the full 360 degrees.
+
+        Note: the previous behaviour was to always mask target cells when they
+        spanned the boundary of max/min longitude and `circular` was `False`,
+        however this has been changed so that such cells will only be masked
+        when there is a gap between max longitude and min longitude. In this
+        test these cells are expected to be unmasked and therefore the result
+        will be equal to the above test for circular longitudes.
+        """
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
         src.coord("longitude").guess_bounds()
@@ -621,11 +635,18 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        # TODO: justify this change in behaviour
         self.assertArrayShapeStats(res, (40, 7), 285.653960, 15.212710)
 
     @tests.skip_data
     def test__proper_non_circular_subset(self):
+        """
+        Test regridding behaviour when the source grid has circular latitude.
+
+        This tests the specific case when the longitude coordinate of the
+        source grid does not span the full 360 degrees. Target cells which span
+        the boundary of max/min longitude will contain a section which is out
+        of bounds from the source grid and are therefore expected to be masked.
+        """
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
         src.coord("longitude").guess_bounds()
