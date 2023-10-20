@@ -225,7 +225,11 @@ def _get_xy_coords(cube):
 
 
 def _get_bounds_in_units(coord, units, dtype):
-    """Return a copy of coord's bounds in the specified units and dtype."""
+    """
+    Return a copy of coord's bounds in the specified units and dtype.
+
+    Return as contiguous bounds.
+    """
     # The bounds are cast to dtype before conversion to prevent issues when
     # mixing float32 and float64 types.
     return coord.units.convert(
@@ -335,6 +339,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         spherical,
         modulus=None,
     ):
+        """Return weights matrix to be used in regridding."""
         src_shape = (len(src_x_bounds) - 1, len(src_y_bounds) - 1)
         tgt_shape = (len(grid_x_bounds) - 1, len(grid_y_bounds) - 1)
 
@@ -348,10 +353,10 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
 
             src_y_bounds = np.sin(src_y_bounds)
             grid_y_bounds = np.sin(grid_y_bounds)
-        x_info = _get_coord_to_coord_matrix(
+        x_info = _get_coord_to_coord_matrix_info(
             src_x_bounds, grid_x_bounds, circular=spherical, mod=modulus
         )
-        y_info = _get_coord_to_coord_matrix(src_y_bounds, grid_y_bounds)
+        y_info = _get_coord_to_coord_matrix_info(src_y_bounds, grid_y_bounds)
         weights_matrix = _combine_xy_weights(
             x_info, y_info, src_shape, tgt_shape
         )
@@ -457,9 +462,18 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     return new_cube
 
 
-def _get_coord_to_coord_matrix(
+def _get_coord_to_coord_matrix_info(
     src_bounds, tgt_bounds, circular=False, mod=None
 ):
+    """
+    First part of weight calculation.
+
+    Calculate the weights contribution from a pair single pair of
+    coordinate bounds. Search for pairs of overlapping source and
+    target bounds and associate weights with them.
+
+    Note: this assumes that the bounds are monotonic.
+    """
     m = len(tgt_bounds) - 1
     n = len(src_bounds) - 1
 
@@ -531,6 +545,13 @@ def _get_coord_to_coord_matrix(
 
 
 def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
+    """
+    Second part of weight calculation.
+
+    Combine the weights contributions from a pair both pairs of coordinate
+    bounds (i.e. the source/target pairs for the x and y coords).
+    Return the result as a sparse array.
+    """
     x_src, y_src = src_shape
     x_tgt, y_tgt = tgt_shape
     src_size = x_src * y_src
@@ -553,7 +574,12 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
     return combined_weights
 
 
-def _regrid_no_masks(data, weights, tgt_shape):
+def _standard_regrid_no_masks(data, weights, tgt_shape):
+    """
+    Regrid unmasked data to an unmasked result.
+
+    Assumes that the first two dimensions are the x-y grid.
+    """
     extra_dims = len(data.shape) > 2
     if extra_dims:
         extra_shape = data.shape[2:]
@@ -569,16 +595,21 @@ def _regrid_no_masks(data, weights, tgt_shape):
 
 
 def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
+    """
+    Regrid data and handle masks.
+
+    Assumes that the first two dimensions are the x-y grid.
+    """
     data_shape = data.shape
     if ma.is_masked(data):
         unmasked = ~ma.getmaskarray(data)
-        weight_sums = _regrid_no_masks(unmasked, weights, tgt_shape)
+        weight_sums = _standard_regrid_no_masks(unmasked, weights, tgt_shape)
     else:
         weight_sums = np.ones(tgt_shape + data_shape[2:])
     mdtol = max(mdtol, 1e-8)
     tgt_mask = weight_sums > 1 - mdtol
     if oob_invalid:
-        inbound_sums = _regrid_no_masks(
+        inbound_sums = _standard_regrid_no_masks(
             np.ones(data_shape[:2]), weights, tgt_shape
         )
         oob_mask = inbound_sums > 1 - 1e-8
@@ -600,13 +631,16 @@ def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
     # dtype when necessary.
     dtype = np.promote_types(data.dtype, np.float16)
 
-    result = _regrid_no_masks(ma.getdata(data), weights, tgt_shape)
+    result = _standard_regrid_no_masks(
+        ma.filled(data, 0.0), weights, tgt_shape
+    )
     result = result * normalisations
     result = result.astype(dtype)
     return result
 
 
 def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
+    """Regrid data, handling masks and dimensions."""
     # TODO: check that this is equivalent to the reordering in curvilinear regridding!
     if x_dim is None:
         x_none = True
