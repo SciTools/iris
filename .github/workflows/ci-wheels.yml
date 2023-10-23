@@ -9,7 +9,7 @@
 name: ci-wheels
 
 on:
-#  pull_request:
+  pull_request:
 
   push:
     tags:
