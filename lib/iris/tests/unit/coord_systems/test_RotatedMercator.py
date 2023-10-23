@@ -11,10 +11,21 @@ from . import test_ObliqueMercator
 
 
 class TestArgs(test_ObliqueMercator.TestArgs):
+    class_kwargs_default = dict(
+        latitude_of_projection_origin=0.0,
+        longitude_of_projection_origin=0.0,
+    )
+    cartopy_kwargs_default = dict(
+        central_longitude=0.0,
+        central_latitude=0.0,
+        false_easting=0.0,
+        false_northing=0.0,
+        scale_factor=1.0,
+        azimuth=90.0,
+        globe=None,
+    )
+
     def make_instance(self) -> RotatedMercator:
         kwargs = self.class_kwargs
         kwargs.pop("azimuth_of_central_line", None)
         return RotatedMercator(**kwargs)
-
-
-TestArgs.cartopy_kwargs_default["azimuth"] = 90.0
