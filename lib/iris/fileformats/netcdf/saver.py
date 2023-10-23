@@ -2220,7 +2220,7 @@ class Saver:
                         isinstance(cs, cs_class)
                         for cs_class in (
                             iris.coord_systems.ObliqueMercator,
-                            iris.coord_systems.RotatedMercator,
+                            iris.coord_systems.ObliqueMercator,
                         )
                     ],
                 ):

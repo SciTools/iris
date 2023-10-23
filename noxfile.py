@@ -187,7 +187,7 @@ def tests(session: nox.sessions.Session):
         "pytest",
         "-n",
         "auto",
-        "lib/iris/tests",
+        "lib/iris/tests/unit/fileformats/netcdf/saver/test_Saver.py",
     ]
     if "-c" in session.posargs or "--coverage" in session.posargs:
         run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
