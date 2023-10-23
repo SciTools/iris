@@ -23,6 +23,7 @@ import numpy.ma as ma
 import pyproj
 
 import iris
+from iris._deprecation import warn_deprecated
 import iris.aux_factory
 from iris.common.mixin import _get_valid_standard_name
 import iris.coord_systems
@@ -940,6 +941,12 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
     }
     SelectedSystem = candidate_systems[grid_mapping_name]
     if SelectedSystem is iris.coord_systems.RotatedMercator:
+        message = (
+            "Iris will stop loading the rotated_mercator grid mapping name in "
+            "a future release, in accordance with CF version 1.11 . Instead "
+            "please use oblique_mercator with azimuth_of_central_line = 90 ."
+        )
+        warn_deprecated(message)
         del kwargs[CF_ATTR_GRID_AZIMUTH_CENT_LINE]
 
     cs = SelectedSystem(**kwargs)

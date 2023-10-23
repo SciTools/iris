@@ -102,6 +102,9 @@ _CF_GLOBAL_ATTRS = ["conventions", "featureType", "history", "title"]
 # UKMO specific attributes that should not be global.
 _UKMO_DATA_ATTRS = ["STASH", "um_stash_source", "ukmo__process_flags"]
 
+# TODO: whenever we advance to CF-1.11 we should then discuss a completion date
+#  for the deprecation of Rotated Mercator in coord_systems.py and
+#  _nc_load_rules/helpers.py .
 CF_CONVENTIONS_VERSION = "CF-1.7"
 
 _FactoryDefn = collections.namedtuple(
@@ -2218,12 +2221,15 @@ class Saver:
                         iris.coord_systems.RotatedMercator,
                     ),
                 ):
+                    # RotatedMercator subclasses ObliqueMercator, and RM
+                    #  instances are implicitly saved as OM due to inherited
+                    #  properties. This is correct because CF 1.11 is removing
+                    #  all mention of RM.
                     if cs.ellipsoid:
                         add_ellipsoid(cs.ellipsoid)
-                    if isinstance(cs, iris.coord_systems.ObliqueMercator):
-                        cf_var_grid.azimuth_of_central_line = (
-                            cs.azimuth_of_central_line
-                        )
+                    cf_var_grid.azimuth_of_central_line = (
+                        cs.azimuth_of_central_line
+                    )
                     cf_var_grid.latitude_of_projection_origin = (
                         cs.latitude_of_projection_origin
                     )

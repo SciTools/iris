@@ -16,6 +16,7 @@ import warnings
 import cartopy.crs as ccrs
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 import iris.exceptions
 
 
@@ -1761,14 +1762,19 @@ class RotatedMercator(ObliqueMercator):
     """
     :class:`ObliqueMercator` with ``azimuth_of_central_line=90``.
 
-    As noted in CF:
+    As noted in CF versions 1.10 and earlier:
 
         The Rotated Mercator projection is an Oblique Mercator projection
         with azimuth = +90.
 
-    """
+    .. deprecated:: 3.8.0
+        This coordinate system was introduced as already scheduled for removal
+        in a future release, since CF version 1.11 onwards now requires use of
+        :class:`ObliqueMercator` with ``azimuth_of_central_line=90.`` .
+        Any :class:`RotatedMercator` instances will always be saved to NetCDF
+        as the ``oblique_mercator`` grid mapping.
 
-    grid_mapping_name = "rotated_mercator"
+    """
 
     def __init__(
         self,
@@ -1801,6 +1807,14 @@ class RotatedMercator(ObliqueMercator):
             If given, defines the ellipsoid.
 
         """
+        message = (
+            "iris.coord_systems.RotatedMercator is deprecated, and will be "
+            "removed in a future release. Instead please use "
+            "iris.coord_systems.ObliqueMercator with "
+            "azimuth_of_central_line=90 ."
+        )
+        warn_deprecated(message)
+
         super().__init__(
             90.0,
             latitude_of_projection_origin,
