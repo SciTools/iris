@@ -932,13 +932,10 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
 
     # Handle the alternative form noted in CF: rotated mercator.
     grid_mapping_name = getattr(cf_grid_var, CF_ATTR_GRID_MAPPING_NAME)
-    candidate_systems = {
-        cs.grid_mapping_name: cs
-        for cs in (
-            iris.coord_systems.ObliqueMercator,
-            iris.coord_systems.RotatedMercator,
-        )
-    }
+    candidate_systems = dict(
+        oblique_mercator=iris.coord_systems.ObliqueMercator,
+        rotated_mercator=iris.coord_systems.RotatedMercator,
+    )
     SelectedSystem = candidate_systems[grid_mapping_name]
     if SelectedSystem is iris.coord_systems.RotatedMercator:
         message = (
