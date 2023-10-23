@@ -2215,15 +2215,7 @@ class Saver:
 
                 # oblique mercator (and rotated variant)
                 # Slightly odd isinstance() check to allow successful mocking.
-                elif any(
-                    [
-                        isinstance(cs, cs_class)
-                        for cs_class in (
-                            iris.coord_systems.ObliqueMercator,
-                            iris.coord_systems.ObliqueMercator,
-                        )
-                    ],
-                ):
+                elif isinstance(cs, iris.coord_systems.RotatedMercator):
                     # RotatedMercator subclasses ObliqueMercator, and RM
                     #  instances are implicitly saved as OM due to inherited
                     #  properties. This is correct because CF 1.11 is removing
