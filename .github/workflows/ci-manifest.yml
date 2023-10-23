@@ -4,9 +4,9 @@
 name: ci-manifest
 
 on:
-#  pull_request:
-#    branches:
-#      - "*"
+  pull_request:
+    branches:
+      - "*"
 
   push:
     branches-ignore:
