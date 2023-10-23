@@ -548,7 +548,7 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
     """
     Second part of weight calculation.
 
-    Combine the weights contributions from a pair both pairs of coordinate
+    Combine the weights contributions from both pairs of coordinate
     bounds (i.e. the source/target pairs for the x and y coords).
     Return the result as a sparse array.
     """
@@ -608,11 +608,14 @@ def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
         weight_sums = np.ones(tgt_shape + data_shape[2:])
     mdtol = max(mdtol, 1e-8)
     tgt_mask = weight_sums > 1 - mdtol
-    if oob_invalid:
+    if oob_invalid or not ma.is_masked(data):
         inbound_sums = _standard_regrid_no_masks(
             np.ones(data_shape[:2]), weights, tgt_shape
         )
-        oob_mask = inbound_sums > 1 - 1e-8
+        if oob_invalid:
+            oob_mask = inbound_sums > 1 - 1e-8
+        else:
+            oob_mask = inbound_sums > 1 - mdtol
         oob_slice = np.s_[:, :] + ((np.newaxis,) * len(data.shape[2:]))
         tgt_mask = tgt_mask * oob_mask[oob_slice]
     masked_weight_sums = weight_sums * tgt_mask
