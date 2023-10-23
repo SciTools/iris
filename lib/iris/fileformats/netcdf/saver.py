@@ -2214,12 +2214,15 @@ class Saver:
                     cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
 
                 # oblique mercator (and rotated variant)
-                elif isinstance(
-                    cs,
-                    (
-                        iris.coord_systems.ObliqueMercator,
-                        iris.coord_systems.RotatedMercator,
-                    ),
+                # Slightly odd isinstance() check to allow successful mocking.
+                elif any(
+                    [
+                        isinstance(cs, cs_class)
+                        for cs_class in (
+                            iris.coord_systems.ObliqueMercator,
+                            iris.coord_systems.RotatedMercator,
+                        )
+                    ],
                 ):
                     # RotatedMercator subclasses ObliqueMercator, and RM
                     #  instances are implicitly saved as OM due to inherited
