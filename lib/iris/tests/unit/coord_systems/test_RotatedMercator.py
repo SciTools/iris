@@ -5,6 +5,9 @@
 # licensing details.
 """Unit tests for the :class:`iris.coord_systems.RotatedMercator` class."""
 
+import pytest
+
+from iris._deprecation import IrisDeprecation
 from iris.coord_systems import RotatedMercator
 
 from . import test_ObliqueMercator
@@ -29,3 +32,8 @@ class TestArgs(test_ObliqueMercator.TestArgs):
         kwargs = self.class_kwargs
         kwargs.pop("azimuth_of_central_line", None)
         return RotatedMercator(**kwargs)
+
+
+def test_deprecated():
+    with pytest.warns(IrisDeprecation, match="azimuth_of_central_line=90"):
+        _ = RotatedMercator(0, 0)
