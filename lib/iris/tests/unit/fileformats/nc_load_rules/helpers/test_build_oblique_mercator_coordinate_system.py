@@ -13,6 +13,7 @@ from unittest import mock
 import pytest
 
 from iris import coord_systems
+from iris._deprecation import IrisDeprecation
 from iris.coord_systems import GeogCS, ObliqueMercator, RotatedMercator
 from iris.fileformats._nc_load_rules.helpers import (
     build_oblique_mercator_coordinate_system,
@@ -156,3 +157,15 @@ class TestAttributes:
 
         _ = build_oblique_mercator_coordinate_system(None, cf_var_mock)
         coord_system_mock.assert_called_with(*self.coord_system_args_expected)
+
+
+def test_deprecation():
+    nc_attributes = dict(
+        grid_mapping_name="rotated_mercator",
+        latitude_of_projection_origin=0.0,
+        longitude_of_projection_origin=0.0,
+        scale_factor_at_projection_origin=1.0,
+    )
+    cf_var_mock = mock.Mock(spec=[], **nc_attributes)
+    with pytest.warns(IrisDeprecation, match="azimuth_of_central_line = 90"):
+        _ = build_oblique_mercator_coordinate_system(None, cf_var_mock)
