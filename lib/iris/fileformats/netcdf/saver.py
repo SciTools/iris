@@ -2214,7 +2214,12 @@ class Saver:
                     cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
 
                 # oblique mercator (and rotated variant)
-                elif isinstance(cs, iris.coord_systems.ObliqueMercator):
+                # Checking grid_mapping_name instead of using isinstance()
+                #  since subclasses (i.e. RotatedMercator) upset mock tests.
+                elif (
+                    getattr(cs, "grid_mapping_name", None)
+                    == "oblique_mercator"
+                ):
                     # RotatedMercator subclasses ObliqueMercator, and RM
                     #  instances are implicitly saved as OM due to inherited
                     #  properties. This is correct because CF 1.11 is removing
