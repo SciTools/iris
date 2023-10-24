@@ -19,6 +19,89 @@ from iris.coord_systems import GeogCS, ObliqueMercator
 ####
 
 
+class GlobeWithEq(ccrs.Globe):
+    def __eq__(self, other):
+        """Need eq to enable comparison with expected arguments."""
+        result = NotImplemented
+        if isinstance(other, ccrs.Globe):
+            result = other.__dict__ == self.__dict__
+        return result
+
+
+class ParamTuple(NamedTuple):
+    """Used for easy coupling of test parameters."""
+
+    id: str
+    class_kwargs: dict
+    cartopy_kwargs: dict
+
+
+kwarg_permutations: List[ParamTuple] = [
+    ParamTuple(
+        "default",
+        dict(),
+        dict(),
+    ),
+    ParamTuple(
+        "azimuth",
+        dict(azimuth_of_central_line=90),
+        dict(azimuth=90),
+    ),
+    ParamTuple(
+        "central_longitude",
+        dict(longitude_of_projection_origin=90),
+        dict(central_longitude=90),
+    ),
+    ParamTuple(
+        "central_latitude",
+        dict(latitude_of_projection_origin=45),
+        dict(central_latitude=45),
+    ),
+    ParamTuple(
+        "false_easting_northing",
+        dict(false_easting=1000000, false_northing=-2000000),
+        dict(false_easting=1000000, false_northing=-2000000),
+    ),
+    ParamTuple(
+        "scale_factor",
+        # Number inherited from Cartopy's test_mercator.py .
+        dict(scale_factor_at_projection_origin=0.939692620786),
+        dict(scale_factor=0.939692620786),
+    ),
+    ParamTuple(
+        "globe",
+        dict(ellipsoid=GeogCS(1)),
+        dict(
+            globe=GlobeWithEq(semimajor_axis=1, semiminor_axis=1, ellipse=None)
+        ),
+    ),
+    ParamTuple(
+        "combo",
+        dict(
+            azimuth_of_central_line=90,
+            longitude_of_projection_origin=90,
+            latitude_of_projection_origin=45,
+            false_easting=1000000,
+            false_northing=-2000000,
+            scale_factor_at_projection_origin=0.939692620786,
+            ellipsoid=GeogCS(1),
+        ),
+        dict(
+            azimuth=90.0,
+            central_longitude=90.0,
+            central_latitude=45.0,
+            false_easting=1000000,
+            false_northing=-2000000,
+            scale_factor=0.939692620786,
+            globe=GlobeWithEq(
+                semimajor_axis=1, semiminor_axis=1, ellipse=None
+            ),
+        ),
+    ),
+]
+permutation_ids: List[str] = [p.id for p in kwarg_permutations]
+
+
 class TestArgs:
     GeogCS = GeogCS
     class_kwargs_default = dict(
@@ -36,89 +119,12 @@ class TestArgs:
         globe=None,
     )
 
-    class GlobeWithEq(ccrs.Globe):
-        def __eq__(self, other):
-            """Need eq to enable comparison with expected arguments."""
-            result = NotImplemented
-            if isinstance(other, ccrs.Globe):
-                result = other.__dict__ == self.__dict__
-            return result
-
-    class ParamTuple(NamedTuple):
-        id: str
-        class_kwargs: dict
-        cartopy_kwargs: dict
-
-    param_list: List[ParamTuple] = [
-        ParamTuple(
-            "default",
-            dict(),
-            dict(),
-        ),
-        ParamTuple(
-            "azimuth",
-            dict(azimuth_of_central_line=90),
-            dict(azimuth=90),
-        ),
-        ParamTuple(
-            "central_longitude",
-            dict(longitude_of_projection_origin=90),
-            dict(central_longitude=90),
-        ),
-        ParamTuple(
-            "central_latitude",
-            dict(latitude_of_projection_origin=45),
-            dict(central_latitude=45),
-        ),
-        ParamTuple(
-            "false_easting_northing",
-            dict(false_easting=1000000, false_northing=-2000000),
-            dict(false_easting=1000000, false_northing=-2000000),
-        ),
-        ParamTuple(
-            "scale_factor",
-            # Number inherited from Cartopy's test_mercator.py .
-            dict(scale_factor_at_projection_origin=0.939692620786),
-            dict(scale_factor=0.939692620786),
-        ),
-        ParamTuple(
-            "globe",
-            dict(ellipsoid=GeogCS(1)),
-            dict(
-                globe=GlobeWithEq(
-                    semimajor_axis=1, semiminor_axis=1, ellipse=None
-                )
-            ),
-        ),
-        ParamTuple(
-            "combo",
-            dict(
-                azimuth_of_central_line=90,
-                longitude_of_projection_origin=90,
-                latitude_of_projection_origin=45,
-                false_easting=1000000,
-                false_northing=-2000000,
-                scale_factor_at_projection_origin=0.939692620786,
-                ellipsoid=GeogCS(1),
-            ),
-            dict(
-                azimuth=90.0,
-                central_longitude=90.0,
-                central_latitude=45.0,
-                false_easting=1000000,
-                false_northing=-2000000,
-                scale_factor=0.939692620786,
-                globe=GlobeWithEq(
-                    semimajor_axis=1, semiminor_axis=1, ellipse=None
-                ),
-            ),
-        ),
-    ]
-    param_ids: List[str] = [p.id for p in param_list]
-
-    @pytest.fixture(autouse=True, params=param_list, ids=param_ids)
+    @pytest.fixture(
+        autouse=True, params=kwarg_permutations, ids=permutation_ids
+    )
     def make_variant_inputs(self, request) -> None:
-        inputs: TestArgs.ParamTuple = request.param
+        """Parse a ParamTuple into usable test information."""
+        inputs: ParamTuple = request.param
         self.class_kwargs = dict(
             self.class_kwargs_default, **inputs.class_kwargs
         )
