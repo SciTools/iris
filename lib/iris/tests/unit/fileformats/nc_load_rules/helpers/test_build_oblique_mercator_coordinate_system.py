@@ -7,14 +7,19 @@
 Test function :func:`iris.fileformats._nc_load_rules.helpers.build_oblique_mercator_coordinate_system`.
 
 """
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Type
 from unittest import mock
 
 import pytest
 
 from iris import coord_systems
 from iris._deprecation import IrisDeprecation
-from iris.coord_systems import GeogCS, ObliqueMercator, RotatedMercator
+from iris.coord_systems import (
+    CoordSystem,
+    GeogCS,
+    ObliqueMercator,
+    RotatedMercator,
+)
 from iris.fileformats._nc_load_rules.helpers import (
     build_oblique_mercator_coordinate_system,
 )
@@ -44,7 +49,7 @@ class TestAttributes:
     class ParamTuple(NamedTuple):
         id: str
         nc_attributes: dict
-        expected_class: [ObliqueMercator, RotatedMercator]
+        expected_class: Type[CoordSystem]
         coord_system_kwargs: dict
 
     param_list: List[ParamTuple] = [
