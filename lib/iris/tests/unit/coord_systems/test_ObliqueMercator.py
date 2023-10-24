@@ -131,7 +131,7 @@ class TestArgs:
 
     @pytest.fixture()
     def instance(self):
-        yield self.make_instance()
+        return self.make_instance()
 
     def test_instantiate(self):
         _ = self.make_instance()
