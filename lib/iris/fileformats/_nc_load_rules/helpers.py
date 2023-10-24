@@ -936,8 +936,7 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
         oblique_mercator=iris.coord_systems.ObliqueMercator,
         rotated_mercator=iris.coord_systems.RotatedMercator,
     )
-    SelectedSystem = candidate_systems[grid_mapping_name]
-    if SelectedSystem is iris.coord_systems.RotatedMercator:
+    if grid_mapping_name == "rotated_mercator":
         message = (
             "Iris will stop loading the rotated_mercator grid mapping name in "
             "a future release, in accordance with CF version 1.11 . Instead "
@@ -946,7 +945,7 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
         warn_deprecated(message)
         del kwargs[CF_ATTR_GRID_AZIMUTH_CENT_LINE]
 
-    cs = SelectedSystem(**kwargs)
+    cs = candidate_systems[grid_mapping_name](**kwargs)
     return cs
 
 
