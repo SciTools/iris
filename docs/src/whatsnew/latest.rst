@@ -1,4 +1,3 @@
-
 .. include:: ../common_links.inc
 
 |iris_version| |build_date| [unreleased]
@@ -35,6 +34,10 @@ This document explains the changes made to Iris for this release
    :class:`UserWarning`\s for richer filtering. The full index of
    sub-categories can be seen here: :mod:`iris.exceptions` . (:pull:`5498`)
 
+#. `@trexfeathers`_ added the :class:`~iris.coord_systems.ObliqueMercator`
+   and :class:`~iris.coord_systems.RotatedMercator` coordinate systems,
+   complete with NetCDF loading and saving. (:pull:`5548`)
+
 
 🐛 Bugs Fixed
 =============
@@ -67,13 +70,19 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@bjlittle`_ enforced the minimum pin of ``numpy>1.21`` in accordance with the `NEP29 Drop Schedule`_.
+   (:pull:`5525`)
 
 
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ documented the intended use of warnings filtering with
+   Iris. See :ref:`filtering-warnings`. (:pull:`5509`)
+
+#. `@rcomer`_ updated the
+   :ref:`sphx_glr_generated_gallery_meteorology_plot_COP_maps.py` to show how
+   a colourbar may steal space from multiple axes. (:pull:`5537`)
 
 
 💼 Internal
@@ -85,8 +94,12 @@ This document explains the changes made to Iris for this release
    working properly. (Main pull request: :pull:`5437`, more detail:
    :pull:`5430`, :pull:`5431`, :pull:`5432`, :pull:`5434`, :pull:`5436`)
 
-#. `@acchamber`_ removed several warnings from iris related to Numpy 1.25 deprecations.
-   (:pull:`5493`)
+#. `@trexfeathers`_ set a number of memory benchmarks to be on-demand, as they
+   were vulnerable to false positives in CI runs. (:pull:`5481`)
+
+#. `@acchamber`_ and `@ESadek-MO`_ resolved several deprecation to reduce
+   number of warnings raised during tests.
+   (:pull:`5493`, :pull:`5511`)
 
 #. `@trexfeathers`_ replaced all uses of the ``logging.WARNING`` level, in
    favour of using Python warnings, following team agreement. (:pull:`5488`)
@@ -94,12 +107,16 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ adapted benchmarking to work with ASV ``>=v0.6`` by no
    longer using the ``--strict`` argument. (:pull:`5496`)
 
+#. `@fazledyn-or`_ replaced ``NotImplementedError`` with ``NotImplemented`` as
+   a proper method call. (:pull:`5544`)
+
+#. `@bjlittle`_ corrected various comment spelling mistakes detected by
+   `codespell`_. (:pull:`5546`)
+
 #. `@trexfeathers`_ and `@pp-mo`_ improved how the conda-forge feedstock
    release candidate branch is managed, via:
    :doc:`../developers_guide/release_do_nothing`.
    (:pull:`5515`)
-
-
 
 
 .. comment
@@ -108,7 +125,12 @@ This document explains the changes made to Iris for this release
 
 .. _@scottrobinson02: https://github.com/scottrobinson02
 .. _@acchamber: https://github.com/acchamber
+.. _@fazledyn-or: https://github.com/fazledyn-or
 
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
+.. _codespell: https://github.com/codespell-project/codespell
+
