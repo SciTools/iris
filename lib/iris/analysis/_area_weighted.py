@@ -321,7 +321,6 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     grid_x_bounds = _get_bounds_in_units(grid_x, x_units, dtype)
     grid_y_bounds = _get_bounds_in_units(grid_y, y_units, dtype)
 
-    # TODO: consider removing this.
     # Create 2d meshgrids as required by _create_cube func.
     meshgrid_x, meshgrid_y = _meshgrid(grid_x.points, grid_y.points)
 
@@ -582,13 +581,13 @@ def _standard_regrid_no_masks(data, weights, tgt_shape):
     """
     extra_dims = len(data.shape) > 2
     if extra_dims:
-        extra_shape = data.shape[2:]
-        result = data.reshape(np.prod(data.shape[:2]), -1)
+        extra_shape = data.shape[:-2]
+        result = data.reshape(-1, np.prod(data.shape[-2:]))
     else:
         result = data.flatten()
-    result = weights @ result
+    result = result @ weights.T
     if extra_dims:
-        result = result.reshape(*(tgt_shape + extra_shape))
+        result = result.reshape(*(extra_shape + tgt_shape))
     else:
         result = result.reshape(*tgt_shape)
     return result
@@ -605,18 +604,18 @@ def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
         unmasked = ~ma.getmaskarray(data)
         weight_sums = _standard_regrid_no_masks(unmasked, weights, tgt_shape)
     else:
-        weight_sums = np.ones(tgt_shape + data_shape[2:])
+        weight_sums = np.ones(data_shape[:-2] + tgt_shape)
     mdtol = max(mdtol, 1e-8)
     tgt_mask = weight_sums > 1 - mdtol
     if oob_invalid or not ma.is_masked(data):
         inbound_sums = _standard_regrid_no_masks(
-            np.ones(data_shape[:2]), weights, tgt_shape
+            np.ones(data_shape[-2:]), weights, tgt_shape
         )
         if oob_invalid:
             oob_mask = inbound_sums > 1 - 1e-8
         else:
             oob_mask = inbound_sums > 1 - mdtol
-        oob_slice = np.s_[:, :] + ((np.newaxis,) * len(data.shape[2:]))
+        oob_slice = ((np.newaxis,) * len(data.shape[:-2])) + np.s_[:, :]
         tgt_mask = tgt_mask * oob_mask[oob_slice]
     masked_weight_sums = weight_sums * tgt_mask
     normalisations = np.ones_like(weight_sums)
@@ -644,32 +643,35 @@ def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
 
 def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
     """Regrid data, handling masks and dimensions."""
-    # TODO: check that this is equivalent to the reordering in curvilinear regridding!
+
+    # Handle scalar coordinates.
+    # Note: scalar source coordinates are only handled when their
+    # corresponding target coordinate is also scalar.
     if x_dim is None:
         x_none = True
-        data = np.expand_dims(data, 0)
-        x_dim = 0
-        if y_dim is not None:
-            y_dim += 1
+        data = np.expand_dims(data, -1)
+        x_dim = -1
     else:
         x_none = False
     if y_dim is None:
         y_none = True
-        data = np.expand_dims(data, 0)
-        y_dim = 0
-        x_dim += 1
+        data = np.expand_dims(data, -1)
+        y_dim = -1
+        if x_none:
+            x_dim = -2
     else:
         y_none = False
-    data = np.moveaxis(data, [x_dim, y_dim], [0, 1])
+
+    # TODO: decide if standard regridding should expect (x,y) or (y,x) ordering
+    # Standard regridding expects the last two dimensions to belong
+    # to the x and y coordinate and will output as such.
+    # Axes are moved to account for an arbitrary dimension ordering.
+    data = np.moveaxis(data, [x_dim, y_dim], [-2, -1])
     result = _standard_regrid(data, weights, tgt_shape, mdtol)
-    # Ensure consistent ordering with old behaviour
-    if ma.isMaskedArray(result):
-        result = ma.array(result, order="F")
-    else:
-        result = np.array(result, order="F")
-    result = np.moveaxis(result, [0, 1], [x_dim, y_dim])
+    result = np.moveaxis(result, [-2, -1], [x_dim, y_dim])
+
     if y_none:
-        result = result[0]
+        result = np.squeeze(result, axis=-1)
     if x_none:
-        result = result[0]
+        result = np.squeeze(result, axis=-1)
     return result
