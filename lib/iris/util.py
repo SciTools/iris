@@ -266,7 +266,6 @@ def guess_coord_axis(coord):
     axis = None
 
     if coord.guess_coord == False:
-
         return None
 
     elif coord.standard_name in (

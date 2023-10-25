@@ -10,22 +10,19 @@
 import iris.tests as tests  # isort:skip
 
 import numpy as np
-import iris.coords
 import pytest
 
+import iris.coords
 from iris.util import guess_coord_axis
 
 
 @pytest.fixture
 def coord():
-    coord = iris.coords.DimCoord(
-        points=(1, 2, 3, 4, 5)
-    )
+    coord = iris.coords.DimCoord(points=(1, 2, 3, 4, 5))
     return coord
 
 
 class TestCoords:
-
     def test_longitude(self, coord):
         coord.standard_name = "longitude"
 
