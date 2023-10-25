@@ -861,7 +861,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 element.setAttribute(
                     "climatological", str(self.climatological)
                 )
-
+        if self.guess_coord:
+            element.setAttribute("guess_coord", str(self.guess_coord))
         if self.attributes:
             attributes_element = doc.createElement("attributes")
             for name in sorted(self.attributes.keys()):
@@ -1541,6 +1542,7 @@ class Coord(_DimensionalMetadata):
         attributes=None,
         coord_system=None,
         climatological=False,
+        guess_coord=True,
     ):
         """
         Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
@@ -1608,6 +1610,8 @@ class Coord(_DimensionalMetadata):
         self.bounds = bounds
         self.climatological = climatological
 
+        self.guess_coord = guess_coord
+
     def copy(self, points=None, bounds=None):
         """
         Returns a copy of this coordinate.
@@ -1655,6 +1659,7 @@ class Coord(_DimensionalMetadata):
             "attributes": coord.attributes,
             "coord_system": copy.deepcopy(coord.coord_system),
             "climatological": coord.climatological,
+            "guess_coord": coord.guess_coord,
         }
         if issubclass(cls, DimCoord):
             # DimCoord introduces an extra constructor keyword.
@@ -1750,6 +1755,29 @@ class Coord(_DimensionalMetadata):
                 raise ValueError(emsg)
 
         self._metadata_manager.climatological = value
+
+    @property
+    def guess_coord(self):
+        """
+        A boolean that controls whether guess_coord_axis acts on this
+        coordinate.
+
+        Defaults to True, and when set to False it will be skipped by
+        guess_coord_axis.
+        """
+        return self._metadata_manager.guess_coord
+
+    @guess_coord.setter
+    def guess_coord(self, value):
+        print(value)
+        if value is not True and value is not False:
+            emsg = (
+                "Guess_coord can only be set to True or False"
+            )
+            raise ValueError(emsg)
+        else:
+            pass
+        self._metadata_manager.guess_coord = value
 
     def lazy_points(self):
         """
@@ -2581,6 +2609,7 @@ class DimCoord(Coord):
         coord_system=None,
         circular=False,
         climatological=False,
+        guess_coord=True,
         with_bounds=False,
     ):
         """
@@ -2630,6 +2659,7 @@ class DimCoord(Coord):
             coord_system=coord_system,
             circular=circular,
             climatological=climatological,
+            guess_coord=guess_coord,
         )
 
     def __init__(
@@ -2644,6 +2674,7 @@ class DimCoord(Coord):
         coord_system=None,
         circular=False,
         climatological=False,
+        guess_coord=True,
     ):
         """
         Create a 1D, numeric, and strictly monotonic coordinate with **immutable** points and bounds.
@@ -2697,6 +2728,8 @@ class DimCoord(Coord):
             Will set to True when a climatological time axis is loaded
             from NetCDF.
             Always False if no bounds exist.
+        * guess_coord (bool):
+            When True: guess_coord will guess the coord, when False it won't.
 
         """
         # Configure the metadata manager.
@@ -2712,6 +2745,7 @@ class DimCoord(Coord):
             attributes=attributes,
             coord_system=coord_system,
             climatological=climatological,
+            guess_coord=guess_coord,
         )
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.

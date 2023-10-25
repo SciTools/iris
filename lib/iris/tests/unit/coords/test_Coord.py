@@ -10,6 +10,7 @@
 import iris.tests as tests  # isort:skip
 
 import collections
+import pytest
 from unittest import mock
 import warnings
 
@@ -1148,6 +1149,36 @@ class TestClimatology(tests.IrisTest):
         self.assertTrue(coord.climatological)
         coord.units = "K"
         self.assertFalse(coord.climatological)
+
+
+@pytest.fixture
+def coord():
+    coord = iris.coords.DimCoord(
+        points=(1, 2, 3, 4, 5)
+    )
+    return coord
+
+class Test_guess_coord:
+    def test_default(self, coord):
+
+        assert coord.guess_coord == True
+
+    def test_set_true(self, coord):
+        coord.guess_coord = True
+
+        assert coord.guess_coord == True
+
+    def test_set_false(self, coord):
+        coord.guess_coord = False
+
+        assert coord.guess_coord == False
+
+    def test_set_random_value(self, coord):
+
+        with pytest.raises(
+                ValueError,
+                match=r"Guess_coord can only be set to True or False"):
+            coord.guess_coord = "foo"
 
 
 class Test___init____abstractmethod(tests.IrisTest):
