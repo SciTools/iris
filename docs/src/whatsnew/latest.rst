@@ -84,6 +84,10 @@ This document explains the changes made to Iris for this release
    :ref:`sphx_glr_generated_gallery_meteorology_plot_COP_maps.py` to show how
    a colourbar may steal space from multiple axes. (:pull:`5537`)
 
+#. `@tkknight`_ improved the top navgation bar alignment and amount of
+   links shown.  Also improved how the warning banner is implemented.
+   (:pull:`5505` and :pull:`5508`)
+
 
 💼 Internal
 ===========
