@@ -64,11 +64,11 @@ jobs:
 
           # Labels on issues exempted from stale.
           exempt-issue-labels:
-            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue, Dragon 🐉, Dragon Sub-Task 🦎"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue, Dragon 🐉, Dragon Sub-Task 🦎, Release: Major"
 
           # Labels on prs exempted from stale.
           exempt-pr-labels:
-            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue, Dragon 🐉, Dragon Sub-Task 🦎"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue, Dragon 🐉, Dragon Sub-Task 🦎, Release: Major"
 
           # Max number of operations per run.
           operations-per-run: 300
