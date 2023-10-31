@@ -49,7 +49,7 @@ This document explains the changes made to Iris for this release
    preventing acceptance. (:issue:`5098`, :pull:`5482`)
 
 #. `@acchamber`_ and `@rcomer`_ modified 2D plots so that time axes and their
-   ticks have more sensible labels.  (:issue:`5426`, :pull:`5561`)
+   ticks have more sensible default labels.  (:issue:`5426`, :pull:`5561`)
 
 
 💣 Incompatible Changes
