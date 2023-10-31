@@ -22,7 +22,6 @@ import cftime
 import matplotlib.animation as animation
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
-import matplotlib.dates as mpl_dates
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mpl_ticker
@@ -454,10 +453,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                 else:
                     values = coord.contiguous_bounds()
                     values = _fixup_dates(coord, values)
-                    if values.dtype == np.dtype(object) and isinstance(
-                        values[0], datetime.datetime
-                    ):
-                        values = mpl_dates.date2num(values)
 
             plot_arrays.append(values)
 
@@ -557,10 +552,6 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
                     )
                 plot_arrays.append(np.arange(values.size))
                 string_axes[axis_name] = values
-            elif values.dtype == np.dtype(object) and isinstance(
-                values[0], datetime.datetime
-            ):
-                plot_arrays.append(mpl_dates.date2num(values))
             else:
                 plot_arrays.append(values)
 
