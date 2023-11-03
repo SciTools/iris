@@ -14,9 +14,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 import cf_units
-from matplotlib import __version__ as _mpl_version
 import matplotlib.pyplot as plt
-from packaging import version
 
 import iris.config
 import iris.coords
@@ -44,18 +42,11 @@ def _title(cube_or_coord, with_units):
             units.is_unknown()
             or units.is_no_unit()
             or units == cf_units.Unit("1")
+            or units.is_time_reference()
         ):
             if _use_symbol(units):
                 units = units.symbol
-            elif units.is_time_reference():
-                # iris.plot uses matplotlib.dates.date2num, which is fixed to the below unit.
-                if version.parse(_mpl_version) >= version.parse("3.3"):
-                    days_since = "1970-01-01"
-                else:
-                    days_since = "0001-01-01"
-                units = "days since {}".format(days_since)
             title += " / {}".format(units)
-
     return title
 
 
@@ -117,10 +108,8 @@ def _label_with_points(cube, result=None, ndims=2, coords=None, axes=None):
 def _get_titles(u_object, v_object):
     if u_object is None:
         u_object = iplt._u_object_from_v_object(v_object)
-    xunits = u_object is not None and not u_object.units.is_time_reference()
-    yunits = not v_object.units.is_time_reference()
-    xlabel = _title(u_object, with_units=xunits)
-    ylabel = _title(v_object, with_units=yunits)
+    xlabel = _title(u_object, with_units=True)
+    ylabel = _title(v_object, with_units=True)
     title = ""
     if u_object is None:
         title = _title(v_object, with_units=False)
