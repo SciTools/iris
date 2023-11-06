@@ -14,6 +14,10 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 from collections.abc import Iterable
+from contextlib import contextmanager
+from copy import deepcopy
+import threading
+from typing import Iterable, Mapping, Union
 import warnings
 
 import numpy as np
@@ -200,6 +204,7 @@ def _get_cf_var_data(cf_var, filename):
     unnecessarily slow + wasteful of memory.
 
     """
+    global CHUNK_CONTROL
     if hasattr(cf_var, "_data_array"):
         # The variable is not an actual netCDF4 file variable, but an emulating
         # object with an attached data array (either numpy or dask), which can be
@@ -216,6 +221,8 @@ def _get_cf_var_data(cf_var, filename):
 
         else:
             # Get lazy chunked data out of a cf variable.
+            # Creates Dask wrappers around data arrays for any cube components which
+            # can have lazy values, e.g. Cube, Coord, CellMeasure, AuxiliaryVariable.
             dtype = _get_actual_dtype(cf_var)
 
             # Make a data-proxy that mimics array access and can fetch from the file.
@@ -232,18 +239,34 @@ def _get_cf_var_data(cf_var, filename):
             chunks = cf_var.cf_data.chunking()
             # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
             if chunks == "contiguous":
-                chunks = None
+                # Equivalent to chunks=None, but value required by chunking control
+                chunks = list(cf_var.shape)
 
-            # Return a dask array providing deferred access.
-            result = as_lazy_data(proxy, chunks=chunks)
+            # Modify the chunking in the context of an active chunking control.
+            # N.B. settings specific to this named var override global ('*') ones.
+            dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
+                cf_var.name
+            ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
+            if not dim_chunks:
+                dims_fixed = None
+            else:
+                # Modify the chunks argument, and pass in a list of 'fixed' dims, for
+                # any of our dims which are controlled.
+                dims = cf_var.cf_data.dimensions
+                dims_fixed = np.zeros(len(dims), dtype=bool)
+                for i_dim, dim_name in enumerate(dims):
+                    dim_chunksize = dim_chunks.get(dim_name)
+                    if dim_chunksize:
+                        chunks[i_dim] = dim_chunksize
+                        dims_fixed[i_dim] = True
 
-    return result
+            return as_lazy_data(proxy, chunks=chunks, dims_fixed=dims_fixed)
 
 
+class OrderedAddableList(list):
 class _OrderedAddableList(list):
     """
     A custom container object for actions recording.
-
     Used purely in actions debugging, to accumulate a record of which actions
     were activated.
 
@@ -266,6 +289,18 @@ class _OrderedAddableList(list):
 
 
 def _load_cube(engine, cf, cf_var, filename):
+    global CHUNK_CONTROL
+
+    # Translate dimension chunk-settings specific to this cube (i.e. named by
+    # it's data-var) into global ones, for the duration of this load.
+    # Thus, by default, we will create any AuxCoords, CellMeasures et al with
+    # any  per-dimension chunksizes specified for the cube.
+    these_settings = CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.name, {})
+    with CHUNK_CONTROL.set(**these_settings):
+        return _load_cube_inner(engine, cf, cf_var, filename)
+
+
+def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
@@ -610,3 +645,114 @@ def load_cubes(file_sources, callback=None, constraints=None):
                     continue
 
                 yield cube
+
+
+class ChunkControl(threading.local):
+    def __init__(self, var_dim_chunksizes=None):
+        """
+        Provide user control of Dask chunking.
+
+        The netcdf loader is controlled by the single instance of this : the
+        :data:`~iris.fileformats.netcdf.CHUNK_CONTROL` object.
+
+        A chunksize can be set for a specific (named) file dimension, when
+        loading specific (named) variables, or for all variables.
+
+        When a selected variable is a CF data-variable, which loads as a
+        cube, then the given dimension chunksize is *also* fixed for all
+        variables which are components of that cube, i.e. its Coords,
+        CellMeasures, Ancillary variables, etc.
+        This can be overriden, if required, by variable-specific settings.
+
+        For this purpose, Mesh coordinates and connectivities are *not* cube
+        components, and a chunk control on a cube data-variable will not affect
+        them.
+
+        """
+        self.var_dim_chunksizes = var_dim_chunksizes or {}
+
+    @contextmanager
+    def set(
+        self,
+        var_names: Union[str, Iterable[str]] = None,
+        **dimension_chunksizes: Mapping[str, int],
+    ) -> None:
+        """
+        Control the Dask chunksizes applied to netcdf variables during loading.
+
+        Parameters
+        ----------
+        var_names : str or list of str
+            apply the ``dimension_chunksizes`` controls only to these variables,
+            or when building cubes from these data variables.
+            If None (the default), settings apply to all loaded variables.
+        dimension_chunksizes : dict: str --> int
+            Kwargs specifying chunksizes for dimensions of file variables.
+            Each key-value pair defines a chunksize for a named file
+            dimension, e.g. {'time': 10, 'model_levels':1}.
+
+        Notes
+        -----
+        This function acts as a contextmanager, for use in a 'with' block.
+
+        Example:
+
+        >>> from iris.fileformats.netcdf import CHUNK_CONTROL
+        >>> with CHUNK_CONTROL.set('var1', model_level=1, time=50):
+        ...     cubes = iris.load(filename)
+
+        When ``var_names`` is present, the chunksize adjustments are applied
+        only to the selected variables.  However, for a CF data variable, this
+        extends to all components of the (raw) cube created from it.
+
+        **Un**-adjusted dimensions have chunk sizes set in the 'usual' way.
+        That is, according to the normal behaviour of
+        :meth:`iris._lazy_data.as_lazy_data`, which is : chunksize is based on
+        the file variable chunking, or full variable shape; this is scaled up
+        or down by integer factors to best match the Dask "default chunksize",
+        i.e. the setting configured by
+        ``dask.config.set({'array.chunk-size': '250MiB'})``.
+
+        """
+        old_settings = deepcopy(self.var_dim_chunksizes)
+        if var_names is None:
+            var_names = ["*"]
+        elif isinstance(var_names, str):
+            var_names = [var_names]
+        try:
+            for var_name in var_names:
+                # Note: here we simply treat '*' as another name.
+                # A specific name match should override a '*' setting, but
+                # that is implemented elsewhere.
+                if not isinstance(var_name, str):
+                    msg = (
+                        "'var_names' should be an iterable of strings, "
+                        f"not {var_names!r}."
+                    )
+                    raise ValueError(msg)
+                dim_chunks = self.var_dim_chunksizes.setdefault(var_name, {})
+                for dim_name, chunksize in dimension_chunksizes.items():
+                    if not (
+                        isinstance(dim_name, str)
+                        and isinstance(chunksize, int)
+                    ):
+                        msg = (
+                            "'dimension_chunksizes' kwargs should be an iterable "
+                            f"of (str, int) pairs, not {dimension_chunksizes!r}."
+                        )
+                        raise ValueError(msg)
+                    dim_chunks[dim_name] = chunksize
+            yield
+        finally:
+            self.var_dim_chunksizes = old_settings
+
+
+# Note: the CHUNK_CONTROL object controls chunk sizing in the
+# :meth:`_get_cf_var_data` method.
+# N.B. :meth:`_load_cube` also modifies this when loading each cube,
+# introducing an additional context in which any cube-specific settings are
+# 'promoted' into being global ones.
+
+#: A :class:`ChunkControl` object providing user-control of Dask chunking
+#: when Iris loads netcdf files.
+CHUNK_CONTROL: ChunkControl = ChunkControl()
