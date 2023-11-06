@@ -203,6 +203,7 @@ def _optimum_chunksize_internals(
 
     return result
 
+
 @wraps(_optimum_chunksize_internals)
 def _optimum_chunksize(
     chunks,
