@@ -263,7 +263,6 @@ def _get_cf_var_data(cf_var, filename):
             return as_lazy_data(proxy, chunks=chunks, dims_fixed=dims_fixed)
 
 
-class OrderedAddableList(list):
 class _OrderedAddableList(list):
     """
     A custom container object for actions recording.
@@ -697,7 +696,7 @@ class ChunkControl(threading.local):
 
         Example:
 
-        >>> from iris.fileformats.netcdf import CHUNK_CONTROL
+        >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
         >>> with CHUNK_CONTROL.set('var1', model_level=1, time=50):
         ...     cubes = iris.load(filename)
 
