@@ -1768,9 +1768,7 @@ class Coord(_DimensionalMetadata):
     @guess_coord.setter
     def guess_coord(self, value):
         if value is not True and value is not False:
-            emsg = (
-                "Guess_coord can only be set to True or False"
-            )
+            emsg = "Guess_coord can only be set to True or False"
             raise ValueError(emsg)
         else:
             pass

@@ -10,12 +10,12 @@
 import iris.tests as tests  # isort:skip
 
 import collections
-import pytest
 from unittest import mock
 import warnings
 
 import dask.array as da
 import numpy as np
+import pytest
 
 import iris
 from iris.coords import AuxCoord, Coord, DimCoord
@@ -1153,10 +1153,9 @@ class TestClimatology(tests.IrisTest):
 
 @pytest.fixture
 def coord():
-    coord = iris.coords.DimCoord(
-        points=(1, 2, 3, 4, 5)
-    )
+    coord = iris.coords.DimCoord(points=(1, 2, 3, 4, 5))
     return coord
+
 
 class Test_guess_coord:
     def test_default(self, coord):
@@ -1174,10 +1173,9 @@ class Test_guess_coord:
         assert coord.guess_coord is False
 
     def test_set_random_value(self, coord):
-
         with pytest.raises(
-                ValueError,
-                match=r"Guess_coord can only be set to True or False"):
+            ValueError, match=r"Guess_coord can only be set to True or False"
+        ):
             coord.guess_coord = "foo"
 
 
