@@ -1159,7 +1159,6 @@ def coord():
 
 class Test_guess_coord:
     def test_default(self, coord):
-
         assert coord.guess_coord is True
 
     def test_set_true(self, coord):

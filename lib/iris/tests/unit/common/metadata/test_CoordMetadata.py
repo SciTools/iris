@@ -41,7 +41,7 @@ class Test(tests.IrisTest):
             attributes=self.attributes,
             coord_system=self.coord_system,
             climatological=self.climatological,
-            guess_coord=self.guess_coord
+            guess_coord=self.guess_coord,
         )
         fmt = (
             "CoordMetadata(standard_name={!r}, long_name={!r}, "
@@ -87,7 +87,7 @@ class Test___eq__(tests.IrisTest):
             attributes=sentinel.attributes,
             coord_system=sentinel.coord_system,
             climatological=sentinel.climatological,
-            guess_coord=sentinel.guess_coord
+            guess_coord=sentinel.guess_coord,
         )
         self.dummy = sentinel.dummy
         self.cls = CoordMetadata
@@ -266,7 +266,7 @@ class Test_combine(tests.IrisTest):
             attributes=sentinel.attributes,
             coord_system=sentinel.coord_system,
             climatological=sentinel.climatological,
-            guess_coord=sentinel.guess_coord
+            guess_coord=sentinel.guess_coord,
         )
         self.dummy = sentinel.dummy
         self.cls = CoordMetadata
