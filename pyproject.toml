@@ -32,6 +32,7 @@ classifiers = [
 ]
 dynamic = [
     "dependencies",
+    "optional-dependencies",
     "readme",
     "version",
 ]
@@ -66,12 +67,13 @@ zip-safe = false
 dependencies = {file = "requirements/pypi-core.txt"}
 readme = {file = "README.md", content-type = "text/markdown"}
 
+[tool.setuptools.dynamic.optional-dependencies]
+docs = {file = ["requirements/pypi-optional-docs.txt"]}
+
+
 [tool.setuptools.packages.find]
 include = ["iris*"]
 where = ["lib"]
-
-[tool.setuptools.dynamic.optional-dependencies]
-docs = {file = ["requirements/pypi-optional-docs.txt"]}
 
 [tool.setuptools_scm]
 write_to = "lib/iris/_version.py"
