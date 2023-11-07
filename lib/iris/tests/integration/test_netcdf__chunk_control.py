@@ -14,13 +14,16 @@ import shutil
 import tempfile
 
 import iris
-from iris.fileformats.netcdf import CHUNK_CONTROL
+from iris.fileformats.netcdf.loader import CHUNK_CONTROL
+from iris.fileformats.netcdf import loader
 import iris.tests.stock as istk
 
 
 class TestChunking(tests.IrisTest):
     @classmethod
     def setUpClass(cls):
+        cls.old_min_bytes = loader._LAZYVAR_MIN_BYTES
+        loader._LAZYVAR_MIN_BYTES = 0
         cls.temp_dir = tempfile.mkdtemp()
         cube = istk.simple_4d_with_hybrid_height()
         cls.cube = cube
@@ -35,6 +38,7 @@ class TestChunking(tests.IrisTest):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.temp_dir)
+        loader._LAZYVAR_MIN_BYTES = cls.old_min_bytes
 
     def test_default(self):
         cube = iris.load_cube(self.tempfile_path, self.cube_varname)
