@@ -70,6 +70,9 @@ readme = {file = "README.md", content-type = "text/markdown"}
 include = ["iris*"]
 where = ["lib"]
 
+[tool.setuptools.dynamic.optional-dependencies]
+docs = {file = ["requirements/pypi-optional-docs.txt"]}
+
 [tool.setuptools_scm]
 write_to = "lib/iris/_version.py"
 local_scheme = "dirty-tag"

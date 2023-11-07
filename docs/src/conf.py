@@ -164,6 +164,7 @@ extensions = [
 ]
 
 if on_rtd:
+    # search as you type on readthedocs only.
     extensions.extend(["sphinx_search.extension"])
 
 if skip_api == "1":
