@@ -163,6 +163,9 @@ extensions = [
     "matplotlib.sphinxext.plot_directive",
 ]
 
+if on_rtd:
+    extensions.extend(["sphinx_search.extension"])
+
 if skip_api == "1":
     autolog("Skipping the API docs generation (SKIP_API=1)")
 else:
