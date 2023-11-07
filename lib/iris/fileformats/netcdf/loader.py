@@ -260,7 +260,9 @@ def _get_cf_var_data(cf_var, filename):
                     if dim_chunksize:
                         chunks[i_dim] = dim_chunksize
                         dims_fixed[i_dim] = True
-            result = as_lazy_data(proxy, chunks=chunks, dims_fixed=tuple(dims_fixed))
+            result = as_lazy_data(
+                proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
+            )
     return result
 
 
