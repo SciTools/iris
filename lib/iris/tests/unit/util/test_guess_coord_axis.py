@@ -50,4 +50,4 @@ class TestCoords:
         coord.standard_name = "longitude"
         coord.guess_coord = False
 
-        assert guess_coord_axis(coord) == None
+        assert guess_coord_axis(coord) is None

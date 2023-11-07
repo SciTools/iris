@@ -258,16 +258,16 @@ def guess_coord_axis(coord):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
-    Can be skipped by setting the coordinate property of a coord guess_coord
+    ``guess_coord_axis`` can be skipped by setting the coordinate property of a coord guess_coord
     to False.
 
     """
 
     axis = None
 
-    if coord.guess_coord == False:
+    if coord.guess_coord is False:
 
-        return None
+        return axis
 
     elif coord.standard_name in (
         "longitude",

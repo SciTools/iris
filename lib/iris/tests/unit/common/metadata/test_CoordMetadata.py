@@ -29,6 +29,7 @@ class Test(tests.IrisTest):
         self.attributes = mock.sentinel.attributes
         self.coord_system = mock.sentinel.coord_system
         self.climatological = mock.sentinel.climatological
+        self.guess_coord = mock.sentinel.guess_coord
         self.cls = CoordMetadata
 
     def test_repr(self):
@@ -40,11 +41,12 @@ class Test(tests.IrisTest):
             attributes=self.attributes,
             coord_system=self.coord_system,
             climatological=self.climatological,
+            guess_coord=self.guess_coord
         )
         fmt = (
             "CoordMetadata(standard_name={!r}, long_name={!r}, "
             "var_name={!r}, units={!r}, attributes={!r}, coord_system={!r}, "
-            "climatological={!r})"
+            "climatological={!r}, guess_coord={!r})"
         )
         expected = fmt.format(
             self.standard_name,
@@ -54,6 +56,7 @@ class Test(tests.IrisTest):
             self.attributes,
             self.coord_system,
             self.climatological,
+            self.guess_coord,
         )
         self.assertEqual(expected, repr(metadata))
 
@@ -66,6 +69,7 @@ class Test(tests.IrisTest):
             "attributes",
             "coord_system",
             "climatological",
+            "guess_coord",
         )
         self.assertEqual(self.cls._fields, expected)
 
@@ -83,6 +87,7 @@ class Test___eq__(tests.IrisTest):
             attributes=sentinel.attributes,
             coord_system=sentinel.coord_system,
             climatological=sentinel.climatological,
+            guess_coord=sentinel.guess_coord
         )
         self.dummy = sentinel.dummy
         self.cls = CoordMetadata
@@ -223,10 +228,10 @@ class Test___eq__(tests.IrisTest):
 class Test___lt__(tests.IrisTest):
     def setUp(self):
         self.cls = CoordMetadata
-        self.one = self.cls(1, 1, 1, 1, 1, 1, 1)
-        self.two = self.cls(1, 1, 1, 2, 1, 1, 1)
-        self.none = self.cls(1, 1, 1, None, 1, 1, 1)
-        self.attributes_cs = self.cls(1, 1, 1, 1, 10, 10, 1)
+        self.one = self.cls(1, 1, 1, 1, 1, 1, 1, 1)
+        self.two = self.cls(1, 1, 1, 2, 1, 1, 1, 1)
+        self.none = self.cls(1, 1, 1, None, 1, 1, 1, 1)
+        self.attributes_cs = self.cls(1, 1, 1, 1, 10, 10, 1, 1)
 
     def test__ascending_lt(self):
         result = self.one < self.two
@@ -261,6 +266,7 @@ class Test_combine(tests.IrisTest):
             attributes=sentinel.attributes,
             coord_system=sentinel.coord_system,
             climatological=sentinel.climatological,
+            guess_coord=sentinel.guess_coord
         )
         self.dummy = sentinel.dummy
         self.cls = CoordMetadata
@@ -457,6 +463,7 @@ class Test_difference(tests.IrisTest):
             attributes=sentinel.attributes,
             coord_system=sentinel.coord_system,
             climatological=sentinel.climatological,
+            guess_coord=sentinel.guess_coord,
         )
         self.dummy = sentinel.dummy
         self.cls = CoordMetadata

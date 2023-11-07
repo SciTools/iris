@@ -1542,7 +1542,6 @@ class Coord(_DimensionalMetadata):
         attributes=None,
         coord_system=None,
         climatological=False,
-        guess_coord=True,
     ):
         """
         Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
@@ -1610,7 +1609,7 @@ class Coord(_DimensionalMetadata):
         self.bounds = bounds
         self.climatological = climatological
 
-        self.guess_coord = guess_coord
+        self.guess_coord = True
 
     def copy(self, points=None, bounds=None):
         """
@@ -1659,7 +1658,6 @@ class Coord(_DimensionalMetadata):
             "attributes": coord.attributes,
             "coord_system": copy.deepcopy(coord.coord_system),
             "climatological": coord.climatological,
-            "guess_coord": coord.guess_coord,
         }
         if issubclass(cls, DimCoord):
             # DimCoord introduces an extra constructor keyword.
@@ -1769,7 +1767,6 @@ class Coord(_DimensionalMetadata):
 
     @guess_coord.setter
     def guess_coord(self, value):
-        print(value)
         if value is not True and value is not False:
             emsg = (
                 "Guess_coord can only be set to True or False"
@@ -2609,7 +2606,6 @@ class DimCoord(Coord):
         coord_system=None,
         circular=False,
         climatological=False,
-        guess_coord=True,
         with_bounds=False,
     ):
         """
@@ -2659,7 +2655,6 @@ class DimCoord(Coord):
             coord_system=coord_system,
             circular=circular,
             climatological=climatological,
-            guess_coord=guess_coord,
         )
 
     def __init__(
@@ -2674,7 +2669,6 @@ class DimCoord(Coord):
         coord_system=None,
         circular=False,
         climatological=False,
-        guess_coord=True,
     ):
         """
         Create a 1D, numeric, and strictly monotonic coordinate with **immutable** points and bounds.
@@ -2745,7 +2739,6 @@ class DimCoord(Coord):
             attributes=attributes,
             coord_system=coord_system,
             climatological=climatological,
-            guess_coord=guess_coord,
         )
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.

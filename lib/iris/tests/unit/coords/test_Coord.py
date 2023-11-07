@@ -1161,17 +1161,17 @@ def coord():
 class Test_guess_coord:
     def test_default(self, coord):
 
-        assert coord.guess_coord == True
+        assert coord.guess_coord is True
 
     def test_set_true(self, coord):
         coord.guess_coord = True
 
-        assert coord.guess_coord == True
+        assert coord.guess_coord is True
 
     def test_set_false(self, coord):
         coord.guess_coord = False
 
-        assert coord.guess_coord == False
+        assert coord.guess_coord is False
 
     def test_set_random_value(self, coord):
 
