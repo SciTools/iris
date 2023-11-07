@@ -403,7 +403,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
         weights,
     ) = regrid_info
 
-    tgt_shape = (len(grid_x.points), len(grid_y.points))
+    tgt_shape = (len(grid_y.points), len(grid_x.points))
 
     # Calculate new data array for regridded cube.
     regrid = functools.partial(
@@ -558,13 +558,13 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
     x_weight, x_rows, x_cols = x_info
     y_weight, y_rows, y_cols = y_info
 
-    xy_weight = x_weight[:, np.newaxis] * y_weight[np.newaxis, :]
+    xy_weight = y_weight[:, np.newaxis] * x_weight[np.newaxis, :]
     xy_weight = xy_weight.flatten()
 
-    xy_rows = (x_rows[:, np.newaxis] * y_tgt) + y_rows[np.newaxis, :]
+    xy_rows = (y_rows[:, np.newaxis] * x_tgt) + x_rows[np.newaxis, :]
     xy_rows = xy_rows.flatten()
 
-    xy_cols = (x_cols[:, np.newaxis] * y_src) + y_cols[np.newaxis, :]
+    xy_cols = (y_cols[:, np.newaxis] * x_src) + x_cols[np.newaxis, :]
     xy_cols = xy_cols.flatten()
 
     combined_weights = csr_array(
@@ -662,13 +662,12 @@ def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
     else:
         y_none = False
 
-    # TODO: decide if standard regridding should expect (x,y) or (y,x) ordering
     # Standard regridding expects the last two dimensions to belong
-    # to the x and y coordinate and will output as such.
+    # to the y and x coordinate and will output as such.
     # Axes are moved to account for an arbitrary dimension ordering.
-    data = np.moveaxis(data, [x_dim, y_dim], [-2, -1])
+    data = np.moveaxis(data, [y_dim, x_dim], [-2, -1])
     result = _standard_regrid(data, weights, tgt_shape, mdtol)
-    result = np.moveaxis(result, [-2, -1], [x_dim, y_dim])
+    result = np.moveaxis(result, [-2, -1], [y_dim, x_dim])
 
     if y_none:
         result = np.squeeze(result, axis=-1)
