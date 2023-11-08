@@ -14,8 +14,8 @@ import shutil
 import tempfile
 
 import iris
-from iris.fileformats.netcdf.loader import CHUNK_CONTROL
 from iris.fileformats.netcdf import loader
+from iris.fileformats.netcdf.loader import CHUNK_CONTROL
 import iris.tests.stock as istk
 
 

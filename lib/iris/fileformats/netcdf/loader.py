@@ -262,7 +262,9 @@ def _get_cf_var_data(cf_var, filename):
                         dims_fixed[i_dim] = True
             if not dims_fixed:
                 dims_fixed = [dims_fixed]
-            result = as_lazy_data(proxy, chunks=chunks, dims_fixed=tuple(dims_fixed))
+            result = as_lazy_data(
+                proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
+            )
     return result
 
 
