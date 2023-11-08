@@ -44,6 +44,18 @@ def test_grid_and_pole__scalar_dim_longitude(unit, modulus):
     assert field.lbnpt == lon.points.size
 
 
+def test_realization():
+    cube = stock.lat_lon_cube()
+    real_coord = DimCoord(42, standard_name="realization", units=1)
+    cube.add_aux_coord(real_coord)
+    with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
+        pp_field.lbrsvd = list(range(6))
+        verify(cube, pp_field)
+        member_number = pp_field.lbrsvd[3]
+
+    assert member_number == 42
+
+
 def _pp_save_ppfield_values(cube):
     """
     Emulate saving a cube as PP, and capture the resulting PP field values.
