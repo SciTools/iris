@@ -3,7 +3,7 @@ import math
 import cartopy.io.shapereader as shpreader
 import numpy as np
 
-import iris._shapefiles
+import iris
 import iris.tests as tests
 from iris.util import apply_shapefile
 
@@ -17,7 +17,7 @@ class TestCubeMasking(tests.IrisTest):
 
     def testGlobal(self):
         path = tests.get_data_path(
-            "NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"
+            ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
         )
         test_global = iris.load_cube(path)
         ne_russia = [
@@ -33,7 +33,7 @@ class TestCubeMasking(tests.IrisTest):
 
     def testRotated(self):
         path = tests.get_data_path(
-            "NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"
+            ["NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"]
         )
         test_rotated = iris.load_cube(path)
         ne_germany = [
@@ -48,7 +48,7 @@ class TestCubeMasking(tests.IrisTest):
 
     def testTransverseMercator(self):
         path = tests.get_data_path(
-            "NetCDF", "transverse_mercator", "tmean_1910_1910.nc"
+            ["NetCDF", "transverse_mercator", "tmean_1910_1910.nc"]
         )
         test_transverse = iris.load_cube(path)
         ne_uk = [
@@ -63,7 +63,7 @@ class TestCubeMasking(tests.IrisTest):
 
     def testRotatedWeighted(self):
         path = tests.get_data_path(
-            "NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"
+            ["NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"]
         )
         test_rotated = iris.load_cube(path)
         ne_germany = [

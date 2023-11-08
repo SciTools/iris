@@ -100,12 +100,9 @@ def create_shapefile_mask(
             mask_template[idx] = True
         # if weights method used, mask intersections below required weight
         if intersect_bool is True and weights is True:
-            if (
-                shapely.covers(trans_geo, cell_box) is False
-            ):  # box is not 100% inside shape
-                intersect_area = trans_geo.intersection(cell_box).area
-                if (intersect_area / cell_box.area) <= minimum_weight:
-                    mask_template[idx] = True
+            intersect_area = trans_geo.intersection(cell_box).area
+            if (intersect_area / cell_box.area) <= minimum_weight:
+                mask_template[idx] = True
 
     return mask_template
 
