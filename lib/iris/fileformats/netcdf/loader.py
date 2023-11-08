@@ -247,7 +247,6 @@ def _get_cf_var_data(cf_var, filename):
             dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
                 cf_var.name
             ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
-            print(dim_chunks)
             if not dim_chunks:
                 dims_fixed = None
             else:
@@ -260,7 +259,7 @@ def _get_cf_var_data(cf_var, filename):
                     if dim_chunksize:
                         chunks[i_dim] = dim_chunksize
                         dims_fixed[i_dim] = True
-            if not dims_fixed:
+            if dims_fixed is None:
                 dims_fixed = [dims_fixed]
             result = as_lazy_data(
                 proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
@@ -746,7 +745,6 @@ class ChunkControl(threading.local):
                         )
                         raise ValueError(msg)
                     dim_chunks[dim_name] = chunksize
-                print(self.var_dim_chunksizes)
             yield
         finally:
             self.var_dim_chunksizes = old_settings
