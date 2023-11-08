@@ -91,6 +91,8 @@ This document explains the changes made to Iris for this release
    links shown.  Also improved how the warning banner is implemented.
    (:pull:`5505` and :pull:`5508`)
 
+#. `@tkknight`_  removed broken git links. (:pull:`5569`)
+
 
 💼 Internal
 ===========
