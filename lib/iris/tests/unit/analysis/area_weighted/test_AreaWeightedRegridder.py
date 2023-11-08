@@ -51,8 +51,7 @@ class Test(tests.IrisTest):
         _regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_grid, target_grid
         )
-        # TODO: understand and write an equivalent test.
-        # self.assertEqual(len(_regrid_info), 10)
+        self.assertEqual(len(_regrid_info), 9)
         with mock.patch(
             "iris.analysis._area_weighted."
             "_regrid_area_weighted_rectilinear_src_and_grid__prepare",

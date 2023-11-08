@@ -579,17 +579,17 @@ def _standard_regrid_no_masks(data, weights, tgt_shape):
 
     Assumes that the first two dimensions are the x-y grid.
     """
-    extra_dims = len(data.shape) > 2
-    if extra_dims:
-        extra_shape = data.shape[:-2]
-        result = data.reshape(-1, np.prod(data.shape[-2:]))
-    else:
-        result = data.flatten()
-    result = result @ weights.T
-    if extra_dims:
-        result = result.reshape(*(extra_shape + tgt_shape))
-    else:
-        result = result.reshape(*tgt_shape)
+    # Reshape data to a form suitable for matrix multiplication.
+    extra_shape = data.shape[:-2]
+    data = data.reshape(-1, np.prod(data.shape[-2:]))
+
+    # Apply regridding weights.
+    # The order of matrix multiplication is chosen to be consistent
+    # with existing regridding code.
+    result = data @ weights.T
+
+    # Reshape result to a suitable form.
+    result = result.reshape(*(extra_shape + tgt_shape))
     return result
 
 
@@ -602,26 +602,41 @@ def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
     data_shape = data.shape
     if ma.is_masked(data):
         unmasked = ~ma.getmaskarray(data)
+        # Calculate contribution from unmasked sources to each target point.
         weight_sums = _standard_regrid_no_masks(unmasked, weights, tgt_shape)
     else:
+        # If there are no masked points then all contributions will be
+        # from unmasked sources, so we can skip this calculation
         weight_sums = np.ones(data_shape[:-2] + tgt_shape)
     mdtol = max(mdtol, 1e-8)
     tgt_mask = weight_sums > 1 - mdtol
+    # If out of bounds sources are treated the same as masked sources this
+    # will already have been calculated above, so we can skip this calculation.
     if oob_invalid or not ma.is_masked(data):
+        # Calculate the proportion of each target cell which is covered by the
+        # source. For the sake of efficiency, this is calculated for a 2D slice
+        # which is then broadcast.
         inbound_sums = _standard_regrid_no_masks(
             np.ones(data_shape[-2:]), weights, tgt_shape
         )
         if oob_invalid:
+            # Legacy behaviour, if the full area of a target cell does not lie
+            # in bounds it will be masked.
             oob_mask = inbound_sums > 1 - 1e-8
         else:
             oob_mask = inbound_sums > 1 - mdtol
+        # Broadcast the mask to the shape of the full array
         oob_slice = ((np.newaxis,) * len(data.shape[:-2])) + np.s_[:, :]
         tgt_mask = tgt_mask * oob_mask[oob_slice]
-    masked_weight_sums = weight_sums * tgt_mask
-    normalisations = np.ones_like(weight_sums)
-    normalisations[tgt_mask] /= masked_weight_sums[tgt_mask]
 
+    # Calculate normalisations.
+    normalisations = np.ones_like(weight_sums)
+    normalisations *= tgt_mask
+    normalisations[tgt_mask] /= weight_sums[tgt_mask]
+
+    # Mask points in the result.
     if ma.isMaskedArray(data):
+        # If the source is masked, the result should have a similar mask.
         fill_value = data.fill_value
         normalisations = ma.array(
             normalisations, mask=~tgt_mask, fill_value=fill_value
@@ -633,9 +648,11 @@ def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
     # dtype when necessary.
     dtype = np.promote_types(data.dtype, np.float16)
 
+    # Perform regridding on unmasked data.
     result = _standard_regrid_no_masks(
         ma.filled(data, 0.0), weights, tgt_shape
     )
+    # Apply normalisations and masks to the regridded data.
     result = result * normalisations
     result = result.astype(dtype)
     return result
@@ -658,7 +675,7 @@ def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
         data = np.expand_dims(data, -1)
         y_dim = -1
         if x_none:
-            x_dim = -2
+            y_dim = -2
     else:
         y_none = False
 
