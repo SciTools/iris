@@ -156,6 +156,14 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
         None,
         hh.build_geostationary_coordinate_system,
     ),
+    hh.CF_GRID_MAPPING_OBLIQUE: (
+        None,
+        hh.build_oblique_mercator_coordinate_system,
+    ),
+    hh.CF_GRID_MAPPING_ROTATED_MERCATOR: (
+        None,
+        hh.build_oblique_mercator_coordinate_system,
+    ),
 }
 
 

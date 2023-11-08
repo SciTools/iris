@@ -53,7 +53,7 @@ class SingleDiagnosticMixin:
             if three_d:
                 create_kwargs["n_levels"] = 71
 
-            # Will re-use a file if already present.
+            # Will reuse a file if already present.
             file_path = make_cubesphere_testfile(**create_kwargs)
 
         else:

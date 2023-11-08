@@ -69,7 +69,7 @@ class LoadAndRealise:
 
 
 class STASHConstraint:
-    # xyz sizes mimic LoadAndRealise to maximise file re-use.
+    # xyz sizes mimic LoadAndRealise to maximise file reuse.
     params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"]]
     param_names = ["xyz", "file_format"]
 

@@ -102,6 +102,9 @@ _CF_GLOBAL_ATTRS = ["conventions", "featureType", "history", "title"]
 # UKMO specific attributes that should not be global.
 _UKMO_DATA_ATTRS = ["STASH", "um_stash_source", "ukmo__process_flags"]
 
+# TODO: whenever we advance to CF-1.11 we should then discuss a completion date
+#  for the deprecation of Rotated Mercator in coord_systems.py and
+#  _nc_load_rules/helpers.py .
 CF_CONVENTIONS_VERSION = "CF-1.7"
 
 _FactoryDefn = collections.namedtuple(
@@ -1009,7 +1012,7 @@ class Saver:
             for element in sorted(
                 coordlike_elements, key=lambda element: element.name()
             ):
-                # Re-use, or create, the associated CF-netCDF variable.
+                # Reuse, or create, the associated CF-netCDF variable.
                 cf_name = self._name_coord_map.name(element)
                 if cf_name is None:
                     # Not already present : create it
@@ -2209,6 +2212,34 @@ class Saver:
                         cs.perspective_point_height
                     )
                     cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
+
+                # oblique mercator (and rotated variant)
+                # Use duck-typing over isinstance() - subclasses (i.e.
+                #  RotatedMercator) upset mock tests.
+                elif (
+                    getattr(cs, "grid_mapping_name", None)
+                    == "oblique_mercator"
+                ):
+                    # RotatedMercator subclasses ObliqueMercator, and RM
+                    #  instances are implicitly saved as OM due to inherited
+                    #  properties. This is correct because CF 1.11 is removing
+                    #  all mention of RM.
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.azimuth_of_central_line = (
+                        cs.azimuth_of_central_line
+                    )
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin
+                    )
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin
+                    )
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.scale_factor_at_projection_origin = (
+                        cs.scale_factor_at_projection_origin
+                    )
 
                 # other
                 else:

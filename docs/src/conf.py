@@ -294,7 +294,9 @@ html_theme_options = {
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,
-    "navbar_align": "left",
+    "navbar_align": "content",
+    # removes the search box from the top bar
+    "navbar_persistent": [],
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
@@ -328,6 +330,16 @@ html_theme_options = {
         "image_dark": "_static/iris-logo-title-dark.svg",
     },
 }
+
+# if we are building via Read The Docs and it is the latest (not stable)
+if on_rtd and rtd_version == "latest":
+    html_theme_options[
+        "announcement"
+    ] = f"""
+        You are viewing the <b>latest</b> unreleased documentation
+        <strong>{version}</strong>. You can switch to a
+        <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
+        version."""
 
 rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
 commit_sha = rev_parse.stdout.decode().strip()

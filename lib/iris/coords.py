@@ -3119,7 +3119,7 @@ class CellMethod(iris.util._OrderedHashable):
 
     def __add__(self, other):
         # Disable the default tuple behaviour of tuple concatenation
-        raise NotImplementedError()
+        return NotImplemented
 
     def xml_element(self, doc):
         """
