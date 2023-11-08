@@ -558,15 +558,22 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
     x_weight, x_rows, x_cols = x_info
     y_weight, y_rows, y_cols = y_info
 
+    # Regridding weights will be applied to a flattened (y, x) array.
+    # Weights and indices are constructed in a way to account for this.
+    # Weights of the combined matrix are constructed by broadcasting
+    # the x_weights and y_weights. The resulting array contains every
+    # combination of x weight and y weight. Then we flatten this array.
     xy_weight = y_weight[:, np.newaxis] * x_weight[np.newaxis, :]
     xy_weight = xy_weight.flatten()
 
+    # Given the x index and y index associated with a weight, calculate
+    # the equivalent index in the flattened (y, x) array.
     xy_rows = (y_rows[:, np.newaxis] * x_tgt) + x_rows[np.newaxis, :]
     xy_rows = xy_rows.flatten()
-
     xy_cols = (y_cols[:, np.newaxis] * x_src) + x_cols[np.newaxis, :]
     xy_cols = xy_cols.flatten()
 
+    # Create a sparse matrix for efficient weight application.
     combined_weights = csr_array(
         (xy_weight, (xy_rows, xy_cols)), shape=(tgt_size, src_size)
     )
@@ -593,12 +600,17 @@ def _standard_regrid_no_masks(data, weights, tgt_shape):
     return result
 
 
-def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
+def _standard_regrid(data, weights, tgt_shape, mdtol):
     """
     Regrid data and handle masks.
 
     Assumes that the first two dimensions are the x-y grid.
     """
+    # This is set to keep consistent with legacy behaviour.
+    # This is likely to become switchable in the future, see:
+    # https://github.com/SciTools/iris/issues/5461
+    oob_invalid = True
+
     data_shape = data.shape
     if ma.is_masked(data):
         unmasked = ~ma.getmaskarray(data)
@@ -660,7 +672,6 @@ def _standard_regrid(data, weights, tgt_shape, mdtol, oob_invalid=True):
 
 def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
     """Regrid data, handling masks and dimensions."""
-
     # Handle scalar coordinates.
     # Note: scalar source coordinates are only handled when their
     # corresponding target coordinate is also scalar.
