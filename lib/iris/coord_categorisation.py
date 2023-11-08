@@ -271,20 +271,29 @@ def _validate_seasons(seasons):
     return
 
 
-def _month_year_adjusts(seasons):
-    """Compute the year adjustments required for each month.
+def _month_year_adjusts(seasons, send_spans_backwards=False):
+    """
+    Compute the year adjustments required for each month.
 
-    These determine whether the month belongs to a season in the same
-    year or is in the start of a season that counts towards the next
-    year.
+    These adjustments ensure that no season spans two years by assigning months
+    to the **next** year (send_spans_backwards is False) or the **previous**
+    year (send_spans_backwards is True). E.g. Winter - djf: either assign Dec
+    to the next year, or Jan and Feb to the previous year.
 
     """
-    month_year_adjusts = [None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    month_year_adjusts = np.array([None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     for season in seasons:
-        months = _months_in_season(season)
-        for month in months:
-            if month > months[-1]:
-                month_year_adjusts[month] = 1
+        months = np.array(_months_in_season(season))
+        if send_spans_backwards:
+            months_to_shift = months < months[0]
+            year_shift = -1
+        else:
+            # Sending forwards.
+            months_to_shift = months > months[-1]
+            year_shift = 1
+        indices_to_shift = months[np.flatnonzero(months_to_shift)]
+        month_year_adjusts[indices_to_shift] = year_shift
+
     return month_year_adjusts
 
 
@@ -383,34 +392,40 @@ def add_season_number(
 
 
 def add_season_year(
-    cube, coord, name="season_year", seasons=("djf", "mam", "jja", "son")
+    cube,
+    coord,
+    name="season_year",
+    seasons=("djf", "mam", "jja", "son"),
+    send_spans_backwards=False,
 ):
     """
-    Add a categorical year-of-season coordinate, with user specified
-    seasons.
+    Add a categorical year-of-season coordinate, with user specified seasons.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
-        The cube containing 'coord'. The new coord will be added into
-        it.
-    * coord (:class:`iris.coords.Coord` or string):
-        Coordinate in 'cube', or its name, representing time.
-
-    Kwargs:
-
-    * name (string):
-        Name of the created coordinate. Defaults to "season_year".
-    * seasons (:class:`list` of strings):
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+        The cube containing `coord`. The new coord will be added into it.
+    coord : :class:`iris.coords.Coord` or str
+        Coordinate in `cube`, or its name, representing time.
+    name : str, default="season_year"
+        Name of the created coordinate.
+    seasons : tuple of str, default=("djf", "mam", "jja", "son")
         List of seasons defined by month abbreviations. Each month must
         appear once and only once. Defaults to standard meteorological
-        seasons ('djf', 'mam', 'jja', 'son').
+        seasons (``djf``, ``mam``, ``jja``, ``son``).
+    send_spans_backwards: bool, default=False
+        Seasons spanning the year boundary (e.g. Winter ``djf``) will belong
+        fully to the following year by default (e.g. the year of Jan and Feb).
+        Set to ``True`` for spanning seasons to belong to the preceding
+        year (e.g. the year of Dec) instead.
 
     """
     # Check that the seasons are valid.
     _validate_seasons(seasons)
     # Define the adjustments to be made to the year.
-    month_year_adjusts = _month_year_adjusts(seasons)
+    month_year_adjusts = _month_year_adjusts(
+        seasons, send_spans_backwards=send_spans_backwards
+    )
 
     # Define a categorisation function.
     def _season_year(coord, value):
