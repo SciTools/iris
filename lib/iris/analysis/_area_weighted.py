@@ -473,9 +473,11 @@ def _get_coord_to_coord_matrix_info(
 
     Note: this assumes that the bounds are monotonic.
     """
+    # Calculate the number of cells represented by the bounds.
     m = len(tgt_bounds) - 1
     n = len(src_bounds) - 1
 
+    # Ensure bounds are strictly increasing.
     src_decreasing = src_bounds[0] > src_bounds[1]
     tgt_decreasing = tgt_bounds[0] > tgt_bounds[1]
     if src_decreasing:
@@ -484,6 +486,11 @@ def _get_coord_to_coord_matrix_info(
         tgt_bounds = tgt_bounds[::-1]
 
     if circular:
+        # For circular coordinates (e.g. longitude) account for source and
+        # target bounds which span different ranges (e.g. (-180, 180) vs
+        # (0, 360)). We ensure that all possible overlaps between source and
+        # target bounds are accounted for by including two copies of the
+        # source bounds, shifted appropriately by the modulus.
         adjust = (tgt_bounds.min() - src_bounds.min()) // mod
         src_bounds = src_bounds + (mod * adjust)
         src_bounds = np.append(src_bounds, src_bounds + mod)
@@ -491,6 +498,9 @@ def _get_coord_to_coord_matrix_info(
     else:
         nn = n
 
+    # Before iterating through pairs of overlapping bounds, find an
+    # appropriate place to start iteration. Note that this assumes that
+    # the bounds are increasing.
     i = max(np.searchsorted(tgt_bounds, src_bounds[0], side="right") - 1, 0)
     j = max(np.searchsorted(src_bounds, tgt_bounds[0], side="right") - 1, 0)
 
@@ -498,48 +508,58 @@ def _get_coord_to_coord_matrix_info(
     rows = []
     cols = []
 
+    # Iterate through overlapping cells in the source and target bounds.
+    # For the sake of calculations, we keep track of the minimum value of
+    # the intersection of each cell.
     floor = max(tgt_bounds[i], src_bounds[j])
     while i < m and j < nn:
+        # Record the current indices.
         rows.append(i)
         cols.append(j)
+
+        # Determine the next indices and floor.
         if tgt_bounds[i + 1] < src_bounds[j + 1]:
-            weight = (tgt_bounds[i + 1] - floor) / (
-                tgt_bounds[i + 1] - tgt_bounds[i]
-            )
-            floor = tgt_bounds[i + 1]
-            i += 1
+            next_floor = tgt_bounds[i + 1]
+            next_i = i + 1
         elif tgt_bounds[i + 1] == src_bounds[j + 1]:
-            weight = (tgt_bounds[i + 1] - floor) / (
-                tgt_bounds[i + 1] - tgt_bounds[i]
-            )
-            floor = tgt_bounds[i + 1]
-            i += 1
+            next_floor = tgt_bounds[i + 1]
+            next_i = i + 1
             j += 1
         else:
-            weight = (src_bounds[j + 1] - floor) / (
-                tgt_bounds[i + 1] - tgt_bounds[i]
-            )
-            floor = src_bounds[j + 1]
+            next_floor = src_bounds[j + 1]
+            next_i = i
             j += 1
+
+        # Calculate and record the weight for the current overlapping cells.
+        weight = (next_floor - floor) / (tgt_bounds[i + 1] - tgt_bounds[i])
         data.append(weight)
+
+        # Update indices and floor
+        i = next_i
+        floor = next_floor
 
     data = np.array(data)
     rows = np.array(rows)
     cols = np.array(cols)
 
     if circular:
-        # remove out of bounds points
+        # Remove out of bounds points. When the source bounds were duplicated
+        # an "out of bounds" cell was introduced between the two copies.
         oob = np.where(cols == n)
         data = np.delete(data, oob)
         rows = np.delete(rows, oob)
         cols = np.delete(cols, oob)
-        # wrap indices
+
+        # Wrap indices. Since we duplicated the source bounds there may be
+        # indices which are greater than n which will need to be corrected.
         cols = cols % (n + 1)
 
+    # Correct indices which were flipped due to reversing decreasing bounds.
     if src_decreasing:
         cols = n - cols - 1
     if tgt_decreasing:
         rows = m - rows - 1
+
     return data, rows, cols
 
 
