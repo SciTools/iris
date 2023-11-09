@@ -93,6 +93,9 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_  removed broken git links. (:pull:`5569`)
 
+#. `@ESadek-MO`_ added a phrasebook for synonymous terms used in similar
+   packages. (:pull:`5564`)
+
 
 💼 Internal
 ===========
