@@ -700,9 +700,11 @@ class ChunkControl(threading.local):
 
         Example:
 
-        >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
-        >>> with CHUNK_CONTROL.set('var1', model_level=1, time=50):
-        ...     cubes = iris.load(filename)
+        #todo
+        # >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
+        # >>> from iris import sample_data_path
+        # >>> with CHUNK_CONTROL.set('var1', model_level=1, time=50):
+        # ...     cubes = iris.load(sample_data_path("toa_brightness_stereographic.nc"))
 
         When ``var_names`` is present, the chunksize adjustments are applied
         only to the selected variables.  However, for a CF data variable, this
