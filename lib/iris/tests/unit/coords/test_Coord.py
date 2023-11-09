@@ -1182,6 +1182,7 @@ class Test_ignore_axis:
         new_coord = coord.from_coord()
         assert new_coord.ignore_axis is True
 
+
 class Test___init____abstractmethod(tests.IrisTest):
     def test(self):
         emsg = (

@@ -17,14 +17,17 @@ def coord():
     return coord
 
 
-@pytest.mark.parametrize("coordinate, axis",
-                          [("longitude", "X"),
-                           ("grid_longitude", "X"),
-                           ("projection_x_coordinate", "X"),
-                           ("latitude", "Y"),
-                           ("grid_latitude", "Y"),
-                           ("projection_y_coordinate", "Y")]
-                          )
+@pytest.mark.parametrize(
+    "coordinate, axis",
+    [
+        ("longitude", "X"),
+        ("grid_longitude", "X"),
+        ("projection_x_coordinate", "X"),
+        ("latitude", "Y"),
+        ("grid_latitude", "Y"),
+        ("projection_y_coordinate", "Y"),
+    ],
+)
 def testcoord(coordinate, axis, coord):
     coord.standard_name = coordinate
     assert guess_coord_axis(coord) == axis
