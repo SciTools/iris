@@ -864,8 +864,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 element.setAttribute(
                     "climatological", str(self.climatological)
                 )
-        if self.ignore_axis:
-            element.setAttribute("ignore_axis", str(self.ignore_axis))
         if self.attributes:
             attributes_element = doc.createElement("attributes")
             for name in sorted(self.attributes.keys()):
