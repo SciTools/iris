@@ -659,6 +659,7 @@ class Test_combine:
 
     def test_op_different__attribute_extra_global(self, op_leniency):
         # One input has an additional attribute, specifically set as a *GLOBAL* one.
+        # ?OBSOLETE : ~equivalent to case "extra_global" --> "GaL-:G-L-"
         is_lenient = op_leniency == "lenient"
 
         self.lvalues["attributes"] = CubeAttrsDict(
@@ -686,6 +687,7 @@ class Test_combine:
 
     def test_op_different__attribute_extra_local(self, op_leniency):
         # One input has an additional attribute, specifically set as a *LOCAL* one.
+        # ?OBSOLETE : ~equivalent to case "extra_local" --> "G-La:G-L-"
         is_lenient = op_leniency == "lenient"
 
         self.lvalues["attributes"] = CubeAttrsDict(
@@ -714,6 +716,7 @@ class Test_combine:
     def test_op_different__attribute_same_global_local(self, op_leniency):
         # One field has an extra specifically *LOCAL* attribute, and the other a
         # corresponding *GLOBAL* one -- both with distinct values.
+        # ?OBSOLETE : ~equivalent to case "extra_local" --> "G-La:G-L-"
         is_lenient = op_leniency == "lenient"
 
         common_attrs = CubeAttrsDict(
