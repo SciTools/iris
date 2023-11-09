@@ -144,8 +144,8 @@ Iris provides a basic chunking shape to Dask, attempting to set the shape for
 best performance. The chunking that is used can depend on the file format that
 is being loaded. See below for how chunking is performed for:
 
-  * :ref:`chunking_netcdf`
-  * :ref:`chunking_pp_ff`
+* :ref:`chunking_netcdf`
+* :ref:`chunking_pp_ff`
 
 It can in some cases be beneficial to re-chunk the arrays in Iris cubes.
 For information on how to do this, see :ref:`dask_rechunking`.
@@ -208,9 +208,9 @@ If you feel you have an example of a Dask best practice that you think may be he
 please share them with us by raising a new `discussion on the Iris repository <https://github.com/SciTools/iris
 /discussions/>`_.
 
-  * :doc:`dask_pp_to_netcdf`
-  * :doc:`dask_parallel_loop`
-  * :doc:`dask_bags_and_greed`
+* :doc:`dask_pp_to_netcdf`
+* :doc:`dask_parallel_loop`
+* :doc:`dask_bags_and_greed`
 
 .. toctree::
    :hidden:
