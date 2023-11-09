@@ -167,13 +167,13 @@ def test_add_season_nonstandard(cube, time_coord):
     ids=["standard_seasons", "nonstandard_seasons"],
 )
 def test_add_season_year(cube, time_coord, backwards, nonstandard):
-    """Specific test to account for the extra send_spans_backwards argument."""
+    """Specific test to account for the extra use_year_at_season_start argument."""
 
     kwargs = dict(
         cube=cube,
         coord=time_coord,
         name="season_years",
-        send_spans_backwards=backwards,
+        use_year_at_season_start=backwards,
     )
     if nonstandard:
         kwargs["seasons"] = ["ndjfm", "amjj", "aso"]

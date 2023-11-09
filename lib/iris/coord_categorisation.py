@@ -271,20 +271,20 @@ def _validate_seasons(seasons):
     return
 
 
-def _month_year_adjusts(seasons, send_spans_backwards=False):
+def _month_year_adjusts(seasons, use_year_at_season_start=False):
     """
     Compute the year adjustments required for each month.
 
     These adjustments ensure that no season spans two years by assigning months
-    to the **next** year (send_spans_backwards is False) or the **previous**
-    year (send_spans_backwards is True). E.g. Winter - djf: either assign Dec
-    to the next year, or Jan and Feb to the previous year.
+    to the **next** year (use_year_at_season_start is False) or the
+    **previous** year (use_year_at_season_start is True). E.g. Winter - djf:
+    either assign Dec to the next year, or Jan and Feb to the previous year.
 
     """
     month_year_adjusts = np.array([None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     for season in seasons:
         months = np.array(_months_in_season(season))
-        if send_spans_backwards:
+        if use_year_at_season_start:
             months_to_shift = months < months[0]
             year_shift = -1
         else:
@@ -396,7 +396,7 @@ def add_season_year(
     coord,
     name="season_year",
     seasons=("djf", "mam", "jja", "son"),
-    send_spans_backwards=False,
+    use_year_at_season_start=False,
 ):
     """
     Add a categorical year-of-season coordinate, with user specified seasons.
@@ -413,7 +413,7 @@ def add_season_year(
         List of seasons defined by month abbreviations. Each month must
         appear once and only once. Defaults to standard meteorological
         seasons (``djf``, ``mam``, ``jja``, ``son``).
-    send_spans_backwards: bool, default=False
+    use_year_at_season_start: bool, default=False
         Seasons spanning the year boundary (e.g. Winter ``djf``) will belong
         fully to the following year by default (e.g. the year of Jan and Feb).
         Set to ``True`` for spanning seasons to belong to the preceding
@@ -424,7 +424,7 @@ def add_season_year(
     _validate_seasons(seasons)
     # Define the adjustments to be made to the year.
     month_year_adjusts = _month_year_adjusts(
-        seasons, send_spans_backwards=send_spans_backwards
+        seasons, use_year_at_season_start=use_year_at_season_start
     )
 
     # Define a categorisation function.
