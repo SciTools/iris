@@ -265,7 +265,7 @@ def guess_coord_axis(coord):
 
     axis = None
 
-    if coord.ignore_axis is True:
+    if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
         return axis
 
     elif coord.standard_name in (

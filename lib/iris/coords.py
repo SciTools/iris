@@ -864,8 +864,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 element.setAttribute(
                     "climatological", str(self.climatological)
                 )
-        if self.guess_coord:
-            element.setAttribute("guess_coord", str(self.guess_coord))
+        if self.ignore_axis:
+            element.setAttribute("ignore_axis", str(self.ignore_axis))
         if self.attributes:
             attributes_element = doc.createElement("attributes")
             for name in sorted(self.attributes.keys()):
@@ -1782,7 +1782,7 @@ class Coord(_DimensionalMetadata):
     @ignore_axis.setter
     def ignore_axis(self, value):
         if not isinstance(value, bool):
-            emsg = "Ignore_axis can only be set to True or False"
+            emsg = "'ignore_axis' can only be set to 'True' or 'False'"
             raise ValueError(emsg)
         self._ignore_axis = value
 
@@ -2732,9 +2732,6 @@ class DimCoord(Coord):
             Will set to True when a climatological time axis is loaded
             from NetCDF.
             Always False if no bounds exist.
-        * guess_coord (bool):
-            When True: guess_coord will guess the coord, when False it won't.
-
         """
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(DimCoordMetadata)
