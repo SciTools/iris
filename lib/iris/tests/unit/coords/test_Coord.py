@@ -1168,7 +1168,7 @@ class Test_ignore_axis:
     def test_set_random_value(self, coord):
         with pytest.raises(
             ValueError,
-            match=r"'ignore_axis' can only be set to 'True' or 'False'"
+            match=r"'ignore_axis' can only be set to 'True' or 'False'",
         ):
             coord.ignore_axis = "foo"
 
