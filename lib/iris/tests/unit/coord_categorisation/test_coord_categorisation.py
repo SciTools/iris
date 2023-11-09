@@ -160,6 +160,57 @@ def test_add_season_nonstandard(cube, time_coord):
     IrisTest.assertCML(IrisTest(), cube, ("categorisation", "customcheck.cml"))
 
 
+@pytest.mark.parametrize("backwards", [None, False, True])
+@pytest.mark.parametrize(
+    "nonstandard",
+    [False, True],
+    ids=["standard_seasons", "nonstandard_seasons"],
+)
+def test_add_season_year(cube, time_coord, backwards, nonstandard):
+    """Specific test to account for the extra send_spans_backwards argument."""
+
+    kwargs = dict(
+        cube=cube,
+        coord=time_coord,
+        name="season_years",
+        send_spans_backwards=backwards,
+    )
+    if nonstandard:
+        kwargs["seasons"] = ["ndjfm", "amjj", "aso"]
+
+    # Based on the actual years of each date.
+    expected_years = np.array(([1970] * 14) + ([1971] * 9))
+    # Subset to just the 'season' of interest.
+    season_slice = np.s_[12:17]
+    expected_years = expected_years[season_slice]
+
+    # Single indices to examine to test the handling of specific months.
+    nov = 0
+    dec = 1
+    jan = 2
+    feb = 3
+    mar = 4
+
+    # Set the expected deviations from the actual date years.
+    if backwards is True:
+        expected_years[jan] = 1970
+        expected_years[feb] = 1970
+        if nonstandard:
+            expected_years[mar] = 1970
+    else:
+        # Either False or None - False being the default behaviour.
+        expected_years[dec] = 1971
+        if nonstandard:
+            expected_years[nov] = 1971
+
+    ccat.add_season_year(**kwargs)
+    actual_years = cube.coord(kwargs["name"]).points
+    # Subset to just the 'season' of interest.
+    actual_years = actual_years[season_slice]
+
+    np.testing.assert_array_almost_equal(actual_years, expected_years)
+
+
 def test_add_season_membership(cube):
     # season membership identifies correct seasons?
     season = "djf"
