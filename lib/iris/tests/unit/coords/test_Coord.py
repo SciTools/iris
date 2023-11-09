@@ -1159,12 +1159,10 @@ def coord():
 
 class Test_ignore_axis:
     def test_default(self, coord):
-
         assert coord.ignore_axis is False
 
     def test_set_true(self, coord):
         coord.ignore_axis = True
-
         assert coord.ignore_axis is True
 
     def test_set_random_value(self, coord):
