@@ -1157,26 +1157,21 @@ def coord():
     return coord
 
 
-class Test_guess_coord:
+class Test_ignore_axis:
     def test_default(self, coord):
 
-        assert coord.guess_coord is True
+        assert coord.ignore_axis is False
 
     def test_set_true(self, coord):
-        coord.guess_coord = True
+        coord.ignore_axis = True
 
-        assert coord.guess_coord is True
-
-    def test_set_false(self, coord):
-        coord.guess_coord = False
-
-        assert coord.guess_coord is False
+        assert coord.ignore_axis is True
 
     def test_set_random_value(self, coord):
         with pytest.raises(
-            ValueError, match=r"Guess_coord can only be set to True or False"
+            ValueError, match=r"Ignore_axis can only be set to True or False"
         ):
-            coord.guess_coord = "foo"
+            coord.ignore_axis = "foo"
 
 
 class Test___init____abstractmethod(tests.IrisTest):

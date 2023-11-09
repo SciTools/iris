@@ -37,6 +37,9 @@ import iris.exceptions
 import iris.time
 import iris.util
 
+#: The default value for ignore_axis which controls guess_coord_axis' behaviour
+DEFAULT_IGNORE_AXIS = False
+
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     """
@@ -1609,7 +1612,7 @@ class Coord(_DimensionalMetadata):
         self.bounds = bounds
         self.climatological = climatological
 
-        self.guess_coord = True
+        self._ignore_axis = DEFAULT_IGNORE_AXIS
 
     def copy(self, points=None, bounds=None):
         """
@@ -1643,6 +1646,10 @@ class Coord(_DimensionalMetadata):
             # self.
             new_coord.bounds = bounds
 
+        # The state of ignore_axis is controlled by the coordinate rather than
+        # the metadata manager
+        new_coord.ignore_axis = self.ignore_axis
+
         return new_coord
 
     @classmethod
@@ -1662,7 +1669,14 @@ class Coord(_DimensionalMetadata):
         if issubclass(cls, DimCoord):
             # DimCoord introduces an extra constructor keyword.
             kwargs["circular"] = getattr(coord, "circular", False)
-        return cls(**kwargs)
+
+        new_coord = cls(**kwargs)
+
+        # The state of ignore_axis is controlled by the coordinate rather than
+        # the metadata manager
+        new_coord.ignore_axis = coord.ignore_axis
+
+        return new_coord
 
     @property
     def points(self):
@@ -1755,24 +1769,22 @@ class Coord(_DimensionalMetadata):
         self._metadata_manager.climatological = value
 
     @property
-    def guess_coord(self):
+    def ignore_axis(self):
         """
         A boolean that controls whether guess_coord_axis acts on this
         coordinate.
 
-        Defaults to True, and when set to False it will be skipped by
+        Defaults to False, and when set to True it will be skipped by
         guess_coord_axis.
         """
-        return self._metadata_manager.guess_coord
+        return self._ignore_axis
 
-    @guess_coord.setter
-    def guess_coord(self, value):
-        if value is not True and value is not False:
-            emsg = "Guess_coord can only be set to True or False"
+    @ignore_axis.setter
+    def ignore_axis(self, value):
+        if not isinstance(value, bool):
+            emsg = "Ignore_axis can only be set to True or False"
             raise ValueError(emsg)
-        else:
-            pass
-        self._metadata_manager.guess_coord = value
+        self._ignore_axis = value
 
     def lazy_points(self):
         """

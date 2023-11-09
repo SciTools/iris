@@ -45,6 +45,6 @@ class TestCoords:
 
     def test_guess_coord(self, coord):
         coord.standard_name = "longitude"
-        coord.guess_coord = False
+        coord.ignore_axis = True
 
         assert guess_coord_axis(coord) is None

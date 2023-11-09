@@ -915,7 +915,7 @@ class CoordMetadata(BaseMetadata):
 
     """
 
-    _members = ("coord_system", "climatological", "guess_coord")
+    _members = ("coord_system", "climatological")
 
     __slots__ = ()
 
@@ -970,7 +970,7 @@ class CoordMetadata(BaseMetadata):
 
         """
 
-        # Perform "strict" combination for "coord_system", "climatological" and "guess_coord".
+        # Perform "strict" combination for "coord_system" and "climatological".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
@@ -998,7 +998,7 @@ class CoordMetadata(BaseMetadata):
             Boolean.
 
         """
-        # Perform "strict" comparison for "coord_system", "climatological" and "guess_coord".
+        # Perform "strict" comparison for "coord_system" and "climatological".
         result = all(
             [
                 getattr(self, field) == getattr(other, field)
@@ -1026,7 +1026,7 @@ class CoordMetadata(BaseMetadata):
 
         """
 
-        # Perform "strict" difference for "coord_system", "climatological" and "guess_coord".
+        # Perform "strict" difference for "coord_system" and "climatological".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
