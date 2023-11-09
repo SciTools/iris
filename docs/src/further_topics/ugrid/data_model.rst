@@ -484,20 +484,20 @@ How UGRID information is stored
   | Described in detail in `MeshCoords`_.
   | Stores the following information:
 
-    * | :attr:`~iris.experimental.ugrid.MeshCoord.mesh`
-      | The :class:`~iris.experimental.ugrid.Mesh` associated with this
-        :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
-        :attr:`~iris.cube.Cube.mesh` attribute of any :class:`~iris.cube.Cube`
-        this :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
-        `The Basics`_)
+  * | :attr:`~iris.experimental.ugrid.MeshCoord.mesh`
+    | The :class:`~iris.experimental.ugrid.Mesh` associated with this
+      :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
+      :attr:`~iris.cube.Cube.mesh` attribute of any :class:`~iris.cube.Cube`
+      this :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+      `The Basics`_)
 
-    * | :attr:`~iris.experimental.ugrid.MeshCoord.location`
-      | ``node``/``edge``/``face`` - the element detailed by this
-        :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
-        :attr:`~iris.cube.Cube.location` attribute of any
-        :class:`~iris.cube.Cube` this
-        :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
-        `The Basics`_).
+  * | :attr:`~iris.experimental.ugrid.MeshCoord.location`
+    | ``node``/``edge``/``face`` - the element detailed by this
+      :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
+      :attr:`~iris.cube.Cube.location` attribute of any
+      :class:`~iris.cube.Cube` this
+      :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+      `The Basics`_).
 
 .. _ugrid MeshCoords:
 

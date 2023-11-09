@@ -390,7 +390,6 @@ linkcheck_ignore = [
     "https://docs.github.com",
     "https://github.com",
     "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "http://schacon.github.com/git",
     "http://scitools.github.com/cartopy",
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",

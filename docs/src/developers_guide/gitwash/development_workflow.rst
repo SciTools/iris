@@ -74,7 +74,7 @@ what the changes in the branch are for.  For example ``add-ability-to-fly``, or
     git checkout my-new-feature
 
 Generally, you will want to keep your feature branches on your public github_
-fork of `iris`_.  To do this, you `git push`_ this new branch up to your
+fork of `iris`_.  To do this, you ``git push`` this new branch up to your
 github repo.  Generally (if you followed the instructions in these pages, and by
 default), git will have a link to your github repo, called ``origin``.  You push
 up to your own repo on github with::
@@ -108,7 +108,7 @@ In More Detail
 --------------
 
 #. Make some changes
-#. See which files have changed with ``git status`` (see `git status`_).
+#. See which files have changed with ``git status``.
    You'll see a listing like this one::
 
      # On branch ny-new-feature
@@ -124,16 +124,15 @@ In More Detail
      #	INSTALL
      no changes added to commit (use "git add" and/or "git commit -a")
 
-#. Check what the actual changes are with ``git diff`` (`git diff`_).
-#. Add any new files to version control ``git add new_file_name`` (see
-   `git add`_).
+#. Check what the actual changes are with ``git diff``.
+#. Add any new files to version control ``git add new_file_name``.
 #. To commit all modified files into the local copy of your repo, do
    ``git commit -am 'A commit message'``.  Note the ``-am`` options to
    ``commit``. The ``m`` flag just signals that you're going to type a
    message on the command line.  The ``a`` flag will automatically stage
    all files that have been modified and deleted.
 #. To push the changes up to your forked repo on github, do a ``git
-   push`` (see `git push`_).
+   push``.
 
 
 Testing Your Changes
