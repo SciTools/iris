@@ -281,7 +281,11 @@ def _month_year_adjusts(seasons, use_year_at_season_start=False):
     either assign Dec to the next year, or Jan and Feb to the previous year.
 
     """
-    month_year_adjusts = np.array([None, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    # 1 'slot' for each month, with an extra leading 'slot' because months
+    #  are 1-indexed - January is 1, therefore corresponding to the 2nd
+    #  array index.
+    month_year_adjusts = np.zeros(13, dtype=int)
+
     for season in seasons:
         months = np.array(_months_in_season(season))
         if use_year_at_season_start:
