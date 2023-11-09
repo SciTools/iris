@@ -17,17 +17,20 @@ def coord():
     return coord
 
 
+@pytest.mark.parametrize("coordinate, axis",
+                          [("longitude", "X"),
+                           ("grid_longitude", "X"),
+                           ("projection_x_coordinate", "X"),
+                           ("latitude", "Y"),
+                           ("grid_latitude", "Y"),
+                           ("projection_y_coordinate", "Y")]
+                          )
+def testcoord(coordinate, axis, coord):
+    coord.standard_name = coordinate
+    assert guess_coord_axis(coord) == axis
+
+
 class TestCoords:
-    def test_longitude(self, coord):
-        coord.standard_name = "longitude"
-
-        assert guess_coord_axis(coord) == "X"
-
-    def test_latitude(self, coord):
-        coord.standard_name = "latitude"
-
-        assert guess_coord_axis(coord) == "Y"
-
     def test_pressure_units(self, coord):
         coord.units = "hPa"
 
@@ -38,7 +41,7 @@ class TestCoords:
 
         assert guess_coord_axis(coord) == "T"
 
-    def test_guess_coord(self, coord):
+    def test_ignore_axis(self, coord):
         coord.standard_name = "longitude"
         coord.ignore_axis = True
 

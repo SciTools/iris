@@ -1167,10 +1167,20 @@ class Test_ignore_axis:
 
     def test_set_random_value(self, coord):
         with pytest.raises(
-            ValueError, match=r"'ignore_axis' can only be set to 'True' or 'False'"
+            ValueError,
+            match=r"'ignore_axis' can only be set to 'True' or 'False'"
         ):
             coord.ignore_axis = "foo"
 
+    def test_copy_coord(self, coord):
+        coord.ignore_axis = True
+        coord_copy = coord.copy()
+        assert coord_copy.ignore_axis is True
+
+    def test_from_coord(self, coord):
+        coord.ignore_axis = True
+        new_coord = coord.from_coord()
+        assert new_coord.ignore_axis is True
 
 class Test___init____abstractmethod(tests.IrisTest):
     def test(self):
