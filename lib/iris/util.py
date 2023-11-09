@@ -2190,12 +2190,6 @@ def apply_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
     >>>
     ...
     """
-    try:
-        if shape.is_valid is False:
-            raise TypeError("Geometry is not a valid Shapely object")
-    except Exception:
-        raise TypeError("Geometry is not a valid Shapely object")
-
     shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     return masked_cube

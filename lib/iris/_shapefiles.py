@@ -13,6 +13,8 @@ import shapely.geometry as sgeom
 import shapely.ops
 import shapely.prepared as prepped
 
+from iris.exceptions import IrisUserWarning
+
 # ------------------------------------------------------------------------------
 # GLOBAL VARIABLES
 # ------------------------------------------------------------------------------
@@ -37,9 +39,14 @@ def create_shapefile_mask(
     Returns:
         A numpy array of the shape of the x & y coordinates of the cube, with points to mask equal to True
     """
-    # verification
+
     from iris.cube import Cube, CubeList
 
+    try:
+        if geometry.is_valid is False:
+            raise TypeError("Geometry is not a valid Shapely object")
+    except Exception:
+        raise TypeError("Geometry is not a valid Shapely object")
     if not isinstance(cube, Cube):
         if isinstance(cube, CubeList):
             msg = "Received CubeList object rather than Cube - to mask a CubeList iterate over each Cube"
@@ -61,7 +68,8 @@ def create_shapefile_mask(
     ):
         weights = False
         warnings.warn(
-            "Shape is of invalid type for minimum weight masking, must use a Polygon rather than Line shape.\n Masking based off intersection instead. "
+            "Shape is of invalid type for minimum weight masking, must use a Polygon rather than Line shape.\n Masking based off intersection instead. ",
+            IrisUserWarning,
         )
     else:
         weights = True
@@ -76,7 +84,6 @@ def create_shapefile_mask(
     _cube_xy_guessbounds(cube_2d)
     xmod = cube.coord(x_name).units.modulus
     ymod = cube.coord(y_name).units.modulus
-    cube.coord("longitude")
     mask_template = np.zeros(cube_2d.shape, dtype=np.float64)
 
     # perform the masking
@@ -122,7 +129,10 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     DEFAULT_CS = _get_global_cs()
     target_system = cube.coord_system()
     if not target_system:
-        warnings.warn("Cube has no coord_system; using default GeogCS lat/lon")
+        warnings.warn(
+            "Cube has no coord_system; using default GeogCS lat/lon",
+            IrisUserWarning,
+        )
         target_system = DEFAULT_CS
     if geometry_system is None:
         geometry_system = DEFAULT_CS
