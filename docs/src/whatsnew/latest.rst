@@ -38,6 +38,13 @@ This document explains the changes made to Iris for this release
    and :class:`~iris.coord_systems.RotatedMercator` coordinate systems,
    complete with NetCDF loading and saving. (:pull:`5548`)
 
+#. `@trexfeathers`_ added the ``send_spans_backwards`` parameter to
+   :func:`iris.coord_categorisation.add_season_year`. When
+   ``send_spans_backwards==True``: seasons spanning the year boundary (e.g.
+   Winter - December to February) will be assigned to the preceding year (e.g.
+   the year of December) instead of the following year (the default behaviour).
+   (:pull:`5573`)
+
 
 🐛 Bugs Fixed
 =============
