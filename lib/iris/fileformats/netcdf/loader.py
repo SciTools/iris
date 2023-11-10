@@ -245,7 +245,7 @@ def _get_cf_var_data(cf_var, filename):
             # Modify the chunking in the context of an active chunking control.
             # N.B. settings specific to this named var override global ('*') ones.
             dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
-                cf_var.name
+                cf_var.cf_name
             ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
             if not dim_chunks:
                 dims_fixed = None
@@ -298,7 +298,7 @@ def _load_cube(engine, cf, cf_var, filename):
     # it's data-var) into global ones, for the duration of this load.
     # Thus, by default, we will create any AuxCoords, CellMeasures et al with
     # any  per-dimension chunksizes specified for the cube.
-    these_settings = CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.name, {})
+    these_settings = CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.cf_name, {})
     with CHUNK_CONTROL.set(**these_settings):
         return _load_cube_inner(engine, cf, cf_var, filename)
 
