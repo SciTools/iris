@@ -13,11 +13,11 @@ and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 import threading
-from typing import Iterable, Mapping, Union
+from typing import Union
 import warnings
 
 import numpy as np
@@ -665,7 +665,7 @@ class ChunkControl(threading.local):
         cube, then the given dimension chunksize is *also* fixed for all
         variables which are components of that cube, i.e. its Coords,
         CellMeasures, Ancillary variables, etc.
-        This can be overriden, if required, by variable-specific settings.
+        This can be overridden, if required, by variable-specific settings.
 
         For this purpose, Mesh coordinates and connectivities are *not* cube
         components, and a chunk control on a cube data-variable will not affect
