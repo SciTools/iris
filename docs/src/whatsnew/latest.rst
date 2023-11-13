@@ -24,7 +24,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. `lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
+#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
 
 
 ✨ Features
