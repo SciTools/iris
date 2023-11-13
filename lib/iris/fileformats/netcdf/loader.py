@@ -656,7 +656,7 @@ class ChunkControl(threading.local):
         Provide user control of Dask chunking.
 
         The netcdf loader is controlled by the single instance of this : the
-        :data:`~iris.fileformats.netcdf.CHUNK_CONTROL` object.
+        :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL` object.
 
         A chunksize can be set for a specific (named) file dimension, when
         loading specific (named) variables, or for all variables.
@@ -712,7 +712,7 @@ class ChunkControl(threading.local):
 
         **Un**-adjusted dimensions have chunk sizes set in the 'usual' way.
         That is, according to the normal behaviour of
-        :meth:`iris._lazy_data.as_lazy_data`, which is : chunksize is based on
+        :func:`iris._lazy_data.as_lazy_data`, which is : chunksize is based on
         the file variable chunking, or full variable shape; this is scaled up
         or down by integer factors to best match the Dask "default chunksize",
         i.e. the setting configured by
