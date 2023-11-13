@@ -78,7 +78,6 @@ class TestChunking(tests.IrisTest):
         sigma = cube.coord("sigma")
         self.assertEqual((4,), sigma.shape)
         self.assertEqual((2,), sigma.lazy_points().chunksize)
-        # N.B. this does not apply to bounds array
         self.assertEqual((2, 2), sigma.lazy_bounds().chunksize)
 
     def test_control_multiple(self):
