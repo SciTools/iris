@@ -152,7 +152,10 @@ class Test__optimised_chunks(tests.IrisTest):
             limitcall_patch.call_args_list,
             [
                 mock.call(
-                    list(test_shape), shape=test_shape, dtype=np.dtype("f4")
+                    list(test_shape),
+                    shape=test_shape,
+                    dtype=np.dtype("f4"),
+                    dims_fixed=None,
                 )
             ],
         )
