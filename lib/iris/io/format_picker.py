@@ -218,10 +218,12 @@ class FormatSpecification:
 
     @property
     def file_element(self):
+        # noqa D102
         return self._file_element
 
     @property
     def file_element_value(self):
+        # noqa D102
         return self._file_element_value
 
     @property
@@ -314,6 +316,7 @@ class MagicNumber(FileElement):
         self._offset = offset
 
     def get_element(self, basename, file_handle):
+        # noqa D102
         if self._offset is not None:
             file_handle.seek(self._offset)
         bytes = file_handle.read(self._num_bytes)
@@ -334,6 +337,7 @@ class FileExtension(FileElement):
     """A :class:`FileElement` that returns the extension from the filename."""
 
     def get_element(self, basename, file_handle):
+        # noqa D102
         return os.path.splitext(basename)[1]
 
 
@@ -377,7 +381,10 @@ class DataSourceObjectProtocol(FileElement):
         super().__init__(requires_fh=False)
 
     def get_element(self, basename, file_handle):
-        # In this context, there should *not* be a file opened by the handler.
-        # Just return 'basename', which in this case is not a name, or even a
-        # string, but a passed 'data object'.
+        """
+        In this context, there should *not* be a file opened by the handler.
+
+        Just return 'basename', which in this case is not a name, or even a
+        string, but a passed 'data object'.
+        """
         return basename
