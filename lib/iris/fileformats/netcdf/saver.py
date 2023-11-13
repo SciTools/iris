@@ -4,6 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
+Module to support the saving of Iris cubes to a NetCDF file.
+
 Module to support the saving of Iris cubes to a NetCDF file, also using the CF
 conventions for metadata interpretation.
 
@@ -178,19 +180,19 @@ class CFNameCoordMap:
         self._map = []
 
     def append(self, name, coord):
-        """
-        Append the given name and coordinate pair to the mapping.
+        """Append the given name and coordinate pair to the mapping.
 
-        Args:
-
-        * name:
+        Parameters
+        ----------
+        name:
             CF name of the associated coordinate.
 
-        * coord:
+        coord:
             The coordinate of the associated CF name.
 
-        Returns:
-            None.
+        Returns
+        -------
+        None.
 
         """
         self._map.append(CFNameCoordMap._Map(name, coord))
@@ -198,26 +200,24 @@ class CFNameCoordMap:
     @property
     def names(self):
         """Return all the CF names."""
-
         return [pair.name for pair in self._map]
 
     @property
     def coords(self):
         """Return all the coordinates."""
-
         return [pair.coord for pair in self._map]
 
     def name(self, coord):
-        """
-        Return the CF name, given a coordinate, or None if not recognised.
+        """Return the CF name, given a coordinate, or None if not recognised.
 
-        Args:
-
-        * coord:
+        Parameters
+        ----------
+        coord:
             The coordinate of the associated CF name.
 
-        Returns:
-            Coordinate or None.
+        Returns
+        -------
+        Coordinate or None.
 
         """
         result = None
@@ -228,17 +228,16 @@ class CFNameCoordMap:
         return result
 
     def coord(self, name):
-        """
-        Return the coordinate, given a CF name, or None if not recognised.
+        """Return the coordinate, given a CF name, or None if not recognised.
 
-        Args:
-
-        * name:
+        Parameters
+        ----------
+        name:
             CF name of the associated coordinate, or None if not recognised.
 
-        Returns:
-            CF name or None.
-
+        Returns
+        -------
+        CF name or None.
         """
         result = None
         for pair in self._map:
@@ -250,6 +249,8 @@ class CFNameCoordMap:
 
 def _bytes_if_ascii(string):
     """
+    Convert string to a byte string (str in py2k, bytes in py3k).
+
     Convert the given string to a byte string (str in py2k, bytes in py3k)
     if the given string can be encoded to ascii, else maintain the type
     of the inputted string.
@@ -268,6 +269,8 @@ def _bytes_if_ascii(string):
 
 def _setncattr(variable, name, attribute):
     """
+    Put the given attribute on the given netCDF4 Data type.
+
     Put the given attribute on the given netCDF4 Data type, casting
     attributes as we go to bytes rather than unicode.
 
@@ -321,9 +324,7 @@ def _data_fillvalue_check(arraylib, data, check_value):
 
 
 class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
-    """
-    Backwards compatible form of :class:`iris.exceptions.IrisSaverFillValueWarning`.
-    """
+    """Backwards compatible form of :class:`iris.exceptions.IrisSaverFillValueWarning`."""
 
     # TODO: remove at the next major release.
     pass
@@ -331,6 +332,8 @@ class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
 
 def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     """
+    Work out whether there was a possible or actual fill-value collision.
+
     From the given information, work out whether there was a possible or actual
     fill-value collision, and if so construct a warning.
 
@@ -342,7 +345,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
         whether the data array was masked
     contains_fill_value : bool
         whether the data array contained the fill-value
-    warn : bool
+    warn : bool, optional
         if True, also issue any resulting warning immediately.
 
     Returns
@@ -388,7 +391,7 @@ class Saver:
 
     def __init__(self, filename, netcdf_format, compute=True):
         """
-        A manager for saving netcdf files.
+        Manage saving netcdf files.
 
         Parameters
         ----------
@@ -547,60 +550,48 @@ class Saver:
         fill_value=None,
     ):
         """
-        Wrapper for saving cubes to a NetCDF file.
+        Wrap for saving cubes to a NetCDF file.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-
-        Kwargs:
-
-        * local_keys (iterable of strings):
+        local_keys : iterable of str
             An interable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
             than global attributes.
-
-        * unlimited_dimensions (iterable of strings and/or
-           :class:`iris.coords.Coord` objects):
+        unlimited_dimensions : iterable of str and/or :class:`iris.coords.Coord`
             List of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
             NetCDF dimension variable length 'UNLIMITED'. By default, no
             unlimited dimensions are saved. Only the 'NETCDF4' format
             supports multiple 'UNLIMITED' dimensions.
-
-        * zlib (bool):
+        zlib : bool
             If `True`, the data will be compressed in the netCDF file using
             gzip compression (default `False`).
-
-        * complevel (int):
+        complevel : int
             An integer between 1 and 9 describing the level of compression
             desired (default 4). Ignored if `zlib=False`.
-
-        * shuffle (bool):
+        shuffle : bool
             If `True`, the HDF5 shuffle filter will be applied before
             compressing the data (default `True`). This significantly improves
             compression. Ignored if `zlib=False`.
-
-        * fletcher32 (bool):
+        fletcher32 : bool
             If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
             detect errors. Default `False`.
-
-        * contiguous (bool):
+        contiguous : bool
             If `True`, the variable data is stored contiguously on disk.
             Default `False`. Setting to `True` for a variable with an unlimited
             dimension will trigger an error.
-
-        * chunksizes (tuple of int):
+        chunksizes : tuple of int
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
-            performance is available here:
-            https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html.
+            performance is available
+            `here <https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html>`__.
             Basically, you want the chunk size for each dimension to match
             as closely as possible the size of the data block that users will
             read from the file. `chunksizes` cannot be set if `contiguous=True`.
-
-        * endian (string):
+        endian : str
             Used to control whether the data is stored in little or big endian
             format on disk. Possible values are 'little', 'big' or 'native'
             (default). The library will automatically handle endian conversions
@@ -608,8 +599,7 @@ class Saver:
             on a computer with the opposite format as the one used to create
             the file, there may be some performance advantage to be gained by
             setting the endian-ness.
-
-        * least_significant_digit (int):
+        least_significant_digit : int
             If `least_significant_digit` is specified, variable data will be
             truncated (quantized). In conjunction with `zlib=True` this
             produces 'lossy', but significantly more efficient compression. For
@@ -617,17 +607,16 @@ class Saver:
             using `numpy.around(scale*data)/scale`, where `scale = 2**bits`,
             and `bits` is determined so that a precision of 0.1 is retained (in
             this case `bits=4`). From
-            http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml:
+            `here <http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__:
             "least_significant_digit -- power of ten of the smallest decimal
             place in unpacked data that is a reliable value". Default is
             `None`, or no quantization, or 'lossless' compression.
-
-        * packing (type or string or dict or list): A numpy integer datatype
-            (signed or unsigned) or a string that describes a numpy integer
-            dtype(i.e. 'i2', 'short', 'u4') or a dict of packing parameters as
-            described below. This provides support for netCDF data packing as
-            described in
-            https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
+        packing : type or str or dict or list
+            A numpy integer datatype (signed or unsigned) or a string that
+            describes a numpy integer dtype(i.e. 'i2', 'short', 'u4') or a
+            dict of packing parameters as described below. This provides
+            support for netCDF data packing as described
+            `here <https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values>`__.
             If this argument is a type (or type string), appropriate values of
             scale_factor and add_offset will be automatically calculated based
             on `cube.data` and possible masking. For more control, pass a dict
@@ -637,20 +626,20 @@ class Saver:
             manually using a dict to avoid this. The default is `None`, in
             which case the datatype is determined from the cube and no packing
             will occur.
-
-        * fill_value:
+        fill_value:
             The value to use for the `_FillValue` attribute on the netCDF
             variable. If `packing` is specified the value of `fill_value`
             should be in the domain of the packed data.
 
-        Returns:
-            None.
+        Returns
+        -------
+        None.
 
-        .. note::
-
-            The `zlib`, `complevel`, `shuffle`, `fletcher32`, `contiguous`,
-            `chunksizes` and `endian` keywords are silently ignored for netCDF
-            3 files that do not use HDF5.
+        Notes
+        -----
+        The `zlib`, `complevel`, `shuffle`, `fletcher32`, `contiguous`,
+        `chunksizes` and `endian` keywords are silently ignored for netCDF
+        3 files that do not use HDF5.
 
         """
         if unlimited_dimensions is None:
@@ -757,6 +746,8 @@ class Saver:
 
     @staticmethod
     def check_attribute_compliance(container, data_dtype):
+        """Check attributte complliance."""
+
         def _coerce_value(val_attr, val_attr_value, data_dtype):
             val_attr_tmp = np.array(val_attr_value, dtype=data_dtype)
             if (val_attr_tmp != val_attr_value).any():
@@ -788,15 +779,15 @@ class Saver:
                 container.attributes[val_attr] = new_val
 
     def update_global_attributes(self, attributes=None, **kwargs):
-        """
+        """Update the CF global attributes.
+
         Update the CF global attributes based on the provided
         iterable/dictionary and/or keyword arguments.
 
-        Args:
-
-        * attributes (dict or iterable of key, value pairs):
+        Parameters
+        ----------
+        attributes: dict or iterable of key, value pairs
             CF global attributes to be updated.
-
         """
         if attributes is not None:
             # Handle sequence e.g. [('fruit', 'apple'), ...].
@@ -812,23 +803,18 @@ class Saver:
     def _create_cf_dimensions(
         self, cube, dimension_names, unlimited_dimensions=None
     ):
-        """
-        Create the CF-netCDF data dimensions.
+        """Create the CF-netCDF data dimensions.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` in which to lookup coordinates.
-
-        Kwargs:
-
-        * unlimited_dimensions (iterable of strings and/or
-          :class:`iris.coords.Coord` objects):
+        unlimited_dimensions: iterable of strings and/or :class:`iris.coords.Coord` objects):
             List of coordinates to make unlimited (None by default).
 
-        Returns:
-            None.
-
+        Returns
+        -------
+        None.
         """
         unlimited_dim_names = []
         if unlimited_dimensions is not None:
@@ -856,6 +842,8 @@ class Saver:
     def _add_mesh(self, cube_or_mesh):
         """
         Add the cube's mesh, and all related variables to the dataset.
+
+        Add the cube's mesh, and all related variables to the dataset.
         Includes all the mesh-element coordinate and connectivity variables.
 
         ..note::
@@ -863,17 +851,16 @@ class Saver:
             Here, we do *not* add the relevant referencing attributes to the
             data-variable, because we want to create the data-variable later.
 
-        Args:
-
-        * cube_or_mesh (:class:`iris.cube.Cube`
-                        or :class:`iris.experimental.ugrid.Mesh`):
+        Parameters
+        ----------
+        cube_or_mesh: :class:`iris.cube.Cube`or :class:`iris.experimental.ugrid.Mesh`
             The Cube or Mesh being saved to the netCDF file.
 
-        Returns:
-            * cf_mesh_name (string or None):
+        Returns
+        -------
+        cf_mesh_name: string or None
             The name of the mesh variable created, or None if the cube does not
             have a mesh.
-
         """
         cf_mesh_name = None
 
@@ -991,6 +978,8 @@ class Saver:
         self, cube, cf_var_cube, dimension_names, coordlike_elements
     ):
         """
+        Create a set of variables for aux-coords, ancillaries or cell-measures.
+
         Create a set of variables for aux-coords, ancillaries or cell-measures,
         and attach them to the parent data variable.
 
@@ -1035,17 +1024,16 @@ class Saver:
 
     def _add_aux_coords(self, cube, cf_var_cube, dimension_names):
         """
-        Add aux. coordinate to the dataset and associate with the data variable
+        Add aux. coordinate to the dataset and associate with the data variable.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        * cf_var_cube (:class:`netcdf.netcdf_variable`):
+        cf_var_cube: :class:`netcdf.netcdf_variable`
             cf variable cube representation.
-        * dimension_names (list):
+        dimension_names: list
             Names associated with the dimensions of the cube.
-
         """
         from iris.experimental.ugrid.mesh import (
             Mesh,
@@ -1077,17 +1065,16 @@ class Saver:
 
     def _add_cell_measures(self, cube, cf_var_cube, dimension_names):
         """
-        Add cell measures to the dataset and associate with the data variable
+        Add cell measures to the dataset and associate with the data variable.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        * cf_var_cube (:class:`netcdf.netcdf_variable`):
+        cf_var_cube: :class:`netcdf.netcdf_variable`
             cf variable cube representation.
-        * dimension_names (list):
+        dimension_names: list
             Names associated with the dimensions of the cube.
-
         """
         return self._add_inner_related_vars(
             cube,
@@ -1098,18 +1085,16 @@ class Saver:
 
     def _add_ancillary_variables(self, cube, cf_var_cube, dimension_names):
         """
-        Add ancillary variables measures to the dataset and associate with the
-        data variable
+        Add ancillary variables measures to the dataset and associate with the data variable.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        * cf_var_cube (:class:`netcdf.netcdf_variable`):
+        cf_var_cube: :class:`netcdf.netcdf_variable`
             cf variable cube representation.
-        * dimension_names (list):
+        dimension_names: list
             Names associated with the dimensions of the cube.
-
         """
         return self._add_inner_related_vars(
             cube,
@@ -1122,13 +1107,12 @@ class Saver:
         """
         Add coordinate variables to NetCDF dataset.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        * dimension_names (list):
+        dimension_names: list
             Names associated with the dimensions of the cube.
-
         """
         # Ensure we create the netCDF coordinate variables first.
         for coord in cube.dim_coords:
@@ -1142,19 +1126,20 @@ class Saver:
 
     def _add_aux_factories(self, cube, cf_var_cube, dimension_names):
         """
-        Modifies the variables of the NetCDF dataset to represent
+        Represent the presence of dimensionless vertical coordinates.
+
+        Modify the variables of the NetCDF dataset to represent
         the presence of dimensionless vertical coordinates based on
         the aux factories of the cube (if any).
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        * cf_var_cube (:class:`netcdf.netcdf_variable`)
+        cf_var_cube: :class:`netcdf.netcdf_variable`
             CF variable cube representation.
-        * dimension_names (list):
+        dimension_names: list
             Names associated with the dimensions of the cube.
-
         """
         primaries = []
         for factory in cube.aux_factories:
@@ -1240,23 +1225,23 @@ class Saver:
         """
         Determine suitable CF-netCDF data dimension names.
 
-        Args:
-
-        * cube_or_mesh (:class:`iris.cube.Cube`
-                        or :class:`iris.experimental.ugrid.Mesh`):
+        Parameters
+        ----------
+        cube_or_mesh: :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
             The Cube or Mesh being saved to the netCDF file.
 
-        Returns:
-            mesh_dimensions, cube_dimensions
-            * mesh_dimensions (list of string):
-                A list of the mesh dimensions of the attached mesh, if any.
-            * cube_dimensions (list of string):
-                A lists of dimension names for each dimension of the cube
+        Returns
+        -------
+        mesh_dimensions: list of str
+            A list of the mesh dimensions of the attached mesh, if any.
+        cube_dimensions: list of str
+            A lists of dimension names for each dimension of the cube
 
-        ..note::
-            The returned lists are in the preferred file creation order.
-            One of the mesh dimensions will typically also appear in the cube
-            dimensions.
+        Notes
+        -----
+        The returned lists are in the preferred file creation order.
+        One of the mesh dimensions will typically also appear in the cube
+        dimensions.
 
         """
 
@@ -1264,6 +1249,8 @@ class Saver:
             names_list, dim_name, length, matching_coords=None
         ):
             """
+            Record a file dimension, its length and associated "coordinates".
+
             Record a file dimension, its length and associated "coordinates"
             (which may in fact also be connectivities).
 
@@ -1462,16 +1449,17 @@ class Saver:
 
     @staticmethod
     def cf_valid_var_name(var_name):
-        """
-        Return a valid CF var_name given a potentially invalid name.
+        """Return a valid CF var_name given a potentially invalid name.
 
-        Args:
-
-        * var_name (str):
+        Parameters
+        ----------
+        var_name: str
             The var_name to normalise
 
-        Returns:
-            A var_name suitable for passing through for variable creation.
+        Returns
+        -------
+        str
+            var_name suitable for passing through for variable creation.
 
         """
         # Replace invalid characters with an underscore ("_").
@@ -1486,17 +1474,17 @@ class Saver:
         """
         Determine a suitable units from a given coordinate.
 
-        Args:
-
-        * coord (:class:`iris.coords.Coord`):
+        Parameters
+        ----------
+        coord: :class:`iris.coords.Coord`
             A coordinate of a cube.
 
-        Returns:
+        Returns
+        -------
+        units
             The (standard_name, long_name, unit) of the given
             :class:`iris.coords.Coord` instance.
-
         """
-
         units = str(coord.units)
         # Set the 'units' of 'latitude' and 'longitude' coordinates specified
         # in 'degrees' to 'degrees_north' and 'degrees_east' respectively,
@@ -1548,17 +1536,18 @@ class Saver:
         """
         Create the associated CF-netCDF bounds variable.
 
-        Args:
-
-        * coord (:class:`iris.coords.Coord`):
+        Parameters
+        ----------
+        coord: :class:`iris.coords.Coord`
             A coordinate of a cube.
-        * cf_var:
+        cf_var:
             CF-netCDF variable
-        * cf_name (string):
+        cf_name: str
             name of the CF-NetCDF variable.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
 
         """
         if hasattr(coord, "has_bounds") and coord.has_bounds():
@@ -1606,15 +1595,17 @@ class Saver:
 
     def _get_cube_variable_name(self, cube):
         """
-        Returns a CF-netCDF variable name for the given cube.
+        Return a CF-netCDF variable name for the given cube.
 
-        Args:
-
-        * cube (class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             An instance of a cube for which a CF-netCDF variable
             name is required.
 
-        Returns:
+        Returns
+        -------
+        str
             A CF-netCDF variable name as a string.
 
         """
@@ -1629,18 +1620,19 @@ class Saver:
 
     def _get_coord_variable_name(self, cube_or_mesh, coord):
         """
-        Returns a CF-netCDF variable name for a given coordinate-like element.
+        Return a CF-netCDF variable name for a given coordinate-like element.
 
-        Args:
-
-        * cube_or_mesh (:class:`iris.cube.Cube`
-                        or :class:`iris.experimental.ugrid.Mesh`):
+        Parameters
+        ----------
+        cube_or_mesh: :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
             The Cube or Mesh being saved to the netCDF file.
-        * coord (:class:`iris.coords._DimensionalMetadata`):
+        coord: :class:`iris.coords._DimensionalMetadata`
             An instance of a coordinate (or similar), for which a CF-netCDF
             variable name is required.
 
-        Returns:
+        Returns
+        -------
+        str
             A CF-netCDF variable name as a string.
 
         """
@@ -1691,15 +1683,17 @@ class Saver:
 
     def _get_mesh_variable_name(self, mesh):
         """
-        Returns a CF-netCDF variable name for the mesh.
+        Return a CF-netCDF variable name for the mesh.
 
-        Args:
-
-        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh`):
+        Parameters
+        ----------
+        mesh: :class:`iris.experimental.ugrid.mesh.Mesh`
             An instance of a Mesh for which a CF-netCDF variable name is
             required.
 
-        Returns:
+        Returns
+        -------
+        str
             A CF-netCDF variable name as a string.
 
         """
@@ -1718,12 +1712,14 @@ class Saver:
         """
         Create a mesh variable in the netCDF dataset.
 
-        Args:
-
-        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh`):
+        Parameters
+        ----------
+        mesh: :class:`iris.experimental.ugrid.mesh.Mesh`
             The Mesh to be saved to CF-netCDF file.
 
-        Returns:
+        Returns
+        -------
+        str
             The string name of the associated CF-netCDF variable saved.
 
         """
@@ -1798,6 +1794,8 @@ class Saver:
         fill_value=None,
     ):
         """
+        Create theCF-netCDF variable given dimensional_metadata.
+
         Create the associated CF-netCDF variable in the netCDF dataset for the
         given dimensional_metadata.
 
@@ -1805,33 +1803,32 @@ class Saver:
             If the metadata element is a coord, it may also contain bounds.
             In which case, an additional var is created and linked to it.
 
-        Args:
-
-        * cube_or_mesh (:class:`iris.cube.Cube`
-                        or :class:`iris.experimental.ugrid.Mesh`):
+        Parameters
+        ----------
+        cube_or_mesh: :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
             The Cube or Mesh being saved to the netCDF file.
-        * cube_dim_names (list of string):
+        cube_dim_names: list of str
             The name of each dimension of the cube.
-        * element:
+        element: :class:`iris.coords._DimensionalMetadata`
             An Iris :class:`iris.coords._DimensionalMetadata`, belonging to the
             cube.  Provides data, units and standard/long/var names.
             Not used if 'element_dims' is not None.
-        * element_dims (list of string, or None):
+        element_dims : list of string, or None
             If set, contains the variable dimension (names),
             otherwise these are taken from `element.cube_dims[cube]`.
             For Mesh components (element coordinates and connectivities), this
             *must* be passed in, as "element.cube_dims" does not function.
-        * fill_value (number or None):
+        fill_value: number or None
             If set, create the variable with this fill-value, and fill any
             masked data points with this value.
             If not set, standard netcdf4-python behaviour : the variable has no
             '_FillValue' property, and uses the "standard" fill-value for its
             type.
 
-        Returns:
-            var_name (string):
-                The name of the CF-netCDF variable created.
-
+        Returns
+        -------
+        str
+            The name of the CF-netCDF variable created.
         """
         # Support cube or mesh save.
         from iris.cube import Cube
@@ -1947,16 +1944,17 @@ class Saver:
         """
         Create CF-netCDF string representation of a cube cell methods.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`) or cubelist
-          (:class:`iris.cube.CubeList`):
+        Parameters
+        ----------
+        cube : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
             A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
             cubes to be saved to a netCDF file.
-        * dimension_names (list):
+        dimension_names : list
             Names associated with the dimensions of the cube.
 
-        Returns:
+        Returns
+        -------
+        str
             CF-netCDF string representation of a cube cell methods.
 
         """
@@ -1996,20 +1994,22 @@ class Saver:
 
     def _create_cf_grid_mapping(self, cube, cf_var_cube):
         """
+        Create CF-netCDF grid mapping and associated CF-netCDF variable.
+
         Create CF-netCDF grid mapping variable and associated CF-netCDF
         data variable grid mapping attribute.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`) or cubelist
-          (:class:`iris.cube.CubeList`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
             A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
             cubes to be saved to a netCDF file.
-        * cf_var_cube (:class:`netcdf.netcdf_variable`):
+        cf_var_cube: :class:`netcdf.netcdf_variable`
             cf variable cube representation.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
 
         """
         cs = cube.coord_system("CoordSystem")
@@ -2265,30 +2265,27 @@ class Saver:
         **kwargs,
     ):
         """
-        Create CF-netCDF data variable for the cube and any associated grid
-        mapping.
+        Create CF-netCDF data variable for the cube and any associated grid mapping.
 
-        Args:
-
-        * cube (:class:`iris.cube.Cube`):
+        Parameters
+        ----------
+        cube: :class:`iris.cube.Cube`
             The associated cube being saved to CF-netCDF file.
-        * dimension_names (list):
+        dimension_names: list
             String names for each dimension of the cube.
-
-        Kwargs:
-
-        * local_keys (iterable of strings):
-            * see :func:`iris.fileformats.netcdf.Saver.write`
-        * packing (type or string or dict or list):
-            * see :func:`iris.fileformats.netcdf.Saver.write`
-        * fill_value:
-            * see :func:`iris.fileformats.netcdf.Saver.write`
+        local_keys: iterable of str, optional
+            See :func:`iris.fileformats.netcdf.Saver.write`
+        packing: type or string or dict or list, optional
+            See :func:`iris.fileformats.netcdf.Saver.write`
+        fill_value: optional
+            See :func:`iris.fileformats.netcdf.Saver.write`
 
         All other keywords are passed through to the dataset's `createVariable`
         method.
 
-        Returns:
-            The newly created CF-netCDF data variable.
+        Returns
+        -------
+        The newly created CF-netCDF data variable.
 
         """
         # Get the values in a form which is valid for the file format.
@@ -2433,13 +2430,14 @@ class Saver:
         Avoidance of conflicts between variable names, where the name is
         incremented to distinguish it from others.
 
-        Args:
-
-        * varname (string):
+        Parameters
+        ----------
+        varname: str
             Variable name to increment.
 
-        Returns:
-            Incremented varname.
+        Returns
+        -------
+        Incremented varname.
 
         """
         num = 0
@@ -2546,18 +2544,19 @@ class Saver:
 
     def delayed_completion(self) -> Delayed:
         """
-        Create and return a :class:`dask.delayed.Delayed` to perform file completion
-        for delayed saves.
+        Perform file completion for delayed saves.
 
-        This contains all the delayed writes, which complete the file by filling out
-        the data of variables initially created empty, and also the checks for
-        potential fill-value collisions.
-        When computed, it returns a list of any warnings which were generated in the
-        save operation.
+        Create and return a :class:`dask.delayed.Delayed` to perform file
+        completion for delayed saves.
+
+        This contains all the delayed writes, which complete the file by
+        filling out the data of variables initially created empty, and also the
+        checks for potential fill-value collisions.  When computed, it returns
+        a list of any warnings which were generated in the save operation.
 
         Returns
         -------
-        completion : :class:`dask.delayed.Delayed`
+        :class:`dask.delayed.Delayed`
 
         Notes
         -----
@@ -2623,12 +2622,12 @@ class Saver:
 
         Parameters
         ----------
-        issue_warnings : bool, default = True
+        issue_warnings: bool, default = True
             If true, issue all the resulting warnings with :func:`warnings.warn`.
 
         Returns
         -------
-        warnings : list of Warning
+        warnings: list of Warning
             Any warnings that were raised while writing delayed data.
 
         """
@@ -2670,7 +2669,7 @@ def save(
     fill_value=None,
     compute=True,
 ):
-    """
+    r"""
     Save cube(s) to a netCDF file, given the cube and the filename.
 
     * Iris will write CF 1.7 compliant NetCDF files.
@@ -2685,13 +2684,12 @@ def save(
       status of the cube's data payload, unless the netcdf_format is explicitly
       specified to be 'NETCDF3' or 'NETCDF3_CLASSIC'.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube` or :class:`iris.cube.CubeList`):
+    Parameters
+    ----------
+    cube: :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
         A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or other
         iterable of cubes to be saved to a netCDF file.
-
-    * filename (string):
+    filename: str
         Name of the netCDF file to save the cube(s).
         **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
 
@@ -2699,56 +2697,45 @@ def save(
             When saving to a dataset, ``compute`` **must** be ``False`` :
             See the ``compute`` parameter.
 
-    Kwargs:
-
-    * netcdf_format (string):
+    netcdf_format: string
         Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
-
-    * local_keys (iterable of strings):
+    local_keys: iterable of str, optional
         An interable of cube attribute keys. Any cube attributes with
         matching keys will become attributes on the data variable rather
         than global attributes.
-
-    * unlimited_dimensions (iterable of strings and/or
-       :class:`iris.coords.Coord` objects):
+    unlimited_dimensions: iterable of str and/or :class:`iris.coords.Coord` objects, optional
         List of coordinate names (or coordinate objects) corresponding
         to coordinate dimensions of `cube` to save with the NetCDF dimension
         variable length 'UNLIMITED'. By default, no unlimited dimensions are
         saved. Only the 'NETCDF4' format supports multiple 'UNLIMITED'
         dimensions.
-
-    * zlib (bool):
+    zlib: bool, optional
         If `True`, the data will be compressed in the netCDF file using gzip
         compression (default `False`).
-
-    * complevel (int):
+    complevel: int
         An integer between 1 and 9 describing the level of compression desired
         (default 4). Ignored if `zlib=False`.
-
-    * shuffle (bool):
+    shuffle: bool, optional
         If `True`, the HDF5 shuffle filter will be applied before compressing
         the data (default `True`). This significantly improves compression.
         Ignored if `zlib=False`.
-
-    * fletcher32 (bool):
+    fletcher32: bool, optional
         If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
         detect errors. Default `False`.
-
-    * contiguous (bool):
+    contiguous: bool, optional
         If `True`, the variable data is stored contiguously on disk. Default
         `False`. Setting to `True` for a variable with an unlimited dimension
         will trigger an error.
-
-    * chunksizes (tuple of int):
+    chunksizes: tuple of int, optional
         Used to manually specify the HDF5 chunksizes for each dimension of the
         variable. A detailed discussion of HDF chunking and I/O performance is
-        available here: https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html.
+        available
+        `here <http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__.
         Basically, you want the chunk size for each dimension to match as
         closely as possible the size of the data block that users will read
         from the file. `chunksizes` cannot be set if `contiguous=True`.
-
-    * endian (string):
+    endian: str
         Used to control whether the data is stored in little or big endian
         format on disk. Possible values are 'little', 'big' or 'native'
         (default). The library will automatically handle endian conversions
@@ -2756,8 +2743,7 @@ def save(
         computer with the opposite format as the one used to create the file,
         there may be some performance advantage to be gained by setting the
         endian-ness.
-
-    * least_significant_digit (int):
+    least_significant_digit: int, optional
         If `least_significant_digit` is specified, variable data will be
         truncated (quantized). In conjunction with `zlib=True` this produces
         'lossy', but significantly more efficient compression. For example, if
@@ -2765,17 +2751,17 @@ def save(
         `numpy.around(scale*data)/scale`, where `scale = 2**bits`, and `bits`
         is determined so that a precision of 0.1 is retained (in this case
         `bits=4`). From
-        http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml:
+
         "least_significant_digit -- power of ten of the smallest decimal place
         in unpacked data that is a reliable value". Default is `None`, or no
         quantization, or 'lossless' compression.
-
-    * packing (type or string or dict or list): A numpy integer datatype
-        (signed or unsigned) or a string that describes a numpy integer dtype
-        (i.e. 'i2', 'short', 'u4') or a dict of packing parameters as described
-        below or an iterable of such types, strings, or dicts.
-        This provides support for netCDF data packing as described in
-        https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
+    packing: type or str or dict or list, optional
+        A numpy integer datatype (signed or unsigned) or a string that
+        describes a numpy integer dtype (i.e. 'i2', 'short', 'u4') or a dict
+        of packing parameters as described below or an iterable of such types,
+        strings, or dicts. This provides support for netCDF data packing as
+        described in
+        `here <http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based
         on `cube.data` and possible masking. For more control, pass a dict with
@@ -2785,18 +2771,16 @@ def save(
         avoid this. The default is `None`, in which case the datatype is
         determined from the cube and no packing will occur. If this argument is
         a list it must have the same number of elements as `cube` if `cube` is
-        a `:class:`iris.cube.CubeList`, or one element, and each element of
+        a :class:`iris.cube.CubeList`, or one element, and each element of
         this argument will be applied to each cube separately.
-
-    * fill_value (numeric or list):
+    fill_value: numeric or list, optional
         The value to use for the `_FillValue` attribute on the netCDF variable.
         If `packing` is specified the value of `fill_value` should be in the
         domain of the packed data. If this argument is a list it must have the
         same number of elements as `cube` if `cube` is a
-        `:class:`iris.cube.CubeList`, or a single element, and each element of
+        :class:`iris.cube.CubeList`, or a single element, and each element of
         this argument will be applied to each cube separately.
-
-    * compute (bool):
+    compute: bool, optional
         Default is ``True``, meaning complete the file immediately, and return ``None``.
 
         When ``False``, create the output file but don't write any lazy array content to
@@ -2819,11 +2803,12 @@ def save(
             must (re-)open the dataset for writing, which will fail if the file is
             still open for writing by the caller.
 
-    Returns:
-        result (None, or dask.delayed.Delayed):
-            If `compute=True`, returns `None`.
-            Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
-            writing to fill in the variables data.
+    Returns
+    -------
+    result: None or dask.delayed.Delayed
+        If `compute=True`, returns `None`.
+        Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
+        writing to fill in the variables data.
 
     .. note::
 
@@ -2831,10 +2816,11 @@ def save(
         `chunksizes` and `endian` keywords are silently ignored for netCDF 3
         files that do not use HDF5.
 
-    .. seealso::
-
-        NetCDF Context manager (:class:`~Saver`).
-
+    Notes
+    -----
+    The `zlib`, `complevel`, `shuffle`, `fletcher32`, `contiguous`,
+    `chunksizes` and `endian` keywords are silently ignored for netCDF 3
+    files that do not use HDF5.
     """
     from iris.cube import Cube, CubeList
 

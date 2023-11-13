@@ -4,8 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Module to support the loading of Iris cubes from NetCDF files, also using the CF
-conventions for metadata interpretation.
+Support loading Iris cubes from NetCDF files using the CF conventions for metadata interpretation.
 
 See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
 and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
@@ -146,7 +145,6 @@ def _actions_activation_stats(engine, cf_name):
 
 def _set_attributes(attributes, key, value):
     """Set attributes dictionary, converting unicode strings appropriately."""
-
     if isinstance(value, str):
         try:
             attributes[str(key)] = str(value)
@@ -158,6 +156,8 @@ def _set_attributes(attributes, key, value):
 
 def _add_unused_attributes(iris_object, cf_var):
     """
+    Populate the attributes of a cf element with the "unused" attributes.
+
     Populate the attributes of a cf element with the "unused" attributes
     from the associated CF-netCDF variable. That is, all those that aren't CF
     reserved terms.
@@ -336,10 +336,7 @@ def _load_cube(engine, cf, cf_var, filename):
 
 
 def _load_aux_factory(engine, cube):
-    """
-    Convert any CF-netCDF dimensionless coordinate to an AuxCoordFactory.
-
-    """
+    """Convert any CF-netCDF dimensionless coordinate to an AuxCoordFactory."""
     formula_type = engine.requires.get("formula_type")
     if formula_type in [
         "atmosphere_sigma_coordinate",
@@ -465,9 +462,10 @@ def _translate_constraints_to_var_callback(constraints):
     """
     Translate load constraints into a simple data-var filter function, if possible.
 
-    Returns:
-         * function(cf_var:CFDataVariable): --> bool,
-            or None.
+    Returns
+    -------
+    function : (cf_var:CFDataVariable)
+        bool, or None.
 
     For now, ONLY handles a single NameConstraint with no 'STASH' component.
 
@@ -507,25 +505,24 @@ def _translate_constraints_to_var_callback(constraints):
 
 def load_cubes(file_sources, callback=None, constraints=None):
     """
-    Loads cubes from a list of NetCDF filenames/OPeNDAP URLs.
+    Load cubes from a list of NetCDF filenames/OPeNDAP URLs.
 
-    Args:
-
-    * file_sources (string/list):
+    Parameters
+    ----------
+    file_sources : str or list
         One or more NetCDF filenames/OPeNDAP URLs to load from.
         OR open datasets.
 
-    Kwargs:
-
-    * callback (callable function):
+    callback: function, optional
         Function which can be passed on to :func:`iris.io.run_callback`.
 
-    Returns:
-        Generator of loaded NetCDF :class:`iris.cube.Cube`.
+    Returns
+    -------
+    Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
-    #  into standard behaviour.
+    # into standard behaviour.
     # Deferred import to avoid circular imports.
     from iris.experimental.ugrid.cf import CFUGridReader
     from iris.experimental.ugrid.load import (
