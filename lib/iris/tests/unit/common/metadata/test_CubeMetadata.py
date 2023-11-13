@@ -21,10 +21,6 @@ import pytest
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata
 from iris.cube import CubeAttrsDict
-from iris.tests.integration.test_netcdf__loadsaveattrs import (
-    decode_matrix_input,
-    encode_matrix_result,
-)
 
 
 def _make_metadata(
@@ -100,97 +96,209 @@ class Test(tests.IrisTest):
 
 @pytest.fixture(params=CubeMetadata._fields)
 def fieldname(request):
+    """Parametrize testing over all CubeMetadata field names."""
     return request.param
 
 
 @pytest.fixture(params=["strict", "lenient"])
 def op_leniency(request):
+    """Parametrize testing over strict or lenient operation."""
     return request.param
 
 
-# Global data defining the individual split attributes "testcases".
-# Each testcase specifies two inputs, with different global+local attribute settings.
-# The same cases are tested for 3 different metadata operations : 'combine',
-#  'difference' and 'equal'.
-_ATTRS_TESTCASE_INPUTS = {
-    "same": "GaLb:GaLb",
-    "extra_global": "GaL-:G-L-",
-    "extra_local": "G-La:G-L-",
-    "same_global_local": "GaL-:G-La",
-    "diff_global_local": "GaL-:G-Lb",
-    "diffglobal_nolocal": "GaL-:GbL-",
-    "diffglobal_samelocal": "GaLc:GbLc",
-    "difflocal_noglobal": "G-La:G-Lb",
-    "difflocal_sameglobal": "GaLc:GaLd",
-    "diff_local_and_global": "GaLc:GbLd",
-}
-_ATTRS_TESTCASE_NAMES = list(_ATTRS_TESTCASE_INPUTS)
-
-
-def check_splitattrs_op(
-    check_testcase: str, check_lenient: bool, op: str, cases: dict
-):
+@pytest.fixture(params=["primaryAA", "primaryAX", "primaryAB"])
+def primary_values(request):
     """
-    Test a common metadata operation, specifically the split-attributes handling.
+    Parametrize over the possible non-trivial pairs of operation values.
+
+    The possible cases are : where one side has a missing value; where both sides
+    have the same non-missing value; and where they have different non-missing values.
+    """
+    return request.param
+
+
+@pytest.fixture(params=[False, True], ids=["primaryLocal", "primaryGlobal"])
+def primary_is_global_not_local(request):
+    """Parametrize split-attribute testing over "global" or "local" attribute types."""
+    return request.param
+
+
+@pytest.fixture(params=[False, True], ids=["leftrightL2R", "leftrightR2L"])
+def order_reversed(request):
+    """Parametrize split-attribute testing over "left OP right" or "right OP left"."""
+    return request.param
+
+
+# Define the expected results for split-attribute testing.
+# This dictionary records the expected for the various possible arrangements of values
+# of a single attribute in the "left" and "right" inputs of a CubeMetadata operation.
+# The possible operations are "equal", "combine" or "difference", and may all be
+# performed "strict" or "lenient".
+_ALL_RESULTS = {
+    "equal": {
+        "primaryAA": {"lenient": True, "strict": True},
+        "primaryAX": {"lenient": True, "strict": False},
+        "primaryAB": {"lenient": False, "strict": False},
+    },
+    "combine": {
+        "primaryAA": {"lenient": "A", "strict": "A"},
+        "primaryAX": {"lenient": "A", "strict": None},
+        "primaryAB": {"lenient": None, "strict": None},
+    },
+    "difference": {
+        "primaryAA": {"lenient": None, "strict": None},
+        "primaryAX": {"lenient": None, "strict": ("A", None)},
+        "primaryAB": {"lenient": ("A", "B"), "strict": ("A", "B")},
+    },
+}
+_TEST_ATTRNAME = "_test_attr_"
+
+
+def extract_attribute_value(split_dict, extract_global):
+    """
+    Extract a test-attribute value from a split-attribute dictionary.
 
     Parameters
     ----------
-    check_testcase : str
-        One of those listed in _ATTRS_TESTCASE_INPUTS.  These keys are coded strings,
-        as used in `iris.tests.integration.test_netcdf_loadsaveattrs`.
-    check_lenient : bool
-        Whether the test operation is performed 'lenient' or 'strict'.
-    op : {'combine', 'difference', 'equal'}
-        The operation under test
-    cases : dict
-        The "expected" result-code values for each testcase.  Values are either two
-        results for 'strict' and 'lenient' cases, when those are different, or a single
-        result if strict and lenient results are the same.
-        NOTE: this arg defines expected results for *all* testcases, even though each
-        call only tests a single testcase.  This just makes parameterisation easier.
+    split_dict : CubeAttrsDict
+        a split dictionary from an operation result
+    extract_global : bool
+        whether to extract values of the global, or local, `_TEST_ATTRNAME` attribute
+
+    Returns
+    -------
+        str | None
+    """
+    if extract_global:
+        result = split_dict.globals.get(_TEST_ATTRNAME, None)
+    else:
+        result = split_dict.locals.get(_TEST_ATTRNAME, None)
+    return result
+
+
+def extract_result_value(input, extract_global):
+    """
+    Extract the values(s) of the main test attribute from an operation result.
+
+    Parameters
+    ----------
+    input : bool | CubeMetadata
+        an operation result : the structure varies for the three different operations.
+    extract_global : bool
+        whether to return values of a global, or local, `_TEST_ATTRNAME` attribute.
+
+    Returns
+    -------
+    None | bool | str or tuple of (None | str)
+        result value(s)
+    """
+    if not isinstance(input, CubeMetadata):
+        # Result is either boolean (for "equals") or a None (for "difference").
+        result = input
+    else:
+        # Result is a CubeMetadata.  Get the value(s) of the required attribute.
+        result = input.attributes
+
+        if isinstance(result, CubeAttrsDict):
+            result = extract_attribute_value(result, extract_global)
+        else:
+            # For "difference", input.attributes is a *pair* of dictionaries.
+            assert isinstance(result, tuple)
+            result = tuple(
+                [
+                    extract_attribute_value(dic, extract_global)
+                    for dic in result
+                ]
+            )
+            if result == (None, None):
+                # This value occurs when the desired attribute is *missing* from a
+                # difference result, but other (secondary) attributes were *different*.
+                # We want only differences of the *target* attribute, so convert these
+                # to a plain 'no difference', for expected-result testing purposes.
+                result = None
+
+    return result
+
+
+def make_attrsdict(value):
+    """
+    Return a dictionary containing a test attribute of the given value.
+
+    If the value is "X", the attribute is absent (result is empty dict).
+    """
+    if value == "X":
+        # Translate an "X" input as "missing".
+        result = {}
+    else:
+        result = {_TEST_ATTRNAME: value}
+    return result
+
+
+def check_splitattrs_testcase(
+    operation_name: str,
+    check_is_lenient: bool,
+    primary_inputs: str = "AA",  # character values
+    secondary_inputs: str = "XX",  # character values
+    check_global_not_local: bool = True,
+    check_reversed: bool = False,
+):
+    """
+    Test a metadata operation with split-attributes against known expected results.
+
+    Parameters
+    ----------
+    operation_name : str
+        One of "equal", "combine" or "difference.
+    check_is_lenient : bool
+        Whether the tested operation is performed 'lenient' or 'strict'.
+    primary_inputs : str
+        A pair of characters defining left + right attribute values for the operands of
+        the operation.
+    secondary_inputs : str
+        A further pair of values for an attribute of the same name but "other" type
+        ( i.e. global/local when the main test is local/global ).
+    check_global_not_local : bool
+        If True, the main operands are the global ones, and secondary are local.
+        Otherwise, the other way around.
+    check_reversed : bool
+        If True, the left and right operands are exchanged, and the expected value
+        modified according.
 
     Notes
     -----
-    Sequence of operation :
+    The expected result of an operation is mostly defined by :  the operation applied;
+    the main "primary" inputs; and the `check_is_lenient` state.
 
-    1. construct 2 inputs from _ATTRS_TESTCASE_INPUTS[check_testcase]
-    2. perform ``result = op(*inputs, lenient=check_lenient)``
-    3. (except for equality) convert the result to a "result-code string",
-       again as in test_netcdf_loadsaveattrs.
-    4  assert that the (encoded) results match the expected
+    In the case of the "equals" operation, however, the expected result is simply
+    set to `False` if the secondary inputs do not match.
+
+    Calling with different values for the keywords aims to show that the main operation
+    has the expected value, from _ALL_RESULTS, the ***same in essentially all cases***
+    ( though modified in specific ways for some factors ).
+
+    This regularity also demonstrates the required independence over the other
+    test-factors, i.e. global/local attribute type, and right-left order.
     """
-    # cases.keys() are the testcase names -- these should always match the master table
-    assert cases.keys() == _ATTRS_TESTCASE_INPUTS.keys()
-    # Each case is recorded as testcase: (<input>, [*output-codes])
-    # The "input"s are only for readability, and should match those in the master table.
+    # Just for comfort, check that inputs are all one of a few single characters.
     assert all(
-        cases[key][0] == _ATTRS_TESTCASE_INPUTS[key]
-        for key in _ATTRS_TESTCASE_INPUTS
+        (item in list("ABCDX")) for item in (primary_inputs + secondary_inputs)
     )
+    # Interpret "primary" and "secondary" inputs as "global" and "local" attributes.
+    if check_global_not_local:
+        global_values, local_values = primary_inputs, secondary_inputs
+    else:
+        local_values, global_values = primary_inputs, secondary_inputs
 
-    # Fetch input test-values from the common dictionary.
-    input_spec, result_specs = cases[check_testcase]
-    input_spec = input_spec.split(
-        ":"
-    )  # make a list from the two sides of the ":"
-    assert len(input_spec) == 2
-    # convert to a list of (global, *locals) value sets
-    input_values = decode_matrix_input(input_spec)
-
-    # form 2 inputs to the operation
-    def attrsdict(value):
-        if value is None:
-            result = {}
-        else:
-            result = {"_testattr_": value}
-        return result
-
-    input_attributes = (
+    # Form 2 inputs to the operation :  Make left+right split-attribute input
+    # dictionaries, with both the primary and secondary attribute value settings.
+    input_dicts = [
         CubeAttrsDict(
-            globals=attrsdict(values[0]), locals=attrsdict(values[1])
+            globals=make_attrsdict(global_value),
+            locals=make_attrsdict(local_value),
         )
-        for values in input_values
-    )
+        for global_value, local_value in zip(global_values, local_values)
+    ]
+    # Make left+right CubeMetadata with just those attributes, other fields all blank.
     input_l, input_r = [
         CubeMetadata(
             **{
@@ -198,91 +306,123 @@ def check_splitattrs_op(
                 for field in CubeMetadata._fields
             }
         )
-        for attrs in input_attributes
+        for attrs in input_dicts
     ]
 
+    if check_reversed:
+        # Swap the inputs to perform a 'reversed' calculation.
+        input_l, input_r = input_r, input_l
+
     # Run the actual operation
-    result = getattr(input_l, op)(input_r, lenient=check_lenient)
+    result = getattr(input_l, operation_name)(
+        input_r, lenient=check_is_lenient
+    )
 
-    # Get the expected result, the strict/lenient one as required
-    if len(result_specs) == 1:
-        expected_spec = result_specs[0]
-    else:
-        expected_spec = result_specs[1 if check_lenient else 0]
+    if operation_name == "difference" and check_reversed:
+        # Adjust the expected result of a "reversed" operation
+        # ( N.B. only "difference" results are affected by reversal. )
+        if isinstance(result, CubeMetadata):
+            result = result._replace(attributes=result.attributes[::-1])
 
-    # Convert the operation result to the form of the recorded "expected" output.
-    # N.B. the expected-result format depends on the operation under test.
-    assert op in ("combine", "difference", "equal")
-    if op == "combine":
-        # "combine" results are CubeMetadata objects
-        # convert global+local values to a result-code string
-        values = [
-            result.attributes.globals.get("_testattr_", None),
-            result.attributes.locals.get("_testattr_", None),
-        ]
-        # N.B. encode_matrix_result returns a list of results (always 1 in this case).
-        (result,) = encode_matrix_result(values)
+    # Extract, from the operation result, the value to be tested against "expected".
+    result = extract_result_value(result, check_global_not_local)
 
-    elif op == "difference":
-        #   "difference" op results are CubeMetadata : its values are difference-pairs.
-        if result is None:
-            # Use a unique string to indicate a null result
-            result = "-"
-        else:
-            # result is a CubeMetadata whose .attributes is a pair of CubeAttrsDict
-            assert isinstance(result, CubeMetadata)
-            assert isinstance(result.attributes, tuple)
-            assert len(result.attributes) == 2
-            assert all(
-                isinstance(dic, CubeAttrsDict) for dic in result.attributes
-            )
+    # Get the *expected* result for this operation.
+    which = "lenient" if check_is_lenient else "strict"
+    primary_key = "primary" + primary_inputs
+    expected = _ALL_RESULTS[operation_name][primary_key][which]
+    if operation_name == "equal" and expected:
+        # Account for the equality cases made `False` by mismatched secondary values.
+        secondary_1, secondary_2 = secondary_inputs
+        if (
+            secondary_1 != "X"
+            and secondary_2 != "X"
+            and secondary_1 != secondary_2
+        ):
+            expected = False
 
-            # calculate value-pairs in each section, where present
-            global_local_valuepairs = [
-                [
-                    val.globals.get("_testattr_", None)
-                    for val in result.attributes
-                ],
-                [
-                    val.locals.get("_testattr_", None)
-                    for val in result.attributes
-                ],
-            ]
-            # E.G. [[None, "a"], [None, None]], or [["a", "b"], [None, "c"]]
-
-            # convert these difference-value-pairs to coded strings, which we will
-            # treat as "global and local values" for conversion into a spec string
-            # E.G. ["a", "b"] --> "ab""
-            # E.G. [None, "a"] --> "-a"
-            # E.G. [None, None] --> "--"
-            def valrep_single(val):
-                return "-" if val is None else val
-
-            def valrep_pair(val):
-                assert len(val) == 2
-                return valrep_single(val[0]) + valrep_single(val[1])
-
-            global_local_valuecodes = [
-                valrep_pair(val) for val in global_local_valuepairs
-            ]
-
-            # Encode those "value-codes" as a result-code string
-            # E.G. converting
-            # (value-pairs) == [[None, "a"], [None, None]]
-            #   --> (value-codes) ["-a", "--"]
-            #   --> (result) "G-aL--"
-            # N.B. encode_matrix_result returns a list of results (1 in this case).
-            (result,) = encode_matrix_result(global_local_valuecodes)
-
-    else:
-        # "equal" op result is a boolean : needs no further conversion
-        assert op == "equal"
-
-    # Check that the coded result matches the expectation.
-    assert result == expected_spec
+    # Check that actual extracted operation result matches the "expected" one.
+    assert result == expected
 
 
-class Test___eq__:
+class MixinSplitattrsMatrixTests:
+    """
+    Define split-attributes tests to perform on all the metadata operations.
+
+    This is inherited by the testclass for each operation :
+    i.e. Test__eq__, Test_combine" and Test_difference
+    """
+
+    # Define the operation name : set in each inheritor
+    operation_name = None
+
+    def test_splitattrs_cases(
+        self,
+        op_leniency,
+        primary_values,
+        primary_is_global_not_local,
+        order_reversed,
+    ):
+        """
+        Check the basic operaation against the expected result from _ALL_RESULTS.
+
+        Parametrisation checks over various factors : strict and lenient ; global and
+        local type attributes ; possible arrangements of the primary values ; and
+        left-to-right or right-to-left operation order.
+        """
+        primary_inputs = primary_values[-2:]
+        check_is_lenient = {"strict": False, "lenient": True}[op_leniency]
+        check_splitattrs_testcase(
+            operation_name=self.operation_name,
+            check_is_lenient=check_is_lenient,
+            primary_inputs=primary_inputs,
+            secondary_inputs="XX",
+            check_global_not_local=primary_is_global_not_local,
+            check_reversed=order_reversed,
+        )
+
+    @pytest.mark.parametrize(
+        "secondary_values", ["secondaryXX", "secondaryCC", "secondaryCD"]
+    )
+    def test_splitattrs_global_local_independence(
+        self,
+        op_leniency,
+        primary_values,
+        secondary_values,
+    ):
+        """
+        Check that results are (mostly) independent of the "other" type attributes.
+
+        The operation on attributes of the 'primary' type (global/local) should be
+        basically unaffected by those of the 'secondary' type (--> local/global).
+
+        This is not really true for equality, so we adjust those results to compensate.
+        See :func:`check_splitattrs_testcase` for explanations.
+
+        Notes
+        -----
+        We provide this *separate* test for global/local attribute independence,
+        parametrized over selected relevant arrangements of the 'secondary' values, and
+        do not test with reversed order or "local" primary inputs.
+        This is because matrix testing over *all* relevant factors produces over 1000
+        possible combinations (!)
+        """
+        primary_inputs = primary_values[-2:]
+        secondary_inputs = secondary_values[-2:]
+        check_is_lenient = {"strict": False, "lenient": True}[op_leniency]
+        check_splitattrs_testcase(
+            operation_name=self.operation_name,
+            check_is_lenient=check_is_lenient,
+            primary_inputs=primary_inputs,
+            secondary_inputs=secondary_inputs,
+            check_global_not_local=True,
+            check_reversed=False,
+        )
+
+
+class Test___eq__(MixinSplitattrsMatrixTests):
+    operation_name = "equal"
+
     @pytest.fixture(autouse=True)
     def setup(self):
         self.lvalues = dict(
@@ -426,28 +566,6 @@ class Test___eq__:
             assert not lmetadata.__eq__(rmetadata)
             assert not rmetadata.__eq__(lmetadata)
 
-    @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
-    def test_op__splitattributes_cases(self, op_leniency, testcase):
-        # Check results for various global/local values of the same attribute.
-        # N.B. 'cases' dict specifies the expected results for each testcase.
-        check_splitattrs_op(
-            check_testcase=testcase,
-            check_lenient=op_leniency == "lenient",
-            op="equal",
-            cases={
-                "same": ("GaLb:GaLb", [True]),
-                "extra_global": ("GaL-:G-L-", [False, True]),
-                "extra_local": ("G-La:G-L-", [False, True]),
-                "same_global_local": ("GaL-:G-La", [False, True]),
-                "diff_global_local": ("GaL-:G-Lb", [False, True]),
-                "diffglobal_nolocal": ("GaL-:GbL-", [False]),
-                "diffglobal_samelocal": ("GaLc:GbLc", [False]),
-                "difflocal_noglobal": ("G-La:G-Lb", [False]),
-                "difflocal_sameglobal": ("GaLc:GaLd", [False]),
-                "diff_local_and_global": ("GaLc:GbLd", [False]),
-            },
-        )
-
 
 class Test___lt__(tests.IrisTest):
     def setUp(self):
@@ -480,7 +598,9 @@ class Test___lt__(tests.IrisTest):
         self.assertFalse(result)
 
 
-class Test_combine:
+class Test_combine(MixinSplitattrsMatrixTests):
+    operation_name = "combine"
+
     @pytest.fixture(autouse=True)
     def setup(self):
         self.lvalues = dict(
@@ -657,30 +777,10 @@ class Test_combine:
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
 
-    @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
-    def test_op__splitattributes_cases(self, op_leniency, testcase):
-        # Check results for various global/local values of the same attribute.
-        # N.B. 'cases' dict specifies the expected results for each testcase.
-        check_splitattrs_op(
-            check_testcase=testcase,
-            check_lenient=op_leniency == "lenient",
-            op="combine",
-            cases={
-                "same": ("GaLb:GaLb", ["GaLb"]),
-                "extra_global": ("GaL-:G-L-", ["G-L-", "GaL-"]),
-                "extra_local": ("G-La:G-L-", ["G-L-", "G-La"]),
-                "same_global_local": ("GaL-:G-La", ["G-L-", "GaLa"]),
-                "diff_global_local": ("GaL-:G-Lb", ["G-L-", "GaLb"]),
-                "diffglobal_nolocal": ("GaL-:GbL-", ["G-L-"]),
-                "diffglobal_samelocal": ("GaLc:GbLc", ["G-Lc"]),
-                "difflocal_noglobal": ("G-La:G-Lb", ["G-L-"]),
-                "difflocal_sameglobal": ("GaLc:GaLd", ["GaL-"]),
-                "diff_local_and_global": ("GaLc:GbLd", ["G-L-"]),
-            },
-        )
 
+class Test_difference(MixinSplitattrsMatrixTests):
+    operation_name = "difference"
 
-class Test_difference:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.lvalues = dict(
@@ -869,28 +969,6 @@ class Test_difference:
             # As calculated above -- same for both strict + lenient
             assert lmetadata.difference(rmetadata)._asdict() == lexpected
             assert rmetadata.difference(lmetadata)._asdict() == rexpected
-
-    @pytest.mark.parametrize("testcase", _ATTRS_TESTCASE_NAMES)
-    def test_op__splitattributes_cases(self, op_leniency, testcase):
-        # Check results for various global/local values of the same attribute.
-        # N.B. 'cases' dict specifies the expected results for each testcase.
-        check_splitattrs_op(
-            check_testcase=testcase,
-            check_lenient=op_leniency == "lenient",
-            op="difference",
-            cases={
-                "same": ("GaLb:GaLb", ["-"]),
-                "extra_global": ("GaL-:G-L-", ["Ga-L--", "-"]),
-                "extra_local": ("G-La:G-L-", ["G--La-", "-"]),
-                "same_global_local": ("GaL-:G-La", ["Ga-L-a", "-"]),
-                "diff_global_local": ("GaL-:G-Lb", ["Ga-L-b", "-"]),
-                "diffglobal_nolocal": ("GaL-:GbL-", ["GabL--"]),
-                "diffglobal_samelocal": ("GaLc:GbLc", ["GabL--"]),
-                "difflocal_noglobal": ("G-La:G-Lb", ["G--Lab"]),
-                "difflocal_sameglobal": ("GaLc:GaLd", ["G--Lcd"]),
-                "diff_local_and_global": ("GaLc:GbLd", ["GabLcd"]),
-            },
-        )
 
 
 class Test_equal(tests.IrisTest):
