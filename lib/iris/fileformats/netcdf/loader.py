@@ -16,7 +16,7 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
-from enum import Enum
+from enum import Enum, auto
 import threading
 from typing import Union
 import warnings
@@ -237,50 +237,50 @@ def _get_cf_var_data(cf_var, filename):
             )
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
-            if CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.AS_DASK:
-                return as_lazy_data(
-                    proxy, chunks=None, as_dask=True
+            if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
+                result = as_lazy_data(
+                    proxy, chunks=None, dask_chunking=True
                 )
-            chunks = cf_var.cf_data.chunking()
-            #
-            if chunks is None and CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.FROM_FILE:
-                raise KeyError(
-                    f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
-                    f"Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
-                    f" behaviour outside of a context manager. "
-                )
-            # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
-            if chunks == "contiguous":
-                # Equivalent to chunks=None, but value required by chunking control
-                chunks = list(cf_var.shape)
-
-            # Modify the chunking in the context of an active chunking control.
-            # N.B. settings specific to this named var override global ('*') ones.
-            dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
-                cf_var.cf_name
-            ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
-            dims = cf_var.cf_data.dimensions
-            if CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.FROM_FILE:
-                dims_fixed = np.ones(len(dims), dtype=bool)
-            elif not dim_chunks:
-                dims_fixed = None
             else:
-                # Modify the chunks argument, and pass in a list of 'fixed' dims, for
-                # any of our dims which are controlled.
-                dims_fixed = np.zeros(len(dims), dtype=bool)
-                for i_dim, dim_name in enumerate(dims):
-                    dim_chunksize = dim_chunks.get(dim_name)
-                    if dim_chunksize:
-                        if dim_chunksize == -1:
-                            chunks[i_dim] = cf_var.shape[i_dim]
-                        else:
-                            chunks[i_dim] = dim_chunksize
-                        dims_fixed[i_dim] = True
-            if dims_fixed is None:
-                dims_fixed = [dims_fixed]
-            result = as_lazy_data(
-                proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
-            )
+                chunks = cf_var.cf_data.chunking()
+                if chunks is None and CHUNK_CONTROL.mode == ChunkControl.Modes.FROM_FILE:
+                    raise KeyError(
+                        f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
+                        f"Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
+                        f" behaviour outside of a context manager. "
+                    )
+                # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
+                if chunks == "contiguous":
+                    # Equivalent to chunks=None, but value required by chunking control
+                    chunks = list(cf_var.shape)
+
+                # Modify the chunking in the context of an active chunking control.
+                # N.B. settings specific to this named var override global ('*') ones.
+                dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
+                    cf_var.cf_name
+                ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
+                dims = cf_var.cf_data.dimensions
+                if CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE:
+                    dims_fixed = np.ones(len(dims), dtype=bool)
+                elif not dim_chunks:
+                    dims_fixed = None
+                else:
+                    # Modify the chunks argument, and pass in a list of 'fixed' dims, for
+                    # any of our dims which are controlled.
+                    dims_fixed = np.zeros(len(dims), dtype=bool)
+                    for i_dim, dim_name in enumerate(dims):
+                        dim_chunksize = dim_chunks.get(dim_name)
+                        if dim_chunksize:
+                            if dim_chunksize == -1:
+                                chunks[i_dim] = cf_var.shape[i_dim]
+                            else:
+                                chunks[i_dim] = dim_chunksize
+                            dims_fixed[i_dim] = True
+                if dims_fixed is None:
+                    dims_fixed = [dims_fixed]
+                result = as_lazy_data(
+                    proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
+                )
     return result
 
 
@@ -668,6 +668,11 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
 
 class ChunkControl(threading.local):
+    class Modes(Enum):
+        DEFAULT = auto()
+        FROM_FILE = auto()
+        AS_DASK = auto()
+
     def __init__(self, var_dim_chunksizes=None):
         """
         Provide user control of Dask chunking.
@@ -690,7 +695,6 @@ class ChunkControl(threading.local):
 
         """
         self.var_dim_chunksizes = var_dim_chunksizes or {}
-        self.Modes = Enum('Modes', ['DEFAULT', 'FROM_FILE', 'AS_DASK'])
         self.mode = self.Modes.DEFAULT
 
     @contextmanager
