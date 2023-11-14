@@ -111,8 +111,15 @@ def primary_values(request):
     """
     Parametrize over the possible non-trivial pairs of operation values.
 
-    The possible cases are : where one side has a missing value; where both sides
-    have the same non-missing value; and where they have different non-missing values.
+    The parameters all provide two attribute values which are the left- and right-hand
+    arguments to the tested operation.  The attribute values are single characters from
+    the end of the parameter name -- except that "X" denotes a "missing" attribute.
+
+    The possible cases are:
+
+    * one side has a value and the other is missing
+    * left and right have the same non-missing value
+    * left and right have different non-missing values
     """
     return request.param
 
@@ -130,10 +137,14 @@ def order_reversed(request):
 
 
 # Define the expected results for split-attribute testing.
-# This dictionary records the expected for the various possible arrangements of values
-# of a single attribute in the "left" and "right" inputs of a CubeMetadata operation.
+# This dictionary records the expected results for the various possible arrangements of
+# values of a single attribute in the "left" and "right" inputs of a CubeMetadata
+# operation.
 # The possible operations are "equal", "combine" or "difference", and may all be
 # performed "strict" or "lenient".
+# N.B. the *same* results should also apply when left+right are swapped, with a suitable
+# adjustment to the result value.  Likewise, results should be the same for either
+# global- or local-style attributes.
 _ALL_RESULTS = {
     "equal": {
         "primaryAA": {"lenient": True, "strict": True},
@@ -151,6 +162,7 @@ _ALL_RESULTS = {
         "primaryAB": {"lenient": ("A", "B"), "strict": ("A", "B")},
     },
 }
+# A fixed attribute name used for all the split-attribute testing.
 _TEST_ATTRNAME = "_test_attr_"
 
 
@@ -189,7 +201,7 @@ def extract_result_value(input, extract_global):
 
     Returns
     -------
-    None | bool | str or tuple of (None | str)
+    None | bool | str | tuple[None | str]
         result value(s)
     """
     if not isinstance(input, CubeMetadata):
@@ -222,7 +234,7 @@ def extract_result_value(input, extract_global):
 
 def make_attrsdict(value):
     """
-    Return a dictionary containing a test attribute of the given value.
+    Return a dictionary containing a test attribute with the given value.
 
     If the value is "X", the attribute is absent (result is empty dict).
     """
@@ -237,8 +249,8 @@ def make_attrsdict(value):
 def check_splitattrs_testcase(
     operation_name: str,
     check_is_lenient: bool,
-    primary_inputs: str = "AA",  # character values
-    secondary_inputs: str = "XX",  # character values
+    primary_inputs: str = "AA",  # two character values
+    secondary_inputs: str = "XX",  # two character values
     check_global_not_local: bool = True,
     check_reversed: bool = False,
 ):
@@ -258,7 +270,8 @@ def check_splitattrs_testcase(
         A further pair of values for an attribute of the same name but "other" type
         ( i.e. global/local when the main test is local/global ).
     check_global_not_local : bool
-        If True, the main operands are the global ones, and secondary are local.
+        If `True` then the primary operands, and the tested result values, are *global*
+        attributes, and the secondary ones are local.
         Otherwise, the other way around.
     check_reversed : bool
         If True, the left and right operands are exchanged, and the expected value
@@ -267,7 +280,7 @@ def check_splitattrs_testcase(
     Notes
     -----
     The expected result of an operation is mostly defined by :  the operation applied;
-    the main "primary" inputs; and the `check_is_lenient` state.
+    the main "primary" inputs; and the lenient/strict mode.
 
     In the case of the "equals" operation, however, the expected result is simply
     set to `False` if the secondary inputs do not match.
@@ -298,7 +311,7 @@ def check_splitattrs_testcase(
         )
         for global_value, local_value in zip(global_values, local_values)
     ]
-    # Make left+right CubeMetadata with just those attributes, other fields all blank.
+    # Make left+right CubeMetadata with those attributes, other fields all blank.
     input_l, input_r = [
         CubeMetadata(
             **{
@@ -319,7 +332,7 @@ def check_splitattrs_testcase(
     )
 
     if operation_name == "difference" and check_reversed:
-        # Adjust the expected result of a "reversed" operation
+        # Adjust the result of a "reversed" operation to the 'normal' way round.
         # ( N.B. only "difference" results are affected by reversal. )
         if isinstance(result, CubeMetadata):
             result = result._replace(attributes=result.attributes[::-1])
@@ -350,7 +363,7 @@ class MixinSplitattrsMatrixTests:
     Define split-attributes tests to perform on all the metadata operations.
 
     This is inherited by the testclass for each operation :
-    i.e. Test__eq__, Test_combine" and Test_difference
+    i.e. Test___eq__, Test_combine and Test_difference
     """
 
     # Define the operation name : set in each inheritor
@@ -364,11 +377,14 @@ class MixinSplitattrsMatrixTests:
         order_reversed,
     ):
         """
-        Check the basic operaation against the expected result from _ALL_RESULTS.
+        Check the basic operation against the expected result from _ALL_RESULTS.
 
-        Parametrisation checks over various factors : strict and lenient ; global and
-        local type attributes ; possible arrangements of the primary values ; and
-        left-to-right or right-to-left operation order.
+        Parametrisation checks this for all combinations of various factors :
+
+        * possible arrangements of the primary values
+        * strict and lenient
+        * global- and local-type attributes
+        * left-to-right or right-to-left operation order.
         """
         primary_inputs = primary_values[-2:]
         check_is_lenient = {"strict": False, "lenient": True}[op_leniency]
@@ -404,8 +420,8 @@ class MixinSplitattrsMatrixTests:
         We provide this *separate* test for global/local attribute independence,
         parametrized over selected relevant arrangements of the 'secondary' values, and
         do not test with reversed order or "local" primary inputs.
-        This is because matrix testing over *all* relevant factors produces over 1000
-        possible combinations (!)
+        This is because matrix testing over *all* relevant factors simply produces too
+        many possible combinations.
         """
         primary_inputs = primary_values[-2:]
         secondary_inputs = secondary_values[-2:]

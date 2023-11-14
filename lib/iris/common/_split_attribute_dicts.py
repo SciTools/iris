@@ -25,7 +25,7 @@ from functools import wraps
 
 def _convert_splitattrs_to_pairedkeys_dict(dic):
     """
-    Convert a split-attributes dictionary to "normal" dict.
+    Convert a split-attributes dictionary to a "normal" dict.
 
     Transform a :class:`~iris.cube.CubeAttributesDict` "split" attributes dictionary
     into a 'normal' :class:`dict`, with paired keys of the form ('global', name) or
