@@ -195,7 +195,7 @@ copybutton_line_continuation_character = "\\"
 todo_include_todos = True
 
 # api generation configuration
-autodoc_member_order = "bysource"
+autodoc_member_order = "alphabetical"
 autodoc_default_flags = ["show-inheritance"]
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
