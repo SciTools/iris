@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.CubeAttrsDict` class."""
 
 import pickle
@@ -27,8 +26,8 @@ def check_content(attrs, locals=None, globals=None, matches=None):
     # If locals/globals are set, test for equality and non-identity.
     assert isinstance(attrs, CubeAttrsDict)
     attr_locals, attr_globals = attrs.locals, attrs.globals
-    assert type(attr_locals) == LimitedAttributeDict
-    assert type(attr_globals) == LimitedAttributeDict
+    assert type(attr_locals) == LimitedAttributeDict  # noqa: E721
+    assert type(attr_globals) == LimitedAttributeDict  # noqa: E721
     if matches:
         locals, globals = matches.locals, matches.globals
 
