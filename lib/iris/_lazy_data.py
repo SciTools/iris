@@ -225,7 +225,9 @@ def _optimum_chunksize(
     )
 
 
-def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None, dask_chunking=False):
+def as_lazy_data(
+    data, chunks=None, asarray=False, dims_fixed=None, dask_chunking=False
+):
     """
     Convert the input array `data` to a :class:`dask.array.Array`.
 
@@ -267,7 +269,9 @@ def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None, dask_chunkin
     """
     if dask_chunking:
         if chunks is not None:
-            raise ValueError(f"Dask chunking chosen, but chunks already assigned value {chunks}")
+            raise ValueError(
+                f"Dask chunking chosen, but chunks already assigned value {chunks}"
+            )
         lazy_params = {"asarray": asarray, "meta": np.ndarray}
     else:
         if chunks is None:
@@ -281,15 +285,20 @@ def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None, dask_chunkin
         if all(elem > 0 for elem in data.shape):
             # Expand or reduce the basic chunk shape to an optimum size.
             chunks = _optimum_chunksize(
-                chunks, shape=data.shape, dtype=data.dtype, dims_fixed=dims_fixed
+                chunks,
+                shape=data.shape,
+                dtype=data.dtype,
+                dims_fixed=dims_fixed,
             )
-            lazy_params = {"chunks": chunks, "asarray": asarray, "meta": np.ndarray}
+            lazy_params = {
+                "chunks": chunks,
+                "asarray": asarray,
+                "meta": np.ndarray,
+            }
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
-        data = da.from_array(
-            data, **lazy_params
-        )
+        data = da.from_array(data, **lazy_params)
     return data
 
 
