@@ -237,6 +237,12 @@ def _get_cf_var_data(cf_var, filename):
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
             chunks = cf_var.cf_data.chunking()
+            if chunks is None and CHUNK_CONTROL.file_mode:
+                raise KeyError(
+                    f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
+                    f"Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
+                    f" behaviour outside of a context manager. "
+                )
             # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
             if chunks == "contiguous":
                 # Equivalent to chunks=None, but value required by chunking control
@@ -247,17 +253,22 @@ def _get_cf_var_data(cf_var, filename):
             dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
                 cf_var.cf_name
             ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
-            if not dim_chunks:
+            dims = cf_var.cf_data.dimensions
+            if CHUNK_CONTROL.file_mode:
+                dims_fixed = np.ones(len(dims), dtype=bool)
+            elif not dim_chunks:
                 dims_fixed = None
             else:
                 # Modify the chunks argument, and pass in a list of 'fixed' dims, for
                 # any of our dims which are controlled.
-                dims = cf_var.cf_data.dimensions
                 dims_fixed = np.zeros(len(dims), dtype=bool)
                 for i_dim, dim_name in enumerate(dims):
                     dim_chunksize = dim_chunks.get(dim_name)
                     if dim_chunksize:
-                        chunks[i_dim] = dim_chunksize
+                        if dim_chunksize == -1:
+                            chunks[i_dim] = cf_var.shape[i_dim]
+                        else:
+                            chunks[i_dim] = dim_chunksize
                         dims_fixed[i_dim] = True
             if dims_fixed is None:
                 dims_fixed = [dims_fixed]
@@ -673,6 +684,7 @@ class ChunkControl(threading.local):
 
         """
         self.var_dim_chunksizes = var_dim_chunksizes or {}
+        self.file_mode = False
 
     @contextmanager
     def set(
@@ -750,6 +762,25 @@ class ChunkControl(threading.local):
             yield
         finally:
             self.var_dim_chunksizes = old_settings
+
+    @contextmanager
+    def from_file(self) -> None:
+        """
+        Ensures the chunks are loaded in from file variables, else will throw an error.
+
+        Notes
+        -----
+        This function acts as a contextmanager, for use in a 'with' block.
+        """
+        try:
+            old_file_mode = self.file_mode
+            old_var_dim_chunksizes = self.var_dim_chunksizes
+            self.file_mode = True
+            yield
+        finally:
+            self.file_mode = old_file_mode
+            self.var_dim_chunksizes = old_var_dim_chunksizes
+
 
 
 # Note: the CHUNK_CONTROL object controls chunk sizing in the
