@@ -16,6 +16,7 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
+from enum import Enum
 import threading
 from typing import Union
 import warnings
@@ -236,8 +237,13 @@ def _get_cf_var_data(cf_var, filename):
             )
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
+            if CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.AS_DASK:
+                return as_lazy_data(
+                    proxy, chunks=None, as_dask=True
+                )
             chunks = cf_var.cf_data.chunking()
-            if chunks is None and CHUNK_CONTROL.file_mode:
+            #
+            if chunks is None and CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.FROM_FILE:
                 raise KeyError(
                     f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
                     f"Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
@@ -254,7 +260,7 @@ def _get_cf_var_data(cf_var, filename):
                 cf_var.cf_name
             ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
             dims = cf_var.cf_data.dimensions
-            if CHUNK_CONTROL.file_mode:
+            if CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.FROM_FILE:
                 dims_fixed = np.ones(len(dims), dtype=bool)
             elif not dim_chunks:
                 dims_fixed = None
@@ -684,7 +690,8 @@ class ChunkControl(threading.local):
 
         """
         self.var_dim_chunksizes = var_dim_chunksizes or {}
-        self.file_mode = False
+        self.Modes = Enum('Modes', ['DEFAULT', 'FROM_FILE', 'AS_DASK'])
+        self.mode = self.Modes.DEFAULT
 
     @contextmanager
     def set(
@@ -731,7 +738,8 @@ class ChunkControl(threading.local):
         ``dask.config.set({'array.chunk-size': '250MiB'})``.
 
         """
-        old_settings = deepcopy(self.var_dim_chunksizes)
+        old_mode = self.mode
+        old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)
         if var_names is None:
             var_names = ["*"]
         elif isinstance(var_names, str):
@@ -761,7 +769,8 @@ class ChunkControl(threading.local):
                     dim_chunks[dim_name] = chunksize
             yield
         finally:
-            self.var_dim_chunksizes = old_settings
+            self.var_dim_chunksizes = old_var_dim_chunksizes
+            self.mode = old_mode
 
     @contextmanager
     def from_file(self) -> None:
@@ -772,13 +781,32 @@ class ChunkControl(threading.local):
         -----
         This function acts as a contextmanager, for use in a 'with' block.
         """
+        old_mode = self.mode
+        old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)
         try:
-            old_file_mode = self.file_mode
-            old_var_dim_chunksizes = self.var_dim_chunksizes
-            self.file_mode = True
+            self.mode = self.Modes.FROM_FILE
             yield
         finally:
-            self.file_mode = old_file_mode
+            self.mode = old_mode
+            self.var_dim_chunksizes = old_var_dim_chunksizes
+
+
+    @contextmanager
+    def as_dask(self) -> None:
+        """
+        Ensures the chunks are decided from dask.
+
+        Notes
+        -----
+        This function acts as a contextmanager, for use in a 'with' block.
+        """
+        old_mode = self.mode
+        old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)
+        try:
+            self.mode = self.Modes.AS_DASK
+            yield
+        finally:
+            self.mode = old_mode
             self.var_dim_chunksizes = old_var_dim_chunksizes
 
 

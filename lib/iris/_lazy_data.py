@@ -225,7 +225,7 @@ def _optimum_chunksize(
     )
 
 
-def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None):
+def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None, as_dask=False):
     """
     Convert the input array `data` to a :class:`dask.array.Array`.
 
@@ -260,26 +260,34 @@ def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None):
         but reduced by a factor if that exceeds the dask default chunksize.
 
     """
-    if chunks is None:
-        # No existing chunks : Make a chunk the shape of the entire input array
-        # (but we will subdivide it if too big).
-        chunks = list(data.shape)
+    if as_dask:
+        if chunks is not None:
+            raise ValueError(f"Dask chunking chosen, but chunks already assigned value {chunks}")
+    else:
+        if chunks is None:
+            # No existing chunks : Make a chunk the shape of the entire input array
+            # (but we will subdivide it if too big).
+            chunks = list(data.shape)
 
-    # Adjust chunk size for better dask performance,
-    # NOTE: but only if no shape dimension is zero, so that we can handle the
-    # PPDataProxy of "raw" landsea-masked fields, which have a shape of (0, 0).
-    if all(elem > 0 for elem in data.shape):
-        # Expand or reduce the basic chunk shape to an optimum size.
-        chunks = _optimum_chunksize(
-            chunks, shape=data.shape, dtype=data.dtype, dims_fixed=dims_fixed
-        )
-
+        # Adjust chunk size for better dask performance,
+        # NOTE: but only if no shape dimension is zero, so that we can handle the
+        # PPDataProxy of "raw" landsea-masked fields, which have a shape of (0, 0).
+        if all(elem > 0 for elem in data.shape):
+            # Expand or reduce the basic chunk shape to an optimum size.
+            chunks = _optimum_chunksize(
+                chunks, shape=data.shape, dtype=data.dtype, dims_fixed=dims_fixed
+            )
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
-        data = da.from_array(
-            data, chunks=chunks, asarray=asarray, meta=np.ndarray
-        )
+        if as_dask:
+            data = da.from_array(
+                data, asarray=asarray, meta=np.ndarray
+            )
+        else:
+            data = da.from_array(
+                data, chunks=chunks, asarray=asarray, meta=np.ndarray
+            )
     return data
 
 
