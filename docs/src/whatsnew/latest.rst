@@ -24,7 +24,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
 
 
 ✨ Features
@@ -37,6 +37,13 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ added the :class:`~iris.coord_systems.ObliqueMercator`
    and :class:`~iris.coord_systems.RotatedMercator` coordinate systems,
    complete with NetCDF loading and saving. (:pull:`5548`)
+
+#. `@trexfeathers`_ added the ``use_year_at_season_start`` parameter to
+   :func:`iris.coord_categorisation.add_season_year`. When
+   ``use_year_at_season_start==True``: seasons spanning the year boundary (e.g.
+   Winter - December to February) will be assigned to the preceding year (e.g.
+   the year of December) instead of the following year (the default behaviour).
+   (:pull:`5573`)
 
 
 🐛 Bugs Fixed
