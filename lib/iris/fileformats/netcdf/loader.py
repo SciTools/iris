@@ -782,7 +782,6 @@ class ChunkControl(threading.local):
             self.var_dim_chunksizes = old_var_dim_chunksizes
 
 
-
 # Note: the CHUNK_CONTROL object controls chunk sizing in the
 # :meth:`_get_cf_var_data` method.
 # N.B. :meth:`_load_cube` also modifies this when loading each cube,
