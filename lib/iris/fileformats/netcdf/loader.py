@@ -238,12 +238,13 @@ def _get_cf_var_data(cf_var, filename):
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
             if CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.AS_DASK:
-                return as_lazy_data(
-                    proxy, chunks=None, as_dask=True
-                )
+                return as_lazy_data(proxy, chunks=None, as_dask=True)
             chunks = cf_var.cf_data.chunking()
             #
-            if chunks is None and CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.FROM_FILE:
+            if (
+                chunks is None
+                and CHUNK_CONTROL.mode == CHUNK_CONTROL.Modes.FROM_FILE
+            ):
                 raise KeyError(
                     f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
                     f"Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
@@ -690,7 +691,7 @@ class ChunkControl(threading.local):
 
         """
         self.var_dim_chunksizes = var_dim_chunksizes or {}
-        self.Modes = Enum('Modes', ['DEFAULT', 'FROM_FILE', 'AS_DASK'])
+        self.Modes = Enum("Modes", ["DEFAULT", "FROM_FILE", "AS_DASK"])
         self.mode = self.Modes.DEFAULT
 
     @contextmanager
@@ -789,7 +790,6 @@ class ChunkControl(threading.local):
         finally:
             self.mode = old_mode
             self.var_dim_chunksizes = old_var_dim_chunksizes
-
 
     @contextmanager
     def as_dask(self) -> None:
