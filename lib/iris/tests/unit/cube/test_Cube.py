@@ -3426,7 +3426,7 @@ class TestAttributesProperty:
     def test_attrs_type(self):
         # Cube attributes are always of a special dictionary type.
         cube = Cube([0], attributes={"a": 1})
-        assert type(cube.attributes) == CubeAttrsDict
+        assert type(cube.attributes) == CubeAttrsDict  # noqa: E721
         assert cube.attributes == {"a": 1}
 
     def test_attrs_remove(self):
@@ -3435,7 +3435,7 @@ class TestAttributesProperty:
         attrs = cube.attributes
         cube.attributes = None
         assert cube.attributes is not attrs
-        assert type(cube.attributes) == CubeAttrsDict
+        assert type(cube.attributes) == CubeAttrsDict  # noqa: E721
         assert cube.attributes == {}
 
     def test_attrs_clear(self):
@@ -3444,7 +3444,7 @@ class TestAttributesProperty:
         attrs = cube.attributes
         cube.attributes.clear()
         assert cube.attributes is attrs
-        assert type(cube.attributes) == CubeAttrsDict
+        assert type(cube.attributes) == CubeAttrsDict  # noqa: E721
         assert cube.attributes == {}
 
 
