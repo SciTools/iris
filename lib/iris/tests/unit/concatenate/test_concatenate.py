@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._concatenate.concatenate.py`."""
 
 # import iris tests first so that some things can be initialised
@@ -239,6 +238,14 @@ class TestMessages(tests.IrisTest):
         cube_2 = cube_1.copy()
         cube_2.data.dtype = np.float64
         exc_regexp = "Data types differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_dim_coords_overlap_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.coord("time").points = np.arange(1, 3, dtype=np.float32)
+        exc_regexp = "Found cubes with overlap on concatenate axis"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import copy
 import functools
@@ -20,6 +19,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid, guess_coord_axis
 
 
@@ -1136,6 +1136,6 @@ def _create_cube(
                 "Cannot update aux_factory {!r} because of dropped"
                 " coordinates.".format(factory.name())
             )
-            warnings.warn(msg)
+            warnings.warn(msg, category=IrisImpossibleUpdateWarning)
 
     return result

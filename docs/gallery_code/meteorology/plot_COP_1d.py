@@ -54,7 +54,7 @@ def main():
     )
 
     # Generate area-weights array. As e1 and a1b are on the same grid we can
-    # do this just once and re-use. This method requires bounds on lat/lon
+    # do this just once and reuse. This method requires bounds on lat/lon
     # coords, so let's add some in sensible locations using the "guess_bounds"
     # method.
     e1.coord("latitude").guess_bounds()

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformat.ff.FFHeader`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -14,7 +13,7 @@ from unittest import mock
 
 import numpy as np
 
-from iris.fileformats._ff import FFHeader
+from iris.fileformats._ff import FFHeader, _WarnComboLoadingDefaulting
 
 MyGrid = collections.namedtuple("MyGrid", "column row real horiz_grid_type")
 
@@ -60,7 +59,8 @@ class Test_grid(tests.IrisTest):
                 grid = header.grid()
         warn.assert_called_with(
             "Staggered grid type: 0 not currently"
-            " interpreted, assuming standard C-grid"
+            " interpreted, assuming standard C-grid",
+            category=_WarnComboLoadingDefaulting,
         )
         self.assertIs(grid, mock.sentinel.grid)
 

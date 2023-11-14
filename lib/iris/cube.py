@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
 Classes for representing multi-dimensional data with metadata.
@@ -786,7 +785,7 @@ class CubeList(list):
         """
         Return a CubeList when CubeList.copy() is called.
         """
-        if type(self) == CubeList:
+        if isinstance(self, CubeList):
             return deepcopy(self)
 
 
@@ -1441,6 +1440,9 @@ class Cube(CFVariableMixin):
         will change the cube's :attr:`~iris.cube.Cube.units` attribute to
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
+
+        Full list of supported units can be found in the UDUNITS-2 documentation
+        https://docs.unidata.ucar.edu/udunits/current/#Database
 
         This operation preserves lazy data.
 
@@ -4027,6 +4029,7 @@ class Cube(CFVariableMixin):
     def __rdiv__(self, other):
         data = 1 / self.core_data()
         reciprocal = self.copy(data=data)
+        reciprocal.units = reciprocal.units**-1
         return iris.analysis.maths.multiply(reciprocal, other)
 
     __truediv__ = __div__
@@ -4161,7 +4164,10 @@ class Cube(CFVariableMixin):
             ]
             if lat_match:
                 for coord in lat_match:
-                    warnings.warn(msg.format(coord.name()))
+                    warnings.warn(
+                        msg.format(coord.name()),
+                        category=iris.exceptions.IrisUserWarning,
+                    )
 
         # Determine the dimensions we need to collapse (and those we don't)
         if aggregator.cell_method == "peak":
@@ -4748,7 +4754,8 @@ x            -               -
             if coord_.has_bounds():
                 warnings.warn(
                     "The bounds of coordinate %r were ignored in "
-                    "the rolling window operation." % coord_.name()
+                    "the rolling window operation." % coord_.name(),
+                    category=iris.exceptions.IrisIgnoringBoundsWarning,
                 )
 
             if coord_.ndim != 1:

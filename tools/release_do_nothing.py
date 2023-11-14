@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 A do-nothing script to hand-hold through the Iris release process.
 
@@ -279,6 +278,11 @@ def finalise_whats_new(
             whatsnew_title += " [release candidate]"
         # TODO: automate
         message = f"In {rsts.release.name}: set the page title to:\n{whatsnew_title}\n"
+        if not is_release_candidate:
+            message += (
+                "\nBe sure to remove any existing mentions of release "
+                "candidate from the title.\n"
+            )
         _wait_for_done(message)
 
         message = (

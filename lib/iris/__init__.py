@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 A package for handling multi-dimensional data and associated metadata.
 
@@ -183,6 +182,8 @@ class Future(threading.local):
         self.__dict__["datum_support"] = datum_support
         self.__dict__["pandas_ndim"] = pandas_ndim
         self.__dict__["save_split_attrs"] = save_split_attrs
+        # TODO: next major release: set IrisDeprecation to subclass
+        #  DeprecationWarning instead of UserWarning.
 
     def __repr__(self):
         # msg = ('Future(example_future_flag={})')

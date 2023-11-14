@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Definitions of coordinates and other dimensional metadata.
 
@@ -1464,12 +1463,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
                 # - Simple matching
                 me = self.point
             else:
-                if hasattr(other, "timetuple"):
-                    raise TypeError(
-                        "Cannot determine whether a point lies "
-                        "within a bounded region for "
-                        "datetime-like objects."
-                    )
                 # Point-and-bound vs number
                 # - Match if "within" the Cell
                 if operator_method in [operator.gt, operator.le]:
@@ -1510,14 +1503,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         """
         if self.bound is None:
             raise ValueError("Point cannot exist inside an unbounded cell.")
-        if hasattr(point, "timetuple") or np.any(
-            [hasattr(val, "timetuple") for val in self.bound]
-        ):
-            raise TypeError(
-                "Cannot determine whether a point lies within "
-                "a bounded region for datetime-like objects."
-            )
-
         return np.min(self.bound) <= point <= np.max(self.bound)
 
 
@@ -1862,6 +1847,8 @@ class Coord(_DimensionalMetadata):
         multiply each value in :attr:`~iris.coords.Coord.points` and
         :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
 
+        Full list of supported units can be found in the UDUNITS-2 documentation
+        https://docs.unidata.ucar.edu/udunits/current/#Database
         """
         super().convert_units(unit=unit)
 
@@ -2069,7 +2056,8 @@ class Coord(_DimensionalMetadata):
             if self.ndim == 1:
                 warnings.warn(
                     "Coordinate {!r} is not bounded, guessing "
-                    "contiguous bounds.".format(self.name())
+                    "contiguous bounds.".format(self.name()),
+                    category=iris.exceptions.IrisGuessBoundsWarning,
                 )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
@@ -2236,7 +2224,10 @@ class Coord(_DimensionalMetadata):
                     "Collapsing a multi-dimensional coordinate. "
                     "Metadata may not be fully descriptive for {!r}."
                 )
-                warnings.warn(msg.format(self.name()))
+                warnings.warn(
+                    msg.format(self.name()),
+                    category=iris.exceptions.IrisVagueMetadataWarning,
+                )
             else:
                 try:
                     self._sanity_check_bounds()
@@ -2246,7 +2237,10 @@ class Coord(_DimensionalMetadata):
                         "Metadata may not be fully descriptive for {!r}. "
                         "Ignoring bounds."
                     )
-                    warnings.warn(msg.format(str(exc), self.name()))
+                    warnings.warn(
+                        msg.format(str(exc), self.name()),
+                        category=iris.exceptions.IrisVagueMetadataWarning,
+                    )
                     self.bounds = None
                 else:
                     if not self.is_contiguous():
@@ -2254,7 +2248,10 @@ class Coord(_DimensionalMetadata):
                             "Collapsing a non-contiguous coordinate. "
                             "Metadata may not be fully descriptive for {!r}."
                         )
-                        warnings.warn(msg.format(self.name()))
+                        warnings.warn(
+                            msg.format(self.name()),
+                            category=iris.exceptions.IrisVagueMetadataWarning,
+                        )
 
             if self.has_bounds():
                 item = self.core_bounds()
@@ -3121,7 +3118,7 @@ class CellMethod(iris.util._OrderedHashable):
 
     def __add__(self, other):
         # Disable the default tuple behaviour of tuple concatenation
-        raise NotImplementedError()
+        return NotImplemented
 
     def xml_element(self, doc):
         """

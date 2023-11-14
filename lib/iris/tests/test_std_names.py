@@ -1,13 +1,12 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
-from iris.std_names import STD_NAMES
+from iris.std_names import CF_STANDARD_NAMES_TABLE_VERSION, STD_NAMES
 
 
 class TestStandardNames(tests.IrisTest):
@@ -18,7 +17,7 @@ class TestStandardNames(tests.IrisTest):
 
     longMessage = True
 
-    def test_standard_names(self):
+    def test_standard_names_table(self):
         # Check we have a dict
         self.assertIsInstance(STD_NAMES, dict)
 
@@ -45,6 +44,12 @@ class TestStandardNames(tests.IrisTest):
             invalid_nameset,
             "\nInvalid standard name(s) present in STD_NAMES",
         )
+
+    def test_standard_names_version(self):
+        # Check we have a dict
+        self.assertIsInstance(CF_STANDARD_NAMES_TABLE_VERSION, int)
+        # Check the value is roughly sensible.
+        self.assertTrue(70 < CF_STANDARD_NAMES_TABLE_VERSION < 999)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Integration tests covering thread safety during loading/saving netcdf files.
 
@@ -38,7 +37,7 @@ def tiny_chunks():
     def _check_tiny_loaded_chunks(cube: Cube):
         assert cube.has_lazy_data()
         cube_lazy_data = cube.core_data()
-        assert np.product(cube_lazy_data.chunksize) < cube_lazy_data.size
+        assert np.prod(cube_lazy_data.chunksize) < cube_lazy_data.size
 
     with dask.config.set({"array.chunk-size": "1KiB"}):
         yield _check_tiny_loaded_chunks
