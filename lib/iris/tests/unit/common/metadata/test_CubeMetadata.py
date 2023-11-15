@@ -346,12 +346,11 @@ def check_splitattrs_testcase(
     expected = _ALL_RESULTS[operation_name][primary_key][which]
     if operation_name == "equal" and expected:
         # Account for the equality cases made `False` by mismatched secondary values.
-        secondary_1, secondary_2 = secondary_inputs
-        if (
-            secondary_1 != "X"
-            and secondary_2 != "X"
-            and secondary_1 != secondary_2
-        ):
+        left, right = secondary_inputs
+        secondaries_same = left == right or (
+            check_is_lenient and "X" in (left, right)
+        )
+        if not secondaries_same:
             expected = False
 
     # Check that actual extracted operation result matches the "expected" one.
@@ -398,7 +397,15 @@ class MixinSplitattrsMatrixTests:
         )
 
     @pytest.mark.parametrize(
-        "secondary_values", ["secondaryXX", "secondaryCC", "secondaryCD"]
+        "secondary_values",
+        [
+            "secondaryXX",
+            "secondaryCX",
+            "secondaryXC",
+            "secondaryCC",
+            "secondaryCD",
+        ]
+        # NOTE: test CX as well as XC, since primary choices has "AX" but not "XA".
     )
     def test_splitattrs_global_local_independence(
         self,
@@ -418,10 +425,9 @@ class MixinSplitattrsMatrixTests:
         Notes
         -----
         We provide this *separate* test for global/local attribute independence,
-        parametrized over selected relevant arrangements of the 'secondary' values, and
-        do not test with reversed order or "local" primary inputs.
-        This is because matrix testing over *all* relevant factors simply produces too
-        many possible combinations.
+        parametrized over selected relevant arrangements of the 'secondary' values.
+        We *don't* test with reversed order or "local" primary inputs, because matrix
+        testing over *all* relevant factors produces too many possible combinations.
         """
         primary_inputs = primary_values[-2:]
         secondary_inputs = secondary_values[-2:]
