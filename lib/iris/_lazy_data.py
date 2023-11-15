@@ -225,7 +225,9 @@ def _optimum_chunksize(
     )
 
 
-def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None):
+def as_lazy_data(
+    data, chunks=None, asarray=False, dims_fixed=None, dask_chunking=False
+):
     """
     Convert the input array `data` to a :class:`dask.array.Array`.
 
@@ -249,6 +251,11 @@ def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None):
         'True' values indicate a dimension which can not be changed, i.e. the
         result for that index must equal the value in 'chunks' or data.shape.
 
+    * dask_chunking (bool):
+        If True, Iris chunking optimisation will be bypassed, and dask's default
+        chunking will be used instead. Including a value for chunks while dask_chunking
+        is set to True will result in a failure.
+
     Returns:
         The input array converted to a :class:`dask.array.Array`.
 
@@ -260,26 +267,38 @@ def as_lazy_data(data, chunks=None, asarray=False, dims_fixed=None):
         but reduced by a factor if that exceeds the dask default chunksize.
 
     """
-    if chunks is None:
-        # No existing chunks : Make a chunk the shape of the entire input array
-        # (but we will subdivide it if too big).
-        chunks = list(data.shape)
+    if dask_chunking:
+        if chunks is not None:
+            raise ValueError(
+                f"Dask chunking chosen, but chunks already assigned value {chunks}"
+            )
+        lazy_params = {"asarray": asarray, "meta": np.ndarray}
+    else:
+        if chunks is None:
+            # No existing chunks : Make a chunk the shape of the entire input array
+            # (but we will subdivide it if too big).
+            chunks = list(data.shape)
 
-    # Adjust chunk size for better dask performance,
-    # NOTE: but only if no shape dimension is zero, so that we can handle the
-    # PPDataProxy of "raw" landsea-masked fields, which have a shape of (0, 0).
-    if all(elem > 0 for elem in data.shape):
-        # Expand or reduce the basic chunk shape to an optimum size.
-        chunks = _optimum_chunksize(
-            chunks, shape=data.shape, dtype=data.dtype, dims_fixed=dims_fixed
-        )
-
+        # Adjust chunk size for better dask performance,
+        # NOTE: but only if no shape dimension is zero, so that we can handle the
+        # PPDataProxy of "raw" landsea-masked fields, which have a shape of (0, 0).
+        if all(elem > 0 for elem in data.shape):
+            # Expand or reduce the basic chunk shape to an optimum size.
+            chunks = _optimum_chunksize(
+                chunks,
+                shape=data.shape,
+                dtype=data.dtype,
+                dims_fixed=dims_fixed,
+            )
+        lazy_params = {
+            "chunks": chunks,
+            "asarray": asarray,
+            "meta": np.ndarray,
+        }
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
-        data = da.from_array(
-            data, chunks=chunks, asarray=asarray, meta=np.ndarray
-        )
+        data = da.from_array(data, **lazy_params)
     return data
 
 
