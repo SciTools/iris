@@ -10,9 +10,10 @@
 import iris.tests as tests  # isort:skip
 
 from pathlib import Path
-import pytest
 import shutil
 import tempfile
+
+import pytest
 
 import iris
 from iris.fileformats.netcdf import loader
@@ -58,6 +59,7 @@ def test_default(tmp_filepath, create_cube):
     assert sigma.lazy_points().chunksize == (4,)
     assert sigma.lazy_bounds().chunksize == (4, 2)
 
+
 def test_control_global(tmp_filepath, create_cube):
     with CHUNK_CONTROL.set(model_level_number=2):
         cube = iris.load_cube(tmp_filepath, create_cube[0])
@@ -68,6 +70,7 @@ def test_control_global(tmp_filepath, create_cube):
     assert sigma.shape == (4,)
     assert sigma.lazy_points().chunksize == (2,)
     assert sigma.lazy_bounds().chunksize == (2, 2)
+
 
 def test_control_sigma_only(tmp_filepath, create_cube):
     with CHUNK_CONTROL.set(create_cube[1], model_level_number=2):
@@ -80,6 +83,7 @@ def test_control_sigma_only(tmp_filepath, create_cube):
     assert sigma.lazy_points().chunksize == (2,)
     assert sigma.lazy_bounds().chunksize == (4, 2)
 
+
 def test_control_cube_var(tmp_filepath, create_cube):
     with CHUNK_CONTROL.set(create_cube[0], model_level_number=2):
         cube = iris.load_cube(tmp_filepath, create_cube[0])
@@ -90,6 +94,7 @@ def test_control_cube_var(tmp_filepath, create_cube):
     assert sigma.shape == (4,)
     assert sigma.lazy_points().chunksize == (2,)
     assert sigma.lazy_bounds().chunksize == (2, 2)
+
 
 def test_control_multiple(tmp_filepath, create_cube):
     with CHUNK_CONTROL.set(
@@ -104,6 +109,7 @@ def test_control_multiple(tmp_filepath, create_cube):
     assert sigma.lazy_points().chunksize == (3,)
     assert sigma.lazy_bounds().chunksize == (2, 2)
 
+
 def test_neg_one(tmp_filepath, create_cube):
     with CHUNK_CONTROL.set(model_level_number=-1):
         cube = iris.load_cube(tmp_filepath, create_cube[0])
@@ -114,6 +120,7 @@ def test_neg_one(tmp_filepath, create_cube):
     assert sigma.shape == (4,)
     assert sigma.lazy_points().chunksize == (4,)
     assert sigma.lazy_bounds().chunksize == (4, 2)
+
 
 def test_from_file(tmp_filepath, create_cube):
     with CHUNK_CONTROL.from_file():
@@ -126,6 +133,7 @@ def test_from_file(tmp_filepath, create_cube):
     assert sigma.lazy_points().chunksize == (4,)
     assert sigma.lazy_bounds().chunksize == (4, 2)
 
+
 def test_as_dask(tmp_filepath, create_cube):
     with CHUNK_CONTROL.as_dask():
         cube = iris.load_cube(tmp_filepath, create_cube[0])
@@ -136,6 +144,7 @@ def test_as_dask(tmp_filepath, create_cube):
     assert sigma.shape == (4,)
     assert sigma.lazy_points().chunksize == (4,)
     assert sigma.lazy_bounds().chunksize == (4, 2)
+
 
 if __name__ == "__main__":
     tests.main()
