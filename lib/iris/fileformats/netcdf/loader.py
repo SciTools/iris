@@ -243,7 +243,7 @@ def _get_cf_var_data(cf_var, filename):
                 chunks = cf_var.cf_data.chunking()
                 if (
                     chunks is None
-                    and CHUNK_CONTROL.mode == ChunkControl.Modes.FROM_FILE
+                    and CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE
                 ):
                     raise KeyError(
                         f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
