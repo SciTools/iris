@@ -13,7 +13,6 @@ Unit tests for the :func:`iris.util.equalise_attributes` function.
 import iris.tests as tests  # isort:skip
 
 import numpy as np
-import pytest
 
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeAttrsDict
@@ -220,7 +219,6 @@ class TestSplitattributes:
         result = self.check_equalised_result(cube1, cube2)
         assert result == ["XX", "XX"]
 
-    @pytest.mark.xfail
     # This case fails without the split-attributes fix.
     def test__oneglobal_onelocal__same(self):
         cube1 = self._sample_splitattrs_cube("AX")
@@ -234,7 +232,6 @@ class TestSplitattributes:
         result = self.check_equalised_result(cube1, cube2)
         assert result == ["XX", "XX"]
 
-    @pytest.mark.xfail
     # This case fails without the split-attributes fix.
     def test__sameglobals_onelocal__same(self):
         cube1 = self._sample_splitattrs_cube("AA")
@@ -242,7 +239,6 @@ class TestSplitattributes:
         result = self.check_equalised_result(cube1, cube2)
         assert result == ["XX", "XX"]
 
-    @pytest.mark.xfail
     # This case fails without the split-attributes fix.
     def test__differentglobals_samelocals(self):
         cube1 = self._sample_splitattrs_cube("AC")

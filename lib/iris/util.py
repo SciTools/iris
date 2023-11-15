@@ -2059,24 +2059,45 @@ def equalise_attributes(cubes):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
+    # deferred imports to avoid circularity problem
+    from iris.common._split_attribute_dicts import (
+        _convert_splitattrs_to_pairedkeys_dict,
+    )
+    from iris.cube import CubeAttrsDict
+
+    cube_attrs = [cube.attributes for cube in cubes]
     removed = []
+
+    # *IF* they are cube attributes, then convert to "paired-keys" form.
+    is_split_dicts = any(
+        isinstance(attrs, CubeAttrsDict) for attrs in cube_attrs
+    )
+    if is_split_dicts:
+        # Note: we only test this in case someone was passing some *other* objects for
+        # attributes processing (though the docstring does not admit this is possible).
+        cube_attrs = [
+            _convert_splitattrs_to_pairedkeys_dict(dic) for dic in cube_attrs
+        ]
+
     # Work out which attributes are identical across all the cubes.
-    common_keys = list(cubes[0].attributes.keys())
+    common_keys = list(cube_attrs[0].keys())
     keys_to_remove = set(common_keys)
-    for cube in cubes[1:]:
-        cube_keys = list(cube.attributes.keys())
+    for attrs in cube_attrs[1:]:
+        cube_keys = list(attrs.keys())
         keys_to_remove.update(cube_keys)
         common_keys = [
             key
             for key in common_keys
-            if (
-                key in cube_keys
-                and np.all(cube.attributes[key] == cubes[0].attributes[key])
-            )
+            if (key in cube_keys and np.all(attrs[key] == cube_attrs[0][key]))
         ]
     keys_to_remove.difference_update(common_keys)
 
-    # Remove all the other attributes.
+    # rework the keys list if we were handling split-attributes.
+    if is_split_dicts:
+        # Collect all the ('local'/'global, name) keys + retain just the names.
+        keys_to_remove = set(key_pair[1] for key_pair in keys_to_remove)
+
+    # Remove all the non-matching attributes.
     for cube in cubes:
         deleted_attributes = {
             key: cube.attributes.pop(key)
@@ -2084,6 +2105,7 @@ def equalise_attributes(cubes):
             if key in cube.attributes
         }
         removed.append(deleted_attributes)
+
     return removed
 
 
