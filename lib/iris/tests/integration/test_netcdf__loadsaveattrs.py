@@ -565,7 +565,8 @@ def encode_matrix_result(results: List[List[str]]) -> List[str]:
     if not isinstance(results[0], list):
         results = [results]
     assert all(
-        all(val is None or len(val) == 1 for val in vals) for vals in results
+        all(val is None or isinstance(val, str) for val in vals)
+        for vals in results
     )
 
     # Translate "None" values to "-"
