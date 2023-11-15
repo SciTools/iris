@@ -735,7 +735,7 @@ class TestRoundtrip(MixinAttrsTesting):
     # a name which is *not* recognised in the netCDF or CF conventions.
     #
 
-    def test_01_userstyle_single_global(self):
+    def test_userstyle_single_global(self):
         self.run_roundtrip_testcase(
             attr_name="myname", values=["single-value", None]
         )
@@ -743,7 +743,7 @@ class TestRoundtrip(MixinAttrsTesting):
         # It simply remains global.
         self.check_roundtrip_results(["single-value", None])
 
-    def test_02_userstyle_single_local(self, do_split):
+    def test_userstyle_single_local(self, do_split):
         # Default behaviour for a general local user-attribute.
         # It results in a "promoted" global attribute.
         self.run_roundtrip_testcase(
@@ -756,7 +756,7 @@ class TestRoundtrip(MixinAttrsTesting):
             expected = ["single-value", None]
         self.check_roundtrip_results(expected)
 
-    def test_03_userstyle_multiple_different(self, do_split):
+    def test_userstyle_multiple_different(self, do_split):
         # Default behaviour for general user-attributes.
         # The global attribute is lost because there are local ones.
         self.run_roundtrip_testcase(
@@ -773,7 +773,7 @@ class TestRoundtrip(MixinAttrsTesting):
         # just check they are all there and distinct
         self.check_roundtrip_results(expected_result)
 
-    def test_04_userstyle_matching_promoted(self, do_split):
+    def test_userstyle_matching_promoted(self, do_split):
         # matching local user-attributes are "promoted" to a global one.
         # (but not when saving split attributes)
         input_values = ["global_file1", "same-value", "same-value"]
@@ -787,7 +787,7 @@ class TestRoundtrip(MixinAttrsTesting):
             expected = ["same-value", None, None]
         self.check_roundtrip_results(expected)
 
-    def test_05_userstyle_matching_crossfile_promoted(self, do_split):
+    def test_userstyle_matching_crossfile_promoted(self, do_split):
         # matching user-attributes are promoted, even across input files.
         # (but not when saving split attributes)
         self.run_roundtrip_testcase(
@@ -819,7 +819,7 @@ class TestRoundtrip(MixinAttrsTesting):
 
         self.check_roundtrip_results(expected_result, expected_warnings)
 
-    def test_06_userstyle_nonmatching_remainlocal(self, do_split):
+    def test_userstyle_nonmatching_remainlocal(self, do_split):
         # Non-matching user attributes remain 'local' to the individual variables.
         input_values = ["global_file1", "value-1", "value-2"]
         if do_split:
@@ -841,7 +841,7 @@ class TestRoundtrip(MixinAttrsTesting):
     # test what that does, though it's inclusion might simply be a mistake.
     #
 
-    def test_07_conventions_var_local(self):
+    def test_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
         # N.B. this is not good CF, but we'll see what happens anyway.
         self.run_roundtrip_testcase(
@@ -850,7 +850,7 @@ class TestRoundtrip(MixinAttrsTesting):
         )
         self.check_roundtrip_results(["CF-1.7", None])
 
-    def test_08_conventions_var_both(self):
+    def test_conventions_var_both(self):
         # What happens if 'Conventions' appears as both global + local attribute.
         self.run_roundtrip_testcase(
             attr_name="Conventions",
@@ -863,7 +863,7 @@ class TestRoundtrip(MixinAttrsTesting):
     # Tests on "global" style attributes
     #  = those specific ones which 'ought' only to be global (except on collisions)
     #
-    def test_09_globalstyle__global(self, global_attr):
+    def test_globalstyle__global(self, global_attr):
         attr_content = f"Global tracked {global_attr}"
         self.run_roundtrip_testcase(
             attr_name=global_attr,
@@ -871,7 +871,7 @@ class TestRoundtrip(MixinAttrsTesting):
         )
         self.check_roundtrip_results([attr_content, None])
 
-    def test_10_globalstyle__local(self, global_attr, do_split):
+    def test_globalstyle__local(self, global_attr, do_split):
         # Strictly, not correct CF, but let's see what it does with it.
         attr_content = f"Local tracked {global_attr}"
         input_values = [None, attr_content]
@@ -889,7 +889,7 @@ class TestRoundtrip(MixinAttrsTesting):
             expected_warning = None
         self.check_roundtrip_results(expected_result, expected_warning)
 
-    def test_11_globalstyle__both(self, global_attr, do_split):
+    def test_globalstyle__both(self, global_attr, do_split):
         attr_global = f"Global-{global_attr}"
         attr_local = f"Local-{global_attr}"
         input_values = [attr_global, attr_local]
@@ -907,7 +907,7 @@ class TestRoundtrip(MixinAttrsTesting):
             expected_warning = None
         self.check_roundtrip_results(expected_result, expected_warning)
 
-    def test_12_globalstyle__multivar_different(self, global_attr):
+    def test_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained, not promoted
         attr_1 = f"Local-{global_attr}-1"
         attr_2 = f"Local-{global_attr}-2"
@@ -919,7 +919,7 @@ class TestRoundtrip(MixinAttrsTesting):
         )
         self.check_roundtrip_results([None, attr_1, attr_2], expect_warning)
 
-    def test_13_globalstyle__multivar_same(self, global_attr, do_split):
+    def test_globalstyle__multivar_same(self, global_attr, do_split):
         # Multiple *same* local settings are promoted to a common global one
         attrval = f"Locally-defined-{global_attr}"
         input_values = [None, attrval, attrval]
@@ -937,7 +937,7 @@ class TestRoundtrip(MixinAttrsTesting):
             expected_result = [attrval, None, None]
         self.check_roundtrip_results(expected_result, expected_warning)
 
-    def test_14_globalstyle__multifile_different(self, global_attr, do_split):
+    def test_globalstyle__multifile_different(self, global_attr, do_split):
         # Different global attributes from multiple files are retained as local ones
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
@@ -952,7 +952,7 @@ class TestRoundtrip(MixinAttrsTesting):
             expected_warnings = ["Saving.* as local"] + expected_warnings
         self.check_roundtrip_results([None, attr_1, attr_2], expected_warnings)
 
-    def test_15_globalstyle__multifile_same(self, global_attr):
+    def test_globalstyle__multifile_same(self, global_attr):
         # Matching global-type attributes in multiple files are retained as global
         attrval = f"Global-{global_attr}"
         self.run_roundtrip_testcase(
@@ -967,7 +967,7 @@ class TestRoundtrip(MixinAttrsTesting):
     #
 
     @pytest.mark.parametrize("origin_style", ["input_global", "input_local"])
-    def test_16_localstyle(self, local_attr, origin_style, do_split):
+    def test_localstyle(self, local_attr, origin_style, do_split):
         # local-style attributes should *not* get 'promoted' to global ones
         # Set the name extension to avoid tests with different 'style' params having
         # collisions over identical testfile names
@@ -1092,7 +1092,7 @@ class TestLoad(MixinAttrsTesting):
     # a name which is *not* recognised in the netCDF or CF conventions.
     #
 
-    def test_01_userstyle_single_global(self):
+    def test_userstyle_single_global(self):
         self.run_load_testcase(
             attr_name="myname", values=["single_value", None, None]
         )
@@ -1104,7 +1104,7 @@ class TestLoad(MixinAttrsTesting):
         # Full new-style results check
         self.check_load_results(["single_value", None, None])
 
-    def test_02_userstyle_single_local(self):
+    def test_userstyle_single_local(self):
         # Default behaviour for a general local user-attribute.
         # It is attached to only the specific cube.
         self.run_load_testcase(
@@ -1116,7 +1116,7 @@ class TestLoad(MixinAttrsTesting):
         )
         self.check_load_results([None, "single-value", None])
 
-    def test_03_userstyle_multiple_different(self):
+    def test_userstyle_multiple_different(self):
         # Default behaviour for differing local user-attributes.
         # The global attribute is simply lost, because there are local ones.
         self.run_load_testcase(
@@ -1134,7 +1134,7 @@ class TestLoad(MixinAttrsTesting):
             [["global_file1", "f1v1", "f1v2"], ["global_file2", "x1", "x2"]]
         )
 
-    def test_04_userstyle_multiple_same(self):
+    def test_userstyle_multiple_same(self):
         # Nothing special to note in this case
         # TODO: ??remove??
         self.run_load_testcase(
@@ -1156,7 +1156,7 @@ class TestLoad(MixinAttrsTesting):
     # test what that does, though it's inclusion might simply be a mistake.
     #
 
-    def test_07_conventions_var_local(self):
+    def test_conventions_var_local(self):
         # What happens if 'Conventions' appears as a variable-local attribute.
         # N.B. this is not good CF, but we'll see what happens anyway.
         self.run_load_testcase(
@@ -1168,7 +1168,7 @@ class TestLoad(MixinAttrsTesting):
         # Newstyle result
         self.check_load_results([None, "user_set"])
 
-    def test_08_conventions_var_both(self):
+    def test_conventions_var_both(self):
         # What happens if 'Conventions' appears as both global + local attribute.
         self.run_load_testcase(
             attr_name="Conventions",
@@ -1186,7 +1186,7 @@ class TestLoad(MixinAttrsTesting):
     #  = those specific ones which 'ought' only to be global (except on collisions)
     #
 
-    def test_09_globalstyle__global(self, global_attr):
+    def test_globalstyle__global(self, global_attr):
         attr_content = f"Global tracked {global_attr}"
         self.run_load_testcase(
             attr_name=global_attr, values=[attr_content, None]
@@ -1196,7 +1196,7 @@ class TestLoad(MixinAttrsTesting):
         # (#2) newstyle : global status preserved.
         self.check_load_results([attr_content, None])
 
-    def test_10_globalstyle__local(self, global_attr):
+    def test_globalstyle__local(self, global_attr):
         # Strictly, not correct CF, but let's see what it does with it.
         attr_content = f"Local tracked {global_attr}"
         self.run_load_testcase(
@@ -1210,7 +1210,7 @@ class TestLoad(MixinAttrsTesting):
             [None, attr_content],
         )
 
-    def test_11_globalstyle__both(self, global_attr):
+    def test_globalstyle__both(self, global_attr):
         attr_global = f"Global-{global_attr}"
         attr_local = f"Local-{global_attr}"
         self.run_load_testcase(
@@ -1222,7 +1222,7 @@ class TestLoad(MixinAttrsTesting):
         # (#2) newstyle result : both retained
         self.check_load_results([attr_global, attr_local])
 
-    def test_12_globalstyle__multivar_different(self, global_attr):
+    def test_globalstyle__multivar_different(self, global_attr):
         # Multiple *different* local settings are retained
         attr_1 = f"Local-{global_attr}-1"
         attr_2 = f"Local-{global_attr}-2"
@@ -1235,7 +1235,7 @@ class TestLoad(MixinAttrsTesting):
         # (#2): exact results, with newstyle "split" cube attrs
         self.check_load_results([None, attr_1, attr_2])
 
-    def test_14_globalstyle__multifile_different(self, global_attr):
+    def test_globalstyle__multifile_different(self, global_attr):
         # Different global attributes from multiple files
         attr_1 = f"Global-{global_attr}-1"
         attr_2 = f"Global-{global_attr}-2"
@@ -1257,7 +1257,7 @@ class TestLoad(MixinAttrsTesting):
     #
 
     @pytest.mark.parametrize("origin_style", ["input_global", "input_local"])
-    def test_16_localstyle(self, local_attr, origin_style):
+    def test_localstyle(self, local_attr, origin_style):
         # local-style attributes should *not* get 'promoted' to global ones
         # Set the name extension to avoid tests with different 'style' params having
         # collisions over identical testfile names
