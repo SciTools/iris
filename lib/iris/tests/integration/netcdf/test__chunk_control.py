@@ -32,6 +32,10 @@ def create_cube(tmp_filepath):
     iris.save(cube, tmp_filepath)
     yield cube_varname, sigma_varname
 
+@pytest.fixture
+def create_file_cube(tmp_filepath):
+    iris.save(istk.simple_3d(), tmp_filepath, chunksizes=(1, 3, 4))
+    yield None
 
 @pytest.fixture
 def tmp_filepath():
@@ -122,16 +126,11 @@ def test_neg_one(tmp_filepath, create_cube):
     assert sigma.lazy_bounds().chunksize == (4, 2)
 
 
-def test_from_file(tmp_filepath, create_cube):
+def test_from_file(tmp_filepath, create_file_cube):
     with CHUNK_CONTROL.from_file():
-        cube = iris.load_cube(tmp_filepath, create_cube[0])
-    assert cube.shape == (3, 4, 5, 6)
-    assert cube.lazy_data().chunksize == (3, 4, 5, 6)
-
-    sigma = cube.coord("sigma")
-    assert sigma.shape == (4,)
-    assert sigma.lazy_points().chunksize == (4,)
-    assert sigma.lazy_bounds().chunksize == (4, 2)
+        cube = iris.load_cube(tmp_filepath)
+    assert cube.shape == (2, 3, 4)
+    assert cube.lazy_data().chunksize == (1, 3, 4)
 
 
 def test_as_dask(tmp_filepath, create_cube):
