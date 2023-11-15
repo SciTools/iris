@@ -105,7 +105,8 @@ def adjust_for_split_attribute_dictionaries(operation):
 
         result = operation(*args, **kwargs)
 
-        # Convert 'pairedkeys' dicts in the result back to split-attributes form.
+        # Convert known specific cases of 'pairedkeys' dicts in the result, and convert
+        # those back into split-attribute dictionaries.
         if isinstance(result, Mapping):
             # Fix a result which is a single dictionary -- for "combine"
             result = _convert_pairedkeys_dict_to_splitattrs(result)
@@ -117,6 +118,7 @@ def adjust_for_split_attribute_dictionaries(operation):
                 _convert_pairedkeys_dict_to_splitattrs(right),
             )
             result = result.__class__([left, right])
+        # ELSE: leave other types of result unchanged. E.G. None, bool
 
         return result
 
