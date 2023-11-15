@@ -290,11 +290,11 @@ def as_lazy_data(
                 dtype=data.dtype,
                 dims_fixed=dims_fixed,
             )
-            lazy_params = {
-                "chunks": chunks,
-                "asarray": asarray,
-                "meta": np.ndarray,
-            }
+        lazy_params = {
+            "chunks": chunks,
+            "asarray": asarray,
+            "meta": np.ndarray,
+        }
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
