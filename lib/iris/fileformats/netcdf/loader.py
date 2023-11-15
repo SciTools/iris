@@ -767,8 +767,8 @@ class ChunkControl(threading.local):
                         and isinstance(chunksize, int)
                     ):
                         msg = (
-                            "'dimension_chunksizes' kwargs should be an iterable "
-                            f"of (str, int) pairs, not {dimension_chunksizes!r}."
+                            "'dimension_chunksizes' kwargs should be a dict "
+                            f"of `str: int` pairs, not {dimension_chunksizes!r}."
                         )
                         raise ValueError(msg)
                     dim_chunks[dim_name] = chunksize
