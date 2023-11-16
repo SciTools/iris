@@ -10,12 +10,14 @@
 import iris.tests as tests  # isort:skip
 
 from unittest import mock
+from unittest.mock import Mock
 
 import dask.array as da
 import dask.config
 import numpy as np
 import numpy.ma as ma
 
+from iris import _lazy_data
 from iris._lazy_data import _optimum_chunksize, as_lazy_data
 
 
@@ -41,6 +43,21 @@ class Test_as_lazy_data(tests.IrisTest):
         lazy_data = as_lazy_data(data, chunks=chunks)
         (result,) = np.unique(lazy_data.chunks)
         self.assertEqual(result, 24)
+
+    def test_dask_chunking(self):
+        data = np.arange(24)
+        chunks = (12,)
+        _lazy_data._optimum_chunksize = Mock(return_value=chunks)
+        as_lazy_data(data, chunks=None, dask_chunking=True)
+        self.assertFalse(_lazy_data._optimum_chunksize.called)
+
+    def test_dask_chunking_error(self):
+        data = np.arange(24)
+        chunks = (12,)
+        _lazy_data._optimum_chunksize = Mock(return_value=chunks)
+        with self.assertRaises(ValueError) as ar:
+            as_lazy_data(data, chunks=chunks, dask_chunking=True)
+        self.assertEqual(str(ar.exception), f"Dask chunking chosen, but chunks already assigned value {chunks}")
 
     def test_with_masked_constant(self):
         masked_data = ma.masked_array([8], mask=True)
