@@ -141,6 +141,7 @@ def test_from_file(tmp_filepath, create_file_cube):
 
 def test_as_dask(tmp_filepath, create_cube):
     message = "Mock called, rest of test unneeded"
+
     loader.as_lazy_data = Mock(side_effect=RuntimeError(message))
     with CHUNK_CONTROL.as_dask():
         try:
