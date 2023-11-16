@@ -12,15 +12,13 @@ import iris.tests as tests  # isort:skip
 from pathlib import Path
 import shutil
 import tempfile
-from unittest.mock import ANY, Mock
+from unittest.mock import ANY, patch
 
 import dask
 from dask import distributed
-from numpy import dtype
 import pytest
 
 import iris
-from iris import _lazy_data
 from iris.fileformats.netcdf import loader
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL
 import iris.tests.stock as istk
@@ -140,21 +138,22 @@ def test_from_file(tmp_filepath, create_file_cube):
     assert cube.lazy_data().chunksize == (1, 3, 4)
 
 
+
 def test_as_dask(tmp_filepath, create_cube):
     message = "Mock called, rest of test unneeded"
-
-    loader.as_lazy_data = Mock(side_effect=RuntimeError(message))
-    with CHUNK_CONTROL.as_dask():
-        try:
-            iris.load_cube(tmp_filepath, create_cube[0])
-        except RuntimeError as e:
-            if str(e) == message:
-                pass
-            else:
-                raise e
-    loader.as_lazy_data.assert_called_with(
-        ANY, chunks=None, dask_chunking=True
-    )
+    with patch("iris.fileformats.netcdf.loader.as_lazy_data") as optimum:
+        optimum.side_effect = RuntimeError(message)
+        with CHUNK_CONTROL.as_dask():
+            try:
+                iris.load_cube(tmp_filepath, create_cube[0])
+            except RuntimeError as e:
+                if str(e) == message:
+                    pass
+                else:
+                    raise e
+        optimum.assert_called_with(
+            ANY, chunks=None, dask_chunking=True
+        )
 
 
 if __name__ == "__main__":
