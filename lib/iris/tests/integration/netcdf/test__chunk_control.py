@@ -36,10 +36,12 @@ def create_cube(tmp_filepath):
     iris.save(cube, tmp_filepath)
     yield cube_varname, sigma_varname
 
+
 @pytest.fixture
 def create_file_cube(tmp_filepath):
     iris.save(istk.simple_3d(), tmp_filepath, chunksizes=(1, 3, 4))
     yield None
+
 
 @pytest.fixture
 def tmp_filepath():
