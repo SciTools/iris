@@ -64,7 +64,6 @@ class Test_as_lazy_data(tests.IrisTest):
             f"Dask chunking chosen, but chunks already assigned value {chunks}",
         )
 
-
     def test_with_masked_constant(self):
         masked_data = ma.masked_array([8], mask=True)
         masked_constant = masked_data[0]
