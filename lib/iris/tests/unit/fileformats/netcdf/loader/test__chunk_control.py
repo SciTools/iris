@@ -9,13 +9,9 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from pathlib import Path
-import shutil
-import tempfile
 from unittest.mock import ANY, patch
 
 import dask
-from dask import array as da
 import pytest
 
 import iris
@@ -166,7 +162,7 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
         optimum.side_effect = RuntimeError(message)
         with CHUNK_CONTROL.as_dask():
             try:
-                cubes = CubeList(loader.load_cubes(tmp_filepath))
+                CubeList(loader.load_cubes(tmp_filepath))
             except RuntimeError as e:
                 if str(e) != message:
                     raise e
