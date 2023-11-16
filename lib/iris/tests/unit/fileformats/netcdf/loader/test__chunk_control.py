@@ -19,9 +19,9 @@ from dask import array as da
 import pytest
 
 import iris
+from iris.cube import CubeList
 from iris.fileformats.netcdf import loader
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL
-from iris.cube import CubeList
 import iris.tests.stock as istk
 
 
@@ -49,12 +49,12 @@ def save_cube_with_chunksize(tmp_filepath):
 #     yield str(tmp_path)
 #     shutil.rmtree(tmp_dir)
 
+
 @pytest.fixture(scope="session")
 def tmp_filepath(tmp_path_factory):
     tmp_dir = tmp_path_factory.mktemp("data")
     tmp_path = tmp_dir / "tmp.nc"
     yield str(tmp_path)
-
 
 
 @pytest.fixture(autouse=True)
@@ -170,9 +170,7 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
             except RuntimeError as e:
                 if str(e) != message:
                     raise e
-        optimum.assert_called_with(
-            ANY, chunks=None, dask_chunking=True
-        )
+        optimum.assert_called_with(ANY, chunks=None, dask_chunking=True)
 
 
 if __name__ == "__main__":
