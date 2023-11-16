@@ -59,7 +59,10 @@ class Test_as_lazy_data(tests.IrisTest):
         optimum.return_value = chunks
         with self.assertRaises(ValueError) as ar:
             as_lazy_data(data, chunks=chunks, dask_chunking=True)
-        self.assertEqual(str(ar.exception), f"Dask chunking chosen, but chunks already assigned value {chunks}")
+        self.assertEqual(
+            str(ar.exception),
+            f"Dask chunking chosen, but chunks already assigned value {chunks}",
+        )
 
 
     def test_with_masked_constant(self):
