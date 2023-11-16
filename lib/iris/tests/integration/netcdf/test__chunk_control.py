@@ -138,7 +138,6 @@ def test_from_file(tmp_filepath, create_file_cube):
     assert cube.lazy_data().chunksize == (1, 3, 4)
 
 
-
 def test_as_dask(tmp_filepath, create_cube):
     message = "Mock called, rest of test unneeded"
     with patch("iris.fileformats.netcdf.loader.as_lazy_data") as optimum:
@@ -151,9 +150,7 @@ def test_as_dask(tmp_filepath, create_cube):
                     pass
                 else:
                     raise e
-        optimum.assert_called_with(
-            ANY, chunks=None, dask_chunking=True
-        )
+        optimum.assert_called_with(ANY, chunks=None, dask_chunking=True)
 
 
 if __name__ == "__main__":
