@@ -12,17 +12,18 @@ import iris.tests as tests  # isort:skip
 from pathlib import Path
 import shutil
 import tempfile
+from unittest.mock import ANY, Mock
+
 import dask
 from dask import distributed
+from numpy import dtype
 import pytest
-from unittest.mock import Mock, ANY
 
 import iris
+from iris import _lazy_data
 from iris.fileformats.netcdf import loader
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL
-from iris import _lazy_data
 import iris.tests.stock as istk
-from numpy import dtype
 
 
 @pytest.fixture()
@@ -151,9 +152,7 @@ def test_as_dask(tmp_filepath, create_cube):
             else:
                 raise e
     loader.as_lazy_data.assert_called_with(
-        ANY,
-        chunks=None,
-        dask_chunking=True
+        ANY, chunks=None, dask_chunking=True
     )
 
 
