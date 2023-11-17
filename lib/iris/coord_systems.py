@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Definitions of coordinate systems.
 
@@ -10,10 +9,14 @@ Definitions of coordinate systems.
 
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
+import re
 import warnings
 
 import cartopy.crs as ccrs
 import numpy as np
+
+from iris._deprecation import warn_deprecated
+import iris.exceptions
 
 
 def _arg_default(value, default, cast_as=float):
@@ -449,7 +452,7 @@ class GeogCS(CoordSystem):
             "the GeogCS object. To change other properties set them explicitly"
             " or create a new GeogCS instance."
         )
-        warnings.warn(wmsg, UserWarning)
+        warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
         value = float(value)
         self._inverse_flattening = value
 
@@ -818,7 +821,8 @@ class Orthographic(CoordSystem):
 
         warnings.warn(
             "Discarding false_easting and false_northing that are "
-            "not used by Cartopy."
+            "not used by Cartopy.",
+            category=iris.exceptions.IrisDefaultingWarning,
         )
 
         return ccrs.Orthographic(
@@ -1631,3 +1635,197 @@ class AlbersEqualArea(CoordSystem):
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
+
+
+class ObliqueMercator(CoordSystem):
+    """
+    A cylindrical map projection, with XY coordinates measured in metres.
+
+    Designed for regions not well suited to :class:`Mercator` or
+    :class:`TransverseMercator`, as the positioning of the cylinder is more
+    customisable.
+
+    See Also
+    --------
+    :class:`RotatedMercator`
+
+    """
+
+    grid_mapping_name = "oblique_mercator"
+
+    def __init__(
+        self,
+        azimuth_of_central_line,
+        latitude_of_projection_origin,
+        longitude_of_projection_origin,
+        false_easting=None,
+        false_northing=None,
+        scale_factor_at_projection_origin=None,
+        ellipsoid=None,
+    ):
+        """
+        Constructs an ObliqueMercator object.
+
+        Parameters
+        ----------
+        azimuth_of_central_line : float
+            Azimuth of centerline clockwise from north at the center point of
+            the centre line.
+        latitude_of_projection_origin : float
+            The true longitude of the central meridian in degrees.
+        longitude_of_projection_origin: float
+            The true latitude of the planar origin in degrees.
+        false_easting: float, optional
+            X offset from the planar origin in metres.
+            Defaults to 0.0 .
+        false_northing: float, optional
+            Y offset from the planar origin in metres.
+            Defaults to 0.0 .
+        scale_factor_at_projection_origin: float, optional
+            Scale factor at the central meridian.
+            Defaults to 1.0 .
+        ellipsoid: :class:`GeogCS`, optional
+            If given, defines the ellipsoid.
+
+        Examples
+        --------
+        >>> from iris.coord_systems import GeogCS, ObliqueMercator
+        >>> my_ellipsoid = GeogCS(6371229.0, None, 0.0)
+        >>> ObliqueMercator(90.0, -22.0, -59.0, -25000.0, -25000.0, 1., my_ellipsoid)
+        ObliqueMercator(azimuth_of_central_line=90.0, latitude_of_projection_origin=-22.0, longitude_of_projection_origin=-59.0, false_easting=-25000.0, false_northing=-25000.0, scale_factor_at_projection_origin=1.0, ellipsoid=GeogCS(6371229.0))
+
+        """
+        #: Azimuth of centerline clockwise from north.
+        self.azimuth_of_central_line = float(azimuth_of_central_line)
+
+        #: True latitude of planar origin in degrees.
+        self.latitude_of_projection_origin = float(
+            latitude_of_projection_origin
+        )
+
+        #: True longitude of planar origin in degrees.
+        self.longitude_of_projection_origin = float(
+            longitude_of_projection_origin
+        )
+
+        #: X offset from planar origin in metres.
+        self.false_easting = _arg_default(false_easting, 0)
+
+        #: Y offset from planar origin in metres.
+        self.false_northing = _arg_default(false_northing, 0)
+
+        #: Scale factor at the central meridian.
+        self.scale_factor_at_projection_origin = _arg_default(
+            scale_factor_at_projection_origin, 1.0
+        )
+
+        #: Ellipsoid definition (:class:`GeogCS` or None).
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return (
+            "{!s}(azimuth_of_central_line={!r}, "
+            "latitude_of_projection_origin={!r}, "
+            "longitude_of_projection_origin={!r}, false_easting={!r}, "
+            "false_northing={!r}, scale_factor_at_projection_origin={!r}, "
+            "ellipsoid={!r})".format(
+                self.__class__.__name__,
+                self.azimuth_of_central_line,
+                self.latitude_of_projection_origin,
+                self.longitude_of_projection_origin,
+                self.false_easting,
+                self.false_northing,
+                self.scale_factor_at_projection_origin,
+                self.ellipsoid,
+            )
+        )
+
+    def as_cartopy_crs(self):
+        globe = self._ellipsoid_to_globe(self.ellipsoid, None)
+
+        return ccrs.ObliqueMercator(
+            central_longitude=self.longitude_of_projection_origin,
+            central_latitude=self.latitude_of_projection_origin,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
+            scale_factor=self.scale_factor_at_projection_origin,
+            azimuth=self.azimuth_of_central_line,
+            globe=globe,
+        )
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
+
+
+class RotatedMercator(ObliqueMercator):
+    """
+    :class:`ObliqueMercator` with ``azimuth_of_central_line=90``.
+
+    As noted in CF versions 1.10 and earlier:
+
+        The Rotated Mercator projection is an Oblique Mercator projection
+        with azimuth = +90.
+
+    .. deprecated:: 3.8.0
+        This coordinate system was introduced as already scheduled for removal
+        in a future release, since CF version 1.11 onwards now requires use of
+        :class:`ObliqueMercator` with ``azimuth_of_central_line=90.`` .
+        Any :class:`RotatedMercator` instances will always be saved to NetCDF
+        as the ``oblique_mercator`` grid mapping.
+
+    """
+
+    def __init__(
+        self,
+        latitude_of_projection_origin,
+        longitude_of_projection_origin,
+        false_easting=None,
+        false_northing=None,
+        scale_factor_at_projection_origin=None,
+        ellipsoid=None,
+    ):
+        """
+        Constructs a RotatedMercator object.
+
+        Parameters
+        ----------
+        latitude_of_projection_origin : float
+            The true longitude of the central meridian in degrees.
+        longitude_of_projection_origin: float
+            The true latitude of the planar origin in degrees.
+        false_easting: float, optional
+            X offset from the planar origin in metres.
+            Defaults to 0.0 .
+        false_northing: float, optional
+            Y offset from the planar origin in metres.
+            Defaults to 0.0 .
+        scale_factor_at_projection_origin: float, optional
+            Scale factor at the central meridian.
+            Defaults to 1.0 .
+        ellipsoid: :class:`GeogCS`, optional
+            If given, defines the ellipsoid.
+
+        """
+        message = (
+            "iris.coord_systems.RotatedMercator is deprecated, and will be "
+            "removed in a future release. Instead please use "
+            "iris.coord_systems.ObliqueMercator with "
+            "azimuth_of_central_line=90 ."
+        )
+        warn_deprecated(message)
+
+        super().__init__(
+            90.0,
+            latitude_of_projection_origin,
+            longitude_of_projection_origin,
+            false_easting,
+            false_northing,
+            scale_factor_at_projection_origin,
+            ellipsoid,
+        )
+
+    def __repr__(self):
+        # Remove the azimuth argument from the parent repr.
+        result = super().__repr__()
+        result = re.sub(r"azimuth_of_central_line=\d*\.?\d*, ", "", result)
+        return result

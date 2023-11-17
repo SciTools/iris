@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import warnings
 
@@ -10,6 +9,7 @@ import cftime
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
+from iris.exceptions import IrisPpClimModifiedWarning
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
@@ -890,4 +890,4 @@ def verify(cube, field):
 
 def _conditional_warning(condition, warning):
     if condition:
-        warnings.warn(warning)
+        warnings.warn(warning, category=IrisPpClimModifiedWarning)

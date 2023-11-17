@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.plot._check_geostationary_coords_and_convert
 function."""
 
@@ -37,7 +36,7 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
         )
 
     def _test(self, geostationary=True):
-        # Re-usable test for when Geostationary is present OR absent.
+        # Reusable test for when Geostationary is present OR absent.
         if geostationary:
             # A Geostationary projection WILL be processed.
             projection_spec = Geostationary

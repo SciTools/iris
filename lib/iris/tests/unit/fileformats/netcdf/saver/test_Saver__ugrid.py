@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Unit tests for the :class:`iris.fileformats.netcdf.Saver` class.
 
@@ -403,6 +402,10 @@ class TestSaveUgrid__cube(tests.IrisTest):
             all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords)
         )
 
+        # The face coordinates should be referenced by the data variable.
+        for coord in face_coords:
+            self.assertIn(coord, a_props["coordinates"])
+
         # The dims of the datavar also == [<faces-dim>]
         self.assertEqual(a_props[_VAR_DIMS], [face_dim])
 
@@ -460,8 +463,10 @@ class TestSaveUgrid__cube(tests.IrisTest):
         v_a, v_b = vars["a"], vars["b"]
         self.assertEqual(v_a["mesh"], mesh_name)
         self.assertEqual(v_a["location"], "face")
+        self.assertEqual(v_a["coordinates"], "face_x face_y")
         self.assertEqual(v_b["mesh"], mesh_name)
         self.assertEqual(v_b["location"], "face")
+        self.assertEqual(v_b["coordinates"], "face_x face_y")
 
     def test_multi_cubes_different_locations(self):
         cube1 = make_cube(var_name="a", location="face")
@@ -478,8 +483,10 @@ class TestSaveUgrid__cube(tests.IrisTest):
         v_a, v_b = vars["a"], vars["b"]
         self.assertEqual(v_a["mesh"], mesh_name)
         self.assertEqual(v_a["location"], "face")
+        self.assertEqual(v_a["coordinates"], "face_x face_y")
         self.assertEqual(v_b["mesh"], mesh_name)
         self.assertEqual(v_b["location"], "node")
+        self.assertEqual(v_b["coordinates"], "node_x node_y")
 
         # the main variables map the face and node dimensions
         face_dim = vars_meshdim(vars, "face")
@@ -520,6 +527,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         for props in a_props, b_props:
             self.assertEqual(props["mesh"], "Mesh2d")
             self.assertEqual(props["location"], "face")
+            self.assertEqual(props["coordinates"], "face_x face_y")
 
         # the data variables map the appropriate node dimensions
         self.assertEqual(a_props[_VAR_DIMS], ["Mesh2d_faces"])
@@ -543,11 +551,15 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(2, len(mesh_datavars))
         self.assertEqual(["a", "b"], sorted(mesh_datavars.keys()))
 
+        def get_props_attrs(props: dict):
+            return props["mesh"], props["location"], props["coordinates"]
+
         # the main variables reference the correct meshes, and 'face' location
         a_props, b_props = vars["a"], vars["b"]
-        mesh_a, loc_a = a_props["mesh"], a_props["location"]
-        mesh_b, loc_b = b_props["mesh"], b_props["location"]
+        mesh_a, loc_a, coords_a = get_props_attrs(a_props)
+        mesh_b, loc_b, coords_b = get_props_attrs(b_props)
         self.assertNotEqual(mesh_a, mesh_b)
+        self.assertNotEqual(coords_a, coords_b)
         self.assertEqual(loc_a, "face")
         self.assertEqual(loc_b, "face")
 
@@ -663,6 +675,31 @@ class TestSaveUgrid__cube(tests.IrisTest):
         # Check the var dimensions
         self.assertEqual(v_a[_VAR_DIMS], ["height", "Mesh2d_faces"])
         self.assertEqual(v_b[_VAR_DIMS], ["Mesh2d_faces", "height"])
+
+    def test_mixed_aux_coords(self):
+        """
+        ``coordinates`` attribute should include mesh location coords and 'normal' coords.
+        """
+
+        cube = make_cube()
+        mesh_dim = cube.mesh_dim()
+        mesh_len = cube.shape[mesh_dim]
+        coord = AuxCoord(np.arange(mesh_len), var_name="face_index")
+        cube.add_aux_coord(coord, mesh_dim)
+
+        # Save and snapshot the result
+        tempfile_path = self.check_save_cubes(cube)
+        dims, vars = scan_dataset(tempfile_path)
+
+        # There is exactly 1 mesh-linked (data)var
+        data_vars = vars_w_props(vars, mesh="*")
+        ((_, a_props),) = data_vars.items()
+
+        expected_coords = [c for c in cube.mesh.face_coords]
+        expected_coords.append(coord)
+        expected_coord_names = [c.var_name for c in expected_coords]
+        expected_coord_attr = " ".join(sorted(expected_coord_names))
+        self.assertEqual(a_props["coordinates"], expected_coord_attr)
 
 
 class TestSaveUgrid__mesh(tests.IrisTest):

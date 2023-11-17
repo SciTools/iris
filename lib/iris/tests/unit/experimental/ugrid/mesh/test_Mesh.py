@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`mesh` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -72,7 +71,7 @@ class TestMeshCommon(tests.IrisTest):
 
 
 class TestProperties1D(TestMeshCommon):
-    # Tests that can re-use a single instance for greater efficiency.
+    # Tests that can reuse a single instance for greater efficiency.
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -737,7 +736,7 @@ class Test__str__various(TestMeshCommon):
 
 
 class TestOperations1D(TestMeshCommon):
-    # Tests that cannot re-use an existing Mesh instance, instead need a new
+    # Tests that cannot reuse an existing Mesh instance, instead need a new
     # one each time.
     def setUp(self):
         self.mesh = mesh.Mesh(

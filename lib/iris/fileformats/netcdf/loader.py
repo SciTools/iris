@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Module to support the loading of Iris cubes from NetCDF files, also using the CF
 conventions for metadata interpretation.
@@ -48,6 +47,15 @@ from . import logger
 # An expected part of the public loader API, but includes thread safety
 #  concerns so is housed in _thread_safe_nc.
 NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
+
+
+class _WarnComboIgnoringBoundsLoad(
+    iris.exceptions.IrisIgnoringBoundsWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
 
 
 def _actions_engine():
@@ -352,7 +360,8 @@ def _load_aux_factory(engine, cube):
                         return coord
                 warnings.warn(
                     "Unable to find coordinate for variable "
-                    "{!r}".format(name)
+                    "{!r}".format(name),
+                    category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
                 )
 
         if formula_type == "atmosphere_sigma_coordinate":
@@ -393,7 +402,10 @@ def _load_aux_factory(engine, cube):
                                 coord_p0.name()
                             )
                         )
-                        warnings.warn(msg)
+                        warnings.warn(
+                            msg,
+                            category=_WarnComboIgnoringBoundsLoad,
+                        )
                     coord_a = coord_from_term("a")
                     if coord_a is not None:
                         if coord_a.units.is_unknown():
@@ -584,7 +596,10 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 try:
                     _load_aux_factory(engine, cube)
                 except ValueError as e:
-                    warnings.warn("{}".format(e))
+                    warnings.warn(
+                        "{}".format(e),
+                        category=iris.exceptions.IrisLoadWarning,
+                    )
 
                 # Perform any user registered callback function.
                 cube = run_callback(callback, cube, cf_var, file_source)

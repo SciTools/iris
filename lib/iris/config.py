@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Provides access to Iris-specific configuration values.
 
@@ -35,6 +34,8 @@ import contextlib
 import logging
 import os.path
 import warnings
+
+import iris.exceptions
 
 
 def get_logger(
@@ -145,7 +146,10 @@ def get_dir_option(section, option, default=None):
                 "Ignoring config item {!r}:{!r} (section:option) as {!r}"
                 " is not a valid directory path."
             )
-            warnings.warn(msg.format(section, option, c_path))
+            warnings.warn(
+                msg.format(section, option, c_path),
+                category=iris.exceptions.IrisIgnoringWarning,
+            )
     return path
 
 
@@ -251,7 +255,10 @@ class NetCDF:
                     "Attempting to set invalid value {!r} for "
                     "attribute {!r}. Defaulting to {!r}."
                 )
-                warnings.warn(wmsg.format(value, name, good_value))
+                warnings.warn(
+                    wmsg.format(value, name, good_value),
+                    category=iris.exceptions.IrisDefaultingWarning,
+                )
                 value = good_value
         self.__dict__[name] = value
 

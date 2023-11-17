@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Integration tests for delayed saving.
 """
@@ -17,8 +16,8 @@ import numpy as np
 import pytest
 
 import iris
+from iris.exceptions import IrisSaverFillValueWarning
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
-from iris.fileformats.netcdf.saver import SaverFillValueWarning
 import iris.tests
 from iris.tests.stock import realistic_4d
 
@@ -311,7 +310,7 @@ class Test__lazy_stream_data:
         result_warnings = [
             log.message
             for log in logged_warnings
-            if isinstance(log.message, SaverFillValueWarning)
+            if isinstance(log.message, IrisSaverFillValueWarning)
         ]
 
         if save_is_delayed:
@@ -320,7 +319,9 @@ class Test__lazy_stream_data:
             # Complete the operation now
             with warnings.catch_warnings():
                 # NOTE: warnings should *not* be issued here, instead they are returned.
-                warnings.simplefilter("error", category=SaverFillValueWarning)
+                warnings.simplefilter(
+                    "error", category=IrisSaverFillValueWarning
+                )
                 result_warnings = result.compute()
 
         # Either way, we should now have 2 similar warnings.
