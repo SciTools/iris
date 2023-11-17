@@ -2059,25 +2059,28 @@ def equalise_attributes(cubes):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-    # deferred imports to avoid circularity problem
+    # deferred import to avoid circularity problem
     from iris.common._split_attribute_dicts import (
         _convert_splitattrs_to_pairedkeys_dict,
     )
-    from iris.cube import CubeAttrsDict
 
     cube_attrs = [cube.attributes for cube in cubes]
-    removed = []
 
-    # *IF* they are cube attributes, then convert to "paired-keys" form.
-    is_split_dicts = any(
-        isinstance(attrs, CubeAttrsDict) for attrs in cube_attrs
-    )
-    if is_split_dicts:
-        # Note: we only test this in case someone was passing some *other* objects for
-        # attributes processing (though the docstring does not admit this is possible).
-        cube_attrs = [
-            _convert_splitattrs_to_pairedkeys_dict(dic) for dic in cube_attrs
-        ]
+    # Convert all the input dictionaries to ones with 'paired' keys, so each key
+    # becomes a pair, ('local'/'global', attribute-name), making them specific to each
+    # "type", i.e. global or local.
+    # This is needed to ensure that afterwards all cubes will have identical
+    # attributes, E.G. it treats an attribute which is global on one cube and local
+    # on another as *not* the same.  This is essential to its use in making merges work.
+    #
+    # This approach does also still function with "ordinary" dictionaries, or
+    # :class:`iris.common.mixin.LimitedAttributeDict`, though somewhat inefficiently,
+    # so the routine works on *other* objects bearing attributes, i.e. not just Cubes.
+    # That is also important since the original code allows that (though the docstring
+    # does not admit it).
+    cube_attrs = [
+        _convert_splitattrs_to_pairedkeys_dict(dic) for dic in cube_attrs
+    ]
 
     # Work out which attributes are identical across all the cubes.
     common_keys = list(cube_attrs[0].keys())
@@ -2092,12 +2095,14 @@ def equalise_attributes(cubes):
         ]
     keys_to_remove.difference_update(common_keys)
 
-    # rework the keys list if we were handling split-attributes.
-    if is_split_dicts:
-        # Collect all the ('local'/'global', name) keys + retain just the names.
-        keys_to_remove = set(key_pair[1] for key_pair in keys_to_remove)
+    # Convert back from the resulting 'paired' keys set, extracting just the
+    # attribute-name parts, as a set of names to be discarded.
+    # Note: we don't care any more what type (global/local) these were :  we will
+    # simply remove *all* attributes with those names.
+    keys_to_remove = set(key_pair[1] for key_pair in keys_to_remove)
 
     # Remove all the non-matching attributes.
+    removed = []
     for cube in cubes:
         deleted_attributes = {
             key: cube.attributes.pop(key)
