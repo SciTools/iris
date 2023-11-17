@@ -160,5 +160,21 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
         optimum.assert_called_with(ANY, chunks=None, dask_chunking=True)
 
 
+def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
+    cube_varname, _ = save_cubelist_with_sigma
+    with dask.config.set({"array.chunk-size": "250B"}):
+        with CHUNK_CONTROL.set(model_level_number=2):
+            cubes = CubeList(loader.load_cubes(tmp_filepath))
+            cube = cubes.extract_cube(cube_varname)
+    assert cube.shape == (3, 4, 5, 6)
+    # uses known good output
+    assert cube.lazy_data().chunksize == (1, 2, 2, 6)
+
+    sigma = cube.coord("sigma")
+    assert sigma.shape == (4,)
+    assert sigma.lazy_points().chunksize == (2,)
+    assert sigma.lazy_bounds().chunksize == (2, 2)
+
+
 if __name__ == "__main__":
     tests.main()

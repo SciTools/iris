@@ -15,7 +15,7 @@ import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
-from iris.fileformats.netcdf.loader import _get_cf_var_data, CHUNK_CONTROL
+from iris.fileformats.netcdf.loader import CHUNK_CONTROL, _get_cf_var_data
 
 
 class Test__get_cf_var_data(tests.IrisTest):
@@ -27,11 +27,10 @@ class Test__get_cf_var_data(tests.IrisTest):
     def _make(
         self, chunksizes=None, shape=None, dtype="i4", **extra_properties
     ):
-
         cf_data = mock.MagicMock(
             _FillValue=None,
             __getitem__="<real-data>",
-            dimensions=["dim_"+str(x) for x in range(len(shape or "1"))]
+            dimensions=["dim_" + str(x) for x in range(len(shape or "1"))],
         )
         cf_data.chunking = mock.MagicMock(return_value=chunksizes)
         if shape is None:
