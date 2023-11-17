@@ -11,7 +11,6 @@ from iris.util import guess_coord_axis
 
 
 class TestGuessCoord:
-
     @pytest.mark.parametrize(
         "coordinate, axis",
         [

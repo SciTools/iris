@@ -1151,7 +1151,6 @@ class TestClimatology(tests.IrisTest):
 
 
 class TestIgnoreAxis:
-
     def test_default(self, sample_coord):
         assert sample_coord.ignore_axis is False
 
