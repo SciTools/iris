@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.guess_coord_axis`."""
 
 import pytest
@@ -12,7 +11,6 @@ from iris.util import guess_coord_axis
 
 
 class TestGuessCoord:
-
     @pytest.fixture
     def sample_coord(self):
         sample_coord = iris.coords.DimCoord(points=(1, 2, 3, 4, 5))
