@@ -166,7 +166,7 @@ class TestSplitattributes:
     of attributes as global or local.
 
     Specifically, it is now possible that although
-    "cube1.attributes.keys == cube2.attributes.keys()",
+    "cube1.attributes.keys() == cube2.attributes.keys()",
     AND "cube1.attributes[k] == cube2.attributes[k]" for all keys,
     YET STILL (possibly) "cube1.attributes != cube2.attributes"
     """
