@@ -18,7 +18,6 @@ any of the common-metadata operations.
 So, we simply treat "global" and "local" attributes of the same name as entirely
 independent. Which happily is also the easiest to code, and to explain.
 """
-
 from collections.abc import Mapping, Sequence
 from functools import wraps
 
@@ -30,7 +29,16 @@ def _convert_splitattrs_to_pairedkeys_dict(dic):
     Transform a :class:`~iris.cube.CubeAttributesDict` "split" attributes dictionary
     into a 'normal' :class:`dict`, with paired keys of the form ('global', name) or
     ('local', name).
+
+    If the input is *not* a split-attrs dict, it is converted to one before
+    transforming it.  This will assign its keys to global/local depending on a standard
+    set of choices (see :class:`~iris.cube.CubeAttributesDict`).
     """
+    from iris.cube import CubeAttrsDict
+
+    # Convert input to CubeAttrsDict
+    if not hasattr(dic, "globals") or not hasattr(dic, "locals"):
+        dic = CubeAttrsDict(dic)
 
     def _global_then_local_items(dic):
         # Routine to produce global, then local 'items' in order, and with all keys
@@ -93,13 +101,6 @@ def adjust_for_split_attribute_dictionaries(operation):
 
     @wraps(operation)
     def _inner_function(*args, **kwargs):
-        from iris.cube import CubeAttrsDict
-
-        # First make all inputs into CubeAttrsDict, if not already.
-        args = [
-            arg if isinstance(arg, CubeAttrsDict) else CubeAttrsDict(arg)
-            for arg in args
-        ]
         # Convert all inputs into 'pairedkeys' type dicts
         args = [_convert_splitattrs_to_pairedkeys_dict(arg) for arg in args]
 

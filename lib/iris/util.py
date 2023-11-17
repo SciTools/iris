@@ -2059,24 +2059,50 @@ def equalise_attributes(cubes):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-    removed = []
+    # deferred import to avoid circularity problem
+    from iris.common._split_attribute_dicts import (
+        _convert_splitattrs_to_pairedkeys_dict,
+    )
+
+    cube_attrs = [cube.attributes for cube in cubes]
+
+    # Convert all the input dictionaries to ones with 'paired' keys, so each key
+    # becomes a pair, ('local'/'global', attribute-name), making them specific to each
+    # "type", i.e. global or local.
+    # This is needed to ensure that afterwards all cubes will have identical
+    # attributes, E.G. it treats an attribute which is global on one cube and local
+    # on another as *not* the same.  This is essential to its use in making merges work.
+    #
+    # This approach does also still function with "ordinary" dictionaries, or
+    # :class:`iris.common.mixin.LimitedAttributeDict`, though somewhat inefficiently,
+    # so the routine works on *other* objects bearing attributes, i.e. not just Cubes.
+    # That is also important since the original code allows that (though the docstring
+    # does not admit it).
+    cube_attrs = [
+        _convert_splitattrs_to_pairedkeys_dict(dic) for dic in cube_attrs
+    ]
+
     # Work out which attributes are identical across all the cubes.
-    common_keys = list(cubes[0].attributes.keys())
+    common_keys = list(cube_attrs[0].keys())
     keys_to_remove = set(common_keys)
-    for cube in cubes[1:]:
-        cube_keys = list(cube.attributes.keys())
+    for attrs in cube_attrs[1:]:
+        cube_keys = list(attrs.keys())
         keys_to_remove.update(cube_keys)
         common_keys = [
             key
             for key in common_keys
-            if (
-                key in cube_keys
-                and np.all(cube.attributes[key] == cubes[0].attributes[key])
-            )
+            if (key in cube_keys and np.all(attrs[key] == cube_attrs[0][key]))
         ]
     keys_to_remove.difference_update(common_keys)
 
-    # Remove all the other attributes.
+    # Convert back from the resulting 'paired' keys set, extracting just the
+    # attribute-name parts, as a set of names to be discarded.
+    # Note: we don't care any more what type (global/local) these were :  we will
+    # simply remove *all* attributes with those names.
+    keys_to_remove = set(key_pair[1] for key_pair in keys_to_remove)
+
+    # Remove all the non-matching attributes.
+    removed = []
     for cube in cubes:
         deleted_attributes = {
             key: cube.attributes.pop(key)
@@ -2084,6 +2110,7 @@ def equalise_attributes(cubes):
             if key in cube.attributes
         }
         removed.append(deleted_attributes)
+
     return removed
 
 
