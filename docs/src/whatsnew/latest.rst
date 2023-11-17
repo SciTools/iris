@@ -32,6 +32,9 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
    lazy data. (:pull:`5307`)
+#. `@HGWright`_ added :func:`~iris.coords.Coord.ignore_axis` to allow manual
+   intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
+   certain coordinate. (:pull:`5551`)
 
 
 🐛 Bugs Fixed

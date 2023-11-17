@@ -11,10 +11,6 @@ from iris.util import guess_coord_axis
 
 
 class TestGuessCoord:
-    @pytest.fixture
-    def sample_coord(self):
-        sample_coord = iris.coords.DimCoord(points=(1, 2, 3, 4, 5))
-        return sample_coord
 
     @pytest.mark.parametrize(
         "coordinate, axis",
