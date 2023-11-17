@@ -29,9 +29,6 @@ This document explains the changes made to Iris for this release
 
 ✨ Features
 ===========
-
-#. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
-   lazy data. (:pull:`5307`)
    
 #. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
    :class:`UserWarning`\s for richer filtering. The full index of
@@ -48,7 +45,7 @@ This document explains the changes made to Iris for this release
    the year of December) instead of the following year (the default behaviour).
    (:pull:`5573`)
    
-   #. `@HGWright`_ added :func:`~iris.coords.Coord.ignore_axis` to allow manual
+   #. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
    intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
    coordinate. (:pull:`5551`)
 
