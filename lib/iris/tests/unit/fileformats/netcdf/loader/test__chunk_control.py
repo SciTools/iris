@@ -1,9 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""Integration tests for loading and saving netcdf files."""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :class:`iris.fileformats.netcdf.loader.ChunkControl`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -38,19 +37,11 @@ def save_cube_with_chunksize(tmp_filepath):
     iris.save(istk.simple_3d(), tmp_filepath, chunksizes=(1, 3, 4))
 
 
-# @pytest.fixture
-# def tmp_filepath():
-#     tmp_dir = Path(tempfile.mkdtemp())
-#     tmp_path = tmp_dir / "tmp.nc"
-#     yield str(tmp_path)
-#     shutil.rmtree(tmp_dir)
-
-
 @pytest.fixture(scope="session")
 def tmp_filepath(tmp_path_factory):
     tmp_dir = tmp_path_factory.mktemp("data")
     tmp_path = tmp_dir / "tmp.nc"
-    yield str(tmp_path)
+    return str(tmp_path)
 
 
 @pytest.fixture(autouse=True)

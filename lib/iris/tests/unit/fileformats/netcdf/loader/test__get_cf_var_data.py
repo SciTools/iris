@@ -15,7 +15,7 @@ import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
-from iris.fileformats.netcdf.loader import _get_cf_var_data
+from iris.fileformats.netcdf.loader import _get_cf_var_data, CHUNK_CONTROL
 
 
 class Test__get_cf_var_data(tests.IrisTest):
@@ -27,9 +27,11 @@ class Test__get_cf_var_data(tests.IrisTest):
     def _make(
         self, chunksizes=None, shape=None, dtype="i4", **extra_properties
     ):
+
         cf_data = mock.MagicMock(
             _FillValue=None,
             __getitem__="<real-data>",
+            dimensions=["dim_"+str(x) for x in range(len(shape or "1"))]
         )
         cf_data.chunking = mock.MagicMock(return_value=chunksizes)
         if shape is None:
@@ -59,6 +61,15 @@ class Test__get_cf_var_data(tests.IrisTest):
         lazy_data = _get_cf_var_data(cf_var, self.filename)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
         expected_chunks = _optimum_chunksize(chunks, self.shape)
+        self.assertArrayEqual(lazy_data_chunks, expected_chunks)
+
+    def test_cf_data_chunk_control(self):
+        chunks = [2500, 240, 200]
+        cf_var = self._make(shape=(2500, 240, 200), chunksizes=chunks)
+        with CHUNK_CONTROL.set(dim_0=25, dim_1=24, dim_2=20):
+            lazy_data = _get_cf_var_data(cf_var, self.filename)
+            lazy_data_chunks = [c[0] for c in lazy_data.chunks]
+        expected_chunks = (25, 24, 20)
         self.assertArrayEqual(lazy_data_chunks, expected_chunks)
 
     def test_cf_data_no_chunks(self):
