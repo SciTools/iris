@@ -258,8 +258,8 @@ def guess_coord_axis(coord):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
-    ``guess_coord_axis`` can be skipped by setting the coordinate property of a coord ignore_axis
-    to False.
+    The ``guess_coord_axis`` behaviour can be skipped by setting the coordinate property ``ignore_axis``
+    to ``False``.
 
     """
 

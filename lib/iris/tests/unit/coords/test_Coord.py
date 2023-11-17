@@ -1152,35 +1152,42 @@ class TestClimatology(tests.IrisTest):
 
 
 @pytest.fixture
-def coord():
-    coord = iris.coords.DimCoord(points=(1, 2, 3, 4, 5))
-    return coord
+def sample_coord():
+    sample_coord = iris.coords.DimCoord(points=(1, 2, 3, 4, 5))
+    return sample_coord
 
 
 class Test_ignore_axis:
-    def test_default(self, coord):
-        assert coord.ignore_axis is False
+    def test_default(self, sample_coord):
+        assert sample_coord.ignore_axis is False
 
-    def test_set_true(self, coord):
-        coord.ignore_axis = True
-        assert coord.ignore_axis is True
+    def test_set_true(self, sample_coord):
+        sample_coord.ignore_axis = True
+        assert sample_coord.ignore_axis is True
 
-    def test_set_random_value(self, coord):
+    def test_set_random_value(self, sample_coord):
         with pytest.raises(
             ValueError,
             match=r"'ignore_axis' can only be set to 'True' or 'False'",
         ):
-            coord.ignore_axis = "foo"
+            sample_coord.ignore_axis = "foo"
 
-    def test_copy_coord(self, coord):
-        coord.ignore_axis = True
-        coord_copy = coord.copy()
-        assert coord_copy.ignore_axis is True
-
-    def test_from_coord(self, coord):
-        coord.ignore_axis = True
-        new_coord = coord.from_coord(coord)
-        assert new_coord.ignore_axis is True
+    @pytest.mark.parametrize(
+        "ignore_axis, copy_or_from, result",
+        [
+            (True, "copy", True),
+            (True, "from_coord", True),
+            (False, "copy", False),
+            (False, "from_coord", False),
+        ],
+    )
+    def test_copy_coord(self, ignore_axis, copy_or_from, result, sample_coord):
+        sample_coord.ignore_axis = ignore_axis
+        if copy_or_from == "copy":
+            new_coord = sample_coord.copy()
+        elif copy_or_from == "from_coord":
+            new_coord = sample_coord.from_coord(sample_coord)
+        assert new_coord.ignore_axis is result
 
 
 class Test___init____abstractmethod(tests.IrisTest):
