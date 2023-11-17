@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
 Classes for representing multi-dimensional data with metadata.
@@ -19,6 +18,7 @@ import warnings
 from xml.dom.minidom import Document
 import zlib
 
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -775,7 +775,7 @@ class CubeList(list):
         """
         Return a CubeList when CubeList.copy() is called.
         """
-        if type(self) == CubeList:
+        if isinstance(self, CubeList):
             return deepcopy(self)
 
 
@@ -1133,6 +1133,9 @@ class Cube(CFVariableMixin):
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
 
+        Full list of supported units can be found in the UDUNITS-2 documentation
+        https://docs.unidata.ucar.edu/udunits/current/#Database
+
         This operation preserves lazy data.
 
         """
@@ -1144,7 +1147,7 @@ class Cube(CFVariableMixin):
             )
         if self.has_lazy_data():
             # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = self.units
+            old_unit = Unit(self.units)
             new_unit = unit
 
             pointwise_convert = partial(old_unit.convert, other=new_unit)
@@ -3718,6 +3721,7 @@ class Cube(CFVariableMixin):
     def __rdiv__(self, other):
         data = 1 / self.core_data()
         reciprocal = self.copy(data=data)
+        reciprocal.units = reciprocal.units**-1
         return iris.analysis.maths.multiply(reciprocal, other)
 
     __truediv__ = __div__
@@ -3835,7 +3839,10 @@ class Cube(CFVariableMixin):
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        _Weights.update_kwargs(kwargs, self)
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
 
         # Convert any coordinate names to coordinates
         coords = self._as_list_of_coords(coords)
@@ -3849,7 +3856,10 @@ class Cube(CFVariableMixin):
             ]
             if lat_match:
                 for coord in lat_match:
-                    warnings.warn(msg.format(coord.name()))
+                    warnings.warn(
+                        msg.format(coord.name()),
+                        category=iris.exceptions.IrisUserWarning,
+                    )
 
         # Determine the dimensions we need to collapse (and those we don't)
         if aggregator.cell_method == "peak":
@@ -3980,7 +3990,11 @@ class Cube(CFVariableMixin):
             )
 
         aggregator.update_metadata(
-            collapsed_cube, coords, axis=collapse_axis, **kwargs
+            collapsed_cube,
+            coords,
+            axis=collapse_axis,
+            _weights_units=getattr(weights_info, "units", None),
+            **kwargs,
         )
         result = aggregator.post_process(
             collapsed_cube, data_result, coords, **kwargs
@@ -4073,7 +4087,10 @@ x            -              -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        _Weights.update_kwargs(kwargs, self)
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
 
         groupby_coords = []
         dimension_to_groupby = None
@@ -4113,16 +4130,10 @@ x            -              -
                         f"that is aggregated, got {len(weights):d}, expected "
                         f"{self.shape[dimension_to_groupby]:d}"
                     )
-
-                # iris.util.broadcast_to_shape does not preserve _Weights type
-                weights = _Weights(
-                    iris.util.broadcast_to_shape(
-                        weights,
-                        self.shape,
-                        (dimension_to_groupby,),
-                    ),
-                    self,
-                    units=weights.units,
+                weights = iris.util.broadcast_to_shape(
+                    weights,
+                    self.shape,
+                    (dimension_to_groupby,),
                 )
             if weights.shape != self.shape:
                 raise ValueError(
@@ -4240,7 +4251,11 @@ x            -              -
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
-            aggregateby_cube, groupby_coords, aggregate=True, **kwargs
+            aggregateby_cube,
+            groupby_coords,
+            aggregate=True,
+            _weights_units=getattr(weights_info, "units", None),
+            **kwargs,
         )
         # Replace the appropriate coordinates within the aggregate-by cube.
         (dim_coord,) = self.coords(
@@ -4379,7 +4394,10 @@ x            -               -
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        _Weights.update_kwargs(kwargs, self)
+        weights_info = None
+        if kwargs.get("weights") is not None:
+            weights_info = _Weights(kwargs["weights"], self)
+            kwargs["weights"] = weights_info.array
 
         coord = self._as_list_of_coords(coord)[0]
 
@@ -4428,7 +4446,8 @@ x            -               -
             if coord_.has_bounds():
                 warnings.warn(
                     "The bounds of coordinate %r were ignored in "
-                    "the rolling window operation." % coord_.name()
+                    "the rolling window operation." % coord_.name(),
+                    category=iris.exceptions.IrisIgnoringBoundsWarning,
                 )
 
             if coord_.ndim != 1:
@@ -4466,6 +4485,7 @@ x            -               -
             new_cube,
             [coord],
             action="with a rolling window of length %s over" % window,
+            _weights_units=getattr(weights_info, "units", None),
             **kwargs,
         )
         # and perform the data transformation, generating weights first if
@@ -4482,14 +4502,8 @@ x            -               -
                         "as the window."
                     )
                 kwargs = dict(kwargs)
-
-                # iris.util.broadcast_to_shape does not preserve _Weights type
-                kwargs["weights"] = _Weights(
-                    iris.util.broadcast_to_shape(
-                        weights, rolling_window_data.shape, (dimension + 1,)
-                    ),
-                    self,
-                    units=weights.units,
+                kwargs["weights"] = iris.util.broadcast_to_shape(
+                    weights, rolling_window_data.shape, (dimension + 1,)
                 )
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs

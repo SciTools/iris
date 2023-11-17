@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Regridding functions.
 
@@ -43,6 +42,7 @@ from iris.analysis._regrid import (
 import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
+from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid
 
 wmsg = (
@@ -538,7 +538,7 @@ class _ProjectedUnstructuredRegridder:
                     "Cannot update aux_factory {!r} because of dropped"
                     " coordinates.".format(factory.name())
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=IrisImpossibleUpdateWarning)
         return result
 
     def __call__(self, src_cube):

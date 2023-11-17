@@ -13,7 +13,7 @@ minimum_pre_commit_version: 1.21.0
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
         # Prevent giant files from being committed.
     -   id: check-added-large-files
@@ -29,21 +29,21 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: "v2.2.4"
+    rev: "v2.2.6"
     hooks:
     -   id: codespell
         types_or: [asciidoc, python, markdown, rst]
         additional_dependencies: [tomli]
 
 -   repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.11.0
     hooks:
     -   id: black
         pass_filenames: false
         args: [--config=./pyproject.toml, .]
 
 -   repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
     -   id: flake8
         types: [file, python]
@@ -56,7 +56,7 @@ repos:
         args: [--filter-files]
 
 -   repo: https://github.com/asottile/blacken-docs
-    rev: 1.13.0
+    rev: 1.16.0
     hooks:
     -   id: blacken-docs
         types: [file, rst]

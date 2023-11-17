@@ -3,30 +3,26 @@
 Installing
 ==========
 
-Iris is available using conda for the following platforms:
-
-* Linux 64-bit,
-* Mac OSX 64-bit, and
-* Windows 64-bit.
-
-Windows 10 now has support for Linux distributions via WSL_ (Windows
-Subsystem for Linux).  This is a great option to get started with Iris
-for users and developers.  Be aware that we do not currently test against
-any WSL_ distributions.
-
-.. _WSL: https://learn.microsoft.com/en-us/windows/wsl/install
+Iris can be installed using conda or pip.
 
 .. note:: Iris is currently supported and tested against |python_support|
           running on Linux.  We do not currently actively test on other
           platforms such as Windows or macOS.
+
+          Windows 10 now has support for Linux distributions via WSL_ (Windows
+          Subsystem for Linux).  This is a great option to get started with
+          Iris for users and contributors.  Be aware that we do not currently
+          test against any WSL_ distributions.
+
+.. _WSL: https://learn.microsoft.com/en-us/windows/wsl/install
 
 .. note:: This documentation was built using Python |python_version|.
 
 
 .. _installing_using_conda:
 
-Installing Using Conda (Users)
-------------------------------
+Installing a Released Version Using Conda
+-----------------------------------------
 
 To install Iris using conda, you must first download and install conda,
 for example from https://docs.conda.io/en/latest/miniconda.html.
@@ -44,33 +40,24 @@ need the Iris sample data. This can also be installed using conda::
 Further documentation on using conda and the features it provides can be found
 at https://docs.conda.io/projects/conda/en/latest/index.html.
 
-.. _installing_from_source_without_conda:
+.. _installing_using_pip:
 
-Installing from Source Without Conda on Debian-Based Linux Distros (Developers)
--------------------------------------------------------------------------------
+Installing a Released Version Using Pip
+---------------------------------------
 
-Iris can also be installed without a conda environment. The instructions in
-this section are valid for Debian-based Linux distributions (Debian, Ubuntu,
-Kubuntu, etc.).
+Iris is also available from https://pypi.org/ so can be installed with ``pip``::
 
-Iris and its dependencies need some shared libraries in order to work properly.
-These can be installed with apt::
+  pip install scitools-iris
 
-  sudo apt-get install python3-pip python3-tk libudunits2-dev libproj-dev proj-bin libgeos-dev libcunit1-dev
+If you wish to run any of the code in the gallery you will also
+need the Iris sample data. This can also be installed using pip::
 
-The rest can be done with pip::
-
-  pip3 install scitools-iris
-
-This procedure was tested on a Ubuntu 20.04 system on the
-26th of July, 2021.
-Be aware that through updates of the involved Debian packages,
-dependency conflicts might arise or the procedure might have to be modified.
+  pip install iris-sample-data
 
 .. _installing_from_source:
 
-Installing from Source with Conda (Developers)
-----------------------------------------------
+Installing a Development Version from a Git Checkout
+----------------------------------------------------
 
 The latest Iris source release is available from
 https://github.com/SciTools/iris.
@@ -78,9 +65,9 @@ https://github.com/SciTools/iris.
 For instructions on how to obtain the Iris project source from GitHub see
 :ref:`forking` and :ref:`set-up-fork` for instructions.
 
-Once conda is installed, you can install Iris using conda and then activate
-it.  The example commands below assume you are in the root directory of your
-local copy of Iris::
+Once conda is installed, you can create a development environment for Iris
+using conda and then activate it.  The example commands below assume you are in
+the root directory of your local copy of Iris::
 
   conda env create --force --file=requirements/iris.yml
   conda activate iris-dev

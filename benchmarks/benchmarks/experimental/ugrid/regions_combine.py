@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Benchmarks stages of operation of the function
 :func:`iris.experimental.ugrid.utils.recombine_submeshes`.
@@ -23,14 +22,14 @@ from iris import load, load_cube, save
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.utils import recombine_submeshes
 
-from ... import TrackAddedMemoryAllocation
+from ... import TrackAddedMemoryAllocation, on_demand_benchmark
 from ...generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
 class MixinCombineRegions:
     # Characterise time taken + memory-allocated, for various stages of combine
     # operations on cubesphere-like test data.
-    params = [4, 500]
+    params = [50, 500]
     param_names = ["cubesphere-N"]
 
     def _parametrised_cache_filename(self, n_cubesphere, content_name):
@@ -200,6 +199,8 @@ class CombineRegionsComputeRealData(MixinCombineRegions):
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
+    # Vulnerable to noise, so disabled by default.
+    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
@@ -217,6 +218,8 @@ class CombineRegionsSaveData(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
+    # Vulnerable to noise, so disabled by default.
+    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_save(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
@@ -245,6 +248,8 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
+    # Vulnerable to noise, so disabled by default.
+    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_stream_file2file(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
