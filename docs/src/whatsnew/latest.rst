@@ -29,7 +29,7 @@ This document explains the changes made to Iris for this release
 
 ✨ Features
 ===========
-
+   
 #. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
    :class:`UserWarning`\s for richer filtering. The full index of
    sub-categories can be seen here: :mod:`iris.exceptions` . (:pull:`5498`)
@@ -44,6 +44,10 @@ This document explains the changes made to Iris for this release
    Winter - December to February) will be assigned to the preceding year (e.g.
    the year of December) instead of the following year (the default behaviour).
    (:pull:`5573`)
+   
+   #. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
+   intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
+   coordinate. (:pull:`5551`)
 
 
 🐛 Bugs Fixed

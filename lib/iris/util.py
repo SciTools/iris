@@ -257,10 +257,17 @@ def guess_coord_axis(coord):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
+    The ``guess_coord_axis`` behaviour can be skipped by setting the coordinate property ``ignore_axis``
+    to ``False``.
+
     """
+
     axis = None
 
-    if coord.standard_name in (
+    if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
+        return axis
+
+    elif coord.standard_name in (
         "longitude",
         "grid_longitude",
         "projection_x_coordinate",
