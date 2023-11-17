@@ -2094,7 +2094,7 @@ def equalise_attributes(cubes):
 
     # rework the keys list if we were handling split-attributes.
     if is_split_dicts:
-        # Collect all the ('local'/'global, name) keys + retain just the names.
+        # Collect all the ('local'/'global', name) keys + retain just the names.
         keys_to_remove = set(key_pair[1] for key_pair in keys_to_remove)
 
     # Remove all the non-matching attributes.
