@@ -467,7 +467,7 @@ def _get_coord_to_coord_matrix_info(
     """
     First part of weight calculation.
 
-    Calculate the weights contribution from a pair single pair of
+    Calculate the weights contribution from a single pair of
     coordinate bounds. Search for pairs of overlapping source and
     target bounds and associate weights with them.
 
@@ -656,14 +656,16 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
             # in bounds it will be masked.
             oob_mask = inbound_sums > 1 - 1e-8
         else:
+            # Note: this code is currently inaccessible. This code exists to lay
+            # the groundwork for future work which will make out of bounds
+            # behaviour switchable.
             oob_mask = inbound_sums > 1 - mdtol
         # Broadcast the mask to the shape of the full array
         oob_slice = ((np.newaxis,) * len(data.shape[:-2])) + np.s_[:, :]
         tgt_mask = tgt_mask * oob_mask[oob_slice]
 
     # Calculate normalisations.
-    normalisations = np.ones_like(weight_sums)
-    normalisations *= tgt_mask
+    normalisations = tgt_mask.astype(weight_sums.dtype)
     normalisations[tgt_mask] /= weight_sums[tgt_mask]
 
     # Mask points in the result.
@@ -695,20 +697,17 @@ def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
     # Handle scalar coordinates.
     # Note: scalar source coordinates are only handled when their
     # corresponding target coordinate is also scalar.
+    num_scalar_dims = 0
     if x_dim is None:
-        x_none = True
+        num_scalar_dims += 1
         data = np.expand_dims(data, -1)
         x_dim = -1
-    else:
-        x_none = False
     if y_dim is None:
-        y_none = True
+        num_scalar_dims += 1
         data = np.expand_dims(data, -1)
         y_dim = -1
-        if x_none:
+        if num_scalar_dims == 2:
             y_dim = -2
-    else:
-        y_none = False
 
     # Standard regridding expects the last two dimensions to belong
     # to the y and x coordinate and will output as such.
@@ -717,8 +716,6 @@ def _regrid_along_dims(data, x_dim, y_dim, weights, tgt_shape, mdtol):
     result = _standard_regrid(data, weights, tgt_shape, mdtol)
     result = np.moveaxis(result, [-2, -1], [y_dim, x_dim])
 
-    if y_none:
-        result = np.squeeze(result, axis=-1)
-    if x_none:
+    for _ in range(num_scalar_dims):
         result = np.squeeze(result, axis=-1)
     return result
