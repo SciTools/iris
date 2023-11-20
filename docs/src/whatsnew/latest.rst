@@ -33,9 +33,9 @@ This document explains the changes made to Iris for this release
    :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` handling to
    better preserve the distinction between dataset-level and variable-level
    attributes, allowing file-Cube-file round-tripping of NetCDF attributes. See
-   :class:`~iris.cube.CubeAttrsDict` and NetCDF
-   :func:`~iris.fileformats.netcdf.saver.save` for more. (:pull:`5152`,
-   `split attributes project`_)
+   :class:`~iris.cube.CubeAttrsDict`, NetCDF
+   :func:`~iris.fileformats.netcdf.saver.save` and :data:`~iris.Future` for more.
+   (:pull:`5152`, `split attributes project`_)
 
 #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
    lazy data. (:pull:`5307`)
