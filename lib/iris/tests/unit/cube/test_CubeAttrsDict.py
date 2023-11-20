@@ -109,8 +109,7 @@ class Test_OddMethods:
         check_content(copy, matches=sample_attrs)
 
     @pytest.fixture(params=["regular_arg", "split_arg"])
-    @staticmethod
-    def update_testcase(request):
+    def update_testcase(self, request):
         lhs = CubeAttrsDict(globals={"a": 1, "b": 2}, locals={"b": 3, "c": 4})
         if request.param == "split_arg":
             # A set of "update settings", with global/local-specific keys.
