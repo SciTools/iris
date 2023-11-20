@@ -84,9 +84,11 @@ def create_shapefile_mask(
     prepped_trans_geo = prepped.prep(trans_geo)
 
     # prepare 2D cube
+    for coord in cube.dim_coords:
+        if not coord.has_bounds():
+            coord.guess_bounds()
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     cube_2d = cube.slices([y_name, x_name]).next()
-    _cube_xy_guessbounds(cube_2d)
     xmod = cube.coord(x_name).units.modulus
     ymod = cube.coord(y_name).units.modulus
     mask_template = np.zeros(cube_2d.shape, dtype=bool)
@@ -184,22 +186,6 @@ def _cube_primary_xy_coord_names(cube):
     latitude = latc.standard_name if latc.standard_name else latc.long_name
     longitude = lonc.standard_name if lonc.standard_name else lonc.long_name
     return latitude, longitude
-
-
-def _cube_xy_guessbounds(cube):
-    """Guess latitude/longitude bounds of the cube and add them (**in place**)
-    if not present.
-
-    Arguments:
-        cube (:class:`iris.cube.Cube`): An Iris cube
-
-    Warning:
-        This function modifies the passed `cube` in place, adding bounds to the
-        latitude and longitude coordinates.
-    """
-    for coord in _cube_primary_xy_coord_names(cube):
-        if not cube.coord(coord).has_bounds():
-            cube.coord(coord).guess_bounds()
 
 
 def _rebase_values_to_modulus(values, modulus):
