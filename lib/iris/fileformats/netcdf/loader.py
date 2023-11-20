@@ -780,7 +780,12 @@ class ChunkControl(threading.local):
     @contextmanager
     def from_file(self) -> None:
         """
-        Ensures the chunks are loaded in from file variables, else will throw an error.
+        Ensures the chunksizes are loaded in from NetCDF file variables.
+
+        Raises
+        ------
+        KeyError
+            If any NetCDF file variable does not specify chunksizes.
 
         Notes
         -----
@@ -798,7 +803,7 @@ class ChunkControl(threading.local):
     @contextmanager
     def as_dask(self) -> None:
         """
-        Ensures the chunks are decided from dask.
+        Uses Dask :external+dask:doc:`array` to control chunksizes.
 
         Notes
         -----
