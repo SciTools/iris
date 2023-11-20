@@ -63,6 +63,7 @@ class Test__get_cf_var_data(tests.IrisTest):
         self.assertArrayEqual(lazy_data_chunks, expected_chunks)
 
     def test_cf_data_chunk_control(self):
+        # more thorough testing can be found at `test__chunk_control`
         chunks = [2500, 240, 200]
         cf_var = self._make(shape=(2500, 240, 200), chunksizes=chunks)
         with CHUNK_CONTROL.set(dim_0=25, dim_1=24, dim_2=20):

@@ -108,6 +108,18 @@ def test_control_cube_var(tmp_filepath, save_cubelist_with_sigma):
     assert sigma.lazy_bounds().chunksize == (2, 2)
 
 
+def test_invalid_chunksize(tmp_filepath, save_cubelist_with_sigma):
+    with pytest.raises(ValueError):
+        with CHUNK_CONTROL.set(model_level_numer="2"):
+            CubeList(loader.load_cubes(tmp_filepath))
+
+
+def test_invalid_var_name(tmp_filepath, save_cubelist_with_sigma):
+    with pytest.raises(ValueError):
+        with CHUNK_CONTROL.set([1, 2], model_level_numer="2"):
+            CubeList(loader.load_cubes(tmp_filepath))
+
+
 def test_control_multiple(tmp_filepath, save_cubelist_with_sigma):
     cube_varname, sigma_varname = save_cubelist_with_sigma
     with CHUNK_CONTROL.set(
@@ -147,17 +159,29 @@ def test_from_file(tmp_filepath, save_cube_with_chunksize):
     assert cube.lazy_data().chunksize == (1, 3, 4)
 
 
+def test_no_chunks_from_file(tmp_filepath, save_cubelist_with_sigma):
+    cube_varname, _ = save_cubelist_with_sigma
+    with pytest.raises(KeyError):
+        with CHUNK_CONTROL.from_file():
+            CubeList(loader.load_cubes(tmp_filepath))
+
+
 def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
+    """
+    This does not test return values, as we can't be sure
+    dask chunking behaviour won't change, or that it will differ
+    from our own chunking behaviour.
+    """
     message = "Mock called, rest of test unneeded"
-    with patch("iris.fileformats.netcdf.loader.as_lazy_data") as optimum:
-        optimum.side_effect = RuntimeError(message)
+    with patch("iris.fileformats.netcdf.loader.as_lazy_data") as as_lazy_data:
+        as_lazy_data.side_effect = RuntimeError(message)
         with CHUNK_CONTROL.as_dask():
             try:
                 CubeList(loader.load_cubes(tmp_filepath))
             except RuntimeError as e:
                 if str(e) != message:
                     raise e
-        optimum.assert_called_with(ANY, chunks=None, dask_chunking=True)
+        as_lazy_data.assert_called_with(ANY, chunks=None, dask_chunking=True)
 
 
 def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
@@ -168,6 +192,7 @@ def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
             cube = cubes.extract_cube(cube_varname)
     assert cube.shape == (3, 4, 5, 6)
     # uses known good output
+    # known good output WITHOUT pinning: (1, 1, 5, 6)
     assert cube.lazy_data().chunksize == (1, 2, 2, 6)
 
     sigma = cube.coord("sigma")
