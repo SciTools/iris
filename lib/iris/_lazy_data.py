@@ -72,8 +72,8 @@ def _optimum_chunksize_internals(
 
     Args:
 
-    * chunks (tuple of int, or None):
-        Pre-existing chunk shape of the target data : None if unknown.
+    * chunks (tuple of int):
+        Pre-existing chunk shape of the target data.
     * shape (tuple of int):
         The full array shape of the target data.
     * limit (int):
@@ -106,8 +106,6 @@ def _optimum_chunksize_internals(
         "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
 
     """
-    if chunks is None:
-        chunks = list(shape)
 
     # Set the chunksize limit.
     if limit is None:
