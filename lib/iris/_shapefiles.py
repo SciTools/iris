@@ -126,8 +126,12 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     Returns:
         A transformed shape (copy)
     """
-    y_name, x_name = _cube_primary_xy_coord_names(cube)
-    DEFAULT_CS = _get_global_cs()
+    y_coord, x_coord = _cube_primary_xy_coord_names(cube)
+    import iris.analysis.cartography
+
+    DEFAULT_CS = iris.coord_systems.GeogCS(
+        iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
+    )
     target_system = cube.coord_system()
     if not target_system:
         warnings.warn(
@@ -138,10 +142,11 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     if geometry_system is None:
         geometry_system = DEFAULT_CS
     target_proj = target_system.as_cartopy_projection()
-    source_crs = geometry_system.as_cartopy_projection()
+    source_proj = geometry_system.as_cartopy_projection()
 
-    trans_geometry = target_proj.project_geometry(geometry, source_crs)
-    if target_system == DEFAULT_CS and cube.coord(x_name).points[-1] > 180:
+    trans_geometry = target_proj.project_geometry(geometry, source_proj)
+    # A default coord system in iris can be either -180 to 180 or 0 to 360
+    if target_system == DEFAULT_CS and x_coord.points[-1] > 180:
         trans_geometry = shapely.transform(trans_geometry, _trans_func)
 
     return trans_geometry
@@ -153,14 +158,6 @@ def _trans_func(geometry):
         if point[0] < 0:
             point[0] = 360 - np.abs(point[0])
     return geometry
-
-
-def _get_global_cs():
-    """pocket function for returning the iris default coord system to avoid circular imports"""
-    import iris.fileformats.pp
-
-    DEFAULT_CS = iris.coord_systems.GeogCS(iris.fileformats.pp.EARTH_RADIUS)
-    return DEFAULT_CS
 
 
 def _cube_primary_xy_coord_names(cube):
