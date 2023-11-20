@@ -146,7 +146,7 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
 
     trans_geometry = target_proj.project_geometry(geometry, source_proj)
     # A default coord system in iris can be either -180 to 180 or 0 to 360
-    if target_system == DEFAULT_CS and x_coord.points[-1] > 180:
+    if target_system == DEFAULT_CS and cube.coord(x_coord).points[-1] > 180:
         trans_geometry = shapely.transform(trans_geometry, _trans_func)
 
     return trans_geometry

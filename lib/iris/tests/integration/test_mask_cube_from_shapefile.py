@@ -14,10 +14,11 @@ class TestCubeMasking(tests.IrisTest):
     using different projections in iris_test_data - answers are the KGO
     """
 
-    ne_countries = shpreader.natural_earth(
-        resolution="10m", category="cultural", name="admin_0_countries"
-    )
-    reader = shpreader.Reader(ne_countries)
+    def setUp(self):
+        ne_countries = shpreader.natural_earth(
+            resolution="10m", category="cultural", name="admin_0_countries"
+        )
+        self.reader = shpreader.Reader(ne_countries)
 
     def testGlobal(self):
         path = tests.get_data_path(

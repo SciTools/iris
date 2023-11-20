@@ -12,22 +12,23 @@ from iris.util import mask_cube_from_shapefile
 class TestBasicCubeMasking(tests.IrisTest):
     """Unit tests for mask_cube_from_shapefile function"""
 
-    basic_data = np.array([[1, 2], [4, 8]])
-    basic_cube = iris.cube.Cube(basic_data)
-    coord = DimCoord(
-        np.array([0, 1]),
-        standard_name="projection_y_coordinate",
-        bounds=[[0, 0.5], [0.5, 1]],
-        units="1",
-    )
-    basic_cube.add_dim_coord(coord, 0)
-    coord = DimCoord(
-        np.array([0, 1]),
-        standard_name="projection_x_coordinate",
-        bounds=[[0, 0.5], [0.5, 1]],
-        units="1",
-    )
-    basic_cube.add_dim_coord(coord, 1)
+    def setUp(self):
+        basic_data = np.array([[1, 2], [4, 8]])
+        self.basic_cube = iris.cube.Cube(basic_data)
+        coord = DimCoord(
+            np.array([0, 1]),
+            standard_name="projection_y_coordinate",
+            bounds=[[0, 0.5], [0.5, 1]],
+            units="1",
+        )
+        self.basic_cube.add_dim_coord(coord, 0)
+        coord = DimCoord(
+            np.array([0, 1]),
+            standard_name="projection_x_coordinate",
+            bounds=[[0, 0.5], [0.5, 1]],
+            units="1",
+        )
+        self.basic_cube.add_dim_coord(coord, 1)
 
     def testBasicCubeIntersect(self):
         shape = shapely.geometry.box(0.6, 0.6, 1, 1)
