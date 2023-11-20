@@ -14,11 +14,7 @@ import shapely.geometry as sgeom
 import shapely.ops
 import shapely.prepared as prepped
 
-from iris.exceptions import IrisUserWarning
-
-# ------------------------------------------------------------------------------
-# GLOBAL VARIABLES
-# ------------------------------------------------------------------------------
+from iris.exceptions import IrisDefaultingWarning
 
 
 def create_shapefile_mask(
@@ -44,13 +40,15 @@ def create_shapefile_mask(
     from iris.cube import Cube, CubeList
 
     try:
+        msg = TypeError("Geometry is not a valid Shapely object")
         if geometry.is_valid is False:
-            raise TypeError("Geometry is not a valid Shapely object")
+            raise msg
     except Exception:
-        raise TypeError("Geometry is not a valid Shapely object")
+        raise msg
     if not isinstance(cube, Cube):
         if isinstance(cube, CubeList):
-            msg = "Received CubeList object rather than Cube - to mask a CubeList iterate over each Cube"
+            msg = "Received CubeList object rather than Cube - \
+            to mask a CubeList iterate over each Cube"
             raise TypeError(msg)
         else:
             msg = "Received non-Cube object where a Cube is expected"
@@ -69,15 +67,17 @@ def create_shapefile_mask(
     ):
         weights = False
         warnings.warn(
-            "Shape is of invalid type for minimum weight masking, must use a Polygon rather than Line shape.\n Masking based off intersection instead. ",
-            IrisUserWarning,
+            """Shape is of invalid type for minimum weight masking,
+            must use a Polygon rather than Line shape.\n
+              Masking based off intersection instead. """,
+            IrisDefaultingWarning,
         )
     else:
         weights = True
 
     # prepare shape
     trans_geo = _transform_coord_system(geometry, cube, shape_coord_system)
-    prepped.prep(trans_geo)
+    prepped_trans_geo = prepped.prep(trans_geo)
 
     # prepare 2D cube
     y_name, x_name = _cube_primary_xy_coord_names(cube)
@@ -85,7 +85,7 @@ def create_shapefile_mask(
     _cube_xy_guessbounds(cube_2d)
     xmod = cube.coord(x_name).units.modulus
     ymod = cube.coord(y_name).units.modulus
-    mask_template = np.zeros(cube_2d.shape, dtype=np.float64)
+    mask_template = np.zeros(cube_2d.shape, dtype=bool)
 
     # perform the masking
     for count, idx in enumerate(np.ndindex(cube_2d.shape)):
@@ -102,7 +102,7 @@ def create_shapefile_mask(
 
         # create a new polygon of the grid cell and check intersection
         cell_box = sgeom.box(x0, y0, x1, y1)
-        intersect_bool = trans_geo.intersects(cell_box)
+        intersect_bool = prepped_trans_geo.intersects(cell_box)
         # mask all points without a intersection
         if intersect_bool is False:
             mask_template[idx] = True
@@ -132,7 +132,7 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     if not target_system:
         warnings.warn(
             "Cube has no coord_system; using default GeogCS lat/lon",
-            IrisUserWarning,
+            IrisDefaultingWarning,
         )
         target_system = DEFAULT_CS
     if geometry_system is None:
