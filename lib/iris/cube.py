@@ -972,7 +972,11 @@ class CubeAttrsDict(MutableMapping):
         return result
 
     #
-    # Provide a copy method, as for 'dict', but *not* provided by MutableMapping
+    # Provide methods duplicating those for a 'dict', but which are *not* provided by
+    # MutableMapping, for compatibility with code which expected a cube.attributes to be
+    # a :class:`~iris.common.mixin.LimitedAttributeDict`.
+    # The extra required methods are :
+    #   'copy', 'update', '__ior__', '__or__', '__ror__' and 'fromkeys'.
     #
     def copy(self):
         """
@@ -982,6 +986,66 @@ class CubeAttrsDict(MutableMapping):
 
         """
         return CubeAttrsDict(self)
+
+    def update(self, *args, **kwargs):
+        """
+        Update by adding items from a mapping arg, or keyword-values.
+
+        If the argument is a split dictionary, preserve the local/global nature of its
+        keys.
+        """
+        if args and hasattr(args[0], "globals") and hasattr(args[0], "locals"):
+            dic = args[0]
+            self.globals.update(dic.globals)
+            self.locals.update(dic.locals)
+        else:
+            super().update(*args)
+        super().update(**kwargs)
+
+    def __or__(self, arg):
+        """Implement 'or' via 'update'."""
+        if not isinstance(arg, Mapping):
+            return NotImplemented
+        new_dict = self.copy()
+        new_dict.update(arg)
+        return new_dict
+
+    def __ior__(self, arg):
+        """Implement 'ior' via 'update'."""
+        self.update(arg)
+        return self
+
+    def __ror__(self, arg):
+        """
+        Implement 'ror' via 'update'.
+
+        This needs to promote, such that the result is a CubeAttrsDict.
+        """
+        if not isinstance(arg, Mapping):
+            return NotImplemented
+        result = CubeAttrsDict(arg)
+        result.update(self)
+        return result
+
+    @classmethod
+    def fromkeys(cls, iterable, value=None):
+        """
+        Create a new object with keys taken from an argument, all set to one value.
+
+        If the argument is a split dictionary, preserve the local/global nature of its
+        keys.
+        """
+        if hasattr(iterable, "globals") and hasattr(iterable, "locals"):
+            # When main input is a split-attrs dict, create global/local parts from its
+            # global/local keys
+            result = cls(
+                globals=dict.fromkeys(iterable.globals, value),
+                locals=dict.fromkeys(iterable.locals, value),
+            )
+        else:
+            # Create from a dict.fromkeys, using default classification of the keys.
+            result = cls(dict.fromkeys(iterable, value))
+        return result
 
     #
     # The remaining methods are sufficient to generate a complete standard Mapping
