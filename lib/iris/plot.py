@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot`
 interface.
@@ -22,7 +21,6 @@ import cftime
 import matplotlib.animation as animation
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
-import matplotlib.dates as mpl_dates
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mpl_ticker
@@ -34,7 +32,7 @@ import iris.analysis.cartography as cartography
 import iris.coord_systems
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisError
+from iris.exceptions import IrisError, IrisUnsupportedPlottingWarning
 
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
@@ -454,10 +452,6 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                 else:
                     values = coord.contiguous_bounds()
                     values = _fixup_dates(coord, values)
-                    if values.dtype == np.dtype(object) and isinstance(
-                        values[0], datetime.datetime
-                    ):
-                        values = mpl_dates.date2num(values)
 
             plot_arrays.append(values)
 
@@ -557,10 +551,6 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
                     )
                 plot_arrays.append(np.arange(values.size))
                 string_axes[axis_name] = values
-            elif values.dtype == np.dtype(object) and isinstance(
-                values[0], datetime.datetime
-            ):
-                plot_arrays.append(mpl_dates.date2num(values))
             else:
                 plot_arrays.append(values)
 
@@ -1155,16 +1145,26 @@ def contourf(cube, *args, **kwargs):
     # But if the polygons are virtually opaque then we can cover the seams
     # by drawing anti-aliased lines *underneath* the polygon joins.
 
-    # Figure out the alpha level for the contour plot
-    if result.alpha is None:
-        alpha = result.collections[0].get_facecolor()[0][3]
+    if hasattr(result, "get_antialiased"):
+        # Matplotlib v3.8 onwards.
+        antialiased = any(result.get_antialiased())
+        # Figure out the colours and alpha level for the contour plot
+        colors = result.get_facecolor()
+        alpha = result.alpha or colors[0][3]
+        # Define a zorder just *below* the polygons to ensure we minimise any boundary shift.
+        zorder = result.zorder - 0.1
     else:
-        alpha = result.alpha
+        antialiased = result.antialiased
+        # Figure out the alpha level for the contour plot
+        alpha = result.alpha or result.collections[0].get_facecolor()[0][3]
+        colors = [c[0] for c in result.tcolors]
+        # Define a zorder just *below* the polygons to ensure we minimise any boundary shift.
+        zorder = result.collections[0].zorder - 0.1
+
     # If the contours are anti-aliased and mostly opaque then draw lines under
     # the seams.
-    if result.antialiased and alpha > 0.95:
+    if antialiased and alpha > 0.95:
         levels = result.levels
-        colors = [c[0] for c in result.tcolors]
         if result.extend == "neither":
             levels = levels[1:-1]
             colors = colors[:-1]
@@ -1177,11 +1177,7 @@ def contourf(cube, *args, **kwargs):
         else:
             colors = colors[:-1]
         if len(levels) > 0 and np.nanmax(cube.data) > levels[0]:
-            # Draw the lines just *below* the polygons to ensure we minimise
-            # any boundary shift.
-            zorder = result.collections[0].zorder - 0.1
             axes = kwargs.get("axes", None)
-
             contour(
                 cube,
                 levels=levels,
@@ -2017,7 +2013,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
             "use: {}."
         )
         msg = msg.format(plot_func.__module__, supported)
-        warnings.warn(msg, UserWarning)
+        warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 
     supported = ["contour", "contourf", "pcolor", "pcolormesh"]
     if plot_func.__name__ not in supported:
@@ -2026,7 +2022,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
             "use: {}."
         )
         msg = msg.format(plot_func.__name__, supported)
-        warnings.warn(msg, UserWarning)
+        warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 
     # Determine plot range.
     vmin = kwargs.pop("vmin", min([cc.data.min() for cc in cubes]))

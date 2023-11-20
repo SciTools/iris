@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -18,6 +17,7 @@ from iris.coord_systems import (
 )
 import iris.coords
 import iris.cube
+from iris.exceptions import IrisUserWarning
 import iris.tests.stock
 
 
@@ -341,7 +341,7 @@ class Test_GeogCS_mutation(tests.IrisTest):
         cs = GeogCS(6543210, 6500000)
         initial_crs = cs.as_cartopy_crs()
         with self.assertWarnsRegex(
-            UserWarning,
+            IrisUserWarning,
             "Setting inverse_flattening does not affect other properties of the GeogCS object.",
         ):
             cs.inverse_flattening = cs.inverse_flattening + 1

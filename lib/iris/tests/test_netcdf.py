@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Test CF-NetCDF file loading and saving.
 
@@ -26,6 +25,7 @@ import iris
 from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
+from iris.exceptions import IrisCfSaveWarning
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import _thread_safe_nc
@@ -1099,7 +1099,9 @@ class TestNetCDFSave(tests.IrisTest):
         with self.temp_filename(suffix=".nc") as filename:
             with mock.patch("warnings.warn") as warn:
                 iris.save([self.cube, self.cube2], filename)
-                warn.assert_called_with(expected_msg)
+                warn.assert_called_with(
+                    expected_msg, category=IrisCfSaveWarning
+                )
                 self.assertCDL(
                     filename, ("netcdf", "netcdf_save_confl_global_attr.cdl")
                 )

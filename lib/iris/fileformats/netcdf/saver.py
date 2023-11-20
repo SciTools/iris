@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Module to support the saving of Iris cubes to a NetCDF file, also using the CF
 conventions for metadata interpretation.
@@ -102,6 +101,9 @@ _CF_GLOBAL_ATTRS = ["conventions", "featureType", "history", "title"]
 # UKMO specific attributes that should not be global.
 _UKMO_DATA_ATTRS = ["STASH", "um_stash_source", "ukmo__process_flags"]
 
+# TODO: whenever we advance to CF-1.11 we should then discuss a completion date
+#  for the deprecation of Rotated Mercator in coord_systems.py and
+#  _nc_load_rules/helpers.py .
 CF_CONVENTIONS_VERSION = "CF-1.7"
 
 _FactoryDefn = collections.namedtuple(
@@ -155,6 +157,15 @@ _FACTORY_DEFNS = {
         "depth_c: {depth_c}",
     ),
 }
+
+
+class _WarnComboMaskSave(
+    iris.exceptions.IrisMaskValueMatchWarning,
+    iris.exceptions.IrisSaveWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
 
 
 class CFNameCoordMap:
@@ -308,7 +319,12 @@ def _data_fillvalue_check(arraylib, data, check_value):
     return is_masked, contains_value
 
 
-class SaverFillValueWarning(UserWarning):
+class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
+    """
+    Backwards compatible form of :class:`iris.exceptions.IrisSaverFillValueWarning`.
+    """
+
+    # TODO: remove at the next major release.
     pass
 
 
@@ -359,7 +375,10 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
         )
 
     if warn and result is not None:
-        warnings.warn(result)
+        warnings.warn(
+            result,
+            category=_WarnComboMaskSave,
+        )
     return result
 
 
@@ -743,7 +762,7 @@ class Saver:
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch"
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
     @staticmethod
     def check_attribute_compliance(container, data_dtype):
@@ -908,6 +927,9 @@ class Saver:
                                 coord,
                                 element_dims=(mesh_dims[location],),
                             )
+                            # Only created once per file, but need to fetch the
+                            #  name later in _add_inner_related_vars().
+                            self._name_coord_map.append(coord_name, coord)
                             coord_names.append(coord_name)
                         # Record the coordinates (if any) on the mesh variable.
                         if coord_names:
@@ -1002,7 +1024,7 @@ class Saver:
             for element in sorted(
                 coordlike_elements, key=lambda element: element.name()
             ):
-                # Re-use, or create, the associated CF-netCDF variable.
+                # Reuse, or create, the associated CF-netCDF variable.
                 cf_name = self._name_coord_map.name(element)
                 if cf_name is None:
                     # Not already present : create it
@@ -1037,15 +1059,32 @@ class Saver:
             Names associated with the dimensions of the cube.
 
         """
+        from iris.experimental.ugrid.mesh import (
+            Mesh,
+            MeshEdgeCoords,
+            MeshFaceCoords,
+            MeshNodeCoords,
+        )
+
         # Exclude any mesh coords, which are bundled in with the aux-coords.
-        aux_coords_no_mesh = [
+        coords_to_add = [
             coord for coord in cube.aux_coords if not hasattr(coord, "mesh")
         ]
+
+        # Include any relevant mesh location coordinates.
+        mesh: Mesh = getattr(cube, "mesh")
+        mesh_location: str = getattr(cube, "location")
+        if mesh and mesh_location:
+            location_coords: MeshNodeCoords | MeshEdgeCoords | MeshFaceCoords = getattr(
+                mesh, f"{mesh_location}_coords"
+            )
+            coords_to_add.extend(list(location_coords))
+
         return self._add_inner_related_vars(
             cube,
             cf_var_cube,
             dimension_names,
-            aux_coords_no_mesh,
+            coords_to_add,
         )
 
     def _add_cell_measures(self, cube, cf_var_cube, dimension_names):
@@ -1137,7 +1176,7 @@ class Saver:
                     "Unable to determine formula terms "
                     "for AuxFactory: {!r}".format(factory)
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=iris.exceptions.IrisSaveWarning)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
                 # primary coord that signals the presence of a dimensionless
@@ -2119,7 +2158,10 @@ class Saver:
 
                 # osgb (a specific tmerc)
                 elif isinstance(cs, iris.coord_systems.OSGB):
-                    warnings.warn("OSGB coordinate system not yet handled")
+                    warnings.warn(
+                        "OSGB coordinate system not yet handled",
+                        category=iris.exceptions.IrisSaveWarning,
+                    )
 
                 # lambert azimuthal equal area
                 elif isinstance(
@@ -2183,12 +2225,41 @@ class Saver:
                     )
                     cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
 
+                # oblique mercator (and rotated variant)
+                # Use duck-typing over isinstance() - subclasses (i.e.
+                #  RotatedMercator) upset mock tests.
+                elif (
+                    getattr(cs, "grid_mapping_name", None)
+                    == "oblique_mercator"
+                ):
+                    # RotatedMercator subclasses ObliqueMercator, and RM
+                    #  instances are implicitly saved as OM due to inherited
+                    #  properties. This is correct because CF 1.11 is removing
+                    #  all mention of RM.
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.azimuth_of_central_line = (
+                        cs.azimuth_of_central_line
+                    )
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin
+                    )
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin
+                    )
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.scale_factor_at_projection_origin = (
+                        cs.scale_factor_at_projection_origin
+                    )
+
                 # other
                 else:
                     warnings.warn(
                         "Unable to represent the horizontal "
                         "coordinate system. The coordinate system "
-                        "type %r is not yet implemented." % type(cs)
+                        "type %r is not yet implemented." % type(cs),
+                        category=iris.exceptions.IrisSaveWarning,
                     )
 
                 self._coord_systems.append(cs)
@@ -2360,7 +2431,7 @@ class Saver:
                     "attribute, but {attr_name!r} should only be a CF "
                     "global attribute.".format(attr_name=attr_name)
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
             _setncattr(cf_var, attr_name, value)
 
@@ -2594,7 +2665,9 @@ class Saver:
         if issue_warnings:
             # Issue any delayed warnings from the compute.
             for delayed_warning in result_warnings:
-                warnings.warn(delayed_warning)
+                warnings.warn(
+                    delayed_warning, category=iris.exceptions.IrisSaveWarning
+                )
 
         return result_warnings
 
@@ -3008,7 +3081,7 @@ def save(
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch_conventions"
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
         # Add conventions attribute.
         if iris.FUTURE.save_split_attrs:

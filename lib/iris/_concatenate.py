@@ -1,20 +1,21 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Automatic concatenation of multiple cubes over one or more existing dimensions.
 
 """
 
 from collections import defaultdict, namedtuple
+import warnings
 
 import dask.array as da
 import numpy as np
 
 import iris.coords
 import iris.cube
+import iris.exceptions
 from iris.util import array_equal, guess_coord_axis
 
 #
@@ -992,6 +993,12 @@ class _ProtoCube:
             match = self._sequence(
                 coord_signature.dim_extents[dim_ind], candidate_axis
             )
+            if error_on_mismatch and not match:
+                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, cannot concatenate overlapping cubes"
+                raise iris.exceptions.ConcatenateError([msg])
+            elif not match:
+                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
+                warnings.warn(msg, category=iris.exceptions.IrisUserWarning)
 
         # Check for compatible AuxCoords.
         if match:

@@ -32,6 +32,7 @@ pip-cache
 # asv data, environments, results
 .asv
 benchmarks/.data
+.github/workflows/benchmark_reports
 
 #Translations
 *.mo

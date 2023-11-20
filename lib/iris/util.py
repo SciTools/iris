@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Miscellaneous utility functions.
 
@@ -258,10 +257,17 @@ def guess_coord_axis(coord):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
+    The ``guess_coord_axis`` behaviour can be skipped by setting the coordinate property ``ignore_axis``
+    to ``False``.
+
     """
+
     axis = None
 
-    if coord.standard_name in (
+    if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
+        return axis
+
+    elif coord.standard_name in (
         "longitude",
         "grid_longitude",
         "projection_x_coordinate",
@@ -1471,7 +1477,8 @@ def unify_time_units(cubes):
     Performs an in-place conversion of the time units of all time coords in the
     cubes in a given iterable. One common epoch is defined for each calendar
     found in the cubes to prevent units being defined with inconsistencies
-    between epoch and calendar.
+    between epoch and calendar. During this process, all time coordinates have
+    their data type converted to 64-bit floats to allow for smooth concatenation.
 
     Each epoch is defined from the first suitable time coordinate found in the
     input cubes.
@@ -1492,6 +1499,11 @@ def unify_time_units(cubes):
     for cube in cubes:
         for time_coord in cube.coords():
             if time_coord.units.is_time_reference():
+                time_coord.points = time_coord.core_points().astype("float64")
+                if time_coord.bounds is not None:
+                    time_coord.bounds = time_coord.core_bounds().astype(
+                        "float64"
+                    )
                 epoch = epochs.setdefault(
                     time_coord.units.calendar, time_coord.units.origin
                 )

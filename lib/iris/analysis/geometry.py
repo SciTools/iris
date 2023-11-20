@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Various utilities related to geometric operations.
 
@@ -74,7 +73,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's x dimension at the " "lower end.",
-            UserWarning,
+            category=iris.exceptions.IrisGeometryExceedWarning,
         )
         x_min_ix = 0 if x_ascending else x_coord.points.size - 1
 
@@ -84,7 +83,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's x dimension at the " "upper end.",
-            UserWarning,
+            category=iris.exceptions.IrisGeometryExceedWarning,
         )
         x_max_ix = x_coord.points.size - 1 if x_ascending else 0
 
@@ -94,7 +93,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's y dimension at the " "lower end.",
-            UserWarning,
+            category=iris.exceptions.IrisGeometryExceedWarning,
         )
         y_min_ix = 0 if y_ascending else y_coord.points.size - 1
 
@@ -104,7 +103,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's y dimension at the " "upper end.",
-            UserWarning,
+            category=iris.exceptions.IrisGeometryExceedWarning,
         )
         y_max_ix = y_coord.points.size - 1 if y_ascending else 0
 
