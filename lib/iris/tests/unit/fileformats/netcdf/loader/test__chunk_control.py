@@ -7,10 +7,10 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
-
 from unittest.mock import ANY, patch
 
 import dask
+import numpy as np
 import pytest
 
 import iris
@@ -34,7 +34,18 @@ def save_cubelist_with_sigma(tmp_filepath):
 
 @pytest.fixture
 def save_cube_with_chunksize(tmp_filepath):
-    iris.save(istk.simple_3d(), tmp_filepath, chunksizes=(1, 3, 4))
+    cube = istk.simple_3d()
+    # adding an aux coord allows us to test that
+    # iris.fileformats.netcdf.loader._get_cf_var_data()
+    # will only throw an error if from_file mode is
+    # True when the entire cube has no specified chunking
+    aux = iris.coords.AuxCoord(
+        points=np.zeros((3, 4)),
+        long_name="random",
+        units="1",
+    )
+    cube.add_aux_coord(aux, [1, 2])
+    iris.save(cube, tmp_filepath, chunksizes=(1, 3, 4))
 
 
 @pytest.fixture(scope="session")
