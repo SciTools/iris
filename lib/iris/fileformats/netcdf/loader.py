@@ -241,17 +241,19 @@ def _get_cf_var_data(cf_var, filename):
                 result = as_lazy_data(proxy, chunks=None, dask_chunking=True)
             else:
                 chunks = cf_var.cf_data.chunking()
-                if (
-                    chunks is None
-                    and CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE
-                ):
-                    raise KeyError(
-                        f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
-                        f"Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
-                        f" behaviour outside of a context manager. "
-                    )
                 # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
                 if chunks == "contiguous":
+                    if (
+                        CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE
+                        and isinstance(
+                            cf_var, iris.fileformats.cf.CFDataVariable
+                        )
+                    ):
+                        raise KeyError(
+                            f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
+                            f" Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
+                            f" behaviour outside of a context manager. "
+                        )
                     # Equivalent to chunks=None, but value required by chunking control
                     chunks = list(cf_var.shape)
 

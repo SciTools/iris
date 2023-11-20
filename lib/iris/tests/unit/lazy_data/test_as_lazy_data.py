@@ -42,6 +42,25 @@ class Test_as_lazy_data(tests.IrisTest):
         (result,) = np.unique(lazy_data.chunks)
         self.assertEqual(result, 24)
 
+    def test_dask_chunking(self):
+        data = np.arange(24)
+        chunks = (12,)
+        optimum = self.patch("iris._lazy_data._optimum_chunksize")
+        optimum.return_value = chunks
+        _ = as_lazy_data(data, chunks=None, dask_chunking=True)
+        self.assertFalse(optimum.called)
+
+    def test_dask_chunking_error(self):
+        data = np.arange(24)
+        chunks = (12,)
+        optimum = self.patch("iris._lazy_data._optimum_chunksize")
+        optimum.return_value = chunks
+        with self.assertRaisesRegex(
+            ValueError,
+            r"Dask chunking chosen, but chunks already assigned value",
+        ):
+            as_lazy_data(data, chunks=chunks, dask_chunking=True)
+
     def test_with_masked_constant(self):
         masked_data = ma.masked_array([8], mask=True)
         masked_constant = masked_data[0]
