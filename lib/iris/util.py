@@ -22,15 +22,12 @@ from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
-# from iris.cube import Cube, CubeList
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data, is_lazy_masked_data
 from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
-
-# from iris._shapefiles import create_shapefile_mask
 
 
 def broadcast_to_shape(array, shape, dim_map):
@@ -2151,31 +2148,34 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
-def apply_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
+def mask_cube_from_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
     """Takes a shapefile and masks all points not touching it in a cube
 
-    Finds the overlap between the `shape` and the `cube` in 2D xy space, and creates a mask
-    to mask out any cells with no overlap. `minimum_weight' can set a minimum overlap required.
+    Finds the overlap between the `shape` and the `cube` in 2D xy space and
+    masks out any cells with less % overlap with shape than set.
+    Default behaviour is to count any overlap between shape and cell as valid
 
     Parameters
     -----------
 
     shape : Shapely.Geometry object
-        A single `shape` of the area to remain unmasked on the `cube`. If it a line object of some kind
-        then minimum_weight will be ignored as you cannot compare the area of a 1D line and 2D Cell
-    cube : iris.Cube object
+        A single `shape` of the area to remain unmasked on the `cube`.
+        If it a line object of some kind then minimum_weight will be ignored,
+        because you cannot compare the area of a 1D line and 2D Cell
+    cube : :class:`~iris.cube.Cube` object
         The `Cube` object to masked. Must be singular, rather than a `CubeList`
-    minimum_weight : float , optional
-        A number between 0-1 describing how much of a cube cell must overlap with the shape
-        defaults to 0.0
+    minimum_weight : float , default=0.0
+        A number between 0-1 describing what % of a cube cell area must
+        the shape overlap to include it.
     in_place : bool, default=False
-        Whether to mask the `cube` in-place or return a newly masked `cube`. Defaults to False.
+        Whether to mask the `cube` in-place or return a newly masked `cube`.
+        Defaults to False.
 
     Returns
     --------
 
     iris.Cube
-        A masked version of the input cube
+        A masked version of the input cube, if in_place is False
 
     Notes
     -------
@@ -2192,4 +2192,5 @@ def apply_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
     """
     shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
-    return masked_cube
+    if not in_place:
+        return masked_cube

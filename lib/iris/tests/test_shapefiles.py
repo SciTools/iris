@@ -6,11 +6,13 @@ from iris.coords import DimCoord
 import iris.cube
 from iris.exceptions import IrisUserWarning
 import iris.tests as tests
-from iris.util import apply_shapefile
+from iris.util import mask_cube_from_shapefile
 
 
 class TestBasicCubeMasking(tests.IrisTest):
-    basic_data = np.array([[1, 2], [3, 4]])
+    """Unit tests for mask_cube_from_shapefile function"""
+
+    basic_data = np.array([[1, 2], [4, 8]])
     basic_cube = iris.cube.Cube(basic_data)
     coord = DimCoord(
         np.array([0, 1]),
@@ -29,27 +31,27 @@ class TestBasicCubeMasking(tests.IrisTest):
 
     def testBasicCubeIntersect(self):
         shape = shapely.geometry.box(0.6, 0.6, 1, 1)
-        masked_cube = apply_shapefile(shape, self.basic_cube)
+        masked_cube = mask_cube_from_shapefile(shape, self.basic_cube)
         assert (
-            np.sum(masked_cube.data) == 4
+            np.sum(masked_cube.data) == 8
         ), f"basic cube masking failed test - expected 4 got {np.sum(masked_cube.data)}"
 
     def testBasicCubeIntersectLowWeight(self):
-        shape = shapely.geometry.box(0.5, 0.5, 1, 1)
-        masked_cube = apply_shapefile(
+        shape = shapely.geometry.box(0.1, 0.6, 1, 1)
+        masked_cube = mask_cube_from_shapefile(
             shape, self.basic_cube, minimum_weight=0.2
         )
         assert (
-            np.sum(masked_cube.data) == 4
+            np.sum(masked_cube.data) == 8
         ), f"basic cube masking weighting failed test - expected 4 got {np.sum(masked_cube.data)}"
 
     def testBasicCubeIntersectHighWeight(self):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
-        masked_cube = apply_shapefile(
+        masked_cube = mask_cube_from_shapefile(
             shape, self.basic_cube, minimum_weight=0.5
         )
         assert (
-            np.sum(masked_cube.data) == 7
+            np.sum(masked_cube.data) == 12
         ), f"basic cube masking weighting failed test- expected 7 got {np.sum(masked_cube.data)}"
 
     def testCubeListError(self):
@@ -58,25 +60,25 @@ class TestBasicCubeMasking(tests.IrisTest):
         with pytest.raises(
             TypeError, match="CubeList object rather than Cube"
         ):
-            apply_shapefile(shape, cubelist)
+            mask_cube_from_shapefile(shape, cubelist)
 
     def testNonCubeError(self):
         fake = None
         shape = shapely.geometry.box(1, 1, 2, 2)
         with pytest.raises(TypeError, match="Received non-Cube object"):
-            apply_shapefile(shape, fake)
+            mask_cube_from_shapefile(shape, fake)
 
     def testLineShapeWarning(self):
         shape = shapely.geometry.LineString([(0, 0.75), (2, 0.75)])
         with pytest.warns(IrisUserWarning, match="invalid type"):
-            masked_cube = apply_shapefile(
+            masked_cube = mask_cube_from_shapefile(
                 shape, self.basic_cube, minimum_weight=0.1
             )
         assert (
-            np.sum(masked_cube.data) == 7
+            np.sum(masked_cube.data) == 12
         ), f"basic cube masking against line failed test - expected 7 got {np.sum(masked_cube.data)}"
 
     def testShapeInvalid(self):
         shape = None
-        with pytest.raises(TypeError):
-            apply_shapefile(shape, self.basic_cube)
+        with pytest.raises(TypeError, match="invalid"):
+            mask_cube_from_shapefile(shape, self.basic_cube)

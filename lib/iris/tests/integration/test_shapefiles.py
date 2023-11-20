@@ -5,11 +5,15 @@ import numpy as np
 
 import iris
 import iris.tests as tests
-from iris.util import apply_shapefile
+from iris.util import mask_cube_from_shapefile
 
 
 @tests.skip_data
 class TestCubeMasking(tests.IrisTest):
+    """integration tests of mask_cube_from_shapefile
+    using different projections in iris_test_data - answers are the KGO
+    """
+
     ne_countries = shpreader.natural_earth(
         resolution="10m", category="cultural", name="admin_0_countries"
     )
@@ -25,7 +29,7 @@ class TestCubeMasking(tests.IrisTest):
             for country in self.reader.records()
             if "Russia" in country.attributes["NAME_LONG"]
         ][0]
-        masked_test = apply_shapefile(ne_russia, test_global)
+        masked_test = mask_cube_from_shapefile(ne_russia, test_global)
         print(np.sum(masked_test.data))
         assert math.isclose(
             np.sum(masked_test.data), 76845.37, rel_tol=0.00001
@@ -41,7 +45,7 @@ class TestCubeMasking(tests.IrisTest):
             for country in self.reader.records()
             if "Germany" in country.attributes["NAME_LONG"]
         ][0]
-        masked_test = apply_shapefile(ne_germany, test_rotated)
+        masked_test = mask_cube_from_shapefile(ne_germany, test_rotated)
         assert math.isclose(
             np.sum(masked_test.data), 179.46872, rel_tol=0.00001
         ), "rotated europe data with German mask failed test"
@@ -56,7 +60,7 @@ class TestCubeMasking(tests.IrisTest):
             for country in self.reader.records()
             if "United Kingdom" in country.attributes["NAME_LONG"]
         ][0]
-        masked_test = apply_shapefile(ne_uk, test_transverse)
+        masked_test = mask_cube_from_shapefile(ne_uk, test_transverse)
         assert math.isclose(
             np.sum(masked_test.data), 90740.25, rel_tol=0.00001
         ), "transverse mercator UK data with UK mask failed test"
@@ -71,7 +75,7 @@ class TestCubeMasking(tests.IrisTest):
             for country in self.reader.records()
             if "Germany" in country.attributes["NAME_LONG"]
         ][0]
-        masked_test = apply_shapefile(
+        masked_test = mask_cube_from_shapefile(
             ne_germany, test_rotated, minimum_weight=0.9
         )
         assert math.isclose(
