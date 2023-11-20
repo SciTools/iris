@@ -4,6 +4,10 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+# Much of this code is originally based off the ASCEND library, developed in
+# the Met Office by Chris Kent, Emilie Vanvyve, David Bentley, Joana Mendes
+# many thanks to them. Converted to iris by Alex Chamberlain-Clay s
+
 
 import warnings
 

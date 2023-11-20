@@ -11,7 +11,8 @@ from iris.util import mask_cube_from_shapefile
 @tests.skip_data
 class TestCubeMasking(tests.IrisTest):
     """integration tests of mask_cube_from_shapefile
-    using different projections in iris_test_data - answers are the KGO
+    using different projections in iris_test_data -
+    values are the KGO calculated using ASCEND
     """
 
     def setUp(self):
@@ -20,7 +21,7 @@ class TestCubeMasking(tests.IrisTest):
         )
         self.reader = shpreader.Reader(ne_countries)
 
-    def testGlobal(self):
+    def test_global_proj_russia(self):
         path = tests.get_data_path(
             ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
         )
@@ -36,7 +37,7 @@ class TestCubeMasking(tests.IrisTest):
             np.sum(masked_test.data), 76845.37, rel_tol=0.00001
         ), "Global data with Russia mask failed test"
 
-    def testRotated(self):
+    def test_rotated_pole_proj_germany(self):
         path = tests.get_data_path(
             ["NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"]
         )
@@ -51,7 +52,7 @@ class TestCubeMasking(tests.IrisTest):
             np.sum(masked_test.data), 179.46872, rel_tol=0.00001
         ), "rotated europe data with German mask failed test"
 
-    def testTransverseMercator(self):
+    def test_transverse_mercator_proj_uk(self):
         path = tests.get_data_path(
             ["NetCDF", "transverse_mercator", "tmean_1910_1910.nc"]
         )
@@ -66,7 +67,7 @@ class TestCubeMasking(tests.IrisTest):
             np.sum(masked_test.data), 90740.25, rel_tol=0.00001
         ), "transverse mercator UK data with UK mask failed test"
 
-    def testRotatedWeighted(self):
+    def test_rotated_pole_proj_germany_weighted_area(self):
         path = tests.get_data_path(
             ["NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"]
         )
