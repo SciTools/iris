@@ -785,7 +785,8 @@ class ChunkControl(threading.local):
         Raises
         ------
         KeyError
-            If any NetCDF file variable does not specify chunksizes.
+            If any NetCDF data variables - those that become
+            :class:`~iris.cube.Cube`\\ s - do not specify chunksizes.
 
         Notes
         -----
