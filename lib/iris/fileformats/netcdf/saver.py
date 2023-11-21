@@ -27,6 +27,7 @@ import dask.array as da
 from dask.delayed import Delayed
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
@@ -2965,6 +2966,17 @@ def save(
     else:
         # Legacy mode: calculate "local_keys" to control which attributes are local
         # and which global.
+        # TODO: when iris.FUTURE.save_split_attrs is removed, this section can also be
+        # removed
+        message = (
+            "Saving to netcdf with legacy-style attribute handling for backwards "
+            "compatibility.\n"
+            "This mode is deprecated since Iris 3.8, and will eventually be removed.\n"
+            "Please consider enabling the new split-attributes handling mode, by "
+            "setting 'iris.FUTURE.save_split_attrs = True'."
+        )
+        warn_deprecated(message)
+
         if local_keys is None:
             local_keys = set()
         else:
