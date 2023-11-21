@@ -94,7 +94,9 @@ _SKIP_WARNCHECK = "_no_warnings_check"
 
 
 def check_captured_warnings(
-    expected_keys: List[str], captured_warnings: List[warnings.WarningMessage]
+    expected_keys: List[str],
+    captured_warnings: List[warnings.WarningMessage],
+    allow_possible_legacy_warning: bool = False,
 ):
     """
     Compare captured warning messages with a list of regexp-matches.
@@ -104,6 +106,9 @@ def check_captured_warnings(
     comprehend.
 
     """
+    # TODO: when iris.FUTURE.save_split_attrs is removed, we can remove the
+    #  'allow_possible_legacy_warning' arg.
+
     if expected_keys is None:
         expected_keys = []
     elif hasattr(expected_keys, "upper"):
@@ -112,6 +117,14 @@ def check_captured_warnings(
             # No check at all in this case
             return
         expected_keys = [expected_keys]
+
+    if allow_possible_legacy_warning:
+        # Allow but do not require a "saving without split-attributes" warning.
+        legacy_message_key = (
+            "Saving to netcdf with legacy-style attribute handling for backwards "
+            "compatibility."
+        )
+        expected_keys.append(legacy_message_key)
 
     expected_keys = [re.compile(key) for key in expected_keys]
     found_results = [str(warning.message) for warning in captured_warnings]
@@ -125,6 +138,13 @@ def check_captured_warnings(
                 remaining_keys.remove(key)
                 # skip on to next message
                 break
+
+    if allow_possible_legacy_warning:
+        # Remove any unused "legacy attribute saving" key.
+        # N.B. this is the *only* key we will tolerate not being used.
+        expected_keys = [
+            key for key in expected_keys if key != legacy_message_key
+        ]
 
     assert set(found_results) == set(expected_keys)
 
@@ -726,7 +746,12 @@ class TestRoundtrip(MixinAttrsTesting):
         # which came from different input files.
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
-        check_captured_warnings(expected_warnings, self.captured_warnings)
+        check_captured_warnings(
+            expected_warnings,
+            self.captured_warnings,
+            # N.B. only allow a legacy-attributes warning when NOT saving split-attrs
+            allow_possible_legacy_warning=not self.save_split_attrs,
+        )
 
     #######################################################
     # Tests on "user-style" attributes.
@@ -1391,7 +1416,12 @@ class TestSave(MixinAttrsTesting):
     ):
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
-        check_captured_warnings(expected_warnings, self.captured_warnings)
+        check_captured_warnings(
+            expected_warnings,
+            self.captured_warnings,
+            # N.B. only allow a legacy-attributes warning when NOT saving split-attrs
+            allow_possible_legacy_warning=not self.save_split_attrs,
+        )
 
     def test_userstyle__single(self, do_split):
         self.run_save_testcase_legacytype("random", "value-x")
