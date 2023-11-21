@@ -167,8 +167,13 @@ def _add_unused_attributes(iris_object, cf_var):
         return item[0] not in _CF_ATTRS
 
     tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
+    attrs_dict = iris_object.attributes
+    if hasattr(attrs_dict, "locals"):
+        # Treat cube attributes (i.e. a CubeAttrsDict) as a special case.
+        # These attrs are "local" (i.e. on the variable), so record them as such.
+        attrs_dict = attrs_dict.locals
     for attr_name, attr_value in tmpvar:
-        _set_attributes(iris_object.attributes, attr_name, attr_value)
+        _set_attributes(attrs_dict, attr_name, attr_value)
 
 
 def _get_actual_dtype(cf_var):
