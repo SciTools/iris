@@ -2932,7 +2932,8 @@ def save(
             warnings.warn(
                 f"Saving the cube global attributes {sorted(invalid_globals)} as local "
                 "(i.e. data-variable) attributes, where possible, since they are not "
-                "the same on all input cubes."
+                "the same on all input cubes.",
+                category=iris.exceptions.IrisSaveWarning,
             )
             cubes = cubes.copy()  # avoiding modifying the actual input arg.
             for i_cube in range(len(cubes)):
@@ -2947,7 +2948,8 @@ def save(
                         warnings.warn(
                             f"Global cube attributes {sorted(blocked_attrs)} "
                             f'of cube "{cube.name()}" were not saved, overlaid '
-                            "by existing local attributes with the same names."
+                            "by existing local attributes with the same names.",
+                            category=iris.exceptions.IrisSaveWarning,
                         )
                     demote_attrs -= blocked_attrs
                     if demote_attrs:
