@@ -72,7 +72,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@stephenworsley`_ improved the speed of :class:`~iris.analysis.AreaWeighted`
+   regridding. (:pull:`5543`)
 
 
 🔥 Deprecations
