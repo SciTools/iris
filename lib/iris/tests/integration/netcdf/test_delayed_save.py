@@ -23,6 +23,13 @@ from iris.tests.stock import realistic_4d
 
 
 class Test__lazy_stream_data:
+    # Ensure all saves are done with split-atttribute saving,
+    # -- because some of these tests are sensitive to unexpected warnings.
+    @pytest.fixture(autouse=True)
+    def all_saves_with_split_attrs(self):
+        with iris.FUTURE.context(save_split_attrs=True):
+            yield
+
     @pytest.fixture(autouse=True)
     def output_path(self, tmp_path):
         # A temporary output netcdf-file path, **unique to each test call**.
