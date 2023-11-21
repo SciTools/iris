@@ -36,8 +36,8 @@ def check_content(attrs, locals=None, globals=None, matches=None):
     """
     assert isinstance(attrs, CubeAttrsDict)
     attr_locals, attr_globals = attrs.locals, attrs.globals
-    assert type(attr_locals) == LimitedAttributeDict
-    assert type(attr_globals) == LimitedAttributeDict
+    assert type(attr_locals) is LimitedAttributeDict
+    assert type(attr_globals) is LimitedAttributeDict
     if matches:
         locals, globals = matches.locals, matches.globals
 
