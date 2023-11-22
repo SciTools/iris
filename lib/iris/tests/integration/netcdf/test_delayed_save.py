@@ -5,6 +5,7 @@
 """
 Integration tests for delayed saving.
 """
+import re
 import warnings
 
 from cf_units import Unit
@@ -190,19 +191,36 @@ class Test__lazy_stream_data:
 
         if not save_is_delayed:
             assert result is None
-            assert len(logged_warnings) == 2
             issued_warnings = [log.message for log in logged_warnings]
         else:
             assert result is not None
             assert len(logged_warnings) == 0
-            warnings.simplefilter("error")
-            issued_warnings = result.compute()
+            with warnings.catch_warnings(record=True) as logged_warnings:
+                # The compute *returns* warnings from the delayed operations.
+                issued_warnings = result.compute()
+            issued_warnings = [
+                log.message for log in logged_warnings
+            ] + issued_warnings
 
-        assert len(issued_warnings) == 2
+        warning_messages = [warning.args[0] for warning in issued_warnings]
+        if scheduler_type == "DistributedScheduler":
+            # Ignore any "large data transfer" messages generated,
+            # specifically when testing with the Distributed scheduler.
+            # These may not always occur and don't reflect something we want to
+            # test for.
+            large_transfer_message_regex = re.compile(
+                "Sending large graph.* may cause some slowdown", re.DOTALL
+            )
+            warning_messages = [
+                message
+                for message in warning_messages
+                if not large_transfer_message_regex.search(message)
+            ]
+
+        # In all cases, should get 2 fill value warnings overall.
+        assert len(warning_messages) == 2
         expected_msg = "contains unmasked data points equal to the fill-value"
-        assert all(
-            expected_msg in warning.args[0] for warning in issued_warnings
-        )
+        assert all(expected_msg in message for message in warning_messages)
 
     def test_time_of_writing(
         self, save_is_delayed, output_path, scheduler_type
