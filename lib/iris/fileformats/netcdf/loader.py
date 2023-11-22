@@ -719,18 +719,23 @@ class ChunkControl(threading.local):
             Kwargs specifying chunksizes for dimensions of file variables.
             Each key-value pair defines a chunksize for a named file
             dimension, e.g. {'time': 10, 'model_levels':1}.
+            Values of -1 will lock the chunk to the size of it's shape.
 
         Notes
         -----
         This function acts as a contextmanager, for use in a 'with' block.
 
-        Example:
+        .. testsetup:: *
 
-        #todo
-        # >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
-        # >>> from iris import sample_data_path
-        # >>> with CHUNK_CONTROL.set('var1', model_level=1, time=50):
-        # ...     cubes = iris.load(sample_data_path("toa_brightness_stereographic.nc"))
+            from foo import *
+            from foo.bar import *
+        >>> import iris
+        >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
+        >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1):
+        ...     cube = iris.load(iris.sample_data_path("E1_north_america.nc"))[0]
+        >>>
+        >>> print(cube.lazy_data().chunksize)
+        (180, 37, 49)
 
         When ``var_names`` is present, the chunksize adjustments are applied
         only to the selected variables.  However, for a CF data variable, this

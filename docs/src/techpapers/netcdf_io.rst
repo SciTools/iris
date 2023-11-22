@@ -63,11 +63,11 @@ as the shape, i.e. no optimisation occurs on that dimension.
 
 .. doctest:: chunk_control
 
-    >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1, longitude=25):
+    >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1):
     ...     cube = iris.load_cube(tmp_filepath)
     >>>
     >>> print(cube.lazy_data().chunksize)
-    (180, 37, 25)
+    (180, 37, 49)
 
 Custom Chunking: From File
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
