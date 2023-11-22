@@ -2160,7 +2160,7 @@ def mask_cube_from_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
 
     shape : Shapely.Geometry object
         A single `shape` of the area to remain unmasked on the `cube`.
-        If it is a line object of some kind then minimum_weight will be 
+        If it is a line object of some kind then minimum_weight will be
         ignored, because you cannot compare the area of a 1D line and 2D Cell.
     cube : :class:`~iris.cube.Cube` object
         The :class:`~iris.cube.Cube` object to masked. Must be singular,
