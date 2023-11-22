@@ -11,6 +11,7 @@
 
 import warnings
 
+import dask.array
 import numpy as np
 import shapely
 import shapely.errors
@@ -89,17 +90,18 @@ def create_shapefile_mask(
             coord.guess_bounds()
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     cube_2d = cube.slices([y_name, x_name]).next()
-    xmod = cube.coord(x_name).units.modulus
-    ymod = cube.coord(y_name).units.modulus
+    y_coord, x_coord = [cube_2d.coord(n) for n in (y_name, x_name)]
+    xmod = x_coord.units.modulus
+    ymod = y_coord.units.modulus
     mask_template = np.zeros(cube_2d.shape, dtype=bool)
 
     # perform the masking
     for count, idx in enumerate(np.ndindex(cube_2d.shape)):
         # get the bounds of the grid cell
-        xi = idx[cube_2d.coord_dims(x_name)[0]]
-        yi = idx[cube_2d.coord_dims(y_name)[0]]
-        x0, x1 = cube_2d.coord(x_name).bounds[xi]
-        y0, y1 = cube_2d.coord(y_name).bounds[yi]
+        xi = idx[x_coord.cube_dims(cube_2d)[0]]
+        yi = idx[y_coord.cube_dims(cube_2d)[0]]
+        x0, x1 = x_coord.bounds[xi]
+        y0, y1 = y_coord.bounds[yi]
 
         if xmod:
             x0, x1 = _rebase_values_to_modulus((x0, x1), xmod)
@@ -121,6 +123,10 @@ def create_shapefile_mask(
     return mask_template
 
 
+def map_blocks_func(x_bounds, y_bounds, shapefile, cube_2d, minimum_weight):
+    dask.array()
+
+
 def _transform_coord_system(geometry, cube, geometry_system=None):
     """Project the shape onto another coordinate system.
 
@@ -132,7 +138,7 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     Returns:
         A transformed shape (copy)
     """
-    y_coord, x_coord = _cube_primary_xy_coord_names(cube)
+    y_name, x_name = _cube_primary_xy_coord_names(cube)
     import iris.analysis.cartography
 
     DEFAULT_CS = iris.coord_systems.GeogCS(
@@ -152,7 +158,7 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
 
     trans_geometry = target_proj.project_geometry(geometry, source_proj)
     # A default coord system in iris can be either -180 to 180 or 0 to 360
-    if target_system == DEFAULT_CS and cube.coord(x_coord).points[-1] > 180:
+    if target_system == DEFAULT_CS and cube.coord(x_name).points[-1] > 180:
         trans_geometry = shapely.transform(trans_geometry, _trans_func)
 
     return trans_geometry
@@ -176,15 +182,23 @@ def _cube_primary_xy_coord_names(cube):
     Returns:
         The names of the primary latitude and longitude coordinates
     """
-    latc = cube.coords(axis="y")[0] if cube.coords(axis="y") else -1
-    lonc = cube.coords(axis="x")[0] if cube.coords(axis="x") else -1
+    latc = (
+        cube.coords(axis="y", dim_coords=True)[0]
+        if cube.coords(axis="y", dim_coords=True)
+        else -1
+    )
+    lonc = (
+        cube.coords(axis="x", dim_coords=True)[0]
+        if cube.coords(axis="x", dim_coords=True)
+        else -1
+    )
 
     if -1 in (latc, lonc):
-        msg = "Error retrieving xy dimensions in cube: {!r}"
+        msg = "Error retrieving 1d xy coordinates in cube: {!r}"
         raise ValueError(msg.format(cube))
 
-    latitude = latc.standard_name if latc.standard_name else latc.long_name
-    longitude = lonc.standard_name if lonc.standard_name else lonc.long_name
+    latitude = latc.name()
+    longitude = lonc.name()
     return latitude, longitude
 
 
