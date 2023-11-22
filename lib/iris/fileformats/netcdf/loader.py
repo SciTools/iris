@@ -725,10 +725,6 @@ class ChunkControl(threading.local):
         -----
         This function acts as a contextmanager, for use in a 'with' block.
 
-        .. testsetup:: *
-
-            from foo import *
-            from foo.bar import *
         >>> import iris
         >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
         >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1):
