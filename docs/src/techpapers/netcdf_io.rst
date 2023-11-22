@@ -78,7 +78,7 @@ the NetCDF file. Any dimensions without specified chunks will default to iris op
 .. doctest:: chunk_control
 
     >>> with CHUNK_CONTROL.from_file():
-    >>>     cube = iris.load_cube(tmp_filepath)
+    ...     cube = iris.load_cube(tmp_filepath)
     >>>
     >>> print(cube.lazy_data().chunksize)
     (120, 37, 49)
