@@ -730,8 +730,7 @@ class ChunkControl(threading.local):
         >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1):
         ...     cube = iris.load(iris.sample_data_path("E1_north_america.nc"))[0]
         >>>
-        >>> print(cube.lazy_data().chunksize)
-        (180, 37, 49)
+        >>> print(cube.core_data().chunksize)
 
         When ``var_names`` is present, the chunksize adjustments are applied
         only to the selected variables.  However, for a CF data variable, this
