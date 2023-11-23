@@ -10,18 +10,18 @@
     import shutil
     import tempfile
 
-    dask.config.set({'array.chunk-size': '250B'})
-
     tmp_dir = Path(tempfile.mkdtemp())
     tmp_filepath = tmp_dir / "tmp.nc"
 
     cube = iris.load(iris.sample_data_path("E1_north_america.nc"))[0]
     iris.save(cube, tmp_filepath, chunksizes=(120, 37, 49))
+    old_dask = dask.config.get("array.chunk-size")
+    dask.config.set({'array.chunk-size': '500KiB'})
 
 
 .. testcleanup:: chunk_control
 
-    dask.config.set({'array.chunk-size': '250MiB'})
+    dask.config.set({'array.chunk-size': old_dask})
     shutil.rmtree(tmp_dir)
 
 
@@ -57,8 +57,9 @@ calculated based on a number of factors, including:
     >>> cube = iris.load_cube(tmp_filepath)
     >>>
     >>> print(cube.shape)
-    >>> print(cube.core_data().chunksize)
     (240, 37, 49)
+    >>> print(cube.core_data().chunksize)
+    (60, 37, 49)
 
 For more user control, functionality was updated in :pull:`5588`, with the
 creation of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL` class.
@@ -81,7 +82,8 @@ as the shape, i.e. no optimisation occurs on that dimension.
     >>> print(cube.core_data().chunksize)
     (180, 37, 25)
 
-Note that ``var_name`` is optional, and that you don't need to specify every dimension:
+Note that ``var_name`` is optional, and that you don't need to specify every dimension. If you
+specify only one dimension, the rest will be optimised using Iris' default behaviour.
 
 .. doctest:: chunk_control
 
@@ -89,7 +91,7 @@ Note that ``var_name`` is optional, and that you don't need to specify every dim
     ...     cube = iris.load_cube(tmp_filepath)
     >>>
     >>> print(cube.core_data().chunksize)
-    (240, 37, 25)
+    (120, 37, 25)
 
 Custom Chunking: From File
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -118,7 +120,7 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
     ...    cube = iris.load_cube(tmp_filepath)
     >>>
     >>> print(cube.core_data().chunksize)
-    (240, 37, 49)
+    (70, 37, 49)
 
 
 Split Attributes
