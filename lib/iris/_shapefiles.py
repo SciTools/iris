@@ -25,8 +25,9 @@ from iris.exceptions import IrisDefaultingWarning
 def create_shapefile_mask(
     geometry, cube, minimum_weight=0.0, shape_coord_system=None
 ):
-    """Get the mask array of the intersection between the given shapely geometry and
-    cube.
+    """
+    Get the mask of the intersection between the
+    given shapely geometry and cube.
 
     Arguments:
         geometry        : A :class:`shapely.Geometry` object
@@ -87,16 +88,14 @@ def create_shapefile_mask(
     cube_2d = cube.slices([y_name, x_name]).next()
 
     y_coord, x_coord = [cube_2d.coord(n) for n in (y_name, x_name)]
-    xmod = x_coord.units.modulus
-    ymod = y_coord.units.modulus
+    x_bounds = _get_mod_rebased_coord_bounds(x_coord)
+    y_bounds = _get_mod_rebased_coord_bounds(y_coord)
     # prepare array for dark
-    bounds_array = np.asarray(list(product(x_coord.bounds, y_coord.bounds)))
+    bounds_array = np.asarray(list(product(x_bounds, y_bounds)))
     da_bounds_array = dask.array.from_array(bounds_array, chunks="auto")
     dask_template = dask.array.map_blocks(
         map_blocks_func,
         da_bounds_array,
-        xmod,
-        ymod,
         trans_geo,
         minimum_weight,
         drop_axis=[1, 2],
@@ -108,16 +107,12 @@ def create_shapefile_mask(
     return mask_template
 
 
-def map_blocks_func(bounds_array, xmod, ymod, shapefile, minimum_weight):
+def map_blocks_func(bounds_array, shapefile, minimum_weight):
     dask_template = np.empty(bounds_array.shape[0], dtype=bool)
     for count, idx in enumerate(bounds_array):
         # get the bounds of the grid cell
         x0, x1 = idx[0]
         y0, y1 = idx[1]
-        if xmod:
-            x0, x1 = _rebase_values_to_modulus((x0, x1), xmod)
-        if ymod:
-            y0, y1 = _rebase_values_to_modulus((y0, y1), ymod)
         # create a new polygon of the grid cell and check intersection
         cell_box = sgeom.box(x0, y0, x1, y1)
         intersect_bool = shapefile.intersects(cell_box)
@@ -212,22 +207,15 @@ def _cube_primary_xy_coord_names(cube):
     return latitude, longitude
 
 
-def _rebase_values_to_modulus(values, modulus):
-    """Rebase values to a modulus value.
-
-    Arguments:
-        values (list, tuple): The values to be re-based
-        modulus             : The value to re-base to
-
-    Returns:
-        A list of re-based values.
-    """
-    rebased = []
-    for val in values:
-        nv = np.abs(val) % modulus
-        if val < 0.0:
-            nv *= -1.0
-        if np.abs(nv - modulus) < 1e-10:
-            nv = 0.0
-        rebased.append(nv)
-    return rebased
+def _get_mod_rebased_coord_bounds(coord):
+    """takes in a coord and returns the bounds of that coord
+    rebased to the modulus"""
+    modulus = coord.units.modulus
+    # Force realisation (rather than core_bounds) - more efficient for the
+    #  repeated indexing happening downstream.
+    result = np.array(coord.bounds)
+    if modulus:
+        result[result > 0.0] = result[result > 0.0] % modulus
+        result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
+        result[np.isclose(result, modulus, 1e-10)] = 0.0
+    return result
