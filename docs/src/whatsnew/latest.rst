@@ -59,6 +59,10 @@ This document explains the changes made to Iris for this release
    intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
    coordinate. (:pull:`5551`)
 
+#. `@pp-mo`_, `@trexfeathers`_ and `@ESadek-MO`_ added more control over
+   NetCDF chunking with the use of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`
+   context manager. (:pull:`5588`)
+
 
 🐛 Bugs Fixed
 =============
@@ -117,6 +121,10 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ added a phrasebook for synonymous terms used in similar
    packages. (:pull:`5564`)
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created a technical paper for NetCDF
+   saving and loading, with a section on chunking and placeholders
+   for further topics. (:pull:`5588`)
 
 
 💼 Internal
