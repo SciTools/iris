@@ -680,21 +680,23 @@ class ChunkControl(threading.local):
         """
         Provide user control of Dask chunking.
 
-        The netcdf loader is controlled by the single instance of this : the
+        The NetCDF loader is controlled by the single instance of this: the
         :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL` object.
 
-        A chunksize can be set for a specific (named) file dimension, when
+        A chunk size can be set for a specific (named) file dimension, when
         loading specific (named) variables, or for all variables.
 
         When a selected variable is a CF data-variable, which loads as a
-        cube, then the given dimension chunksize is *also* fixed for all
-        variables which are components of that cube, i.e. its Coords,
-        CellMeasures, Ancillary variables, etc.
+        :class:`~iris.cube.Cube`, then the given dimension chunk size is *also*
+        fixed for all variables which are components of that :class:`~iris.cube.Cube`,
+        i.e. any :class:`~iris.coords.Coord`, :class:`~iris.coords.CellMeasure`,
+        :class:`~iris.coords.AncillaryVariable` etc.
         This can be overridden, if required, by variable-specific settings.
 
-        For this purpose, Mesh coordinates and connectivities are *not* cube
-        components, and a chunk control on a cube data-variable will not affect
-        them.
+        For this purpose, :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` are not
+        :class:`~iris.cube.Cube` components, and chunk control on a
+        :class:`~iris.cube.Cube` data-variable will not affect them.
 
         """
         self.var_dim_chunksizes = var_dim_chunksizes or {}
@@ -707,40 +709,40 @@ class ChunkControl(threading.local):
         **dimension_chunksizes: Mapping[str, int],
     ) -> None:
         """
-        Control the Dask chunksizes applied to netcdf variables during loading.
+        Control the Dask chunk sizes applied to NetCDF variables during loading.
 
         Parameters
         ----------
-        var_names : str or list of str
-            apply the ``dimension_chunksizes`` controls only to these variables,
-            or when building cubes from these data variables.
-            If None (the default), settings apply to all loaded variables.
-        dimension_chunksizes : dict: str --> int
+        var_names : str or list of str, default=None
+            apply the `dimension_chunksizes` controls only to these variables,
+            or when building :class:`~iris.cube.Cube`\\ s from these data variables.
+            If ``None``, settings apply to all loaded variables.
+        dimension_chunksizes : dict of {str: int}
             Kwargs specifying chunksizes for dimensions of file variables.
-            Each key-value pair defines a chunksize for a named file
-            dimension, e.g. {'time': 10, 'model_levels':1}.
+            Each key-value pair defines a chunk size for a named file
+            dimension, e.g. ``{'time': 10, 'model_levels':1}``.
+            Values of ``-1`` will lock the chunk size to the full size of that
+            dimension.
 
         Notes
         -----
-        This function acts as a contextmanager, for use in a 'with' block.
+        This function acts as a context manager, for use in a ``with`` block.
 
-        Example:
+        >>> import iris
+        >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
+        >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1):
+        ...     cube = iris.load(iris.sample_data_path("E1_north_america.nc"))[0]
 
-        #todo
-        # >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
-        # >>> from iris import sample_data_path
-        # >>> with CHUNK_CONTROL.set('var1', model_level=1, time=50):
-        # ...     cubes = iris.load(sample_data_path("toa_brightness_stereographic.nc"))
-
-        When ``var_names`` is present, the chunksize adjustments are applied
+        When `var_names` is present, the chunk size adjustments are applied
         only to the selected variables.  However, for a CF data variable, this
-        extends to all components of the (raw) cube created from it.
+        extends to all components of the (raw) :class:`~iris.cube.Cube` created
+        from it.
 
         **Un**-adjusted dimensions have chunk sizes set in the 'usual' way.
         That is, according to the normal behaviour of
-        :func:`iris._lazy_data.as_lazy_data`, which is : chunksize is based on
+        :func:`iris._lazy_data.as_lazy_data`, which is: chunk size is based on
         the file variable chunking, or full variable shape; this is scaled up
-        or down by integer factors to best match the Dask "default chunksize",
+        or down by integer factors to best match the Dask default chunk size,
         i.e. the setting configured by
         ``dask.config.set({'array.chunk-size': '250MiB'})``.
 
@@ -782,17 +784,17 @@ class ChunkControl(threading.local):
     @contextmanager
     def from_file(self) -> None:
         """
-        Ensures the chunksizes are loaded in from NetCDF file variables.
+        Ensures the chunk sizes are loaded in from NetCDF file variables.
 
         Raises
         ------
         KeyError
             If any NetCDF data variables - those that become
-            :class:`~iris.cube.Cube`\\ s - do not specify chunksizes.
+            :class:`~iris.cube.Cube`\\ s - do not specify chunk sizes.
 
         Notes
         -----
-        This function acts as a contextmanager, for use in a 'with' block.
+        This function acts as a context manager, for use in a ``with`` block.
         """
         old_mode = self.mode
         old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)
@@ -806,11 +808,11 @@ class ChunkControl(threading.local):
     @contextmanager
     def as_dask(self) -> None:
         """
-        Uses Dask :external+dask:doc:`array` to control chunksizes.
+        Relies on Dask :external+dask:doc:`array` to control chunk sizes.
 
         Notes
         -----
-        This function acts as a contextmanager, for use in a 'with' block.
+        This function acts as a context manager, for use in a ``with`` block.
         """
         old_mode = self.mode
         old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)
@@ -828,6 +830,6 @@ class ChunkControl(threading.local):
 # introducing an additional context in which any cube-specific settings are
 # 'promoted' into being global ones.
 
-#: A :class:`ChunkControl` object providing user-control of Dask chunking
-#: when Iris loads netcdf files.
+#: The global :class:`ChunkControl` object providing user-control of Dask chunking
+#: when Iris loads NetCDF files.
 CHUNK_CONTROL: ChunkControl = ChunkControl()
