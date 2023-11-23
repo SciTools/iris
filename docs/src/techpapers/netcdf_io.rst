@@ -1,5 +1,3 @@
-.. _netcdf_io:
-
 .. testsetup:: chunk_control
 
     import iris
@@ -24,6 +22,7 @@
     dask.config.set({'array.chunk-size': old_dask})
     shutil.rmtree(tmp_dir)
 
+.. _netcdf_io:
 
 =============================
 NetCDF I/O Handling in Iris
