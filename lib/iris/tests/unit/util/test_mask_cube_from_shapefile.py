@@ -13,25 +13,25 @@ class TestBasicCubeMasking(tests.IrisTest):
     """Unit tests for mask_cube_from_shapefile function"""
 
     def setUp(self):
-        basic_data = np.array([[1, 2], [4, 8]])
+        basic_data = np.array([[1, 2, 3], [4, 8, 12]])
         self.basic_cube = iris.cube.Cube(basic_data)
         coord = DimCoord(
-            np.array([0, 1]),
+            np.array([0, 1.0]),
             standard_name="projection_y_coordinate",
             bounds=[[0, 0.5], [0.5, 1]],
             units="1",
         )
         self.basic_cube.add_dim_coord(coord, 0)
         coord = DimCoord(
-            np.array([0, 1]),
+            np.array([0, 1.0, 1.5]),
             standard_name="projection_x_coordinate",
-            bounds=[[0, 0.5], [0.5, 1]],
+            bounds=[[0, 0.5], [0.5, 1], [1, 1.5]],
             units="1",
         )
         self.basic_cube.add_dim_coord(coord, 1)
 
     def test_basic_cube_intersect(self):
-        shape = shapely.geometry.box(0.6, 0.6, 1, 1)
+        shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
         masked_cube = mask_cube_from_shapefile(shape, self.basic_cube)
         assert (
             np.sum(masked_cube.data) == 8
@@ -76,8 +76,8 @@ class TestBasicCubeMasking(tests.IrisTest):
                 shape, self.basic_cube, minimum_weight=0.1
             )
         assert (
-            np.sum(masked_cube.data) == 12
-        ), f"basic cube masking against line failed test - expected 7 got {np.sum(masked_cube.data)}"
+            np.sum(masked_cube.data) == 24
+        ), f"basic cube masking against line failed test - expected 24 got {np.sum(masked_cube.data)}"
 
     def test_shape_invalid(self):
         shape = None

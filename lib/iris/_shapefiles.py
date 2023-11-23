@@ -6,9 +6,10 @@
 
 # Much of this code is originally based off the ASCEND library, developed in
 # the Met Office by Chris Kent, Emilie Vanvyve, David Bentley, Joana Mendes
-# many thanks to them. Converted to iris by Alex Chamberlain-Clay s
+# many thanks to them. Converted to iris by Alex Chamberlain-Clay
 
 
+from itertools import product
 import warnings
 
 import dask.array
@@ -17,7 +18,6 @@ import shapely
 import shapely.errors
 import shapely.geometry as sgeom
 import shapely.ops
-import shapely.prepared as prepped
 
 from iris.exceptions import IrisDefaultingWarning
 
@@ -58,9 +58,7 @@ def create_shapefile_mask(
         else:
             msg = "Received non-Cube object where a Cube is expected"
             raise TypeError(msg)
-    if not minimum_weight or minimum_weight == 0.0:
-        weights = False
-    elif isinstance(
+    if minimum_weight > 0.0 and isinstance(
         geometry,
         (
             sgeom.Point,
@@ -70,19 +68,16 @@ def create_shapefile_mask(
             sgeom.MultiLineString,
         ),
     ):
-        weights = False
+        minimum_weight = 0.0
         warnings.warn(
             """Shape is of invalid type for minimum weight masking,
             must use a Polygon rather than Line shape.\n
               Masking based off intersection instead. """,
             IrisDefaultingWarning,
         )
-    else:
-        weights = True
 
     # prepare shape
     trans_geo = _transform_coord_system(geometry, cube, shape_coord_system)
-    prepped_trans_geo = prepped.prep(trans_geo)
 
     # prepare 2D cube
     for coord in cube.dim_coords:
@@ -90,41 +85,56 @@ def create_shapefile_mask(
             coord.guess_bounds()
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     cube_2d = cube.slices([y_name, x_name]).next()
+
     y_coord, x_coord = [cube_2d.coord(n) for n in (y_name, x_name)]
     xmod = x_coord.units.modulus
     ymod = y_coord.units.modulus
-    mask_template = np.zeros(cube_2d.shape, dtype=bool)
-
-    # perform the masking
-    for count, idx in enumerate(np.ndindex(cube_2d.shape)):
-        # get the bounds of the grid cell
-        xi = idx[x_coord.cube_dims(cube_2d)[0]]
-        yi = idx[y_coord.cube_dims(cube_2d)[0]]
-        x0, x1 = x_coord.bounds[xi]
-        y0, y1 = y_coord.bounds[yi]
-
-        if xmod:
-            x0, x1 = _rebase_values_to_modulus((x0, x1), xmod)
-        if ymod:
-            y0, y1 = _rebase_values_to_modulus((y0, y1), ymod)
-
-        # create a new polygon of the grid cell and check intersection
-        cell_box = sgeom.box(x0, y0, x1, y1)
-        intersect_bool = prepped_trans_geo.intersects(cell_box)
-        # mask all points without a intersection
-        if intersect_bool is False:
-            mask_template[idx] = True
-        # if weights method used, mask intersections below required weight
-        if intersect_bool is True and weights is True:
-            intersect_area = trans_geo.intersection(cell_box).area
-            if (intersect_area / cell_box.area) <= minimum_weight:
-                mask_template[idx] = True
+    # prepare array for dark
+    bounds_array = np.asarray(list(product(x_coord.bounds, y_coord.bounds)))
+    da_bounds_array = dask.array.from_array(bounds_array, chunks="auto")
+    dask_template = dask.array.map_blocks(
+        map_blocks_func,
+        da_bounds_array,
+        xmod,
+        ymod,
+        trans_geo,
+        minimum_weight,
+        drop_axis=[1, 2],
+        dtype=bool,
+        meta=np.array(False),
+    )
+    mask_template = np.reshape(dask_template.compute(), cube_2d.shape[::-1]).T
 
     return mask_template
 
 
-def map_blocks_func(x_bounds, y_bounds, shapefile, cube_2d, minimum_weight):
-    dask.array()
+def map_blocks_func(bounds_array, xmod, ymod, shapefile, minimum_weight):
+    dask_template = np.empty(bounds_array.shape[0], dtype=bool)
+    for count, idx in enumerate(bounds_array):
+        # get the bounds of the grid cell
+        x0, x1 = idx[0]
+        y0, y1 = idx[1]
+        if xmod:
+            x0, x1 = _rebase_values_to_modulus((x0, x1), xmod)
+        if ymod:
+            y0, y1 = _rebase_values_to_modulus((y0, y1), ymod)
+        # create a new polygon of the grid cell and check intersection
+        cell_box = sgeom.box(x0, y0, x1, y1)
+        intersect_bool = shapefile.intersects(cell_box)
+        # mask all points without a intersection
+        if intersect_bool is False:
+            dask_template[count] = True
+        # if weights method used, mask intersections below required weight
+        elif intersect_bool is True and minimum_weight > 0.0:
+            intersect_area = shapefile.intersection(cell_box).area
+            if (intersect_area / cell_box.area) <= minimum_weight:
+                dask_template[count] = True
+            else:
+                dask_template[count] = False
+        else:
+            dask_template[count] = False
+
+    return dask_template
 
 
 def _transform_coord_system(geometry, cube, geometry_system=None):

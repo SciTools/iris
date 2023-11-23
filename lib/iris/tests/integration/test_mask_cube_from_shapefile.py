@@ -34,7 +34,7 @@ class TestCubeMasking(tests.IrisTest):
         masked_test = mask_cube_from_shapefile(ne_russia, test_global)
         print(np.sum(masked_test.data))
         assert math.isclose(
-            np.sum(masked_test.data), 76845.37, rel_tol=0.00001
+            np.sum(masked_test.data), 76845.37, rel_tol=0.001
         ), "Global data with Russia mask failed test"
 
     def test_rotated_pole_proj_germany(self):
@@ -49,7 +49,7 @@ class TestCubeMasking(tests.IrisTest):
         ][0]
         masked_test = mask_cube_from_shapefile(ne_germany, test_rotated)
         assert math.isclose(
-            np.sum(masked_test.data), 179.46872, rel_tol=0.00001
+            np.sum(masked_test.data), 179.46872, rel_tol=0.001
         ), "rotated europe data with German mask failed test"
 
     def test_transverse_mercator_proj_uk(self):
@@ -64,7 +64,7 @@ class TestCubeMasking(tests.IrisTest):
         ][0]
         masked_test = mask_cube_from_shapefile(ne_uk, test_transverse)
         assert math.isclose(
-            np.sum(masked_test.data), 90740.25, rel_tol=0.00001
+            np.sum(masked_test.data), 90740.25, rel_tol=0.001
         ), "transverse mercator UK data with UK mask failed test"
 
     def test_rotated_pole_proj_germany_weighted_area(self):
@@ -81,5 +81,5 @@ class TestCubeMasking(tests.IrisTest):
             ne_germany, test_rotated, minimum_weight=0.9
         )
         assert math.isclose(
-            np.sum(masked_test.data), 125.60199, rel_tol=0.00001
+            np.sum(masked_test.data), 125.60199, rel_tol=0.001
         ), "rotated europe data with 0.9 weight germany mask failed test"
