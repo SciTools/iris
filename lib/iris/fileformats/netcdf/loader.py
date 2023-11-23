@@ -687,14 +687,15 @@ class ChunkControl(threading.local):
         loading specific (named) variables, or for all variables.
 
         When a selected variable is a CF data-variable, which loads as a
-        cube, then the given dimension chunksize is *also* fixed for all
-        variables which are components of that cube, i.e. its Coords,
-        CellMeasures, Ancillary variables, etc.
+        :class:`~iris.cube.Cube`, then the given dimension chunksize is *also*
+        fixed for all variables which are components of that :class:`~iris.cube.Cube`,
+        i.e. any :class:`~iris.coords.Coord`, :class:`~iris.coords.CellMeasure`,
+        :class:`~iris.coords.AncillaryVariable` etc.
         This can be overridden, if required, by variable-specific settings.
 
-        For this purpose, Mesh coordinates and connectivities are *not* cube
-        components, and a chunk control on a cube data-variable will not affect
-        them.
+        For this purpose, :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` are not :class:`~iris.cube.Cube` components
+        , and chunk control on a :class:`~iris.cube.Cube` data-variable.
 
         """
         self.var_dim_chunksizes = var_dim_chunksizes or {}
@@ -729,8 +730,6 @@ class ChunkControl(threading.local):
         >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
         >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1):
         ...     cube = iris.load(iris.sample_data_path("E1_north_america.nc"))[0]
-        >>>
-        >>> print(cube.core_data().chunksize)
 
         When ``var_names`` is present, the chunksize adjustments are applied
         only to the selected variables.  However, for a CF data variable, this
