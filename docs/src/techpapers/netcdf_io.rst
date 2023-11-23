@@ -31,6 +31,7 @@ NetCDF I/O Handling in Iris
 This document provides a basic account of how Iris loads and saves NetCDF files.
 
 .. admonition:: Under Construction
+
     This document is still a work in progress, so might include blank or unfinished sections,
     watch this space!
 
@@ -66,7 +67,7 @@ Custom Chunking: Set
 ^^^^^^^^^^^^^^^^^^^^
 
 There are three context manangers within :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
-:method:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.set()`. This allows you to specify the chunksize for each dimension,
+:meth:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.set()`. This allows you to specify the chunksize for each dimension,
 and to specify a var_name specifically to change.
 
 Using ``-1`` in place of a chunksize will ensure the chunksize stays the same
@@ -93,7 +94,7 @@ Note that ``var_name`` is optional, and that you don't need to specify every dim
 Custom Chunking: From File
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The second context manager is :method:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.from_file()`.
+The second context manager is :meth:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.from_file()`.
 This takes chunksizes as defined in the NetCDF file. Any dimensions without specified chunks
 will default to Iris optimisation.
 
@@ -108,7 +109,7 @@ will default to Iris optimisation.
 Custom Chunking: As Dask
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The final context manager, :method:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.as_dask()`, bypasses
+The final context manager, :meth:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.as_dask()`, bypasses
 Iris' optimisation all together, and will take its chunksizes from dask's behaviour.
 
 .. doctest:: chunk_control
