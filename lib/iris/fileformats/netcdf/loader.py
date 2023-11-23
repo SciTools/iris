@@ -695,7 +695,7 @@ class ChunkControl(threading.local):
 
         For this purpose, :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
         :class:`~iris.experimental.ugrid.mesh.Connectivity` are not :class:`~iris.cube.Cube` components
-        , and chunk control on a :class:`~iris.cube.Cube` data-variable.
+        , and chunk control on a :class:`~iris.cube.Cube` data-variable will not affect them.
 
         """
         self.var_dim_chunksizes = var_dim_chunksizes or {}
@@ -720,7 +720,7 @@ class ChunkControl(threading.local):
             Kwargs specifying chunksizes for dimensions of file variables.
             Each key-value pair defines a chunksize for a named file
             dimension, e.g. ``{'time': 10, 'model_levels':1}``.
-            Values of ``-1`` will lock the chunk to the size of its shape.
+            Values of ``-1`` will lock the chunk size to the full size of that dimension.
 
         Notes
         -----

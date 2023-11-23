@@ -47,10 +47,10 @@ Chunks are, by default, optimised by Iris on load. This will automatically
 decide the best chunksize for your data without any user input. This is
 calculated based on a number of factors, including:
 
-    - File Variable Chunking
-    - Full Variable Shape
-    - Dask Default Chunksize
-    - Dimension Order: Earlier (outer) dimensions will be prioritised to be split over later (inner) dimensions.
+- File Variable Chunking
+- Full Variable Shape
+- Dask Default Chunksize
+- Dimension Order: Earlier (outer) dimensions will be prioritised to be split over later (inner) dimensions.
 
 .. doctest:: chunk_control
 
@@ -62,13 +62,13 @@ calculated based on a number of factors, including:
     (60, 37, 49)
 
 For more user control, functionality was updated in :pull:`5588`, with the
-creation of the :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL` class.
+creation of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL` class.
 
 Custom Chunking: Set
 ^^^^^^^^^^^^^^^^^^^^
 
 There are three context manangers within :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
-:meth:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL.set`. This allows you to specify the chunksize for each dimension,
+:meth:`~iris.fileformats.netcdf.loader.ChunkControl.set`. This allows you to specify the chunksize for each dimension,
 and to specify a ``var_name`` specifically to change.
 
 Using ``-1`` in place of a chunksize will ensure the chunksize stays the same
@@ -96,7 +96,7 @@ specify only one dimension, the rest will be optimised using Iris' default behav
 Custom Chunking: From File
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The second context manager is :meth:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL.from_file`.
+The second context manager is :meth:`~iris.fileformats.netcdf.loader.ChunkControl.from_file`.
 This takes chunksizes as defined in the NetCDF file. Any dimensions without specified chunks
 will default to Iris optimisation.
 
@@ -111,7 +111,7 @@ will default to Iris optimisation.
 Custom Chunking: As Dask
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The final context manager, :meth:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL.as_dask`, bypasses
+The final context manager, :meth:`~iris.fileformats.netcdf.loader.ChunkControl.as_dask`, bypasses
 Iris' optimisation all together, and will take its chunksizes from Dask's behaviour.
 
 .. doctest:: chunk_control
