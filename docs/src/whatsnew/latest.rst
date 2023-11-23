@@ -123,7 +123,7 @@ This document explains the changes made to Iris for this release
    packages. (:pull:`5564`)
 
 #. `@ESadek-MO`_ and `@trexfeathers`_ created a technical paper for NetCDF
-   saving and loading, with a section on chunking and placeholders
+   saving and loading, :ref:`netcdf_io` with a section on chunking, and placeholders
    for further topics. (:pull:`5588`)
 
 
