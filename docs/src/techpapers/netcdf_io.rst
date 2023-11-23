@@ -6,6 +6,7 @@
     from iris.fileformats.netcdf.loader import CHUNK_CONTROL
 
     from pathlib import Path
+    import dask
     import shutil
     import tempfile
 
@@ -53,7 +54,6 @@ calculated based on a number of factors, including:
 
 .. doctest:: chunk_control
 
-    >>> # DEFAULT CHUNKING
     >>> cube = iris.load_cube(tmp_filepath)
     >>>
     >>> print(cube.shape)
@@ -68,7 +68,7 @@ Custom Chunking: Set
 
 There are three context manangers within :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
 :meth:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.set`. This allows you to specify the chunksize for each dimension,
-and to specify a var_name specifically to change.
+and to specify a `var_name` specifically to change.
 
 Using ``-1`` in place of a chunksize will ensure the chunksize stays the same
 as the shape, i.e. no optimisation occurs on that dimension.
@@ -110,7 +110,7 @@ Custom Chunking: As Dask
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The final context manager, :meth:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.as_dask`, bypasses
-Iris' optimisation all together, and will take its chunksizes from dask's behaviour.
+Iris' optimisation all together, and will take its chunksizes from Dask's behaviour.
 
 .. doctest:: chunk_control
 
