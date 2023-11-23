@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 All the pure-Python 'helper' functions which were previously included in the
 Pyke rules database 'fc_rules_cf.krb'.
@@ -483,9 +482,9 @@ def build_cube_metadata(engine):
     # Set the cube global attributes.
     for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
         try:
-            cube.attributes[str(attr_name)] = attr_value
+            cube.attributes.globals[str(attr_name)] = attr_value
         except ValueError as e:
-            msg = "Skipping global attribute {!r}: {}"
+            msg = "Skipping disallowed global attribute {!r}: {}"
             warnings.warn(
                 msg.format(attr_name, str(e)),
                 category=_WarnComboIgnoringLoad,
