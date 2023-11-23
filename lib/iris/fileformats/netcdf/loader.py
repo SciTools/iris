@@ -711,15 +711,15 @@ class ChunkControl(threading.local):
 
         Parameters
         ----------
-        var_names : str or list of str
+        var_names : str or list of str, default=None
             apply the ``dimension_chunksizes`` controls only to these variables,
             or when building cubes from these data variables.
-            If None (the default), settings apply to all loaded variables.
-        dimension_chunksizes : dict: str --> int
+            If None, settings apply to all loaded variables.
+        dimension_chunksizes : dict of str: int
             Kwargs specifying chunksizes for dimensions of file variables.
             Each key-value pair defines a chunksize for a named file
-            dimension, e.g. {'time': 10, 'model_levels':1}.
-            Values of -1 will lock the chunk to the size of it's shape.
+            dimension, e.g. ``{'time': 10, 'model_levels':1}``.
+            Values of ``-1`` will lock the chunk to the size of its shape.
 
         Notes
         -----

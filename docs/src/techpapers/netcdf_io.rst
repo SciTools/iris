@@ -60,12 +60,12 @@ calculated based on a number of factors, including:
     (240, 37, 49)
 
 For more user control, functionality was updated in :pull:`5588`, with the
-creation of the :class:`CHUNK_CONTROL` class.
+creation of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL` class.
 
 Custom Chunking: Set
 ^^^^^^^^^^^^^^^^^^^^
 
-There are three context manangers within :class:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
+There are three context manangers within :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
 :method:`iris.fileformats.netcdf.loader.CHUNK_CONTROL.set()`. This allows you to specify the chunksize for each dimension,
 and to specify a var_name specifically to change.
 
