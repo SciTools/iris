@@ -48,3 +48,4 @@ they may serve as a useful reference for future exploration.
    ../further_topics/lenient_maths
    ../further_topics/dask_best_practices/index
    ../further_topics/ugrid/index
+   ../further_topics/techpapers/index
