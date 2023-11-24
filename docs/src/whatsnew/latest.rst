@@ -126,6 +126,9 @@ This document explains the changes made to Iris for this release
    saving and loading, :ref:`netcdf_io` with a section on chunking, and placeholders
    for further topics. (:pull:`5588`)
 
+#. `@Esadek-MO`_ moved :ref:`further_topics_index` onto it's own page, and moved
+   all the technical papers into this new page. (:pull:`5604`)
+
 
 💼 Internal
 ===========
