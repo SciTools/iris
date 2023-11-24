@@ -61,6 +61,5 @@ If you are new to using GitHub we recommend reading the
 
    ../generated/api/iris
    ../whatsnew/index
-   ../../further_topics/techpapers/index
    ../copyright
    ../voted_issues
