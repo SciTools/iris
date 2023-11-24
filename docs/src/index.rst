@@ -203,4 +203,12 @@ The legacy support resources:
    Iris API <generated/api/iris>
 
 
+.. toctree::
+   :caption: Further Topics
+   :maxdepth: 1
+   :hidden:
+
+   Further Topics <further_topics/index>
+
+
 .. todolist::
