@@ -2042,6 +2042,62 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
         return result
 
 
+def mask_cube_from_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
+    """Takes a shapefile and masks all points not touching it in a cube
+
+    Finds the overlap between the `shape` and the `cube` in 2D xy space and
+    masks out any cells with less % overlap with shape than set.
+    Default behaviour is to count any overlap between shape and cell as valid
+
+    Parameters
+    -----------
+
+    shape : Shapely.Geometry object
+        A single `shape` of the area to remain unmasked on the `cube`.
+        If it a line object of some kind then minimum_weight will be ignored,
+        because you cannot compare the area of a 1D line and 2D Cell
+    cube : :class:`~iris.cube.Cube` object
+        The `Cube` object to masked. Must be singular, rather than a `CubeList`
+    minimum_weight : float , default=0.0
+        A number between 0-1 describing what % of a cube cell area must
+        the shape overlap to include it.
+    in_place : bool, default=False
+        Whether to mask the `cube` in-place or return a newly masked `cube`.
+        Defaults to False.
+
+    Returns
+    --------
+
+    iris.Cube
+        A masked version of the input cube, if in_place is False
+
+
+    See Also
+    ---------
+
+    :func:`~iris.util.mask_cube'
+
+    Notes
+    -------
+    To mask a cube from a shapefile, both must first be on the same coordinate system.
+    Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
+    The shapefile is projected to the coord system of the cube, then each cell
+    is compared to the shapefile to determine overlap and populate a true/false array
+    This array is then used to mask the cube using the `iris.util.mask_cube' function
+
+    Examples
+    ----------
+    >>> shape = shapely.geometry.box(30,30, 50,40) # box between 30N-40N 30E-50E
+    >>> masked_cube = mask_cube_from_shapefile(shape, cube):
+
+    ...
+    """
+    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
+    masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
+    if not in_place:
+        return masked_cube
+
+
 def equalise_attributes(cubes):
     """
     Delete cube attributes that are not identical over all cubes in a group.
@@ -2146,51 +2202,3 @@ def _strip_metadata_from_dims(cube, dims):
             reduced_cube.remove_cell_measure(cm)
 
     return reduced_cube
-
-
-def mask_cube_from_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
-    """Takes a shapefile and masks all points not touching it in a cube
-
-    Finds the overlap between the `shape` and the `cube` in 2D xy space and
-    masks out any cells with less % overlap with shape than set.
-    Default behaviour is to count any overlap between shape and cell as valid
-
-    Parameters
-    -----------
-
-    shape : Shapely.Geometry object
-        A single `shape` of the area to remain unmasked on the `cube`.
-        If it a line object of some kind then minimum_weight will be ignored,
-        because you cannot compare the area of a 1D line and 2D Cell
-    cube : :class:`~iris.cube.Cube` object
-        The `Cube` object to masked. Must be singular, rather than a `CubeList`
-    minimum_weight : float , default=0.0
-        A number between 0-1 describing what % of a cube cell area must
-        the shape overlap to include it.
-    in_place : bool, default=False
-        Whether to mask the `cube` in-place or return a newly masked `cube`.
-        Defaults to False.
-
-    Returns
-    --------
-
-    iris.Cube
-        A masked version of the input cube, if in_place is False
-
-    Notes
-    -------
-
-    Examples
-    ----------
-    >>>
-    ...
-
-    explanation
-
-    >>>
-    ...
-    """
-    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
-    masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
-    if not in_place:
-        return masked_cube

@@ -23,24 +23,29 @@ from iris.exceptions import IrisDefaultingWarning
 
 
 def create_shapefile_mask(
-    geometry, cube, minimum_weight=0.0, shape_coord_system=None
+    geometry,
+    cube,
+    minimum_weight=0.0,
 ):
-    """
+    """Makes a mask for a cube from the shapefile
+
     Get the mask of the intersection between the
     given shapely geometry and cube.
 
-    Arguments:
+    Parameters
+    -----------
         geometry        : A :class:`shapely.Geometry` object
 
         cube            : A :class:`iris.cube.Cube`
-                            with x and y coordinates
+                            with 1d x and y coordinates
         minimum_weight  : A float between 0 and 1 determining what % of a cell
                             a shape must cover for the cell to remain unmasked.
                             eg: 0.1 means that at least 10% of the shape overlaps the cell
                             to be unmasked
 
     Returns:
-        A numpy array of the shape of the x & y coordinates of the cube, with points to mask equal to True
+        A :class:`np.array` of the shape of the x & y coordinates of the cube, with points to mask equal to True
+
     """
 
     from iris.cube import Cube, CubeList
@@ -78,7 +83,7 @@ def create_shapefile_mask(
         )
 
     # prepare shape
-    trans_geo = _transform_coord_system(geometry, cube, shape_coord_system)
+    trans_geo = _transform_coord_system(geometry, cube)
 
     # prepare 2D cube
     for coord in cube.dim_coords:
@@ -92,7 +97,12 @@ def create_shapefile_mask(
     y_bounds = _get_mod_rebased_coord_bounds(y_coord)
     # prepare array for dark
     bounds_array = np.asarray(list(product(x_bounds, y_bounds)))
-    da_bounds_array = dask.array.from_array(bounds_array, chunks="auto")
+    # if bounds_array is large enough set chunksize to speed up masking
+    if bounds_array.shape[0] > 250000:  # roughly equal to 500x500 2d
+        chunksize = [int(np.ceil(bounds_array.shape[0] / 10)), -1, -1]
+    else:
+        chunksize = "auto"
+    da_bounds_array = dask.array.from_array(bounds_array, chunks=chunksize)
     dask_template = dask.array.map_blocks(
         map_blocks_func,
         da_bounds_array,
