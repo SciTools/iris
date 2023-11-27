@@ -99,7 +99,7 @@ def create_shapefile_mask(
     bounds_array = np.asarray(list(product(x_bounds, y_bounds)))
     # if bounds_array is large enough set chunksize to speed up masking
     if bounds_array.shape[0] > 250000:  # roughly equal to 500x500 2d
-        chunksize = [int(np.ceil(bounds_array.shape[0] / 10)), -1, -1]
+        chunksize = [int(np.ceil(bounds_array.shape[0] / 20)), -1, -1]
     else:
         chunksize = "auto"
     da_bounds_array = dask.array.from_array(bounds_array, chunks=chunksize)
@@ -225,7 +225,6 @@ def _get_mod_rebased_coord_bounds(coord):
     #  repeated indexing happening downstream.
     result = np.array(coord.bounds)
     if modulus:
-        result[result > 0.0] = result[result > 0.0] % modulus
         result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
         result[np.isclose(result, modulus, 1e-10)] = 0.0
     return result

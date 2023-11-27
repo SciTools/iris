@@ -2148,8 +2148,8 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
-def mask_cube_from_shapefile(shape, cube, minimum_weight=0.0, in_place=False):
-    """Takes a shapefile and masks all points not touching it in a cube
+def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
+    """Takes a shape object and masks all points not touching it in a cube
 
     Finds the overlap between the `shape` and the `cube` in 2D xy space and
     masks out any cells with less % overlap with shape than set.
