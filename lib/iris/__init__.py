@@ -141,7 +141,9 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, datum_support=False, pandas_ndim=False):
+    def __init__(
+        self, datum_support=False, pandas_ndim=False, save_split_attrs=False
+    ):
         """
         A container for run-time options controls.
 
@@ -163,6 +165,11 @@ class Future(threading.local):
         pandas_ndim : bool, default=False
             See :func:`iris.pandas.as_data_frame` for details - opts in to the
             newer n-dimensional behaviour.
+        save_split_attrs : bool, default=False
+            Save "global" and "local" cube attributes to netcdf in appropriately
+            different ways :  "global" ones are saved as dataset attributes, where
+            possible, while "local" ones are saved as data-variable attributes.
+            See :func:`iris.fileformats.netcdf.saver.save`.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -174,14 +181,18 @@ class Future(threading.local):
         # self.__dict__['example_future_flag'] = example_future_flag
         self.__dict__["datum_support"] = datum_support
         self.__dict__["pandas_ndim"] = pandas_ndim
+        self.__dict__["save_split_attrs"] = save_split_attrs
+
         # TODO: next major release: set IrisDeprecation to subclass
         #  DeprecationWarning instead of UserWarning.
 
     def __repr__(self):
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future(datum_support={}, pandas_ndim={})"
-        return msg.format(self.datum_support, self.pandas_ndim)
+        msg = "Future(datum_support={}, pandas_ndim={}, save_split_attrs={})"
+        return msg.format(
+            self.datum_support, self.pandas_ndim, self.save_split_attrs
+        )
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}

@@ -29,6 +29,7 @@ import dask.array as da
 from dask.delayed import Delayed
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
@@ -559,6 +560,11 @@ class Saver:
             An interable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
             than global attributes.
+
+            .. Note::
+
+                Has no effect if :attr:`iris.FUTURE.save_split_attrs` is ``True``.
+
         unlimited_dimensions : iterable of str and/or :class:`iris.coords.Coord`
             List of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
@@ -641,6 +647,9 @@ class Saver:
         3 files that do not use HDF5.
 
         """
+        # TODO: when iris.FUTURE.save_split_attrs defaults to True, we can deprecate the
+        #  "local_keys" arg, and finally remove it when we finally remove the
+        #  save_split_attrs switch.
         if unlimited_dimensions is None:
             unlimited_dimensions = []
 
@@ -717,20 +726,23 @@ class Saver:
         # aux factory in the cube.
         self._add_aux_factories(cube, cf_var_cube, cube_dimensions)
 
-        # Add data variable-only attribute names to local_keys.
-        if local_keys is None:
-            local_keys = set()
-        else:
-            local_keys = set(local_keys)
-        local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
+        if not iris.FUTURE.save_split_attrs:
+            # In the "old" way, we update global attributes as we go.
+            # Add data variable-only attribute names to local_keys.
+            if local_keys is None:
+                local_keys = set()
+            else:
+                local_keys = set(local_keys)
+            local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
 
-        # Add global attributes taking into account local_keys.
-        global_attributes = {
-            k: v
-            for k, v in cube.attributes.items()
-            if (k not in local_keys and k.lower() != "conventions")
-        }
-        self.update_global_attributes(global_attributes)
+            # Add global attributes taking into account local_keys.
+            cube_attributes = cube.attributes
+            global_attributes = {
+                k: v
+                for k, v in cube_attributes.items()
+                if (k not in local_keys and k.lower() != "conventions")
+            }
+            self.update_global_attributes(global_attributes)
 
         if cf_profile_available:
             cf_patch = iris.site_configuration.get("cf_patch")
@@ -788,6 +800,9 @@ class Saver:
         attributes: dict or iterable of key, value pairs
             CF global attributes to be updated.
         """
+        # TODO: when when iris.FUTURE.save_split_attrs is removed, this routine will
+        # only be called once: it can reasonably be renamed "_set_global_attributes",
+        # and the 'kwargs' argument can be removed.
         if attributes is not None:
             # Handle sequence e.g. [('fruit', 'apple'), ...].
             if not hasattr(attributes, "keys"):
@@ -2266,6 +2281,9 @@ class Saver:
         """
         Create CF-netCDF data variable for the cube and any associated grid mapping.
 
+        # TODO: when iris.FUTURE.save_split_attrs is removed, the 'local_keys' arg can
+        # be removed.
+
         Parameters
         ----------
         cube: :class:`iris.cube.Cube`
@@ -2287,6 +2305,8 @@ class Saver:
         The newly created CF-netCDF data variable.
 
         """
+        # TODO: when iris.FUTURE.save_split_attrs is removed, the 'local_keys' arg can
+        # be removed.
         # Get the values in a form which is valid for the file format.
         data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
 
@@ -2375,16 +2395,20 @@ class Saver:
         if cube.units.calendar:
             _setncattr(cf_var, "calendar", cube.units.calendar)
 
-        # Add data variable-only attribute names to local_keys.
-        if local_keys is None:
-            local_keys = set()
+        if iris.FUTURE.save_split_attrs:
+            attr_names = cube.attributes.locals.keys()
         else:
-            local_keys = set(local_keys)
-        local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
+            # Add data variable-only attribute names to local_keys.
+            if local_keys is None:
+                local_keys = set()
+            else:
+                local_keys = set(local_keys)
+            local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
 
-        # Add any cube attributes whose keys are in local_keys as
-        # CF-netCDF data variable attributes.
-        attr_names = set(cube.attributes).intersection(local_keys)
+            # Add any cube attributes whose keys are in local_keys as
+            # CF-netCDF data variable attributes.
+            attr_names = set(cube.attributes).intersection(local_keys)
+
         for attr_name in sorted(attr_names):
             # Do not output 'conventions' attribute.
             if attr_name.lower() == "conventions":
@@ -2672,9 +2696,15 @@ def save(
     Save cube(s) to a netCDF file, given the cube and the filename.
 
     * Iris will write CF 1.7 compliant NetCDF files.
-    * The attributes dictionaries on each cube in the saved cube list
-      will be compared and common attributes saved as NetCDF global
-      attributes where appropriate.
+    * **If split-attribute saving is disabled**, i.e.
+      :data:`iris.FUTURE`\\ ``.save_split_attrs`` is ``False``, then attributes
+      dictionaries on each cube in the saved cube list will be compared, and common
+      attributes saved as NetCDF global attributes where appropriate.
+
+      Or, **when split-attribute saving is enabled**, then ``cube.attributes.locals``
+      are always saved as attributes of data-variables, and ``cube.attributes.globals``
+      are saved as global (dataset) attributes, where possible.
+      Since the 2 types are now distinguished : see :class:`~iris.cube.CubeAttrsDict`.
     * Keyword arguments specifying how to save the data are applied
       to each cube. To use different settings for different cubes, use
       the NetCDF Context manager (:class:`~Saver`) directly.
@@ -2703,6 +2733,11 @@ def save(
         An interable of cube attribute keys. Any cube attributes with
         matching keys will become attributes on the data variable rather
         than global attributes.
+
+        .. note::
+            This is *ignored* if 'split-attribute saving' is **enabled**,
+            i.e. when ``iris.FUTURE.save_split_attrs`` is ``True``.
+
     unlimited_dimensions: iterable of str and/or :class:`iris.coords.Coord` objects, optional
         List of coordinate names (or coordinate objects) corresponding
         to coordinate dimensions of `cube` to save with the NetCDF dimension
@@ -2832,26 +2867,127 @@ def save(
     else:
         cubes = cube
 
-    if local_keys is None:
+    # Decide which cube attributes will be saved as "global" attributes
+    # NOTE: in 'legacy' mode, when iris.FUTURE.save_split_attrs == False, this code
+    # section derives a common value for 'local_keys', which is passed to 'Saver.write'
+    # when saving each input cube.  The global attributes are then created by a call
+    # to "Saver.update_global_attributes" within each 'Saver.write' call (which is
+    # obviously a bit redundant!), plus an extra one to add 'Conventions'.
+    # HOWEVER, in `split_attrs` mode (iris.FUTURE.save_split_attrs == False), this code
+    # instead constructs a 'global_attributes' dictionary, and outputs that just once,
+    # after writing all the input cubes.
+    if iris.FUTURE.save_split_attrs:
+        # We don't actually use 'local_keys' in this case.
+        # TODO: can remove this when the iris.FUTURE.save_split_attrs is removed.
         local_keys = set()
-    else:
-        local_keys = set(local_keys)
 
-    # Determine the attribute keys that are common across all cubes and
-    # thereby extend the collection of local_keys for attributes
-    # that should be attributes on data variables.
-    attributes = cubes[0].attributes
-    common_keys = set(attributes)
-    for cube in cubes[1:]:
-        keys = set(cube.attributes)
-        local_keys.update(keys.symmetric_difference(common_keys))
-        common_keys.intersection_update(keys)
-        different_value_keys = []
-        for key in common_keys:
-            if np.any(attributes[key] != cube.attributes[key]):
-                different_value_keys.append(key)
-        common_keys.difference_update(different_value_keys)
-        local_keys.update(different_value_keys)
+        # Find any collisions in the cube global attributes and "demote" all those to
+        # local attributes (where possible, else warn they are lost).
+        # N.B. "collision" includes when not all cubes *have* that attribute.
+        global_names = set()
+        for cube in cubes:
+            global_names |= set(cube.attributes.globals.keys())
+
+        # Fnd any global attributes which are not the same on *all* cubes.
+        def attr_values_equal(val1, val2):
+            # An equality test which also works when some values are numpy arrays (!)
+            # As done in :meth:`iris.common.mixin.LimitedAttributeDict.__eq__`.
+            match = val1 == val2
+            try:
+                match = bool(match)
+            except ValueError:
+                match = match.all()
+            return match
+
+        cube0 = cubes[0]
+        invalid_globals = set(
+            [
+                attrname
+                for attrname in global_names
+                if not all(
+                    attr_values_equal(
+                        cube.attributes.globals.get(attrname),
+                        cube0.attributes.globals.get(attrname),
+                    )
+                    for cube in cubes[1:]
+                )
+            ]
+        )
+
+        # Establish all the global attributes which we will write to the file (at end).
+        global_attributes = {
+            attr: cube0.attributes.globals.get(attr)
+            for attr in global_names - invalid_globals
+        }
+        if invalid_globals:
+            # Some cubes have different global attributes: modify cubes as required.
+            warnings.warn(
+                f"Saving the cube global attributes {sorted(invalid_globals)} as local "
+                "(i.e. data-variable) attributes, where possible, since they are not "
+                "the same on all input cubes.",
+                category=iris.exceptions.IrisSaveWarning,
+            )
+            cubes = cubes.copy()  # avoiding modifying the actual input arg.
+            for i_cube in range(len(cubes)):
+                # We iterate over cube *index*, so we can replace the list entries with
+                # with cube *copies* -- just to avoid changing our call args.
+                cube = cubes[i_cube]
+                demote_attrs = set(cube.attributes.globals) & invalid_globals
+                if any(demote_attrs):
+                    # Catch any demoted attrs where there is already a local version
+                    blocked_attrs = demote_attrs & set(cube.attributes.locals)
+                    if blocked_attrs:
+                        warnings.warn(
+                            f"Global cube attributes {sorted(blocked_attrs)} "
+                            f'of cube "{cube.name()}" were not saved, overlaid '
+                            "by existing local attributes with the same names.",
+                            category=iris.exceptions.IrisSaveWarning,
+                        )
+                    demote_attrs -= blocked_attrs
+                    if demote_attrs:
+                        # This cube contains some 'demoted' global attributes.
+                        # Replace input cube with a copy, so we can modify attributes.
+                        cube = cube.copy()
+                        cubes[i_cube] = cube
+                        for attr in demote_attrs:
+                            # move global to local
+                            value = cube.attributes.globals.pop(attr)
+                            cube.attributes.locals[attr] = value
+
+    else:
+        # Legacy mode: calculate "local_keys" to control which attributes are local
+        # and which global.
+        # TODO: when iris.FUTURE.save_split_attrs is removed, this section can also be
+        # removed
+        message = (
+            "Saving to netcdf with legacy-style attribute handling for backwards "
+            "compatibility.\n"
+            "This mode is deprecated since Iris 3.8, and will eventually be removed.\n"
+            "Please consider enabling the new split-attributes handling mode, by "
+            "setting 'iris.FUTURE.save_split_attrs = True'."
+        )
+        warn_deprecated(message)
+
+        if local_keys is None:
+            local_keys = set()
+        else:
+            local_keys = set(local_keys)
+
+        # Determine the attribute keys that are common across all cubes and
+        # thereby extend the collection of local_keys for attributes
+        # that should be attributes on data variables.
+        attributes = cubes[0].attributes
+        common_keys = set(attributes)
+        for cube in cubes[1:]:
+            keys = set(cube.attributes)
+            local_keys.update(keys.symmetric_difference(common_keys))
+            common_keys.intersection_update(keys)
+            different_value_keys = []
+            for key in common_keys:
+                if np.any(attributes[key] != cube.attributes[key]):
+                    different_value_keys.append(key)
+            common_keys.difference_update(different_value_keys)
+            local_keys.update(different_value_keys)
 
     def is_valid_packspec(p):
         """Only checks that the datatype is valid."""
@@ -2953,7 +3089,12 @@ def save(
                 warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
         # Add conventions attribute.
-        sman.update_global_attributes(Conventions=conventions)
+        if iris.FUTURE.save_split_attrs:
+            # In the "new way", we just create all the global attributes at once.
+            global_attributes["Conventions"] = conventions
+            sman.update_global_attributes(global_attributes)
+        else:
+            sman.update_global_attributes(Conventions=conventions)
 
     if compute:
         # No more to do, since we used Saver(compute=True).

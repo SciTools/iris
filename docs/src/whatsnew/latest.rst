@@ -29,7 +29,17 @@ This document explains the changes made to Iris for this release
 
 ✨ Features
 ===========
+#. `@pp-mo`_, `@lbdreyer`_ and `@trexfeathers`_ improved
+   :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` handling to
+   better preserve the distinction between dataset-level and variable-level
+   attributes, allowing file-Cube-file round-tripping of NetCDF attributes. See
+   :class:`~iris.cube.CubeAttrsDict`, NetCDF
+   :func:`~iris.fileformats.netcdf.saver.save` and :data:`~iris.Future` for more.
+   (:pull:`5152`, `split attributes project`_)
 
+#. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
+   lazy data. (:pull:`5307`)
+   
 #. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
    :class:`UserWarning`\s for richer filtering. The full index of
    sub-categories can be seen here: :mod:`iris.exceptions` . (:pull:`5498`)
@@ -44,6 +54,14 @@ This document explains the changes made to Iris for this release
    Winter - December to February) will be assigned to the preceding year (e.g.
    the year of December) instead of the following year (the default behaviour).
    (:pull:`5573`)
+   
+#. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
+   intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
+   coordinate. (:pull:`5551`)
+
+#. `@pp-mo`_, `@trexfeathers`_ and `@ESadek-MO`_ added more control over
+   NetCDF chunking with the use of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`
+   context manager. (:pull:`5588`)
 
 
 🐛 Bugs Fixed
@@ -68,7 +86,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@stephenworsley`_ improved the speed of :class:`~iris.analysis.AreaWeighted`
+   regridding. (:pull:`5543`)
 
 
 🔥 Deprecations
@@ -102,6 +121,10 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ added a phrasebook for synonymous terms used in similar
    packages. (:pull:`5564`)
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created a technical paper for NetCDF
+   saving and loading, :ref:`netcdf_io` with a section on chunking, and placeholders
+   for further topics. (:pull:`5588`)
 
 
 💼 Internal
@@ -147,4 +170,4 @@ This document explains the changes made to Iris for this release
 
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
 .. _codespell: https://github.com/codespell-project/codespell
-
+.. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info

@@ -13,8 +13,13 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.cube import Cube
+from iris.coords import AuxCoord
+from iris.cube import Cube, CubeAttrsDict
 import iris.tests.stock
+from iris.tests.unit.common.metadata.test_CubeMetadata import (
+    _TEST_ATTRNAME,
+    make_attrsdict,
+)
 from iris.util import equalise_attributes
 
 
@@ -149,6 +154,112 @@ class TestEqualiseAttributes(tests.IrisTest):
                 "source": "Data from Met Office Unified Model",
             },
             [{}, {}],
+        )
+
+
+class TestSplitattributes:
+    """
+    Extra testing for cases where attributes differ specifically by type
+
+    That is, where there is a new possibility of 'mismatch' due to the newer "typing"
+    of attributes as global or local.
+
+    Specifically, it is now possible that although
+    "cube1.attributes.keys() == cube2.attributes.keys()",
+    AND "cube1.attributes[k] == cube2.attributes[k]" for all keys,
+    YET STILL (possibly) "cube1.attributes != cube2.attributes"
+    """
+
+    @staticmethod
+    def _sample_splitattrs_cube(attr_global_local):
+        attrs = CubeAttrsDict(
+            globals=make_attrsdict(attr_global_local[0]),
+            locals=make_attrsdict(attr_global_local[1]),
+        )
+        return Cube([0], attributes=attrs)
+
+    @staticmethod
+    def check_equalised_result(cube1, cube2):
+        equalise_attributes([cube1, cube2])
+        # Note: "X" represents a missing attribute, as in test_CubeMetadata
+        return [
+            (
+                cube1.attributes.globals.get(_TEST_ATTRNAME, "X")
+                + cube1.attributes.locals.get(_TEST_ATTRNAME, "X")
+            ),
+            (
+                cube2.attributes.globals.get(_TEST_ATTRNAME, "X")
+                + cube2.attributes.locals.get(_TEST_ATTRNAME, "X")
+            ),
+        ]
+
+    def test__global_and_local__bothsame(self):
+        # A trivial case showing that the original globals+locals are both preserved.
+        cube1 = self._sample_splitattrs_cube("AB")
+        cube2 = self._sample_splitattrs_cube("AB")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["AB", "AB"]
+
+    def test__globals_different(self):
+        cube1 = self._sample_splitattrs_cube("AX")
+        cube2 = self._sample_splitattrs_cube("BX")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["XX", "XX"]
+
+    def test__locals_different(self):
+        cube1 = self._sample_splitattrs_cube("XA")
+        cube2 = self._sample_splitattrs_cube("XB")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["XX", "XX"]
+
+    def test__oneglobal_onelocal__different(self):
+        cube1 = self._sample_splitattrs_cube("AX")
+        cube2 = self._sample_splitattrs_cube("XB")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["XX", "XX"]
+
+    # This case fails without the split-attributes fix.
+    def test__oneglobal_onelocal__same(self):
+        cube1 = self._sample_splitattrs_cube("AX")
+        cube2 = self._sample_splitattrs_cube("XA")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["XX", "XX"]
+
+    def test__sameglobals_onelocal__different(self):
+        cube1 = self._sample_splitattrs_cube("AB")
+        cube2 = self._sample_splitattrs_cube("AX")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["XX", "XX"]
+
+    # This case fails without the split-attributes fix.
+    def test__sameglobals_onelocal__same(self):
+        cube1 = self._sample_splitattrs_cube("AA")
+        cube2 = self._sample_splitattrs_cube("AX")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["XX", "XX"]
+
+    # This case fails without the split-attributes fix.
+    def test__differentglobals_samelocals(self):
+        cube1 = self._sample_splitattrs_cube("AC")
+        cube2 = self._sample_splitattrs_cube("BC")
+        result = self.check_equalised_result(cube1, cube2)
+        assert result == ["XX", "XX"]
+
+
+class TestNonCube:
+    # Just to assert that we can do operations on non-cube components (like Coords),
+    # in fact effectively, anything with a ".attributes".
+    # Even though the docstring does not admit this, we test it because we put in
+    # special code to preserve it when adding the split-attribute handling.
+    def test(self):
+        attrs = [1, 1, 2]
+        coords = [
+            AuxCoord([0], attributes={"a": attr, "b": "all_the_same"})
+            for attr in attrs
+        ]
+        equalise_attributes(coords)
+        assert all(
+            coord.attributes == {"b": "all_the_same"} for coord in coords
         )
 
 

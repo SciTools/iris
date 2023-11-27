@@ -22,6 +22,9 @@ from iris._lazy_data import (
     multidim_lazy_stack,
 )
 from iris.common import CoordMetadata, CubeMetadata
+from iris.common._split_attribute_dicts import (
+    _convert_splitattrs_to_pairedkeys_dict as convert_splitattrs_to_pairedkeys_dict,
+)
 import iris.coords
 import iris.cube
 import iris.exceptions
@@ -390,8 +393,10 @@ class _CubeSignature(
                 )
             )
         if self_defn.attributes != other_defn.attributes:
-            diff_keys = set(self_defn.attributes.keys()) ^ set(
-                other_defn.attributes.keys()
+            attrs_1, attrs_2 = self_defn.attributes, other_defn.attributes
+            diff_keys = sorted(
+                set(attrs_1.globals) ^ set(attrs_2.globals)
+                | set(attrs_1.locals) ^ set(attrs_2.locals)
             )
             if diff_keys:
                 msgs.append(
@@ -399,14 +404,16 @@ class _CubeSignature(
                     + ", ".join(repr(key) for key in diff_keys)
                 )
             else:
-                diff_attrs = [
-                    repr(key)
-                    for key in self_defn.attributes
-                    if np.all(
-                        self_defn.attributes[key] != other_defn.attributes[key]
-                    )
+                attrs_1, attrs_2 = [
+                    convert_splitattrs_to_pairedkeys_dict(dic)
+                    for dic in (attrs_1, attrs_2)
                 ]
-                diff_attrs = ", ".join(diff_attrs)
+                diff_attrs = [
+                    repr(key[1])
+                    for key in attrs_1
+                    if np.all(attrs_1[key] != attrs_2[key])
+                ]
+                diff_attrs = ", ".join(sorted(diff_attrs))
                 msgs.append(
                     "cube.attributes values differ for keys: {}".format(
                         diff_attrs
