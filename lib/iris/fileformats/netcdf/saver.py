@@ -2826,7 +2826,7 @@ def save(
 
         .. Note::
             when computed, the returned :class:`dask.delayed.Delayed` object returns
-            a list of :class:`Warning`\\s :  These are any warnings which *would* have
+            a list of :class:`Warning` :  These are any warnings which *would* have
             been issued in the save call, if ``compute`` had been ``True``.
 
         .. Note::
@@ -2844,17 +2844,12 @@ def save(
         Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
         writing to fill in the variables data.
 
-    .. note::
-
-        The `zlib`, `complevel`, `shuffle`, `fletcher32`, `contiguous`,
-        `chunksizes` and `endian` keywords are silently ignored for netCDF 3
-        files that do not use HDF5.
-
     Notes
     -----
     The `zlib`, `complevel`, `shuffle`, `fletcher32`, `contiguous`,
     `chunksizes` and `endian` keywords are silently ignored for netCDF 3
     files that do not use HDF5.
+
     """
     from iris.cube import Cube, CubeList
 
