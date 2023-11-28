@@ -155,6 +155,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ corrected various comment spelling mistakes detected by
    `codespell`_. (:pull:`5546`)
 
+#. `@rcomer`_ reduced the size of the conda environment used for testing.
+   (:pull:`5606`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
