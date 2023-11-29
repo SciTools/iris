@@ -32,7 +32,7 @@ class TestBasicCubeMasking(tests.IrisTest):
 
     def test_basic_cube_intersect(self):
         shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
-        masked_cube = mask_cube_from_shapefile(shape, self.basic_cube)
+        masked_cube = mask_cube_from_shapefile(self.basic_cube, shape)
         assert (
             np.sum(masked_cube.data) == 8
         ), f"basic cube masking failed test - expected 8 got {np.sum(masked_cube.data)}"
@@ -40,7 +40,7 @@ class TestBasicCubeMasking(tests.IrisTest):
     def test_basic_cube_intersect_low_weight(self):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
         masked_cube = mask_cube_from_shapefile(
-            shape, self.basic_cube, minimum_weight=0.2
+            self.basic_cube, shape, minimum_weight=0.2
         )
         assert (
             np.sum(masked_cube.data) == 12
@@ -49,7 +49,7 @@ class TestBasicCubeMasking(tests.IrisTest):
     def test_basic_cube_intersect_high_weight(self):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
         masked_cube = mask_cube_from_shapefile(
-            shape, self.basic_cube, minimum_weight=0.7
+            self.basic_cube, shape, minimum_weight=0.7
         )
         assert (
             np.sum(masked_cube.data) == 8
@@ -61,25 +61,25 @@ class TestBasicCubeMasking(tests.IrisTest):
         with pytest.raises(
             TypeError, match="CubeList object rather than Cube"
         ):
-            mask_cube_from_shapefile(shape, cubelist)
+            mask_cube_from_shapefile(cubelist, shape)
 
     def test_non_cube_error(self):
         fake = None
         shape = shapely.geometry.box(1, 1, 2, 2)
         with pytest.raises(TypeError, match="Received non-Cube object"):
-            mask_cube_from_shapefile(shape, fake)
+            mask_cube_from_shapefile(fake, shape)
 
     def test_line_shape_warning(self):
         shape = shapely.geometry.LineString([(0, 0.75), (2, 0.75)])
         with pytest.warns(IrisUserWarning, match="invalid type"):
             masked_cube = mask_cube_from_shapefile(
-                shape, self.basic_cube, minimum_weight=0.1
+                self.basic_cube, shape, minimum_weight=0.1
             )
         assert (
             np.sum(masked_cube.data) == 24
         ), f"basic cube masking against line failed test - expected 24 got {np.sum(masked_cube.data)}"
 
     def test_shape_invalid(self):
-        shape = None
+        shape = [5, 6, 7, 8]  # random array
         with pytest.raises(TypeError, match="valid Shapely"):
-            mask_cube_from_shapefile(shape, self.basic_cube)
+            mask_cube_from_shapefile(self.basic_cube, shape)

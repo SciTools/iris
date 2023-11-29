@@ -37,7 +37,7 @@ def create_shapefile_mask(
         geometry        : A :class:`shapely.Geometry` object
 
         cube            : A :class:`iris.cube.Cube`
-                            with 1d x and y coordinates
+                            with at least 1d x and y coordinates
         minimum_weight  : A float between 0 and 1 determining what % of a cell
                             a shape must cover for the cell to remain unmasked.
                             eg: 0.1 means that at least 10% of the shape overlaps the cell
@@ -51,11 +51,11 @@ def create_shapefile_mask(
     from iris.cube import Cube, CubeList
 
     try:
-        msg = TypeError("Geometry is not a valid Shapely object")
-        if geometry.is_valid is False:
-            raise msg
+        msg = "Geometry is not a valid Shapely object"
+        if shapely.is_valid(geometry) is False:
+            raise TypeError(msg)
     except Exception:
-        raise msg
+        raise TypeError(msg)
     if not isinstance(cube, Cube):
         if isinstance(cube, CubeList):
             msg = "Received CubeList object rather than Cube - \
@@ -86,11 +86,11 @@ def create_shapefile_mask(
     trans_geo = _transform_coord_system(geometry, cube)
 
     # prepare 2D cube
-    for coord in cube.dim_coords:
-        if not coord.has_bounds():
-            coord.guess_bounds()
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     cube_2d = cube.slices([y_name, x_name]).next()
+    for coord in cube_2d.dim_coords:
+        if not coord.has_bounds():
+            coord.guess_bounds()
 
     y_coord, x_coord = [cube_2d.coord(n) for n in (y_name, x_name)]
     x_bounds = _get_mod_rebased_coord_bounds(x_coord)
