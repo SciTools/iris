@@ -395,11 +395,11 @@ class Saver:
 
         Parameters
         ----------
-        filename : string or netCDF4.Dataset
+        filename : str or netCDF4.Dataset
             Name of the netCDF file to save the cube.
             OR a writeable object supporting the :class:`netCF4.Dataset` api.
 
-        netcdf_format : string
+        netcdf_format : str
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 
@@ -872,7 +872,7 @@ class Saver:
 
         Returns
         -------
-        cf_mesh_name: string or None
+        cf_mesh_name: str or None
             The name of the mesh variable created, or None if the cube does not
             have a mesh.
         """
@@ -1827,7 +1827,7 @@ class Saver:
             An Iris :class:`iris.coords._DimensionalMetadata`, belonging to the
             cube.  Provides data, units and standard/long/var names.
             Not used if 'element_dims' is not None.
-        element_dims : list of string, or None
+        element_dims : list of str, or None
             If set, contains the variable dimension (names),
             otherwise these are taken from `element.cube_dims[cube]`.
             For Mesh components (element coordinates and connectivities), this
@@ -2292,7 +2292,7 @@ class Saver:
             String names for each dimension of the cube.
         local_keys: iterable of str, optional
             See :func:`iris.fileformats.netcdf.Saver.write`
-        packing: type or string or dict or list, optional
+        packing: type or str or dict or list, optional
             See :func:`iris.fileformats.netcdf.Saver.write`
         fill_value: optional
             See :func:`iris.fileformats.netcdf.Saver.write`
@@ -2726,7 +2726,7 @@ def save(
             When saving to a dataset, ``compute`` **must** be ``False`` :
             See the ``compute`` parameter.
 
-    netcdf_format: string
+    netcdf_format: str
         Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
     local_keys: iterable of str, optional
