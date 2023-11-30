@@ -76,6 +76,9 @@ This document explains the changes made to Iris for this release
 #. `@acchamber`_ and `@rcomer`_ modified 2D plots so that time axes and their
    ticks have more sensible default labels.  (:issue:`5426`, :pull:`5561`)
 
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) added handling for realization
+   coordinates when saving pp files (:issue:`4747`, :pull:`5568`)
+
 
 💣 Incompatible Changes
 =======================
