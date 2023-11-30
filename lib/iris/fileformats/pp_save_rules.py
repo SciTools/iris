@@ -615,7 +615,7 @@ def _non_std_cross_section_rules(cube, pp):
 
 def _lbproc_rules(cube, pp):
     """
-    Rules for setting the time processing information of the PP field.
+    Rules for setting the processing code of the PP field.
 
     Note: `pp.lbproc` must be set to 0 before these rules are run.
 
@@ -845,7 +845,10 @@ def _vertical_rules(cube, pp):
 
 def _all_other_rules(cube, pp):
     """
-    Rules for setting the field code and ensemble member number of the PP field.
+    Fields currently managed by these rules:
+
+    * lbfc (field code)
+    * lbrsvd[3] (ensemble member number)
 
     Args:
         cube: the cube being saved as a series of PP fields.
