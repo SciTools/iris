@@ -42,4 +42,4 @@ they may serve as a useful reference for future exploration.
    :maxdepth: 3
    :caption: Further Topics
 
-   ..further_topics/index
+   further_topics/index
