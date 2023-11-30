@@ -36,10 +36,4 @@ they may serve as a useful reference for future exploration.
    citation
    code_maintenance
    glossary
-
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Further Topics
-
    ../further_topics/index
