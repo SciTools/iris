@@ -49,7 +49,7 @@ def test_realization():
     real_coord = DimCoord(42, standard_name="realization", units=1)
     cube.add_aux_coord(real_coord)
     with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-        pp_field.lbrsvd = list(range(6))
+        pp_field.lbrsvd = list(range(4))
         verify(cube, pp_field)
         member_number = pp_field.lbrsvd[3]
 
