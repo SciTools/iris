@@ -1,5 +1,3 @@
-.. _um_files_loading:
-
 .. testsetup::
 
     import numpy as np
@@ -12,6 +10,8 @@
 
     np.set_printoptions(precision=8)
 
+
+.. _um_files_loading:
 
 ===================================
 Iris Handling of PP and Fieldsfiles
