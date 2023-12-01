@@ -52,9 +52,9 @@ give them meaning.
 The **metadata** used to define an Iris `CF Conventions`_ class is composed of
 individual **metadata members**, almost all of which reference specific
 `CF Conventions`_ terms. The individual metadata members used to define each of
-the Iris `CF Conventions`_ classes are shown in :numref:`metadata members table`.
+the Iris `CF Conventions`_ classes are shown in :ref:`metadata members table`.
 
-As :numref:`metadata members table` highlights, **specific** metadata is used to
+As :ref:`metadata members table` highlights, **specific** metadata is used to
 define and represent each Iris `CF Conventions`_ class. This means that metadata
 alone, can be used to easily **identify**, **compare** and **differentiate**
 between individual class instances.
@@ -111,7 +111,7 @@ Common Metadata API
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
 
 As of Iris ``3.0.0``, a unified treatment of metadata has been applied
-across each Iris class (:numref:`metadata members table`) to allow users
+across each Iris class (:ref:`metadata members table`) to allow users
 to easily manage and manipulate their metadata in a consistent way.
 
 This is achieved through the ``metadata`` property, which allows you to
@@ -158,7 +158,7 @@ Or use the ``metadata`` property again, but this time on the ``forecast_period``
     CoordMetadata(standard_name='forecast_period', long_name=None, var_name='forecast_period', units=Unit('hours'), attributes={}, coord_system=None, climatological=False)
 
 Note that, the ``metadata`` property is available on each of the Iris `CF Conventions`_
-class containers referenced in :numref:`metadata members table`, and thus provides
+class containers referenced in :ref:`metadata members table`, and thus provides
 a **common** and **consistent** approach to managing your metadata, which we'll
 now explore a little more fully.
 
@@ -168,7 +168,7 @@ Metadata Classes
 
 The ``metadata`` property will return an appropriate `namedtuple`_ metadata class
 for each Iris `CF Conventions`_ class container. The metadata class returned by
-each container class is shown in :numref:`metadata classes table` below,
+each container class is shown in :ref:`metadata classes table` below,
 
 .. _metadata classes table:
 .. table:: - Iris namedtuple metadata classes
@@ -187,7 +187,7 @@ each container class is shown in :numref:`metadata classes table` below,
    ========================================== ========================================================
 
 Akin to the behaviour of a `namedtuple`_, the metadata classes in
-:numref:`metadata classes table` create **tuple-like** instances i.e., they provide a
+:ref:`metadata classes table` create **tuple-like** instances i.e., they provide a
 **snapshot** of the associated metadata member **values**, which are **not
 settable**, but they **may be mutable** depending on the data-type of the member.
 For example, given the following ``metadata`` of a :class:`~iris.coords.DimCoord`,
@@ -243,13 +243,13 @@ with a **snapshot** of the container class metadata values at that point in time
 
 Skip ahead to :ref:`metadata assignment <metadata assignment>` for a fuller
 discussion on options how to **set** and **get** metadata on the instance of
-an Iris `CF Conventions`_ container class (:numref:`metadata classes table`).
+an Iris `CF Conventions`_ container class (:ref:`metadata classes table`).
 
 
 Metadata Class Behaviour
 ------------------------
 
-As mentioned previously, the metadata classes in :numref:`metadata classes table`
+As mentioned previously, the metadata classes in :ref:`metadata classes table`
 inherit the behaviour of a `namedtuple`_, and so act and feel like a `namedtuple`_,
 just as you might expect. For example, given the following ``metadata``,
 
@@ -326,7 +326,7 @@ Richer Metadata Behaviour
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
     longitude = cube.coord("longitude")
 
-The metadata classes from :numref:`metadata classes table` support additional
+The metadata classes from :ref:`metadata classes table` support additional
 behaviour above and beyond that of the  standard Python `namedtuple`_, which
 allows you to easily **compare**, **combine**, **convert** and understand the
 **difference** between your ``metadata`` instances.
@@ -340,7 +340,7 @@ Metadata Equality
 The metadata classes support both **equality** (``__eq__``) and **inequality**
 (``__ne__``), but no other `rich comparison`_ operators are implemented.
 This is simply because there is no obvious ordering to any collective of metadata
-members, as defined in :numref:`metadata members table`.
+members, as defined in :ref:`metadata members table`.
 
 For example, given the following :class:`~iris.coords.DimCoord`,
 
@@ -455,7 +455,7 @@ be ``False``,
 
 The reason different metadata classes cannot be compared is simply because each
 metadata class contains **different** members, as shown in
-:numref:`metadata members table`. However, there is an exception to the rule...
+:ref:`metadata members table`. However, there is an exception to the rule...
 
 
 .. _exception rule:
@@ -834,7 +834,7 @@ using ``from_metadata``,
     >>> print(newmeta)
     DimCoordMetadata(standard_name=air_temperature, var_name=air_temperature, units=K, attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'})
 
-By examining :numref:`metadata members table`, we can see that the
+By examining :ref:`metadata members table`, we can see that the
 :class:`~iris.cube.Cube` and :class:`~iris.coords.DimCoord` container
 classes share the following common metadata members,
 
@@ -880,7 +880,7 @@ Metadata Assignment
    latitude = cube.coord("latitude")
 
 The ``metadata`` property available on each Iris `CF Conventions`_ container
-class (:numref:`metadata classes table`) can not only be used **to get**
+class (:ref:`metadata classes table`) can not only be used **to get**
 the metadata of an instance, but also **to set** the metadata on an instance.
 
 For example, given the following :class:`~iris.common.metadata.DimCoordMetadata` of the
