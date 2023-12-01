@@ -76,6 +76,9 @@ This document explains the changes made to Iris for this release
 #. `@acchamber`_ and `@rcomer`_ modified 2D plots so that time axes and their
    ticks have more sensible default labels.  (:issue:`5426`, :pull:`5561`)
 
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) added handling for realization
+   coordinates when saving pp files (:issue:`4747`, :pull:`5568`)
+
 
 💣 Incompatible Changes
 =======================
@@ -154,6 +157,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ corrected various comment spelling mistakes detected by
    `codespell`_. (:pull:`5546`)
+
+#. `@rcomer`_ reduced the size of the conda environment used for testing.
+   (:pull:`5606`)
 
 
 .. comment

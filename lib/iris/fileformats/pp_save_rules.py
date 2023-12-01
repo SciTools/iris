@@ -614,7 +614,7 @@ def _non_std_cross_section_rules(cube, pp):
 
 def _lbproc_rules(cube, pp):
     """
-    Rules for setting the horizontal grid and pole location of the PP field.
+    Rules for setting the processing code of the PP field.
 
     Note: `pp.lbproc` must be set to 0 before these rules are run.
 
@@ -844,7 +844,10 @@ def _vertical_rules(cube, pp):
 
 def _all_other_rules(cube, pp):
     """
-    Rules for setting the horizontal grid and pole location of the PP field.
+    Fields currently managed by these rules:
+
+    * lbfc (field code)
+    * lbrsvd[3] (ensemble member number)
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -859,12 +862,17 @@ def _all_other_rules(cube, pp):
     if check_items in CF_TO_LBFC:
         pp.lbfc = CF_TO_LBFC[check_items]
 
-    # Set STASH code.
+    # Set field code.
     if (
         "STASH" in cube.attributes
         and str(cube.attributes["STASH"]) in STASH_TRANS
     ):
         pp.lbfc = STASH_TRANS[str(cube.attributes["STASH"])].field_code
+
+    # Set ensemble member number.
+    real_coord = scalar_coord(cube, "realization")
+    if real_coord is not None:
+        pp.lbrsvd[3] = real_coord.points[0]
 
     return pp
 
