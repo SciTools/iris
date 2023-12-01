@@ -6,18 +6,15 @@ Iris Code
 ---------
 
 All Iris source code, unless explicitly stated, is ``Copyright Iris
-contributors`` and is licensed under the **GNU Lesser General Public
-License** as published by the Free Software Foundation, either version 3 of
-the License, or (at your option) any later version.
+contributors`` and is licensed under the **BSD-3 License**.
 You should find all source files with the following header:
 
 .. admonition:: Code License
 
     Copyright Iris contributors
 
-    This file is part of Iris and is released under the LGPL license.
-    See COPYING and COPYING.LESSER in the root of the repository for full
-    licensing details.
+    This file is part of Iris and is released under the BSD license.
+    See LICENSE in the root of the repository for full licensing details.
 
 
 Iris Documentation and Examples

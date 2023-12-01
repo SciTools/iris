@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.Coord` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -15,6 +14,7 @@ import warnings
 
 import dask.array as da
 import numpy as np
+import pytest
 
 import iris
 from iris.coords import AuxCoord, Coord, DimCoord
@@ -1148,6 +1148,39 @@ class TestClimatology(tests.IrisTest):
         self.assertTrue(coord.climatological)
         coord.units = "K"
         self.assertFalse(coord.climatological)
+
+
+class TestIgnoreAxis:
+    def test_default(self, sample_coord):
+        assert sample_coord.ignore_axis is False
+
+    def test_set_true(self, sample_coord):
+        sample_coord.ignore_axis = True
+        assert sample_coord.ignore_axis is True
+
+    def test_set_random_value(self, sample_coord):
+        with pytest.raises(
+            ValueError,
+            match=r"'ignore_axis' can only be set to 'True' or 'False'",
+        ):
+            sample_coord.ignore_axis = "foo"
+
+    @pytest.mark.parametrize(
+        "ignore_axis, copy_or_from, result",
+        [
+            (True, "copy", True),
+            (True, "from_coord", True),
+            (False, "copy", False),
+            (False, "from_coord", False),
+        ],
+    )
+    def test_copy_coord(self, ignore_axis, copy_or_from, result, sample_coord):
+        sample_coord.ignore_axis = ignore_axis
+        if copy_or_from == "copy":
+            new_coord = sample_coord.copy()
+        elif copy_or_from == "from_coord":
+            new_coord = sample_coord.from_coord(sample_coord)
+        assert new_coord.ignore_axis is result
 
 
 class Test___init____abstractmethod(tests.IrisTest):

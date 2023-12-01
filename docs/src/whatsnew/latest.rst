@@ -24,11 +24,21 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
 
 
 ✨ Features
 ===========
+#. `@pp-mo`_, `@lbdreyer`_ and `@trexfeathers`_ improved
+   :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` handling to
+   better preserve the distinction between dataset-level and variable-level
+   attributes, allowing file-Cube-file round-tripping of NetCDF attributes. See
+   :class:`~iris.cube.CubeAttrsDict`, NetCDF
+   :func:`~iris.fileformats.netcdf.saver.save` and :data:`~iris.Future` for more.
+   (:pull:`5152`, `split attributes project`_)
+
+#. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
+   lazy data. (:pull:`5307`)
 
 #. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
    :class:`UserWarning`\s for richer filtering. The full index of
@@ -37,6 +47,21 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ added the :class:`~iris.coord_systems.ObliqueMercator`
    and :class:`~iris.coord_systems.RotatedMercator` coordinate systems,
    complete with NetCDF loading and saving. (:pull:`5548`)
+
+#. `@trexfeathers`_ added the ``use_year_at_season_start`` parameter to
+   :func:`iris.coord_categorisation.add_season_year`. When
+   ``use_year_at_season_start==True``: seasons spanning the year boundary (e.g.
+   Winter - December to February) will be assigned to the preceding year (e.g.
+   the year of December) instead of the following year (the default behaviour).
+   (:pull:`5573`)
+
+#. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
+   intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
+   coordinate. (:pull:`5551`)
+
+#. `@pp-mo`_, `@trexfeathers`_ and `@ESadek-MO`_ added more control over
+   NetCDF chunking with the use of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`
+   context manager. (:pull:`5588`)
 
 
 🐛 Bugs Fixed
@@ -48,6 +73,12 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ has updated :mod:`iris.tests.graphics.idiff` to stop duplicated file names
    preventing acceptance. (:issue:`5098`, :pull:`5482`)
 
+#. `@acchamber`_ and `@rcomer`_ modified 2D plots so that time axes and their
+   ticks have more sensible default labels.  (:issue:`5426`, :pull:`5561`)
+
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) added handling for realization
+   coordinates when saving pp files (:issue:`4747`, :pull:`5568`)
+
 
 💣 Incompatible Changes
 =======================
@@ -58,7 +89,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@stephenworsley`_ improved the speed of :class:`~iris.analysis.AreaWeighted`
+   regridding. (:pull:`5543`)
 
 
 🔥 Deprecations
@@ -83,6 +115,19 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ updated the
    :ref:`sphx_glr_generated_gallery_meteorology_plot_COP_maps.py` to show how
    a colourbar may steal space from multiple axes. (:pull:`5537`)
+
+#. `@tkknight`_ improved the top navgation bar alignment and amount of
+   links shown.  Also improved how the warning banner is implemented.
+   (:pull:`5505` and :pull:`5508`)
+
+#. `@tkknight`_  removed broken git links. (:pull:`5569`)
+
+#. `@ESadek-MO`_ added a phrasebook for synonymous terms used in similar
+   packages. (:pull:`5564`)
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created a technical paper for NetCDF
+   saving and loading, :ref:`netcdf_io` with a section on chunking, and placeholders
+   for further topics. (:pull:`5588`)
 
 
 💼 Internal
@@ -113,6 +158,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ corrected various comment spelling mistakes detected by
    `codespell`_. (:pull:`5546`)
 
+#. `@rcomer`_ reduced the size of the conda environment used for testing.
+   (:pull:`5606`)
+
 #. `@trexfeathers`_ and `@pp-mo`_ improved how the conda-forge feedstock
    release candidate branch is managed, via:
    :doc:`../developers_guide/release_do_nothing`.
@@ -133,4 +181,4 @@ This document explains the changes made to Iris for this release
 
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
 .. _codespell: https://github.com/codespell-project/codespell
-
+.. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info
