@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """
-Module to support the loading and saving of NetCDF files, also using the CF conventions
-for metadata interpretation.
+Support loading and saving NetCDF files using CF conventions for metadata interpretation.
 
 See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
 and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.

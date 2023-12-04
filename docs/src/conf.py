@@ -15,7 +15,6 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 # ----------------------------------------------------------------------------
 
 import datetime
@@ -195,7 +194,7 @@ copybutton_line_continuation_character = "\\"
 todo_include_todos = True
 
 # api generation configuration
-autodoc_member_order = "groupwise"
+autodoc_member_order = "alphabetical"
 autodoc_default_flags = ["show-inheritance"]
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
