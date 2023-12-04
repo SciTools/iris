@@ -41,7 +41,7 @@ def run_callback(callback, cube, field, filename):
 
     Parameters
     ----------
-    callback
+    callback :
         A function to add metadata from the originating field and/or URI which
         obeys the following rules:
 
@@ -348,9 +348,9 @@ def add_saver(file_extension, new_saver):
 
     Parameters
     ----------
-    file_extension: str
+    file_extension : str
         A string such as "pp" or "my_format".
-    new_saver:function
+    new_saver : function
         A function of the form ``my_saver(cube, target)``.
 
     See Also
@@ -375,7 +375,7 @@ def find_saver(filespec):
 
     Parameters
     ----------
-    filespec: str
+    filespec : str
         A string such as "my_file.pp" or "PP".
 
     Returns
@@ -419,11 +419,11 @@ def save(source, target, saver=None, **kwargs):
 
     Parameters
     ----------
-    source: :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
-    target: str or pathlib.PurePath or io.TextIOWrapper
+    source : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
+    target : str or pathlib.PurePath or io.TextIOWrapper
         When given a filename or file, Iris can determine the
         file format.
-    saver: str or function, optional
+    saver : str or function, optional
         Specifies the file format to save.
         If omitted, Iris will attempt to determine the format.
         If a string, this is the recognised filename extension
@@ -434,7 +434,7 @@ def save(source, target, saver=None, **kwargs):
         is assumed that a saver will accept an ``append`` keyword
         if its file format can handle multiple cubes. See also
         :func:`iris.io.add_saver`.
-    **kwargs: dict, optional
+    **kwargs : dict, optional
         All other keywords are passed through to the saver function; see the
         relevant saver documentation for more information on keyword arguments.
 

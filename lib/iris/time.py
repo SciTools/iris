@@ -60,19 +60,19 @@ class PartialDateTime:
 
         Parameters
         ----------
-        year: int
+        year : int
             The year number as an integer, or None.
-        month: int
+        month : int
             The month number as an integer, or None.
-        day: int
+        day : int
             The day number as an integer, or None.
-        hour: int
+        hour : int
             The hour number as an integer, or None.
-        minute: int
+        minute : int
             The minute number as an integer, or None.
-        second: int
+        second : int
             The second number as an integer, or None.
-        microsecond: int
+        microsecond : int
             The microsecond number as an integer, or None.
 
         Examples

@@ -199,7 +199,7 @@ class NetCDF:
 
         Parameters
         ----------
-        conventions_override: bool, optional
+        conventions_override : bool, optional
             Define whether the CF Conventions version (e.g. `CF-1.6`) set when
             saving a cube to a NetCDF file should be defined by
             Iris (the default) or the cube being saved.  If `False`

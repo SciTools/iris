@@ -179,15 +179,15 @@ class FormatSpecification:
 
         Parameters
         ----------
-        format_name: str
+        format_name : str
             string name of fileformat being described
-        file_element
+        file_element :
             FileElement instance of the element which identifies this
             FormatSpecification
-        file_element_value
+        file_element_value :
             The value that the file_element should take if a file matches this
             FormatSpecification
-        handler: optional
+        handler : optional
             function which will be called when the specification has been
             identified and is required to handler a format.  If None, then the
             file can still be identified but no handling can be done.
@@ -287,7 +287,7 @@ class FileElement:
 
         Parameters
         ----------
-        requires_fh: optional
+        requires_fh : optional
             Whether this FileElement needs a file buffer.
 
         """

@@ -575,7 +575,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
         One or more NetCDF filenames/OPeNDAP URLs to load from.
         OR open datasets.
 
-    callback: function, optional
+    callback : function, optional
         Function which can be passed on to :func:`iris.io.run_callback`.
 
     Returns
