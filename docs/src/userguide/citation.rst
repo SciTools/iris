@@ -20,7 +20,7 @@ For example::
  year = {2010 - 2023},
  address = {Exeter, Devon},
  url = {https://github.com/SciTools/iris},
- doi = {https://zenodo.org/record/8305232}
+ doi = {10.5281/zenodo.8305232}
  }
 
 
