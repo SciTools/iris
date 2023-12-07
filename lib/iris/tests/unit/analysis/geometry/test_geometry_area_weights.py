@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Unit tests for the :func:`iris.analysis.geometry.geometry_area_weights`
 function.
@@ -21,6 +20,7 @@ import shapely.geometry
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisGeometryExceedWarning
 import iris.tests.stock as stock
 
 
@@ -148,7 +148,9 @@ class Test(tests.IrisTest):
                 "The geometry exceeds the "
                 "cube's y dimension at the upper end.",
             )
-            self.assertTrue(issubclass(w[-1].category, UserWarning))
+            self.assertTrue(
+                issubclass(w[-1].category, IrisGeometryExceedWarning)
+            )
         target = np.array(
             [
                 [0, top_cell_half, top_cell_half, 0],

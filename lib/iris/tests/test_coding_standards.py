@@ -1,13 +1,13 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+import ast
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
@@ -22,9 +22,8 @@ from iris.tests import system_test
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details."""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details."""
 
 # Guess iris repo directory of Iris - realpath is used to mitigate against
 # Python finding the iris package via a symlink.
@@ -131,6 +130,66 @@ def test_python_versions():
 
     for path, search in text_searches:
         assert search in path.read_text()
+
+
+def test_categorised_warnings():
+    """
+    To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
+
+    No obvious category? Use the parent:
+    :class:`iris.exceptions.IrisUserWarning`.
+
+    Warning matches multiple categories? Create a one-off combo class. For
+    example:
+
+    .. code-block:: python
+
+        class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
+            \"""
+            One-off combination of warning classes - enhances user filtering.
+            \"""
+            pass
+
+    """
+    warns_without_category = []
+    warns_with_user_warning = []
+    tmp_list = []
+
+    for file_path in Path(IRIS_DIR).rglob("*.py"):
+        file_text = file_path.read_text()
+        parsed = ast.parse(source=file_text)
+        calls = filter(lambda node: hasattr(node, "func"), ast.walk(parsed))
+        warn_calls = filter(
+            lambda c: getattr(c.func, "attr", None) == "warn", calls
+        )
+
+        warn_call: ast.Call
+        for warn_call in warn_calls:
+            warn_ref = f"{file_path}:{warn_call.lineno}"
+            tmp_list.append(warn_ref)
+
+            category_kwargs = filter(
+                lambda k: k.arg == "category", warn_call.keywords
+            )
+            category_kwarg: ast.keyword = next(category_kwargs, None)
+
+            if category_kwarg is None:
+                warns_without_category.append(warn_ref)
+            # Work with Attribute or Name instances.
+            elif (
+                getattr(category_kwarg.value, "attr", None)
+                or getattr(category_kwarg.value, "id", None)
+            ) == "UserWarning":
+                warns_with_user_warning.append(warn_ref)
+
+    # This avoids UserWarnings being raised by unwritten default behaviour.
+    assert (
+        warns_without_category == []
+    ), "All warnings raised by Iris must be raised with the category kwarg."
+
+    assert (
+        warns_with_user_warning == []
+    ), "No warnings raised by Iris can be the base UserWarning class."
 
 
 class TestLicenseHeaders(tests.IrisTest):

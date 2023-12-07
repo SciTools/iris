@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Test the cube concatenate mechanism.
 
@@ -20,6 +19,7 @@ import pytest
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
+from iris.exceptions import IrisUserWarning
 import iris.tests.stock as stock
 
 
@@ -340,7 +340,8 @@ class TestNoConcat(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 1))
         cubes.append(_make_cube((1, 3), y, 2))
         with pytest.warns(
-            UserWarning, match="Found cubes with overlap on concatenate axis"
+            IrisUserWarning,
+            match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
         self.assertEqual(len(result), 2)
@@ -351,7 +352,8 @@ class TestNoConcat(tests.IrisTest):
         cubes.append(_make_cube(x, (3, 0, -1), 1))
         cubes.append(_make_cube(x, (1, -1, -1), 2))
         with pytest.warns(
-            UserWarning, match="Found cubes with overlap on concatenate axis"
+            IrisUserWarning,
+            match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
         self.assertEqual(len(result), 2)
@@ -366,7 +368,8 @@ class TestNoConcat(tests.IrisTest):
         )
         cubes.append(cube)
         with pytest.warns(
-            UserWarning, match="Found cubes with overlap on concatenate axis"
+            IrisUserWarning,
+            match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
         self.assertEqual(len(result), 2)
@@ -381,7 +384,8 @@ class TestNoConcat(tests.IrisTest):
         )
         cubes.append(cube)
         with pytest.warns(
-            UserWarning, match="Found cubes with overlap on concatenate axis"
+            IrisUserWarning,
+            match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
         self.assertEqual(len(result), 2)

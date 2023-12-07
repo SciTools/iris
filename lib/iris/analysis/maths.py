@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Basic mathematical and statistical operations.
 
@@ -988,7 +987,8 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
     if other.has_bounds():
         warnings.warn(
             "Using {!r} with a bounded coordinate is not well "
-            "defined; ignoring bounds.".format(operation_name)
+            "defined; ignoring bounds.".format(operation_name),
+            category=iris.exceptions.IrisIgnoringBoundsWarning,
         )
 
     points = other.points

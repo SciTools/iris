@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.netcdf._load_aux_factory` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -16,6 +15,7 @@ import numpy as np
 
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisFactoryCoordNotFoundWarning
 from iris.fileformats.netcdf.loader import _load_aux_factory
 
 
@@ -165,7 +165,8 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         with mock.patch("warnings.warn") as warn:
             _load_aux_factory(self.engine, self.cube)
         warn.assert_called_once_with(
-            "Unable to find coordinate for variable " "'ap'"
+            "Unable to find coordinate for variable " "'ap'",
+            category=IrisFactoryCoordNotFoundWarning,
         )
         self._check_no_delta()
 

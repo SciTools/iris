@@ -50,12 +50,12 @@ jobs:
             session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.19"
+      IRIS_TEST_DATA_VERSION: "2.22"
       ENV_NAME: "ci-tests"
 
     steps:
       - name: "checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "environment configure"
         env:
@@ -80,7 +80,7 @@ jobs:
           env_name: ${{ env.ENV_NAME }}
 
       - name: "conda install"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-version: latest
           channels: conda-forge,defaults

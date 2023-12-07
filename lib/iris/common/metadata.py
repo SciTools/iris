@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Provides the infrastructure to support the common metadata API.
 
@@ -21,6 +20,7 @@ import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
 from ..config import get_logger
+from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
 from .lenient import _qualname as qualname
@@ -242,7 +242,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         field_strings = []
         for field in self._fields:
             value = getattr(self, field)
-            if value is None or isinstance(value, (str, dict)) and not value:
+            if (
+                value is None
+                or isinstance(value, (str, Mapping))
+                and not value
+            ):
                 continue
             field_strings.append(f"{field}={value}")
 
@@ -1250,6 +1254,46 @@ class CubeMetadata(BaseMetadata):
             raise ValueError(emsg.format(self))
 
         return result
+
+    #
+    # Override each of the attribute-dict operations in BaseMetadata, to enable
+    # them to deal with split-attribute dictionaries correctly.
+    # There are 6 of these, for (equals/combine/difference) * (lenient/strict).
+    # Each is overridden with a *wrapped* version of the parent method, using the
+    # "@adjust_for_split_attribute_dictionaries" decorator, which converts any
+    # split-attribute dictionaries in the inputs to ordinary dicts, and likewise
+    # re-converts any dictionaries in the return value.
+    #
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _combine_lenient_attributes(left, right):
+        return BaseMetadata._combine_lenient_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _combine_strict_attributes(left, right):
+        return BaseMetadata._combine_strict_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _compare_lenient_attributes(left, right):
+        return BaseMetadata._compare_lenient_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _compare_strict_attributes(left, right):
+        return BaseMetadata._compare_strict_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _difference_lenient_attributes(left, right):
+        return BaseMetadata._difference_lenient_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _difference_strict_attributes(left, right):
+        return BaseMetadata._difference_strict_attributes(left, right)
 
 
 class DimCoordMetadata(CoordMetadata):

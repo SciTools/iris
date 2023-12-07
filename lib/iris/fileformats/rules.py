@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Generalised mechanisms for metadata translation and cube construction.
 
@@ -47,7 +46,8 @@ class ConcreteReferenceTarget:
                 src_cubes = src_cubes.merge(unique=False)
                 if len(src_cubes) > 1:
                     warnings.warn(
-                        "Multiple reference cubes for {}".format(self.name)
+                        "Multiple reference cubes for {}".format(self.name),
+                        category=iris.exceptions.IrisUserWarning,
                     )
             src_cube = src_cubes[-1]
 
@@ -329,7 +329,7 @@ def _make_cube(field, converter):
             cube.units = metadata.units
         except ValueError:
             msg = "Ignoring PP invalid units {!r}".format(metadata.units)
-            warnings.warn(msg)
+            warnings.warn(msg, category=iris.exceptions.IrisIgnoringWarning)
             cube.attributes["invalid_units"] = metadata.units
             cube.units = cf_units._UNKNOWN_UNIT_STRING
 
@@ -350,7 +350,10 @@ def _resolve_factory_references(
         except _ReferenceError as e:
             msg = "Unable to create instance of {factory}. " + str(e)
             factory_name = factory.factory_class.__name__
-            warnings.warn(msg.format(factory=factory_name))
+            warnings.warn(
+                msg.format(factory=factory_name),
+                category=iris.exceptions.IrisUserWarning,
+            )
         else:
             aux_factory = factory.factory_class(*args)
             cube.add_aux_factory(aux_factory)

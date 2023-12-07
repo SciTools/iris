@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Unit tests for :class:`iris.analysis._area_weighted.AreaWeightedRegridder`.
 
@@ -51,7 +50,7 @@ class Test(tests.IrisTest):
         _regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_grid, target_grid
         )
-        self.assertEqual(len(_regrid_info), 10)
+        self.assertEqual(len(_regrid_info), 9)
         with mock.patch(
             "iris.analysis._area_weighted."
             "_regrid_area_weighted_rectilinear_src_and_grid__prepare",

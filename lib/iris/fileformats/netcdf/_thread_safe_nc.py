@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Module to ensure all calls to the netCDF4 library are thread-safe.
 
@@ -25,7 +24,10 @@ default_fillvals = netCDF4.default_fillvals
 
 class _ThreadSafeWrapper(ABC):
     """
-    Contains a netCDF4 class instance, ensuring wrapping all API calls within _GLOBAL_NETCDF4_LOCK.
+    Contains a netCDF4 class instance, ensuring wrapping all API calls.
+
+    Contains a netCDF4 class instance, ensuring wrapping all API calls within
+    _GLOBAL_NETCDF4_LOCK.
 
     Designed to 'gate keep' all the instance's API calls, but allowing the
     same API as if working directly with the instance itself.
@@ -118,7 +120,7 @@ class VariableWrapper(_ThreadSafeWrapper):
 
     def setncattr(self, *args, **kwargs) -> None:
         """
-        Calls netCDF4.Variable.setncattr within _GLOBAL_NETCDF4_LOCK.
+        Call netCDF4.Variable.setncattr within _GLOBAL_NETCDF4_LOCK.
 
         Only defined explicitly in order to get some mocks to work.
         """
@@ -142,11 +144,12 @@ class VariableWrapper(_ThreadSafeWrapper):
 
     def get_dims(self, *args, **kwargs) -> typing.Tuple[DimensionWrapper]:
         """
-        Calls netCDF4.Variable.get_dims() within _GLOBAL_NETCDF4_LOCK, returning DimensionWrappers.
+        Call netCDF4.Variable.get_dims() within _GLOBAL_NETCDF4_LOCK.
 
-        The original returned netCDF4.Dimensions are simply replaced with their
-        respective DimensionWrappers, ensuring that downstream calls are
-        also performed within _GLOBAL_NETCDF4_LOCK.
+        Call netCDF4.Variable.get_dims() within _GLOBAL_NETCDF4_LOCK,
+        returning DimensionWrappers.  The original returned netCDF4.Dimensions
+        are simply replaced with their respective DimensionWrappers, ensuring
+        that downstream calls are also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
             dimensions_ = list(
@@ -172,11 +175,12 @@ class GroupWrapper(_ThreadSafeWrapper):
     @property
     def dimensions(self) -> typing.Dict[str, DimensionWrapper]:
         """
-        Calls dimensions of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning DimensionWrappers.
+        Calls dimensions of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
 
-        The original returned netCDF4.Dimensions are simply replaced with their
-        respective DimensionWrappers, ensuring that downstream calls are
-        also performed within _GLOBAL_NETCDF4_LOCK.
+        Calls dimensions of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK,
+        returning DimensionWrappers.  The original returned netCDF4.Dimensions
+        are simply replaced with their respective DimensionWrappers, ensuring
+        that downstream calls are also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
             dimensions_ = self._contained_instance.dimensions
@@ -187,11 +191,13 @@ class GroupWrapper(_ThreadSafeWrapper):
 
     def createDimension(self, *args, **kwargs) -> DimensionWrapper:
         """
-        Calls createDimension() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning DimensionWrapper.
+        Call createDimension() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
 
-        The original returned netCDF4.Dimension is simply replaced with its
-        respective DimensionWrapper, ensuring that downstream calls are
-        also performed within _GLOBAL_NETCDF4_LOCK.
+        Call createDimension() from netCDF4.Group/Dataset within
+        _GLOBAL_NETCDF4_LOCK, returning DimensionWrapper. The original returned
+        netCDF4.Dimension is simply replaced with its respective
+        DimensionWrapper, ensuring that downstream calls are also performed
+        within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_dimension = self._contained_instance.createDimension(
@@ -205,11 +211,12 @@ class GroupWrapper(_ThreadSafeWrapper):
     @property
     def variables(self) -> typing.Dict[str, VariableWrapper]:
         """
-        Calls variables of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning VariableWrappers.
+        Calls variables of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
 
-        The original returned netCDF4.Variables are simply replaced with their
-        respective VariableWrappers, ensuring that downstream calls are
-        also performed within _GLOBAL_NETCDF4_LOCK.
+        Calls variables of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK,
+        returning VariableWrappers.  The original returned netCDF4.Variables
+        are simply replaced with their respective VariableWrappers, ensuring
+        that downstream calls are also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
             variables_ = self._contained_instance.variables
@@ -219,11 +226,13 @@ class GroupWrapper(_ThreadSafeWrapper):
 
     def createVariable(self, *args, **kwargs) -> VariableWrapper:
         """
-        Calls createVariable() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning VariableWrapper.
+        Call createVariable() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
 
-        The original returned netCDF4.Variable is simply replaced with its
-        respective VariableWrapper, ensuring that downstream calls are
-        also performed within _GLOBAL_NETCDF4_LOCK.
+        Call createVariable() from netCDF4.Group/Dataset within
+        _GLOBAL_NETCDF4_LOCK, returning VariableWrapper.  The original
+        returned netCDF4.Variable is simply replaced with its respective
+        VariableWrapper, ensuring that downstream calls are also performed
+        within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_variable = self._contained_instance.createVariable(
@@ -235,7 +244,10 @@ class GroupWrapper(_ThreadSafeWrapper):
         self, *args, **kwargs
     ) -> typing.List[VariableWrapper]:
         """
-        Calls get_variables_by_attributes() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning VariableWrappers.
+        Call get_variables_by_attributes() from netCDF4.Group/Dataset.
+
+        Call get_variables_by_attributes() from netCDF4.Group/Dataset
+        within_GLOBAL_NETCDF4_LOCK, returning VariableWrappers.
 
         The original returned netCDF4.Variables are simply replaced with their
         respective VariableWrappers, ensuring that downstream calls are
@@ -255,7 +267,10 @@ class GroupWrapper(_ThreadSafeWrapper):
     @property
     def groups(self):
         """
-        Calls groups of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning GroupWrappers.
+        Calls groups of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
+
+        Calls groups of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK,
+        returning GroupWrappers.
 
         The original returned netCDF4.Groups are simply replaced with their
         respective GroupWrappers, ensuring that downstream calls are
@@ -268,7 +283,10 @@ class GroupWrapper(_ThreadSafeWrapper):
     @property
     def parent(self):
         """
-        Calls parent of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning a GroupWrapper.
+        Calls parent of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
+
+        Calls parent of netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK,
+        returning a GroupWrapper.
 
         The original returned netCDF4.Group is simply replaced with its
         respective GroupWrapper, ensuring that downstream calls are
@@ -280,11 +298,13 @@ class GroupWrapper(_ThreadSafeWrapper):
 
     def createGroup(self, *args, **kwargs):
         """
-        Calls createGroup() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK, returning GroupWrapper.
+        Call createGroup() from netCDF4.Group/Dataset.
 
-        The original returned netCDF4.Group is simply replaced with its
-        respective GroupWrapper, ensuring that downstream calls are
-        also performed within _GLOBAL_NETCDF4_LOCK.
+        Call createGroup() from netCDF4.Group/Dataset within
+        _GLOBAL_NETCDF4_LOCK, returning GroupWrapper.  The original returned
+        netCDF4.Group is simply replaced with its respective GroupWrapper,
+        ensuring that downstream calls are also performed within
+        _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_group = self._contained_instance.createGroup(*args, **kwargs)
@@ -305,11 +325,12 @@ class DatasetWrapper(GroupWrapper):
     @classmethod
     def fromcdl(cls, *args, **kwargs):
         """
-        Calls netCDF4.Dataset.fromcdl() within _GLOBAL_NETCDF4_LOCK, returning a DatasetWrapper.
+        Call netCDF4.Dataset.fromcdl() within _GLOBAL_NETCDF4_LOCK.
 
-        The original returned netCDF4.Dataset is simply replaced with its
-        respective DatasetWrapper, ensuring that downstream calls are
-        also performed within _GLOBAL_NETCDF4_LOCK.
+        Call netCDF4.Dataset.fromcdl() within _GLOBAL_NETCDF4_LOCK,
+        returning a DatasetWrapper.  The original returned netCDF4.Dataset is
+        simply replaced with its respective DatasetWrapper, ensuring that
+        downstream calls are also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
             instance = cls.CONTAINED_CLASS.fromcdl(*args, **kwargs)
@@ -330,12 +351,13 @@ class NetCDFDataProxy:
 
     @property
     def ndim(self):
+        # noqa: D102
         return len(self.shape)
 
     def __getitem__(self, keys):
         # Using a DatasetWrapper causes problems with invalid ID's and the
-        #  netCDF4 library, presumably because __getitem__ gets called so many
-        #  times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
+        # netCDF4 library, presumably because __getitem__ gets called so many
+        # times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
         with _GLOBAL_NETCDF4_LOCK:
             dataset = netCDF4.Dataset(self.path)
             try:
@@ -364,11 +386,14 @@ class NetCDFDataProxy:
 
 class NetCDFWriteProxy:
     """
-    The "opposite" of a NetCDFDataProxy : An object mimicking the data access of a
-    netCDF4.Variable, but where the data is to be ***written to***.
+    An object mimicking the data access of a netCDF4.Variable.
 
-    It encapsulates the netcdf file and variable which are actually to be written to.
-    This opens the file each time, to enable writing the data chunk, then closes it.
+    The "opposite" of a NetCDFDataProxy : An object mimicking the data access
+    of a netCDF4.Variable, but where the data is to be ***written to***.
+
+    It encapsulates the netcdf file and variable which are actually to be
+    written to.  This opens the file each time, to enable writing the data
+    chunk, then closes it.
     TODO: could be improved with a caching scheme, but this just about works.
     """
 

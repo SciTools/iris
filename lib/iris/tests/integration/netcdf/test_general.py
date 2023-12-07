@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving netcdf files."""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -25,7 +24,7 @@ import iris.coord_systems
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
 import iris.exceptions
-from iris.fileformats.netcdf import Saver, UnknownCellMethodWarning
+from iris.fileformats.netcdf import Saver
 
 # Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
@@ -141,7 +140,9 @@ class TestCellMethod_unknown(tests.IrisTest):
             warning_messages = [
                 warn
                 for warn in warning_messages
-                if isinstance(warn, UnknownCellMethodWarning)
+                if isinstance(
+                    warn, iris.exceptions.IrisUnknownCellMethodWarning
+                )
             ]
             self.assertEqual(len(warning_messages), 1)
             message = warning_messages[0].args[0]

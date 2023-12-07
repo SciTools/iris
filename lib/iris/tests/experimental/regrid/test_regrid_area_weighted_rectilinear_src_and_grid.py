@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Test area weighted regridding.
 
@@ -602,6 +601,20 @@ class TestAreaWeightedRegrid(tests.IrisTest):
 
     @tests.skip_data
     def test_non_circular_subset(self):
+        """
+        Test regridding behaviour when the source grid has circular latitude.
+
+        This tests the specific case when the longitude coordinate of the
+        source grid has the `circular` attribute as `False` but otherwise spans
+        the full 360 degrees.
+
+        Note: the previous behaviour was to always mask target cells when they
+        spanned the boundary of max/min longitude and `circular` was `False`,
+        however this has been changed so that such cells will only be masked
+        when there is a gap between max longitude and min longitude. In this
+        test these cells are expected to be unmasked and therefore the result
+        will be equal to the above test for circular longitudes.
+        """
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
         src.coord("longitude").guess_bounds()
@@ -621,7 +634,51 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
+        self.assertArrayShapeStats(res, (40, 7), 285.653960, 15.212710)
+
+    @tests.skip_data
+    def test__proper_non_circular_subset(self):
+        """
+        Test regridding behaviour when the source grid has circular latitude.
+
+        This tests the specific case when the longitude coordinate of the
+        source grid does not span the full 360 degrees. Target cells which span
+        the boundary of max/min longitude will contain a section which is out
+        of bounds from the source grid and are therefore expected to be masked.
+        """
+        src = iris.tests.stock.global_pp()
+        src.coord("latitude").guess_bounds()
+        src.coord("longitude").guess_bounds()
+        src_lon_bounds = src.coord("longitude").bounds.copy()
+        # Leave a small gap between the first and last longitude value.
+        src_lon_bounds[0, 0] += 0.001
+        src_lon = src.coord("longitude").copy(
+            points=src.coord("longitude").points, bounds=src_lon_bounds
+        )
+        src.remove_coord("longitude")
+        src.add_dim_coord(src_lon, 1)
+        dest_lat = src.coord("latitude")[0:40]
+        dest_lon = iris.coords.DimCoord(
+            [-15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0],
+            standard_name="longitude",
+            units="degrees",
+            coord_system=dest_lat.coord_system,
+        )
+        # Note target grid (in -180 to 180) src in 0 to 360
+        dest_lon.guess_bounds()
+        data = np.zeros((dest_lat.shape[0], dest_lon.shape[0]))
+        dest = iris.cube.Cube(data)
+        dest.add_dim_coord(dest_lat, 0)
+        dest.add_dim_coord(dest_lon, 1)
+
+        res = regrid_area_weighted(src, dest)
         self.assertArrayShapeStats(res, (40, 7), 285.550814, 15.190245)
+
+        # The target cells straddling the gap between min and max source
+        # longitude should be masked.
+        expected_mask = np.zeros(res.shape)
+        expected_mask[:, 3] = 1
+        assert np.array_equal(expected_mask, res.data.mask)
 
 
 if __name__ == "__main__":

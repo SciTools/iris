@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 All the pure-Python 'helper' functions which were previously included in the
 Pyke rules database 'fc_rules_cf.krb'.
@@ -23,6 +22,7 @@ import numpy.ma as ma
 import pyproj
 
 import iris
+from iris._deprecation import warn_deprecated
 import iris.aux_factory
 from iris.common.mixin import _get_valid_standard_name
 import iris.coord_systems
@@ -124,6 +124,8 @@ CF_GRID_MAPPING_STEREO = "stereographic"
 CF_GRID_MAPPING_TRANSVERSE = "transverse_mercator"
 CF_GRID_MAPPING_VERTICAL = "vertical_perspective"
 CF_GRID_MAPPING_GEOSTATIONARY = "geostationary"
+CF_GRID_MAPPING_OBLIQUE = "oblique_mercator"
+CF_GRID_MAPPING_ROTATED_MERCATOR = "rotated_mercator"
 
 #
 # CF Attribute Names.
@@ -154,6 +156,7 @@ CF_ATTR_GRID_LON_OF_CENT_MERIDIAN = "longitude_of_central_meridian"
 CF_ATTR_GRID_STANDARD_PARALLEL = "standard_parallel"
 CF_ATTR_GRID_PERSPECTIVE_HEIGHT = "perspective_point_height"
 CF_ATTR_GRID_SWEEP_ANGLE_AXIS = "sweep_angle_axis"
+CF_ATTR_GRID_AZIMUTH_CENT_LINE = "azimuth_of_central_line"
 CF_ATTR_POSITIVE = "positive"
 CF_ATTR_STD_NAME = "standard_name"
 CF_ATTR_LONG_NAME = "long_name"
@@ -219,6 +222,42 @@ _CM_KNOWN_METHODS = [
 ]
 
 
+class _WarnComboIgnoringLoad(
+    iris.exceptions.IrisIgnoringWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
+class _WarnComboDefaultingLoad(
+    iris.exceptions.IrisDefaultingWarning,
+    iris.exceptions.IrisLoadWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
+class _WarnComboDefaultingCfLoad(
+    iris.exceptions.IrisCfLoadWarning,
+    iris.exceptions.IrisDefaultingWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
+class _WarnComboIgnoringCfLoad(
+    iris.exceptions.IrisIgnoringWarning,
+    iris.exceptions.IrisCfLoadWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
 def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     """
     Split a CF cell_methods attribute string into a list of zero or more cell
@@ -256,7 +295,11 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
                     "Cell methods may be incorrectly parsed due to mismatched "
                     "brackets"
                 )
-                warnings.warn(msg, UserWarning, stacklevel=2)
+                warnings.warn(
+                    msg,
+                    category=iris.exceptions.IrisCfLoadWarning,
+                    stacklevel=2,
+                )
         if bracket_depth > 0 and ind in name_start_inds:
             name_start_inds.remove(ind)
 
@@ -275,14 +318,21 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
             msg = (
                 f"Failed to fully parse cell method string: {nc_cell_methods}"
             )
-            warnings.warn(msg, UserWarning, stacklevel=2)
+            warnings.warn(
+                msg, category=iris.exceptions.IrisCfLoadWarning, stacklevel=2
+            )
             continue
         nc_cell_methods_matches.append(nc_cell_method_match)
 
     return nc_cell_methods_matches
 
 
-class UnknownCellMethodWarning(Warning):
+class UnknownCellMethodWarning(iris.exceptions.IrisUnknownCellMethodWarning):
+    """
+    Backwards compatible form of :class:`iris.exceptions.IrisUnknownCellMethodWarning`.
+    """
+
+    # TODO: remove at the next major release.
     pass
 
 
@@ -320,7 +370,7 @@ def parse_cell_methods(nc_cell_methods):
                 msg = "NetCDF variable contains unknown cell method {!r}"
                 warnings.warn(
                     msg.format("{}".format(method_words[0])),
-                    UnknownCellMethodWarning,
+                    category=UnknownCellMethodWarning,
                 )
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
@@ -389,7 +439,6 @@ def parse_cell_methods(nc_cell_methods):
 ################################################################################
 def build_cube_metadata(engine):
     """Add the standard meta data to the cube."""
-
     cf_var = engine.cf_var
     cube = engine.cube
 
@@ -433,10 +482,13 @@ def build_cube_metadata(engine):
     # Set the cube global attributes.
     for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
         try:
-            cube.attributes[str(attr_name)] = attr_value
+            cube.attributes.globals[str(attr_name)] = attr_value
         except ValueError as e:
-            msg = "Skipping global attribute {!r}: {}"
-            warnings.warn(msg.format(attr_name, str(e)))
+            msg = "Skipping disallowed global attribute {!r}: {}"
+            warnings.warn(
+                msg.format(attr_name, str(e)),
+                category=_WarnComboIgnoringLoad,
+            )
 
 
 ################################################################################
@@ -479,7 +531,7 @@ def _get_ellipsoid(cf_grid_var):
             "applied. To apply the datum when loading, use the "
             "iris.FUTURE.datum_support flag."
         )
-        warnings.warn(wmsg, FutureWarning, stacklevel=14)
+        warnings.warn(wmsg, category=FutureWarning, stacklevel=14)
         datum = None
 
     if datum is not None:
@@ -512,7 +564,10 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
         cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LON, 0.0
     )
     if north_pole_latitude is None or north_pole_longitude is None:
-        warnings.warn("Rotated pole position is not fully specified")
+        warnings.warn(
+            "Rotated pole position is not fully specified",
+            category=iris.exceptions.IrisCfLoadWarning,
+        )
 
     north_pole_grid_lon = getattr(
         cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0
@@ -842,6 +897,58 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
 
 
 ################################################################################
+def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
+    """
+    Create an oblique mercator coordinate system from the CF-netCDF
+    grid mapping variable.
+
+    """
+    ellipsoid = _get_ellipsoid(cf_grid_var)
+
+    azimuth_of_central_line = getattr(
+        cf_grid_var, CF_ATTR_GRID_AZIMUTH_CENT_LINE, None
+    )
+    latitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    )
+    longitude_of_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    )
+    scale_factor_at_projection_origin = getattr(
+        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    )
+    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+    kwargs = dict(
+        azimuth_of_central_line=azimuth_of_central_line,
+        latitude_of_projection_origin=latitude_of_projection_origin,
+        longitude_of_projection_origin=longitude_of_projection_origin,
+        scale_factor_at_projection_origin=scale_factor_at_projection_origin,
+        false_easting=false_easting,
+        false_northing=false_northing,
+        ellipsoid=ellipsoid,
+    )
+
+    # Handle the alternative form noted in CF: rotated mercator.
+    grid_mapping_name = getattr(cf_grid_var, CF_ATTR_GRID_MAPPING_NAME)
+    candidate_systems = dict(
+        oblique_mercator=iris.coord_systems.ObliqueMercator,
+        rotated_mercator=iris.coord_systems.RotatedMercator,
+    )
+    if grid_mapping_name == "rotated_mercator":
+        message = (
+            "Iris will stop loading the rotated_mercator grid mapping name in "
+            "a future release, in accordance with CF version 1.11 . Instead "
+            "please use oblique_mercator with azimuth_of_central_line = 90 ."
+        )
+        warn_deprecated(message)
+        del kwargs[CF_ATTR_GRID_AZIMUTH_CENT_LINE]
+
+    cs = candidate_systems[grid_mapping_name](**kwargs)
+    return cs
+
+
+################################################################################
 def get_attr_units(cf_var, attributes):
     attr_units = getattr(cf_var, CF_ATTR_UNITS, UNKNOWN_UNIT_STRING)
     if not attr_units:
@@ -859,7 +966,10 @@ def get_attr_units(cf_var, attributes):
         msg = "Ignoring netCDF variable {!r} invalid units {!r}".format(
             cf_var.cf_name, attr_units
         )
-        warnings.warn(msg)
+        warnings.warn(
+            msg,
+            category=_WarnComboIgnoringCfLoad,
+        )
         attributes["invalid_units"] = attr_units
         attr_units = UNKNOWN_UNIT_STRING
 
@@ -948,7 +1058,8 @@ def get_cf_bounds_var(cf_coord_var):
     if attr_bounds is not None and attr_climatology is not None:
         warnings.warn(
             "Ignoring climatology in favour of bounds attribute "
-            "on NetCDF variable {!r}.".format(cf_coord_var.cf_name)
+            "on NetCDF variable {!r}.".format(cf_coord_var.cf_name),
+            category=_WarnComboIgnoringCfLoad,
         )
 
     return cf_bounds_var, climatological
@@ -1007,7 +1118,10 @@ def build_dimension_coordinate(
     if ma.is_masked(points_data):
         points_data = ma.filled(points_data)
         msg = "Gracefully filling {!r} dimension coordinate masked points"
-        warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+        warnings.warn(
+            msg.format(str(cf_coord_var.cf_name)),
+            category=_WarnComboDefaultingLoad,
+        )
 
     # Get any coordinate bounds.
     cf_bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
@@ -1017,7 +1131,10 @@ def build_dimension_coordinate(
         if ma.is_masked(bounds_data):
             bounds_data = ma.filled(bounds_data)
             msg = "Gracefully filling {!r} dimension coordinate masked bounds"
-            warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+            warnings.warn(
+                msg.format(str(cf_coord_var.cf_name)),
+                category=_WarnComboDefaultingLoad,
+            )
         # Handle transposed bounds where the vertex dimension is not
         # the last one. Test based on shape to support different
         # dimension names.
@@ -1082,7 +1199,10 @@ def build_dimension_coordinate(
             "Failed to create {name!r} dimension coordinate: {error}\n"
             "Gracefully creating {name!r} auxiliary coordinate instead."
         )
-        warnings.warn(msg.format(name=str(cf_coord_var.cf_name), error=e_msg))
+        warnings.warn(
+            msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
+            category=_WarnComboDefaultingCfLoad,
+        )
         coord = iris.coords.AuxCoord(
             points_data,
             standard_name=standard_name,
@@ -1097,7 +1217,10 @@ def build_dimension_coordinate(
         try:
             cube.add_aux_coord(coord, data_dims)
         except iris.exceptions.CannotAddError as e_msg:
-            warnings.warn(coord_skipped_msg.format(error=e_msg))
+            warnings.warn(
+                coord_skipped_msg.format(error=e_msg),
+                category=iris.exceptions.IrisCannotAddWarning,
+            )
             coord_skipped = True
     else:
         # Add the dimension coordinate to the cube.
@@ -1108,7 +1231,10 @@ def build_dimension_coordinate(
                 # Scalar coords are placed in the aux_coords container.
                 cube.add_aux_coord(coord, data_dims)
         except iris.exceptions.CannotAddError as e_msg:
-            warnings.warn(coord_skipped_msg.format(error=e_msg))
+            warnings.warn(
+                coord_skipped_msg.format(error=e_msg),
+                category=iris.exceptions.IrisCannotAddWarning,
+            )
             coord_skipped = True
 
     if not coord_skipped:
@@ -1186,7 +1312,10 @@ def build_auxiliary_coordinate(
         cube.add_aux_coord(coord, data_dims)
     except iris.exceptions.CannotAddError as e_msg:
         msg = "{name!r} coordinate not added to Cube: {error}"
-        warnings.warn(msg.format(name=str(cf_coord_var.cf_name), error=e_msg))
+        warnings.warn(
+            msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
+            category=iris.exceptions.IrisCannotAddWarning,
+        )
     else:
         # Make a list with names, stored on the engine, so we can find them all later.
         engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
@@ -1237,7 +1366,10 @@ def build_cell_measures(engine, cf_cm_var):
         cube.add_cell_measure(cell_measure, data_dims)
     except iris.exceptions.CannotAddError as e_msg:
         msg = "{name!r} cell measure not added to Cube: {error}"
-        warnings.warn(msg.format(name=str(cf_cm_var.cf_name), error=e_msg))
+        warnings.warn(
+            msg.format(name=str(cf_cm_var.cf_name), error=e_msg),
+            category=iris.exceptions.IrisCannotAddWarning,
+        )
     else:
         # Make a list with names, stored on the engine, so we can find them all later.
         engine.cube_parts["cell_measures"].append(
@@ -1286,7 +1418,10 @@ def build_ancil_var(engine, cf_av_var):
         cube.add_ancillary_variable(av, data_dims)
     except iris.exceptions.CannotAddError as e_msg:
         msg = "{name!r} ancillary variable not added to Cube: {error}"
-        warnings.warn(msg.format(name=str(cf_av_var.cf_name), error=e_msg))
+        warnings.warn(
+            msg.format(name=str(cf_av_var.cf_name), error=e_msg),
+            category=iris.exceptions.IrisCannotAddWarning,
+        )
     else:
         # Make a list with names, stored on the engine, so we can find them all later.
         engine.cube_parts["ancillary_variables"].append(
@@ -1503,7 +1638,8 @@ def has_supported_mercator_parameters(engine, cf_name):
     ):
         warnings.warn(
             "It does not make sense to provide both "
-            '"scale_factor_at_projection_origin" and "standard_parallel".'
+            '"scale_factor_at_projection_origin" and "standard_parallel".',
+            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
         )
         is_valid = False
 
@@ -1533,7 +1669,10 @@ def has_supported_polar_stereographic_parameters(engine, cf_name):
         latitude_of_projection_origin != 90
         and latitude_of_projection_origin != -90
     ):
-        warnings.warn('"latitude_of_projection_origin" must be +90 or -90.')
+        warnings.warn(
+            '"latitude_of_projection_origin" must be +90 or -90.',
+            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
+        )
         is_valid = False
 
     if (
@@ -1542,14 +1681,16 @@ def has_supported_polar_stereographic_parameters(engine, cf_name):
     ):
         warnings.warn(
             "It does not make sense to provide both "
-            '"scale_factor_at_projection_origin" and "standard_parallel".'
+            '"scale_factor_at_projection_origin" and "standard_parallel".',
+            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
         )
         is_valid = False
 
     if scale_factor_at_projection_origin is None and standard_parallel is None:
         warnings.warn(
             'One of "scale_factor_at_projection_origin" and '
-            '"standard_parallel" is required.'
+            '"standard_parallel" is required.',
+            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
         )
         is_valid = False
 

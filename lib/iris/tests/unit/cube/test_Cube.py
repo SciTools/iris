@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.Cube` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -34,12 +33,14 @@ from iris.coords import (
     CellMethod,
     DimCoord,
 )
-from iris.cube import Cube
+from iris.cube import Cube, CubeAttrsDict
 import iris.exceptions
 from iris.exceptions import (
     AncillaryVariableNotFoundError,
     CellMeasureNotFoundError,
     CoordinateNotFoundError,
+    IrisUserWarning,
+    IrisVagueMetadataWarning,
     UnitConversionError,
 )
 import iris.tests.stock as stock
@@ -676,7 +677,10 @@ class Test_collapsed__warning(tests.IrisTest):
         # Ensure that warning is raised.
         msg = "Collapsing spatial coordinate {!r} without weighting"
         for coord in coords:
-            self.assertIn(mock.call(msg.format(coord)), warn.call_args_list)
+            self.assertIn(
+                mock.call(msg.format(coord), category=IrisUserWarning),
+                warn.call_args_list,
+            )
 
     def _assert_nowarn_collapse_without_weight(self, coords, warn):
         # Ensure that warning is not raised.
@@ -765,7 +769,10 @@ class Test_collapsed_coord_with_3_bounds(tests.IrisTest):
                 f"bounds. Metadata may not be fully descriptive for "
                 f"'{coord}'. Ignoring bounds."
             )
-            self.assertIn(mock.call(msg), warn.call_args_list)
+            self.assertIn(
+                mock.call(msg, category=IrisVagueMetadataWarning),
+                warn.call_args_list,
+            )
 
     def _assert_cube_as_expected(self, cube):
         """Ensure that cube data and coordinates are as expected."""
@@ -2754,6 +2761,13 @@ class TestCoords(tests.IrisTest):
             _ = self.cube.coord(bad_coord)
 
 
+class Test_coord_division_units(tests.IrisTest):
+    def test(self):
+        aux = AuxCoord(1, long_name="length", units="metres")
+        cube = Cube(1, units="seconds")
+        self.assertEqual((aux / cube).units, "m.s-1")
+
+
 class Test__getitem_CellMeasure(tests.IrisTest):
     def setUp(self):
         cube = Cube(np.arange(6).reshape(2, 3))
@@ -3420,6 +3434,32 @@ class Test__cell_methods:
         )  # fill props with value==name
         with pytest.raises(ValueError, match="not an iris.coords.CellMethod"):
             self.cube.cell_methods = (test_object,)
+
+
+class TestAttributesProperty:
+    def test_attrs_type(self):
+        # Cube attributes are always of a special dictionary type.
+        cube = Cube([0], attributes={"a": 1})
+        assert type(cube.attributes) is CubeAttrsDict
+        assert cube.attributes == {"a": 1}
+
+    def test_attrs_remove(self):
+        # Wiping attributes replaces the stored object
+        cube = Cube([0], attributes={"a": 1})
+        attrs = cube.attributes
+        cube.attributes = None
+        assert cube.attributes is not attrs
+        assert type(cube.attributes) is CubeAttrsDict
+        assert cube.attributes == {}
+
+    def test_attrs_clear(self):
+        # Clearing attributes leaves the same object
+        cube = Cube([0], attributes={"a": 1})
+        attrs = cube.attributes
+        cube.attributes.clear()
+        assert cube.attributes is attrs
+        assert type(cube.attributes) is CubeAttrsDict
+        assert cube.attributes == {}
 
 
 if __name__ == "__main__":

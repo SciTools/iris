@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # -*- coding: utf-8 -*-
 #
@@ -16,7 +15,6 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 # ----------------------------------------------------------------------------
 
 import datetime
@@ -196,7 +194,7 @@ copybutton_line_continuation_character = "\\"
 todo_include_todos = True
 
 # api generation configuration
-autodoc_member_order = "groupwise"
+autodoc_member_order = "alphabetical"
 autodoc_default_flags = ["show-inheritance"]
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
@@ -294,7 +292,9 @@ html_theme_options = {
     "collapse_navigation": True,
     "navigation_depth": 3,
     "show_prev_next": True,
-    "navbar_align": "left",
+    "navbar_align": "content",
+    # removes the search box from the top bar
+    "navbar_persistent": [],
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
@@ -328,6 +328,16 @@ html_theme_options = {
         "image_dark": "_static/iris-logo-title-dark.svg",
     },
 }
+
+# if we are building via Read The Docs and it is the latest (not stable)
+if on_rtd and rtd_version == "latest":
+    html_theme_options[
+        "announcement"
+    ] = f"""
+        You are viewing the <b>latest</b> unreleased documentation
+        <strong>{version}</strong>. You can switch to a
+        <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
+        version."""
 
 rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
 commit_sha = rev_parse.stdout.decode().strip()
@@ -378,7 +388,6 @@ linkcheck_ignore = [
     "https://docs.github.com",
     "https://github.com",
     "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "http://schacon.github.com/git",
     "http://scitools.github.com/cartopy",
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",

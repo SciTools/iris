@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Test the cube merging mechanism.
 
@@ -22,6 +21,7 @@ import iris
 from iris._lazy_data import as_lazy_data
 from iris.coords import AuxCoord, DimCoord
 import iris.cube
+from iris.cube import CubeAttrsDict
 import iris.exceptions
 import iris.tests.stock
 
@@ -1106,6 +1106,87 @@ class TestCubeMergeWithAncils(tests.IrisTest):
         cube2 = self._makecube(1)
         with self.assertRaisesRegex(iris.exceptions.MergeError, msg):
             _ = iris.cube.CubeList([cube1, cube2]).merge_cube()
+
+
+class TestCubeMerge__split_attributes__error_messages(tests.IrisTest):
+    """
+    Specific tests for the detection and wording of attribute-mismatch errors.
+
+    In particular, the adoption of 'split' attributes with the new
+    :class:`iris.cube.CubeAttrsDict` introduces some more subtle possible discrepancies
+    in attributes, where this has also impacted the messaging, so this aims to probe
+    those cases.
+    """
+
+    def _check_merge_error(self, attrs_1, attrs_2, expected_message):
+        """
+        Check the error from a merge failure caused by a mismatch of attributes.
+
+        Build a pair of cubes with given attributes, merge them + check for a match
+        to the expected error message.
+        """
+        cube_1 = iris.cube.Cube(
+            [0],
+            aux_coords_and_dims=[(AuxCoord([1], long_name="x"), None)],
+            attributes=attrs_1,
+        )
+        cube_2 = iris.cube.Cube(
+            [0],
+            aux_coords_and_dims=[(AuxCoord([2], long_name="x"), None)],
+            attributes=attrs_2,
+        )
+        with self.assertRaisesRegex(
+            iris.exceptions.MergeError, expected_message
+        ):
+            iris.cube.CubeList([cube_1, cube_2]).merge_cube()
+
+    def test_keys_differ__single(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),
+            attrs_2=dict(a=1),
+            # Note: matching key 'a' does *not* appear in the message
+            expected_message="cube.attributes keys differ: 'b'",
+        )
+
+    def test_keys_differ__multiple(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),
+            attrs_2=dict(a=1, c=2),
+            expected_message="cube.attributes keys differ: 'b', 'c'",
+        )
+
+    def test_values_differ__single(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),  # Note: matching key 'a' does not appear
+            attrs_2=dict(a=1, b=3),
+            expected_message="cube.attributes values differ for keys: 'b'",
+        )
+
+    def test_values_differ__multiple(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),
+            attrs_2=dict(a=12, b=22),
+            expected_message="cube.attributes values differ for keys: 'a', 'b'",
+        )
+
+    def test_splitattrs_keys_local_global_mismatch(self):
+        # Since Cube.attributes is now a "split-attributes" dictionary, it is now
+        # possible to have "cube1.attributes != cube1.attributes", but also
+        # "set(cube1.attributes.keys()) == set(cube2.attributes.keys())".
+        # I.E. it is now necessary to specifically compare ".globals" and ".locals" to
+        # see *what* differs between two attributes dictionaries.
+        self._check_merge_error(
+            attrs_1=CubeAttrsDict(globals=dict(a=1), locals=dict(b=2)),
+            attrs_2=CubeAttrsDict(locals=dict(a=2)),
+            expected_message="cube.attributes keys differ: 'a', 'b'",
+        )
+
+    def test_splitattrs_keys_local_match_masks_global_mismatch(self):
+        self._check_merge_error(
+            attrs_1=CubeAttrsDict(globals=dict(a=1), locals=dict(a=3)),
+            attrs_2=CubeAttrsDict(globals=dict(a=2), locals=dict(a=3)),
+            expected_message="cube.attributes values differ for keys: 'a'",
+        )
 
 
 if __name__ == "__main__":

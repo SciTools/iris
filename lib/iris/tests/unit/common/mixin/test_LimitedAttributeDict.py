@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Unit tests for the :class:`iris.common.mixin.LimitedAttributeDict`.
 
@@ -21,7 +20,7 @@ from iris.common.mixin import LimitedAttributeDict
 
 class Test(tests.IrisTest):
     def setUp(self):
-        self.forbidden_keys = LimitedAttributeDict._forbidden_keys
+        self.forbidden_keys = LimitedAttributeDict.CF_ATTRS_FORBIDDEN
         self.emsg = "{!r} is not a permitted attribute"
 
     def test__invalid_keys(self):
