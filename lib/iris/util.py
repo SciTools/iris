@@ -22,7 +22,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import as_concrete_data, is_lazy_data, is_lazy_masked_data
+from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
@@ -400,25 +400,9 @@ def array_equal(array1, array2, withnans=False):
     eq = array1.shape == array2.shape
     if eq:
         eqs = array1 == array2
-
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-            nans1, nans2 = np.isnan(array1), np.isnan(array2)
-            eq = as_concrete_data(np.all(nans1 == nans2))
-
-            if eq:
-                eqs = as_concrete_data(eqs)
-                if not is_lazy_data(nans1):
-                    idxs = nans1
-                elif not is_lazy_data(nans2):
-                    idxs = nans2
-                else:
-                    idxs = as_concrete_data(nans1)
-
-                if np.any(idxs):
-                    eqs[idxs] = True
-
-        if eq:
-            eq = as_concrete_data(np.all(eqs))  # check equal at all points
+            eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
+        eq = bool(np.all(eqs))
 
     return eq
 
