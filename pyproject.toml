@@ -59,7 +59,9 @@ Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
 Issues = "https://github.com/SciTools/iris/issues"
 
 [tool.ruff]
-exclude = [
+# Exclude the following, in addition to the standard set of exclusions.
+# https://docs.astral.sh/ruff/settings/#exclude
+extend-exclude = [
     "_ff_cross_references.py",
     "um_cf_map.py",
     "docs/src/sphinxext",
