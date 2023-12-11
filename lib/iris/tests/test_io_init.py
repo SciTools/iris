@@ -35,8 +35,8 @@ class TestDecodeUri(tests.IrisTest):
                 uri[5:],
             ),
             (uri := "https://www.somehost.com:8080/resource/thing.grib"): (
-                uri[:4],
-                uri[5:],
+                uri[:5],
+                uri[6:],
             ),
             (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",

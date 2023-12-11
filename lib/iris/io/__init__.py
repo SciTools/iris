@@ -100,7 +100,7 @@ def decode_uri(uri, default="file"):
     --------
     >>> from iris.io import decode_uri
     >>> print(decode_uri('https://www.thing.com:8080/resource?id=a:b'))
-    ('http', '//www.thing.com:8080/resource?id=a:b')
+    ('https', '//www.thing.com:8080/resource?id=a:b')
 
     >>> print(decode_uri('file:///data/local/dataZoo/...'))
     ('file', '///data/local/dataZoo/...')
