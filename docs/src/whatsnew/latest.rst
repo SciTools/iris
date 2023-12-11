@@ -166,6 +166,8 @@ This document explains the changes made to Iris for this release
    :doc:`../developers_guide/release_do_nothing`.
    (:pull:`5515`)
 
+#. `@bjlittle`_ adopted and configured the `ruff`_ linter. (:pull:`5623`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -181,4 +183,5 @@ This document explains the changes made to Iris for this release
 
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
 .. _codespell: https://github.com/codespell-project/codespell
+.. _ruff: https://github.com/astral-sh/ruff
 .. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info
