@@ -28,6 +28,13 @@ repos:
         # Don't commit to main branch.
     -   id: no-commit-to-branch
 
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.1.6"
+    hooks:
+    -   id: ruff
+        types: [file, python]
+        args: [--fix, --show-fixes]
+
 -   repo: https://github.com/codespell-project/codespell
     rev: "v2.2.6"
     hooks:

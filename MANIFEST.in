@@ -14,6 +14,7 @@ exclude .gitignore
 exclude .mailmap
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
+exclude .ruff.toml
 exclude CHANGES
 exclude CODE_OF_CONDUCT.md
 exclude codecov.yml

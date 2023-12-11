@@ -58,6 +58,35 @@ Discussions = "https://github.com/SciTools/iris/discussions"
 Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
 Issues = "https://github.com/SciTools/iris/issues"
 
+[tool.ruff]
+exclude = [
+    "_ff_cross_references.py",
+    "um_cf_map.py",
+    "docs/src/sphinxext",
+    "tools",
+]
+line-length = 79
+src = [
+    "benchmarks",
+    "lib",
+    "docs/src",
+]
+target-version = "py39"
+
+[tool.ruff.lint]
+ignore = [
+    # NOTE: Non-permanent exclusions should be added to the ".ruff.toml" file.
+
+    # flake8-implicit-str-concat (ISC)
+    # https://docs.astral.sh/ruff/rules/single-line-implicit-string-concatenation/
+    # NOTE: This rule may cause conflicts when used with "ruff format".
+    "ISC001",  # Implicitly concatenate string literals on one line.
+    ]
+    preview = false
+    select = [
+        "ALL",
+    ]
+
 [tool.setuptools]
 license-files = ["LICENSE"]
 zip-safe = false
