@@ -6,7 +6,7 @@
 Experimental module for importing/exporting raster data from Iris cubes using
 the GDAL library.
 
-See also: `GDAL - Geospatial Data Abstraction Library <http://www.gdal.org>`_.
+See also: `GDAL - Geospatial Data Abstraction Library <https://www.gdal.org>`_.
 
 TODO: If this module graduates from experimental the (optional) GDAL
       dependency should be added to INSTALL
@@ -120,7 +120,7 @@ def export_geotiff(cube, fname):
     .. note::
 
         For more details on GeoTiff specification and PixelIsArea, see:
-        http://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
+        https://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
 
     """
     wmsg = (

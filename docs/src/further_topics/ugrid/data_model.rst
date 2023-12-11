@@ -38,7 +38,7 @@ The Detail
      (e.g. Inkscape). They were originally made in MS PowerPoint.
 
     Uses the IBM Colour Blind Palette (see
-     http://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
+     https://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
      )
 
 Structured Grids (the old world)

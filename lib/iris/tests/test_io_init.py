@@ -34,9 +34,9 @@ class TestDecodeUri(tests.IrisTest):
                 uri[:4],
                 uri[5:],
             ),
-            (uri := "http://www.somehost.com:8080/resource/thing.grib"): (
-                uri[:4],
-                uri[5:],
+            (uri := "https://www.somehost.com:8080/resource/thing.grib"): (
+                uri[:5],
+                uri[6:],
             ),
             (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
@@ -151,7 +151,7 @@ class TestFileFormatPicker(tests.IrisTest):
         # tests that *ANY* http or https URL is seen as an OPeNDAP service.
         # This may need to change in the future if other protocols are
         # supported.
-        DAP_URI = "http://geoport.whoi.edu/thredds/dodsC/bathy/gom15"
+        DAP_URI = "https://geoport.whoi.edu/thredds/dodsC/bathy/gom15"
         a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
         self.assertEqual(a.name, "NetCDF OPeNDAP")
 

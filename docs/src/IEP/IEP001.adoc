@@ -162,12 +162,12 @@ There is a risk that this topic could bog down when dealing with non-standard ca
 * Boolean array indexing
 * Lambdas?
 * What to do about constrained loading?
-* Relationship to http://scitools.org.uk/iris/docs/v1.9.2/iris/iris/cube.html#iris.cube.Cube.intersection[iris.cube.Cube.intersection]?
+* Relationship to https://scitools.org.uk/iris/docs/v1.9.2/iris/iris/cube.html#iris.cube.Cube.intersection[iris.cube.Cube.intersection]?
 * Relationship to interpolation (especially nearest-neighbour)?
 ** e.g. What to do about values that don't exist?
 *** pandas throws a KeyError
-*** xarray supports (several) nearest-neighbour schemes via http://xarray.pydata.org/en/stable/indexing.html#nearest-neighbor-lookups[`data.sel()`]
-*** Apparently http://holoviews.org/[holoviews] does nearest-neighbour interpolation.
+*** xarray supports (several) nearest-neighbour schemes via https://xarray.pydata.org/en/stable/indexing.html#nearest-neighbor-lookups[`data.sel()`]
+*** Apparently https://holoviews.org/[holoviews] does nearest-neighbour interpolation.
 * multi-dimensional coordinate => unroll?
 * var_name only selection? `cube.vloc(t0=12)`
 * Orthogonal only? Or also independent? `cube.loc_points(lon=[1, 1, 5], lat=[31, 33, 32])`
@@ -185,9 +185,9 @@ cube.interpolate(
 
 ## References
 . Iris
- * http://scitools.org.uk/iris/docs/v1.9.2/iris/iris.html#iris.Constraint[iris.Constraint]
- * http://scitools.org.uk/iris/docs/v1.9.2/userguide/subsetting_a_cube.html[Subsetting a cube]
-. http://pandas.pydata.org/pandas-docs/stable/indexing.html[pandas indexing]
-. http://xarray.pydata.org/en/stable/indexing.html[xarray indexing]
-. http://legacy.python.org/dev/peps/pep-0472/[PEP 472 - Support for indexing with keyword arguments]
-. http://nbviewer.jupyter.org/gist/rsignell-usgs/13d7ce9d95fddb4983d4cbf98be6c71d[Time slicing NetCDF or OPeNDAP datasets] - Rich Signell's xarray/iris comparison focussing on time handling and performance
+ * https://scitools.org.uk/iris/docs/v1.9.2/iris/iris.html#iris.Constraint[iris.Constraint]
+ * https://scitools.org.uk/iris/docs/v1.9.2/userguide/subsetting_a_cube.html[Subsetting a cube]
+. https://pandas.pydata.org/pandas-docs/stable/indexing.html[pandas indexing]
+. https://xarray.pydata.org/en/stable/indexing.html[xarray indexing]
+. https://legacy.python.org/dev/peps/pep-0472/[PEP 472 - Support for indexing with keyword arguments]
+. https://nbviewer.jupyter.org/gist/rsignell-usgs/13d7ce9d95fddb4983d4cbf98be6c71d[Time slicing NetCDF or OPeNDAP datasets] - Rich Signell's xarray/iris comparison focussing on time handling and performance

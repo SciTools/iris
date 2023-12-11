@@ -36,7 +36,7 @@ developer version or the most recent released
          alt="#showyourstripes Global 1850-2021"></a>
 </h4>
 
-**Graphics and Lead Scientist**: [Ed Hawkins](http://www.met.reading.ac.uk/~ed/home/index.php), National Centre for Atmospheric Science, University of Reading.
+**Graphics and Lead Scientist**: [Ed Hawkins](https://www.met.reading.ac.uk/~ed/home/index.php), National Centre for Atmospheric Science, University of Reading.
 
 **Data**: Berkeley Earth, NOAA, UK Met Office, MeteoSwiss, DWD, SMHI, UoR, Meteo France & ZAMG.
 

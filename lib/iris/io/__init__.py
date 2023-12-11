@@ -99,8 +99,8 @@ def decode_uri(uri, default="file"):
     Examples
     --------
     >>> from iris.io import decode_uri
-    >>> print(decode_uri('http://www.thing.com:8080/resource?id=a:b'))
-    ('http', '//www.thing.com:8080/resource?id=a:b')
+    >>> print(decode_uri('https://www.thing.com:8080/resource?id=a:b'))
+    ('https', '//www.thing.com:8080/resource?id=a:b')
 
     >>> print(decode_uri('file:///data/local/dataZoo/...'))
     ('file', '///data/local/dataZoo/...')
@@ -127,7 +127,7 @@ def decode_uri(uri, default="file"):
     if isinstance(uri, str):
         # make sure scheme has at least 2 letters to avoid windows drives
         # put - last in the brackets so it refers to the character, not a range
-        # reference on valid schemes: http://tools.ietf.org/html/std66#section-3.1
+        # reference on valid schemes: https://tools.ietf.org/html/std66#section-3.1
         match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]+):(.+)", uri)
         if match:
             scheme = match.group(1)

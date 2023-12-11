@@ -57,7 +57,7 @@ class Test___repr__(tests.IrisTest):
 class Test_timetuple(tests.IrisTest):
     def test_exists(self):
         # Check that the PartialDateTime class implements a timetuple (needed
-        # because of http://bugs.python.org/issue8005).
+        # because of https://bugs.python.org/issue8005).
         pd = PartialDateTime(*list(range(7)))
         self.assertTrue(hasattr(pd, "timetuple"))
 

@@ -68,7 +68,7 @@ class LimitedAttributeDict(dict):
     :data:`iris.common.mixin.LimitedAttributeDict.CF_ATTRS_FORBIDDEN` .
 
     All the forbidden attributes are amongst those listed in
-    `Appendix A of the CF Conventions: <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_
+    `Appendix A of the CF Conventions: <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_
     -- however, not *all* of them, since not all are interpreted by Iris.
 
     """

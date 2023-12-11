@@ -740,7 +740,7 @@ def apply_ufunc(
 ):
     """
     Apply a `numpy universal function
-    <http://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube
+    <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube
     or pair of cubes.
 
     .. note:: Many of the numpy.ufunc have been implemented explicitly in Iris

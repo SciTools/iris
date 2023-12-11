@@ -186,7 +186,7 @@ def update_standard_names(first_in_series: bool) -> None:
             "(This is used during build to automatically generate the sourcefile "
             "``lib/iris/std_names.py``).\n"
             "Latest standard names:\n"
-            'wget "http://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml";'
+            'wget "https://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml";'
         )
         _wait_for_done(message)
 

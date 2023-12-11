@@ -8,11 +8,11 @@
    __not_case_sensitive__, so only one target definition is needed for
    nipy, NIPY, Nipy, etc...
 
-.. _git: http://git-scm.com/
+.. _git: https://git-scm.com/
 .. _github: https://github.com
 .. _github help: https://help.github.com
 .. _git documentation: https://git-scm.com/docs
 
-.. _linux git workflow: http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html
+.. _linux git workflow: https://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html
 
 .. |emdash| unicode:: U+02014

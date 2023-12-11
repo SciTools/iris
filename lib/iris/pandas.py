@@ -5,7 +5,7 @@
 """
 Provide conversion to and from Pandas data structures.
 
-See also: http://pandas.pydata.org/
+See also: https://pandas.pydata.org/
 
 """
 import datetime

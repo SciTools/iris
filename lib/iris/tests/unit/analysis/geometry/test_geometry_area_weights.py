@@ -139,7 +139,7 @@ class Test(tests.IrisTest):
         miny = 84.99998474121094
         maxy = 99.99998474121094
         geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        # see http://stackoverflow.com/a/3892301 to assert warnings
+        # see https://stackoverflow.com/a/3892301 to assert warnings
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")  # always trigger all warnings
             weights = geometry_area_weights(cube, geometry)
