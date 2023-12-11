@@ -1103,7 +1103,7 @@ class CubeAttrsDict(MutableMapping):
           **However** a handful of "known normally global" cases, as defined by CF,
           go into ``.globals`` instead.
           At present these are : ('conventions', 'featureType', 'history', 'title').
-          See `CF Conventions, Appendix A: <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_ .
+          See `CF Conventions, Appendix A: <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_ .
 
         """
         # If an attribute of this name is already present, update that

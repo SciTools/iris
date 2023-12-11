@@ -210,13 +210,13 @@ class TestsHttp(tests.IrisTest):
         )
 
     def test_http(self):
-        url = "http://foo"
+        url = "https://foo"
         with PARSE_UGRID_ON_LOAD.context():
             _ = load_meshes(url)
         self.format_agent_mock.assert_called_with(url, None)
 
     def test_mixed_sources(self):
-        url = "http://foo"
+        url = "https://foo"
         file = TMP_DIR / f"{uuid4()}.nc"
         file.touch()
         glob = f"{TMP_DIR}/*.nc"

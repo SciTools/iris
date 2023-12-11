@@ -151,7 +151,7 @@ class TestLoadRaw(tests.IrisTest):
 
 class TestOPeNDAP(tests.IrisTest):
     def setUp(self):
-        self.url = "http://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
+        self.url = "https://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
 
     def test_load_http_called(self):
         # Check that calling iris.load_* with an http URI triggers a call to

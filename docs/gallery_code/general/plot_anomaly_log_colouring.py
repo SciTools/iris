@@ -21,7 +21,7 @@ This is provided in Iris by the functions :meth:`iris.plot.pcolor` and
 :meth:`iris.plot.pcolormesh`, which call the underlying matplotlib
 functions of the same names (i.e., :obj:`matplotlib.pyplot.pcolor`
 and :obj:`matplotlib.pyplot.pcolormesh`).
-See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
+See also: https://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 """
 
@@ -62,7 +62,7 @@ def main():
 
     # Use a standard colour map which varies blue-white-red.
     # For suitable options, see the 'Diverging colormaps' section in:
-    # http://matplotlib.org/stable/gallery/color/colormap_reference.html
+    # https://matplotlib.org/stable/gallery/color/colormap_reference.html
     anom_cmap = "bwr"
 
     # Create a 'logarithmic' data normalization.

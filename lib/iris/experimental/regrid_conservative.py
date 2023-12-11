@@ -105,7 +105,7 @@ def _make_esmpy_field(
     # NOTE: we don't care about Iris' idea of where the points 'really' are
     # *but* ESMF requires the data in the CENTER for conservative regrid,
     # according to the documentation :
-    #  - http://www.earthsystemmodeling.org/
+    #  - https://www.earthsystemmodeling.org/
     #        esmf_releases/public/last/ESMF_refdoc.pdf
     #  - section  22.2.3 : ESMF_REGRIDMETHOD
     #

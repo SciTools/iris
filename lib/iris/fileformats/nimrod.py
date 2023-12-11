@@ -173,7 +173,7 @@ class NimrodField:
     References:
         Met Office (2003): Met Office Rain Radar Data from the NIMROD System.
         NCAS British Atmospheric Data Centre, date of citation.
-        http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
+        https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
 
     """
 
