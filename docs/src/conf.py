@@ -331,9 +331,7 @@ html_theme_options = {
 
 # if we are building via Read The Docs and it is the latest (not stable)
 if on_rtd and rtd_version == "latest":
-    html_theme_options[
-        "announcement"
-    ] = f"""
+    html_theme_options["announcement"] = f"""
         You are viewing the <b>latest</b> unreleased documentation
         <strong>{version}</strong>. You can switch to a
         <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
