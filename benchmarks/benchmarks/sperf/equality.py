@@ -5,8 +5,8 @@
 """
 Equality benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
 """
-from . import FileMixin
 from .. import on_demand_benchmark
+from . import FileMixin
 
 
 @on_demand_benchmark

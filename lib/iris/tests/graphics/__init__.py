@@ -129,8 +129,8 @@ def repos_equal(repo1: Dict[str, str], repo2: Dict[str, str]) -> bool:
 
 
 def get_phash(input: Path) -> str:
-    from PIL import Image
     import imagehash
+    from PIL import Image
 
     return imagehash.phash(Image.open(input), hash_size=HASH_SIZE)
 

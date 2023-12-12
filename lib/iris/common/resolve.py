@@ -19,8 +19,8 @@ from typing import Any
 from dask.array.core import broadcast_shapes
 import numpy as np
 
-from . import LENIENT
 from ..config import get_logger
+from . import LENIENT
 
 __all__ = ["Resolve"]
 
