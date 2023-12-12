@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides access to Iris-specific configuration values.
+"""Provides access to Iris-specific configuration values.
 
 The default configuration values can be overridden by creating the file
 ``iris/etc/site.cfg``. If it exists, this file must conform to the format
@@ -42,8 +41,7 @@ import iris.exceptions
 def get_logger(
     name, datefmt=None, fmt=None, level=None, propagate=None, handler=True
 ):
-    """
-    Create a custom class for logging.
+    """Create a custom class for logging.
 
     Create a :class:`logging.Logger` with a :class:`logging.StreamHandler`
     and custom :class:`logging.Formatter`.
@@ -114,8 +112,7 @@ def get_logger(
 
 # Returns simple string options
 def get_option(section, option, default=None):
-    """
-    Return the option value for the given section.
+    """Return the option value for the given section.
 
     Returns the option value for the given section, or the default value
     if the section/option is not present.
@@ -129,8 +126,7 @@ def get_option(section, option, default=None):
 
 # Returns directory path options
 def get_dir_option(section, option, default=None):
-    """
-    Return the directory path from the given option and section.
+    """Return the directory path from the given option and section.
 
     Returns the directory path from the given option and section, or
     returns the given default value if the section/option is not present
@@ -194,8 +190,7 @@ class NetCDF:
     """Control Iris NetCDF options."""
 
     def __init__(self, conventions_override=None):
-        """
-        Set up NetCDF processing options for Iris.
+        """Set up NetCDF processing options for Iris.
 
         Parameters
         ----------
@@ -274,8 +269,7 @@ class NetCDF:
 
     @contextlib.contextmanager
     def context(self, **kwargs):
-        """
-        Allow temporary modification of the options via a context manager.
+        """Allow temporary modification of the options via a context manager.
 
         Accepted kwargs are the same as can be supplied to the Option.
 

@@ -36,8 +36,7 @@ _savers = _SaversDict()
 
 
 def run_callback(callback, cube, field, filename):
-    """
-    Run the callback mechanism given the appropriate arguments.
+    """Run the callback mechanism given the appropriate arguments.
 
     Parameters
     ----------
@@ -50,6 +49,12 @@ def run_callback(callback, cube, field, filename):
            returned by the function.
         3. If the cube is to be rejected the callback must raise
            an :class:`iris.exceptions.IgnoreCubeException`.
+    cube :
+        Cube.
+    field :
+        Field.
+    filename :
+        Filename.
 
     Notes
     -----
@@ -83,8 +88,7 @@ def run_callback(callback, cube, field, filename):
 
 
 def decode_uri(uri, default="file"):
-    r"""
-    Decode a single URI into scheme and scheme-specific parts.
+    r"""Decode a single URI into scheme and scheme-specific parts.
 
     In addition to well-formed URIs, it also supports bare file paths as strings
     or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
@@ -146,8 +150,7 @@ def decode_uri(uri, default="file"):
 
 
 def expand_filespecs(file_specs, files_expected=True):
-    """
-    Find all matching file paths from a list of file-specs.
+    """Find all matching file paths from a list of file-specs.
 
     Parameters
     ----------
@@ -201,8 +204,7 @@ def expand_filespecs(file_specs, files_expected=True):
 
 
 def load_files(filenames, callback, constraints=None):
-    """
-    Create a generator of Cubes from given files.
+    """Create a generator of Cubes from given files.
 
     Take a list of filenames which may also be globs, and optionally a
     constraint set and a callback function, and returns a
@@ -241,8 +243,7 @@ def load_files(filenames, callback, constraints=None):
 
 
 def load_http(urls, callback):
-    """
-    Create generator of Cubes from the given OPeNDAP URLs.
+    """Create generator of Cubes from the given OPeNDAP URLs.
 
     Take a list of OPeNDAP URLs and a callback function, and returns a generator
     of Cubes from the given URLs.
@@ -276,8 +277,7 @@ def load_http(urls, callback):
 
 
 def load_data_objects(urls, callback):
-    """
-    Take a list of data-source objects and a callback function, returns a generator of Cubes.
+    """Take a list of data-source objects and a callback function, returns a generator of Cubes.
 
     The 'objects' take the place of 'uris' in the load calls.
     The appropriate types of the data-source objects are expected to be
@@ -343,8 +343,7 @@ def _check_init_savers():
 
 
 def add_saver(file_extension, new_saver):
-    """
-    Add a custom saver to the Iris session.
+    """Add a custom saver to the Iris session.
 
     Parameters
     ----------
@@ -370,8 +369,7 @@ def add_saver(file_extension, new_saver):
 
 
 def find_saver(filespec):
-    """
-    Find the saver function appropriate to the given filename or extension.
+    """Find the saver function appropriate to the given filename or extension.
 
     Parameters
     ----------
@@ -401,8 +399,7 @@ def find_saver(filespec):
 
 
 def save(source, target, saver=None, **kwargs):
-    """
-    Save one or more Cubes to file (or other writeable).
+    """Save one or more Cubes to file (or other writeable).
 
     Iris currently supports three file formats for saving, which it can
     recognise by filename extension:
@@ -420,6 +417,7 @@ def save(source, target, saver=None, **kwargs):
     Parameters
     ----------
     source : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
+        Source.
     target : str or pathlib.PurePath or io.TextIOWrapper
         When given a filename or file, Iris can determine the
         file format.

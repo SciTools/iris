@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Module containing code to create locks enabling dask workers to co-operate.
+"""Module containing code to create locks enabling dask workers to co-operate.
 
 This matter is complicated by needing different solutions for different dask
 scheduler types, i.e. local 'threads' scheduler, local 'processes' or
@@ -81,8 +80,7 @@ def dask_scheduler_is_distributed():
 
 
 def get_dask_array_scheduler_type():
-    """
-    Work out what type of scheduler an array.compute*() will use.
+    """Work out what type of scheduler an array.compute*() will use.
 
     Returns one of 'distributed', 'threads' or 'processes'.
     The return value is a valid argument for dask.config.set(scheduler=<type>).
@@ -117,8 +115,7 @@ def get_dask_array_scheduler_type():
 
 
 def get_worker_lock(identity: str):
-    """
-    Return a mutex Lock which can be shared by multiple Dask workers.
+    """Return a mutex Lock which can be shared by multiple Dask workers.
 
     The type of Lock generated depends on the dask scheduler type, which must
     therefore be set up before this is called.
@@ -126,6 +123,7 @@ def get_worker_lock(identity: str):
     Parameters
     ----------
     identity : str
+        Identity.
 
     """
     scheduler_type = get_dask_array_scheduler_type()
