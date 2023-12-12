@@ -176,7 +176,6 @@ class CFNameCoordMap:
     _Map = collections.namedtuple("_Map", ["name", "coord"])
 
     def __init__(self):
-        """Init."""
         self._map = []
 
     def append(self, name, coord):
@@ -792,8 +791,6 @@ class Saver:
         ----------
         attributes : dict or iterable of key, value pairs
             CF global attributes to be updated.
-        **kwargs :
-            Additional keywords.
         """
         # TODO: when when iris.FUTURE.save_split_attrs is removed, this routine will
         # only be called once: it can reasonably be renamed "_set_global_attributes",
@@ -818,8 +815,6 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` in which to lookup coordinates.
-        dimension_names :
-            Dimensions names.
         unlimited_dimensions : iterable of strings and/or :class:`iris.coords.Coord` objects):
             List of coordinates to make unlimited (None by default).
 
@@ -2274,8 +2269,6 @@ class Saver:
             See :func:`iris.fileformats.netcdf.Saver.write`
         fill_value : optional
             See :func:`iris.fileformats.netcdf.Saver.write`
-        **kwargs:
-            Additional keywords.
 
         All other keywords are passed through to the dataset's `createVariable`
         method.

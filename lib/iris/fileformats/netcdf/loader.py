@@ -574,7 +574,6 @@ def load_cubes(file_sources, callback=None, constraints=None):
         Function which can be passed on to :func:`iris.io.run_callback`.
 
     constraints : optional
-        Constraints keyword.
 
     Returns
     -------
@@ -670,11 +669,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
 
 class ChunkControl(threading.local):
-    """ChunkControl Class."""
-
     class Modes(Enum):
-        """Modes Class."""
-
         DEFAULT = auto()
         FROM_FILE = auto()
         AS_DASK = auto()

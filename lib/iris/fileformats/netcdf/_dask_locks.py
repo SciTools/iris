@@ -123,7 +123,6 @@ def get_worker_lock(identity: str):
     Parameters
     ----------
     identity : str
-        Identity.
 
     """
     scheduler_type = get_dask_array_scheduler_type()

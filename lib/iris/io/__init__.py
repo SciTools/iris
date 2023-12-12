@@ -49,12 +49,6 @@ def run_callback(callback, cube, field, filename):
            returned by the function.
         3. If the cube is to be rejected the callback must raise
            an :class:`iris.exceptions.IgnoreCubeException`.
-    cube :
-        Cube.
-    field :
-        Field.
-    filename :
-        Filename.
 
     Notes
     -----
@@ -417,7 +411,6 @@ def save(source, target, saver=None, **kwargs):
     Parameters
     ----------
     source : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
-        Source.
     target : str or pathlib.PurePath or io.TextIOWrapper
         When given a filename or file, Iris can determine the
         file format.
