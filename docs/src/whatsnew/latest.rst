@@ -92,6 +92,9 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ improved the speed of :class:`~iris.analysis.AreaWeighted`
    regridding. (:pull:`5543`)
 
+#. `@bouweandela`_ made :func:`iris.util.array_equal` faster when comparing
+   lazy data from file. This will also speed up coordinate comparison.
+   (:pull:`5610`)
 
 🔥 Deprecations
 ===============
@@ -129,6 +132,7 @@ This document explains the changes made to Iris for this release
    saving and loading, :ref:`netcdf_io` with a section on chunking, and placeholders
    for further topics. (:pull:`5588`)
 
+#. `@bouweandela`_ updated all hyperlinks to https. (:pull:`5621`)
 
 💼 Internal
 ===========
