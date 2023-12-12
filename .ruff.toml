@@ -27,7 +27,7 @@ lint.ignore = [
 
     # pydocstyle (D)
     # https://docs.astral.sh/ruff/rules/#pydocstyle-d
-    #"D",
+    "D",
     # Permanent
     "D105",  # Missing docstring in magic method
 
