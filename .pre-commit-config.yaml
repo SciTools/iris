@@ -55,13 +55,6 @@ repos:
     -   id: flake8
         types: [file, python]
 
--   repo: https://github.com/pycqa/isort
-    rev: 5.13.0
-    hooks:
-    -   id: isort
-        types: [file, python]
-        args: [--filter-files]
-
 -   repo: https://github.com/asottile/blacken-docs
     rev: 1.16.0
     hooks:

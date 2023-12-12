@@ -89,6 +89,10 @@ ignore = [
         "ALL",
     ]
 
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["iris"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 

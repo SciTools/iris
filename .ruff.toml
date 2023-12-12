@@ -17,10 +17,6 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#mccabe-c90
     "C90",
 
-    # isort (I)
-    # https://docs.astral.sh/ruff/rules/#isort-i
-    "I",
-
     # pep8-naming (N)
     # https://docs.astral.sh/ruff/rules/#pep8-naming-n
     "N",
