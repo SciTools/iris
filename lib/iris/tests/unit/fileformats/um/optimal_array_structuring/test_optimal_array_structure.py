@@ -33,17 +33,13 @@ class Test_optimal_array_structure(tests.IrisTest):
                 result_dims,
                 spec_dims,
                 'element dims differ for "{}": '
-                "result={!r}, expected {!r}".format(
-                    keyname, result_dims, spec_dims
-                ),
+                "result={!r}, expected {!r}".format(keyname, result_dims, spec_dims),
             )
             self.assertArrayEqual(
                 result_array,
                 spec_array,
                 'element arrays differ for "{}": '
-                "result={!r}, expected {!r}".format(
-                    keyname, result_array, spec_array
-                ),
+                "result={!r}, expected {!r}".format(keyname, result_array, spec_array),
             )
 
     def test_none(self):
@@ -63,9 +59,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(shape, (3,))
         self.assertEqual(primaries, set("a"))
-        self._check_arrays_and_dims(
-            elems_and_dims, {"a": (np.array([1, 2, 4]), (0,))}
-        )
+        self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([1, 2, 4]), (0,))})
 
     def test_1d_actuals(self):
         # Test use of alternate element values for array construction.
@@ -76,9 +70,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         )
         self.assertEqual(shape, (3,))
         self.assertEqual(primaries, set("a"))
-        self._check_arrays_and_dims(
-            elems_and_dims, {"a": (np.array([7, 3, 9]), (0,))}
-        )
+        self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([7, 3, 9]), (0,))})
 
     def test_actuals_mismatch_fail(self):
         elements = [("a", np.array([1, 2, 4]))]
@@ -144,9 +136,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(shape, (3,))
         self.assertEqual(primaries, set(["a"]))
-        self._check_arrays_and_dims(
-            elems_and_dims, {"a": (np.array([1, 2, 3]), (0,))}
-        )
+        self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([1, 2, 3]), (0,))})
 
     def test_1d_duplicates(self):
         # When two have the same structure, the first is 'the dimension'.

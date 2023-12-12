@@ -41,15 +41,11 @@ class MixinExampleSetup:
         # Make sample 1-D source cube.
         src = Cube(src_x_y_value[:, 2])
         src.add_aux_coord(
-            AuxCoord(
-                src_x_y_value[:, 0], standard_name="longitude", units="degrees"
-            ),
+            AuxCoord(src_x_y_value[:, 0], standard_name="longitude", units="degrees"),
             0,
         )
         src.add_aux_coord(
-            AuxCoord(
-                src_x_y_value[:, 1], standard_name="latitude", units="degrees"
-            ),
+            AuxCoord(src_x_y_value[:, 1], standard_name="latitude", units="degrees"),
             0,
         )
         self.src_cube = src
@@ -84,9 +80,7 @@ class MixinExampleSetup:
         self.src_z_cube = CubeList(z_cubes).merge_cube()
 
         # Make a corresponding 3d expected result.
-        self.expected_data_zxy = self.src_z_cube.data[
-            :, expected_result_indices
-        ]
+        self.expected_data_zxy = self.src_z_cube.data[:, expected_result_indices]
 
     def _check_expected(
         self,
@@ -290,9 +284,7 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
         # last one.
         src_z_cube = self.src_z_cube
         src_z_cube.transpose((1, 0))
-        self._check_expected(
-            src_cube=src_z_cube, expected_data=self.expected_data_zxy
-        )
+        self._check_expected(src_cube=src_z_cube, expected_data=self.expected_data_zxy)
 
     def test_radians_degrees(self):
         # Check source + target unit conversions, grid and result in degrees.

@@ -44,9 +44,7 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
     return pts[..., 0], pts[..., 1]
 
 
-def _regrid_weighted_curvilinear_to_rectilinear__prepare(
-    src_cube, weights, grid_cube
-):
+def _regrid_weighted_curvilinear_to_rectilinear__prepare(src_cube, weights, grid_cube):
     """
     First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
@@ -87,10 +85,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
         raise ValueError(msg.format(sx.name(), sy.name()))
 
     if sx.coord_system is None:
-        msg = (
-            "The source X and Y coordinates must have a defined "
-            "coordinate system."
-        )
+        msg = "The source X and Y coordinates must have a defined coordinate system."
         raise ValueError(msg)
 
     if tx.units != ty.units:
@@ -101,10 +96,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
         raise ValueError(msg.format(tx.name(), ty.name()))
 
     if tx.coord_system is None:
-        msg = (
-            "The target X and Y coordinates must have a defined "
-            "coordinate system."
-        )
+        msg = "The target X and Y coordinates must have a defined coordinate system."
         raise ValueError(msg)
 
     if tx.coord_system != ty.coord_system:
@@ -117,24 +109,15 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     if weights is None:
         weights = np.ones(sx.shape)
     if weights.shape != sx.shape:
-        msg = (
-            "Provided weights must have the same shape as the X and Y "
-            "coordinates."
-        )
+        msg = "Provided weights must have the same shape as the X and Y coordinates."
         raise ValueError(msg)
 
     if not tx.has_bounds() or not tx.is_contiguous():
-        msg = (
-            "The target grid cube x ({!r})coordinate requires "
-            "contiguous bounds."
-        )
+        msg = "The target grid cube x ({!r})coordinate requires contiguous bounds."
         raise ValueError(msg.format(tx.name()))
 
     if not ty.has_bounds() or not ty.is_contiguous():
-        msg = (
-            "The target grid cube y ({!r}) coordinate requires "
-            "contiguous bounds."
-        )
+        msg = "The target grid cube y ({!r}) coordinate requires contiguous bounds."
         raise ValueError(msg.format(ty.name()))
 
     def _src_align_and_flatten(coord):
@@ -329,9 +312,7 @@ def _curvilinear_to_rectilinear_regrid_data(
             sum_weights = valid_src_cells @ sparse_matrix.T
         data = r_data
     if sum_weights is None:
-        sum_weights = (
-            np.ones(data_shape).reshape(-1, grid_size) @ sparse_matrix.T
-        )
+        sum_weights = np.ones(data_shape).reshape(-1, grid_size) @ sparse_matrix.T
     # Work out where output cells are missing all contributions.
     # This allows for where 'rows' contains output cells that have no
     # data because of missing input points.
@@ -365,9 +346,7 @@ def _curvilinear_to_rectilinear_regrid_data(
     return result
 
 
-def _regrid_weighted_curvilinear_to_rectilinear__perform(
-    src_cube, regrid_info
-):
+def _regrid_weighted_curvilinear_to_rectilinear__perform(src_cube, regrid_info):
     """
     Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
@@ -502,10 +481,8 @@ class CurvilinearRegridder:
         slice_cube = next(src.slices(sx))
         if self._regrid_info is None:
             # Calculate the basic regrid info just once.
-            self._regrid_info = (
-                _regrid_weighted_curvilinear_to_rectilinear__prepare(
-                    slice_cube, self.weights, self._target_cube
-                )
+            self._regrid_info = _regrid_weighted_curvilinear_to_rectilinear__prepare(
+                slice_cube, self.weights, self._target_cube
             )
         result = _regrid_weighted_curvilinear_to_rectilinear__perform(
             src, self._regrid_info
@@ -521,9 +498,7 @@ class RectilinearRegridder:
 
     """
 
-    def __init__(
-        self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode
-    ):
+    def __init__(self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode):
         """
         Create a regridder for conversions between the source
         and target grids.
@@ -969,9 +944,7 @@ class RectilinearRegridder:
             extrapolation_mode=self._extrapolation_mode,
         )
 
-        data = map_complete_blocks(
-            src, regrid, (y_dim, x_dim), sample_grid_x.shape
-        )
+        data = map_complete_blocks(src, regrid, (y_dim, x_dim), sample_grid_x.shape)
 
         # Wrap up the data as a Cube.
         _regrid_callback = functools.partial(
@@ -999,9 +972,7 @@ class RectilinearRegridder:
         return result
 
 
-def _create_cube(
-    data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback
-):
+def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback):
     r"""
     Return a new cube for the result of regridding.
     Returned cube represents the result of regridding the source cube
@@ -1074,11 +1045,7 @@ def _create_cube(
 
             def dim_offset(dim):
                 offset = sum(
-                    [
-                        d <= dim
-                        for d in (grid_dim_x, grid_dim_y)
-                        if d is not None
-                    ]
+                    [d <= dim for d in (grid_dim_x, grid_dim_y) if d is not None]
                 )
                 if offset and num_tgt_dims == 1:
                     offset -= 1
@@ -1103,8 +1070,7 @@ def _create_cube(
         # Determine which of the reference surface's dimensions span the X
         # and Y dimensions of the source cube.
         relative_surface_dims = [
-            surface_dims.index(dim) if dim is not None else None
-            for dim in src_dims
+            surface_dims.index(dim) if dim is not None else None for dim in src_dims
         ]
         surface = regrid_callback(
             src_surface_coord.points,

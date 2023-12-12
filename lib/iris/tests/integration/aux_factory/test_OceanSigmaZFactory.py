@@ -87,9 +87,7 @@ class Test_sample(tests.IrisTest):
             ]
         )
 
-        self.derived_coord_name = (
-            "sea_surface_height_above_reference_ellipsoid"
-        )
+        self.derived_coord_name = "sea_surface_height_above_reference_ellipsoid"
 
     def _check_result(self, cube, expected_result=None, **kwargs):
         if expected_result is None:
@@ -112,16 +110,12 @@ class Test_sample(tests.IrisTest):
         # Check same results when key coords are made lazy.
         cube = self.cube
         self.assertEqual(cube.coord("depth").has_lazy_points(), False)
-        self.assertEqual(
-            cube.coord(self.derived_coord_name).has_lazy_points(), True
-        )
+        self.assertEqual(cube.coord(self.derived_coord_name).has_lazy_points(), True)
 
     def test_lazy_cube_same_result(self):
         cube = self._lazy_testcube()
         self.assertEqual(cube.coord("depth").has_lazy_points(), True)
-        self.assertEqual(
-            cube.coord(self.derived_coord_name).has_lazy_points(), True
-        )
+        self.assertEqual(cube.coord(self.derived_coord_name).has_lazy_points(), True)
         self._check_result(cube)
 
     def test_transpose(self):

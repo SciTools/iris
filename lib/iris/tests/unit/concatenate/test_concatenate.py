@@ -57,9 +57,7 @@ class TestMessages(tests.IrisTest):
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
         # Time coord
-        t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="standard"
-        )
+        t_unit = cf_units.Unit("hours since 1970-01-01 00:00:00", calendar="standard")
         t_coord = iris.coords.DimCoord(
             points=np.arange(2, dtype=np.float32),
             standard_name="time",
@@ -97,9 +95,7 @@ class TestMessages(tests.IrisTest):
         )
         # Ancillary Variables
         cube.add_ancillary_variable(
-            iris.coords.AncillaryVariable(
-                [0, 1, 2], long_name="baz", units="1"
-            ),
+            iris.coords.AncillaryVariable([0, 1, 2], long_name="baz", units="1"),
             data_dims=(1,),
         )
         # Derived Coords
@@ -371,13 +367,9 @@ class TestConcatenate__dask(tests.IrisTest):
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
         if aux_coords:
-            bounds = np.arange(len(points) * nx * 4).reshape(
-                len(points), nx, 4
-            )
+            bounds = np.arange(len(points) * nx * 4).reshape(len(points), nx, 4)
             bounds = as_lazy_data(bounds)
-            aux_coord = iris.coords.AuxCoord(
-                data, var_name="aux_coord", bounds=bounds
-            )
+            aux_coord = iris.coords.AuxCoord(data, var_name="aux_coord", bounds=bounds)
             cube.add_aux_coord(aux_coord, (0, 1))
         return cube
 

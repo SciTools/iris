@@ -36,9 +36,7 @@ for subplot_num, mdtol in zip([2, 3, 4], [0, 0.5, 1]):
         size="medium",
     )
 
-plt.subplots_adjust(
-    hspace=0, wspace=0.05, left=0.001, right=0.999, bottom=0, top=0.955
-)
+plt.subplots_adjust(hspace=0, wspace=0.05, left=0.001, right=0.999, bottom=0, top=0.955)
 
 # Iterate over each of the figure's axes, adding coastlines, gridlines
 # and setting the extent.

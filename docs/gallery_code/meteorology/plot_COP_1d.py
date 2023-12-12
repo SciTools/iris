@@ -90,9 +90,7 @@ def main():
     )
 
     # Constrain the period 1860-1999 and extract the observed data from a1b
-    constraint = iris.Constraint(
-        time=lambda cell: 1860 <= cell.point.year <= 1999
-    )
+    constraint = iris.Constraint(time=lambda cell: 1860 <= cell.point.year <= 1999)
     observed = a1b_mean.extract(constraint)
 
     # Assert that this data set is the same as the e1 scenario:

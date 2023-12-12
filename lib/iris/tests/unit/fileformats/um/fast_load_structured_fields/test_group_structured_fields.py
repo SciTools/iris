@@ -108,25 +108,17 @@ class Test__grouping(tests.IrisTest):
             stashes=[11, 11, 15, 11], lbprocs=[31, 42, 31, 42]
         )
         result = self._group_result(fields_iter)
-        self.assertEqual(
-            result, self._test_fields([(1001,), (1002, 1004), (1003,)])
-        )
+        self.assertEqual(result, self._test_fields([(1001,), (1002, 1004), (1003,)]))
 
     def test_sortorder(self):
         fields_iter = self._dummy_fields_iter(stashes=[11, 7, 12])
         result = self._group_result(fields_iter)
-        self.assertEqual(
-            result, self._test_fields([(1002,), (1001,), (1003,)])
-        )
+        self.assertEqual(result, self._test_fields([(1002,), (1001,), (1003,)]))
 
     def test_sortorder_2d(self):
-        fields_iter = self._dummy_fields_iter(
-            stashes=[11, 11, 12], lbprocs=[31, 9, 1]
-        )
+        fields_iter = self._dummy_fields_iter(stashes=[11, 11, 12], lbprocs=[31, 9, 1])
         result = self._group_result(fields_iter)
-        self.assertEqual(
-            result, self._test_fields([(1002,), (1001,), (1003,)])
-        )
+        self.assertEqual(result, self._test_fields([(1002,), (1001,), (1003,)]))
 
 
 if __name__ == "__main__":

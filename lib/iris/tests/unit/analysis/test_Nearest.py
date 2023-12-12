@@ -62,9 +62,7 @@ class Test_interpolator(tests.IrisTest):
             "iris.analysis.RectilinearInterpolator",
             return_value=mock.sentinel.interpolator,
         ) as ri:
-            interpolator = scheme.interpolator(
-                mock.sentinel.cube, mock.sentinel.coords
-            )
+            interpolator = scheme.interpolator(mock.sentinel.cube, mock.sentinel.coords)
         if mode is None:
             expected_mode = "extrapolate"
         else:
@@ -104,9 +102,7 @@ class Test_regridder(tests.IrisTest):
             "iris.analysis.RectilinearRegridder",
             return_value=mock.sentinel.regridder,
         ) as rr:
-            regridder = scheme.regridder(
-                mock.sentinel.src_grid, mock.sentinel.tgt_grid
-            )
+            regridder = scheme.regridder(mock.sentinel.src_grid, mock.sentinel.tgt_grid)
 
         expected_mode = "extrapolate" if mode is None else mode
         rr.assert_called_once_with(

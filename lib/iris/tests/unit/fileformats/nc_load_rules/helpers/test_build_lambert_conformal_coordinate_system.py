@@ -56,9 +56,7 @@ class TestBuildLambertConformalCoordinateSystem(tests.IrisTest):
             )
         else:
             gridvar_props["semi_minor_axis"] = 6356256.909
-            expected_ellipsoid = iris.coord_systems.GeogCS(
-                6377563.396, 6356256.909
-            )
+            expected_ellipsoid = iris.coord_systems.GeogCS(6377563.396, 6356256.909)
 
         cf_grid_var = mock.Mock(spec=[], **gridvar_props)
 

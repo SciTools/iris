@@ -31,8 +31,7 @@ class TestExtent(tests.IrisTest):
         # This is set in longitudes with the datum set to the
         # International Date Line.
         self.assertTrue(
-            -10 < plt.gca().get_xlim()[0] < -5
-            and 5 < plt.gca().get_xlim()[1] < 10
+            -10 < plt.gca().get_xlim()[0] < -5 and 5 < plt.gca().get_xlim()[1] < 10
         )
 
 

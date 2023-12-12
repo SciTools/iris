@@ -36,12 +36,8 @@ def uv_cubes(x=None, y=None):
     x2d, y2d = np.meshgrid(x, y)
     u = 10 * (2 * np.cos(2 * np.deg2rad(x2d) + 3 * np.deg2rad(y2d + 30)) ** 2)
     v = 20 * np.cos(6 * np.deg2rad(x2d))
-    lon = DimCoord(
-        x, standard_name="grid_longitude", units="degrees", coord_system=cs
-    )
-    lat = DimCoord(
-        y, standard_name="grid_latitude", units="degrees", coord_system=cs
-    )
+    lon = DimCoord(x, standard_name="grid_longitude", units="degrees", coord_system=cs)
+    lat = DimCoord(y, standard_name="grid_latitude", units="degrees", coord_system=cs)
     u_cube = Cube(u, standard_name="x_wind", units="m/s")
     v_cube = Cube(v, standard_name="y_wind", units="m/s")
     for cube in (u_cube, v_cube):
@@ -160,10 +156,7 @@ class TestAnalyticComparison(tests.IrisTest):
             phi_angle
         )
         sin_rot = -(
-            (
-                np.sin(np.radians(trueLongitude) - lambda_angle)
-                * np.sin(phi_angle)
-            )
+            (np.sin(np.radians(trueLongitude) - lambda_angle) * np.sin(phi_angle))
             / np.cos(np.radians(rotated_lats))
         )
 
@@ -183,9 +176,7 @@ class TestAnalyticComparison(tests.IrisTest):
         pole_lon = cs_rot.grid_north_pole_longitude
         rotated_lons = u_rot.coord("grid_longitude").points
         rotated_lats = u_rot.coord("grid_latitude").points
-        rotated_lons_2d, rotated_lats_2d = np.meshgrid(
-            rotated_lons, rotated_lats
-        )
+        rotated_lons_2d, rotated_lats_2d = np.meshgrid(rotated_lons, rotated_lats)
         rotated_u, rotated_v = u_rot.data, v_rot.data
         u_ref, v_ref = self._unrotate_equation(
             rotated_lons_2d,
@@ -204,18 +195,14 @@ class TestAnalyticComparison(tests.IrisTest):
         # Check for a small field with varying data.
         target_cs = iris.coord_systems.GeogCS(6371229)
         u_rot, v_rot = uv_cubes()
-        self._check_rotated_to_true(
-            u_rot, v_rot, target_cs, rtol=1e-5, atol=0.0005
-        )
+        self._check_rotated_to_true(u_rot, v_rot, target_cs, rtol=1e-5, atol=0.0005)
 
     def test_rotated_to_true_global(self):
         # Check for global fields with various constant wind values
         # - constant in the rotated pole system, that is.
         # We expect less accuracy where this gets close to the true poles.
         target_cs = iris.coord_systems.GeogCS(6371229)
-        u_rot, v_rot = uv_cubes(
-            x=np.arange(0, 360.0, 15), y=np.arange(-89, 89, 10)
-        )
+        u_rot, v_rot = uv_cubes(x=np.arange(0, 360.0, 15), y=np.arange(-89, 89, 10))
         for vector in ((1, 0), (0, 1), (1, 1), (-3, -1.5)):
             u_rot.data[...] = vector[0]
             v_rot.data[...] = vector[1]
@@ -316,21 +303,11 @@ class TestRotatedToOSGB(tests.IrisTest):
         self.assertEqual(ut.coord("projection_y_coordinate"), expected_y)
         self.assertEqual(vt.coord("projection_y_coordinate"), expected_y)
         # Check dim mapping for 2d coords is yx.
-        expected_dims = u.coord_dims("grid_latitude") + u.coord_dims(
-            "grid_longitude"
-        )
-        self.assertEqual(
-            ut.coord_dims("projection_x_coordinate"), expected_dims
-        )
-        self.assertEqual(
-            ut.coord_dims("projection_y_coordinate"), expected_dims
-        )
-        self.assertEqual(
-            vt.coord_dims("projection_x_coordinate"), expected_dims
-        )
-        self.assertEqual(
-            vt.coord_dims("projection_y_coordinate"), expected_dims
-        )
+        expected_dims = u.coord_dims("grid_latitude") + u.coord_dims("grid_longitude")
+        self.assertEqual(ut.coord_dims("projection_x_coordinate"), expected_dims)
+        self.assertEqual(ut.coord_dims("projection_y_coordinate"), expected_dims)
+        self.assertEqual(vt.coord_dims("projection_x_coordinate"), expected_dims)
+        self.assertEqual(vt.coord_dims("projection_y_coordinate"), expected_dims)
 
     def test_orig_coords(self):
         u, v = self._uv_cubes_limited_extent()
@@ -479,20 +456,12 @@ class TestRoundTrip(tests.IrisTest):
         )
         # Shift longitude from 0 to 360 -> -180 to 180.
         x2d = np.where(x2d > 180, x2d - 360, x2d)
-        res_x = res_u.coord(
-            "projection_x_coordinate", coord_system=orig_cs
-        ).points
-        res_y = res_u.coord(
-            "projection_y_coordinate", coord_system=orig_cs
-        ).points
+        res_x = res_u.coord("projection_x_coordinate", coord_system=orig_cs).points
+        res_y = res_u.coord("projection_y_coordinate", coord_system=orig_cs).points
         self.assertArrayAlmostEqual(res_x, x2d)
         self.assertArrayAlmostEqual(res_y, y2d)
-        res_x = res_v.coord(
-            "projection_x_coordinate", coord_system=orig_cs
-        ).points
-        res_y = res_v.coord(
-            "projection_y_coordinate", coord_system=orig_cs
-        ).points
+        res_x = res_v.coord("projection_x_coordinate", coord_system=orig_cs).points
+        res_y = res_v.coord("projection_y_coordinate", coord_system=orig_cs).points
         self.assertArrayAlmostEqual(res_x, x2d)
         self.assertArrayAlmostEqual(res_y, y2d)
 

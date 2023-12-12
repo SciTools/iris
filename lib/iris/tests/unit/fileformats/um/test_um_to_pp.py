@@ -33,9 +33,7 @@ class Test_call(tests.IrisTest):
 
         # Call um_to_pp while patching the um._ff_replacement.FF2PP class.
         test_path = "/any/old/file.name"
-        with mock.patch(
-            "iris.fileformats.um._ff_replacement.FF2PP", mock_ff2pp_class
-        ):
+        with mock.patch("iris.fileformats.um._ff_replacement.FF2PP", mock_ff2pp_class):
             result = um_to_pp(test_path)
 
         # Check that it called FF2PP in the expected way.
@@ -43,9 +41,7 @@ class Test_call(tests.IrisTest):
             mock_ff2pp_class.call_args_list,
             [mock.call("/any/old/file.name", read_data=False)],
         )
-        self.assertEqual(
-            mock_ff2pp_instance.__iter__.call_args_list, [mock.call()]
-        )
+        self.assertEqual(mock_ff2pp_instance.__iter__.call_args_list, [mock.call()])
 
         # Check that it returned the expected result.
         self.assertIs(result, mock_iterator)

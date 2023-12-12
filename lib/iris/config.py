@@ -38,9 +38,7 @@ import warnings
 import iris.exceptions
 
 
-def get_logger(
-    name, datefmt=None, fmt=None, level=None, propagate=None, handler=True
-):
+def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler=True):
     """Create a custom class for logging.
 
     Create a :class:`logging.Logger` with a :class:`logging.StreamHandler`

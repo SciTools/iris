@@ -127,8 +127,7 @@ class ConcatenateError(IrisError):
 
     def __str__(self):
         return "\n  ".join(
-            ["failed to concatenate into a single cube."]
-            + list(self.differences)
+            ["failed to concatenate into a single cube."] + list(self.differences)
         )
 
 

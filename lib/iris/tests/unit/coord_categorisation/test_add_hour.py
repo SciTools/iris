@@ -24,9 +24,7 @@ class Test_add_hour(tests.IrisTest):
 
         # use hour numbers as data values also (don't actually use this for
         # anything)
-        cube = iris.cube.Cube(
-            hour_numbers, long_name="test cube", units="metres"
-        )
+        cube = iris.cube.Cube(hour_numbers, long_name="test cube", units="metres")
 
         time_coord = iris.coords.DimCoord(
             hour_numbers,

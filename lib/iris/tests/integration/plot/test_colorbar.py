@@ -87,19 +87,13 @@ class TestColorBarCreation(tests.GraphicsTest):
         self.assertIs(cbar.mappable, mappable_initial)
 
     def test_scatter_with_c_kwarg(self):
-        mappable = scatter(
-            self.traj_lon, self.traj_lat, c=self.traj_lon.points
-        )
+        mappable = scatter(self.traj_lon, self.traj_lat, c=self.traj_lon.points)
         cbar = plt.colorbar()
         self.assertIs(cbar.mappable, mappable)
 
     def test_scatter_with_c_kwarg_specified_mappable(self):
-        mappable_initial = scatter(
-            self.traj_lon, self.traj_lat, c=self.traj_lon.points
-        )
-        _ = scatter(
-            self.traj_lon, self.traj_lat, c=self.traj_lon.points, cmap="cool"
-        )
+        mappable_initial = scatter(self.traj_lon, self.traj_lat, c=self.traj_lon.points)
+        _ = scatter(self.traj_lon, self.traj_lat, c=self.traj_lon.points, cmap="cool")
         cbar = plt.colorbar(mappable_initial)
         self.assertIs(cbar.mappable, mappable_initial)
 

@@ -19,9 +19,7 @@ from iris.tests import env_bin_path
 NCGEN_PATHSTR = str(env_bin_path("ncgen"))
 
 
-def ncgen_from_cdl(
-    cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str
-):
+def ncgen_from_cdl(cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str):
     """
     Generate a test netcdf file from cdl.
 
@@ -62,23 +60,17 @@ def ncgen_from_cdl(
     subprocess.run(call_args, check=True, **call_kwargs)
 
 
-def _file_from_cdl_template(
-    temp_file_dir, dataset_name, dataset_type, template_subs
-):
+def _file_from_cdl_template(temp_file_dir, dataset_name, dataset_type, template_subs):
     """Shared template filling behaviour.
 
     Substitutes placeholders in the appropriate CDL template, saves to a
     NetCDF file.
 
     """
-    nc_write_path = (
-        Path(temp_file_dir).joinpath(dataset_name).with_suffix(".nc")
-    )
+    nc_write_path = Path(temp_file_dir).joinpath(dataset_name).with_suffix(".nc")
     # Fetch the specified CDL template type.
     templates_dir = Path(__file__).parent / "file_headers"
-    template_filepath = templates_dir.joinpath(dataset_type).with_suffix(
-        ".cdl"
-    )
+    template_filepath = templates_dir.joinpath(dataset_type).with_suffix(".cdl")
     # Substitute placeholders.
     with open(template_filepath) as file:
         template_string = Template(file.read())

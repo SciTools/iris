@@ -112,10 +112,7 @@ def _series_index_unique(pandas_series: pandas.Series):
     else:
         result = None
         levels_combinations = chain(
-            *[
-                combinations(levels_range, levels + 1)
-                for levels in levels_range
-            ]
+            *[combinations(levels_range, levels + 1) for levels in levels_range]
         )
         for lc in levels_combinations:
             if pandas_series.groupby(level=lc).nunique().max() == 1:
@@ -171,8 +168,7 @@ def as_cube(
     calendars = calendars or {}
     if pandas_array.ndim not in [1, 2]:
         raise ValueError(
-            "Only 1D or 2D Pandas arrays "
-            "can currently be converted to Iris cubes."
+            "Only 1D or 2D Pandas arrays can currently be converted to Iris cubes."
         )
 
     # Make the copy work consistently across NumPy 1.6 and 1.7.
@@ -182,9 +178,7 @@ def as_cube(
     order = "C" if copy else "A"
     data = np.array(pandas_array, copy=copy, order=order)
     cube = Cube(np.ma.masked_invalid(data, copy=False))
-    _add_iris_coord(
-        cube, "index", pandas_array.index, 0, calendars.get(0, None)
-    )
+    _add_iris_coord(cube, "index", pandas_array.index, 0, calendars.get(0, None))
     if pandas_array.ndim == 2:
         _add_iris_coord(
             cube,
@@ -384,8 +378,7 @@ def as_cubes(
         raise ValueError(message)
 
     if not (
-        pandas_index.is_monotonic_increasing
-        or pandas_index.is_monotonic_decreasing
+        pandas_index.is_monotonic_increasing or pandas_index.is_monotonic_decreasing
     ):
         # Need monotonic index for use in DimCoord(s).
         # This function doesn't sort_index itself since that breaks the
@@ -412,9 +405,7 @@ def as_cubes(
         # Common convenience to get the right DM in the right format for
         #  Cube creation.
         calendar = calendars.get(name_)
-        instance = _get_dimensional_metadata(
-            name_, values_, calendar, dm_class_
-        )
+        instance = _get_dimensional_metadata(name_, values_, calendar, dm_class_)
         return (instance, dimensions_)
 
     # DimCoords.
@@ -519,9 +510,7 @@ def _assert_shared(np_obj, pandas_obj):
     base = _get_base(values)
     np_base = _get_base(np_obj)
     if base is not np_base:
-        msg = "Pandas {} does not share memory".format(
-            type(pandas_obj).__name__
-        )
+        msg = "Pandas {} does not share memory".format(type(pandas_obj).__name__)
         raise AssertionError(msg)
 
 
@@ -531,9 +520,7 @@ def _make_dim_coord_list(cube):
     for dimn in range(cube.ndim):
         dimn_coord = cube.coords(dimensions=dimn, dim_coords=True)
         if dimn_coord:
-            outlist += [
-                [dimn_coord[0].name(), _as_pandas_coord(dimn_coord[0])]
-            ]
+            outlist += [[dimn_coord[0].name(), _as_pandas_coord(dimn_coord[0])]]
         else:
             outlist += [[f"dim{dimn}", range(cube.shape[dimn])]]
     return list(zip(*outlist))
@@ -870,9 +857,7 @@ def as_data_frame(
         coord_names, coords = _make_dim_coord_list(cube)
         # Make base DataFrame
         index = pandas.MultiIndex.from_product(coords, names=coord_names)
-        data_frame = pandas.DataFrame(
-            data.ravel(), columns=[cube.name()], index=index
-        )
+        data_frame = pandas.DataFrame(data.ravel(), columns=[cube.name()], index=index)
 
         if add_aux_coords:
             data_frame = merge_metadata(_make_aux_coord_list(cube))

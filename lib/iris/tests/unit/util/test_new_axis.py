@@ -46,9 +46,7 @@ class Test:
         for cm_a, cm_b in zip(cube_a.cell_measures(), cube_b.cell_measures()):
             assert cm_a is not cm_b
 
-        for factory_a, factory_b in zip(
-            cube_a.aux_factories, cube_b.aux_factories
-        ):
+        for factory_a, factory_b in zip(cube_a.aux_factories, cube_b.aux_factories):
             assert factory_a is not factory_b
 
     def test_promote_no_coord(self, stock_cube):
@@ -87,9 +85,7 @@ class Test:
         assert result == expected
         # Explicitly check time has been made a cube dim coord as cube equality
         # does not check this.
-        assert result.coord("time") in [
-            item[0] for item in result._dim_coords_and_dims
-        ]
+        assert result.coord("time") in [item[0] for item in result._dim_coords_and_dims]
         self._assert_cube_notis(result, stock_cube)
 
     def test_promote_scalar_auxcoord(self, stock_cube):
@@ -121,9 +117,7 @@ class Test:
         stock_cube.add_aux_coord(coord)
 
         new_cube = iris.util.new_axis(stock_cube, coord)
-        with pytest.raises(
-            ValueError, match="is already a dimension coordinate."
-        ):
+        with pytest.raises(ValueError, match="is already a dimension coordinate."):
             iris.util.new_axis(new_cube, coord)
 
     def test_promote_non_scalar(self, stock_cube):
@@ -296,9 +290,7 @@ class Test:
         self._assert_cube_notis(result, stock_cube)
 
     def test_expand_multiple(self, stock_cube):
-        result = new_axis(
-            stock_cube, "time", expand_extras=["wibble", "cell_area"]
-        )
+        result = new_axis(stock_cube, "time", expand_extras=["wibble", "cell_area"])
 
         expected = iris.cube.Cube(
             stock_cube.data[None], long_name="thingness", units="1"

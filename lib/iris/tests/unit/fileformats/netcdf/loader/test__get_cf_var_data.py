@@ -23,9 +23,7 @@ class Test__get_cf_var_data(tests.IrisTest):
         self.shape = (300000, 240, 200)
         self.expected_chunks = _optimum_chunksize(self.shape, self.shape)
 
-    def _make(
-        self, chunksizes=None, shape=None, dtype="i4", **extra_properties
-    ):
+    def _make(self, chunksizes=None, shape=None, dtype="i4", **extra_properties):
         cf_data = mock.MagicMock(
             _FillValue=None,
             __getitem__="<real-data>",

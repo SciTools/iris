@@ -42,9 +42,7 @@ class TestBuildTransverseMercatorCoordinateSystem(tests.IrisTest):
             )
         else:
             gridvar_props["semi_minor_axis"] = 6356256.909
-            expected_ellipsoid = iris.coord_systems.GeogCS(
-                6377563.396, 6356256.909
-            )
+            expected_ellipsoid = iris.coord_systems.GeogCS(6377563.396, 6356256.909)
 
         if no_options:
             del gridvar_props["false_easting"]
@@ -59,12 +57,8 @@ class TestBuildTransverseMercatorCoordinateSystem(tests.IrisTest):
         cs = build_transverse_mercator_coordinate_system(None, cf_grid_var)
 
         expected = TransverseMercator(
-            latitude_of_projection_origin=(
-                cf_grid_var.latitude_of_projection_origin
-            ),
-            longitude_of_central_meridian=(
-                cf_grid_var.longitude_of_central_meridian
-            ),
+            latitude_of_projection_origin=(cf_grid_var.latitude_of_projection_origin),
+            longitude_of_central_meridian=(cf_grid_var.longitude_of_central_meridian),
             false_easting=test_easting,
             false_northing=test_northing,
             scale_factor_at_central_meridian=test_scale_factor,

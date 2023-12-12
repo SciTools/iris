@@ -173,8 +173,7 @@ def _get_xy_coords(cube):
         ]
     if len(x_coords) != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D x "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D x coordinate.".format(cube.name())
         )
     x_coord = x_coords[0]
 
@@ -190,8 +189,7 @@ def _get_xy_coords(cube):
         ]
     if len(y_coords) != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D y "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D y coordinate.".format(cube.name())
         )
     y_coord = y_coords[0]
 
@@ -216,8 +214,7 @@ def _get_xy_coords(cube):
 
     if x_dim is not None and y_dim == x_dim:
         raise ValueError(
-            "The cube's x and y coords must not describe the "
-            "same data dimension."
+            "The cube's x and y coords must not describe the same data dimension."
         )
 
     return x_coord, y_coord
@@ -231,14 +228,12 @@ def _get_bounds_in_units(coord, units, dtype):
     """
     # The bounds are cast to dtype before conversion to prevent issues when
     # mixing float32 and float64 types.
-    return coord.units.convert(
-        coord.contiguous_bounds().astype(dtype), units
-    ).astype(dtype)
+    return coord.units.convert(coord.contiguous_bounds().astype(dtype), units).astype(
+        dtype
+    )
 
 
-def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
-    src_cube, grid_cube
-):
+def _regrid_area_weighted_rectilinear_src_and_grid__prepare(src_cube, grid_cube):
     """
     First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
 
@@ -355,9 +350,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_x_bounds, grid_x_bounds, circular=spherical, mod=modulus
         )
         y_info = _get_coord_to_coord_matrix_info(src_y_bounds, grid_y_bounds)
-        weights_matrix = _combine_xy_weights(
-            x_info, y_info, src_shape, tgt_shape
-        )
+        weights_matrix = _combine_xy_weights(x_info, y_info, src_shape, tgt_shape)
         return weights_matrix
 
     weights = _calculate_regrid_area_weighted_weights(
@@ -460,9 +453,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     return new_cube
 
 
-def _get_coord_to_coord_matrix_info(
-    src_bounds, tgt_bounds, circular=False, mod=None
-):
+def _get_coord_to_coord_matrix_info(src_bounds, tgt_bounds, circular=False, mod=None):
     """
     First part of weight calculation.
 
@@ -671,9 +662,7 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
     if ma.isMaskedArray(data):
         # If the source is masked, the result should have a similar mask.
         fill_value = data.fill_value
-        normalisations = ma.array(
-            normalisations, mask=~tgt_mask, fill_value=fill_value
-        )
+        normalisations = ma.array(normalisations, mask=~tgt_mask, fill_value=fill_value)
     elif np.any(~tgt_mask):
         normalisations = ma.array(normalisations, mask=~tgt_mask)
 
@@ -682,9 +671,7 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
     dtype = np.promote_types(data.dtype, np.float16)
 
     # Perform regridding on unmasked data.
-    result = _standard_regrid_no_masks(
-        ma.filled(data, 0.0), weights, tgt_shape
-    )
+    result = _standard_regrid_no_masks(ma.filled(data, 0.0), weights, tgt_shape)
     # Apply normalisations and masks to the regridded data.
     result = result * normalisations
     result = result.astype(dtype)

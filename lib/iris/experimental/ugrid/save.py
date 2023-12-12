@@ -49,15 +49,11 @@ def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
             mesh_dimensions, _ = sman._get_dim_names(mesh)
 
             # Create dimensions.
-            sman._create_cf_dimensions(
-                cube=None, dimension_names=mesh_dimensions
-            )
+            sman._create_cf_dimensions(cube=None, dimension_names=mesh_dimensions)
 
             # Create the mesh components.
             sman._add_mesh(mesh)
 
         # Add a conventions attribute.
         # TODO: add 'UGRID' to conventions, when this is agreed with CF ?
-        sman.update_global_attributes(
-            Conventions=netcdf.CF_CONVENTIONS_VERSION
-        )
+        sman.update_global_attributes(Conventions=netcdf.CF_CONVENTIONS_VERSION)

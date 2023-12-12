@@ -26,9 +26,7 @@ class TestLoad(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -82,9 +80,7 @@ class TestLoadCube(tests.IrisTest):
         _ = iris.load_cube(paths)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         _ = iris.load_cube(paths)
 
     def test_not_enough(self):
@@ -109,9 +105,7 @@ class TestLoadCubes(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load_cubes(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -142,9 +136,7 @@ class TestLoadRaw(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load_raw(paths)
         self.assertEqual(len(cubes), 1)
 

@@ -48,9 +48,7 @@ class _ThreadSafeWrapper(ABC):
 
     @classmethod
     def is_contained_type(cls, instance):
-        return all(
-            hasattr(instance, attr) for attr in cls._DUCKTYPE_CHECK_PROPERTIES
-        )
+        return all(hasattr(instance, attr) for attr in cls._DUCKTYPE_CHECK_PROPERTIES)
 
     @classmethod
     def from_existing(cls, instance):
@@ -152,9 +150,7 @@ class VariableWrapper(_ThreadSafeWrapper):
         that downstream calls are also performed within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            dimensions_ = list(
-                self._contained_instance.get_dims(*args, **kwargs)
-            )
+            dimensions_ = list(self._contained_instance.get_dims(*args, **kwargs))
         return tuple([DimensionWrapper.from_existing(d) for d in dimensions_])
 
 
@@ -184,10 +180,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             dimensions_ = self._contained_instance.dimensions
-        return {
-            k: DimensionWrapper.from_existing(v)
-            for k, v in dimensions_.items()
-        }
+        return {k: DimensionWrapper.from_existing(v) for k, v in dimensions_.items()}
 
     def createDimension(self, *args, **kwargs) -> DimensionWrapper:
         """
@@ -200,9 +193,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            new_dimension = self._contained_instance.createDimension(
-                *args, **kwargs
-            )
+            new_dimension = self._contained_instance.createDimension(*args, **kwargs)
         return DimensionWrapper.from_existing(new_dimension)
 
     # All Group API that returns Variable(s) is wrapped to instead return
@@ -220,9 +211,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             variables_ = self._contained_instance.variables
-        return {
-            k: VariableWrapper.from_existing(v) for k, v in variables_.items()
-        }
+        return {k: VariableWrapper.from_existing(v) for k, v in variables_.items()}
 
     def createVariable(self, *args, **kwargs) -> VariableWrapper:
         """
@@ -235,9 +224,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         within _GLOBAL_NETCDF4_LOCK.
         """
         with _GLOBAL_NETCDF4_LOCK:
-            new_variable = self._contained_instance.createVariable(
-                *args, **kwargs
-            )
+            new_variable = self._contained_instance.createVariable(*args, **kwargs)
         return VariableWrapper.from_existing(new_variable)
 
     def get_variables_by_attributes(
@@ -255,9 +242,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             variables_ = list(
-                self._contained_instance.get_variables_by_attributes(
-                    *args, **kwargs
-                )
+                self._contained_instance.get_variables_by_attributes(*args, **kwargs)
             )
         return [VariableWrapper.from_existing(v) for v in variables_]
 

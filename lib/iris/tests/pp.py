@@ -53,15 +53,11 @@ class PPTest:
                 temp_pp_path = iris.util.create_temp_filename(".pp")
                 try:
                     iris.save(reference_cubes, temp_pp_path, **kwargs)
-                    self._create_reference_txt(
-                        reference_txt_path, temp_pp_path
-                    )
+                    self._create_reference_txt(reference_txt_path, temp_pp_path)
                 finally:
                     os.remove(temp_pp_path)
             elif reference_pp_path:
-                self._create_reference_txt(
-                    reference_txt_path, reference_pp_path
-                )
+                self._create_reference_txt(reference_txt_path, reference_pp_path)
             else:
                 raise ValueError(
                     "Missing all of reference txt file, cubes, and PP path."

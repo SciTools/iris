@@ -380,9 +380,7 @@ def multidim_lazy_stack(stack):
         result = da.stack(list(stack))
     else:
         # Recurse because dask.stack does not do multi-dimensional.
-        result = da.stack(
-            [multidim_lazy_stack(subarray) for subarray in stack]
-        )
+        result = da.stack([multidim_lazy_stack(subarray) for subarray in stack])
     return result
 
 

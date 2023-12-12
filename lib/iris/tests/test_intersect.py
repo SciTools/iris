@@ -54,9 +54,7 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
             0,
         )
         cube.add_aux_coord(
-            iris.coords.DimCoord(
-                points=np.int32(11), long_name="pressure", units="Pa"
-            )
+            iris.coords.DimCoord(points=np.int32(11), long_name="pressure", units="Pa")
         )
         cube.rename("temperature")
         cube.units = "K"
@@ -94,9 +92,7 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
             0,
         )
         cube2.add_aux_coord(
-            iris.coords.DimCoord(
-                points=np.int32(11), long_name="pressure", units="Pa"
-            )
+            iris.coords.DimCoord(points=np.int32(11), long_name="pressure", units="Pa")
         )
         cube2.rename("")
 

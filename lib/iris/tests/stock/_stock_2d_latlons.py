@@ -87,8 +87,7 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     for coord in (x_coord_1d, y_coord_1d):
         if coord.ndim != 1:
             msg = (
-                "Input coords must be one-dimensional. "
-                'Coordinate "{}" has shape {}.'
+                "Input coords must be one-dimensional. " 'Coordinate "{}" has shape {}.'
             )
             raise ValueError(msg.format(coord.name(), coord.shape))
 
@@ -295,9 +294,7 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     return cube
 
 
-def make_bounds_discontiguous_at_point(
-    cube, at_iy, at_ix, in_y=False, upper=True
-):
+def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False, upper=True):
     """
     Meddle with the XY grid bounds of a 2D cube to make the grid discontiguous.
 
@@ -314,8 +311,7 @@ def make_bounds_discontiguous_at_point(
     y_coord = cube.coord(axis="y")
     assert x_coord.shape == y_coord.shape
     assert (
-        coord.bounds.ndim == 3 and coord.shape[-1] == 4
-        for coord in (x_coord, y_coord)
+        coord.bounds.ndim == 3 and coord.shape[-1] == 4 for coord in (x_coord, y_coord)
     )
 
     # For both X and Y coord, move points + bounds to create a discontinuity.

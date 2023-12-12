@@ -62,9 +62,7 @@ class Test_CubeSummary(tests.IrisTest):
             "Cell measures:",
             "Ancillary variables:",
         ]
-        self.assertEqual(
-            list(rep.vector_sections.keys()), expected_vector_sections
-        )
+        self.assertEqual(list(rep.vector_sections.keys()), expected_vector_sections)
         for title in expected_vector_sections:
             vector_section = rep.vector_sections[title]
             self.assertEqual(vector_section.contents, [])
@@ -79,9 +77,7 @@ class Test_CubeSummary(tests.IrisTest):
             "Attributes:",
         ]
 
-        self.assertEqual(
-            list(rep.scalar_sections.keys()), expected_scalar_sections
-        )
+        self.assertEqual(list(rep.scalar_sections.keys()), expected_scalar_sections)
         for title in expected_scalar_sections:
             scalar_section = rep.scalar_sections[title]
             self.assertEqual(scalar_section.contents, [])
@@ -115,9 +111,7 @@ class Test_CubeSummary(tests.IrisTest):
             long_name="foo",
             attributes={"key": 42, "key2": "value-str"},
         )
-        scalar_coord_awkward_text = AuxCoord(
-            ["a is\nb\n and c"], long_name="foo_2"
-        )
+        scalar_coord_awkward_text = AuxCoord(["a is\nb\n and c"], long_name="foo_2")
         cube.add_aux_coord(scalar_coord_no_bounds)
         cube.add_aux_coord(scalar_coord_with_bounds)
         cube.add_aux_coord(scalar_coord_simple_text)
@@ -219,16 +213,10 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertEqual(rep.header.dimension_header.shape, [])
         self.assertEqual(rep.header.dimension_header.contents, ["scalar cube"])
         self.assertEqual(len(rep.vector_sections), 6)
-        self.assertTrue(
-            all(sect.is_empty() for sect in rep.vector_sections.values())
-        )
+        self.assertTrue(all(sect.is_empty() for sect in rep.vector_sections.values()))
         self.assertEqual(len(rep.scalar_sections), 6)
-        self.assertEqual(
-            len(rep.scalar_sections["Scalar coordinates:"].contents), 1
-        )
-        self.assertTrue(
-            rep.scalar_sections["Scalar cell measures:"].is_empty()
-        )
+        self.assertEqual(len(rep.scalar_sections["Scalar coordinates:"].contents), 1)
+        self.assertTrue(rep.scalar_sections["Scalar cell measures:"].is_empty())
         self.assertTrue(rep.scalar_sections["Attributes:"].is_empty())
         self.assertTrue(rep.scalar_sections["Cell methods:"].is_empty())
 
@@ -244,9 +232,7 @@ class Test_CubeSummary(tests.IrisTest):
         co2_summ = rep.vector_sections["Auxiliary coordinates:"].contents[0]
         # Notes: 'b' is same so does not appear; sorted order; quoted strings.
         self.assertEqual(co1_summ.extra, "a=1")
-        self.assertEqual(
-            co2_summ.extra, "a=7, text='ok', text2='multi\\nline', z=77"
-        )
+        self.assertEqual(co2_summ.extra, "a=7, text='ok', text2='multi\\nline', z=77")
 
     def test_array_attributes(self):
         cube = self.cube

@@ -139,40 +139,26 @@ def pearsonr(
             )
 
         dims_1_common = [
-            i
-            for i in range(cube_1.ndim)
-            if dim_coords_1[i] in common_dim_coords
+            i for i in range(cube_1.ndim) if dim_coords_1[i] in common_dim_coords
         ]
         weights_1 = broadcast_to_shape(weights, cube_1.shape, dims_1_common)
         if cube_2.shape != smaller_shape:
             dims_2_common = [
-                i
-                for i in range(cube_2.ndim)
-                if dim_coords_2[i] in common_dim_coords
+                i for i in range(cube_2.ndim) if dim_coords_2[i] in common_dim_coords
             ]
-            weights_2 = broadcast_to_shape(
-                weights, cube_2.shape, dims_2_common
-            )
+            weights_2 = broadcast_to_shape(weights, cube_2.shape, dims_2_common)
         else:
             weights_2 = weights
 
     # Calculate correlations.
-    s1 = cube_1 - cube_1.collapsed(
-        corr_coords, iris.analysis.MEAN, weights=weights_1
-    )
-    s2 = cube_2 - cube_2.collapsed(
-        corr_coords, iris.analysis.MEAN, weights=weights_2
-    )
+    s1 = cube_1 - cube_1.collapsed(corr_coords, iris.analysis.MEAN, weights=weights_1)
+    s2 = cube_2 - cube_2.collapsed(corr_coords, iris.analysis.MEAN, weights=weights_2)
 
     covar = (s1 * s2).collapsed(
         corr_coords, iris.analysis.SUM, weights=weights_1, mdtol=mdtol
     )
-    var_1 = (s1**2).collapsed(
-        corr_coords, iris.analysis.SUM, weights=weights_1
-    )
-    var_2 = (s2**2).collapsed(
-        corr_coords, iris.analysis.SUM, weights=weights_2
-    )
+    var_1 = (s1**2).collapsed(corr_coords, iris.analysis.SUM, weights=weights_1)
+    var_2 = (s2**2).collapsed(corr_coords, iris.analysis.SUM, weights=weights_2)
 
     denom = iris.analysis.maths.apply_ufunc(
         np.sqrt, var_1 * var_2, new_unit=covar.units

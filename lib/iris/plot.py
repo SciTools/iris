@@ -163,9 +163,7 @@ def _get_plot_defn(cube, mode, ndims=2):
         if coord is None:
             aux_coords = cube.coords(dimensions=dim)
             aux_coords = [
-                coord
-                for coord in aux_coords
-                if isinstance(coord, iris.coords.DimCoord)
+                coord for coord in aux_coords if isinstance(coord, iris.coords.DimCoord)
             ]
             if aux_coords:
                 aux_coords.sort(key=lambda coord: coord.metadata)
@@ -173,15 +171,11 @@ def _get_plot_defn(cube, mode, ndims=2):
 
     # If plotting a 2 dimensional plot, check for 2d coordinates
     if ndims == 2:
-        missing_dims = [
-            dim for dim, coord in enumerate(coords) if coord is None
-        ]
+        missing_dims = [dim for dim, coord in enumerate(coords) if coord is None]
         if missing_dims:
             # Note that this only picks up coordinates that span the dims
             two_dim_coords = cube.coords(dimensions=missing_dims)
-            two_dim_coords = [
-                coord for coord in two_dim_coords if coord.ndim == 2
-            ]
+            two_dim_coords = [coord for coord in two_dim_coords if coord.ndim == 2]
             if len(two_dim_coords) >= 2:
                 two_dim_coords.sort(key=lambda coord: coord.metadata)
                 coords = two_dim_coords[:2]
@@ -195,10 +189,7 @@ def _get_plot_defn(cube, mode, ndims=2):
         axis = "Z"
         if axis in axes:
             for coord in cube.coords(dim_coords=False):
-                if (
-                    max(coord.shape) > 1
-                    and iris.util.guess_coord_axis(coord) == axis
-                ):
+                if max(coord.shape) > 1 and iris.util.guess_coord_axis(coord) == axis:
                     coords[axes.index(axis)] = coord
 
     # Re-order the coordinates to achieve the preferred
@@ -222,9 +213,7 @@ def _get_plot_defn(cube, mode, ndims=2):
 
 def _can_draw_map(coords):
     std_names = [
-        c and c.standard_name
-        for c in coords
-        if isinstance(c, iris.coords.Coord)
+        c and c.standard_name for c in coords if isinstance(c, iris.coords.Coord)
     ]
     valid_std_names = [
         ["latitude", "longitude"],
@@ -392,9 +381,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # Get & remove the coords entry from kwargs.
     coords = kwargs.pop("coords", None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(
-            cube, coords, mode, ndims=2
-        )
+        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
@@ -402,9 +389,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
 
     for coord in plot_defn.coords:
         if hasattr(coord, "has_bounds") and coord.has_bounds():
-            _check_bounds_contiguity_and_mask(
-                coord, data=cube.data, atol=contig_tol
-            )
+            _check_bounds_contiguity_and_mask(coord, data=cube.data, atol=contig_tol)
 
     if _can_draw_map(plot_defn.coords):
         result = _map_common(
@@ -546,8 +531,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             if values.dtype.char in "SU":
                 if values.ndim != 1:
                     raise ValueError(
-                        "Multi-dimensional string coordinates "
-                        "not supported."
+                        "Multi-dimensional string coordinates not supported."
                     )
                 plot_arrays.append(np.arange(values.size))
                 string_axes[axis_name] = values
@@ -595,8 +579,7 @@ def _fixup_dates(coord, values):
                 raise IrisError(msg)
 
             r = [
-                cftime.datetime(*date, calendar=coord.units.calendar)
-                for date in dates
+                cftime.datetime(*date, calendar=coord.units.calendar) for date in dates
             ]
 
         values = np.empty(len(r), dtype=object)
@@ -637,9 +620,7 @@ def _u_object_from_v_object(v_object):
 
 
 def _get_plot_objects(args):
-    if len(args) > 2 and isinstance(
-        args[2], (iris.cube.Cube, iris.coords.Coord)
-    ):
+    if len(args) > 2 and isinstance(args[2], (iris.cube.Cube, iris.coords.Coord)):
         # three arguments
         u_object, v_object1, v_object2 = args[:3]
         u1, v1 = _uv_from_u_object_v_object(u_object, v_object1)
@@ -660,9 +641,7 @@ def _get_plot_objects(args):
         u = u1
         v = (v1, v2)
         v_object = (v_object1, v_object2)
-    elif len(args) > 1 and isinstance(
-        args[1], (iris.cube.Cube, iris.coords.Coord)
-    ):
+    elif len(args) > 1 and isinstance(args[1], (iris.cube.Cube, iris.coords.Coord)):
         # two arguments
         u_object, v_object = args[:2]
         u, v = _uv_from_u_object_v_object(u_object, v_object)
@@ -711,9 +690,7 @@ def _get_geodesic_params(globe):
             semimajor = globe.semiminor_axis / (1.0 - flattening)
         elif flattening is None:
             if globe.semiminor_axis is not None:
-                flattening = (semimajor - globe.semiminor_axis) / float(
-                    semimajor
-                )
+                flattening = (semimajor - globe.semiminor_axis) / float(semimajor)
             else:
                 # Has inverse flattening or raises error
                 flattening = 1.0 / globe.inverse_flattening
@@ -812,9 +789,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     ):
         # Replace non-cartopy subplot/axes with a cartopy alternative and set
         # the transform keyword.
-        kwargs = _ensure_cartopy_axes_and_determine_kwargs(
-            u_object, v_object, kwargs
-        )
+        kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object, kwargs)
         if draw_method_name == "plot" and u_object.standard_name not in (
             "projection_x_coordinate",
             "projection_y_coordinate",
@@ -866,9 +841,7 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     ):
         # Replace non-cartopy subplot/axes with a cartopy alternative and set
         # the transform keyword.
-        kwargs = _ensure_cartopy_axes_and_determine_kwargs(
-            u_object, v_object1, kwargs
-        )
+        kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object1, kwargs)
 
     axes = kwargs.pop("axes", None)
     draw_method = getattr(axes if axes else plt, draw_method_name)
@@ -926,9 +899,7 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     """
     # Determine projection.
     if x_coord.coord_system != y_coord.coord_system:
-        raise ValueError(
-            "The X and Y coordinates must have equal coordinate" " systems."
-        )
+        raise ValueError("The X and Y coordinates must have equal coordinate systems.")
     cs = x_coord.coord_system
     if cs is not None:
         cartopy_proj = cs.as_cartopy_projection()
@@ -955,7 +926,7 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
             _replace_axes_with_cartopy_axes(cartopy_proj)
     elif axes and not isinstance(axes, cartopy.mpl.geoaxes.GeoAxes):
         raise TypeError(
-            "The supplied axes instance must be a cartopy " "GeoAxes instance."
+            "The supplied axes instance must be a cartopy GeoAxes instance."
         )
 
     # Set the "from transform" keyword.
@@ -986,9 +957,7 @@ def _check_geostationary_coords_and_convert(x, y, kwargs):
     return x, y
 
 
-def _map_common(
-    draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwargs
-):
+def _map_common(draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwargs):
     """
     Draw the given cube on a map using its points or bounds.
 
@@ -1040,9 +1009,7 @@ def _map_common(
     # placed in the CS.
     if getattr(x_coord, "circular", False):
         original_length = y.shape[1]
-        _, direction = iris.util.monotonic(
-            x_coord.points, return_direction=True
-        )
+        _, direction = iris.util.monotonic(x_coord.points, return_direction=True)
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
@@ -1057,16 +1024,12 @@ def _map_common(
             if val_arr.ndim >= 2 and val_arr.shape[1] == original_length:
                 # Concatenate the first column to the end of the data then
                 # update kwargs
-                val_arr = ma.concatenate(
-                    [val_arr, val_arr[:, 0:1, ...]], axis=1
-                )
+                val_arr = ma.concatenate([val_arr, val_arr[:, 0:1, ...]], axis=1)
                 kwargs[key] = val_arr
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
-    kwargs = _ensure_cartopy_axes_and_determine_kwargs(
-        x_coord, y_coord, kwargs
-    )
+    kwargs = _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs)
 
     # Make Geostationary coordinates plot-able.
     x, y = _check_geostationary_coords_and_convert(x, y, kwargs)
@@ -1246,9 +1209,7 @@ def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
     orography = cube.coord("surface_altitude")
 
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(
-            cube, coords, mode, ndims=2
-        )
+        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
     v_coord, u_coord = plot_defn.coords
@@ -1488,9 +1449,7 @@ def points(cube, *args, **kwargs):
     def _scatter_args(u, v, data, *args, **kwargs):
         return ((u, v) + args, kwargs)
 
-    return _draw_2d_from_points(
-        "scatter", _scatter_args, cube, *args, **kwargs
-    )
+    return _draw_2d_from_points("scatter", _scatter_args, cube, *args, **kwargs)
 
 
 def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
@@ -1772,9 +1731,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
         raise TypeError("y2 must be a cube or a coordinate.")
     args = (x, y1, y2) + args
     _plot_args = None
-    return _draw_two_1d_from_points(
-        "fill_between", _plot_args, *args, **kwargs
-    )
+    return _draw_two_1d_from_points("fill_between", _plot_args, *args, **kwargs)
 
 
 def hist(x, *args, **kwargs):
@@ -1806,8 +1763,7 @@ def hist(x, *args, **kwargs):
         data = x._values
     else:
         raise TypeError(
-            "x must be a cube, coordinate, cell measure or "
-            "ancillary variable."
+            "x must be a cube, coordinate, cell measure or ancillary variable."
         )
     return plt.hist(data, *args, **kwargs)
 
@@ -2008,19 +1964,13 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
 
     supported = ["iris.plot", "iris.quickplot"]
     if plot_func.__module__ not in supported:
-        msg = (
-            'Given plotting module "{}" may not be supported, intended '
-            "use: {}."
-        )
+        msg = 'Given plotting module "{}" may not be supported, intended ' "use: {}."
         msg = msg.format(plot_func.__module__, supported)
         warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 
     supported = ["contour", "contourf", "pcolor", "pcolormesh"]
     if plot_func.__name__ not in supported:
-        msg = (
-            'Given plotting function "{}" may not be supported, intended '
-            "use: {}."
-        )
+        msg = 'Given plotting function "{}" may not be supported, intended ' "use: {}."
         msg = msg.format(plot_func.__name__, supported)
         warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 

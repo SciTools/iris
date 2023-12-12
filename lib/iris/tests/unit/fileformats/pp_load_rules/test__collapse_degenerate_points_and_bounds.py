@@ -76,18 +76,14 @@ class Test(tests.IrisTest):
     def test_bounds_collapse(self):
         points = np.array([1, 1, 1])
         bounds = np.array([[0, 1], [0, 1], [0, 1]])
-        result_pts, result_bds = _collapse_degenerate_points_and_bounds(
-            points, bounds
-        )
+        result_pts, result_bds = _collapse_degenerate_points_and_bounds(points, bounds)
         self.assertArrayEqual(result_pts, np.array([1]))
         self.assertArrayEqual(result_bds, np.array([[0, 1]]))
 
     def test_bounds_no_collapse(self):
         points = np.array([1, 1, 1])
         bounds = np.array([[0, 1], [0, 1], [0, 2]])
-        result_pts, result_bds = _collapse_degenerate_points_and_bounds(
-            points, bounds
-        )
+        result_pts, result_bds = _collapse_degenerate_points_and_bounds(points, bounds)
         self.assertArrayEqual(result_pts, points)
         self.assertArrayEqual(result_bds, bounds)
 

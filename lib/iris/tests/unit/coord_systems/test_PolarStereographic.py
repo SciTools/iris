@@ -167,9 +167,7 @@ class AsCartopyMixin:
         scale_factor_at_projection_origin = 1.3
         false_easting = 13
         false_northing = 15
-        ellipsoid = GeogCS(
-            semi_major_axis=6377563.396, semi_minor_axis=6356256.909
-        )
+        ellipsoid = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)
 
         polar_cs = PolarStereographic(
             central_lat=central_lat,
@@ -204,9 +202,7 @@ class AsCartopyMixin:
         true_scale_lat = 80
         false_easting = 13
         false_northing = 15
-        ellipsoid = GeogCS(
-            semi_major_axis=6377563.396, semi_minor_axis=6356256.909
-        )
+        ellipsoid = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)
 
         polar_cs = PolarStereographic(
             central_lat=central_lat,
@@ -239,9 +235,7 @@ class Test_PolarStereographic__as_cartopy_crs(tests.IrisTest, AsCartopyMixin):
         self.as_cartopy_method = PolarStereographic.as_cartopy_crs
 
 
-class Test_PolarStereographic__as_cartopy_projection(
-    tests.IrisTest, AsCartopyMixin
-):
+class Test_PolarStereographic__as_cartopy_projection(tests.IrisTest, AsCartopyMixin):
     def setUp(self):
         self.as_cartopy_method = PolarStereographic.as_cartopy_projection
 

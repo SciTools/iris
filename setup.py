@@ -45,10 +45,7 @@ def custom_command(cmd, help=""):
             # Execute the parent "cmd" class method.
             cmd.finalize_options(self)
 
-            if (
-                not hasattr(self, "editable_mode")
-                or self.editable_mode is None
-            ):
+            if not hasattr(self, "editable_mode") or self.editable_mode is None:
                 # Default to editable i.e., applicable to "std_names" and
                 # and "develop" commands.
                 self.editable_mode = True
@@ -78,9 +75,7 @@ def custom_command(cmd, help=""):
 custom_commands = {
     "develop": custom_command(develop),
     "build_py": custom_command(build_py),
-    "std_names": custom_command(
-        BaseCommand, help="generate CF standard names"
-    ),
+    "std_names": custom_command(BaseCommand, help="generate CF standard names"),
 }
 
 

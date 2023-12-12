@@ -36,9 +36,7 @@ class Test(tests.IrisTest):
         assert cube.coord("longitude").circular
 
         result = _xy_range(cube)
-        np.testing.assert_array_almost_equal(
-            result, ((0, 360), (-90, 90)), decimal=0
-        )
+        np.testing.assert_array_almost_equal(result, ((0, 360), (-90, 90)), decimal=0)
 
     @tests.skip_data
     def test_geog_cs_regional(self):

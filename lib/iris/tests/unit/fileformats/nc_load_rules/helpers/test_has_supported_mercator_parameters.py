@@ -119,8 +119,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
         self.assertEqual(len(warns), 1)
         self.assertRegex(
             str(warns[0]),
-            "both "
-            '"scale_factor_at_projection_origin" and "standard_parallel"',
+            "both " '"scale_factor_at_projection_origin" and "standard_parallel"',
         )
 
 

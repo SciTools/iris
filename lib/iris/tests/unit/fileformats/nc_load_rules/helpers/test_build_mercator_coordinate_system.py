@@ -34,9 +34,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
@@ -56,9 +54,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis,
                 inverse_flattening=cf_grid_var.inverse_flattening,
@@ -97,9 +93,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
@@ -118,9 +112,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),

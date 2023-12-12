@@ -83,16 +83,12 @@ class Test_standard(tests.IrisTest):
 
     def test_attributes(self):
         # Confirm that this can handle attrib dicts including np arrays.
-        attrib_one_two = Mock(
-            attributes={"one": np.arange(1), "two": np.arange(2)}
-        )
+        attrib_one_two = Mock(attributes={"one": np.arange(1), "two": np.arange(2)})
         attrib_three_four = Mock(
             attributes={"three": np.arange(3), "four": np.arange(4)}
         )
         input_list = [attrib_one_two, attrib_three_four]
-        result = metadata_filter(
-            input_list, attributes=attrib_one_two.attributes
-        )
+        result = metadata_filter(input_list, attributes=attrib_one_two.attributes)
         self.assertIn(attrib_one_two, result)
         self.assertNotIn(attrib_three_four, result)
 

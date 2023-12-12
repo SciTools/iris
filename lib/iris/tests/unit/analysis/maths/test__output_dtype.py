@@ -103,9 +103,7 @@ class Test(tests.IrisTest):
                 self.assertEqual(
                     dtype,
                     result_dtype,
-                    self._binary_error_message(
-                        op, dtype, dtype, dtype, result_dtype
-                    ),
+                    self._binary_error_message(op, dtype, dtype, dtype, result_dtype),
                 )
             for op in self.unary_same_result_ops:
                 result_dtype = _output_dtype(op, dtype)
@@ -155,9 +153,7 @@ class Test(tests.IrisTest):
                 self.assertEqual(
                     expected_dtype,
                     result_dtype,
-                    self._unary_error_message(
-                        op, dtype, expected_dtype, result_dtype
-                    ),
+                    self._unary_error_message(op, dtype, expected_dtype, result_dtype),
                 )
 
     def test_binary_float_argument(self):

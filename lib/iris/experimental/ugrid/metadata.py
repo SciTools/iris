@@ -88,10 +88,7 @@ class ConnectivityMetadata(BaseMetadata):
             ConnectivityMetadata._members,
         )
         result = all(
-            [
-                getattr(self, field) == getattr(other, field)
-                for field in members
-            ]
+            [getattr(self, field) == getattr(other, field) for field in members]
         )
         if result:
             # Perform lenient comparison of the other parent members.
@@ -330,10 +327,7 @@ class MeshCoordMetadata(BaseMetadata):
         # Perform "strict" comparison for the MeshCoord specific members
         # 'location', 'axis' : for equality, they must all match.
         result = all(
-            [
-                getattr(self, field) == getattr(other, field)
-                for field in self._members
-            ]
+            [getattr(self, field) == getattr(other, field) for field in self._members]
         )
         if result:
             # Perform lenient comparison of the other parent members.

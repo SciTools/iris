@@ -88,9 +88,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         in_filename = tests.get_data_path(("PP", "simple_pp", "global.pp"))
         cubes = iris.load(in_filename, callback=itab_callback)
 
-        reference_txt_path = tests.get_result_path(
-            ("cube_to_pp", "simple.txt")
-        )
+        reference_txt_path = tests.get_result_path(("cube_to_pp", "simple.txt"))
         with self.cube_save_test(
             reference_txt_path, reference_cubes=cubes
         ) as temp_pp_path:
@@ -102,18 +100,14 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         # load 2 arrays of >2D cubes
         cube = stock.simple_pp()
 
-        reference_txt_path = tests.get_result_path(
-            ("cube_to_pp", "append_single.txt")
-        )
+        reference_txt_path = tests.get_result_path(("cube_to_pp", "append_single.txt"))
         with self.cube_save_test(
             reference_txt_path, reference_cubes=[cube, cube]
         ) as temp_pp_path:
             iris.save(cube, temp_pp_path)  # Create file
             iris.save(cube, temp_pp_path, append=True)  # Append to file
 
-        reference_txt_path = tests.get_result_path(
-            ("cube_to_pp", "replace_single.txt")
-        )
+        reference_txt_path = tests.get_result_path(("cube_to_pp", "replace_single.txt"))
         with self.cube_save_test(
             reference_txt_path, reference_cubes=cube
         ) as temp_pp_path:
@@ -127,18 +121,14 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         cube_4d = stock.realistic_4d()
         cubes = [cube_4d[i, :2, :, :] for i in range(4)]
 
-        reference_txt_path = tests.get_result_path(
-            ("cube_to_pp", "append_multi.txt")
-        )
+        reference_txt_path = tests.get_result_path(("cube_to_pp", "append_multi.txt"))
         with self.cube_save_test(
             reference_txt_path, reference_cubes=cubes
         ) as temp_pp_path:
             iris.save(cubes[:2], temp_pp_path)
             iris.save(cubes[2:], temp_pp_path, append=True)
 
-        reference_txt_path = tests.get_result_path(
-            ("cube_to_pp", "replace_multi.txt")
-        )
+        reference_txt_path = tests.get_result_path(("cube_to_pp", "replace_multi.txt"))
         with self.cube_save_test(
             reference_txt_path, reference_cubes=cubes[2:]
         ) as temp_pp_path:
@@ -168,9 +158,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
             reference_cubes=cm,
             field_coords=[coord1.name(), coord2.name()],
         ) as temp_pp_path:
-            iris.save(
-                cm, temp_pp_path, field_coords=[coord1.name(), coord2.name()]
-            )
+            iris.save(cm, temp_pp_path, field_coords=[coord1.name(), coord2.name()])
         # test with coord
         with self.cube_save_test(
             reference_txt_path,
@@ -203,9 +191,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         )
 
         self.add_coords_to_cube_and_test(
-            iris.coords.DimCoord(
-                f.z, long_name="depth", units="m", bounds=f.z_bounds
-            ),
+            iris.coords.DimCoord(f.z, long_name="depth", units="m", bounds=f.z_bounds),
             iris.coords.DimCoord(
                 f.y,
                 standard_name="latitude",
@@ -216,9 +202,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         )
 
         self.add_coords_to_cube_and_test(
-            iris.coords.DimCoord(
-                f.z, long_name="eta", units="1", bounds=f.z_bounds
-            ),
+            iris.coords.DimCoord(f.z, long_name="eta", units="1", bounds=f.z_bounds),
             iris.coords.DimCoord(
                 f.y,
                 standard_name="latitude",
@@ -314,13 +298,9 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
                 pp_cube.coord_system(GeogCS), iris.coord_systems.GeogCS
             )
             self.assertIsNotNone(pp_cube.coord_system(None))
-            self.assertIsInstance(
-                pp_cube.coord_system(None), iris.coord_systems.GeogCS
-            )
+            self.assertIsInstance(pp_cube.coord_system(None), iris.coord_systems.GeogCS)
             self.assertIsNotNone(pp_cube.coord_system())
-            self.assertIsInstance(
-                pp_cube.coord_system(), iris.coord_systems.GeogCS
-            )
+            self.assertIsInstance(pp_cube.coord_system(), iris.coord_systems.GeogCS)
 
     def lbproc_from_pp(self, filename):
         # Gets the lbproc field from the ppfile
@@ -384,9 +364,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
 
         expected = ([2, 1, -5.0], [2, 2, -10.0], [2, 3, -15.0], [2, 4, -20.0])
 
-        for field, (lbvc, lblev, blev) in zip(
-            fields_from_cube(cube), expected
-        ):
+        for field, (lbvc, lblev, blev) in zip(fields_from_cube(cube), expected):
             self.assertEqual(field.lbvc, lbvc)
             self.assertEqual(field.lblev, lblev)
             self.assertEqual(field.blev, blev)

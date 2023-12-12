@@ -41,9 +41,7 @@ def _dot_path():
             if not os.path.isabs(path):
                 try:
                     # Check PATH
-                    subprocess.check_output(
-                        [path, "-V"], stderr=subprocess.STDOUT
-                    )
+                    subprocess.check_output([path, "-V"], stderr=subprocess.STDOUT)
                 except (OSError, subprocess.CalledProcessError):
                     path = None
             else:
@@ -122,20 +120,15 @@ def save_png(source, target, launch=False):
     # Create png data
     if not _dot_path():
         raise ValueError(
-            'Executable "dot" not found: '
-            "Review dot_path setting in site.cfg."
+            'Executable "dot" not found: ' "Review dot_path setting in site.cfg."
         )
     # To filename or open file handle?
     if isinstance(target, str):
-        subprocess.call(
-            [_dot_path(), "-T", "png", "-o", target, dot_file_path]
-        )
+        subprocess.call([_dot_path(), "-T", "png", "-o", target, dot_file_path])
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
-        subprocess.call(
-            [_dot_path(), "-T", "png", dot_file_path], stdout=target
-        )
+        subprocess.call([_dot_path(), "-T", "png", dot_file_path], stdout=target)
     else:
         raise ValueError("Can only write dot png for a filename or writable")
 
@@ -149,8 +142,7 @@ def save_png(source, target, launch=False):
             subprocess.call(("firefox", target))
         else:
             raise iris.exceptions.NotYetImplementedError(
-                "Unhandled operating system. The image has been created in %s"
-                % target
+                "Unhandled operating system. The image has been created in %s" % target
             )
 
     # Remove the dot file if we created it
@@ -223,8 +215,9 @@ def cube_text(cube):
         # Are there any relationships to data dimensions?
         dims = cube.coord_dims(coord)
         for dim in dims:
-            relationships_association += (
-                '\n    "%s" -> "CubeDimension_%s":w' % (coord_label, dim)
+            relationships_association += '\n    "%s" -> "CubeDimension_%s":w' % (
+                coord_label,
+                dim,
             )
 
     dimension_nodes += """
@@ -275,9 +268,7 @@ digraph CubeGraph{
     %(associations)s
 }
     """
-    cube_attributes = list(
-        sorted(cube.attributes.items(), key=lambda item: item[0])
-    )
+    cube_attributes = list(sorted(cube.attributes.items(), key=lambda item: item[0]))
     cube_node = _dot_node(_GRAPH_INDENT, ":Cube", "Cube", cube_attributes)
     res_string = template % {
         "cube_node": cube_node,
@@ -314,9 +305,7 @@ def _coord_text(label, coord):
     attrs = [(name, getattr(coord, name)) for name in _dot_attrs]
 
     if coord.attributes:
-        custom_attrs = sorted(
-            coord.attributes.items(), key=lambda item: item[0]
-        )
+        custom_attrs = sorted(coord.attributes.items(), key=lambda item: item[0])
         attrs.extend(custom_attrs)
 
     node = _dot_node(_SUBGRAPH_INDENT, label, coord.__class__.__name__, attrs)

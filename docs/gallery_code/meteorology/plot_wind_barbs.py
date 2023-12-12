@@ -32,9 +32,7 @@ def main():
     # that a storm is passing over
     magnitude = (uwind**2 + vwind**2) ** 0.5
     magnitude.convert_units("knot")
-    max_speed = magnitude.collapsed(
-        ("latitude", "longitude"), iris.analysis.MAX
-    ).data
+    max_speed = magnitude.collapsed(("latitude", "longitude"), iris.analysis.MAX).data
     max_desired = 65
 
     uwind = uwind / max_speed * max_desired

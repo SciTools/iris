@@ -246,9 +246,7 @@ def _get_cf_var_data(cf_var, filename):
                 if chunks == "contiguous":
                     if (
                         CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE
-                        and isinstance(
-                            cf_var, iris.fileformats.cf.CFDataVariable
-                        )
+                        and isinstance(cf_var, iris.fileformats.cf.CFDataVariable)
                     ):
                         raise KeyError(
                             f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
@@ -416,8 +414,7 @@ def _load_aux_factory(engine, cube):
                     if cf_var_name == name:
                         return coord
                 warnings.warn(
-                    "Unable to find coordinate for variable "
-                    "{!r}".format(name),
+                    "Unable to find coordinate for variable {!r}".format(name),
                     category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
                 )
 
@@ -455,9 +452,7 @@ def _load_aux_factory(engine, cube):
                     if coord_p0.has_bounds():
                         msg = (
                             "Ignoring atmosphere hybrid sigma pressure "
-                            "scalar coordinate {!r} bounds.".format(
-                                coord_p0.name()
-                            )
+                            "scalar coordinate {!r} bounds.".format(coord_p0.name())
                         )
                         warnings.warn(
                             msg,
@@ -484,9 +479,7 @@ def _load_aux_factory(engine, cube):
             depth_c = coord_from_term("depth_c")
             nsigma = coord_from_term("nsigma")
             zlev = coord_from_term("zlev")
-            factory = OceanSigmaZFactory(
-                sigma, eta, depth, depth_c, nsigma, zlev
-            )
+            factory = OceanSigmaZFactory(sigma, eta, depth, depth_c, nsigma, zlev)
         elif formula_type == "ocean_sigma_coordinate":
             sigma = coord_from_term("sigma")
             eta = coord_from_term("eta")
@@ -762,10 +755,7 @@ class ChunkControl(threading.local):
                     raise ValueError(msg)
                 dim_chunks = self.var_dim_chunksizes.setdefault(var_name, {})
                 for dim_name, chunksize in dimension_chunksizes.items():
-                    if not (
-                        isinstance(dim_name, str)
-                        and isinstance(chunksize, int)
-                    ):
+                    if not (isinstance(dim_name, str) and isinstance(chunksize, int)):
                         msg = (
                             "'dimension_chunksizes' kwargs should be a dict "
                             f"of `str: int` pairs, not {dimension_chunksizes!r}."

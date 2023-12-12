@@ -336,9 +336,7 @@ class Test_HdfSaveBug(tests.IrisTest):
         # NOTE: it *should* be possible for a cube with string data to cause
         # this collision, but cubes with string data are currently not working.
         # See : https://github.com/SciTools/iris/issues/4412
-        x_dim = AuxCoord(
-            ["this", "that"], long_name="dim_x", var_name="string_auxco"
-        )
+        x_dim = AuxCoord(["this", "that"], long_name="dim_x", var_name="string_auxco")
         cube_2.add_aux_coord(x_dim, 0)
         cube_1 = Cube([0], long_name="cube_1", var_name="string4")
         # Test save + loadback
@@ -385,9 +383,7 @@ class Test_compute_usage:
             return mock_new_saver_call(*args, **kwargs)
 
         # Patch the Saver() creation to return our mock Saver object.
-        with mock.patch(
-            "iris.fileformats.netcdf.saver.Saver", mock_saver_class_create
-        ):
+        with mock.patch("iris.fileformats.netcdf.saver.Saver", mock_saver_class_create):
             # Return mocks for both constructor call, and Saver object.
             yield mock_new_saver_call, mock_saver
 
@@ -399,9 +395,7 @@ class Test_compute_usage:
 
         # A special object for the cube, since cube.attributes must be indexable
         mock_cube = mock.MagicMock()
-        args = namedtuple(
-            "saver_args", ["cube", "filename", "format", "compute"]
-        )(
+        args = namedtuple("saver_args", ["cube", "filename", "format", "compute"])(
             cube=mock_cube,
             filename=mock.sentinel.filepath,
             format=mock.sentinel.netcdf4,
@@ -440,9 +434,7 @@ class Test_compute_usage:
         # Result should be None
         assert result is None
 
-    def test_compute_false_result_delayed(
-        self, mock_saver_creation, mock_saver_args
-    ):
+    def test_compute_false_result_delayed(self, mock_saver_creation, mock_saver_args):
         # Check operation when compute=False.
         mock_saver_new, mock_saver = mock_saver_creation
         args = mock_saver_args

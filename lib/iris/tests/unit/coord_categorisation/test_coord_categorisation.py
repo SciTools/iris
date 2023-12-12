@@ -150,12 +150,8 @@ def test_add_season_nonstandard(cube, time_coord):
     # season categorisations work for non-standard seasons?
     seasons = ["djfm", "amjj", "ason"]
     ccat.add_season(cube, time_coord, name="seasons", seasons=seasons)
-    ccat.add_season_number(
-        cube, time_coord, name="season_numbers", seasons=seasons
-    )
-    ccat.add_season_year(
-        cube, time_coord, name="season_years", seasons=seasons
-    )
+    ccat.add_season_number(cube, time_coord, name="season_numbers", seasons=seasons)
+    ccat.add_season_year(cube, time_coord, name="season_years", seasons=seasons)
     IrisTest.assertCML(IrisTest(), cube, ("categorisation", "customcheck.cml"))
 
 
@@ -219,9 +215,7 @@ def test_add_season_membership(cube):
     coord_membership = cube.coord("in_season")
     season_locations = np.where(coord_season.points == season)[0]
     membership_locations = np.where(coord_membership.points)[0]
-    np.testing.assert_array_almost_equal(
-        membership_locations, season_locations
-    )
+    np.testing.assert_array_almost_equal(membership_locations, season_locations)
 
 
 def test_add_season_invalid_spec(cube, season_cat_func):

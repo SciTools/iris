@@ -41,9 +41,7 @@ class Check__fillvalueandmasking:
             results = results.compute()
 
         # Return a named tuple, for named-property access to the 2 result values.
-        result = collections.namedtuple("_", ["is_masked", "contains_value"])(
-            *results
-        )
+        result = collections.namedtuple("_", ["is_masked", "contains_value"])(*results)
         return result
 
     def test_no_fill_value_not_masked(self):

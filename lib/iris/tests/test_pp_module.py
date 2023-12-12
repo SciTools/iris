@@ -140,9 +140,7 @@ class TestPPHeaderDerived(tests.IrisTest):
 @tests.skip_data
 class TestPPField_GlobalTemperature(IrisPPTest):
     def setUp(self):
-        self.original_pp_filepath = tests.get_data_path(
-            ("PP", "aPPglob1", "global.pp")
-        )
+        self.original_pp_filepath = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
         self.r = list(pp.load(self.original_pp_filepath))
 
     def test_full_file(self):
@@ -260,18 +258,14 @@ class TestPPFile(IrisPPTest):
 @tests.skip_data
 class TestPPFileExtraXData(IrisPPTest):
     def setUp(self):
-        self.original_pp_filepath = tests.get_data_path(
-            ("PP", "ukV1", "ukVpmslont.pp")
-        )
+        self.original_pp_filepath = tests.get_data_path(("PP", "ukV1", "ukVpmslont.pp"))
         self.r = list(pp.load(self.original_pp_filepath))[0:5]
 
     def test_full_file(self):
         self.check_pp(self.r, ("PP", "extra_x_data.pp.txt"))
 
     def test_save_single(self):
-        filepath = tests.get_data_path(
-            ("PP", "ukV1", "ukVpmslont_first_field.pp")
-        )
+        filepath = tests.get_data_path(("PP", "ukV1", "ukVpmslont_first_field.pp"))
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
@@ -322,9 +316,7 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         )
 
     def test_save_single(self):
-        filepath = tests.get_data_path(
-            ("PP", "model_comp", "dec_first_field.pp")
-        )
+        filepath = tests.get_data_path(("PP", "model_comp", "dec_first_field.pp"))
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")

@@ -45,9 +45,7 @@ class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
     pass
 
 
-class _WarnComboCfDefaultingIgnoring(
-    _WarnComboCfDefaulting, IrisIgnoringWarning
-):
+class _WarnComboCfDefaultingIgnoring(_WarnComboCfDefaulting, IrisIgnoringWarning):
     """One-off combination of warning classes - enhances user filtering."""
 
     pass
@@ -148,9 +146,7 @@ def load_mesh(uris, var_name=None):
     result = set([mesh for file in meshes_result.values() for mesh in file])
     mesh_count = len(result)
     if mesh_count != 1:
-        message = (
-            f"Expecting 1 mesh, but input file(s) produced: {mesh_count} ."
-        )
+        message = f"Expecting 1 mesh, but input file(s) produced: {mesh_count} ."
         raise ValueError(message)
     return result.pop()  # Return the single element
 
@@ -214,9 +210,7 @@ def load_meshes(uris, var_name=None):
         for source in sources:
             if scheme == "file":
                 with open(source, "rb") as fh:
-                    handling_format_spec = FORMAT_AGENT.get_spec(
-                        Path(source).name, fh
-                    )
+                    handling_format_spec = FORMAT_AGENT.get_spec(Path(source).name, fh)
             else:
                 handling_format_spec = FORMAT_AGENT.get_spec(source, None)
 
@@ -325,9 +319,7 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
     else:
         location_axis = 0
 
-    standard_name, long_name, var_name = get_names(
-        connectivity_var, None, attributes
-    )
+    standard_name, long_name, var_name = get_names(connectivity_var, None, attributes)
 
     connectivity = Connectivity(
         indices=indices_data,
@@ -364,9 +356,7 @@ def _build_mesh(cf, mesh_var, file_path):
     else:
         cf_role = getattr(mesh_var, "cf_role")
     if cf_role != "mesh_topology":
-        cf_role_message = (
-            f"{mesh_var.cf_name} has an inappropriate cf_role: {cf_role}."
-        )
+        cf_role_message = f"{mesh_var.cf_name} has an inappropriate cf_role: {cf_role}."
     if cf_role_message:
         cf_role_message += " Correcting to 'mesh_topology'."
         warnings.warn(
@@ -421,13 +411,9 @@ def _build_mesh(cf, mesh_var, file_path):
         if coord.var_name in mesh_var.node_coordinates.split():
             node_coord_args.append(coord_and_axis)
             node_dimension = coord_var.dimensions[0]
-        elif (
-            coord.var_name in getattr(mesh_var, "edge_coordinates", "").split()
-        ):
+        elif coord.var_name in getattr(mesh_var, "edge_coordinates", "").split():
             edge_coord_args.append(coord_and_axis)
-        elif (
-            coord.var_name in getattr(mesh_var, "face_coordinates", "").split()
-        ):
+        elif coord.var_name in getattr(mesh_var, "face_coordinates", "").split():
             face_coord_args.append(coord_and_axis)
         # TODO: support volume_coordinates.
         else:
@@ -438,10 +424,7 @@ def _build_mesh(cf, mesh_var, file_path):
             raise ValueError(message)
 
     if node_dimension is None:
-        message = (
-            "'node_dimension' could not be identified from mesh node "
-            "coordinates."
-        )
+        message = "'node_dimension' could not be identified from mesh node coordinates."
         raise ValueError(message)
 
     # Used for detecting transposed connectivities.
@@ -479,14 +462,10 @@ def _build_mesh(cf, mesh_var, file_path):
         face_dimension=face_dimension,
     )
 
-    mesh_elements = (
-        list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
-    )
+    mesh_elements = list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
     mesh_elements = filter(None, mesh_elements)
     for iris_object in mesh_elements:
-        nc_loader._add_unused_attributes(
-            iris_object, cf.cf_group[iris_object.var_name]
-        )
+        nc_loader._add_unused_attributes(iris_object, cf.cf_group[iris_object.var_name])
 
     return mesh
 

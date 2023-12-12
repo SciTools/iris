@@ -279,9 +279,10 @@ def guess_coord_axis(coord):
         "projection_y_coordinate",
     ):
         axis = "Y"
-    elif coord.units.is_convertible("hPa") or coord.attributes.get(
-        "positive"
-    ) in ("up", "down"):
+    elif coord.units.is_convertible("hPa") or coord.attributes.get("positive") in (
+        "up",
+        "down",
+    ):
         axis = "Z"
     elif coord.units.is_time_reference():
         axis = "T"
@@ -357,9 +358,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
         )
         rw = ma.array(
             rw,
-            mask=np.lib.stride_tricks.as_strided(
-                mask, shape=shape, strides=strides
-            ),
+            mask=np.lib.stride_tricks.as_strided(mask, shape=shape, strides=strides),
         )
     return rw
 
@@ -549,9 +548,7 @@ def reverse(cube_or_array, coords_or_dims):
             "sequence of these.  Got cube."
         )
 
-    if isinstance(coords_or_dims, str) or not isinstance(
-        coords_or_dims, Iterable
-    ):
+    if isinstance(coords_or_dims, str) or not isinstance(coords_or_dims, Iterable):
         coords_or_dims = [coords_or_dims]
 
     axes = set()
@@ -559,9 +556,7 @@ def reverse(cube_or_array, coords_or_dims):
         if isinstance(coord_or_dim, int):
             axes.add(coord_or_dim)
         elif isinstance(cube_or_array, np.ndarray):
-            raise TypeError(
-                "To reverse an array, provide an int or sequence of ints."
-            )
+            raise TypeError("To reverse an array, provide an int or sequence of ints.")
         else:
             try:
                 axes.update(cube_or_array.coord_dims(coord_or_dim))
@@ -624,8 +619,7 @@ def monotonic(array, strict=False, return_direction=False):
     """
     if array.ndim != 1 or len(array) <= 1:
         raise ValueError(
-            "The array to check must be 1 dimensional and have "
-            "more than 1 element."
+            "The array to check must be 1 dimensional and have more than 1 element."
         )
 
     if ma.isMaskedArray(array) and ma.count_masked(array) != 0:
@@ -694,13 +688,9 @@ def column_slices_generator(full_slice, ndims):
     # Get all of the dimensions for which a tuple of indices were provided
     # (numpy.ndarrays are treated in the same way tuples in this case)
     def is_tuple_style_index(key):
-        return isinstance(key, tuple) or (
-            isinstance(key, np.ndarray) and key.ndim == 1
-        )
+        return isinstance(key, tuple) or (isinstance(key, np.ndarray) and key.ndim == 1)
 
-    tuple_indices = [
-        i for i, key in enumerate(full_slice) if is_tuple_style_index(key)
-    ]
+    tuple_indices = [i for i, key in enumerate(full_slice) if is_tuple_style_index(key)]
 
     # stg1: Take a copy of the full_slice specification, turning all tuples
     # into a full slice
@@ -776,10 +766,7 @@ def _build_full_slice_given_keys(keys, ndim):
             # replace any subsequent Ellipsis objects in keys with
             # slice(None, None) as per Numpy
             keys = keys[:i] + tuple(
-                [
-                    slice(None, None) if key is Ellipsis else key
-                    for key in keys[i:]
-                ]
+                [slice(None, None) if key is Ellipsis else key for key in keys[i:]]
             )
 
             # iterate over the remaining keys in reverse to fill in
@@ -869,16 +856,12 @@ def _wrap_function_for_method(function, docstring=None):
     else:
         cutoff = -len(defaults)
         basic_args = ["self"] + args[1:cutoff]
-        default_args = [
-            "%s=%r" % pair for pair in zip(args[cutoff:], defaults)
-        ]
+        default_args = ["%s=%r" % pair for pair in zip(args[cutoff:], defaults)]
         simple_default_args = args[cutoff:]
     var_arg = [] if varargs is None else ["*" + varargs]
     var_kw = [] if varkw is None else ["**" + varkw]
     arg_source = ", ".join(basic_args + default_args + var_arg + var_kw)
-    simple_arg_source = ", ".join(
-        basic_args + simple_default_args + var_arg + var_kw
-    )
+    simple_arg_source = ", ".join(basic_args + simple_default_args + var_arg + var_kw)
     source = "def %s(%s):\n    return function(%s)" % (
         function.__name__,
         arg_source,
@@ -993,14 +976,10 @@ class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
     # Prevent attribute updates
 
     def __setattr__(self, name, value):
-        raise AttributeError(
-            "Instances of %s are immutable" % type(self).__name__
-        )
+        raise AttributeError("Instances of %s are immutable" % type(self).__name__)
 
     def __delattr__(self, name):
-        raise AttributeError(
-            "Instances of %s are immutable" % type(self).__name__
-        )
+        raise AttributeError("Instances of %s are immutable" % type(self).__name__)
 
     # Provide hash semantics
 
@@ -1011,10 +990,7 @@ class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
         return hash(self._identity())
 
     def __eq__(self, other):
-        return (
-            isinstance(other, type(self))
-            and self._identity() == other._identity()
-        )
+        return isinstance(other, type(self)) and self._identity() == other._identity()
 
     def __ne__(self, other):
         # Since we've defined __eq__ we should also define __ne__.
@@ -1181,9 +1157,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
                 new_data = data_manager.data[None]
         return new_data
 
-    def _handle_dimensional_metadata(
-        cube, dm_item, cube_add_method, expand_extras
-    ):
+    def _handle_dimensional_metadata(cube, dm_item, cube_add_method, expand_extras):
         cube_dims = dm_item.cube_dims(cube)
         if dm_item in expand_extras:
             if cube_dims == ():
@@ -1195,9 +1169,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
                 new_dm_item = dm_item.__class__(new_values, **kwargs)
                 try:
                     if dm_item.has_bounds():
-                        new_dm_item.bounds = _reshape_data_array(
-                            dm_item._bounds_dm
-                        )
+                        new_dm_item.bounds = _reshape_data_array(dm_item._bounds_dm)
                 except AttributeError:
                     pass
         else:
@@ -1218,9 +1190,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
             emsg = scalar_coord.name() + " is not a scalar coordinate."
             raise ValueError(emsg)
 
-    expand_extras = [
-        src_cube._dimensional_metadata(item) for item in expand_extras
-    ]
+    expand_extras = [src_cube._dimensional_metadata(item) for item in expand_extras]
 
     new_cube = iris.cube.Cube(_reshape_data_array(src_cube._data_manager))
     new_cube.metadata = src_cube.metadata
@@ -1249,9 +1219,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
         )
 
     nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
-    coord_mapping = {
-        id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords
-    }
+    coord_mapping = {id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords}
     for factory in src_cube.aux_factories:
         new_factory = factory.updated(coord_mapping)
         new_cube.add_aux_factory(new_factory)
@@ -1288,9 +1256,7 @@ def squeeze(cube):
 
     """
 
-    slices = [
-        0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)
-    ]
+    slices = [0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)]
 
     squeezed = cube[tuple(slices)]
 
@@ -1485,9 +1451,7 @@ def unify_time_units(cubes):
             if time_coord.units.is_time_reference():
                 time_coord.points = time_coord.core_points().astype("float64")
                 if time_coord.bounds is not None:
-                    time_coord.bounds = time_coord.core_bounds().astype(
-                        "float64"
-                    )
+                    time_coord.bounds = time_coord.core_bounds().astype("float64")
                 epoch = epochs.setdefault(
                     time_coord.units.calendar, time_coord.units.origin
                 )
@@ -1678,9 +1642,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         msg = msg.format(aux_coord.name(), str(valerr))
         raise ValueError(msg)
 
-    old_dim_coord = cube.coords(
-        dim_coords=True, contains_dimension=coord_dim[0]
-    )
+    old_dim_coord = cube.coords(dim_coords=True, contains_dimension=coord_dim[0])
 
     if len(old_dim_coord) == 1:
         demote_dim_coord_to_aux_coord(cube, old_dim_coord[0])
@@ -1897,13 +1859,9 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
             rtol=rel_tol, atol=abs_tol
         )
 
-        bad_points_boolean[:, :-1] = np.logical_or(
-            bad_points_boolean[:, :-1], diffs_x
-        )
+        bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1], diffs_x)
         # apply mask for y-direction discontiguities:
-        bad_points_boolean[:-1, :] = np.logical_or(
-            bad_points_boolean[:-1, :], diffs_y
-        )
+        bad_points_boolean[:-1, :] = np.logical_or(bad_points_boolean[:-1, :], diffs_y)
     return bad_points_boolean
 
 
@@ -1927,9 +1885,7 @@ def _mask_array(array, points_to_mask, in_place=False):
         if not is_lazy_data(array) and in_place:
             # Non-lazy array and lazy mask should not come up for in_place
             # case, due to _binary_op_common handling added at #3790.
-            raise TypeError(
-                "Cannot apply lazy mask in-place to a non-lazy array."
-            )
+            raise TypeError("Cannot apply lazy mask in-place to a non-lazy array.")
         in_place = False
 
     elif in_place and not isinstance(array, ma.MaskedArray):
@@ -2074,9 +2030,7 @@ def equalise_attributes(cubes):
     # so the routine works on *other* objects bearing attributes, i.e. not just Cubes.
     # That is also important since the original code allows that (though the docstring
     # does not admit it).
-    cube_attrs = [
-        _convert_splitattrs_to_pairedkeys_dict(dic) for dic in cube_attrs
-    ]
+    cube_attrs = [_convert_splitattrs_to_pairedkeys_dict(dic) for dic in cube_attrs]
 
     # Work out which attributes are identical across all the cubes.
     common_keys = list(cube_attrs[0].keys())

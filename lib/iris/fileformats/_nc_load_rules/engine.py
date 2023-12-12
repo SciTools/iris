@@ -144,6 +144,4 @@ class Engine:
         A shorthand form used only by the new 'actions' routines.
 
         """
-        self.add_case_specific_fact(
-            fact_name=fact_name, fact_arglist=fact_arglist
-        )
+        self.add_case_specific_fact(fact_name=fact_name, fact_arglist=fact_arglist)

@@ -101,9 +101,7 @@ class Constraint:
         if not (name is None or isinstance(name, str)):
             raise TypeError("name must be None or string, got %r" % name)
         if not (cube_func is None or callable(cube_func)):
-            raise TypeError(
-                "cube_func must be None or callable, got %r" % cube_func
-            )
+            raise TypeError("cube_func must be None or callable, got %r" % cube_func)
         if not (coord_values is None or isinstance(coord_values, Mapping)):
             raise TypeError(
                 "coord_values must be None or a "
@@ -126,9 +124,7 @@ class Constraint:
 
         self._coord_constraints = []
         for coord_name, coord_thing in self._coord_values.items():
-            self._coord_constraints.append(
-                _CoordConstraint(coord_name, coord_thing)
-            )
+            self._coord_constraints.append(_CoordConstraint(coord_name, coord_thing))
 
     def __eq__(self, other):
         # Equivalence is defined, but is naturally limited for any Constraints
@@ -267,9 +263,7 @@ class ConstraintCombination(Constraint):
         )
 
     def _CIM_extract(self, cube):
-        return self.operator(
-            self.lhs._CIM_extract(cube), self.rhs._CIM_extract(cube)
-        )
+        return self.operator(self.lhs._CIM_extract(cube), self.rhs._CIM_extract(cube))
 
 
 class _CoordConstraint:
@@ -472,9 +466,7 @@ class _ColumnIndexManager:
                     delta = np.diff(where_true, axis=0)
                     # if the diff is consistent we can create a slice object
                     if all(delta[0] == delta):
-                        result[dim] = slice(
-                            where_true[0], where_true[-1] + 1, delta[0]
-                        )
+                        result[dim] = slice(where_true[0], where_true[-1] + 1, delta[0])
                     else:
                         # otherwise, key is a tuple
                         result[dim] = tuple(where_true)
@@ -638,8 +630,7 @@ class NameConstraint(Constraint):
 
     def __eq__(self, other):
         eq = isinstance(other, NameConstraint) and all(
-            getattr(self, attname) == getattr(other, attname)
-            for attname in self._names
+            getattr(self, attname) == getattr(other, attname) for attname in self._names
         )
         return eq
 

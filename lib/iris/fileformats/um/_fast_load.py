@@ -210,12 +210,8 @@ def _convert_collation(collation):
             return [(coord, adjust(dims)) for coord, dims in coords_and_dims]
 
         n_collation_dims = len(collation.vector_dims_shape)
-        dim_coords_and_dims = _adjust_dims(
-            dim_coords_and_dims, n_collation_dims
-        )
-        aux_coords_and_dims = _adjust_dims(
-            aux_coords_and_dims, n_collation_dims
-        )
+        dim_coords_and_dims = _adjust_dims(dim_coords_and_dims, n_collation_dims)
+        aux_coords_and_dims = _adjust_dims(aux_coords_and_dims, n_collation_dims)
 
     # Dimensions to which we've already assigned dimension coordinates.
     dim_coord_dims = set()
@@ -299,15 +295,11 @@ def _convert_collation(collation):
         )
     )
     if len(dims) > 1:
-        raise TranslationError(
-            "Unsupported multiple values for vertical " "dimension."
-        )
+        raise TranslationError("Unsupported multiple values for vertical dimension.")
     if dims:
         v_dims = dims.pop()
         if len(v_dims) > 1:
-            raise TranslationError(
-                "Unsupported multi-dimension vertical " "headers."
-            )
+            raise TranslationError("Unsupported multi-dimension vertical headers.")
     else:
         v_dims = ()
     coords_and_dims, factories = _convert_vertical_coords(

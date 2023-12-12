@@ -123,9 +123,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     }
 
     # Calculate the basic fields-group array structure.
-    base_structure = GroupStructure.from_component_arrays(
-        element_ordering_arrays
-    )
+    base_structure = GroupStructure.from_component_arrays(element_ordering_arrays)
 
     # Work out the target cube structure.
     target_structure = _optimal_dimensioning_structure(
@@ -139,9 +137,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         elements_length = len(ordering_elements[0][1])
         vector_dims_shape = (elements_length,)
     else:
-        vector_dims_shape = tuple(
-            struct.size for (_, struct) in target_structure
-        )
+        vector_dims_shape = tuple(struct.size for (_, struct) in target_structure)
 
     # Build arrays of element values mapped onto the vectorised dimensions.
     elements_and_dimensions = base_structure.build_arrays(

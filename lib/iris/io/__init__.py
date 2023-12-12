@@ -26,9 +26,7 @@ class _SaversDict(dict):
             raise ValueError("A saver already exists for", key)
         for k in self.keys():
             if k.endswith(key) or key.endswith(k):
-                raise ValueError(
-                    "key %s conflicts with existing key %s" % (key, k)
-                )
+                raise ValueError("key %s conflicts with existing key %s" % (key, k))
         dict.__setitem__(self, key, value)
 
 
@@ -75,9 +73,7 @@ def run_callback(callback, cube, field, filename):
         if result is None:
             result = cube
         elif not isinstance(result, Cube):
-            raise TypeError(
-                "Callback function returned an " "unhandled data type."
-            )
+            raise TypeError("Callback function returned an unhandled data type.")
     return result
 
 
@@ -165,17 +161,13 @@ def expand_filespecs(file_specs, files_expected=True):
     """
     # Remove any hostname component - currently unused
     filenames = [
-        os.path.abspath(
-            os.path.expanduser(fn[2:] if fn.startswith("//") else fn)
-        )
+        os.path.abspath(os.path.expanduser(fn[2:] if fn.startswith("//") else fn))
         for fn in file_specs
     ]
 
     if files_expected:
         # Try to expand all filenames as globs
-        glob_expanded = OrderedDict(
-            [[fn, sorted(glob.glob(fn))] for fn in filenames]
-        )
+        glob_expanded = OrderedDict([[fn, sorted(glob.glob(fn))] for fn in filenames])
 
         # If any of the specs expanded to an empty list then raise an error
         all_expanded = glob_expanded.values()
@@ -187,9 +179,7 @@ def expand_filespecs(file_specs, files_expected=True):
                         pattern, len(expanded)
                     )
                 else:
-                    msg += '\n    * "{}" didn\'t match any files'.format(
-                        pattern
-                    )
+                    msg += '\n    * "{}" didn\'t match any files'.format(pattern)
             raise IOError(msg)
         result = [fname for fnames in all_expanded for fname in fnames]
     else:
@@ -218,18 +208,14 @@ def load_files(filenames, callback, constraints=None):
     handler_map = collections.defaultdict(list)
     for fn in all_file_paths:
         with open(fn, "rb") as fh:
-            handling_format_spec = FORMAT_AGENT.get_spec(
-                os.path.basename(fn), fh
-            )
+            handling_format_spec = FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the appropriate filenames
     for handling_format_spec in sorted(handler_map):
         fnames = handler_map[handling_format_spec]
         if handling_format_spec.constraint_aware_handler:
-            for cube in handling_format_spec.handler(
-                fnames, callback, constraints
-            ):
+            for cube in handling_format_spec.handler(fnames, callback, constraints):
                 yield cube
         else:
             for cube in handling_format_spec.handler(fnames, callback):
@@ -314,8 +300,7 @@ def _grib_save(cube, target, append=False, **kwargs):
         from iris_grib import save_grib2
     except ImportError:
         raise RuntimeError(
-            "Unable to save GRIB file - "
-            '"iris_grib" package is not installed.'
+            "Unable to save GRIB file - " '"iris_grib" package is not installed.'
         )
 
     save_grib2(cube, target, append, **kwargs)
@@ -352,10 +337,7 @@ def add_saver(file_extension, new_saver):
 
     """
     # Make sure it's a func with 2+ args
-    if (
-        not hasattr(new_saver, "__call__")
-        or new_saver.__code__.co_argcount < 2
-    ):
+    if not hasattr(new_saver, "__call__") or new_saver.__code__.co_argcount < 2:
         raise ValueError("Saver routines must be callable with 2+ arguments.")
 
     # Try to add this saver. Invalid keys will be rejected.
@@ -494,8 +476,7 @@ def save(source, target, saver=None, **kwargs):
 
     # CubeList or sequence of cubes?
     elif isinstance(source, CubeList) or (
-        isinstance(source, (list, tuple))
-        and all([isinstance(i, Cube) for i in source])
+        isinstance(source, (list, tuple)) and all([isinstance(i, Cube) for i in source])
     ):
         # Only allow cubelist saving for those fileformats that are capable.
         if "iris.fileformats.netcdf" not in saver.__module__:

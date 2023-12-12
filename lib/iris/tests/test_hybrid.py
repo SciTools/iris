@@ -35,9 +35,7 @@ class TestRealistic4d(tests.GraphicsTest):
         self.assertEqual(self.altitude.attributes, {"positive": "up"})
 
     def test_points(self):
-        self.assertAlmostEqual(
-            self.altitude.points.min(), np.float32(191.84892)
-        )
+        self.assertAlmostEqual(self.altitude.points.min(), np.float32(191.84892))
         self.assertAlmostEqual(self.altitude.points.max(), np.float32(40000))
 
     def test_transpose(self):
@@ -65,11 +63,7 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has surface_altitude and delta dependencies.
         factory = cube.aux_factory(name="altitude")
-        t = [
-            key
-            for key, coord in factory.dependencies.items()
-            if coord is not None
-        ]
+        t = [key for key, coord in factory.dependencies.items() if coord is not None]
         self.assertCountEqual(t, ["orography", "delta"])
 
     def test_removing_orography(self):
@@ -81,11 +75,7 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has sigma and delta dependencies.
         factory = cube.aux_factory(name="altitude")
-        t = [
-            key
-            for key, coord in factory.dependencies.items()
-            if coord is not None
-        ]
+        t = [key for key, coord in factory.dependencies.items() if coord is not None]
         self.assertCountEqual(t, ["sigma", "delta"])
 
     def test_derived_coords(self):
@@ -216,9 +206,7 @@ class TestHybridPressure(tests.IrisTest):
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
             with self.assertRaises(IrisIgnoringBoundsWarning):
-                _ = HybridPressureFactory(
-                    sigma=sigma, surface_air_pressure=sigma
-                )
+                _ = HybridPressureFactory(sigma=sigma, surface_air_pressure=sigma)
 
     def test_bounded_surface_pressure(self):
         # Start with everything normal

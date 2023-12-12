@@ -80,8 +80,7 @@ class ABFField:
         basename = os.path.basename(filename)
         if len(basename) != 24:
             raise ValueError(
-                "ABFField expects a filename of 24 characters: "
-                "{}".format(basename)
+                "ABFField expects a filename of 24 characters: {}".format(basename)
             )
         self._filename = filename
 
@@ -167,7 +166,7 @@ class ABFField:
             end = calendar.monthrange(self.year, self.month)[1]
         else:
             raise iris.exceptions.TranslationError(
-                "Unknown period: " "{}".format(self.period)
+                "Unknown period: {}".format(self.period)
             )
 
         start = datetime.date(year=self.year, month=self.month, day=start)

@@ -139,16 +139,12 @@ class TestAttributes:
         ellipsoid=None,
     )
 
-    @pytest.fixture(
-        autouse=True, params=kwarg_permutations, ids=permutation_ids
-    )
+    @pytest.fixture(autouse=True, params=kwarg_permutations, ids=permutation_ids)
     def make_variant_inputs(self, request) -> None:
         """Parse a ParamTuple into usable test information."""
         inputs: ParamTuple = request.param
 
-        self.nc_attributes = dict(
-            self.nc_attributes_default, **inputs.nc_attributes
-        )
+        self.nc_attributes = dict(self.nc_attributes_default, **inputs.nc_attributes)
         self.expected_class = inputs.expected_class
         coord_system_kwargs_expected = dict(
             self.coord_system_kwargs_default, **inputs.coord_system_kwargs
@@ -157,9 +153,7 @@ class TestAttributes:
         if self.expected_class is RotatedMercator:
             del coord_system_kwargs_expected["azimuth_of_central_line"]
 
-        self.coord_system_args_expected = list(
-            coord_system_kwargs_expected.values()
-        )
+        self.coord_system_args_expected = list(coord_system_kwargs_expected.values())
 
     def test_attributes(self):
         cf_var_mock = mock.Mock(spec=[], **self.nc_attributes)

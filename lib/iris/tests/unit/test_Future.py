@@ -50,9 +50,7 @@ class Test___setattr__(tests.IrisTest):
 
     def test_deprecated_error(self):
         future = patched_future(deprecated=True, error=True)
-        exp_emsg = (
-            "'Future' property 'example_future_flag' has been deprecated"
-        )
+        exp_emsg = "'Future' property 'example_future_flag' has been deprecated"
         with self.assertRaisesRegex(AttributeError, exp_emsg):
             future.example_future_flag = False
 

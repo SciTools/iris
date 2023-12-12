@@ -67,10 +67,7 @@ class Table:
         """
         n_cols = len(cols)
         if len(aligns) != n_cols:
-            msg = (
-                f"Number of aligns ({len(aligns)})"
-                f" != number of cols ({n_cols})"
-            )
+            msg = f"Number of aligns ({len(aligns)})" f" != number of cols ({n_cols})"
             raise ValueError(msg)
         if self.n_columns is not None:
             # For now, all rows must have same number of columns
@@ -104,18 +101,13 @@ class Table:
         result_lines = []
         for row in self.rows:
             col_texts = []
-            for col, align, width in zip(
-                row.cols, row.aligns, self.col_widths
-            ):
+            for col, align, width in zip(row.cols, row.aligns, self.col_widths):
                 if align == "left":
                     col_text = col.ljust(width)
                 elif align == "right":
                     col_text = col.rjust(width)
                 else:
-                    msg = (
-                        f'Unknown alignment "{align}" '
-                        'not in ("left", "right")'
-                    )
+                    msg = f'Unknown alignment "{align}" ' 'not in ("left", "right")'
                     raise ValueError(msg)
                 col_texts.append(col_text)
 

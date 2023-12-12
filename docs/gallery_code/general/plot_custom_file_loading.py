@@ -125,9 +125,7 @@ def load_NAME_III(filename):
                 header_value = int(header_value)
             elif header_name in DATE_HEADERS:
                 # convert the time to python datetimes
-                header_value = datetime.datetime.strptime(
-                    header_value, UTC_format
-                )
+                header_value = datetime.datetime.strptime(header_value, UTC_format)
 
             headers[header_name] = header_value
 
@@ -194,9 +192,7 @@ def NAME_to_cube(filenames, callback):
             # information for each field into a dictionary of headers for just
             # this field. Ignore the first 4 columns of grid position (data was
             # located with the data array).
-            field_headings = dict(
-                (k, v[i + 4]) for k, v in column_headings.items()
-            )
+            field_headings = dict((k, v[i + 4]) for k, v in column_headings.items())
 
             # make an cube
             cube = iris.cube.Cube(data_array)
@@ -333,9 +329,7 @@ def main():
         r"$%s < x \leq %s$" % (levels[1], levels[2]),
         r"$x > %s$" % levels[2],
     ]
-    ax.legend(
-        artists, labels, title="Ash concentration / g m-3", loc="upper left"
-    )
+    ax.legend(artists, labels, title="Ash concentration / g m-3", loc="upper left")
 
     time = cube.coord("time")
     time_date = time.units.num2date(time.points[0]).strftime(UTC_format)

@@ -19,9 +19,7 @@ class TestCells(tests.IrisTest):
 
     def test_cell_from_coord(self):
         Cell = iris.coords.Cell
-        coord = iris.coords.AuxCoord(
-            np.arange(4) * 1.5, long_name="test", units="1"
-        )
+        coord = iris.coords.AuxCoord(np.arange(4) * 1.5, long_name="test", units="1")
         self.assertEqual(Cell(point=0.0, bound=None), coord.cell(0))
         self.assertEqual(Cell(point=1.5, bound=None), coord.cell(1))
         self.assertEqual(Cell(point=4.5, bound=None), coord.cell(-1))
@@ -46,9 +44,7 @@ class TestCells(tests.IrisTest):
             bounds=np.arange(48).reshape(3, 4, 4),
         )
         self.assertRaises(IndexError, coord.cell, 0)
-        self.assertEqual(
-            Cell(point=3, bound=(12, 13, 14, 15)), coord.cell((0, 3))
-        )
+        self.assertEqual(Cell(point=3, bound=(12, 13, 14, 15)), coord.cell((0, 3)))
 
     def test_mod(self):
         # Check that applying the mod function is not modifying the original
@@ -69,9 +65,7 @@ class TestCells(tests.IrisTest):
         self.assertTrue(c.contains_point(359.49951))
 
     def test_pointless(self):
-        self.assertRaises(
-            ValueError, iris.coords.Cell, None, (359.49951, 359.5004)
-        )
+        self.assertRaises(ValueError, iris.coords.Cell, None, (359.49951, 359.5004))
 
     def test_add(self):
         # Check that applying the mod function is not modifying the original

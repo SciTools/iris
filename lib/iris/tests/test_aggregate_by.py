@@ -39,9 +39,7 @@ class TestAggregateBy(tests.IrisTest):
         b = np.arange(36, dtype=np.int32).reshape(36, 1, 1)
         data = b * a
 
-        self.cube_single = iris.cube.Cube(
-            data, long_name="temperature", units="kelvin"
-        )
+        self.cube_single = iris.cube.Cube(data, long_name="temperature", units="kelvin")
 
         z_points = np.array(
             [
@@ -106,9 +104,7 @@ class TestAggregateBy(tests.IrisTest):
         b = np.arange(20, dtype=np.int32).reshape(20, 1, 1)
         data = b * a
 
-        self.cube_multi = iris.cube.Cube(
-            data, long_name="temperature", units="kelvin"
-        )
+        self.cube_multi = iris.cube.Cube(data, long_name="temperature", units="kelvin")
 
         z1_points = np.array(
             [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 1, 5, 5, 2, 2],
@@ -142,9 +138,7 @@ class TestAggregateBy(tests.IrisTest):
         #
         mask_single = np.vstack(
             (
-                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
-                    26, axis=0
-                ),
+                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(26, axis=0),
                 np.zeros([10, 3, 3]),
             )
         )
@@ -153,9 +147,7 @@ class TestAggregateBy(tests.IrisTest):
         )
         mask_multi = np.vstack(
             (
-                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(
-                    16, axis=0
-                ),
+                np.array([[[0, 1, 0], [1, 0, 1], [0, 1, 0]]]).repeat(16, axis=0),
                 np.ones([2, 3, 3]),
                 np.zeros([2, 3, 3]),
             )
@@ -373,29 +365,19 @@ class TestAggregateBy(tests.IrisTest):
 
     def test_single(self):
         # mean group-by with single coordinate name.
-        aggregateby_cube = self.cube_single.aggregated_by(
-            "height", iris.analysis.MEAN
-        )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
-        )
+        aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.MEAN)
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
 
         # mean group-by with single coordinate.
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single, iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
-        )
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
 
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.single_expected
-        )
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
 
         # rms group-by with single coordinate name.
-        aggregateby_cube = self.cube_single.aggregated_by(
-            "height", iris.analysis.RMS
-        )
+        aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.RMS)
         self.assertCML(
             aggregateby_cube, ("analysis", "aggregated_by", "single_rms.cml")
         )
@@ -408,33 +390,23 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube, ("analysis", "aggregated_by", "single_rms.cml")
         )
 
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.single_rms_expected
-        )
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_rms_expected)
 
     def test_str_aggregation_single_weights_none(self):
         # mean group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by(
             "height", iris.analysis.MEAN, weights=None
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
-        )
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.single_expected
-        )
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
 
     def test_coord_aggregation_single_weights_none(self):
         # mean group-by with single coordinate.
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single, iris.analysis.MEAN, weights=None
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
-        )
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.single_expected
-        )
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
 
     def test_weighted_single(self):
         # weighted mean group-by with single coordinate name.
@@ -466,15 +438,11 @@ class TestAggregateBy(tests.IrisTest):
 
     def test_single_shared(self):
         z2_points = np.arange(36, dtype=np.int32)
-        coord_z2 = iris.coords.AuxCoord(
-            z2_points, long_name="wibble", units="1"
-        )
+        coord_z2 = iris.coords.AuxCoord(z2_points, long_name="wibble", units="1")
         self.cube_single.add_aux_coord(coord_z2, 0)
 
         # group-by with single coordinate name on shared axis.
-        aggregateby_cube = self.cube_single.aggregated_by(
-            "height", iris.analysis.MEAN
-        )
+        aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.MEAN)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_shared.cml"),
@@ -489,15 +457,11 @@ class TestAggregateBy(tests.IrisTest):
             ("analysis", "aggregated_by", "single_shared.cml"),
         )
 
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.single_expected
-        )
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
 
     def test_weighted_single_shared(self):
         z2_points = np.arange(36, dtype=np.int32)
-        coord_z2 = iris.coords.AuxCoord(
-            z2_points, long_name="wibble", units="1"
-        )
+        coord_z2 = iris.coords.AuxCoord(z2_points, long_name="wibble", units="1")
         self.cube_single.add_aux_coord(coord_z2, 0)
 
         # weighted group-by with single coordinate name on shared axis.
@@ -533,9 +497,7 @@ class TestAggregateBy(tests.IrisTest):
         self.cube_single.add_aux_coord(circ_coord, 0)
 
         # group-by with single coordinate name on shared axis.
-        aggregateby_cube = self.cube_single.aggregated_by(
-            "height", iris.analysis.MEAN
-        )
+        aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.MEAN)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_shared_circular.cml"),
@@ -543,16 +505,12 @@ class TestAggregateBy(tests.IrisTest):
 
         # group-by with single coordinate on shared axis.
         coord = self.cube_single.coords("height")
-        aggregateby_cube = self.cube_single.aggregated_by(
-            coord, iris.analysis.MEAN
-        )
+        aggregateby_cube = self.cube_single.aggregated_by(coord, iris.analysis.MEAN)
         self.assertCML(
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_shared_circular.cml"),
         )
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.single_expected
-        )
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
 
     def test_weighted_single_shared_circular(self):
         points = np.arange(36) * 10.0
@@ -601,37 +559,27 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["height", "level"], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
-        )
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
 
         # group-by with multiple coordinate names (different order).
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["level", "height"], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
-        )
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
 
         # group-by with multiple coordinates.
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z1_multi, self.coord_z2_multi], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
-        )
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
 
         # group-by with multiple coordinates (different order).
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z2_multi, self.coord_z1_multi], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
-        )
+        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
 
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.multi_expected
-        )
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.multi_expected)
 
     def test_weighted_multi(self):
         # weighted group-by with multiple coordinate names.
@@ -684,13 +632,9 @@ class TestAggregateBy(tests.IrisTest):
 
     def test_multi_shared(self):
         z3_points = np.arange(20, dtype=np.int32)
-        coord_z3 = iris.coords.AuxCoord(
-            z3_points, long_name="sigma", units="1"
-        )
+        coord_z3 = iris.coords.AuxCoord(z3_points, long_name="sigma", units="1")
         z4_points = np.arange(19, -1, -1, dtype=np.int32)
-        coord_z4 = iris.coords.AuxCoord(
-            z4_points, long_name="gamma", units="1"
-        )
+        coord_z4 = iris.coords.AuxCoord(z4_points, long_name="gamma", units="1")
 
         self.cube_multi.add_aux_coord(coord_z3, 0)
         self.cube_multi.add_aux_coord(coord_z4, 0)
@@ -728,19 +672,13 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube, ("analysis", "aggregated_by", "multi_shared.cml")
         )
 
-        np.testing.assert_almost_equal(
-            aggregateby_cube.data, self.multi_expected
-        )
+        np.testing.assert_almost_equal(aggregateby_cube.data, self.multi_expected)
 
     def test_weighted_multi_shared(self):
         z3_points = np.arange(20, dtype=np.int32)
-        coord_z3 = iris.coords.AuxCoord(
-            z3_points, long_name="sigma", units="1"
-        )
+        coord_z3 = iris.coords.AuxCoord(z3_points, long_name="sigma", units="1")
         z4_points = np.arange(19, -1, -1, dtype=np.int32)
-        coord_z4 = iris.coords.AuxCoord(
-            z4_points, long_name="gamma", units="1"
-        )
+        coord_z4 = iris.coords.AuxCoord(z4_points, long_name="gamma", units="1")
 
         self.cube_multi.add_aux_coord(coord_z3, 0)
         self.cube_multi.add_aux_coord(coord_z4, 0)
@@ -799,14 +737,10 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy mean aggregate test by each coordinate.
         #
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "longitude", iris.analysis.MEAN
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("longitude", iris.analysis.MEAN)
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
-            np.array(
-                [[8.0, 15.0], [10.0, 17.0], [15.0, 8.0]], dtype=np.float32
-            ),
+            np.array([[8.0, 15.0], [10.0, 17.0], [15.0, 8.0]], dtype=np.float32),
         )
 
         self.assertCML(
@@ -814,9 +748,7 @@ class TestAggregateBy(tests.IrisTest):
             ("analysis", "aggregated_by", "easy.cml"),
         )
 
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "latitude", iris.analysis.MEAN
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("latitude", iris.analysis.MEAN)
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -828,19 +760,13 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy max aggregate test by each coordinate.
         #
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "longitude", iris.analysis.MAX
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("longitude", iris.analysis.MAX)
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
-            np.array(
-                [[10.0, 18.0], [12.0, 20.0], [18.0, 10.0]], dtype=np.float32
-            ),
+            np.array([[10.0, 18.0], [12.0, 20.0], [18.0, 10.0]], dtype=np.float32),
         )
 
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "latitude", iris.analysis.MAX
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("latitude", iris.analysis.MAX)
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -852,19 +778,13 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy sum aggregate test by each coordinate.
         #
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "longitude", iris.analysis.SUM
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("longitude", iris.analysis.SUM)
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
-            np.array(
-                [[16.0, 30.0], [20.0, 34.0], [30.0, 16.0]], dtype=np.float32
-            ),
+            np.array([[16.0, 30.0], [20.0, 34.0], [30.0, 16.0]], dtype=np.float32),
         )
 
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "latitude", iris.analysis.SUM
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("latitude", iris.analysis.SUM)
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
             np.array(
@@ -881,9 +801,7 @@ class TestAggregateBy(tests.IrisTest):
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
-            np.array(
-                [[7.0, 13.5], [9.0, 15.5], [13.5, 7.0]], dtype=np.float32
-            ),
+            np.array([[7.0, 13.5], [9.0, 15.5], [13.5, 7.0]], dtype=np.float32),
         )
 
         aggregateby_cube = self.cube_easy.aggregated_by(
@@ -900,9 +818,7 @@ class TestAggregateBy(tests.IrisTest):
         #
         # Easy root mean square aggregate test by each coordinate.
         #
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "longitude", iris.analysis.RMS
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("longitude", iris.analysis.RMS)
         row = [
             list(np.sqrt([68.0, 234.0])),
             list(np.sqrt([104.0, 298.0])),
@@ -912,9 +828,7 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube.data, np.array(row, dtype=np.float32)
         )
 
-        aggregateby_cube = self.cube_easy.aggregated_by(
-            "latitude", iris.analysis.RMS
-        )
+        aggregateby_cube = self.cube_easy.aggregated_by("latitude", iris.analysis.RMS)
         row = [
             list(np.sqrt([50.0, 122.0, 170.0, 362.0])),
             [18.0, 12.0, 10.0, 6.0],
@@ -1008,9 +922,7 @@ class TestAggregateBy(tests.IrisTest):
         )
         np.testing.assert_almost_equal(
             aggregateby_cube.data,
-            np.array(
-                [[3.0, np.sqrt(65.0)], [np.sqrt(0.4), 4.0]], dtype=np.float32
-            ),
+            np.array([[3.0, np.sqrt(65.0)], [np.sqrt(0.4), 4.0]], dtype=np.float32),
         )
 
         aggregateby_cube = self.cube_easy_weighted.aggregated_by(
@@ -1078,9 +990,7 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_missing.cml"),
         )
-        self.assertMaskedArrayAlmostEqual(
-            aggregateby_cube.data, single_expected
-        )
+        self.assertMaskedArrayAlmostEqual(aggregateby_cube.data, single_expected)
 
     def test_weighted_single_missing(self):
         # weighted aggregation correctly handles masked data
@@ -1202,9 +1112,7 @@ class TestAggregateBy(tests.IrisTest):
             aggregateby_cube,
             ("analysis", "aggregated_by", "multi_missing.cml"),
         )
-        self.assertMaskedArrayAlmostEqual(
-            aggregateby_cube.data, multi_expected
-        )
+        self.assertMaskedArrayAlmostEqual(aggregateby_cube.data, multi_expected)
 
     def test_weighted_multi_missing(self):
         # weighted aggregation correctly handles masked data
@@ -1362,9 +1270,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
     def setUp(self):
         super().setUp()
 
-        self.weights_single = self.cube_single[:, 0, 0].copy(
-            self.weights_single
-        )
+        self.weights_single = self.cube_single[:, 0, 0].copy(self.weights_single)
         self.weights_single.units = "m2"
         self.weights_multi = self.cube_multi[:, 0, 0].copy(self.weights_multi)
         self.weights_multi.units = "m2"

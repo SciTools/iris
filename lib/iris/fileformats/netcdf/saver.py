@@ -126,8 +126,7 @@ _FACTORY_DEFNS = {
     HybridPressureFactory: _FactoryDefn(
         primary="delta",
         std_name="atmosphere_hybrid_sigma_pressure_coordinate",
-        formula_terms_format="ap: {delta} b: {sigma} "
-        "ps: {surface_air_pressure}",
+        formula_terms_format="ap: {delta} b: {sigma} ps: {surface_air_pressure}",
     ),
     OceanSigmaZFactory: _FactoryDefn(
         primary="zlev",
@@ -436,9 +435,7 @@ class Saver:
             "NETCDF3_CLASSIC",
             "NETCDF3_64BIT",
         ]:
-            raise ValueError(
-                "Unknown netCDF file format, got %r" % netcdf_format
-            )
+            raise ValueError("Unknown netCDF file format, got %r" % netcdf_format)
 
         # All persistent variables
         #: CF name mapping with iris coordinates
@@ -455,9 +452,7 @@ class Saver:
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: Target filepath
-        self.filepath = (
-            None  # this line just for the API page -- value is set later
-        )
+        self.filepath = None  # this line just for the API page -- value is set later
         #: Whether to complete delayed saves on exit (and raise associated warnings).
         self.compute = compute
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
@@ -645,9 +640,10 @@ class Saver:
         if unlimited_dimensions is None:
             unlimited_dimensions = []
 
-        cf_profile_available = iris.site_configuration.get(
-            "cf_profile"
-        ) not in [None, False]
+        cf_profile_available = iris.site_configuration.get("cf_profile") not in [
+            None,
+            False,
+        ]
         if cf_profile_available:
             # Perform a CF profile of the cube. This may result in an exception
             # being raised if mandatory requirements are not satisfied.
@@ -742,9 +738,7 @@ class Saver:
                 # Perform a CF patch of the dataset.
                 cf_patch(profile, self._dataset, cf_var_cube)
             else:
-                msg = "cf_profile is available but no {} defined.".format(
-                    "cf_patch"
-                )
+                msg = "cf_profile is available but no {} defined.".format("cf_patch")
                 warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
 
     @staticmethod
@@ -806,9 +800,7 @@ class Saver:
         for attr_name in sorted(kwargs):
             _setncattr(self._dataset, attr_name, kwargs[attr_name])
 
-    def _create_cf_dimensions(
-        self, cube, dimension_names, unlimited_dimensions=None
-    ):
+    def _create_cf_dimensions(self, cube, dimension_names, unlimited_dimensions=None):
         """Create the CF-netCDF data dimensions.
 
         Parameters
@@ -914,17 +906,11 @@ class Saver:
                         # Record the coordinates (if any) on the mesh variable.
                         if coord_names:
                             coord_names = " ".join(coord_names)
-                            _setncattr(
-                                cf_mesh_var, coords_file_attr, coord_names
-                            )
+                            _setncattr(cf_mesh_var, coords_file_attr, coord_names)
 
                 # Add all the connectivity variables.
                 # pre-fetch the set + ignore "None"s, which are empty slots.
-                conns = [
-                    conn
-                    for conn in mesh.all_connectivities
-                    if conn is not None
-                ]
+                conns = [conn for conn in mesh.all_connectivities if conn is not None]
                 for conn in conns:
                     # Get the connectivity role, = "{loc1}_{loc2}_connectivity".
                     cf_conn_attr_name = conn.cf_role
@@ -1171,9 +1157,7 @@ class Saver:
                     key: self._name_coord_map.name(coord)
                     for key, coord in factory.dependencies.items()
                 }
-                formula_terms = factory_defn.formula_terms_format.format(
-                    **names
-                )
+                formula_terms = factory_defn.formula_terms_format.format(**names)
                 std_name = factory_defn.std_name
 
                 if hasattr(cf_var, "formula_terms"):
@@ -1188,10 +1172,7 @@ class Saver:
                         #  dimensionless vertical coordinate is required
                         #  with new formula_terms and a renamed dimension.
                         if cf_name in dimension_names:
-                            msg = (
-                                "Unable to create dimensonless vertical "
-                                "coordinate."
-                            )
+                            msg = "Unable to create dimensonless vertical coordinate."
                             raise ValueError(msg)
                         key = (cf_name, std_name, formula_terms)
                         name = self._formula_terms_cache.get(key)
@@ -1212,9 +1193,7 @@ class Saver:
                         # Update the associated cube variable.
                         coords = cf_var_cube.coordinates.split()
                         coords = [name if c == cf_name else c for c in coords]
-                        _setncattr(
-                            cf_var_cube, "coordinates", " ".join(coords)
-                        )
+                        _setncattr(cf_var_cube, "coordinates", " ".join(coords))
                 else:
                     _setncattr(cf_var, "standard_name", std_name)
                     _setncattr(cf_var, "axis", "Z")
@@ -1243,9 +1222,7 @@ class Saver:
 
         """
 
-        def record_dimension(
-            names_list, dim_name, length, matching_coords=None
-        ):
+        def record_dimension(names_list, dim_name, length, matching_coords=None):
             """Record a file dimension, its length and associated "coordinates".
 
             Record a file dimension, its length and associated "coordinates"
@@ -1327,9 +1304,7 @@ class Saver:
                     if dim_name is not None:
                         # For mesh-identifying coords, we require the *same*
                         # coord, not an identical one (i.e. "is" not "==")
-                        stored_coord = self._dim_names_and_coords.coord(
-                            dim_name
-                        )
+                        stored_coord = self._dim_names_and_coords.coord(dim_name)
                         if dim_element is not stored_coord:
                             # This is *not* a proper match after all.
                             dim_name = None
@@ -1340,9 +1315,7 @@ class Saver:
                             (dim_length,) = dim_element.shape
                         else:
                             # extract source dim, respecting dim-ordering
-                            dim_length = dim_element.shape[
-                                dim_element.location_axis
-                            ]
+                            dim_length = dim_element.shape[dim_element.location_axis]
                         # Name it for the relevant mesh dimension
                         location_dim_attr = f"{location}_dimension"
                         dim_name = getattr(mesh, location_dim_attr)
@@ -1405,9 +1378,7 @@ class Saver:
                         if dim_name is None:
                             # Not already present : create  a unique dimension name
                             # from the coord.
-                            dim_name = self._get_coord_variable_name(
-                                cube, coord
-                            )
+                            dim_name = self._get_coord_variable_name(cube, coord)
                             # Disambiguate if it has the same name as an
                             # existing dimension.
                             # OR if it matches an existing file variable name.
@@ -1431,16 +1402,12 @@ class Saver:
                         # block above.
                         while (
                             dim_name in self._existing_dim
-                            and (
-                                self._existing_dim[dim_name] != cube.shape[dim]
-                            )
+                            and (self._existing_dim[dim_name] != cube.shape[dim])
                         ) or dim_name in self._dataset.variables:
                             dim_name = self._increment_name(dim_name)
 
                 # Record the dimension.
-                record_dimension(
-                    cube_dimensions, dim_name, cube.shape[dim], dim_coords
-                )
+                record_dimension(cube_dimensions, dim_name, cube.shape[dim], dim_coords)
 
         return mesh_dimensions, cube_dimensions
 
@@ -1512,18 +1479,14 @@ class Saver:
             if is_lazy_data(values):
                 val_min, val_max = _co_realise_lazy_arrays([val_min, val_max])
             # Cast to an integer type supported by netCDF3.
-            can_cast = all(
-                [np.can_cast(m, np.int32) for m in (val_min, val_max)]
-            )
+            can_cast = all([np.can_cast(m, np.int32) for m in (val_min, val_max)])
             if not can_cast:
                 msg = (
                     "The data type of {} {!r} is not supported by {} and"
                     " its values cannot be safely cast to a supported"
                     " integer type."
                 )
-                msg = msg.format(
-                    src_name, src_object, self._dataset.file_format
-                )
+                msg = msg.format(src_name, src_object, self._dataset.file_format)
                 raise ValueError(msg)
             values = values.astype(np.int32)
         return values
@@ -1569,9 +1532,7 @@ class Saver:
                 while bounds_dimension_name in self._dataset.variables:
                     # Also avoid collision with variable names.
                     # See '_get_dim_names' for reason.
-                    bounds_dimension_name = self._increment_name(
-                        bounds_dimension_name
-                    )
+                    bounds_dimension_name = self._increment_name(bounds_dimension_name)
                 self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
             boundsvar_name = "{}_{}".format(cf_name, varname_extra)
@@ -1858,9 +1819,7 @@ class Saver:
                 while string_dimension_name in self._dataset.variables:
                     # Also avoid collision with variable names.
                     # See '_get_dim_names' for reason.
-                    string_dimension_name = self._increment_name(
-                        string_dimension_name
-                    )
+                    string_dimension_name = self._increment_name(string_dimension_name)
                 self._dataset.createDimension(
                     string_dimension_name, string_dimension_depth
                 )
@@ -2011,9 +1970,7 @@ class Saver:
                 cf_var_grid = self._dataset.createVariable(
                     cs.grid_mapping_name, np.int32
                 )
-                _setncattr(
-                    cf_var_grid, "grid_mapping_name", cs.grid_mapping_name
-                )
+                _setncattr(cf_var_grid, "grid_mapping_name", cs.grid_mapping_name)
 
                 def add_ellipsoid(ellipsoid):
                     cf_var_grid.longitude_of_prime_meridian = (
@@ -2037,15 +1994,9 @@ class Saver:
                 elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
                     if cs.ellipsoid:
                         add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.grid_north_pole_latitude = (
-                        cs.grid_north_pole_latitude
-                    )
-                    cf_var_grid.grid_north_pole_longitude = (
-                        cs.grid_north_pole_longitude
-                    )
-                    cf_var_grid.north_pole_grid_longitude = (
-                        cs.north_pole_grid_longitude
-                    )
+                    cf_var_grid.grid_north_pole_latitude = cs.grid_north_pole_latitude
+                    cf_var_grid.grid_north_pole_longitude = cs.grid_north_pole_longitude
+                    cf_var_grid.north_pole_grid_longitude = cs.north_pole_grid_longitude
 
                 # tmerc
                 elif isinstance(cs, iris.coord_systems.TransverseMercator):
@@ -2095,9 +2046,7 @@ class Saver:
                     if cs.ellipsoid:
                         add_ellipsoid(cs.ellipsoid)
                     cf_var_grid.latitude_of_projection_origin = cs.central_lat
-                    cf_var_grid.straight_vertical_longitude_from_pole = (
-                        cs.central_lon
-                    )
+                    cf_var_grid.straight_vertical_longitude_from_pole = cs.central_lon
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
                     # Only one of these should be set
@@ -2140,9 +2089,7 @@ class Saver:
                     )
 
                 # lambert azimuthal equal area
-                elif isinstance(
-                    cs, iris.coord_systems.LambertAzimuthalEqualArea
-                ):
+                elif isinstance(cs, iris.coord_systems.LambertAzimuthalEqualArea):
                     if cs.ellipsoid:
                         add_ellipsoid(cs.ellipsoid)
                     cf_var_grid.longitude_of_projection_origin = (
@@ -2180,9 +2127,7 @@ class Saver:
                     )
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.perspective_point_height = (
-                        cs.perspective_point_height
-                    )
+                    cf_var_grid.perspective_point_height = cs.perspective_point_height
 
                 # geostationary
                 elif isinstance(cs, iris.coord_systems.Geostationary):
@@ -2196,27 +2141,20 @@ class Saver:
                     )
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.perspective_point_height = (
-                        cs.perspective_point_height
-                    )
+                    cf_var_grid.perspective_point_height = cs.perspective_point_height
                     cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
 
                 # oblique mercator (and rotated variant)
                 # Use duck-typing over isinstance() - subclasses (i.e.
                 #  RotatedMercator) upset mock tests.
-                elif (
-                    getattr(cs, "grid_mapping_name", None)
-                    == "oblique_mercator"
-                ):
+                elif getattr(cs, "grid_mapping_name", None) == "oblique_mercator":
                     # RotatedMercator subclasses ObliqueMercator, and RM
                     #  instances are implicitly saved as OM due to inherited
                     #  properties. This is correct because CF 1.11 is removing
                     #  all mention of RM.
                     if cs.ellipsoid:
                         add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.azimuth_of_central_line = (
-                        cs.azimuth_of_central_line
-                    )
+                    cf_var_grid.azimuth_of_central_line = cs.azimuth_of_central_line
                     cf_var_grid.latitude_of_projection_origin = (
                         cs.latitude_of_projection_origin
                     )
@@ -2484,9 +2422,7 @@ class Saver:
                 # does not have a compatible type.  This causes a deprecation warning at
                 # numpy 1.24, *and* was preventing correct fill-value checking of character
                 # data, since they are actually bytes (dtype 'S1').
-                fill_value_to_check = np.array(
-                    fill_value_to_check, dtype=dtype
-                )
+                fill_value_to_check = np.array(fill_value_to_check, dtype=dtype)
             else:
                 # A None means we will NOT check for collisions.
                 fill_value_to_check = None
@@ -2510,9 +2446,7 @@ class Saver:
                         self.filepath, cf_var, self.file_write_lock
                     )
                     # Add to the list of delayed writes, used in delayed_completion().
-                    self._delayed_writes.append(
-                        (data, write_wrapper, fill_info)
-                    )
+                    self._delayed_writes.append((data, write_wrapper, fill_info))
                     # In this case, fill-value checking is done later. But return 2 dummy
                     # values, to be consistent with the non-streamed "store" signature.
                     is_masked, contains_value = False, False
@@ -2523,18 +2457,14 @@ class Saver:
                 # We also check it immediately for any fill-value problems.
                 def store(data, cf_var, fill_info):
                     cf_var[:] = data
-                    return _data_fillvalue_check(
-                        np, data, fill_info.check_value
-                    )
+                    return _data_fillvalue_check(np, data, fill_info.check_value)
 
             # Store the data and check if it is masked and contains the fill value.
             is_masked, contains_fill_value = store(data, cf_var, fill_info)
 
             if not doing_delayed_save:
                 # Issue a fill-value warning immediately, if appropriate.
-                _fillvalue_report(
-                    fill_info, is_masked, contains_fill_value, warn=True
-                )
+                _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=True)
 
     def delayed_completion(self) -> Delayed:
         """Perform file completion for delayed saves.
@@ -2578,9 +2508,7 @@ class Saver:
                 results = []
                 # Pair each fill_check result (is_masked, contains_value) with its
                 # fillinfo and construct a suitable Warning if needed.
-                for fillinfo, (is_masked, contains_value) in zip(
-                    fv_infos, fv_checks
-                ):
+                for fillinfo, (is_masked, contains_value) in zip(fv_infos, fv_checks):
                     fv_warning = _fillvalue_report(
                         fill_info=fillinfo,
                         is_masked=is_masked,
@@ -2636,9 +2564,7 @@ class Saver:
         if issue_warnings:
             # Issue any delayed warnings from the compute.
             for delayed_warning in result_warnings:
-                warnings.warn(
-                    delayed_warning, category=iris.exceptions.IrisSaveWarning
-                )
+                warnings.warn(delayed_warning, category=iris.exceptions.IrisSaveWarning)
 
         return result_warnings
 
@@ -3029,20 +2955,17 @@ def save(
 
         if iris.config.netcdf.conventions_override:
             # Set to the default if custom conventions are not available.
-            conventions = cube.attributes.get(
-                "Conventions", CF_CONVENTIONS_VERSION
-            )
+            conventions = cube.attributes.get("Conventions", CF_CONVENTIONS_VERSION)
         else:
             conventions = CF_CONVENTIONS_VERSION
 
         # Perform a CF patch of the conventions attribute.
-        cf_profile_available = iris.site_configuration.get(
-            "cf_profile"
-        ) not in [None, False]
+        cf_profile_available = iris.site_configuration.get("cf_profile") not in [
+            None,
+            False,
+        ]
         if cf_profile_available:
-            conventions_patch = iris.site_configuration.get(
-                "cf_patch_conventions"
-            )
+            conventions_patch = iris.site_configuration.get("cf_patch_conventions")
             if conventions_patch is not None:
                 conventions = conventions_patch(conventions)
             else:

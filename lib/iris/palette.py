@@ -300,12 +300,12 @@ def _load_palette():
 
         # Integrity check for meta-data 'type' field.
         assert cmap_type is not None, (
-            'Missing meta-data "type" keyword for color map file, "%s"'
-            % filename
+            'Missing meta-data "type" keyword for color map file, "%s"' % filename
         )
-        assert (
-            cmap_type == "rgb"
-        ), 'Invalid type [%s] for color map file "%s"' % (cmap_type, filename)
+        assert cmap_type == "rgb", 'Invalid type [%s] for color map file "%s"' % (
+            cmap_type,
+            filename,
+        )
 
         # Update the color map look-up dictionaries.
         CMAP_BREWER.add(cmap_name)
@@ -330,9 +330,7 @@ def _load_palette():
         if interpolate_flag:
             # Perform default color map interpolation for quantization
             # levels per primary color.
-            cmap = mpl_colors.LinearSegmentedColormap.from_list(
-                cmap_name, cmap_data
-            )
+            cmap = mpl_colors.LinearSegmentedColormap.from_list(cmap_name, cmap_data)
         else:
             # Restrict quantization levels per primary color (turn-off
             # interpolation).

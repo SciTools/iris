@@ -77,14 +77,10 @@ class STASHConstraint:
         file_path_dict = {}
         for xyz in self.params[0]:
             x, y, z = xyz
-            file_path_dict[xyz] = create_um_files(
-                x, y, z, 1, False, file_type_args
-            )
+            file_path_dict[xyz] = create_um_files(x, y, z, 1, False, file_type_args)
         return file_path_dict
 
-    def setup(
-        self, file_path_dict: dict, xyz: tuple, file_format: str
-    ) -> None:
+    def setup(self, file_path_dict: dict, xyz: tuple, file_format: str) -> None:
         self.file_path = file_path_dict[xyz][file_format]
 
     def time_stash_constraint(self, _, __, ___) -> None:
@@ -104,9 +100,7 @@ class TimeConstraint:
             )
         return file_path_dict
 
-    def setup(
-        self, file_path_dict: dict, time_dim_len: int, file_format: str
-    ) -> None:
+    def setup(self, file_path_dict: dict, time_dim_len: int, file_format: str) -> None:
         self.file_path = file_path_dict[time_dim_len][file_format]
         self.time_constr = Constraint(time=lambda cell: cell.point.year < 3)
 

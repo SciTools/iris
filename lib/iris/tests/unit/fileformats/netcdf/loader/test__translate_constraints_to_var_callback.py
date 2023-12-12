@@ -90,9 +90,7 @@ class Test(tests.IrisTest):
         self.assertArrayEqual(result, [False, False, False, True, False])
 
     def test_NameConstraint_with_STASH(self):
-        constr = iris.NameConstraint(
-            standard_name="x_wind", STASH="m01s00i024"
-        )
+        constr = iris.NameConstraint(standard_name="x_wind", STASH="m01s00i024")
         result = _translate_constraints_to_var_callback(constr)
         self.assertIsNone(result)
 

@@ -54,9 +54,7 @@ def _convert_latlons(crs, x_array, y_array):
     return ll_values[..., 0], ll_values[..., 1]
 
 
-def _make_esmpy_field(
-    x_coord, y_coord, ref_name="field", data=None, mask=None
-):
+def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
     """
     Create an ESMPy ESMF.Field on given coordinates.
 

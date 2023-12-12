@@ -137,9 +137,7 @@ class Test__points_and_bounds(tests.IrisTest):
     # See Test_MeshCoord__dataviews for more detailed checks.
     def test_node(self):
         meshcoord = sample_meshcoord(location="node")
-        n_nodes = (
-            iris.tests.stock.mesh._TEST_N_NODES
-        )  # n-nodes default for sample mesh
+        n_nodes = iris.tests.stock.mesh._TEST_N_NODES  # n-nodes default for sample mesh
         self.assertIsNone(meshcoord.core_bounds())
         self.assertArrayAllClose(meshcoord.points, 1100 + np.arange(n_nodes))
 
@@ -148,9 +146,7 @@ class Test__points_and_bounds(tests.IrisTest):
         points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
         self.assertEqual(points.shape, meshcoord.shape)
         self.assertEqual(bounds.shape, meshcoord.shape + (2,))
-        self.assertArrayAllClose(
-            meshcoord.points, [2100, 2101, 2102, 2103, 2104]
-        )
+        self.assertArrayAllClose(meshcoord.points, [2100, 2101, 2102, 2103, 2104])
         self.assertArrayAllClose(
             meshcoord.bounds,
             [
@@ -780,9 +776,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
             # Indicate how many "extra" missing results this should cause.
             "n_extra_bad_points": 2,
         }
-        self._make_test_meshcoord(
-            facenodes_changes=facenodes_modify, lazy_sources=lazy
-        )
+        self._make_test_meshcoord(facenodes_changes=facenodes_modify, lazy_sources=lazy)
         self._check_expected_bounds_values()
 
     def test_bounds_badvalues__real(self):
@@ -837,22 +831,16 @@ class Test__metadata:
     def test_node_meshcoord(self, axis_x_or_y):
         # MeshCoord metadata matches that of the relevant node coord.
         self.setup_mesh(location="node", axis=axis_x_or_y)
-        meshcoord = self.mesh.to_MeshCoord(
-            location=self.location, axis=self.axis
-        )
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
         self.coord_metadata_matches(meshcoord, self.node_coord)
 
     def test_faceedge_basic(self, location_face_or_edge, axis_x_or_y):
         # MeshCoord metadata matches that of the face/edge ("points") coord.
         self.setup_mesh(location_face_or_edge, axis_x_or_y)
-        meshcoord = self.mesh.to_MeshCoord(
-            location=self.location, axis=self.axis
-        )
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
         self.coord_metadata_matches(meshcoord, self.location_coord)
 
-    @pytest.mark.parametrize(
-        "fieldname", ["long_name", "var_name", "attributes"]
-    )
+    @pytest.mark.parametrize("fieldname", ["long_name", "var_name", "attributes"])
     def test_faceedge_dontcare_fields(
         self, location_face_or_edge, axis_x_or_y, fieldname
     ):
@@ -867,9 +855,7 @@ class Test__metadata:
         setattr(self.location_coord, fieldname, different_value)
         # Mostly.. just check this does not cause an error, as it would do if we
         # modified "standard_name" or "units" (see other tests) ...
-        meshcoord = self.mesh.to_MeshCoord(
-            location=self.location, axis=self.axis
-        )
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
         # ... but also, check that the result matches the expected face/edge coord.
         self.coord_metadata_matches(meshcoord, self.location_coord)
 
@@ -888,13 +874,9 @@ class Test__metadata:
             f"'{node_name}' instead of '{location_name}'"
         )
         with pytest.raises(ValueError, match=msg):
-            self.mesh.to_MeshCoord(
-                location=location_face_or_edge, axis=axis_x_or_y
-            )
+            self.mesh.to_MeshCoord(location=location_face_or_edge, axis=axis_x_or_y)
 
-    def test_faceedge_fail_missing_stdnames(
-        self, location_face_or_edge, axis_x_or_y
-    ):
+    def test_faceedge_fail_missing_stdnames(self, location_face_or_edge, axis_x_or_y):
         # "standard_name" compared with None also causes an error.
         self.setup_mesh(location_face_or_edge, axis_x_or_y)
         self.node_coord.standard_name = None
@@ -911,13 +893,9 @@ class Test__metadata:
             f"None instead of '{location_name}'"
         )
         with pytest.raises(ValueError, match=msg):
-            self.mesh.to_MeshCoord(
-                location=location_face_or_edge, axis=axis_x_or_y
-            )
+            self.mesh.to_MeshCoord(location=location_face_or_edge, axis=axis_x_or_y)
 
-    def test_faceedge_fail_mismatched_units(
-        self, location_face_or_edge, axis_x_or_y
-    ):
+    def test_faceedge_fail_mismatched_units(self, location_face_or_edge, axis_x_or_y):
         # Different "units" for node and face/edge causes an error.
         self.setup_mesh(location_face_or_edge, axis_x_or_y)
         self.node_coord.units = "hPa"
@@ -928,18 +906,14 @@ class Test__metadata:
             "'hPa' instead of 'degrees'"
         )
         with pytest.raises(ValueError, match=msg):
-            self.mesh.to_MeshCoord(
-                location=location_face_or_edge, axis=axis_x_or_y
-            )
+            self.mesh.to_MeshCoord(location=location_face_or_edge, axis=axis_x_or_y)
 
     def test_faceedge_missing_units(self, location_face_or_edge, axis_x_or_y):
         # Units compared with a None ("unknown") is not an error.
         self.setup_mesh(location_face_or_edge, axis_x_or_y)
         self.node_coord.units = None
         # This is OK
-        meshcoord = self.mesh.to_MeshCoord(
-            location=self.location, axis=self.axis
-        )
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
         # ... but also, check that the result matches the expected face/edge coord.
         self.coord_metadata_matches(meshcoord, self.location_coord)
 

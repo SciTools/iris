@@ -117,9 +117,7 @@ class Test(tests.IrisTest):
             (LONGITUDE, 2),
             (LATITUDE, 1),
             (
-                iris.coords.DimCoord(
-                    [18, 24, 30], "time", units="hours since epoch"
-                ),
+                iris.coords.DimCoord([18, 24, 30], "time", units="hours since epoch"),
                 (0,),
             ),
         ]
@@ -132,9 +130,7 @@ class Test(tests.IrisTest):
                 None,
             ),
             (
-                iris.coords.DimCoord(
-                    [6, 12, 18], "forecast_period", units="hours"
-                ),
+                iris.coords.DimCoord([6, 12, 18], "forecast_period", units="hours"),
                 (0,),
             ),
         ]
@@ -178,9 +174,7 @@ class Test(tests.IrisTest):
                 None,
             ),
             (
-                iris.coords.DimCoord(
-                    [6, 3, 0.0], "forecast_period", units="hours"
-                ),
+                iris.coords.DimCoord([6, 3, 0.0], "forecast_period", units="hours"),
                 (0,),
             ),
         ]
@@ -256,9 +250,7 @@ class Test(tests.IrisTest):
             (LONGITUDE, 3),
             (LATITUDE, 2),
             (
-                iris.coords.DimCoord(
-                    [30, 33, 36], "time", units="hours since epoch"
-                ),
+                iris.coords.DimCoord([30, 33, 36], "time", units="hours since epoch"),
                 (1,),
             ),
             (

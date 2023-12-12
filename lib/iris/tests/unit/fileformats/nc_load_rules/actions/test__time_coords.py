@@ -65,10 +65,7 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         # NB we don't necessarily *use* either of these
         dims_and_lens = {timedim_name: 2, perioddim_name: 3}
         dims_string = "\n".join(
-            [
-                f"        {name} = {length} ;"
-                for name, length in dims_and_lens.items()
-            ]
+            [f"        {name} = {length} ;" for name, length in dims_and_lens.items()]
         )
 
         phenom_auto_dims = []
@@ -143,8 +140,7 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         else:
             phenom_coords_string = " ".join(phenom_coords)
             phenom_coords_string = (
-                "            "
-                f'phenom:coordinates = "{phenom_coords_string}" ; '
+                "            " f'phenom:coordinates = "{phenom_coords_string}" ; '
             )
 
         # Create a testcase with time dims + coords.

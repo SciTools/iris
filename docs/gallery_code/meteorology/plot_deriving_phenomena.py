@@ -42,9 +42,7 @@ def main():
         iris.Constraint(phenom, model_level_number=1) for phenom in phenomena
     ]
 
-    air_potential_temperature, air_pressure = iris.load_cubes(
-        fname, constraints
-    )
+    air_potential_temperature, air_pressure = iris.load_cubes(fname, constraints)
 
     # Define a coordinate which represents 1000 hPa
     p0 = coords.AuxCoord(1000, long_name="P0", units="hPa")

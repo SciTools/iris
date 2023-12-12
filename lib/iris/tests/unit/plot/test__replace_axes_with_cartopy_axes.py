@@ -32,9 +32,7 @@ class Test_replace_axes_with_cartopy_axes(tests.IrisTest):
 
         # get_position returns mpl.transforms.Bbox object, for which equality does
         # not appear to be implemented.  Compare the bounds (tuple) instead.
-        self.assertEqual(
-            expected.get_position().bounds, result.get_position().bounds
-        )
+        self.assertEqual(expected.get_position().bounds, result.get_position().bounds)
 
     def test_ax_on_subfigure(self):
         subfig, _ = self.fig.subfigures(nrows=2)

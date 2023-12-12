@@ -38,9 +38,7 @@ def _get_NAME_loader(filename):
             load = name_loaders.load_NAMEII_field
 
     if load is None:
-        raise ValueError(
-            "Unable to determine NAME file type " "of {!r}.".format(filename)
-        )
+        raise ValueError("Unable to determine NAME file type of {!r}.".format(filename))
 
     return load
 

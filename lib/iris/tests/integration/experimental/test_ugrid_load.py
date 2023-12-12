@@ -59,9 +59,7 @@ def ugrid_load(uris, constraints=None, callback=None):
 class TestBasic(tests.IrisTest):
     def common_test(self, load_filename, assert_filename):
         cube_list = ugrid_load(
-            tests.get_data_path(
-                ["NetCDF", "unstructured_grid", load_filename]
-            ),
+            tests.get_data_path(["NetCDF", "unstructured_grid", load_filename]),
         )
         self.assertEqual(1, len(cube_list))
         cube = cube_list[0]
@@ -133,9 +131,7 @@ class TestMultiplePhenomena(tests.IrisTest):
                 ["NetCDF", "unstructured_grid", "lfric_surface_mean.nc"]
             ),
         )
-        self.assertCML(
-            cube_list, ("experimental", "ugrid", "surface_mean.cml")
-        )
+        self.assertCML(cube_list, ("experimental", "ugrid", "surface_mean.cml"))
 
 
 class TestTolerantLoading(XIOSFileMixin):
@@ -154,9 +150,7 @@ class TestTolerantLoading(XIOSFileMixin):
     def create_synthetic_file(self, **create_kwargs):
         template_name = create_kwargs["template"]  # required kwarg
         testfile_name = "tmp_netcdf"
-        template_subs = dict(
-            NUM_NODES=7, NUM_FACES=3, DATASET_NAME=testfile_name
-        )
+        template_subs = dict(NUM_NODES=7, NUM_FACES=3, DATASET_NAME=testfile_name)
         kwarg_subs = create_kwargs.get("subs", {})  # optional kwarg
         template_subs.update(kwarg_subs)
         filepath = create_file_from_cdl_template(

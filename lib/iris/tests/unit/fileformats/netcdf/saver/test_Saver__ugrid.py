@@ -89,8 +89,7 @@ def build_mesh(
             np.zeros((n_edges, 2), np.int32), cf_role="edge_node_connectivity"
         )
         edge_coords = [
-            AuxCoord(np.arange(n_edges), standard_name=name)
-            for name in XY_NAMES
+            AuxCoord(np.arange(n_edges), standard_name=name) for name in XY_NAMES
         ]
         apply_xyargs(edge_coords, edgecoord_xyargs)
 
@@ -100,8 +99,7 @@ def build_mesh(
             np.zeros((n_faces, 4), np.int32), cf_role="face_node_connectivity"
         )
         face_coords = [
-            AuxCoord(np.arange(n_faces), standard_name=name)
-            for name in XY_NAMES
+            AuxCoord(np.arange(n_faces), standard_name=name) for name in XY_NAMES
         ]
         apply_xyargs(face_coords, facecoord_xyargs)
 
@@ -114,9 +112,7 @@ def build_mesh(
             else:
                 loc_from, loc_to, _ = role.split("_")
                 dims = [mesh_dims[loc] for loc in (loc_from, loc_to)]
-                conn = Connectivity(
-                    np.zeros(dims, dtype=np.int32), cf_role=role
-                )
+                conn = Connectivity(np.zeros(dims, dtype=np.int32), cf_role=role)
                 connectivities[role] = conn
             applyargs(conn, kwargs)
 
@@ -150,12 +146,8 @@ def make_mesh(basic=True, **kwargs):
         use_kwargs = dict(
             n_nodes=5,
             n_faces=2,
-            nodecoord_xyargs=tuple(
-                dict(var_name=f"node_{loc}") for loc in XY_LOCS
-            ),
-            facecoord_xyargs=tuple(
-                dict(var_name=f"face_{loc}") for loc in XY_LOCS
-            ),
+            nodecoord_xyargs=tuple(dict(var_name=f"node_{loc}") for loc in XY_LOCS),
+            facecoord_xyargs=tuple(dict(var_name=f"face_{loc}") for loc in XY_LOCS),
             mesh_kwargs=dict(
                 var_name="Mesh2d",
                 node_dimension="Mesh2d_nodes",
@@ -290,9 +282,7 @@ def vars_w_props(varsdict, **kwargs):
         return result
 
     varsdict = {
-        name: attrs
-        for name, attrs in varsdict.items()
-        if check_attrs_match(attrs)
+        name: attrs for name, attrs in varsdict.items() if check_attrs_match(attrs)
     }
     return varsdict
 
@@ -398,9 +388,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # The face coords should both map that single dim.
         face_dim = vars_meshdim(vars, "face")
-        self.assertTrue(
-            all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords)
-        )
+        self.assertTrue(all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords))
 
         # The face coordinates should be referenced by the data variable.
         for coord in face_coords:
@@ -420,9 +408,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # There are no edges.
         self.assertNotIn("edge_node_connectivity", mesh_props)
-        self.assertEqual(
-            len(vars_w_props(vars, cf_role="edge_node_connectivity")), 0
-        )
+        self.assertEqual(len(vars_w_props(vars, cf_role="edge_node_connectivity")), 0)
 
         # The dims are precisely (nodes, faces, nodes-per-face), in that order.
         self.assertEqual(
@@ -511,12 +497,8 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(sorted(mesh_names), ["Mesh2d"])
 
         # same dimensions
-        self.assertEqual(
-            vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes"
-        )
-        self.assertEqual(
-            vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces"
-        )
+        self.assertEqual(vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes")
+        self.assertEqual(vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces")
 
         # there are exactly two data-variables with a 'mesh' property
         mesh_datavars = vars_w_props(vars, mesh="*")
@@ -642,9 +624,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # have just 1 data-variable, which maps to hybrid-height and mesh dims
         ((data_name, data_props),) = vars_w_props(vars, mesh="*").items()
-        self.assertEqual(
-            data_props[_VAR_DIMS], ["model_level_number", face_dim]
-        )
+        self.assertEqual(data_props[_VAR_DIMS], ["model_level_number", face_dim])
         self.assertEqual(data_props["mesh"], mesh_name)
         self.assertEqual(data_props["location"], "face")
 
@@ -849,9 +829,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
         # check that the connectivity has the corrects dims and fill-property
         ff_props = vars[ff_conn_name]
-        self.assertEqual(
-            ff_props[_VAR_DIMS], ["Mesh2d_faces", "Mesh2d_face_N_faces"]
-        )
+        self.assertEqual(ff_props[_VAR_DIMS], ["Mesh2d_faces", "Mesh2d_face_N_faces"])
         self.assertIn("_FillValue", ff_props)
         self.assertEqual(ff_props["_FillValue"], -1)
 
@@ -874,9 +852,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
     def test_one_dimensional(self):
         # Test a mesh with edges only.
-        mesh = make_mesh(
-            n_edges=5, n_faces=0, mesh_kwargs={"var_name": "Mesh1d"}
-        )
+        mesh = make_mesh(n_edges=5, n_faces=0, mesh_kwargs={"var_name": "Mesh1d"})
 
         # Save and snapshot the result
         tempfile_path = self.check_save_mesh(mesh)
@@ -1211,12 +1187,8 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
         # they use different dimensions
         # mesh1
-        self.assertEqual(
-            vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes"
-        )
-        self.assertEqual(
-            vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces"
-        )
+        self.assertEqual(vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes")
+        self.assertEqual(vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces")
         if "edge_coordinates" in vars["Mesh2d"]:
             self.assertEqual(
                 vars_meshdim(vars, "edge", mesh_name="Mesh2d"), "Mesh2d_edge"

@@ -55,16 +55,10 @@ class Test_post_process(tests.IrisTest):
 
     def test_missing_mandatory_kwarg(self):
         aggregator = WeightedPercentileAggregator()
-        emsg = (
-            "weighted_percentile aggregator requires "
-            ".* keyword argument 'percent'"
-        )
+        emsg = "weighted_percentile aggregator requires .* keyword argument 'percent'"
         with self.assertRaisesRegex(ValueError, emsg):
             aggregator.aggregate("dummy", axis=0, weights=None)
-        emsg = (
-            "weighted_percentile aggregator requires "
-            ".* keyword argument 'weights'"
-        )
+        emsg = "weighted_percentile aggregator requires .* keyword argument 'weights'"
         with self.assertRaisesRegex(ValueError, emsg):
             aggregator.aggregate("dummy", axis=0, percent=50)
 
@@ -74,9 +68,7 @@ class Test_post_process(tests.IrisTest):
         kwargs = dict(percent=percent, weights=self.weights_simple)
         data = np.empty(self.cube_simple.shape)
         coords = [self.coord_simple]
-        actual = aggregator.post_process(
-            self.cube_simple, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_simple, data, coords, **kwargs)
         self.assertEqual(actual.shape, self.cube_simple.shape)
         self.assertIs(actual.data, data)
         name = "weighted_percentile_over_time"
@@ -87,9 +79,7 @@ class Test_post_process(tests.IrisTest):
     def test_simple_multiple_points(self):
         aggregator = WeightedPercentileAggregator()
         percent = np.array([10, 20, 50, 90])
-        kwargs = dict(
-            percent=percent, weights=self.weights_simple, returned=True
-        )
+        kwargs = dict(percent=percent, weights=self.weights_simple, returned=True)
         shape = self.cube_simple.shape + percent.shape
         data = np.empty(shape)
         total_weights = 1.0
@@ -98,9 +88,7 @@ class Test_post_process(tests.IrisTest):
             self.cube_simple, (data, total_weights), coords, **kwargs
         )
         self.assertEqual(len(actual), 2)
-        self.assertEqual(
-            actual[0].shape, percent.shape + self.cube_simple.shape
-        )
+        self.assertEqual(actual[0].shape, percent.shape + self.cube_simple.shape)
         expected = np.rollaxis(data, -1)
         self.assertArrayEqual(actual[0].data, expected)
         self.assertIs(actual[1], total_weights)
@@ -115,9 +103,7 @@ class Test_post_process(tests.IrisTest):
         kwargs = dict(percent=percent, weights=self.weights_multi)
         data = np.empty(self.cube_multi.shape)
         coords = [self.coord_multi_0]
-        actual = aggregator.post_process(
-            self.cube_multi, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
         self.assertEqual(actual.shape, self.cube_multi.shape)
         self.assertIs(actual.data, data)
         name = "weighted_percentile_over_time"
@@ -132,9 +118,7 @@ class Test_post_process(tests.IrisTest):
         shape = self.cube_multi.shape + percent.shape
         data = np.empty(shape)
         coords = [self.coord_multi_0]
-        actual = aggregator.post_process(
-            self.cube_multi, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
         self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
         expected = np.rollaxis(data, -1)
         self.assertArrayEqual(actual.data, expected)

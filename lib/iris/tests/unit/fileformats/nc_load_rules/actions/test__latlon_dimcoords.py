@@ -172,9 +172,7 @@ netcdf test {{
             units=self.unrotated_units,
             grid_mapping="latlon",
         )
-        self.check_result(
-            result, self.unrotated_name, None, "degrees", "latlon"
-        )
+        self.check_result(result, self.unrotated_name, None, "degrees", "latlon")
 
     def test_fullinfo_rotated(self):
         # Check behaviour with all normal info elements for 'rotated' case.
@@ -184,9 +182,7 @@ netcdf test {{
             units=self.rotated_units,
             grid_mapping="rotated",
         )
-        self.check_result(
-            result, self.rotated_name, None, "degrees", "rotated"
-        )
+        self.check_result(result, self.rotated_name, None, "degrees", "rotated")
 
     def test_axis(self):
         # A suitable axis --> unrotated lat/lon coord, but unknown units.
@@ -208,12 +204,8 @@ netcdf test {{
     def test_units_unrotated_gridmapping(self):
         # With an unrotated unit *AND* a suitable grid-mapping, we identify a
         # rotated latlon coordinate + assign it the coord-system.
-        result = self.run_testcase(
-            units=self.unrotated_units, grid_mapping="latlon"
-        )
-        self.check_result(
-            result, self.unrotated_name, None, "degrees", "latlon"
-        )
+        result = self.run_testcase(units=self.unrotated_units, grid_mapping="latlon")
+        self.check_result(result, self.unrotated_name, None, "degrees", "latlon")
 
     def test_units_rotated_gridmapping_noname(self):
         # Rotated units and grid-mapping, but *without* the expected name.
@@ -232,9 +224,7 @@ netcdf test {{
             units="degrees",
             grid_mapping="rotated",
         )
-        self.check_result(
-            result, self.rotated_name, None, "degrees", "rotated"
-        )
+        self.check_result(result, self.rotated_name, None, "degrees", "rotated")
 
     def test_units_rotated_gridmapping_varname(self):
         # Same but with var-name containing the standard-name : in this case we
@@ -263,9 +253,7 @@ netcdf test {{
         # (= set standard-name).
         # N.B. this accepts "degrees" as a generic term, and so does *not*
         # interpret it as a rotated coordinate.
-        result = self.run_testcase(
-            var_name=self.unrotated_name, units="degrees"
-        )
+        result = self.run_testcase(var_name=self.unrotated_name, units="degrees")
         self.check_result(result, self.unrotated_name, None, "degrees")
 
     def test_longname(self):
@@ -289,9 +277,7 @@ netcdf test {{
         result = self.run_testcase(
             standard_name=self.unrotated_name, grid_mapping="latlon"
         )
-        self.check_result(
-            result, self.unrotated_name, None, "unknown", "latlon"
-        )
+        self.check_result(result, self.unrotated_name, None, "unknown", "latlon")
 
     def test_stdname_rotated_gridmapping(self):
         # An *rotated* standard-name and grid-mapping, translates into a

@@ -116,14 +116,11 @@ class TestLoadCubes(tests.IrisTest):
         factory = mock.Mock()
         factory.args = [{"name": "foo"}]
         factory.factory_class = (
-            lambda *args: setattr(aux_factory, "fake_args", args)
-            or aux_factory
+            lambda *args: setattr(aux_factory, "fake_args", args) or aux_factory
         )
 
         def converter(field):
-            return ConversionMetadata(
-                [factory], [], "", "", "", {}, [], [], []
-            )
+            return ConversionMetadata([factory], [], "", "", "", {}, [], [], [])
 
         # Finish by making a fake Loader
         fake_loader = Loader(field_generator, {}, converter)
@@ -196,9 +193,7 @@ class TestLoadCubes(tests.IrisTest):
         def converter(field):
             if field is press_field:
                 src = param_cube
-                factories = [
-                    Factory(HybridHeightFactory, [Reference("orography")])
-                ]
+                factories = [Factory(HybridHeightFactory, [Reference("orography")])]
                 references = []
             else:
                 src = orog_cube

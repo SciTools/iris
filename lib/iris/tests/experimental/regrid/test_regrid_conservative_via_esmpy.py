@@ -32,9 +32,7 @@ import iris.analysis.cartography as i_cartog
 from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 import iris.tests.stock as istk
 
-_PLAIN_GEODETIC_CS = iris.coord_systems.GeogCS(
-    i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS
-)
+_PLAIN_GEODETIC_CS = iris.coord_systems.GeogCS(i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS)
 
 
 def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
@@ -83,9 +81,7 @@ def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
 def _cube_area_sum(cube):
     """Calculate total area-sum - Iris can't do this in one operation."""
     area_sums = cube * i_cartog.area_weights(cube, normalize=False)
-    area_sum = area_sums.collapsed(
-        area_sums.coords(dim_coords=True), iris.analysis.SUM
-    )
+    area_sum = area_sums.collapsed(area_sums.coords(dim_coords=True), iris.analysis.SUM)
     return area_sum.data.flatten()[0]
 
 
@@ -504,9 +500,7 @@ class TestConservativeRegrid(tests.IrisTest):
         ylim2 = 90.0 * (shape2[1] - 1) / shape2[1]
         xlims_2 = (-xlim2, xlim2)
         ylims_2 = (-ylim2, ylim2)
-        c2 = _make_test_cube(
-            shape2, xlims_2, ylims_2, pole_latlon=(47.4, 25.7)
-        )
+        c2 = _make_test_cube(shape2, xlims_2, ylims_2, pole_latlon=(47.4, 25.7))
 
         # Perform regridding
         c1toc2 = regrid_conservative_via_esmpy(c1, c2)
@@ -622,18 +616,14 @@ class TestConservativeRegrid(tests.IrisTest):
         regrid_conservative_via_esmpy(c1, c2)
 
         # Replace the coord_system one of the source coords + check this fails.
-        c1.coord("grid_longitude").coord_system = c2.coord(
-            "longitude"
-        ).coord_system
+        c1.coord("grid_longitude").coord_system = c2.coord("longitude").coord_system
         with self.assertRaises(ValueError):
             regrid_conservative_via_esmpy(c1, c2)
 
         # Repeat with target coordinate fiddled.
         c1 = _make_test_cube(shape1, xlims1, ylims1, pole_latlon=(45.0, 35.0))
         c2 = _make_test_cube(shape2, xlims2, ylims2)
-        c2.coord("latitude").coord_system = c1.coord(
-            "grid_latitude"
-        ).coord_system
+        c2.coord("latitude").coord_system = c1.coord("grid_latitude").coord_system
         with self.assertRaises(ValueError):
             regrid_conservative_via_esmpy(c1, c2)
 

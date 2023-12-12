@@ -458,9 +458,7 @@ class FF2PP:
 
     """
 
-    def __init__(
-        self, filename, read_data=False, word_depth=DEFAULT_FF_WORD_DEPTH
-    ):
+    def __init__(self, filename, read_data=False, word_depth=DEFAULT_FF_WORD_DEPTH):
         """
         Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
@@ -534,9 +532,7 @@ class FF2PP:
             boundary_width = pack_dims.x_halo + pack_dims.rim_width
             y_height, x_width = field.lbrow, field.lbnpt
             mid_height = y_height - 2 * boundary_height
-            data_words = (
-                boundary_height * x_width * 2 + boundary_width * mid_height * 2
-            )
+            data_words = boundary_height * x_width * 2 + boundary_width * mid_height * 2
 
         data_depth = data_words * word_depth
         return data_depth, data_type
@@ -826,9 +822,7 @@ class FF2PP:
                         "Input field skipped as PPField creation failed :"
                         " error = {!r}"
                     )
-                    warnings.warn(
-                        msg.format(str(valerr)), category=IrisLoadWarning
-                    )
+                    warnings.warn(msg.format(str(valerr)), category=IrisLoadWarning)
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())

@@ -55,9 +55,7 @@ Mesh2DNames = namedtuple(
 #
 
 #: Namedtuple for 1D mesh :class:`~iris.coords.AuxCoord` coordinates.
-Mesh1DCoords = namedtuple(
-    "Mesh1DCoords", ["node_x", "node_y", "edge_x", "edge_y"]
-)
+Mesh1DCoords = namedtuple("Mesh1DCoords", ["node_x", "node_y", "edge_x", "edge_y"])
 #: Namedtuple for 2D mesh :class:`~iris.coords.AuxCoord` coordinates.
 Mesh2DCoords = namedtuple(
     "Mesh2DCoords",
@@ -372,9 +370,7 @@ class Connectivity(_DimensionalMetadata):
 
         indices_shape = indices.shape
         if len(indices_shape) != 2:
-            indices_error(
-                f"Expected 2-dimensional shape, got: shape={indices_shape} ."
-            )
+            indices_error(f"Expected 2-dimensional shape, got: shape={indices_shape} .")
 
         len_req_fail = False
         if shapes_only:
@@ -667,26 +663,18 @@ class Mesh(CFVariableMixin):
 
         # check the UGRID minimum requirement for coordinates
         if "node_x" not in kwargs:
-            emsg = (
-                "Require a node coordinate that is x-axis like to be provided."
-            )
+            emsg = "Require a node coordinate that is x-axis like to be provided."
             raise ValueError(emsg)
         if "node_y" not in kwargs:
-            emsg = (
-                "Require a node coordinate that is y-axis like to be provided."
-            )
+            emsg = "Require a node coordinate that is y-axis like to be provided."
             raise ValueError(emsg)
 
         if self.topology_dimension == 1:
             self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh1DConnectivityManager(
-                *connectivities
-            )
+            self._connectivity_manager = _Mesh1DConnectivityManager(*connectivities)
         elif self.topology_dimension == 2:
             self._coord_manager = _Mesh2DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh2DConnectivityManager(
-                *connectivities
-            )
+            self._connectivity_manager = _Mesh2DConnectivityManager(*connectivities)
         else:
             emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
             raise NotImplementedError(emsg)
@@ -799,16 +787,11 @@ class Mesh(CFVariableMixin):
             attr_name = f"core_{array_name}"
             arrays = [getattr(coord, attr_name)() for coord in coords]
             if any(a is None for a in arrays):
-                message = (
-                    f"{array_name} missing from coords[{arrays.index(None)}] ."
-                )
+                message = f"{array_name} missing from coords[{arrays.index(None)}] ."
                 raise ValueError(message)
             shapes = [array.shape for array in arrays]
             if shapes.count(shapes[0]) != len(shapes):
-                message = (
-                    f"{array_name} shapes are not identical for all "
-                    f"coords."
-                )
+                message = f"{array_name} shapes are not identical for all " f"coords."
                 raise ValueError(message)
 
         for array in ("points", "bounds"):
@@ -826,8 +809,7 @@ class Mesh(CFVariableMixin):
         bounds_dim1 = bounds_shape[1]
         if bounds_dim1 < 2:
             message = (
-                f"Expected coordinate bounds.shape (n, >"
-                f"=2), got: {bounds_shape} ."
+                f"Expected coordinate bounds.shape (n, >" f"=2), got: {bounds_shape} ."
             )
             raise ValueError(message)
         elif bounds_dim1 == 2:
@@ -859,15 +841,11 @@ class Mesh(CFVariableMixin):
                 units=coord.units,
                 attributes=coord.attributes,
             )
-            node_points = array_lib.ma.filled(
-                coord.core_bounds(), 0.0
-            ).flatten()
+            node_points = array_lib.ma.filled(coord.core_bounds(), 0.0).flatten()
             node_coords.append(AuxCoord(points=node_points, **coord_kwargs))
 
             centre_points = coord.core_points()
-            centre_coords.append(
-                AuxCoord(points=centre_points, **coord_kwargs)
-            )
+            centre_coords.append(AuxCoord(points=centre_points, **coord_kwargs))
 
         #####
         # TODO: remove axis assignment once Mesh supports arbitrary coords.
@@ -898,9 +876,7 @@ class Mesh(CFVariableMixin):
             node_coords_and_axes=node_coords_and_axes,
             connectivities=[connectivity],
         )
-        mesh_kwargs[
-            f"{coord_centring}_coords_and_axes"
-        ] = centre_coords_and_axes
+        mesh_kwargs[f"{coord_centring}_coords_and_axes"] = centre_coords_and_axes
         return cls(**mesh_kwargs)
 
     def __eq__(self, other):
@@ -1006,9 +982,7 @@ class Mesh(CFVariableMixin):
                 line(f"{dim_name}: '{dim}'", 2)
                 # Print defining connectivity (except node)
                 if element != "node":
-                    main_conn_string = main_conn.summary(
-                        shorten=True, linewidth=0
-                    )
+                    main_conn_string = main_conn.summary(shorten=True, linewidth=0)
                     line(f"{main_conn_name}: {main_conn_string}", 2)
                 # Print coords
                 include_key = f"include_{element}s"
@@ -1027,9 +1001,7 @@ class Mesh(CFVariableMixin):
             "face_edge_connectivity",
             "edge_face_connectivity",
         )
-        optional_conns = [
-            getattr(self, name, None) for name in optional_conn_names
-        ]
+        optional_conns = [getattr(self, name, None) for name in optional_conn_names]
         optional_conns = {
             name: conn
             for conn, name in zip(optional_conns, optional_conn_names)
@@ -1086,9 +1058,7 @@ class Mesh(CFVariableMixin):
         )
         zipped = zip(args, currents)
         if reset:
-            node, edge, face = [
-                None if arg else current for arg, current in zipped
-            ]
+            node, edge, face = [None if arg else current for arg, current in zipped]
         else:
             node, edge, face = [arg or current for arg, current in zipped]
 
@@ -1103,9 +1073,7 @@ class Mesh(CFVariableMixin):
                 self.node_dimension, self.edge_dimension, self.face_dimension
             )
         else:
-            message = (
-                f"Unsupported topology_dimension: {self.topology_dimension} ."
-            )
+            message = f"Unsupported topology_dimension: {self.topology_dimension} ."
             raise NotImplementedError(message)
 
         return result
@@ -1968,9 +1936,7 @@ class Mesh(CFVariableMixin):
 
         """
         # factory method
-        result = [
-            self.to_MeshCoord(location=location, axis=ax) for ax in self.AXES
-        ]
+        result = [self.to_MeshCoord(location=location, axis=ax) for ax in self.AXES]
         return tuple(result)
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
@@ -2085,11 +2051,7 @@ class _Mesh1DCoordinateManager:
         return result
 
     def __repr__(self):
-        args = [
-            f"{member}={coord!r}"
-            for member, coord in self
-            if coord is not None
-        ]
+        args = [f"{member}={coord!r}" for member, coord in self if coord is not None]
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __setstate__(self, state):
@@ -2119,9 +2081,7 @@ class _Mesh1DCoordinateManager:
 
         # enforce the UGRID minimum coordinate requirement
         if element == "node" and coord is None:
-            emsg = (
-                f"{member!r} is a required coordinate, cannot set to 'None'."
-            )
+            emsg = f"{member!r} is a required coordinate, cannot set to 'None'."
             raise ValueError(emsg)
 
         if coord is not None:
@@ -2140,7 +2100,9 @@ class _Mesh1DCoordinateManager:
                 raise TypeError(emsg)
 
             if shape is not None and coord.shape != shape:
-                emsg = f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
+                emsg = (
+                    f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
+                )
                 raise ValueError(emsg)
 
         self._members[member] = coord
@@ -2176,9 +2138,7 @@ class _Mesh1DCoordinateManager:
 
     @edge_x.setter
     def edge_x(self, coord):
-        self._setter(
-            element="edge", axis="x", coord=coord, shape=self._edge_shape
-        )
+        self._setter(element="edge", axis="x", coord=coord, shape=self._edge_shape)
 
     @property
     def edge_y(self):
@@ -2186,9 +2146,7 @@ class _Mesh1DCoordinateManager:
 
     @edge_y.setter
     def edge_y(self, coord):
-        self._setter(
-            element="edge", axis="y", coord=coord, shape=self._edge_shape
-        )
+        self._setter(element="edge", axis="y", coord=coord, shape=self._edge_shape)
 
     @property
     def node_coords(self):
@@ -2200,9 +2158,7 @@ class _Mesh1DCoordinateManager:
 
     @node_x.setter
     def node_x(self, coord):
-        self._setter(
-            element="node", axis="x", coord=coord, shape=self._node_shape
-        )
+        self._setter(element="node", axis="x", coord=coord, shape=self._node_shape)
 
     @property
     def node_y(self):
@@ -2210,9 +2166,7 @@ class _Mesh1DCoordinateManager:
 
     @node_y.setter
     def node_y(self, coord):
-        self._setter(
-            element="node", axis="y", coord=coord, shape=self._node_shape
-        )
+        self._setter(element="node", axis="y", coord=coord, shape=self._node_shape)
 
     def _add(self, coords):
         member_x, member_y = coords._fields
@@ -2254,9 +2208,7 @@ class _Mesh1DCoordinateManager:
         result = self.filters(**kwargs)
 
         if len(result) > 1:
-            names = ", ".join(
-                f"{member}={coord!r}" for member, coord in result.items()
-            )
+            names = ", ".join(f"{member}={coord!r}" for member, coord in result.items())
             emsg = (
                 f"Expected to find exactly 1 coordinate, but found {len(result)}. "
                 f"They were: {names}."
@@ -2276,9 +2228,7 @@ class _Mesh1DCoordinateManager:
                 or None
             )
             name = "" if name is None else f"{name!r} "
-            emsg = (
-                f"Expected to find exactly 1 {name}coordinate, but found none."
-            )
+            emsg = f"Expected to find exactly 1 {name}coordinate, but found none."
             raise CoordinateNotFoundError(emsg)
 
         return result
@@ -2334,9 +2284,7 @@ class _Mesh1DCoordinateManager:
 
         # Use the results to filter the _members dict for returning.
         result_ids = [id(r) for r in result]
-        result_dict = {
-            k: v for k, v in self._members.items() if id(v) in result_ids
-        }
+        result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
 
     def remove(
@@ -2403,9 +2351,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
 
     @face_x.setter
     def face_x(self, coord):
-        self._setter(
-            element="face", axis="x", coord=coord, shape=self._face_shape
-        )
+        self._setter(element="face", axis="x", coord=coord, shape=self._face_shape)
 
     @property
     def face_y(self):
@@ -2413,9 +2359,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
 
     @face_y.setter
     def face_y(self, coord):
-        self._setter(
-            element="face", axis="y", coord=coord, shape=self._face_shape
-        )
+        self._setter(element="face", axis="y", coord=coord, shape=self._face_shape)
 
     def add(
         self,
@@ -2500,9 +2444,7 @@ class _MeshConnectivityManagerBase(ABC):
 
     def __str__(self):
         args = [
-            f"{member}"
-            for member, connectivity in self
-            if connectivity is not None
+            f"{member}" for member, connectivity in self if connectivity is not None
         ]
         return f"{self.__class__.__name__}({', '.join(args)})"
 
@@ -2534,9 +2476,7 @@ class _MeshConnectivityManagerBase(ABC):
 
         # Validate shapes.
         proposed_members = {**self._members, **add_dict}
-        elements = set(
-            [c.location for c in proposed_members.values() if c is not None]
-        )
+        elements = set([c.location for c in proposed_members.values() if c is not None])
         for element in elements:
             counts = [
                 len(c.indices_by_location(c.lazy_indices()))
@@ -2558,8 +2498,7 @@ class _MeshConnectivityManagerBase(ABC):
         result = self.filters(**kwargs)
         if len(result) > 1:
             names = ", ".join(
-                f"{member}={connectivity!r}"
-                for member, connectivity in result.items()
+                f"{member}={connectivity!r}" for member, connectivity in result.items()
             )
             message = (
                 f"Expected to find exactly 1 connectivity, but found "
@@ -2572,9 +2511,7 @@ class _MeshConnectivityManagerBase(ABC):
             if item is not None:
                 if not isinstance(item, str):
                     _name = item.name()
-            bad_name = (
-                _name or kwargs["standard_name"] or kwargs["long_name"] or ""
-            )
+            bad_name = _name or kwargs["standard_name"] or kwargs["long_name"] or ""
             message = (
                 f"Expected to find exactly 1 {bad_name} connectivity, "
                 f"but found none."
@@ -2598,9 +2535,7 @@ class _MeshConnectivityManagerBase(ABC):
         members = [c for c in self._members.values() if c is not None]
 
         if cf_role is not None:
-            members = [
-                instance for instance in members if instance.cf_role == cf_role
-            ]
+            members = [instance for instance in members if instance.cf_role == cf_role]
 
         def element_filter(instances, loc_arg, loc_name):
             if loc_arg is False:
@@ -2636,9 +2571,7 @@ class _MeshConnectivityManagerBase(ABC):
         # any face cf-roles if none are present.
         supports_faces = any(["face" in role for role in self.ALL])
         if contains_face and not supports_faces:
-            message = (
-                "Ignoring request to filter for non-existent 'face' cf-roles."
-            )
+            message = "Ignoring request to filter for non-existent 'face' cf-roles."
             logger.debug(message, extra=dict(cls=self.__class__.__name__))
 
         result = metadata_filter(
@@ -2652,9 +2585,7 @@ class _MeshConnectivityManagerBase(ABC):
 
         # Use the results to filter the _members dict for returning.
         result_ids = [id(r) for r in result]
-        result_dict = {
-            k: v for k, v in self._members.items() if id(v) in result_ids
-        }
+        result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
 
     def remove(
@@ -2973,9 +2904,7 @@ class MeshCoord(AuxCoord):
 
         # Make a new MeshCoord with the same args :  The Mesh is the *same*
         # as the original (not a copy).
-        new_coord = MeshCoord(
-            mesh=self.mesh, location=self.location, axis=self.axis
-        )
+        new_coord = MeshCoord(mesh=self.mesh, location=self.location, axis=self.axis)
         return new_coord
 
     def __deepcopy__(self, memo):
@@ -3108,9 +3037,7 @@ class MeshCoord(AuxCoord):
             node_points = node_coord.core_points()
             n_nodes = node_points.shape[0]
             # Choose real/lazy array library, to suit array types.
-            lazy = _lazy.is_lazy_data(indices) or _lazy.is_lazy_data(
-                node_points
-            )
+            lazy = _lazy.is_lazy_data(indices) or _lazy.is_lazy_data(node_points)
             al = da if lazy else np
             # NOTE: Dask cannot index with a multidimensional array, so we
             # must flatten it and restore the shape later.
@@ -3120,9 +3047,7 @@ class MeshCoord(AuxCoord):
             # with "safe" index values, and post-mask the results.
             flat_inds_nomask = al.ma.filled(flat_inds, -1)
             # Note: *also* mask any places where the index is out of range.
-            missing_inds = (flat_inds_nomask < 0) | (
-                flat_inds_nomask >= n_nodes
-            )
+            missing_inds = (flat_inds_nomask < 0) | (flat_inds_nomask >= n_nodes)
             flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
             # Here's the core indexing operation.
             # The comma applies all inds-array values to the *first* dimension.

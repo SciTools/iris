@@ -28,9 +28,7 @@ class TestDecodeUri(tests.IrisTest):
                 "file",
                 uri,
             ),
-            (
-                uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"
-            ): (
+            (uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 uri[:4],
                 uri[5:],
             ),

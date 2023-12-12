@@ -74,9 +74,7 @@ class BasicFieldCollation:
             self._calculate_structure()
         if self._data_cache is None:
             stack = np.empty(self.vector_dims_shape, "object")
-            for nd_index, field in zip(
-                np.ndindex(self.vector_dims_shape), self.fields
-            ):
+            for nd_index, field in zip(np.ndindex(self.vector_dims_shape), self.fields):
                 stack[nd_index] = as_lazy_data(field._data)
             self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
@@ -86,9 +84,7 @@ class BasicFieldCollation:
 
     @property
     def realised_dtype(self):
-        return np.result_type(
-            *[field.realised_dtype for field in self._fields]
-        )
+        return np.result_type(*[field.realised_dtype for field in self._fields])
 
     @property
     def data_proxy(self):
@@ -230,10 +226,7 @@ class BasicFieldCollation:
                 # Flatten out the array apart from the last dimension,
                 # convert to cftime objects, then reshape back.
                 arr = np.array(
-                    [
-                        cftime.datetime(*args)
-                        for args in arr.reshape(-1, extra_length)
-                    ]
+                    [cftime.datetime(*args) for args in arr.reshape(-1, extra_length)]
                 ).reshape(arr_shape)
                 vector_element_arrays_and_dims[name] = (arr, dims)
 

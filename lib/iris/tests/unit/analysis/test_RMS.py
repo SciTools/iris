@@ -88,9 +88,7 @@ class Test_lazy_aggregate(tests.IrisTest):
 
     def test_2d(self):
         # 2-dimensional input.
-        data = as_lazy_data(
-            np.array([[5, 2, 6, 4], [12, 4, 10, 8]], dtype=np.float64)
-        )
+        data = as_lazy_data(np.array([[5, 2, 6, 4], [12, 4, 10, 8]], dtype=np.float64))
         expected_rms = np.array([4.5, 9.0], dtype=np.float64)
         rms = RMS.lazy_aggregate(data, 1)
         self.assertArrayAlmostEqual(rms, expected_rms)

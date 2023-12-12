@@ -57,9 +57,7 @@ class TestField(tests.IrisTest):
             return sorted(list, key=lambda item: item[0].name())
 
         coords_and_dims_got = sorted_by_coordname(coords_and_dims_got)
-        coords_and_dims_expected = sorted_by_coordname(
-            coords_and_dims_expected
-        )
+        coords_and_dims_expected = sorted_by_coordname(coords_and_dims_expected)
         self.assertEqual(coords_and_dims_got, coords_and_dims_expected)
         # Also check coordinate type equivalences (as Coord.__eq__ does not).
         self.assertEqual(

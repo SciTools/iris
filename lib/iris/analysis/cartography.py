@@ -112,13 +112,9 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
         An array of unrotated longitudes and an array of unrotated latitudes.
 
     """
-    src_proj = ccrs.RotatedGeodetic(
-        pole_longitude=pole_lon, pole_latitude=pole_lat
-    )
+    src_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon, pole_latitude=pole_lat)
     target_proj = ccrs.Geodetic()
-    res = target_proj.transform_points(
-        x=rotated_lons, y=rotated_lats, src_crs=src_proj
-    )
+    res = target_proj.transform_points(x=rotated_lons, y=rotated_lats, src_crs=src_proj)
     unrotated_lon = res[..., 0]
     unrotated_lat = res[..., 1]
 
@@ -162,9 +158,7 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
     """
     src_proj = ccrs.Geodetic()
-    target_proj = ccrs.RotatedGeodetic(
-        pole_longitude=pole_lon, pole_latitude=pole_lat
-    )
+    target_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon, pole_latitude=pole_lat)
     res = target_proj.transform_points(x=lons, y=lats, src_crs=src_proj)
     rotated_lon = res[..., 0]
     rotated_lat = res[..., 1]
@@ -174,16 +168,14 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 def _get_lon_lat_coords(cube):
     def search_for_coord(coord_iterable, coord_name):
-        return [
-            coord for coord in coord_iterable if coord_name in coord.name()
-        ]
+        return [coord for coord in coord_iterable if coord_name in coord.name()]
 
-    lat_coords = search_for_coord(
-        cube.dim_coords, "latitude"
-    ) or search_for_coord(cube.coords(), "latitude")
-    lon_coords = search_for_coord(
-        cube.dim_coords, "longitude"
-    ) or search_for_coord(cube.coords(), "longitude")
+    lat_coords = search_for_coord(cube.dim_coords, "latitude") or search_for_coord(
+        cube.coords(), "latitude"
+    )
+    lon_coords = search_for_coord(cube.dim_coords, "longitude") or search_for_coord(
+        cube.coords(), "longitude"
+    )
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
             "Calling `_get_lon_lat_coords` with multiple same-type (i.e. dim/aux) lat or lon coords"
@@ -216,9 +208,7 @@ def _xy_range(cube, mode=None):
         iris.coord_systems.RotatedGeogCS,
     )
     if (cs is not None) and not isinstance(cs, cs_valid_types):
-        raise ValueError(
-            "Latlon coords cannot be found with {0}.".format(type(cs))
-        )
+        raise ValueError("Latlon coords cannot be found with {0}.".format(type(cs)))
 
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system("CoordSystem")
@@ -231,9 +221,7 @@ def _xy_range(cube, mode=None):
 
     if x_coord.has_bounds():
         if mode not in [iris.coords.POINT_MODE, iris.coords.BOUND_MODE]:
-            raise ValueError(
-                'When the coordinate has bounds, please specify "mode".'
-            )
+            raise ValueError('When the coordinate has bounds, please specify "mode".')
         _mode = mode
     else:
         _mode = iris.coords.POINT_MODE
@@ -479,9 +467,7 @@ def area_weights(cube, normalize=False):
         if dim is not None:
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(
-        ll_weights, cube.shape, broadcast_dims
-    )
+    broad_weights = iris.util.broadcast_to_shape(ll_weights, cube.shape, broadcast_dims)
 
     return broad_weights
 
@@ -526,17 +512,14 @@ def cosine_latitude_weights(cube):
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # Find all latitude coordinates, we want one and only one.
-    lat_coords = [
-        coord for coord in cube.coords() if "latitude" in coord.name()
-    ]
+    lat_coords = [coord for coord in cube.coords() if "latitude" in coord.name()]
     if len(lat_coords) > 1:
         raise ValueError("Multiple latitude coords are currently disallowed.")
     try:
         lat = lat_coords[0]
     except IndexError:
         raise ValueError(
-            "Cannot get latitude "
-            "coordinate from cube {!r}.".format(cube.name())
+            "Cannot get latitude coordinate from cube {!r}.".format(cube.name())
         )
 
     # Get the dimension position(s) of the latitude coordinate.
@@ -557,8 +540,7 @@ def cosine_latitude_weights(cube):
         lat.points > np.pi / 2.0 + threshold
     ):
         warnings.warn(
-            "Out of range latitude values will be "
-            "clipped to the valid range.",
+            "Out of range latitude values will be clipped to the valid range.",
             category=iris.exceptions.IrisDefaultingWarning,
         )
     points = lat.points
@@ -572,9 +554,7 @@ def cosine_latitude_weights(cube):
         if dim is not None:
             wshape.append(l_weights.shape[idim])
     l_weights = l_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(
-        l_weights, cube.shape, broadcast_dims
-    )
+    broad_weights = iris.util.broadcast_to_shape(l_weights, cube.shape, broadcast_dims)
 
     return broad_weights
 
@@ -711,8 +691,7 @@ def project(cube, target_proj, nx=None, ny=None):
     # Determine dimension mappings - expect either 1d or 2d
     if lat_coord.ndim != lon_coord.ndim:
         raise ValueError(
-            "The latitude and longitude coordinates have "
-            "different dimensionality."
+            "The latitude and longitude coordinates have different dimensionality."
         )
 
     latlon_ndim = lat_coord.ndim
@@ -974,9 +953,7 @@ def _crs_distance_differentials(crs, x, y):
     # Transform points to true-latlon (just to get the true latitudes).
     _, true_lat = _transform_xy(crs, x, y, crs_latlon)
     # Get coordinate differentials w.r.t. true-latlon.
-    dlon_dx, dlat_dx, dlon_dy, dlat_dy = _inter_crs_differentials(
-        crs, x, y, crs_latlon
-    )
+    dlon_dx, dlat_dx, dlon_dy, dlat_dy = _inter_crs_differentials(crs, x, y, crs_latlon)
     # Calculate effective scalings of X and Y coordinates.
     lat_factor = np.cos(np.deg2rad(true_lat)) ** 2
     ds_dx = np.sqrt(dlat_dx * dlat_dx + dlon_dx * dlon_dx * lat_factor)
@@ -1017,9 +994,7 @@ def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
     return u2_dist, v2_dist
 
 
-def _transform_distance_vectors_tolerance_mask(
-    src_crs, x, y, tgt_crs, ds, dx2, dy2
-):
+def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, dy2):
     """
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
@@ -1138,15 +1113,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
     )
     if u_cube.coord(axis="x") != v_cube.coord(axis="x"):
         raise ValueError(
-            msg.format(
-                u_cube.coord(axis="x").name(), v_cube.coord(axis="x").name()
-            )
+            msg.format(u_cube.coord(axis="x").name(), v_cube.coord(axis="x").name())
         )
     if u_cube.coord(axis="y") != v_cube.coord(axis="y"):
         raise ValueError(
-            msg.format(
-                u_cube.coord(axis="y").name(), v_cube.coord(axis="y").name()
-            )
+            msg.format(u_cube.coord(axis="y").name(), v_cube.coord(axis="y").name())
         )
 
     # Check x and y coords have the same coordinate system.
@@ -1193,13 +1164,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
     # Check the dimension mappings match between u_cube and v_cube.
     if u_cube.coord_dims(x_coord) != v_cube.coord_dims(x_coord):
         raise ValueError(
-            "Dimension mapping of x coordinate differs "
-            "between u and v cubes."
+            "Dimension mapping of x coordinate differs between u and v cubes."
         )
     if u_cube.coord_dims(y_coord) != v_cube.coord_dims(y_coord):
         raise ValueError(
-            "Dimension mapping of y coordinate differs "
-            "between u and v cubes."
+            "Dimension mapping of y coordinate differs between u and v cubes."
         )
     x_dims = u_cube.coord_dims(x_coord)
     y_dims = u_cube.coord_dims(y_coord)

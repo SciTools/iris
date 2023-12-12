@@ -43,9 +43,7 @@ class Test(tests.IrisTest):
         py_t = py_0 + 0.7
         dyt_0 = self._interpolate_point(py_t, py_0, py_1, d_0, d_1)
         dyt_1 = self._interpolate_point(py_t, py_0, py_1, d_2, d_3)
-        self.test_increment = self._interpolate_point(
-            px_t, px_0, px_1, dyt_0, dyt_1
-        )
+        self.test_increment = self._interpolate_point(px_t, px_0, px_1, dyt_0, dyt_1)
 
         xv, yv = np.meshgrid(newy, newx)
         self.tgrid = np.dstack((yv, xv))

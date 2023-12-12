@@ -19,9 +19,7 @@ from iris.fileformats.netcdf.saver import (
 
 
 class Test__fillvaluereport:
-    @pytest.mark.parametrize(
-        "is_bytes", [True, False], ids=["ByteData", "NonbyteData"]
-    )
+    @pytest.mark.parametrize("is_bytes", [True, False], ids=["ByteData", "NonbyteData"])
     @pytest.mark.parametrize(
         "is_masked", [True, False], ids=["MaskedData", "NonmaskedData"]
     )
@@ -31,9 +29,7 @@ class Test__fillvaluereport:
     @pytest.mark.parametrize(
         "given_user_fv", [True, False], ids=["WithUserfill", "NoUserfill"]
     )
-    def test_fillvalue_checking(
-        self, is_bytes, is_masked, contains_fv, given_user_fv
-    ):
+    def test_fillvalue_checking(self, is_bytes, is_masked, contains_fv, given_user_fv):
         dtype_code = "u1" if is_bytes else "f4"
         dtype = np.dtype(dtype_code)
         if given_user_fv:
@@ -54,7 +50,9 @@ class Test__fillvaluereport:
         if is_bytes and is_masked and not given_user_fv:
             msg_fragment = "'<testvar>' contains byte data with masked points"
         elif contains_fv:
-            msg_fragment = "'<testvar>' contains unmasked data points equal to the fill-value"
+            msg_fragment = (
+                "'<testvar>' contains unmasked data points equal to the fill-value"
+            )
         else:
             msg_fragment = None
 
@@ -89,7 +87,9 @@ class Test__fillvaluereport:
         # Check results
         if has_collision:
             # Check that we get the expected warning
-            expected_msg = "'<testvar>' contains unmasked data points equal to the fill-value"
+            expected_msg = (
+                "'<testvar>' contains unmasked data points equal to the fill-value"
+            )
             # Enter a warnings context that checks for the error.
             warning_context = pytest.warns(
                 IrisSaverFillValueWarning, match=expected_msg
@@ -97,9 +97,7 @@ class Test__fillvaluereport:
             warning_context.__enter__()
         else:
             # Check that we get NO warning of the expected type.
-            warnings.filterwarnings(
-                "error", category=IrisSaverFillValueWarning
-            )
+            warnings.filterwarnings("error", category=IrisSaverFillValueWarning)
 
         # Do call: it should raise AND return a warning, ONLY IF there was a collision.
         result = _fillvalue_report(

@@ -34,9 +34,7 @@ class TestGeoTiffExport(tests.IrisTest):
             msg_badval = "Tiff header entry {} has value {} != {}."
             for key, value in expect_entries.items():
                 content = im.tag[key]
-                self.assertEqual(
-                    content, value, msg_badval.format(key, content, value)
-                )
+                self.assertEqual(content, value, msg_badval.format(key, content, value))
 
     def check_tiff(self, cube, header_keys, header_items):
         # Check that the cube saves correctly to TIFF :

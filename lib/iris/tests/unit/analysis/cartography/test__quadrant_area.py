@@ -54,9 +54,7 @@ class TestExampleCases(tests.IrisTest):
         self.assertArrayAllClose(area, [[1228800593851.443115234375]])
 
     def test_area_multiple_lats(self):
-        lats, lons = self._as_bounded_coords(
-            [[-80, -70], [0, 10], [70, 80]], [0, 10]
-        )
+        lats, lons = self._as_bounded_coords([[-80, -70], [0, 10], [70, 80]], [0, 10])
         area = _quadrant_area(lats, lons, DEFAULT_SPHERICAL_EARTH_RADIUS)
 
         self.assertArrayAllClose(
@@ -112,9 +110,7 @@ class TestErrorHandling(tests.IrisTest):
         self._assert_error_on_malformed_bounds([[0, 10]], [[0, 10, 20]])
 
     def _assert_error_on_malformed_bounds(self, lat_bnds, lon_bnds):
-        with self.assertRaisesRegex(
-            ValueError, r"Bounds must be \[n,2\] array"
-        ):
+        with self.assertRaisesRegex(ValueError, r"Bounds must be \[n,2\] array"):
             _quadrant_area(np.array(lat_bnds), np.array(lon_bnds), 1.0)
 
 

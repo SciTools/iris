@@ -325,9 +325,7 @@ class TestLBVC002_Depth(TestField):
 
 
 class TestLBVC006_SoilLevel(TestField):
-    def _check_soil_level(
-        self, lbcode, lblev=12.3, expect_match=True, dim=None
-    ):
+    def _check_soil_level(self, lbcode, lblev=12.3, expect_match=True, dim=None):
         lbvc = 6
         stash = STASH(1, 1, 1)
         brsvd1, brlev = 0, 0
@@ -479,9 +477,7 @@ class TestLBVC008_Pressure(TestField):
             dim=dim,
         )
         if expect_match:
-            expect_result = [
-                (DimCoord(blev, long_name="pressure", units="hPa"), dim)
-            ]
+            expect_result = [(DimCoord(blev, long_name="pressure", units="hPa"), dim)]
         else:
             expect_result = []
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
@@ -506,9 +502,7 @@ class TestLBVC008_Pressure(TestField):
 
     def test_pressure_cross_section__vector(self):
         blev = np.arange(10)
-        self._check_pressure(
-            _lbcode(ix=10, iy=1), blev=blev, dim=1, expect_match=False
-        )
+        self._check_pressure(_lbcode(ix=10, iy=1), blev=blev, dim=1, expect_match=False)
 
 
 class TestLBVC019_PotentialTemperature(TestField):
@@ -565,9 +559,7 @@ class TestLBVC019_PotentialTemperature(TestField):
 
     def test_cross_section__vector(self):
         blev = np.arange(5) + 100
-        self._check_potm(
-            _lbcode(ix=10, iy=11), blev=blev, dim=1, expect_match=False
-        )
+        self._check_potm(_lbcode(ix=10, iy=11), blev=blev, dim=1, expect_match=False)
 
 
 class TestLBVC009_HybridPressure(TestField):
@@ -647,9 +639,7 @@ class TestLBVC009_HybridPressure(TestField):
                 ],
             )
         ]
-        self.assertCoordsAndDimsListsMatch(
-            coords_and_dims, expect_coords_and_dims
-        )
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)
 
     def test_normal(self):
@@ -751,9 +741,7 @@ class TestLBVC065_HybridHeight(TestField):
                 ],
             )
         ]
-        self.assertCoordsAndDimsListsMatch(
-            coords_and_dims, expect_coords_and_dims
-        )
+        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)
 
     def test_normal(self):

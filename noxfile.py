@@ -36,9 +36,7 @@ ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
     """Return the path of the session lockfile."""
-    return Path(
-        f"requirements/locks/py{session.python.replace('.', '')}-linux-64.lock"
-    )
+    return Path(f"requirements/locks/py{session.python.replace('.', '')}-linux-64.lock")
 
 
 def session_cachefile(session: nox.sessions.Session) -> Path:
@@ -288,9 +286,7 @@ def wheel(session: nox.sessions.Session):
     if len(fname) == 0:
         raise ValueError("Cannot find wheel to install.")
     if len(fname) > 1:
-        emsg = (
-            f"Expected to find 1 wheel to install, found {len(fname)} instead."
-        )
+        emsg = f"Expected to find 1 wheel to install, found {len(fname)} instead."
         raise ValueError(emsg)
     session.install(fname[0].name)
     session.run(

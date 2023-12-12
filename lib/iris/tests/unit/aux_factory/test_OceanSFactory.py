@@ -168,9 +168,7 @@ class Test_dependencies(tests.IrisTest):
 class Test_make_coord(tests.IrisTest):
     @staticmethod
     def coord_dims(coord):
-        mapping = dict(
-            s=(0,), eta=(1, 2), depth=(1, 2), a=(), b=(), depth_c=()
-        )
+        mapping = dict(s=(0,), eta=(1, 2), depth=(1, 2), a=(), b=(), depth_c=())
         return mapping[coord.name()]
 
     @staticmethod

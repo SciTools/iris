@@ -30,9 +30,7 @@ ROOT_DIR = BENCHMARKS_DIR.parent
 GH_REPORT_DIR = ROOT_DIR.joinpath(".github", "workflows", "benchmark_reports")
 
 # Common ASV arguments for all run_types except `custom`.
-ASV_HARNESS = (
-    "run {posargs} --attribute rounds=4 --interleave-rounds --show-stderr"
-)
+ASV_HARNESS = "run {posargs} --attribute rounds=4 --interleave-rounds --show-stderr"
 
 
 def echo(echo_string: str):
@@ -148,18 +146,14 @@ def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
 
         comparison = _subprocess_runner_capture(asv_command, asv=True)
         echo(comparison)
-        shifts = _subprocess_runner_capture(
-            [*asv_command, "--only-changed"], asv=True
-        )
+        shifts = _subprocess_runner_capture([*asv_command, "--only-changed"], asv=True)
 
         if shifts or (not overnight_mode):
             # For the overnight run: only post if there are shifts.
             _gh_create_reports(after, comparison, shifts)
 
 
-def _gh_create_reports(
-    commit_sha: str, results_full: str, results_shifts: str
-) -> None:
+def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) -> None:
     """
     If running under GitHub Actions: record the results in report(s).
 
@@ -174,9 +168,7 @@ def _gh_create_reports(
     on_pull_request = pr_number is not None
     run_id = environ["GITHUB_RUN_ID"]
     repo = environ["GITHUB_REPOSITORY"]
-    gha_run_link = (
-        f"[`{run_id}`](https://github.com/{repo}/actions/runs/{run_id})"
-    )
+    gha_run_link = f"[`{run_id}`](https://github.com/{repo}/actions/runs/{run_id})"
 
     GH_REPORT_DIR.mkdir(exist_ok=True)
     commit_dir = GH_REPORT_DIR / commit_sha
@@ -387,9 +379,7 @@ class Overnight(_SubParserGenerator):
 
         commit_range = f"{args.first_commit}^^.."
         # git rev-list --first-parent is the command ASV uses.
-        git_command = shlex.split(
-            f"git rev-list --first-parent {commit_range}"
-        )
+        git_command = shlex.split(f"git rev-list --first-parent {commit_range}")
         commit_string = _subprocess_runner_capture(git_command)
         commit_list = commit_string.split("\n")
 
@@ -436,9 +426,7 @@ class Branch(_SubParserGenerator):
         git_command = shlex.split("git rev-parse HEAD")
         head_sha = _subprocess_runner_capture(git_command)[:8]
 
-        git_command = shlex.split(
-            f"git merge-base {head_sha} {args.base_branch}"
-        )
+        git_command = shlex.split(f"git merge-base {head_sha} {args.base_branch}")
         merge_base = _subprocess_runner_capture(git_command)[:8]
 
         with NamedTemporaryFile("w") as hashfile:
@@ -474,20 +462,15 @@ class _CSPerf(_SubParserGenerator, ABC):
         )
 
     @staticmethod
-    def csperf(
-        args: argparse.Namespace, run_type: Literal["cperf", "sperf"]
-    ) -> None:
+    def csperf(args: argparse.Namespace, run_type: Literal["cperf", "sperf"]) -> None:
         _setup_common()
 
         publish_dir = Path(args.publish_dir)
         if not publish_dir.is_dir():
-            message = (
-                f"Input 'publish directory' is not a directory: {publish_dir}"
-            )
+            message = f"Input 'publish directory' is not a directory: {publish_dir}"
             raise NotADirectoryError(message)
         publish_subdir = (
-            publish_dir
-            / f"{run_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            publish_dir / f"{run_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )
         publish_subdir.mkdir()
 
@@ -496,14 +479,10 @@ class _CSPerf(_SubParserGenerator, ABC):
         environ["ON_DEMAND_BENCHMARKS"] = "True"
         commit_range = "upstream/main^!"
 
-        asv_command = (
-            ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
-        )
+        asv_command = ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
 
         # Only do a single round.
-        asv_command = shlex.split(
-            re.sub(r"rounds=\d", "rounds=1", asv_command)
-        )
+        asv_command = shlex.split(re.sub(r"rounds=\d", "rounds=1", asv_command))
         try:
             _subprocess_runner([*asv_command, *args.asv_args], asv=True)
         except subprocess.CalledProcessError as err:
@@ -513,9 +492,7 @@ class _CSPerf(_SubParserGenerator, ABC):
             if err.returncode != 2:
                 raise
 
-        asv_command = shlex.split(
-            f"publish {commit_range} --html-dir={publish_subdir}"
-        )
+        asv_command = shlex.split(f"publish {commit_range} --html-dir={publish_subdir}")
         _subprocess_runner(asv_command, asv=True)
 
         # Print completion message.

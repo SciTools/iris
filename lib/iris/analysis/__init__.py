@@ -130,10 +130,7 @@ class _CoordGroup:
         return (
             "["
             + ", ".join(
-                [
-                    coord.name() if coord is not None else "None"
-                    for coord in self
-                ]
+                [coord.name() if coord is not None else "None" for coord in self]
             )
             + "]"
         )
@@ -422,21 +419,17 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
         result["grouped_coords"] - result["non_equal_data_dimension"]
     )
     result["equal"] = result["grouped_coords"] - result["not_equal"]
-    result["dimensioned"] = (
-        result["grouped_coords"] - result["no_data_dimension"]
-    )
+    result["dimensioned"] = result["grouped_coords"] - result["no_data_dimension"]
     result["ungroupable_and_dimensioned"] = (
         result["ungroupable"] & result["dimensioned"]
     )
-    result["ignorable"] = (
-        result["not_equal"] | result["ungroupable"]
-    ) & result["no_data_dimension"]
+    result["ignorable"] = (result["not_equal"] | result["ungroupable"]) & result[
+        "no_data_dimension"
+    ]
     result["resamplable"] = (
         result["not_equal"] & result["equal_data_dimension"] - result["scalar"]
     )
-    result["transposable"] = (
-        result["equal"] & result["non_equal_data_dimension"]
-    )
+    result["transposable"] = result["equal"] & result["non_equal_data_dimension"]
 
     # for convenience, turn all of the sets in the dictionary into lists,
     # sorted by the name of the group
@@ -597,11 +590,7 @@ class _Aggregator:
         mdtol = kwargs.pop("mdtol", None)
 
         result = self.call_func(data, axis=axis, **kwargs)
-        if (
-            mdtol is not None
-            and ma.is_masked(data)
-            and result is not ma.masked
-        ):
+        if mdtol is not None and ma.is_masked(data) and result is not ma.masked:
             fraction_not_missing = data.count(axis=axis) / data.shape[axis]
             mask_update = np.array(1 - mdtol > fraction_not_missing)
             if np.array(result).ndim > mask_update.ndim:
@@ -878,9 +867,7 @@ class PercentileAggregator(_Aggregator):
         # order cube.
         for point in points:
             cube = collapsed_cube.copy()
-            coord = iris.coords.AuxCoord(
-                point, long_name=coord_name, units="percent"
-            )
+            coord = iris.coords.AuxCoord(point, long_name=coord_name, units="percent")
             cube.add_aux_coord(coord)
             cubes.append(cube)
 
@@ -1087,7 +1074,7 @@ class Aggregator(_Aggregator):
         for coord in coords:
             if not isinstance(coord, iris.coords.Coord):
                 raise TypeError(
-                    "Coordinate instance expected to the " "Aggregator object."
+                    "Coordinate instance expected to the Aggregator object."
                 )
             coord_names.append(coord.name())
 
@@ -1362,9 +1349,7 @@ def _build_dask_mdtol_function(dask_stats_function):
                     dask_result.shape,
                 )
             # Return an mdtol-masked version of the basic result.
-            result = da.ma.masked_array(
-                da.ma.getdata(dask_result), boolean_mask
-            )
+            result = da.ma.masked_array(da.ma.getdata(dask_result), boolean_mask)
         return result
 
     return inner_stat
@@ -1431,9 +1416,7 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
         quantiles = percent / 100.0
         for key in ["alphap", "betap"]:
             kwargs.setdefault(key, 1)
-        result = scipy.stats.mstats.mquantiles(
-            data, quantiles, axis=-1, **kwargs
-        )
+        result = scipy.stats.mstats.mquantiles(data, quantiles, axis=-1, **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         return np.asarray(result)
     else:
@@ -1536,9 +1519,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
     return result
 
 
-def _weighted_percentile(
-    data, axis, weights, percent, returned=False, **kwargs
-):
+def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs):
     """
     The weighted_percentile aggregator is an additive operation. This means
     that it *may* introduce a new dimension to the data for the statistic being
@@ -1668,9 +1649,7 @@ def _lazy_max_run(array, axis=-1, **kwargs):
         emsg = "function must be a callable. Got {}."
         raise TypeError(emsg.format(type(func)))
     bool_array = da.ma.getdata(func(array))
-    bool_array = da.logical_and(
-        bool_array, da.logical_not(da.ma.getmaskarray(array))
-    )
+    bool_array = da.logical_and(bool_array, da.logical_not(da.ma.getmaskarray(array)))
     padding = [(0, 0)] * array.ndim
     padding[axis] = (0, 1)
     ones_zeros = da.pad(bool_array, padding).astype(int)
@@ -1733,13 +1712,9 @@ def _sum(array, **kwargs):
             weights = al.ones_like(array)
             if al is da:
                 # Dask version of ones_like does not preserve masks. See dask#9301.
-                weights = da.ma.masked_array(
-                    weights, da.ma.getmaskarray(array)
-                )
+                weights = da.ma.masked_array(weights, da.ma.getmaskarray(array))
         else:
-            weights = al.ma.masked_array(
-                weights_in, mask=al.ma.getmaskarray(array)
-            )
+            weights = al.ma.masked_array(weights_in, mask=al.ma.getmaskarray(array))
         rvalue = (wsum, np.sum(weights, axis=axis_in))
     else:
         rvalue = wsum
@@ -1777,9 +1752,7 @@ def _peak(array, **kwargs):
                     if index != nan_index:
                         columns.append(column[:nan_index])
                 elif nan_indices[index - 1] != (nan_index - 1):
-                    columns.append(
-                        column[nan_indices[index - 1] + 1 : nan_index]
-                    )
+                    columns.append(column[nan_indices[index - 1] + 1 : nan_index])
             if nan_indices[-1] != len(column) - 1:
                 columns.append(column[nan_indices[-1] + 1 :])
         return columns
@@ -1818,8 +1791,7 @@ def _peak(array, **kwargs):
         # Check if the column slice contains a single value, nans only,
         # masked values only or if the values are all equal.
         equal_slice = (
-            np.ones(column_slice.size, dtype=column_slice.dtype)
-            * column_slice[0]
+            np.ones(column_slice.size, dtype=column_slice.dtype) * column_slice[0]
         )
         if (
             column_slice.size == 1
@@ -2046,9 +2018,7 @@ please try :obj:`~.PERCENTILE`.
 """
 
 
-MIN = Aggregator(
-    "minimum", ma.min, lazy_func=_build_dask_mdtol_function(da.min)
-)
+MIN = Aggregator("minimum", ma.min, lazy_func=_build_dask_mdtol_function(da.min))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the minimum over a :class:`~iris.cube.Cube`, as computed by
@@ -2065,9 +2035,7 @@ This aggregator handles masked data and lazy data.
 """
 
 
-MAX = Aggregator(
-    "maximum", ma.max, lazy_func=_build_dask_mdtol_function(da.max)
-)
+MAX = Aggregator("maximum", ma.max, lazy_func=_build_dask_mdtol_function(da.max))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the maximum over a :class:`~iris.cube.Cube`, as computed by
@@ -2426,9 +2394,7 @@ class _Groupby:
         self._stop = None
         # Ensure group-by coordinates are iterable.
         if not isinstance(groupby_coords, Iterable):
-            raise TypeError(
-                "groupby_coords must be a `collections.Iterable` type."
-            )
+            raise TypeError("groupby_coords must be a `collections.Iterable` type.")
 
         # Add valid group-by coordinates.
         for coord in groupby_coords:
@@ -2438,9 +2404,7 @@ class _Groupby:
         if shared_coords is not None:
             # Ensure shared coordinates are iterable.
             if not isinstance(shared_coords, Iterable):
-                raise TypeError(
-                    "shared_coords must be a `collections.Iterable` type."
-                )
+                raise TypeError("shared_coords must be a `collections.Iterable` type.")
             # Add valid shared coordinates.
             for coord, dim in shared_coords:
                 self._add_shared_coord(coord, dim)
@@ -2494,9 +2458,7 @@ class _Groupby:
 
             groups = [group_iterator(c.points) for c in self._groupby_coords]
             groupby_slices = [next(group) for group in groups]
-            indices_by_key: dict[
-                tuple[Union[Number, str], ...], list[int]
-            ] = {}
+            indices_by_key: dict[tuple[Union[Number, str], ...], list[int]] = {}
             while any(s is not None for s in groupby_slices):
                 # Determine the extent (start, stop) of the group given
                 # each current group-by coordinate group.
@@ -2504,9 +2466,7 @@ class _Groupby:
                 stop = min(s.stop for s in groupby_slices if s is not None)
                 # Construct composite group key for the group using the
                 # start value from each group-by coordinate.
-                key = tuple(
-                    coord.points[start] for coord in self._groupby_coords
-                )
+                key = tuple(coord.points[start] for coord in self._groupby_coords)
                 # Associate group slice with group key within the ordered
                 # dictionary.
                 indices_by_key.setdefault(key, []).extend(range(start, stop))
@@ -2613,8 +2573,7 @@ class _Groupby:
                             new_bounds_list.append(
                                 [
                                     first_choices.take(start, dim),
-                                    first_choices.take(0, dim)
-                                    + coord.units.modulus,
+                                    first_choices.take(0, dim) + coord.units.modulus,
                                 ]
                             )
                         else:
@@ -2638,9 +2597,7 @@ class _Groupby:
                 # Bounds needs to be an array with the length 2 start-stop
                 # dimension last, and the aggregated dimension back in its
                 # original position.
-                new_bounds = np.moveaxis(
-                    np.array(new_bounds_list), (0, 1), (dim, -1)
-                )
+                new_bounds = np.moveaxis(np.array(new_bounds_list), (0, 1), (dim, -1))
 
                 # Now create the new bounded group shared coordinate.
                 try:
@@ -2912,9 +2869,7 @@ class AreaWeighted:
             that is to be regridded to the grid of `target_grid_cube`.
 
         """
-        return AreaWeightedRegridder(
-            src_grid_cube, target_grid_cube, mdtol=self.mdtol
-        )
+        return AreaWeightedRegridder(src_grid_cube, target_grid_cube, mdtol=self.mdtol)
 
 
 class Nearest:
@@ -2998,9 +2953,7 @@ class Nearest:
             `[new_lat_values, new_lon_values]`.
 
         """
-        return RectilinearInterpolator(
-            cube, coords, "nearest", self.extrapolation_mode
-        )
+        return RectilinearInterpolator(cube, coords, "nearest", self.extrapolation_mode)
 
     def regridder(self, src_grid, target_grid):
         """

@@ -31,9 +31,7 @@ class Test(tests.IrisTest):
         def myfunc():
             pass
 
-        qualname_func = self.locals.format(
-            "test_callable_function_local", "myfunc"
-        )
+        qualname_func = self.locals.format("test_callable_function_local", "myfunc")
         result = _qualname(myfunc)
         self.assertEqual(result, qualname_func)
 

@@ -36,9 +36,7 @@ except KeyError:
     error = "Env variable DATA_GEN_PYTHON not defined."
     raise KeyError(error)
 except (CalledProcessError, FileNotFoundError, PermissionError):
-    error = (
-        "Env variable DATA_GEN_PYTHON not a runnable python executable path."
-    )
+    error = "Env variable DATA_GEN_PYTHON not a runnable python executable path."
     raise ValueError(error)
 
 # The default location of data files used in benchmarks. Used by CI.
@@ -90,9 +88,7 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
     func_string = dedent(getsource(func_to_run))
     func_string = func_string.replace("@staticmethod\n", "")
     func_call_term_strings = [repr(arg) for arg in args]
-    func_call_term_strings += [
-        f"{name}={repr(val)}" for name, val in kwargs.items()
-    ]
+    func_call_term_strings += [f"{name}={repr(val)}" for name, val in kwargs.items()]
     func_call_string = (
         f"{func_to_run.__name__}(" + ",".join(func_call_term_strings) + ")"
     )
