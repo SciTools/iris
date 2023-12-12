@@ -26,13 +26,7 @@ import iris.aux_factory
 from iris.aux_factory import HybridHeightFactory
 from iris.common.metadata import BaseMetadata
 import iris.coords
-from iris.coords import (
-    AncillaryVariable,
-    AuxCoord,
-    CellMeasure,
-    CellMethod,
-    DimCoord,
-)
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube, CubeAttrsDict
 import iris.exceptions
 from iris.exceptions import (
@@ -44,11 +38,7 @@ from iris.exceptions import (
     UnitConversionError,
 )
 import iris.tests.stock as stock
-from iris.tests.stock.mesh import (
-    sample_mesh,
-    sample_mesh_cube,
-    sample_meshcoord,
-)
+from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube, sample_meshcoord
 
 
 class Test___init___data(tests.IrisTest):

@@ -19,11 +19,7 @@ import pytest
 
 from iris import Constraint, load
 from iris.exceptions import IrisCfWarning
-from iris.experimental.ugrid.load import (
-    PARSE_UGRID_ON_LOAD,
-    load_mesh,
-    load_meshes,
-)
+from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
 from iris.experimental.ugrid.mesh import Mesh
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,

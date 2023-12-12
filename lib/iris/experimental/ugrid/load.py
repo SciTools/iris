@@ -18,11 +18,7 @@ import warnings
 
 from ...config import get_logger
 from ...coords import AuxCoord
-from ...exceptions import (
-    IrisCfWarning,
-    IrisDefaultingWarning,
-    IrisIgnoringWarning,
-)
+from ...exceptions import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...fileformats.netcdf import loader as nc_loader
 from ...io import decode_uri, expand_filespecs

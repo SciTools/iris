@@ -12,9 +12,7 @@ Test rules activation relating to hybrid vertical coordinates.
 import iris.tests as tests  # isort: skip
 
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Test__formulae_tests(Mixin__nc_load_actions, tests.IrisTest):

@@ -9,12 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from iris._concatenate import (
-    _CONSTANT,
-    _DECREASING,
-    _INCREASING,
-    _CoordMetaData,
-)
+from iris._concatenate import _CONSTANT, _DECREASING, _INCREASING, _CoordMetaData
 
 from . import ExpectedItem, create_metadata
 

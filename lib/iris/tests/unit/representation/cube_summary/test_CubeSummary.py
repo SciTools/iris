@@ -11,13 +11,7 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 from iris._representation.cube_summary import CubeSummary
-from iris.coords import (
-    AncillaryVariable,
-    AuxCoord,
-    CellMeasure,
-    CellMethod,
-    DimCoord,
-)
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
 from iris.tests.stock.mesh import sample_mesh_cube
 

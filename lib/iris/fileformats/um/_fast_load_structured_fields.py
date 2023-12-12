@@ -17,9 +17,7 @@ import cftime
 import numpy as np
 
 from iris._lazy_data import as_lazy_data, multidim_lazy_stack
-from iris.fileformats.um._optimal_array_structuring import (
-    optimal_array_structure,
-)
+from iris.fileformats.um._optimal_array_structuring import optimal_array_structure
 
 
 class BasicFieldCollation:

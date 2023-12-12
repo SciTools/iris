@@ -30,11 +30,7 @@ from iris.analysis._area_weighted import (
     _regrid_area_weighted_rectilinear_src_and_grid__perform,
     _regrid_area_weighted_rectilinear_src_and_grid__prepare,
 )
-from iris.analysis._interpolation import (
-    get_xy_coords,
-    get_xy_dim_coords,
-    snapshot_grid,
-)
+from iris.analysis._interpolation import get_xy_coords, get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import (
     _regrid_weighted_curvilinear_to_rectilinear__perform,
     _regrid_weighted_curvilinear_to_rectilinear__prepare,

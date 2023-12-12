@@ -14,9 +14,7 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.analysis.trajectory import (
-    _nearest_neighbour_indices_ndcoords as nn_ndinds,
-)
+from iris.analysis.trajectory import _nearest_neighbour_indices_ndcoords as nn_ndinds
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 

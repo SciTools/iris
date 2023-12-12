@@ -15,11 +15,7 @@ from shutil import rmtree
 import tempfile
 from uuid import uuid4
 
-from iris.experimental.ugrid.load import (
-    PARSE_UGRID_ON_LOAD,
-    load_meshes,
-    logger,
-)
+from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, load_meshes, logger
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 

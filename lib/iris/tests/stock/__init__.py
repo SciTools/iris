@@ -19,13 +19,7 @@ import iris.aux_factory
 from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coords import (
-    AncillaryVariable,
-    AuxCoord,
-    CellMeasure,
-    CellMethod,
-    DimCoord,
-)
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
 
 from ._stock_2d_latlons import (  # noqa

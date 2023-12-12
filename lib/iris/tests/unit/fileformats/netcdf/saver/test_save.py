@@ -19,12 +19,7 @@ import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-from iris.fileformats.netcdf import (
-    CF_CONVENTIONS_VERSION,
-    Saver,
-    _thread_safe_nc,
-    save,
-)
+from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION, Saver, _thread_safe_nc, save
 from iris.tests.stock import lat_lon_cube
 from iris.tests.stock.mesh import sample_mesh_cube
 

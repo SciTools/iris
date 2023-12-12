@@ -13,9 +13,7 @@ import iris.tests as tests  # isort: skip
 
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Mixin__grid_mapping(Mixin__nc_load_actions):

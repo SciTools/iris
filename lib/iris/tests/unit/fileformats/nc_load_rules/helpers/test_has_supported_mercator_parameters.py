@@ -11,9 +11,7 @@ has_supported_mercator_parameters`.
 from unittest import mock
 import warnings
 
-from iris.fileformats._nc_load_rules.helpers import (
-    has_supported_mercator_parameters,
-)
+from iris.fileformats._nc_load_rules.helpers import has_supported_mercator_parameters
 
 # import iris tests first so that some things can be initialised before
 # importing anything else

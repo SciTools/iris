@@ -12,9 +12,7 @@ Tests for rules activation relating to 'time' and 'time_period' coords.
 import iris.tests as tests  # isort: skip
 
 from iris.coords import AuxCoord, DimCoord
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Opts(dict):

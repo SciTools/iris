@@ -14,9 +14,7 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.fileformats.um._fast_load_structured_fields import (
-    group_structured_fields,
-)
+from iris.fileformats.um._fast_load_structured_fields import group_structured_fields
 
 
 def _convert_to_vector(value, length, default):

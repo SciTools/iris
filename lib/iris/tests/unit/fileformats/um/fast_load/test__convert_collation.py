@@ -19,9 +19,7 @@ import iris.coord_systems
 import iris.coords
 import iris.fileformats.pp
 import iris.fileformats.rules
-from iris.fileformats.um._fast_load import (
-    _convert_collation as convert_collation,
-)
+from iris.fileformats.um._fast_load import _convert_collation as convert_collation
 
 COORD_SYSTEM = iris.coord_systems.GeogCS(6371229.0)
 LATITUDE = iris.coords.DimCoord(

@@ -17,9 +17,7 @@ import iris.tests as tests  # isort: skip
 
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure
 from iris.fileformats.pp import STASH
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Test__ukmo_attributes(Mixin__nc_load_actions, tests.IrisTest):

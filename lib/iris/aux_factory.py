@@ -14,11 +14,7 @@ import cf_units
 import dask.array as da
 import numpy as np
 
-from iris.common import (
-    CFVariableMixin,
-    CoordMetadata,
-    metadata_manager_factory,
-)
+from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
 from iris.exceptions import IrisIgnoringBoundsWarning
 

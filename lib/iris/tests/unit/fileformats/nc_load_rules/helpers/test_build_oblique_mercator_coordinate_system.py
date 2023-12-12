@@ -13,12 +13,7 @@ import pytest
 
 from iris import coord_systems
 from iris._deprecation import IrisDeprecation
-from iris.coord_systems import (
-    CoordSystem,
-    GeogCS,
-    ObliqueMercator,
-    RotatedMercator,
-)
+from iris.coord_systems import CoordSystem, GeogCS, ObliqueMercator, RotatedMercator
 from iris.fileformats._nc_load_rules.helpers import (
     build_oblique_mercator_coordinate_system,
 )

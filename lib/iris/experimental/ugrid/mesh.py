@@ -19,11 +19,7 @@ from dask import array as da
 import numpy as np
 
 from ... import _lazy_data as _lazy
-from ...common import (
-    CFVariableMixin,
-    metadata_filter,
-    metadata_manager_factory,
-)
+from ...common import CFVariableMixin, metadata_filter, metadata_manager_factory
 from ...common.metadata import BaseMetadata
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata

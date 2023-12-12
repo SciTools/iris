@@ -54,10 +54,7 @@ import scipy.stats.mstats
 
 import iris._lazy_data
 from iris.analysis._area_weighted import AreaWeightedRegridder
-from iris.analysis._interpolation import (
-    EXTRAPOLATION_MODES,
-    RectilinearInterpolator,
-)
+from iris.analysis._interpolation import EXTRAPOLATION_MODES, RectilinearInterpolator
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
 from iris.coords import _DimensionalMetadata
@@ -3071,9 +3068,7 @@ class UnstructuredNearest:
             that is to be regridded to the `target_grid`.
 
         """
-        from iris.analysis.trajectory import (
-            UnstructuredNearestNeigbourRegridder,
-        )
+        from iris.analysis.trajectory import UnstructuredNearestNeigbourRegridder
 
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
 

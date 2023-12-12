@@ -30,9 +30,7 @@ import iris.exceptions
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
-from iris.fileformats._pp_lbproc_pairs import (  # noqa: F401
-    LBPROC_MAP as lbproc_map,
-)
+from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP as lbproc_map  # noqa: F401
 from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify

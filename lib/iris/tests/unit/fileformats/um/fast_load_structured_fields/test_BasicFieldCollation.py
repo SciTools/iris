@@ -17,9 +17,7 @@ import numpy as np
 
 from iris._lazy_data import as_lazy_data
 import iris.fileformats.pp
-from iris.fileformats.um._fast_load_structured_fields import (
-    BasicFieldCollation,
-)
+from iris.fileformats.um._fast_load_structured_fields import BasicFieldCollation
 
 
 class Test___init__(tests.IrisTest):

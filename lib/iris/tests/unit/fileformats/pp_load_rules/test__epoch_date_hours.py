@@ -16,9 +16,7 @@ import cf_units
 from cf_units import Unit
 from cftime import datetime as nc_datetime
 
-from iris.fileformats.pp_load_rules import (
-    _epoch_date_hours as epoch_hours_call,
-)
+from iris.fileformats.pp_load_rules import _epoch_date_hours as epoch_hours_call
 
 #
 # Run tests for each of the possible calendars from PPfield.calendar().

@@ -13,9 +13,7 @@ rotated and non-rotated.
 import iris.tests as tests  # isort: skip
 
 from iris.coord_systems import GeogCS, RotatedGeogCS
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Mixin_latlon_dimcoords(Mixin__nc_load_actions):

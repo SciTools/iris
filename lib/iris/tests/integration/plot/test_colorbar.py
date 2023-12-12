@@ -21,14 +21,7 @@ import iris.tests.stock
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
 
-    from iris.plot import (
-        contour,
-        contourf,
-        pcolor,
-        pcolormesh,
-        points,
-        scatter,
-    )
+    from iris.plot import contour, contourf, pcolor, pcolormesh, points, scatter
 
 
 @tests.skip_plot

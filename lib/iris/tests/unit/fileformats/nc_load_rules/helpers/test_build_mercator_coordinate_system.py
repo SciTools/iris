@@ -16,9 +16,7 @@ from unittest import mock
 
 import iris
 from iris.coord_systems import Mercator
-from iris.fileformats._nc_load_rules.helpers import (
-    build_mercator_coordinate_system,
-)
+from iris.fileformats._nc_load_rules.helpers import build_mercator_coordinate_system
 
 
 class TestBuildMercatorCoordinateSystem(tests.IrisTest):

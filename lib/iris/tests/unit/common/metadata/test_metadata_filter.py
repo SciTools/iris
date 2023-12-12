@@ -9,11 +9,7 @@ Unit tests for the :func:`iris.common.metadata_filter`.
 
 import numpy as np
 
-from iris.common.metadata import (
-    CoordMetadata,
-    DimCoordMetadata,
-    metadata_filter,
-)
+from iris.common.metadata import CoordMetadata, DimCoordMetadata, metadata_filter
 from iris.coords import AuxCoord
 
 # Import iris.tests first so that some things can be initialised before

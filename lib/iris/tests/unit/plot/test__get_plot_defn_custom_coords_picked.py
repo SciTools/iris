@@ -10,11 +10,7 @@ function."""
 import iris.tests as tests  # isort:skip
 
 from iris.coords import BOUND_MODE, POINT_MODE
-from iris.tests.stock import (
-    hybrid_height,
-    simple_2d,
-    simple_2d_w_multidim_coords,
-)
+from iris.tests.stock import hybrid_height, simple_2d, simple_2d_w_multidim_coords
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
