@@ -172,6 +172,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ adopted and configured the `ruff`_ linter. (:pull:`5623`)
 
+#. `@bjlittle`_ configured the ``line-length = 88`` for `black`_, `isort`_
+   and `ruff`_. (:pull:`5632`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
