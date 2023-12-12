@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Module to support the saving of Iris cubes to a NetCDF file.
+"""Module to support the saving of Iris cubes to a NetCDF file.
 
 Module to support the saving of Iris cubes to a NetCDF file, also using the CF
 conventions for metadata interpretation.
@@ -186,7 +185,6 @@ class CFNameCoordMap:
         ----------
         name:
             CF name of the associated coordinate.
-
         coord:
             The coordinate of the associated CF name.
 
@@ -248,8 +246,7 @@ class CFNameCoordMap:
 
 
 def _bytes_if_ascii(string):
-    """
-    Convert string to a byte string (str in py2k, bytes in py3k).
+    """Convert string to a byte string (str in py2k, bytes in py3k).
 
     Convert the given string to a byte string (str in py2k, bytes in py3k)
     if the given string can be encoded to ascii, else maintain the type
@@ -268,8 +265,7 @@ def _bytes_if_ascii(string):
 
 
 def _setncattr(variable, name, attribute):
-    """
-    Put the given attribute on the given netCDF4 Data type.
+    """Put the given attribute on the given netCDF4 Data type.
 
     Put the given attribute on the given netCDF4 Data type, casting
     attributes as we go to bytes rather than unicode.
@@ -293,8 +289,7 @@ _FillvalueCheckInfo = collections.namedtuple(
 
 
 def _data_fillvalue_check(arraylib, data, check_value):
-    """
-    Check whether an array is masked, and whether it contains a fill-value.
+    """Check whether an array is masked, and whether it contains a fill-value.
 
     Parameters
     ----------
@@ -331,8 +326,7 @@ class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
 
 
 def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
-    """
-    Work out whether there was a possible or actual fill-value collision.
+    """Work out whether there was a possible or actual fill-value collision.
 
     From the given information, work out whether there was a possible or actual
     fill-value collision, and if so construct a warning.
@@ -390,8 +384,7 @@ class Saver:
     """A manager for saving netcdf files."""
 
     def __init__(self, filename, netcdf_format, compute=True):
-        """
-        Manage saving netcdf files.
+        """Manage saving netcdf files.
 
         Parameters
         ----------
@@ -549,8 +542,7 @@ class Saver:
         packing=None,
         fill_value=None,
     ):
-        """
-        Wrap for saving cubes to a NetCDF file.
+        """Wrap for saving cubes to a NetCDF file.
 
         Parameters
         ----------
@@ -854,8 +846,7 @@ class Saver:
                 self._dataset.createDimension(dim_name, size)
 
     def _add_mesh(self, cube_or_mesh):
-        """
-        Add the cube's mesh, and all related variables to the dataset.
+        """Add the cube's mesh, and all related variables to the dataset.
 
         Add the cube's mesh, and all related variables to the dataset.
         Includes all the mesh-element coordinate and connectivity variables.
@@ -991,8 +982,7 @@ class Saver:
     def _add_inner_related_vars(
         self, cube, cf_var_cube, dimension_names, coordlike_elements
     ):
-        """
-        Create a set of variables for aux-coords, ancillaries or cell-measures.
+        """Create a set of variables for aux-coords, ancillaries or cell-measures.
 
         Create a set of variables for aux-coords, ancillaries or cell-measures,
         and attach them to the parent data variable.
@@ -1037,8 +1027,7 @@ class Saver:
                 _setncattr(cf_var_cube, role_attribute_name, variable_names)
 
     def _add_aux_coords(self, cube, cf_var_cube, dimension_names):
-        """
-        Add aux. coordinate to the dataset and associate with the data variable.
+        """Add aux. coordinate to the dataset and associate with the data variable.
 
         Parameters
         ----------
@@ -1078,8 +1067,7 @@ class Saver:
         )
 
     def _add_cell_measures(self, cube, cf_var_cube, dimension_names):
-        """
-        Add cell measures to the dataset and associate with the data variable.
+        """Add cell measures to the dataset and associate with the data variable.
 
         Parameters
         ----------
@@ -1098,8 +1086,7 @@ class Saver:
         )
 
     def _add_ancillary_variables(self, cube, cf_var_cube, dimension_names):
-        """
-        Add ancillary variables measures to the dataset and associate with the data variable.
+        """Add ancillary variables measures to the dataset and associate with the data variable.
 
         Parameters
         ----------
@@ -1118,8 +1105,7 @@ class Saver:
         )
 
     def _add_dim_coords(self, cube, dimension_names):
-        """
-        Add coordinate variables to NetCDF dataset.
+        """Add coordinate variables to NetCDF dataset.
 
         Parameters
         ----------
@@ -1139,8 +1125,7 @@ class Saver:
                 self._name_coord_map.append(cf_name, coord)
 
     def _add_aux_factories(self, cube, cf_var_cube, dimension_names):
-        """
-        Represent the presence of dimensionless vertical coordinates.
+        """Represent the presence of dimensionless vertical coordinates.
 
         Modify the variables of the NetCDF dataset to represent
         the presence of dimensionless vertical coordinates based on
@@ -1236,8 +1221,7 @@ class Saver:
                     _setncattr(cf_var, "formula_terms", formula_terms)
 
     def _get_dim_names(self, cube_or_mesh):
-        """
-        Determine suitable CF-netCDF data dimension names.
+        """Determine suitable CF-netCDF data dimension names.
 
         Parameters
         ----------
@@ -1262,8 +1246,7 @@ class Saver:
         def record_dimension(
             names_list, dim_name, length, matching_coords=None
         ):
-            """
-            Record a file dimension, its length and associated "coordinates".
+            """Record a file dimension, its length and associated "coordinates".
 
             Record a file dimension, its length and associated "coordinates"
             (which may in fact also be connectivities).
@@ -1485,8 +1468,7 @@ class Saver:
 
     @staticmethod
     def _cf_coord_standardised_units(coord):
-        """
-        Determine a suitable units from a given coordinate.
+        """Determine a suitable units from a given coordinate.
 
         Parameters
         ----------
@@ -1547,8 +1529,7 @@ class Saver:
         return values
 
     def _create_cf_bounds(self, coord, cf_var, cf_name):
-        """
-        Create the associated CF-netCDF bounds variable.
+        """Create the associated CF-netCDF bounds variable.
 
         Parameters
         ----------
@@ -1608,8 +1589,7 @@ class Saver:
             )
 
     def _get_cube_variable_name(self, cube):
-        """
-        Return a CF-netCDF variable name for the given cube.
+        """Return a CF-netCDF variable name for the given cube.
 
         Parameters
         ----------
@@ -1633,8 +1613,7 @@ class Saver:
         return cf_name
 
     def _get_coord_variable_name(self, cube_or_mesh, coord):
-        """
-        Return a CF-netCDF variable name for a given coordinate-like element.
+        """Return a CF-netCDF variable name for a given coordinate-like element.
 
         Parameters
         ----------
@@ -1696,8 +1675,7 @@ class Saver:
         return cf_name
 
     def _get_mesh_variable_name(self, mesh):
-        """
-        Return a CF-netCDF variable name for the mesh.
+        """Return a CF-netCDF variable name for the mesh.
 
         Parameters
         ----------
@@ -1723,8 +1701,7 @@ class Saver:
         return cf_name
 
     def _create_mesh(self, mesh):
-        """
-        Create a mesh variable in the netCDF dataset.
+        """Create a mesh variable in the netCDF dataset.
 
         Parameters
         ----------
@@ -1807,8 +1784,7 @@ class Saver:
         element_dims=None,
         fill_value=None,
     ):
-        """
-        Create theCF-netCDF variable given dimensional_metadata.
+        """Create theCF-netCDF variable given dimensional_metadata.
 
         Create the associated CF-netCDF variable in the netCDF dataset for the
         given dimensional_metadata.
@@ -1955,8 +1931,7 @@ class Saver:
         return cf_name
 
     def _create_cf_cell_methods(self, cube, dimension_names):
-        """
-        Create CF-netCDF string representation of a cube cell methods.
+        """Create CF-netCDF string representation of a cube cell methods.
 
         Parameters
         ----------
@@ -2007,8 +1982,7 @@ class Saver:
         return " ".join(cell_methods)
 
     def _create_cf_grid_mapping(self, cube, cf_var_cube):
-        """
-        Create CF-netCDF grid mapping and associated CF-netCDF variable.
+        """Create CF-netCDF grid mapping and associated CF-netCDF variable.
 
         Create CF-netCDF grid mapping variable and associated CF-netCDF
         data variable grid mapping attribute.
@@ -2278,8 +2252,7 @@ class Saver:
         fill_value=None,
         **kwargs,
     ):
-        """
-        Create CF-netCDF data variable for the cube and any associated grid mapping.
+        """Create CF-netCDF data variable for the cube and any associated grid mapping.
 
         # TODO: when iris.FUTURE.save_split_attrs is removed, the 'local_keys' arg can
         # be removed.
@@ -2352,8 +2325,7 @@ class Saver:
             dtype = data.dtype.newbyteorder("=")
 
         def set_packing_ncattrs(cfvar):
-            """
-            Set netCDF packing attributes.
+            """Set netCDF packing attributes.
 
             NOTE: cfvar needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
 
@@ -2447,8 +2419,7 @@ class Saver:
         return cf_var
 
     def _increment_name(self, varname):
-        """
-        Increment string name or begin increment.
+        """Increment string name or begin increment.
 
         Avoidance of conflicts between variable names, where the name is
         incremented to distinguish it from others.
@@ -2566,8 +2537,7 @@ class Saver:
                 )
 
     def delayed_completion(self) -> Delayed:
-        """
-        Perform file completion for delayed saves.
+        """Perform file completion for delayed saves.
 
         Create and return a :class:`dask.delayed.Delayed` to perform file
         completion for delayed saves.
@@ -2638,8 +2608,7 @@ class Saver:
         return result
 
     def complete(self, issue_warnings=True) -> List[Warning]:
-        """
-        Complete file by computing any delayed variable saves.
+        """Complete file by computing any delayed variable saves.
 
         This requires that the Saver has closed the dataset (exited its context).
 
@@ -2692,8 +2661,7 @@ def save(
     fill_value=None,
     compute=True,
 ):
-    r"""
-    Save cube(s) to a netCDF file, given the cube and the filename.
+    r"""Save cube(s) to a netCDF file, given the cube and the filename.
 
     * Iris will write CF 1.7 compliant NetCDF files.
     * **If split-attribute saving is disabled**, i.e.

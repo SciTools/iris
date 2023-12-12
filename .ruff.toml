@@ -28,6 +28,14 @@ lint.ignore = [
     # pydocstyle (D)
     # https://docs.astral.sh/ruff/rules/#pydocstyle-d
     "D",
+    # Permanent
+    "D105",  # Missing docstring in magic method
+
+    # Temporary, to be removed when we are more compliant
+    "D417",  # Missing argument descriptions in the docstring
+    "D101",  # Missing docstring in public class
+    "D102",  # Missing docstring in public method
+    "D106",  # Missing docstring in public nested class
 
     # pyupgrade (UP)
     # https://docs.astral.sh/ruff/rules/#pyupgrade-up
