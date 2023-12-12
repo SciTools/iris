@@ -179,6 +179,8 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ replaced `isort`_ with `ruff`_. (:pull:`5633`)
 
+#. `@bjlittle`_ replaced `black`_ with `ruff`_. (:pull:`5634`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
