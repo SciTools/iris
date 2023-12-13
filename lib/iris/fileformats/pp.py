@@ -1334,9 +1334,8 @@ class PPField(metaclass=ABCMeta):
         elif lbpack == 1:
             pp_file.write(packed_data)
         else:
-            msg = (
-                "Writing packed pp data with lbpack of {} "
-                "is not supported.".format(lbpack)
+            msg = "Writing packed pp data with lbpack of {} is not supported.".format(
+                lbpack
             )
             raise NotImplementedError(msg)
 

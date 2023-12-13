@@ -414,8 +414,9 @@ def area_weights(cube, normalize=False):
         lon, lat = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError(
-            "Cannot get latitude/longitude "
-            "coordinates from cube {!r}.".format(cube.name())
+            "Cannot get latitude/longitude coordinates from cube {!r}.".format(
+                cube.name()
+            )
         )
 
     if lat.ndim > 1:
@@ -631,8 +632,9 @@ def project(cube, target_proj, nx=None, ny=None):
         lon_coord, lat_coord = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError(
-            "Cannot get latitude/longitude "
-            "coordinates from cube {!r}.".format(cube.name())
+            "Cannot get latitude/longitude coordinates from cube {!r}.".format(
+                cube.name()
+            )
         )
 
     if lat_coord.coord_system != lon_coord.coord_system:
@@ -840,8 +842,7 @@ def project(cube, target_proj, nx=None, ny=None):
     discarded_coords = coords_to_ignore.difference([lat_coord, lon_coord])
     if discarded_coords:
         warnings.warn(
-            "Discarding coordinates that share dimensions with "
-            "{} and {}: {}".format(
+            "Discarding coordinates that share dimensions with {} and {}: {}".format(
                 lat_coord.name(),
                 lon_coord.name(),
                 [coord.name() for coord in discarded_coords],

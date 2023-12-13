@@ -127,15 +127,11 @@ def aux_factory(cube, aux_factory_class):
     ]
     if not aux_factories:
         raise ValueError(
-            "Cube does not have an aux factory of type {!r}.".format(
-                aux_factory_class
-            )
+            "Cube does not have an aux factory of type {!r}.".format(aux_factory_class)
         )
     elif len(aux_factories) > 1:
         raise ValueError(
-            "Cube has more than one aux factory of type {!r}.".format(
-                aux_factory_class
-            )
+            "Cube has more than one aux factory of type {!r}.".format(aux_factory_class)
         )
     return aux_factories[0]
 

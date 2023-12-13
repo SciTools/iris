@@ -1130,9 +1130,8 @@ class Saver:
         for factory in cube.aux_factories:
             factory_defn = _FACTORY_DEFNS.get(type(factory), None)
             if factory_defn is None:
-                msg = (
-                    "Unable to determine formula terms "
-                    "for AuxFactory: {!r}".format(factory)
+                msg = "Unable to determine formula terms for AuxFactory: {!r}".format(
+                    factory
                 )
                 warnings.warn(msg, category=iris.exceptions.IrisSaveWarning)
             else:
