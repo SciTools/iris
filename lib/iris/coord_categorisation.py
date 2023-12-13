@@ -245,8 +245,9 @@ def _validate_seasons(seasons):
     ]
     if not_present:
         raise ValueError(
-            "some months do not appear in any season: "
-            "{!s}".format(", ".join(not_present))
+            "some months do not appear in any season: {!s}".format(
+                ", ".join(not_present)
+            )
         )
     # Make a list of months that appear multiple times...
     multi_present = [
@@ -254,8 +255,9 @@ def _validate_seasons(seasons):
     ]
     if multi_present:
         raise ValueError(
-            "some months appear in more than one season: "
-            "{!s}".format(", ".join(multi_present))
+            "some months appear in more than one season: {!s}".format(
+                ", ".join(multi_present)
+            )
         )
     return
 

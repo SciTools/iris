@@ -585,8 +585,9 @@ class FF2PP:
         lbtim_default = 11
         if field.lbtim not in (0, lbtim_default):
             raise ValueError(
-                "LBC field has LBTIM of {:d}, expected only "
-                "0 or {:d}.".format(field.lbtim, lbtim_default)
+                "LBC field has LBTIM of {:d}, expected only 0 or {:d}.".format(
+                    field.lbtim, lbtim_default
+                )
             )
         field.lbtim = lbtim_default
 
@@ -595,8 +596,9 @@ class FF2PP:
         lbvc_default = 65
         if field.lbvc not in (0, lbvc_default):
             raise ValueError(
-                "LBC field has LBVC of {:d}, expected only "
-                "0 or {:d}.".format(field.lbvc, lbvc_default)
+                "LBC field has LBVC of {:d}, expected only 0 or {:d}.".format(
+                    field.lbvc, lbvc_default
+                )
             )
         field.lbvc = lbvc_default
         # Specifying a vertical encoding scheme means a usable vertical

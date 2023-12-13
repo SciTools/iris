@@ -104,8 +104,9 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     total_span = set().union(*spans)
     if len(total_span) != ndims:
         raise ValueError(
-            "The given coordinates ({}) don't span the {} data"
-            " dimensions.".format(names(coords), ndims)
+            "The given coordinates ({}) don't span the {} data dimensions.".format(
+                names(coords), ndims
+            )
         )
 
     # If we have 2-dimensional data, and one or more 1-dimensional
