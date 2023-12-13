@@ -4,8 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 import iris.tests as tests  # isort:skip
-import PIL.Image
 import numpy as np
+import PIL.Image
 
 import iris
 

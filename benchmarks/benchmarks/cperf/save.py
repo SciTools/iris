@@ -8,9 +8,9 @@ File saving benchmarks for the CPerf scheme of the UK Met Office's NG-VAT projec
 
 from iris import save
 
-from . import _N_CUBESPHERE_UM_EQUIVALENT, _UM_DIMS_YX
 from .. import TrackAddedMemoryAllocation, on_demand_benchmark
 from ..generate_data.ugrid import make_cube_like_2d_cubesphere, make_cube_like_umfield
+from . import _N_CUBESPHERE_UM_EQUIVALENT, _UM_DIMS_YX
 
 
 @on_demand_benchmark

@@ -5,8 +5,8 @@
 """
 File loading benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
 """
-from . import SingleDiagnosticMixin
 from .. import on_demand_benchmark
+from . import SingleDiagnosticMixin
 
 
 @on_demand_benchmark

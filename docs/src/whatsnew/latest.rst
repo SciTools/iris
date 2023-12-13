@@ -96,6 +96,7 @@ This document explains the changes made to Iris for this release
    lazy data from file. This will also speed up coordinate comparison.
    (:pull:`5610`)
 
+
 🔥 Deprecations
 ===============
 
@@ -133,6 +134,7 @@ This document explains the changes made to Iris for this release
    for further topics. (:pull:`5588`)
 
 #. `@bouweandela`_ updated all hyperlinks to https. (:pull:`5621`)
+
 
 💼 Internal
 ===========
@@ -175,6 +177,8 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ configured the ``line-length = 88`` for `black`_, `isort`_
    and `ruff`_. (:pull:`5632`)
 
+#. `@bjlittle`_ replaced `isort`_ with `ruff`_. (:pull:`5633`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -190,5 +194,4 @@ This document explains the changes made to Iris for this release
 
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
 .. _codespell: https://github.com/codespell-project/codespell
-.. _ruff: https://github.com/astral-sh/ruff
 .. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info
