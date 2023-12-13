@@ -34,6 +34,8 @@ repos:
     -   id: ruff
         types: [file, python]
         args: [--fix, --show-fixes]
+    -   id: ruff-format
+        types: [file, python]
 
 -   repo: https://github.com/codespell-project/codespell
     rev: "v2.2.6"
@@ -41,13 +43,6 @@ repos:
     -   id: codespell
         types_or: [asciidoc, python, markdown, rst]
         additional_dependencies: [tomli]
-
--   repo: https://github.com/psf/black
-    rev: 23.11.0
-    hooks:
-    -   id: black
-        pass_filenames: false
-        args: [--config=./pyproject.toml, .]
 
 -   repo: https://github.com/PyCQA/flake8
     rev: 6.1.0

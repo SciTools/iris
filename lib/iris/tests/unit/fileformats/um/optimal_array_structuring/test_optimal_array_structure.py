@@ -30,14 +30,16 @@ class Test_optimal_array_structure(tests.IrisTest):
             self.assertEqual(
                 result_dims,
                 spec_dims,
-                'element dims differ for "{}": '
-                "result={!r}, expected {!r}".format(keyname, result_dims, spec_dims),
+                'element dims differ for "{}": ' "result={!r}, expected {!r}".format(
+                    keyname, result_dims, spec_dims
+                ),
             )
             self.assertArrayEqual(
                 result_array,
                 spec_array,
-                'element arrays differ for "{}": '
-                "result={!r}, expected {!r}".format(keyname, result_array, spec_array),
+                'element arrays differ for "{}": ' "result={!r}, expected {!r}".format(
+                    keyname, result_array, spec_array
+                ),
             )
 
     def test_none(self):

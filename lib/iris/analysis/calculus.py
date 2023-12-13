@@ -164,8 +164,9 @@ def cube_delta(cube, coord):
         coord.shape[0] == 1 and not getattr(coord, "circular", False)
     ) or not delta_dims:
         raise ValueError(
-            "Cannot calculate delta over {!r} as it has "
-            "length of 1.".format(coord.name())
+            "Cannot calculate delta over {!r} as it has length of 1.".format(
+                coord.name()
+            )
         )
     delta_dim = delta_dims[0]
 
@@ -570,8 +571,9 @@ def curl(i_cube, j_cube, k_cube=None):
     bad_coords = coord_comparison["resamplable"]
     if bad_coords:
         raise ValueError(
-            "Some coordinates are different ({}), consider "
-            "resampling.".format(", ".join(group.name() for group in bad_coords))
+            "Some coordinates are different ({}), consider resampling.".format(
+                ", ".join(group.name() for group in bad_coords)
+            )
         )
 
     # Get the dim_coord, or None if none exist, for the xyz dimensions

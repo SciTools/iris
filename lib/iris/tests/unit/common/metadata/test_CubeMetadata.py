@@ -394,7 +394,7 @@ class MixinSplitattrsMatrixTests:
             "secondaryXC",
             "secondaryCC",
             "secondaryCD",
-        ]
+        ],
         # NOTE: test CX as well as XC, since primary choices has "AX" but not "XA".
     )
     def test_splitattrs_global_local_independence(
