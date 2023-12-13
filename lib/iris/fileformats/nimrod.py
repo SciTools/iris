@@ -236,8 +236,9 @@ class NimrodField:
         trailing_length = struct.unpack(">L", infile.read(4))[0]
         if trailing_length != leading_length:
             raise TranslationError(
-                "Expected header trailing_length of {}, "
-                "got {}.".format(leading_length, trailing_length)
+                "Expected header trailing_length of {}, got {}.".format(
+                    leading_length, trailing_length
+                )
             )
 
     def _read_data(self, infile):

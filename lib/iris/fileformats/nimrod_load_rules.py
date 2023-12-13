@@ -440,8 +440,7 @@ def horizontal_grid(cube, field, handle_metadata_errors):
         y_coord_name = "latitude"
     else:
         raise TranslationError(
-            "Horizontal grid type {} not "
-            "implemented".format(field.horizontal_grid_type)
+            "Horizontal grid type {} not implemented".format(field.horizontal_grid_type)
         )
     points = np.linspace(
         field.x_origin,

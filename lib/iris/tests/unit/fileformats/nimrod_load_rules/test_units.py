@@ -80,7 +80,7 @@ class Test(tests.IrisTest):
     def test_ug_per_m3_units(self):
         with mock.patch("warnings.warn") as warn:
             self._call_units(
-                data=((np.ones_like(self.cube.data) * 10)),
+                data=(np.ones_like(self.cube.data) * 10),
                 units_str="ug/m3E1",
             )
         self.assertEqual(warn.call_count, 0)
@@ -91,7 +91,7 @@ class Test(tests.IrisTest):
     def test_g_per_kg(self):
         with mock.patch("warnings.warn") as warn:
             self._call_units(
-                data=((np.ones_like(self.cube.data) * 1000)), units_str="g/Kg"
+                data=(np.ones_like(self.cube.data) * 1000), units_str="g/Kg"
             )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "kg/kg")

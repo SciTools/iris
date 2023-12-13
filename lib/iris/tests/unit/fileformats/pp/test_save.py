@@ -140,8 +140,9 @@ class TestLbfcProduction(tests.IrisTest):
         self.assertEqual(
             lbfc_produced,
             lbfc_expected,
-            "Lbfc for ({!r} / {!r}) should be {:d}, "
-            "got {:d}".format(name, units, lbfc_expected, lbfc_produced),
+            "Lbfc for ({!r} / {!r}) should be {:d}, got {:d}".format(
+                name, units, lbfc_expected, lbfc_produced
+            ),
         )
 
     def test_name_units_to_lbfc(self):

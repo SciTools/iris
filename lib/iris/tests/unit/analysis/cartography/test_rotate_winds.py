@@ -152,9 +152,7 @@ class TestAnalyticComparison(tests.IrisTest):
             np.radians(trueLongitude) - lambda_angle
         ) + np.sin(np.radians(rotated_lons)) * np.sin(
             np.radians(trueLongitude) - lambda_angle
-        ) * np.cos(
-            phi_angle
-        )
+        ) * np.cos(phi_angle)
         sin_rot = -(
             (np.sin(np.radians(trueLongitude) - lambda_angle) * np.sin(phi_angle))
             / np.cos(np.radians(rotated_lats))

@@ -994,9 +994,8 @@ class OceanSigmaZFactory(AuxCoordFactory):
             sigma.units = cf_units.Unit("1")
 
         if sigma is not None and not sigma.units.is_dimensionless():
-            msg = (
-                "Invalid units: sigma coordinate {!r} "
-                "must be dimensionless.".format(sigma.name())
+            msg = "Invalid units: sigma coordinate {!r} must be dimensionless.".format(
+                sigma.name()
             )
             raise ValueError(msg)
 
@@ -1198,9 +1197,8 @@ class OceanSigmaFactory(AuxCoordFactory):
         # Check bounds and shape.
         coord, term = (sigma, "sigma")
         if coord is not None and coord.nbounds not in (0, 2):
-            msg = (
-                "Invalid {} coordinate {!r}: must have either "
-                "0 or 2 bounds.".format(term, coord.name())
+            msg = "Invalid {} coordinate {!r}: must have either 0 or 2 bounds.".format(
+                term, coord.name()
             )
             raise ValueError(msg)
 
@@ -1219,9 +1217,8 @@ class OceanSigmaFactory(AuxCoordFactory):
             sigma.units = cf_units.Unit("1")
 
         if sigma is not None and not sigma.units.is_dimensionless():
-            msg = (
-                "Invalid units: sigma coordinate {!r} "
-                "must be dimensionless.".format(sigma.name())
+            msg = "Invalid units: sigma coordinate {!r} must be dimensionless.".format(
+                sigma.name()
             )
             raise ValueError(msg)
 
@@ -1550,9 +1547,8 @@ class OceanSFactory(AuxCoordFactory):
 
         # Check bounds and shape.
         if s is not None and s.nbounds not in (0, 2):
-            msg = (
-                "Invalid s coordinate {!r}: must have either "
-                "0 or 2 bounds.".format(s.name())
+            msg = "Invalid s coordinate {!r}: must have either 0 or 2 bounds.".format(
+                s.name()
             )
             raise ValueError(msg)
 
