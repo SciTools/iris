@@ -26,7 +26,6 @@ lint.ignore = [
     "D",
     # Permanent
     "D105",  # Missing docstring in magic method
-
     # Temporary, to be removed when we are more compliant
     "D417",  # Missing argument descriptions in the docstring
     "D101",  # Missing docstring in public class

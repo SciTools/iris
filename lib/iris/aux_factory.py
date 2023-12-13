@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Definitions of derived coordinates.
-
-"""
+"""Definitions of derived coordinates."""
 
 from abc import ABCMeta, abstractmethod
 import warnings
@@ -20,7 +17,8 @@ from iris.exceptions import IrisIgnoringBoundsWarning
 
 
 class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
-    """
+    """Represents a "factory" which can manufacture additional auxiliary coordinate.
+
     Represents a "factory" which can manufacture an additional auxiliary
     coordinate on demand, by combining the values of other coordinates.
 
@@ -50,10 +48,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def coord_system(self):
-        """
-        The coordinate-system (if any) of the coordinate made by the factory.
-
-        """
+        """The coordinate-system (if any) of the coordinate made by the factory."""
         return self._metadata_manager.coord_system
 
     @coord_system.setter
@@ -62,7 +57,8 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def climatological(self):
-        """
+        """Always returns False, as a factory itself can never have points/bounds.
+
         Always returns False, as a factory itself can never have points/bounds
         and therefore can never be climatological by definition.
 
@@ -72,37 +68,38 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
     @property
     @abstractmethod
     def dependencies(self):
-        """
-        Returns a dictionary mapping from constructor argument names to
+        """Return a dict mapping from constructor argument.
+
+        Return a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
         """
 
     @abstractmethod
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this
-        factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate.
+
             See :meth:`iris.cube.Cube.coord_dims()`.
 
         """
 
     def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
+        """Notify the factory of the removal/replacement of a coordinate.
+
+        Notify the factory of the removal/replacement of a coordinate
         which might be a dependency.
 
-        Args:
-
-        * old_coord:
+        Parameters
+        ----------
+        old_coord:
             The coordinate to be removed/replaced.
-        * new_coord:
+        new_coord: optional
             If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
@@ -130,19 +127,18 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         return "<{}({})>".format(type(self).__name__, ", ".join(args))
 
     def derived_dims(self, coord_dims_func):
-        """
-        Returns the cube dimensions for the derived coordinate.
+        """Return the cube dimensions for the derived coordinate.
 
-        Args:
-
-        * coord_dims_func:
-            A callable which can return the list of dimensions relevant
-            to a given coordinate.
+        Parameters
+        ----------
+        coord_dims_func:
+            A callable which can return the list of dimensions relevant to a given
+            coordinate.
             See :meth:`iris.cube.Cube.coord_dims()`.
 
-        Returns:
-
-            A sorted list of cube dimension numbers.
+        Returns
+        -------
+        A sorted list of cube dimension numbers.
 
         """
         # Which dimensions are relevant?
@@ -158,13 +154,14 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         return derived_dims
 
     def updated(self, new_coord_mapping):
-        """
-        Creates a new instance of this factory where the dependencies
+        """Create a new instance of this factory.
+
+        Create a new instance of this factory where the dependencies
         are replaced according to the given mapping.
 
-        Args:
-
-        * new_coord_mapping:
+        Parameters
+        ----------
+        new_coord_mapping:
             A dictionary mapping from the object IDs potentially used
             by this factory, to the coordinate objects that should be
             used instead.
@@ -178,10 +175,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         return type(self)(**new_dependencies)
 
     def xml_element(self, doc):
-        """
-        Returns a DOM element describing this coordinate factory.
-
-        """
+        """Return a DOM element describing this coordinate factory."""
         element = doc.createElement("coordFactory")
         for key, coord in self.dependencies.items():
             element.setAttribute(key, coord._xml_id())
@@ -197,8 +191,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     @staticmethod
     def _nd_bounds(coord, dims, ndim):
-        """
-        Return a lazy bounds array for a dependency coordinate, 'coord'.
+        """Return a lazy bounds array for a dependency coordinate, 'coord'.
 
         The result is aligned to the first 'ndim' cube dimensions, and
         expanded to the full ('ndim'+1)-dimensional shape.
@@ -208,11 +201,12 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         The extra final result dimension ('ndim'-th) is the bounds dimension.
 
-        Example:
+        Example::
             coord.shape == (70,)
             coord.nbounds = 2
             dims == [3]
             ndim == 5
+
         results in:
             nd_bounds.shape == (1, 1, 1, 70, 1, 2)
 
@@ -233,8 +227,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     @staticmethod
     def _nd_points(coord, dims, ndim):
-        """
-        Return a lazy points array for a dependency coordinate, 'coord'.
+        """Return a lazy points array for a dependency coordinate, 'coord'.
 
         The result is aligned to the first 'ndim' cube dimensions, and
         expanded to the full 'ndim'-dimensional shape.
@@ -242,11 +235,15 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         The value of 'ndim' must be >= the highest cube dimension of the
         dependency coordinate.
 
-        Example:
+        Examples
+        --------
+        ::
             coord.shape == (4, 3)
             dims == [3, 2]
             ndim == 5
-        results in:
+
+        results in::
+
             nd_points.shape == (1, 1, 3, 4, 1)
 
         """
@@ -272,8 +269,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         return points
 
     def _remap(self, dependency_dims, derived_dims):
-        """
-        Return a mapping from dependency names to coordinate points arrays.
+        """Return a mapping from dependency names to coordinate points arrays.
 
         For dependencies that are present, the values are all expanded and
         aligned to the same dimensions, which is the full set of all the
@@ -311,8 +307,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         return nd_points_by_key
 
     def _remap_with_bounds(self, dependency_dims, derived_dims):
-        """
-        Return a mapping from dependency names to coordinate bounds arrays.
+        """Return a mapping from dependency names to coordinate bounds arrays.
 
         For dependencies that are present, the values are all expanded and
         aligned to the same dimensions, which is the full set of all the
@@ -369,16 +364,19 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
 
 class AtmosphereSigmaFactory(AuxCoordFactory):
-    """Defines an atmosphere sigma coordinate factory with the formula:
-    p = ptop + sigma * (ps - ptop)
+    """Define an atmosphere sigma coordinate factory with the following formula.
+
+    .. math::
+        p = ptop + sigma * (ps - ptop)
 
     """
 
     def __init__(self, pressure_at_top=None, sigma=None, surface_air_pressure=None):
-        """Creates an atmosphere sigma coordinate factory with the formula:
+        """Create an atmosphere sigma coordinate factory with a formula.
 
-        p(n, k, j, i) = pressure_at_top + sigma(k) *
-                        (surface_air_pressure(n, j, i) - pressure_at_top)
+        .. math::
+            p(n, k, j, i) = pressure_at_top + sigma(k) *
+                            (surface_air_pressure(n, j, i) - pressure_at_top)
 
         """
         # Configure the metadata manager.
@@ -469,15 +467,14 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
         return pressure_at_top + sigma * (surface_air_pressure - pressure_at_top)
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this
-        factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate.
+
             See :meth:`iris.cube.Cube.coord_dims()`.
 
         """
@@ -537,26 +534,23 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
 
 
 class HybridHeightFactory(AuxCoordFactory):
-    """
-    Defines a hybrid-height coordinate factory with the formula:
-        z = a + b * orog
-
-    """
+    """Defines a hybrid-height coordinate factory."""
 
     def __init__(self, delta=None, sigma=None, orography=None):
-        """
-        Creates a hybrid-height coordinate factory with the formula:
+        """Create a hybrid-height coordinate factory with the following formula.
+
+        .. math::
             z = a + b * orog
 
         At least one of `delta` or `orography` must be provided.
 
-        Args:
-
-        * delta: Coord
+        Parameters
+        ----------
+        delta: Coord, optional
             The coordinate providing the `a` term.
-        * sigma: Coord
+        sigma: Coord, optional
             The coordinate providing the `b` term.
-        * orography: Coord
+        orography: Coord, optional
             The coordinate providing the `orog` term.
 
         """
@@ -601,8 +595,9 @@ class HybridHeightFactory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """
-        Returns a dictionary mapping from constructor argument names to
+        """Return a dict mapping from constructor arg names to coordinates.
+
+        Return a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
         """
@@ -616,15 +611,14 @@ class HybridHeightFactory(AuxCoordFactory):
         return delta + sigma * orography
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this
-        factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate.
+
             See :meth:`iris.cube.Cube.coord_dims()`.
 
         """
@@ -677,15 +671,16 @@ class HybridHeightFactory(AuxCoordFactory):
         return hybrid_height
 
     def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
+        """Notify the factory of the removal/replacement of a coordinate.
+
+        Notify the factory of the removal/replacement of a coordinate
         which might be a dependency.
 
-        Args:
-
-        * old_coord:
+        Parameters
+        ----------
+        old_coord:
             The coordinate to be removed/replaced.
-        * new_coord:
+        new_coord: optional
             If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
@@ -713,26 +708,23 @@ class HybridHeightFactory(AuxCoordFactory):
 
 
 class HybridPressureFactory(AuxCoordFactory):
-    """
-    Defines a hybrid-pressure coordinate factory with the formula:
-        p = ap + b * ps
-
-    """
+    """Define a hybrid-pressure coordinate factory."""
 
     def __init__(self, delta=None, sigma=None, surface_air_pressure=None):
-        """
-        Creates a hybrid-height coordinate factory with the formula:
+        """Create a hybrid-height coordinate factory with the following formula.
+
+        .. math::
             p = ap + b * ps
 
         At least one of `delta` or `surface_air_pressure` must be provided.
 
-        Args:
-
-        * delta: Coord
+        Parameters
+        ----------
+        delta: Coord, optional
             The coordinate providing the `ap` term.
-        * sigma: Coord
+        sigma: Coord, optional
             The coordinate providing the `b` term.
-        * surface_air_pressure: Coord
+        surface_air_pressure: Coord, optional
             The coordinate providing the `ps` term.
 
         """
@@ -809,7 +801,8 @@ class HybridPressureFactory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """
+        """Return a dict mapping from constructor arg names to coordinates.
+
         Returns a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
@@ -824,15 +817,14 @@ class HybridPressureFactory(AuxCoordFactory):
         return delta + sigma * surface_air_pressure
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this
-        factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate.
+
             See :meth:`iris.cube.Cube.coord_dims()`.
 
         """
@@ -897,14 +889,17 @@ class OceanSigmaZFactory(AuxCoordFactory):
         nsigma=None,
         zlev=None,
     ):
-        """
-        Creates an ocean sigma over z coordinate factory with the formula:
+        """Create an ocean sigma over z coordinate factory with the following formula.
 
         if k < nsigma:
+
+        .. math::
             z(n, k, j, i) = eta(n, j, i) + sigma(k) *
-                             (min(depth_c, depth(j, i)) + eta(n, j, i))
+                            (min(depth_c, depth(j, i)) + eta(n, j, i))
 
         if k >= nsigma:
+
+        .. math::
             z(n, k, j, i) = zlev(k)
 
         The `zlev` and 'nsigma' coordinates must be provided, and at least
@@ -1012,7 +1007,8 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """
+        """Return a dict mapping from constructor arg names to coordinates.
+
         Returns a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
@@ -1084,12 +1080,11 @@ class OceanSigmaZFactory(AuxCoordFactory):
         return result
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1163,11 +1158,11 @@ class OceanSigmaFactory(AuxCoordFactory):
     """Defines an ocean sigma coordinate factory."""
 
     def __init__(self, sigma=None, eta=None, depth=None):
-        """
-        Creates an ocean sigma coordinate factory with the formula:
+        """Create an ocean sigma coordinate factory with the following formula.
 
-        z(n, k, j, i) = eta(n, j, i) + sigma(k) *
-                        (depth(j, i) + eta(n, j, i))
+        .. math::
+            z(n, k, j, i) = eta(n, j, i) + sigma(k) *
+                            (depth(j, i) + eta(n, j, i))
 
         """
         # Configure the metadata manager.
@@ -1237,7 +1232,8 @@ class OceanSigmaFactory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """
+        """Return a dict mapping from constructor arg names to coordinates.
+
         Returns a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
@@ -1248,12 +1244,11 @@ class OceanSigmaFactory(AuxCoordFactory):
         return eta + sigma * (depth + eta)
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1317,12 +1312,14 @@ class OceanSg1Factory(AuxCoordFactory):
     """Defines an Ocean s-coordinate, generic form 1 factory."""
 
     def __init__(self, s=None, c=None, eta=None, depth=None, depth_c=None):
-        """
-        Creates an Ocean s-coordinate, generic form 1 factory with the formula:
+        """Create an Ocean s-coordinate, generic form 1 factory with the following formula.
 
-        z(n,k,j,i) = S(k,j,i) + eta(n,j,i) * (1 + S(k,j,i) / depth(j,i))
+        .. math::
+            z(n,k,j,i) = S(k,j,i) + eta(n,j,i) * (1 + S(k,j,i) / depth(j,i))
 
         where:
+
+        .. math::
             S(k,j,i) = depth_c * s(k) + (depth(j,i) - depth_c) * C(k)
 
         """
@@ -1411,8 +1408,9 @@ class OceanSg1Factory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """
-        Returns a dictionary mapping from constructor argument names to
+        """Return a dict mapping from constructor arg names to coordinates.
+
+        Return a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
         """
@@ -1429,12 +1427,11 @@ class OceanSg1Factory(AuxCoordFactory):
         return S + eta * (1 + S / depth)
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1502,13 +1499,17 @@ class OceanSFactory(AuxCoordFactory):
     """Defines an Ocean s-coordinate factory."""
 
     def __init__(self, s=None, eta=None, depth=None, a=None, b=None, depth_c=None):
-        """
-        Creates an Ocean s-coordinate factory with the formula:
+        """Create an Ocean s-coordinate factory with a formula.
 
-        z(n,k,j,i) = eta(n,j,i)*(1+s(k)) + depth_c*s(k) +
-                     (depth(j,i)-depth_c)*C(k)
+        .. math::
+
+            z(n,k,j,i) = eta(n,j,i)*(1+s(k)) + depth_c*s(k) +
+                         (depth(j,i)-depth_c)*C(k)
 
         where:
+
+        .. math::
+
             C(k) = (1-b) * sinh(a*s(k)) / sinh(a) +
                    b * [tanh(a * (s(k) + 0.5)) / (2 * tanh(0.5*a)) - 0.5]
 
@@ -1596,8 +1597,9 @@ class OceanSFactory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """
-        Returns a dictionary mapping from constructor argument names to
+        """Return a dict mapping from constructor arg names to coordinates.
+
+        Return a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
         """
@@ -1617,12 +1619,11 @@ class OceanSFactory(AuxCoordFactory):
         return eta * (1 + s) + depth_c * s + (depth - depth_c) * c
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1692,12 +1693,14 @@ class OceanSg2Factory(AuxCoordFactory):
     """Defines an Ocean s-coordinate, generic form 2 factory."""
 
     def __init__(self, s=None, c=None, eta=None, depth=None, depth_c=None):
-        """
-        Creates an Ocean s-coordinate, generic form 2 factory with the formula:
+        """Create an Ocean s-coordinate, generic form 2 factory with the following formula.
 
-        z(n,k,j,i) = eta(n,j,i) + (eta(n,j,i) + depth(j,i)) * S(k,j,i)
+        .. math::
+            z(n,k,j,i) = eta(n,j,i) + (eta(n,j,i) + depth(j,i)) * S(k,j,i)
 
         where:
+
+        .. math::
             S(k,j,i) = (depth_c * s(k) + depth(j,i) * C(k)) /
                        (depth_c + depth(j,i))
 
@@ -1787,7 +1790,8 @@ class OceanSg2Factory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """
+        """Returns a dicti mapping from constructor arg names to coordinates.
+
         Returns a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
@@ -1805,12 +1809,11 @@ class OceanSg2Factory(AuxCoordFactory):
         return eta + (eta + depth) * S
 
     def make_coord(self, coord_dims_func):
-        """
-        Returns a new :class:`iris.coords.AuxCoord` as defined by this factory.
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
 
-        Args:
-
-        * coord_dims_func:
+        Parameters
+        ----------
+        coord_dims_func:
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
