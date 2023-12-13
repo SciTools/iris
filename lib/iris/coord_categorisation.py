@@ -23,9 +23,7 @@ import numpy as np
 import iris.coords
 
 
-def add_categorised_coord(
-    cube, name, from_coord, category_function, units="1"
-):
+def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
     """
     Add a new coordinate to a cube, by categorising an existing one.
 
@@ -117,16 +115,12 @@ def _pt_date(coord, time):
 
 def add_year(cube, coord, name="year"):
     """Add a categorical calendar-year coordinate."""
-    add_categorised_coord(
-        cube, name, coord, lambda coord, x: _pt_date(coord, x).year
-    )
+    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).year)
 
 
 def add_month_number(cube, coord, name="month_number"):
     """Add a categorical month coordinate, values 1..12."""
-    add_categorised_coord(
-        cube, name, coord, lambda coord, x: _pt_date(coord, x).month
-    )
+    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).month)
 
 
 def add_month_fullname(cube, coord, name="month_fullname"):
@@ -153,9 +147,7 @@ def add_month(cube, coord, name="month"):
 
 def add_day_of_month(cube, coord, name="day_of_month"):
     """Add a categorical day-of-month coordinate, values 1..31."""
-    add_categorised_coord(
-        cube, name, coord, lambda coord, x: _pt_date(coord, x).day
-    )
+    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).day)
 
 
 def add_day_of_year(cube, coord, name="day_of_year"):
@@ -212,9 +204,7 @@ def add_weekday(cube, coord, name="weekday"):
 
 def add_hour(cube, coord, name="hour"):
     """Add a categorical hour coordinate, values 0..23."""
-    add_categorised_coord(
-        cube, name, coord, lambda coord, x: _pt_date(coord, x).hour
-    )
+    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).hour)
 
 
 # ----------------------------------------------
@@ -314,9 +304,7 @@ def _month_season_numbers(seasons):
     return month_season_numbers
 
 
-def add_season(
-    cube, coord, name="season", seasons=("djf", "mam", "jja", "son")
-):
+def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son")):
     """
     Add a categorical season-of-year coordinate, with user specified
     seasons.

@@ -54,21 +54,15 @@ class Test(tests.IrisTest):
 
     def test_standard_input(self):
         for axis in self.axes:
-            result = relevel(
-                self.cube, self.src_levels, [-1, 0, 5.5], axis=axis
-            )
-            assert_array_equal(
-                result.data.flatten(), np.array([np.nan, 0, 55])
-            )
+            result = relevel(self.cube, self.src_levels, [-1, 0, 5.5], axis=axis)
+            assert_array_equal(result.data.flatten(), np.array([np.nan, 0, 55]))
             expected = DimCoord([-1, 0, 5.5], units=1, long_name="thingness")
             self.assertEqual(expected, result.coord("thingness"))
 
     def test_non_monotonic(self):
         for axis in self.axes:
             result = relevel(self.cube, self.src_levels, [2, 3, 2], axis=axis)
-            assert_array_equal(
-                result.data.flatten(), np.array([20, 30, np.nan])
-            )
+            assert_array_equal(result.data.flatten(), np.array([20, 30, np.nan]))
             expected = AuxCoord([2, 3, 2], units=1, long_name="thingness")
             self.assertEqual(result.coord("thingness"), expected)
 
@@ -100,9 +94,7 @@ class Test(tests.IrisTest):
                 axis=axis,
                 interpolator=interpolator,
             )
-            assert_array_equal(
-                result.data.flatten(), np.array([np.nan, 0, 120])
-            )
+            assert_array_equal(result.data.flatten(), np.array([np.nan, 0, 120]))
 
     def test_multi_dim_target_levels(self):
         interpolator = partial(

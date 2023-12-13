@@ -34,9 +34,7 @@ import iris.util
 #
 # Private namedtuple wrapper classes.
 #
-class _Template(
-    namedtuple("Template", ["dims", "points", "bounds", "kwargs"])
-):
+class _Template(namedtuple("Template", ["dims", "points", "bounds", "kwargs"])):
     """
     Common framework from which to build a dimension or auxiliary coordinate.
 
@@ -136,9 +134,7 @@ class _ScalarCoordPayload(
 
 
 class _VectorCoordPayload(
-    namedtuple(
-        "VectorCoordPayload", ["dim_coords_and_dims", "aux_coords_and_dims"]
-    )
+    namedtuple("VectorCoordPayload", ["dim_coords_and_dims", "aux_coords_and_dims"])
 ):
     """
     Container for all vector coordinate data and metadata represented
@@ -163,9 +159,7 @@ class _VectorCoordPayload(
     __slots__ = ()
 
 
-class _CoordPayload(
-    namedtuple("CoordPayload", ["scalar", "vector", "factory_defns"])
-):
+class _CoordPayload(namedtuple("CoordPayload", ["scalar", "vector", "factory_defns"])):
     """
     Container for all the scalar and vector coordinate data and
     metadata, and auxiliary coordinate factories represented within a
@@ -415,9 +409,7 @@ class _CubeSignature(
                 ]
                 diff_attrs = ", ".join(sorted(diff_attrs))
                 msgs.append(
-                    "cube.attributes values differ for keys: {}".format(
-                        diff_attrs
-                    )
+                    "cube.attributes values differ for keys: {}".format(diff_attrs)
                 )
         if self_defn.cell_methods != other_defn.cell_methods:
             msgs.append("cube.cell_methods differ")
@@ -460,10 +452,7 @@ class _CubeSignature(
         # mismatch to be caused by a difference in order.
         if self.cell_measures_and_dims != other.cell_measures_and_dims:
             msgs.append("cube.cell_measures differ")
-        if (
-            self.ancillary_variables_and_dims
-            != other.ancillary_variables_and_dims
-        ):
+        if self.ancillary_variables_and_dims != other.ancillary_variables_and_dims:
             msgs.append("cube.ancillary_variables differ")
 
         match = not bool(msgs)
@@ -605,9 +594,7 @@ def build_indexes(positions):
                 value_index_by_name = name_index_by_scalar[value]
                 for other_name in names:
                     if other_name != name:
-                        value_index_by_name[other_name].add(
-                            position[other_name]
-                        )
+                        value_index_by_name[other_name].add(position[other_name])
             else:
                 name_index_by_scalar[value] = {
                     other_name: set((position[other_name],))
@@ -860,9 +847,7 @@ def _derive_consistent_groups(relation_matrix, separable_group):
     result = []
 
     for name in separable_group:
-        name_separable_group = (
-            relation_matrix[name].separable & separable_group
-        )
+        name_separable_group = relation_matrix[name].separable & separable_group
         candidate = list(name_separable_group) + [name]
         valid = True
 
@@ -932,9 +917,7 @@ def _build_separable_group(
 
         for name in dependent:
             function_mapping = {}
-            valid = _is_dependent(
-                name, independent, positions, function_mapping
-            )
+            valid = _is_dependent(name, independent, positions, function_mapping)
 
             if not valid:
                 break
@@ -1002,9 +985,7 @@ def _build_inseparable_group(space, group, positions, function_matrix):
 
         for name in dependent:
             function_mapping = {}
-            valid = _is_dependent(
-                name, independent, positions, function_mapping
-            )
+            valid = _is_dependent(name, independent, positions, function_mapping)
 
             if not valid:
                 break
@@ -1126,22 +1107,16 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
                 # There is no relationship between any of the candidate
                 # dimensions in the separable group, so merge them together
                 # into a new combined dimension of the space.
-                _build_combination_group(
-                    space, group, positions, function_matrix
-                )
+                _build_combination_group(space, group, positions, function_matrix)
         else:
             # Determine whether there is a scalar relationship between one of
             # the candidate dimensions and each of the other candidate
             # dimensions in this inseparable group.
-            if not _build_inseparable_group(
-                space, group, positions, function_matrix
-            ):
+            if not _build_inseparable_group(space, group, positions, function_matrix):
                 # There is no relationship between any of the candidate
                 # dimensions in this inseparable group, so merge them together
                 # into a new combined dimension of the space.
-                _build_combination_group(
-                    space, group, positions, function_matrix
-                )
+                _build_combination_group(space, group, positions, function_matrix)
 
     return space
 
@@ -1455,9 +1430,7 @@ class ProtoCube:
                     cells = OrderedDict(
                         (
                             tuple(
-                                position[
-                                    int(member) if member.isdigit() else member
-                                ]
+                                position[int(member) if member.isdigit() else member]
                                 for member in members
                             ),
                             None,
@@ -1529,10 +1502,7 @@ class ProtoCube:
             if name_independents is not None:
                 # Calculate the auxiliary coordinate shape.
                 dims = tuple(
-                    [
-                        dim_by_name[independent]
-                        for independent in name_independents
-                    ]
+                    [dim_by_name[independent] for independent in name_independents]
                 )
                 aux_shape = [self._shape[dim] for dim in dims]
                 # Create empty points and bounds in preparation to be filled.
@@ -1552,9 +1522,7 @@ class ProtoCube:
                     # dimension coordinate/s.
                     index = []
 
-                    name_function_pairs = zip(
-                        name_independents, function_independents
-                    )
+                    name_function_pairs = zip(name_independents, function_independents)
                     for independent, independent_value in name_function_pairs:
                         cache = self._cache_by_name[independent]
                         index.append(cache[independent_value])
@@ -1567,9 +1535,7 @@ class ProtoCube:
                         bounds[index] = name_value.bound
 
                 kwargs = dict(zip(CoordMetadata._fields, defns[name]))
-                self._aux_templates.append(
-                    _Template(dims, points, bounds, kwargs)
-                )
+                self._aux_templates.append(_Template(dims, points, bounds, kwargs))
 
         # Calculate the dimension mapping for each vector within the space.
         offset = len(self._shape)
@@ -1597,8 +1563,7 @@ class ProtoCube:
             (deepcopy(coord), dim) for coord, dim in self._dim_coords_and_dims
         ]
         aux_coords_and_dims = [
-            (deepcopy(coord), dims)
-            for coord, dims in self._aux_coords_and_dims
+            (deepcopy(coord), dims) for coord, dims in self._aux_coords_and_dims
         ]
         kwargs = dict(zip(CubeMetadata._fields, signature.defn))
 
@@ -1606,8 +1571,7 @@ class ProtoCube:
             (deepcopy(cm), dims) for cm, dims in self._cell_measures_and_dims
         ]
         avs_and_dims = [
-            (deepcopy(av), dims)
-            for av, dims in self._ancillary_variables_and_dims
+            (deepcopy(av), dims) for av, dims in self._ancillary_variables_and_dims
         ]
         cube = iris.cube.Cube(
             data,
@@ -1698,18 +1662,11 @@ class ProtoCube:
                 coord = iris.coords.DimCoord(
                     template.points, bounds=template.bounds, **template.kwargs
                 )
-                if (
-                    len(template.dims) == 1
-                    and template.dims[0] not in covered_dims
-                ):
-                    dim_coords_and_dims.append(
-                        _CoordAndDims(coord, template.dims)
-                    )
+                if len(template.dims) == 1 and template.dims[0] not in covered_dims:
+                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
                     covered_dims.append(template.dims[0])
                 else:
-                    aux_coords_and_dims.append(
-                        _CoordAndDims(coord, template.dims)
-                    )
+                    aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
             except ValueError:
                 # kwarg not applicable to AuxCoord.
                 template.kwargs.pop("circular", None)
@@ -1791,9 +1748,7 @@ class ProtoCube:
         # Copes with duplicate hint entries, where the most preferred is king.
         hint_dict = {
             name: i
-            for i, name in zip(
-                range(len(self._hints), 0, -1), self._hints[::-1]
-            )
+            for i, name in zip(range(len(self._hints), 0, -1), self._hints[::-1])
         }
         # Coordinate axis ordering dictionary.
         axis_dict = {"T": 0, "Z": 1, "Y": 2, "X": 3}
@@ -1808,9 +1763,7 @@ class ProtoCube:
                 not np.issubdtype(points_dtype, np.number),
                 not isinstance(coord, iris.coords.DimCoord),
                 hint_dict.get(coord.name(), len(hint_dict) + 1),
-                axis_dict.get(
-                    iris.util.guess_coord_axis(coord), len(axis_dict) + 1
-                ),
+                axis_dict.get(iris.util.guess_coord_axis(coord), len(axis_dict) + 1),
                 coord.metadata,
             )
 
@@ -1841,18 +1794,12 @@ class ProtoCube:
             else:
                 # Extract the vector coordinate and metadata.
                 if id(coord) in cube_aux_coord_ids:
-                    vector_aux_coords_and_dims.append(
-                        _CoordAndDims(coord, dims)
-                    )
+                    vector_aux_coords_and_dims.append(_CoordAndDims(coord, dims))
                 else:
-                    vector_dim_coords_and_dims.append(
-                        _CoordAndDims(coord, dims)
-                    )
+                    vector_dim_coords_and_dims.append(_CoordAndDims(coord, dims))
 
         factory_defns = []
-        for factory in sorted(
-            cube.aux_factories, key=lambda factory: factory.metadata
-        ):
+        for factory in sorted(cube.aux_factories, key=lambda factory: factory.metadata):
             dependency_defns = []
             dependencies = factory.dependencies
             for key in sorted(dependencies):
@@ -1862,9 +1809,7 @@ class ProtoCube:
             factory_defn = _FactoryDefn(type(factory), dependency_defns)
             factory_defns.append(factory_defn)
 
-        scalar = _ScalarCoordPayload(
-            scalar_defns, scalar_values, scalar_metadata
-        )
+        scalar = _ScalarCoordPayload(scalar_defns, scalar_values, scalar_metadata)
         vector = _VectorCoordPayload(
             vector_dim_coords_and_dims, vector_aux_coords_and_dims
         )

@@ -9,11 +9,7 @@ Unit tests for the :func:`iris.common.metadata_filter`.
 
 import numpy as np
 
-from iris.common.metadata import (
-    CoordMetadata,
-    DimCoordMetadata,
-    metadata_filter,
-)
+from iris.common.metadata import CoordMetadata, DimCoordMetadata, metadata_filter
 from iris.coords import AuxCoord
 
 # Import iris.tests first so that some things can be initialised before
@@ -83,16 +79,12 @@ class Test_standard(tests.IrisTest):
 
     def test_attributes(self):
         # Confirm that this can handle attrib dicts including np arrays.
-        attrib_one_two = Mock(
-            attributes={"one": np.arange(1), "two": np.arange(2)}
-        )
+        attrib_one_two = Mock(attributes={"one": np.arange(1), "two": np.arange(2)})
         attrib_three_four = Mock(
             attributes={"three": np.arange(3), "four": np.arange(4)}
         )
         input_list = [attrib_one_two, attrib_three_four]
-        result = metadata_filter(
-            input_list, attributes=attrib_one_two.attributes
-        )
+        result = metadata_filter(input_list, attributes=attrib_one_two.attributes)
         self.assertIn(attrib_one_two, result)
         self.assertNotIn(attrib_three_four, result)
 

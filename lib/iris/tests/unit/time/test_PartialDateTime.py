@@ -98,30 +98,22 @@ class _Test_operator:
         self._test_dt(PartialDateTime(), "null")
 
     def test_item1_lo(self):
-        self._test_dt(
-            PartialDateTime(year=2011, month=3, second=2), "item1_lo"
-        )
+        self._test_dt(PartialDateTime(year=2011, month=3, second=2), "item1_lo")
 
     def test_item1_hi(self):
         self._test_dt(PartialDateTime(year=2015, month=3, day=24), "item1_hi")
 
     def test_item2_lo(self):
-        self._test_dt(
-            PartialDateTime(year=2013, month=1, second=2), "item2_lo"
-        )
+        self._test_dt(PartialDateTime(year=2013, month=1, second=2), "item2_lo")
 
     def test_item2_hi(self):
         self._test_dt(PartialDateTime(year=2013, month=5, day=24), "item2_hi")
 
     def test_item3_lo(self):
-        self._test_dt(
-            PartialDateTime(year=2013, month=3, second=1), "item3_lo"
-        )
+        self._test_dt(PartialDateTime(year=2013, month=3, second=1), "item3_lo")
 
     def test_item3_hi(self):
-        self._test_dt(
-            PartialDateTime(year=2013, month=3, second=42), "item3_hi"
-        )
+        self._test_dt(PartialDateTime(year=2013, month=3, second=42), "item3_hi")
 
     def test_mix_hi_lo(self):
         self._test_dt(PartialDateTime(year=2015, month=1, day=24), "mix_hi_lo")
@@ -143,9 +135,7 @@ class _Test_operator:
         self._test_pdt(PartialDateTime(year=2013), "pdt_diff_fewer")
 
     def test_pdt_diff_more_fields(self):
-        self._test_pdt(
-            PartialDateTime(year=2013, day=24, hour=12), "pdt_diff_more"
-        )
+        self._test_pdt(PartialDateTime(year=2013, day=24, hour=12), "pdt_diff_more")
 
     def test_pdt_diff_no_fields(self):
         pdt1 = PartialDateTime()

@@ -25,9 +25,7 @@ class Test_convert_constraints(tests.IrisTest):
         self.assertTrue(pp_filter(stcube))
 
     def test_stash_object(self):
-        constraint = iris.AttributeConstraint(
-            STASH=STASH.from_msi("m01s03i236")
-        )
+        constraint = iris.AttributeConstraint(STASH=STASH.from_msi("m01s03i236"))
         pp_filter = _convert_constraints(constraint)
         stcube = mock.Mock(stash=STASH.from_msi("m01s03i236"))
         self.assertTrue(pp_filter(stcube))

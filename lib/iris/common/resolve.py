@@ -347,20 +347,14 @@ class Resolve:
         """
         from iris.cube import Cube
 
-        emsg = (
-            "{cls} requires {arg!r} argument to be a 'Cube', got {actual!r}."
-        )
+        emsg = "{cls} requires {arg!r} argument to be a 'Cube', got {actual!r}."
         clsname = self.__class__.__name__
 
         if not isinstance(lhs, Cube):
-            raise TypeError(
-                emsg.format(cls=clsname, arg="LHS", actual=type(lhs))
-            )
+            raise TypeError(emsg.format(cls=clsname, arg="LHS", actual=type(lhs)))
 
         if not isinstance(rhs, Cube):
-            raise TypeError(
-                emsg.format(cls=clsname, arg="RHS", actual=type(rhs))
-            )
+            raise TypeError(emsg.format(cls=clsname, arg="RHS", actual=type(rhs)))
 
         # Initialise the operand state.
         self.lhs_cube = lhs
@@ -428,9 +422,7 @@ class Resolve:
         try:
             # Determine whether the tgt cube shape and proposed new src
             # cube shape will successfully broadcast together.
-            self._broadcast_shape = broadcast_shapes(
-                tgt_cube.shape, new_src_shape
-            )
+            self._broadcast_shape = broadcast_shapes(tgt_cube.shape, new_src_shape)
         except ValueError:
             emsg = (
                 "Cannot resolve cubes, as a suitable transpose of the "
@@ -984,12 +976,8 @@ class Resolve:
 
         # Determine the src/tgt dimensions that are not mapped,
         # and not covered by any metadata.
-        src_free = set(src_dim_coverage.dims_free) & set(
-            src_aux_coverage.dims_free
-        )
-        tgt_free = set(tgt_dim_coverage.dims_free) & set(
-            tgt_aux_coverage.dims_free
-        )
+        src_free = set(src_dim_coverage.dims_free) & set(src_aux_coverage.dims_free)
+        tgt_free = set(tgt_dim_coverage.dims_free) & set(tgt_aux_coverage.dims_free)
 
         if src_free or tgt_free:
             # Determine the src/tgt dimensions that are not mapped.
@@ -1022,9 +1010,7 @@ class Resolve:
                 else:
 
                     def _filter(items):
-                        return list(
-                            filter(lambda item: item[1] == extent, items)
-                        )
+                        return list(filter(lambda item: item[1] == extent, items))
 
                     def _pop(item, items):
                         dim, _ = item
@@ -1088,9 +1074,7 @@ class Resolve:
                             break
 
         # Determine whether there are still unmapped src dimensions.
-        src_unmapped = (
-            set(range(src_cube.ndim)) - set(self.mapping) - set(free_mapping)
-        )
+        src_unmapped = set(range(src_cube.ndim)) - set(self.mapping) - set(free_mapping)
 
         if src_unmapped:
             plural = "s" if len(src_unmapped) > 1 else ""
@@ -1119,9 +1103,7 @@ class Resolve:
 
         """
         # Determine the common dim coordinate metadata coverage.
-        common_dim_metadata = [
-            item.metadata for item in self.category_common.items_dim
-        ]
+        common_dim_metadata = [item.metadata for item in self.category_common.items_dim]
 
         self.lhs_cube_dim_coverage = self._dim_coverage(
             self.lhs_cube,
@@ -1135,9 +1117,7 @@ class Resolve:
         )
 
         # Determine the common aux and scalar coordinate metadata coverage.
-        common_aux_metadata = [
-            item.metadata for item in self.category_common.items_aux
-        ]
+        common_aux_metadata = [item.metadata for item in self.category_common.items_aux]
         common_scalar_metadata = [
             item.metadata for item in self.category_common.items_scalar
         ]
@@ -1210,22 +1190,14 @@ class Resolve:
 
         # Use the dim coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
-        self.mapping.update(
-            self._dim_mapping(src_dim_coverage, tgt_dim_coverage)
-        )
-        logger.debug(
-            f"mapping common dim coordinates gives, mapping={self.mapping}"
-        )
+        self.mapping.update(self._dim_mapping(src_dim_coverage, tgt_dim_coverage))
+        logger.debug(f"mapping common dim coordinates gives, mapping={self.mapping}")
 
         # If necessary, use the aux coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
         if not self.mapped:
-            self.mapping.update(
-                self._aux_mapping(src_aux_coverage, tgt_aux_coverage)
-            )
-            logger.debug(
-                f"mapping common aux coordinates, mapping={self.mapping}"
-            )
+            self.mapping.update(self._aux_mapping(src_aux_coverage, tgt_aux_coverage))
+            logger.debug(f"mapping common aux coordinates, mapping={self.mapping}")
 
         if not self.mapped:
             # Attempt to complete the mapping using src/tgt free dimensions.
@@ -1253,15 +1225,9 @@ class Resolve:
         # Given the number of free dimensions, determine whether the
         # mapping requires to be reversed.
         # Only applies to equal src/tgt dimensionality.
-        src_free = set(src_dim_coverage.dims_free) & set(
-            src_aux_coverage.dims_free
-        )
-        tgt_free = set(tgt_dim_coverage.dims_free) & set(
-            tgt_aux_coverage.dims_free
-        )
-        free_flip = src_cube.ndim == tgt_cube.ndim and len(tgt_free) > len(
-            src_free
-        )
+        src_free = set(src_dim_coverage.dims_free) & set(src_aux_coverage.dims_free)
+        tgt_free = set(tgt_dim_coverage.dims_free) & set(tgt_aux_coverage.dims_free)
+        free_flip = src_cube.ndim == tgt_cube.ndim and len(tgt_free) > len(src_free)
 
         # Reverse the mapping direction.
         if broadcast_flip or free_flip:
@@ -1338,9 +1304,7 @@ class Resolve:
             tgt_aux_coverage,
         )
 
-        self._prepare_factory_payload(
-            tgt_cube, tgt_category_local, from_src=False
-        )
+        self._prepare_factory_payload(tgt_cube, tgt_category_local, from_src=False)
         self._prepare_factory_payload(src_cube, src_category_local)
 
     def _metadata_resolve(self):
@@ -1566,9 +1530,7 @@ class Resolve:
                         src_type = type(src_coord)
                         tgt_type = type(tgt_coord)
                         # Downcast to aux if there are mixed container types.
-                        container = (
-                            src_type if src_type is tgt_type else AuxCoord
-                        )
+                        container = src_type if src_type is tgt_type else AuxCoord
                         prepared_item = self._create_prepared_item(
                             src_coord,
                             tgt_item.dims,
@@ -1710,9 +1672,7 @@ class Resolve:
                         src = tgt = None
                         if from_src:
                             src = item.metadata
-                            dims = tuple(
-                                [self.mapping[dim] for dim in item.dims]
-                            )
+                            dims = tuple([self.mapping[dim] for dim in item.dims])
                         else:
                             tgt = item.metadata
                             dims = item.dims
@@ -1908,9 +1868,7 @@ class Resolve:
         # Determine whether there are tgt dimensions not mapped to by an
         # associated src dimension, and thus may be covered by any local
         # tgt dim coordinates.
-        extra_tgt_dims = set(range(tgt_dim_coverage.cube.ndim)) - set(
-            mapped_tgt_dims
-        )
+        extra_tgt_dims = set(range(tgt_dim_coverage.cube.ndim)) - set(mapped_tgt_dims)
 
         if LENIENT["maths"]:
             tgt_dims_conflict = set()
@@ -1942,9 +1900,7 @@ class Resolve:
 
             # Determine whether there are any tgt dims free to be mapped
             # by an available local tgt dim coordinate.
-            tgt_dims_unmapped = (
-                set(tgt_dim_coverage.dims_local) - tgt_dims_conflict
-            )
+            tgt_dims_unmapped = set(tgt_dim_coverage.dims_local) - tgt_dims_conflict
         else:
             # For strict maths, only local tgt dim coordinates covering
             # the extra dimensions of the tgt cube may be added.
@@ -1961,9 +1917,7 @@ class Resolve:
                     )
                     self.prepared_category.items_dim.append(prepared_item)
 
-    def _prepare_local_payload_scalar(
-        self, src_aux_coverage, tgt_aux_coverage
-    ):
+    def _prepare_local_payload_scalar(self, src_aux_coverage, tgt_aux_coverage):
         """
         Populate the ``items_scalar`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
         with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for each
@@ -2119,11 +2073,7 @@ class Resolve:
                 bounds = src_coord.bounds
 
         # Deal with coordinates spanning broadcast dimensions.
-        if (
-            points is None
-            and bounds is None
-            and src_coord.shape != tgt_coord.shape
-        ):
+        if points is None and bounds is None and src_coord.shape != tgt_coord.shape:
             # Check whether the src coordinate is broadcasting.
             dims = tuple([self.mapping[dim] for dim in src_dims])
             src_shape_broadcast = tuple([self.shape[dim] for dim in dims])
@@ -2158,9 +2108,7 @@ class Resolve:
 
         if points is None and bounds is None:
             # Note that, this also ensures shape equality.
-            eq_points = array_equal(
-                src_coord.points, tgt_coord.points, withnans=True
-            )
+            eq_points = array_equal(src_coord.points, tgt_coord.points, withnans=True)
             if eq_points:
                 points = src_coord.points
                 src_has_bounds = src_coord.has_bounds()
@@ -2168,9 +2116,7 @@ class Resolve:
 
                 if src_has_bounds and tgt_has_bounds:
                     src_bounds = src_coord.bounds
-                    eq_bounds = array_equal(
-                        src_bounds, tgt_coord.bounds, withnans=True
-                    )
+                    eq_bounds = array_equal(src_bounds, tgt_coord.bounds, withnans=True)
 
                     if eq_bounds:
                         bounds = src_bounds
@@ -2458,9 +2404,7 @@ class Resolve:
             result = Cube(data)
 
         # Add the combined cube metadata from both the candidate cubes.
-        result.metadata = self.lhs_cube.metadata.combine(
-            self.rhs_cube.metadata
-        )
+        result.metadata = self.lhs_cube.metadata.combine(self.rhs_cube.metadata)
 
         # Add the prepared dim coordinates.
         for item in self.prepared_category.items_dim:
@@ -2469,8 +2413,7 @@ class Resolve:
 
         # Add the prepared aux and scalar coordinates.
         prepared_aux_coords = (
-            self.prepared_category.items_aux
-            + self.prepared_category.items_scalar
+            self.prepared_category.items_aux + self.prepared_category.items_scalar
         )
         for item in prepared_aux_coords:
             # These items are "special"

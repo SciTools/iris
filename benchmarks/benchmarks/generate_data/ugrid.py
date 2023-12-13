@@ -15,9 +15,7 @@ from .stock import (
 )
 
 
-def generate_cube_like_2d_cubesphere(
-    n_cube: int, with_mesh: bool, output_path: str
-):
+def generate_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool, output_path: str):
     """
     Construct and save to file an LFRIc cubesphere-like cube for a given
     cubesphere size, *or* a simpler structured (UM-like) cube of equivalent
@@ -71,9 +69,7 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
     files in our common testdata directory.
 
     """
-    identifying_filename = (
-        f"cube_like_2d_cubesphere_C{n_cube}_Mesh={with_mesh}.nc"
-    )
+    identifying_filename = f"cube_like_2d_cubesphere_C{n_cube}_Mesh={with_mesh}.nc"
     filepath = BENCHMARK_DATA / identifying_filename
     if not filepath.exists():
         # Create the required testfile, by running the generation code remotely
@@ -151,9 +147,9 @@ def make_cube_like_umfield(xy_dims):
 
         save(cube, save_path_)
 
-    save_path = (
-        BENCHMARK_DATA / f"make_cube_like_umfield_{xy_dims}"
-    ).with_suffix(".nc")
+    save_path = (BENCHMARK_DATA / f"make_cube_like_umfield_{xy_dims}").with_suffix(
+        ".nc"
+    )
     if not REUSE_DATA or not save_path.is_file():
         _ = run_function_elsewhere(_external, xy_dims, str(save_path))
     with PARSE_UGRID_ON_LOAD.context():

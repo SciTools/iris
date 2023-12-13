@@ -16,10 +16,7 @@ import numpy.ma as ma
 
 from iris.coords import DimCoord
 from iris.plot import _check_bounds_contiguity_and_mask
-from iris.tests.stock import (
-    make_bounds_discontiguous_at_point,
-    sample_2d_latlons,
-)
+from iris.tests.stock import make_bounds_discontiguous_at_point, sample_2d_latlons
 
 
 @tests.skip_plot
@@ -91,9 +88,7 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         msg = "coordinate are not contiguous"
         cube.data[3, 4] = ma.nomask
         with self.assertRaisesRegex(ValueError, msg):
-            _check_bounds_contiguity_and_mask(
-                cube.coord("longitude"), cube.data
-            )
+            _check_bounds_contiguity_and_mask(cube.coord("longitude"), cube.data)
 
 
 if __name__ == "__main__":

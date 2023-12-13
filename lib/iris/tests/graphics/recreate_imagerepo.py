@@ -40,9 +40,7 @@ def update_json(baseline_image_dir: Path, dry_run: bool = False):
                 print(key)
                 print(f"\t{old_val} -> {new_val}")
             else:
-                difference = hex_to_hash(str(old_val)) - hex_to_hash(
-                    str(new_val)
-                )
+                difference = hex_to_hash(str(old_val)) - hex_to_hash(str(new_val))
                 if difference > 0:
                     print(key)
                     print(f"\t{old_val} -> {new_val} ({difference})")
@@ -52,18 +50,16 @@ def update_json(baseline_image_dir: Path, dry_run: bool = False):
 
 
 if __name__ == "__main__":
-    default_baseline_image_dir = Path(
-        iris.tests.IrisTest.get_data_path("images")
+    default_baseline_image_dir = Path(iris.tests.IrisTest.get_data_path("images"))
+    description = (
+        "Update imagerepo.json based on contents of the baseline image directory"
     )
-    description = "Update imagerepo.json based on contents of the baseline image directory"
     formatter_class = argparse.RawTextHelpFormatter
     parser = argparse.ArgumentParser(
         description=description, formatter_class=formatter_class
     )
     help = "path to iris tests result image directory (default: %(default)s)"
-    parser.add_argument(
-        "--image-dir", default=default_baseline_image_dir, help=help
-    )
+    parser.add_argument("--image-dir", default=default_baseline_image_dir, help=help)
     help = "dry run (don't actually update imagerepo.json)"
     parser.add_argument("--dry-run", action="store_true", help=help)
     args = parser.parse_args()

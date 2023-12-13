@@ -40,9 +40,7 @@ class Test(tests.IrisTest):
         def func():
             pass
 
-        emsg = (
-            "Invalid lenient client, got both arguments and keyword arguments"
-        )
+        emsg = "Invalid lenient client, got both arguments and keyword arguments"
         with self.assertRaisesRegex(AssertionError, emsg):
             _lenient_client(func, services=func)
 

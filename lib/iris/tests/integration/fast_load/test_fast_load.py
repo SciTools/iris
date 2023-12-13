@@ -227,8 +227,7 @@ class Mixin_FieldTest:
                 vals = np.arange(n_flds + 2)  # Note allowance
             vals = arg_vals(arg, vals)
             coords = [
-                None if val is None else DimCoord([val], units=unit)
-                for val in vals
+                None if val is None else DimCoord([val], units=unit) for val in vals
             ]
             # Apply names separately, as 'pressure' is not a standard name.
             for coord in coords:
@@ -321,9 +320,7 @@ class MixinCallDetails:
         file = self.save_fieldcubes(flds)
         airtemp_flds = [fld for fld in flds if fld.name() == "air_temperature"]
         stash_attribute = airtemp_flds[0].attributes["STASH"]
-        results = iris.load(
-            file, iris.AttributeConstraint(STASH=stash_attribute)
-        )
+        results = iris.load(file, iris.AttributeConstraint(STASH=stash_attribute))
         expected = CubeList(airtemp_flds).merge()
         self.assertEqual(results, expected)
 
@@ -529,19 +526,13 @@ class MixinProblemCases:
         # We'd really like to fix this one...
         (single_timepoint_fld,) = self.fields(c_t="1")
         multi_timepoint_flds = self.fields(c_t="23")
-        file_single = self.save_fieldcubes(
-            [single_timepoint_fld], basename="single"
-        )
-        file_multi = self.save_fieldcubes(
-            multi_timepoint_flds, basename="multi"
-        )
+        file_single = self.save_fieldcubes([single_timepoint_fld], basename="single")
+        file_multi = self.save_fieldcubes(multi_timepoint_flds, basename="multi")
 
         results = iris.load((file_single, file_multi))
         if not self.do_fast_loads:
             # This is what we'd LIKE to get (what iris.load gives).
-            expected = CubeList(
-                multi_timepoint_flds + [single_timepoint_fld]
-            ).merge()
+            expected = CubeList(multi_timepoint_flds + [single_timepoint_fld]).merge()
         else:
             # This is what we ACTUALLY get at present.
             # It can't combine the scalar and vector time coords.
@@ -576,9 +567,7 @@ class MixinProblemCases:
             # It's a bit tricky to arrange the existing data like that.
             # Do it by hacking the time values to allow merge, and then fixing
             # up the time
-            old_t1, old_t2 = (
-                fld.coord("time").points[0] for fld in (flds[0], flds[2])
-            )
+            old_t1, old_t2 = (fld.coord("time").points[0] for fld in (flds[0], flds[2]))
             for i_fld, fld in enumerate(flds):
                 # Hack the phenomena to all look like the first one.
                 fld.rename("air_temperature")
@@ -657,17 +646,13 @@ class TestCallDetails__Fast(Mixin_FieldTest, MixinCallDetails, tests.IrisTest):
     do_fast_loads = True
 
 
-class TestDimsAndOrdering__Iris(
-    Mixin_FieldTest, MixinDimsAndOrdering, tests.IrisTest
-):
+class TestDimsAndOrdering__Iris(Mixin_FieldTest, MixinDimsAndOrdering, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'dimensions and ordering' tests with *normal* loading.
     do_fast_loads = False
 
 
-class TestDimsAndOrdering__Fast(
-    Mixin_FieldTest, MixinDimsAndOrdering, tests.IrisTest
-):
+class TestDimsAndOrdering__Fast(Mixin_FieldTest, MixinDimsAndOrdering, tests.IrisTest):
     # Finally, an actual test-class (unittest.TestCase) :
     # run the 'dimensions and ordering' tests with *FAST* loading.
     do_fast_loads = True

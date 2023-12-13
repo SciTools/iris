@@ -35,10 +35,7 @@ def _basic_coord_system_rules(cube, pp):
         The PP field with updated metadata.
 
     """
-    if (
-        cube.coord_system("GeogCS") is not None
-        or cube.coord_system(None) is None
-    ):
+    if cube.coord_system("GeogCS") is not None or cube.coord_system(None) is None:
         pp.bplat = 90
         pp.bplon = 0
     elif cube.coord_system("RotatedGeogCS") is not None:
@@ -126,17 +123,11 @@ def _general_time_rules(cube, pp):
         pp.t2 = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
     # Forecast.
-    if (
-        time_coord is not None
-        and not time_coord.has_bounds()
-        and fp_coord is not None
-    ):
+    if time_coord is not None and not time_coord.has_bounds() and fp_coord is not None:
         pp.lbtim.ia = 0
         pp.lbtim.ib = 1
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
-        pp.t2 = time_coord.units.num2date(
-            time_coord.points[0] - fp_coord.points[0]
-        )
+        pp.t2 = time_coord.units.num2date(time_coord.points[0] - fp_coord.points[0])
         pp.lbft = fp_coord.points[0]
 
     # Time mean (non-climatological).
@@ -166,12 +157,8 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ib = 2
         pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
         pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-        stop = time_coord.units.convert(
-            time_coord.bounds[0, 1], "hours since epoch"
-        )
-        start = frt_coord.units.convert(
-            frt_coord.points[0], "hours since epoch"
-        )
+        stop = time_coord.units.convert(time_coord.bounds[0, 1], "hours since epoch")
+        start = frt_coord.units.convert(frt_coord.points[0], "hours since epoch")
         pp.lbft = stop - start
 
     if (
@@ -238,12 +225,8 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
 
     if time_coord is not None and time_coord.has_bounds():
-        lower_bound_yr = time_coord.units.num2date(
-            time_coord.bounds[0, 0]
-        ).year
-        upper_bound_yr = time_coord.units.num2date(
-            time_coord.bounds[0, 1]
-        ).year
+        lower_bound_yr = time_coord.units.num2date(time_coord.bounds[0, 0]).year
+        upper_bound_yr = time_coord.units.num2date(time_coord.bounds[0, 1]).year
     else:
         lower_bound_yr = None
         upper_bound_yr = None
@@ -631,10 +614,7 @@ def _lbproc_rules(cube, pp):
 
     if cube.attributes.get("ukmo__process_flags", None):
         pp.lbproc += sum(
-            [
-                LBPROC_MAP[name]
-                for name in cube.attributes["ukmo__process_flags"]
-            ]
+            [LBPROC_MAP[name] for name in cube.attributes["ukmo__process_flags"]]
         )
 
     # Zonal-mean: look for a CellMethod which is a "mean" over "longitude" or
@@ -863,10 +843,7 @@ def _all_other_rules(cube, pp):
         pp.lbfc = CF_TO_LBFC[check_items]
 
     # Set field code.
-    if (
-        "STASH" in cube.attributes
-        and str(cube.attributes["STASH"]) in STASH_TRANS
-    ):
+    if "STASH" in cube.attributes and str(cube.attributes["STASH"]) in STASH_TRANS:
         pp.lbfc = STASH_TRANS[str(cube.attributes["STASH"])].field_code
 
     # Set ensemble member number.

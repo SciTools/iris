@@ -331,9 +331,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
         rhs = np.roll(mid, -1, 2)
         if not x_coord:
             # Create coords for result cube : with no bounds.
-            y_coord = iris.coords.AuxCoord(
-                x, standard_name="latitude", units="degrees"
-            )
+            y_coord = iris.coords.AuxCoord(x, standard_name="latitude", units="degrees")
             x_coord = iris.coords.AuxCoord(
                 y, standard_name="longitude", units="degrees"
             )
@@ -355,14 +353,9 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
             lhs_xyz = 0.5 * (xyz[..., 0] + xyz[..., 3])
             rhs_xyz = 0.5 * (xyz[..., 1] + xyz[..., 2])
         else:
-            msg = (
-                'unrecognised cell_angle_boundpoints of "{}", '
-                "must be one of {}"
-            )
+            msg = 'unrecognised cell_angle_boundpoints of "{}", ' "must be one of {}"
             raise ValueError(
-                msg.format(
-                    cell_angle_boundpoints, list(angle_boundpoints_vals.keys())
-                )
+                msg.format(cell_angle_boundpoints, list(angle_boundpoints_vals.keys()))
             )
         if not x_coord:
             # Create bounded coords for result cube.
@@ -400,9 +393,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
     return result
 
 
-def rotate_grid_vectors(
-    u_cube, v_cube, grid_angles_cube=None, grid_angles_kwargs=None
-):
+def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwargs=None):
     """
     Rotate distance vectors from grid-oriented to true-latlon-oriented.
 

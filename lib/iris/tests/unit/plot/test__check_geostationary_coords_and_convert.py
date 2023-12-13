@@ -31,8 +31,7 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
 
         # Expected arrays if conversion takes place.
         self.x_converted, self.y_converted = (
-            i * geostationary_altitude
-            for i in (self.x_original, self.y_original)
+            i * geostationary_altitude for i in (self.x_original, self.y_original)
         )
 
     def _test(self, geostationary=True):

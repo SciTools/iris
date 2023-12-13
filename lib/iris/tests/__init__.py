@@ -124,16 +124,12 @@ def main():
                 11,
                 "                       NOTE: To compare results of failing tests, ",
             )
-            lines.insert(
-                12, "                             use idiff.py instead"
-            )
+            lines.insert(12, "                             use idiff.py instead")
             lines.insert(
                 13,
                 "  --data-files-used    Save a list of files used to a temporary file",
             )
-            lines.insert(
-                14, "  -m                   Create missing test results"
-            )
+            lines.insert(14, "  -m                   Create missing test results")
             print("\n".join(lines))
     else:
         unittest.main()
@@ -445,9 +441,7 @@ class IrisTest(unittest.TestCase):
         reference_path = self.get_result_path(reference_filename)
         self._check_same(xml, reference_path)
 
-    def assertTextFile(
-        self, source_filename, reference_filename, desc="text file"
-    ):
+    def assertTextFile(self, source_filename, reference_filename, desc="text file"):
         """Check if two text files are the same, printing any diffs."""
         with open(source_filename) as source_file:
             source_text = source_file.readlines()
@@ -477,9 +471,7 @@ class IrisTest(unittest.TestCase):
             with open(reference_path, "r") as reference_file:
                 stats = json.load(reference_file)
                 self.assertEqual(stats.get("shape", []), list(data.shape))
-                self.assertEqual(
-                    stats.get("masked", False), ma.is_masked(data)
-                )
+                self.assertEqual(stats.get("masked", False), ma.is_masked(data))
                 nstats = np.array(
                     (
                         stats.get("mean", 0.0),
@@ -549,9 +541,7 @@ class IrisTest(unittest.TestCase):
             reference_path = self.result_path(None, "txt")
         else:
             reference_path = self.get_result_path(reference_filename)
-        self._check_same(
-            string, reference_path, type_comparison_name="Strings"
-        )
+        self._check_same(string, reference_path, type_comparison_name="Strings")
 
     def assertRepr(self, obj, reference_filename):
         self.assertString(repr(obj), reference_filename)
@@ -562,9 +552,7 @@ class IrisTest(unittest.TestCase):
                 reference = "".join(
                     part.decode("utf-8") for part in reference_fh.readlines()
                 )
-            self._assert_str_same(
-                reference, item, reference_path, type_comparison_name
-            )
+            self._assert_str_same(reference, item, reference_path, type_comparison_name)
         else:
             self._ensure_folder(reference_path)
             with open(reference_path, "wb") as reference_fh:
@@ -583,9 +571,7 @@ class IrisTest(unittest.TestCase):
         doc = iris.cube.Cube._sort_xml_attrs(doc)
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = self.get_result_path(reference_filename)
-        self._check_same(
-            pretty_xml, reference_path, type_comparison_name="XML"
-        )
+        self._check_same(pretty_xml, reference_path, type_comparison_name="XML")
 
     def assertArrayEqual(self, a, b, err_msg=""):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
@@ -652,9 +638,7 @@ class IrisTest(unittest.TestCase):
     def assertArrayAlmostEqual(self, a, b, decimal=6):
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
 
-    assertMaskedArrayAlmostEqual = staticmethod(
-        assert_masked_array_almost_equal
-    )
+    assertMaskedArrayAlmostEqual = staticmethod(assert_masked_array_almost_equal)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
         """
@@ -771,9 +755,7 @@ class IrisTest(unittest.TestCase):
 
     def _check_reference_file(self, reference_path):
         reference_exists = os.path.isfile(reference_path)
-        if not (
-            reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")
-        ):
+        if not (reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")):
             msg = "Missing test result: {}".format(reference_path)
             raise AssertionError(msg)
         return reference_exists
@@ -863,15 +845,11 @@ class IrisTest(unittest.TestCase):
 
         """
         if not isinstance(lhs, Mapping):
-            emsg = (
-                f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
-            )
+            emsg = f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
             self.fail(emsg)
 
         if not isinstance(rhs, Mapping):
-            emsg = (
-                f"Provided RHS argument is not a 'Mapping', got {type(rhs)}."
-            )
+            emsg = f"Provided RHS argument is not a 'Mapping', got {type(rhs)}."
             self.fail(emsg)
 
         if set(lhs.keys()) != set(rhs.keys()):
@@ -899,9 +877,7 @@ class IrisTest(unittest.TestCase):
                     raise AssertionError(emsg)
 
                 self.assertMaskedArrayEqual(lvalue, rvalue)
-            elif isinstance(lvalue, np.ndarray) or isinstance(
-                rvalue, np.ndarray
-            ):
+            elif isinstance(lvalue, np.ndarray) or isinstance(rvalue, np.ndarray):
                 if not isinstance(lvalue, np.ndarray):
                     emsg = (
                         f"Dictionary key {key!r} values are not equal, "
@@ -930,9 +906,7 @@ class IrisTest(unittest.TestCase):
     def assertEqualAndKind(self, value, expected):
         # Check a value, and also its type 'kind' = float/integer/string.
         self.assertEqual(value, expected)
-        self.assertEqual(
-            np.array(value).dtype.kind, np.array(expected).dtype.kind
-        )
+        self.assertEqual(np.array(value).dtype.kind, np.array(expected).dtype.kind)
 
 
 get_data_path = IrisTest.get_data_path
@@ -960,9 +934,7 @@ def skip_data(fn):
         or os.environ.get("IRIS_TEST_NO_DATA")
     )
 
-    skip = unittest.skipIf(
-        condition=no_data, reason="Test(s) require external data."
-    )
+    skip = unittest.skipIf(condition=no_data, reason="Test(s) require external data.")
 
     return skip(fn)
 
@@ -978,9 +950,7 @@ def skip_gdal(fn):
             ...
 
     """
-    skip = unittest.skipIf(
-        condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'."
-    )
+    skip = unittest.skipIf(condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'.")
     return skip(fn)
 
 
@@ -1025,7 +995,7 @@ def no_warnings(func):
         self.assertEqual(
             0,
             warn.call_count,
-            ("Got unexpected warnings." " \n{}".format(warn.call_args_list)),
+            ("Got unexpected warnings.\n{}".format(warn.call_args_list)),
         )
         return result
 

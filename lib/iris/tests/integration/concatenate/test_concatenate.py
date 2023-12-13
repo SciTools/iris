@@ -89,16 +89,10 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
     def create_cube(self):
         data = np.arange(4).reshape(2, 2)
 
-        lat = iris.coords.DimCoord(
-            [0, 30], standard_name="latitude", units="degrees"
-        )
-        lon = iris.coords.DimCoord(
-            [0, 15], standard_name="longitude", units="degrees"
-        )
+        lat = iris.coords.DimCoord([0, 30], standard_name="latitude", units="degrees")
+        lon = iris.coords.DimCoord([0, 15], standard_name="longitude", units="degrees")
         height = iris.coords.AuxCoord([1.5], standard_name="height", units="m")
-        t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="standard"
-        )
+        t_unit = cf_units.Unit("hours since 1970-01-01 00:00:00", calendar="standard")
         time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
 
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -132,18 +126,10 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
     def create_cube(self):
         data = np.arange(4).reshape(2, 2)
 
-        lat = iris.coords.DimCoord(
-            [0, 30], standard_name="latitude", units="degrees"
-        )
-        volume = iris.coords.CellMeasure(
-            [0, 15], measure="volume", long_name="volume"
-        )
-        area = iris.coords.CellMeasure(
-            [1.5], standard_name="height", units="m"
-        )
-        t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="standard"
-        )
+        lat = iris.coords.DimCoord([0, 30], standard_name="latitude", units="degrees")
+        volume = iris.coords.CellMeasure([0, 15], measure="volume", long_name="volume")
+        area = iris.coords.CellMeasure([1.5], standard_name="height", units="m")
+        t_unit = cf_units.Unit("hours since 1970-01-01 00:00:00", calendar="standard")
         time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
 
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -177,16 +163,10 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
     def create_cube(self):
         data = np.arange(4).reshape(2, 2)
 
-        lat = iris.coords.DimCoord(
-            [0, 30], standard_name="latitude", units="degrees"
-        )
+        lat = iris.coords.DimCoord([0, 30], standard_name="latitude", units="degrees")
         quality = iris.coords.AncillaryVariable([0, 15], long_name="quality")
-        height = iris.coords.AncillaryVariable(
-            [1.5], standard_name="height", units="m"
-        )
-        t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="standard"
-        )
+        height = iris.coords.AncillaryVariable([1.5], standard_name="height", units="m")
+        t_unit = cf_units.Unit("hours since 1970-01-01 00:00:00", calendar="standard")
         time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
 
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -223,9 +203,7 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
 
         # DimCoords
         sigma = iris.coords.DimCoord([0.0, 10.0], var_name="sigma", units="1")
-        t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="standard"
-        )
+        t_unit = cf_units.Unit("hours since 1970-01-01 00:00:00", calendar="standard")
         time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
 
         # AtmosphereSigmaFactory (does not span concatenated dim)
@@ -238,9 +216,7 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
         # HybridHeightFactory (span concatenated dim)
         delta = iris.coords.AuxCoord(10.0, var_name="delta", units="m")
         orog = iris.coords.AuxCoord(data, var_name="orog", units="m")
-        aux_factories.append(
-            iris.aux_factory.HybridHeightFactory(delta, sigma, orog)
-        )
+        aux_factories.append(iris.aux_factory.HybridHeightFactory(delta, sigma, orog))
 
         dim_coords_and_dims = [(time, 0), (sigma, 1)]
         aux_coords_and_dims = [
@@ -351,17 +327,11 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
 class Test_anonymous_dims(tests.IrisTest):
     def setUp(self):
         data = np.arange(12).reshape(2, 3, 2)
-        self.cube = iris.cube.Cube(
-            data, standard_name="air_temperature", units="K"
-        )
+        self.cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
 
         # Time coord
-        t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="standard"
-        )
-        t_coord = iris.coords.DimCoord(
-            [0, 6], standard_name="time", units=t_unit
-        )
+        t_unit = cf_units.Unit("hours since 1970-01-01 00:00:00", calendar="standard")
+        t_coord = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
         self.cube.add_dim_coord(t_coord, 0)
 
         # Lats and lons

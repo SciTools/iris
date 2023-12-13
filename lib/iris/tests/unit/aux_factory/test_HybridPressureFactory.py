@@ -25,9 +25,7 @@ class Test___init__(tests.IrisTest):
     def setUp(self):
         self.delta = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
         self.sigma = mock.Mock(units=cf_units.Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(
-            units=cf_units.Unit("Pa"), nbounds=0
-        )
+        self.surface_air_pressure = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
 
     def test_insufficient_coords(self):
         with self.assertRaises(ValueError):
@@ -126,9 +124,7 @@ class Test_dependencies(tests.IrisTest):
     def setUp(self):
         self.delta = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
         self.sigma = mock.Mock(units=cf_units.Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(
-            units=cf_units.Unit("Pa"), nbounds=0
-        )
+        self.surface_air_pressure = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
 
     def test_value(self):
         kwargs = dict(
@@ -143,18 +139,14 @@ class Test_dependencies(tests.IrisTest):
 class Test_make_coord(tests.IrisTest):
     @staticmethod
     def coords_dims_func(coord):
-        mapping = dict(
-            level_pressure=(0,), sigma=(0,), surface_air_pressure=(1, 2)
-        )
+        mapping = dict(level_pressure=(0,), sigma=(0,), surface_air_pressure=(1, 2))
         return mapping[coord.name()]
 
     def setUp(self):
         self.delta = iris.coords.DimCoord(
             [0.0, 1.0, 2.0], long_name="level_pressure", units="Pa"
         )
-        self.sigma = iris.coords.DimCoord(
-            [1.0, 0.9, 0.8], long_name="sigma", units="1"
-        )
+        self.sigma = iris.coords.DimCoord([1.0, 0.9, 0.8], long_name="sigma", units="1")
         self.surface_air_pressure = iris.coords.AuxCoord(
             np.arange(4).reshape(2, 2), "surface_air_pressure", units="Pa"
         )
@@ -248,9 +240,7 @@ class Test_update(tests.IrisTest):
     def setUp(self):
         self.delta = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
         self.sigma = mock.Mock(units=cf_units.Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(
-            units=cf_units.Unit("Pa"), nbounds=0
-        )
+        self.surface_air_pressure = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
 
         self.factory = HybridPressureFactory(
             delta=self.delta,

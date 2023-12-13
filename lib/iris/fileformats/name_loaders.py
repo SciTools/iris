@@ -26,9 +26,7 @@ NAMEII_FIELD_DATETIME_FORMAT = "%H%M%Z %d/%m/%Y"
 NAMEII_TIMESERIES_DATETIME_FORMAT = "%d/%m/%Y  %H:%M:%S"
 
 
-NAMECoord = collections.namedtuple(
-    "NAMECoord", ["name", "dimension", "values"]
-)
+NAMECoord = collections.namedtuple("NAMECoord", ["name", "dimension", "values"])
 
 
 def _split_name_and_units(name):
@@ -138,17 +136,13 @@ def _build_lat_lon_for_NAME_field(
         step = header["X grid resolution"]
         count = header["X grid size"]
         pts = start + np.arange(count, dtype=np.float64) * step
-        lat_lon = NAMECoord(
-            name=coord_names[0], dimension=dimindex, values=pts
-        )
+        lat_lon = NAMECoord(name=coord_names[0], dimension=dimindex, values=pts)
     else:
         start = header["Y grid origin"]
         step = header["Y grid resolution"]
         count = header["Y grid size"]
         pts = start + np.arange(count, dtype=np.float64) * step
-        lat_lon = NAMECoord(
-            name=coord_names[1], dimension=dimindex, values=pts
-        )
+        lat_lon = NAMECoord(name=coord_names[1], dimension=dimindex, values=pts)
 
     return lat_lon
 
@@ -187,12 +181,8 @@ def _build_lat_lon_for_NAME_timeseries(column_headings):
                 new_headings.append(heading)
         column_headings[key] = new_headings
 
-    lon = NAMECoord(
-        name="longitude", dimension=None, values=column_headings["X"]
-    )
-    lat = NAMECoord(
-        name="latitude", dimension=None, values=column_headings["Y"]
-    )
+    lon = NAMECoord(name="longitude", dimension=None, values=column_headings["X"])
+    lat = NAMECoord(name="latitude", dimension=None, values=column_headings["Y"])
 
     return lat, lon
 
@@ -204,9 +194,7 @@ def _calc_integration_period(time_avgs):
 
     """
     integration_periods = []
-    pattern = re.compile(
-        r"\s*(\d{1,2}day)?\s*(\d{1,2}hr)?\s*(\d{1,2}min)?\s*(\w*)\s*"
-    )
+    pattern = re.compile(r"\s*(\d{1,2}day)?\s*(\d{1,2}hr)?\s*(\d{1,2}min)?\s*(\w*)\s*")
     for time_str in time_avgs:
         days = 0
         hours = 0
@@ -272,9 +260,7 @@ def _parse_units(units):
     try:
         units = cf_units.Unit(units)
     except ValueError:
-        warnings.warn(
-            "Unknown units: {!r}".format(units), category=IrisLoadWarning
-        )
+        warnings.warn("Unknown units: {!r}".format(units), category=IrisLoadWarning)
         units = cf_units.Unit(None)
 
     return units
@@ -404,9 +390,7 @@ def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
     return coord
 
 
-def _generate_cubes(
-    header, column_headings, coords, data_arrays, cell_methods=None
-):
+def _generate_cubes(header, column_headings, coords, data_arrays, cell_methods=None):
     """
     Yield :class:`iris.cube.Cube` instances given
     the headers, column headings, coords and data_arrays extracted
@@ -423,9 +407,7 @@ def _generate_cubes(
         cube = iris.cube.Cube(data_array)
 
         # Determine the name and units.
-        name = "{} {}".format(
-            field_headings["Species"], field_headings["Quantity"]
-        )
+        name = "{} {}".format(field_headings["Species"], field_headings["Quantity"])
         name = name.upper().replace(" ", "_")
         cube.rename(name)
 
@@ -438,9 +420,7 @@ def _generate_cubes(
         # level, time etc.)
         if "Z" in field_headings:
             (upper_bound,) = [
-                field_headings["... to [Z]"]
-                if "... to [Z]" in field_headings
-                else None
+                field_headings["... to [Z]"] if "... to [Z]" in field_headings else None
             ]
             (lower_bound,) = [
                 field_headings["... from [Z]"]
@@ -511,10 +491,7 @@ def _generate_cubes(
                     )
                 if coord.name == "height" or coord.name == "altitude":
                     icoord.long_name = long_name
-                if (
-                    coord.name == "time"
-                    and "Av or Int period" in field_headings
-                ):
+                if coord.name == "time" and "Av or Int period" in field_headings:
                     dt = coord.values - field_headings["Av or Int period"]
                     bnds = time_unit.date2num(np.vstack((dt, coord.values)).T)
                     icoord.bounds = bnds.astype(float)
@@ -528,10 +505,7 @@ def _generate_cubes(
                     coord_system=coord_sys,
                     units=coord_units,
                 )
-                if (
-                    coord.name == "time"
-                    and "Av or Int period" in field_headings
-                ):
+                if coord.name == "time" and "Av or Int period" in field_headings:
                     dt = coord.values - field_headings["Av or Int period"]
                     bnds = time_unit.date2num(np.vstack((dt, coord.values)).T)
                     icoord.bounds = bnds[i, :].astype(float)
@@ -612,9 +586,7 @@ def _build_cell_methods(av_or_ints, coord):
         else:
             cell_method = None
             msg = "Unknown {} statistic: {!r}. Unable to create cell method."
-            warnings.warn(
-                msg.format(coord, av_or_int), category=IrisLoadWarning
-            )
+            warnings.warn(msg.format(coord, av_or_int), category=IrisLoadWarning)
         cell_methods.append(cell_method)  # NOTE: this can be a None
     return cell_methods
 
@@ -698,17 +670,11 @@ def load_NAMEIII_field(filename):
             values=np.array(column_headings["Time"]),
         )
 
-        cell_methods = _build_cell_methods(
-            column_headings["Time Av or Int"], tdim.name
-        )
+        cell_methods = _build_cell_methods(column_headings["Time Av or Int"], tdim.name)
 
         # Build regular latitude and longitude coordinates.
-        lon = _build_lat_lon_for_NAME_field(
-            header, 1, "X", coord_names=coord_names
-        )
-        lat = _build_lat_lon_for_NAME_field(
-            header, 0, "Y", coord_names=coord_names
-        )
+        lon = _build_lat_lon_for_NAME_field(header, 1, "X", coord_names=coord_names)
+        lat = _build_lat_lon_for_NAME_field(header, 0, "Y", coord_names=coord_names)
 
         coords = [lon, lat, tdim]
 
@@ -717,9 +683,7 @@ def load_NAMEIII_field(filename):
         shape = (header["Y grid size"], header["X grid size"])
         data_arrays = _read_data_arrays(file_handle, n_arrays, shape)
 
-    return _generate_cubes(
-        header, column_headings, coords, data_arrays, cell_methods
-    )
+    return _generate_cubes(header, column_headings, coords, data_arrays, cell_methods)
 
 
 def load_NAMEII_field(filename):
@@ -782,9 +746,7 @@ def load_NAMEII_field(filename):
             if matches:
                 if len(matches.group(1)) > 0:
                     hours = float(matches.group(1))
-            column_headings["Av or Int period"].append(
-                datetime.timedelta(hours=hours)
-            )
+            column_headings["Av or Int period"].append(datetime.timedelta(hours=hours))
 
         # Build a time coordinate.
         tdim = NAMECoord(
@@ -793,9 +755,7 @@ def load_NAMEII_field(filename):
             values=np.array(column_headings["Time"]),
         )
 
-        cell_methods = _build_cell_methods(
-            column_headings["Time Av or Int"], tdim.name
-        )
+        cell_methods = _build_cell_methods(column_headings["Time Av or Int"], tdim.name)
 
         # Build regular latitude and longitude coordinates.
         lon = _build_lat_lon_for_NAME_field(header, 1, "X")
@@ -811,9 +771,7 @@ def load_NAMEII_field(filename):
         shape = (header["Y grid size"], header["X grid size"])
         data_arrays = _read_data_arrays(file_handle, n_arrays, shape)
 
-    return _generate_cubes(
-        header, column_headings, coords, data_arrays, cell_methods
-    )
+    return _generate_cubes(header, column_headings, coords, data_arrays, cell_methods)
 
 
 def load_NAMEIII_timeseries(filename):
@@ -960,9 +918,7 @@ def load_NAMEII_timeseries(filename):
 
             # Time is stored in the first two columns.
             t = vals[0].strip() + " " + vals[1].strip()
-            dt = datetime.datetime.strptime(
-                t, NAMEII_TIMESERIES_DATETIME_FORMAT
-            )
+            dt = datetime.datetime.strptime(t, NAMEII_TIMESERIES_DATETIME_FORMAT)
             time_list.append(dt)
 
             # Populate the data arrays.
@@ -1089,9 +1045,7 @@ def load_NAMEIII_version2(filename):
         # Make a list of data lists to hold the data
         # for each column.(aimed at T-Z data)
         data_lists = [[] for i in range(header["Number of field cols"])]
-        coord_lists = [
-            [] for i in range(header["Number of preliminary cols"] - 1)
-        ]
+        coord_lists = [[] for i in range(header["Number of preliminary cols"] - 1)]
 
         # Iterate over the remaining lines which represent the data in a
         # column form.
@@ -1214,9 +1168,7 @@ def load_NAMEIII_trajectory(filename):
         A generator :class:`iris.cube.Cube` instances.
 
     """
-    time_unit = cf_units.Unit(
-        "hours since epoch", calendar=cf_units.CALENDAR_STANDARD
-    )
+    time_unit = cf_units.Unit("hours since epoch", calendar=cf_units.CALENDAR_STANDARD)
 
     with open(filename, "r") as infile:
         header = read_header(infile)

@@ -55,9 +55,7 @@ class _UnstructuredArrayException(Exception):
     """
 
 
-class ArrayStructure(
-    namedtuple("ArrayStructure", ["stride", "unique_ordered_values"])
-):
+class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_values"])):
     """
     Represents the identified structure of an array, where stride is the
     step between each unique value being seen in order in the flattened
@@ -113,9 +111,7 @@ class ArrayStructure(
 
         result = NotImplemented
         if stride is not None or arr is not None:
-            result = stride == self.stride and np.all(
-                self.unique_ordered_values == arr
-            )
+            result = stride == self.stride and np.all(self.unique_ordered_values == arr)
         return result
 
     def __ne__(self, other):
@@ -159,9 +155,7 @@ class ArrayStructure(
 
         """
         if original_array.shape[0] != np.prod(target_shape):
-            raise ValueError(
-                "Original array and target shape do not " "match up."
-            )
+            raise ValueError("Original array and target shape do not match up.")
         stride_product = 1
 
         result = None
@@ -182,15 +176,12 @@ class ArrayStructure(
             # given shape? If so, reshape it back to the target shape,
             # then index out any dimensions which are constant.
             if self.stride == stride_product and length == self.size:
-                vector = original_array.reshape(
-                    target_shape + (-1,), order=order
-                )
+                vector = original_array.reshape(target_shape + (-1,), order=order)
                 # Reduce the dimensionality to a 1d array by indexing
                 # everything but this dimension.
                 vector = vector[
                     tuple(
-                        0 if dim != i else slice(None)
-                        for i in range(len(target_shape))
+                        0 if dim != i else slice(None) for i in range(len(target_shape))
                     )
                 ]
                 # Remove any trailing dimension if it is trivial.
@@ -416,9 +407,7 @@ class GroupStructure:
                 # If we are to build another dimension on top of this possible
                 # structure, we need to compute the stride that would be
                 # needed for that dimension.
-                next_stride = np.prod(
-                    [struct.size for (_, struct) in potential]
-                )
+                next_stride = np.prod([struct.size for (_, struct) in potential])
 
                 # If we've found a structure whose product is the length of
                 # the fields of this Group, we've got a valid potential.
@@ -460,8 +449,7 @@ class GroupStructure:
 
         for structure in self.possible_structures():
             sizes = (
-                "{}: {}".format(name, arr_struct.size)
-                for name, arr_struct in structure
+                "{}: {}".format(name, arr_struct.size) for name, arr_struct in structure
             )
             result.append("    ({})".format("; ".join(sizes)))
 

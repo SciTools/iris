@@ -30,9 +30,7 @@ import iris.exceptions
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
-from iris.fileformats._pp_lbproc_pairs import (  # noqa: F401
-    LBPROC_MAP as lbproc_map,
-)
+from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP as lbproc_map  # noqa: F401
 from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
@@ -307,8 +305,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
 
         if msi_match is None:
             raise ValueError(
-                'Expected STASH code MSI string "mXXsXXiXXX", '
-                "got %r" % (msi,)
+                'Expected STASH code MSI string "mXXsXXiXXX", ' "got %r" % (msi,)
             )
 
         return STASH(*msi_match.groups())
@@ -406,8 +403,7 @@ class SplittableInt:
         """
         if value < 0:
             raise ValueError(
-                "Negative numbers not supported with splittable"
-                " integers object"
+                "Negative numbers not supported with splittable integers object"
             )
 
         # define the name lookup first (as this is the way __setattr__ is
@@ -432,9 +428,7 @@ class SplittableInt:
             object.__setattr__(self, name, self[index])
 
     def _calculate_value_from_str_value(self):
-        self._value = np.sum(
-            [10**i * val for i, val in enumerate(self._strvalue)]
-        )
+        self._value = np.sum([10**i * val for i, val in enumerate(self._strvalue)])
 
     def __len__(self):
         return len(self._strvalue)
@@ -458,9 +452,7 @@ class SplittableInt:
         # the entire object appropriately.
 
         if not isinstance(value, int) or value < 0:
-            raise ValueError(
-                "Can only set %s as a positive integer value." % key
-            )
+            raise ValueError("Can only set %s as a positive integer value." % key)
 
         if isinstance(key, slice):
             if (
@@ -481,15 +473,12 @@ class SplittableInt:
             indices = range(*key.indices(100))
             if len(indices) < len(str(value)):
                 raise ValueError(
-                    "Cannot put %s into %s as it has too many"
-                    " digits." % (value, key)
+                    "Cannot put %s into %s as it has too many digits." % (value, key)
                 )
 
             # Iterate over each of the indices in the slice,
             # zipping them together with the associated digit
-            for index, digit in zip(
-                indices, str(value).zfill(current_length)[::-1]
-            ):
+            for index, digit in zip(indices, str(value).zfill(current_length)[::-1]):
                 # assign each digit to the associated index
                 self.__setitem__(index, int(digit))
 
@@ -748,13 +737,11 @@ def _data_bytes_to_shaped_array(
             current_posn : current_posn + boundary_width * mid_height
         ]
         current_posn += len(east)
-        data[
-            boundary_height:-boundary_height, -boundary_width:
-        ] = east.reshape(*e_w_shape)
+        data[boundary_height:-boundary_height, -boundary_width:] = east.reshape(
+            *e_w_shape
+        )
 
-        south = compressed_data[
-            current_posn : current_posn + boundary_height * x_width
-        ]
+        south = compressed_data[current_posn : current_posn + boundary_height * x_width]
         current_posn += len(south)
         data[:boundary_height, :] = south.reshape(*n_s_shape)
 
@@ -965,9 +952,7 @@ class PPField(metaclass=ABCMeta):
     def __repr__(self):
         """Return a string representation of the PP field."""
         # Define an ordering on the basic header names
-        attribute_priority_lookup = {
-            name: loc[0] for name, loc in self.HEADER_DEFN
-        }
+        attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
 
         # With the attributes sorted the order will remain stable if extra
         # attributes are added.
@@ -975,8 +960,7 @@ class PPField(metaclass=ABCMeta):
             EXTRA_DATA.values()
         )
         self_attrs = [
-            (name, getattr(self, name, None))
-            for name in public_attribute_names
+            (name, getattr(self, name, None)) for name in public_attribute_names
         ]
         self_attrs = [pair for pair in self_attrs if pair[1] is not None]
 
@@ -993,9 +977,7 @@ class PPField(metaclass=ABCMeta):
         )
 
         return (
-            "PP Field"
-            + "".join(["\n   %s: %s" % (k, v) for k, v in attributes])
-            + "\n"
+            "PP Field" + "".join(["\n   %s: %s" % (k, v) for k, v in attributes]) + "\n"
         )
 
     @property
@@ -1037,9 +1019,7 @@ class PPField(metaclass=ABCMeta):
     def lbtim(self, value):
         value = int(value)
         self.raw_lbtim = value
-        self._lbtim = SplittableInt(
-            value, {"ia": slice(2, None), "ib": 1, "ic": 0}
-        )
+        self._lbtim = SplittableInt(value, {"ia": slice(2, None), "ib": 1, "ic": 0})
 
     # lbcode
     @property
@@ -1050,9 +1030,7 @@ class PPField(metaclass=ABCMeta):
     def lbcode(self, new_value):
         if not isinstance(new_value, SplittableInt):
             # add the ix/iy values for lbcode
-            new_value = SplittableInt(
-                new_value, {"iy": slice(0, 2), "ix": slice(2, 4)}
-            )
+            new_value = SplittableInt(new_value, {"iy": slice(0, 2), "ix": slice(2, 4)})
         self._lbcode = new_value
 
     # lbpack
@@ -1112,17 +1090,13 @@ class PPField(metaclass=ABCMeta):
             calendar = cf_units.CALENDAR_365_DAY
         return calendar
 
-    def _read_extra_data(
-        self, pp_file, file_reader, extra_len, little_ended=False
-    ):
+    def _read_extra_data(self, pp_file, file_reader, extra_len, little_ended=False):
         """Read the extra data section and update the self appropriately."""
         dtype_endian_char = "<" if little_ended else ">"
         # While there is still extra data to decode run this loop
         while extra_len > 0:
             dtype = "%cL" % dtype_endian_char
-            extra_int_code = struct.unpack_from(
-                dtype, file_reader(PP_WORD_DEPTH)
-            )[0]
+            extra_int_code = struct.unpack_from(dtype, file_reader(PP_WORD_DEPTH))[0]
             extra_len -= PP_WORD_DEPTH
 
             ib = extra_int_code % 1000
@@ -1209,12 +1183,8 @@ class PPField(metaclass=ABCMeta):
             data.dtype = data.dtype.newbyteorder(">")
 
         # Create the arrays which will hold the header information
-        lb = np.empty(
-            shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH)
-        )
-        b = np.empty(
-            shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH)
-        )
+        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Fill in the header elements from the PPField
         for name, pos in self.HEADER_DEFN:
@@ -1228,9 +1198,7 @@ class PPField(metaclass=ABCMeta):
                     header_elem = int(header_elem)
                 lb[index] = header_elem
             else:
-                index = slice(
-                    pos[0] - NUM_LONG_HEADERS, pos[-1] - NUM_LONG_HEADERS + 1
-                )
+                index = slice(pos[0] - NUM_LONG_HEADERS, pos[-1] - NUM_LONG_HEADERS + 1)
                 b[index] = header_elem
 
         # Although all of the elements are now populated, we still need to
@@ -1309,9 +1277,7 @@ class PPField(metaclass=ABCMeta):
                 raise NotImplementedError(msg)
 
         # populate lbrec in WORDS
-        lb[self.HEADER_DICT["lblrec"][0]] = (
-            len_of_data_payload // PP_WORD_DEPTH
-        )
+        lb[self.HEADER_DICT["lblrec"][0]] = len_of_data_payload // PP_WORD_DEPTH
 
         # populate lbuser[0] to have the data's datatype
         if data.dtype == np.dtype(">f4"):
@@ -1394,9 +1360,7 @@ class PPField(metaclass=ABCMeta):
     #
 
     def time_unit(self, time_unit, epoch="epoch"):
-        return cf_units.Unit(
-            "%s since %s" % (time_unit, epoch), calendar=self.calendar
-        )
+        return cf_units.Unit("%s since %s" % (time_unit, epoch), calendar=self.calendar)
 
     def coord_system(self):
         """Return a CoordSystem for this PPField.
@@ -1518,9 +1482,7 @@ class PPField2(PPField):
         """
         if not hasattr(self, "_t1"):
             has_year_zero = self.lbyr == 0 or None
-            calendar = (
-                None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
-            )
+            calendar = None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
             self._t1 = cftime.datetime(
                 self.lbyr,
                 self.lbmon,
@@ -1552,9 +1514,7 @@ class PPField2(PPField):
         """
         if not hasattr(self, "_t2"):
             has_year_zero = self.lbyrd == 0 or None
-            calendar = (
-                None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
-            )
+            calendar = None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
             self._t2 = cftime.datetime(
                 self.lbyrd,
                 self.lbmond,
@@ -1599,9 +1559,7 @@ class PPField3(PPField):
         """
         if not hasattr(self, "_t1"):
             has_year_zero = self.lbyr == 0 or None
-            calendar = (
-                None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
-            )
+            calendar = None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
             self._t1 = cftime.datetime(
                 self.lbyr,
                 self.lbmon,
@@ -1634,9 +1592,7 @@ class PPField3(PPField):
         """
         if not hasattr(self, "_t2"):
             has_year_zero = self.lbyrd == 0 or None
-            calendar = (
-                None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
-            )
+            calendar = None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
             self._t2 = cftime.datetime(
                 self.lbyrd,
                 self.lbmond,
@@ -1701,9 +1657,7 @@ def load(filename, read_data=False, little_ended=False):
 
     """
     return _interpret_fields(
-        _field_gen(
-            filename, read_data_bytes=read_data, little_ended=little_ended
-        )
+        _field_gen(filename, read_data_bytes=read_data, little_ended=little_ended)
     )
 
 
@@ -1772,9 +1726,7 @@ def _interpret_fields(fields):
 
         for field in landmask_compressed_fields:
             field.lbrow, field.lbnpt = mask_shape
-            _create_field_data(
-                field, mask_shape, land_mask_field=land_mask_field
-            )
+            _create_field_data(field, mask_shape, land_mask_field=land_mask_field)
             yield field
 
 
@@ -1911,17 +1863,13 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
             pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
             # Get the LONG header entries
             dtype = "%ci%d" % (dtype_endian_char, PP_WORD_DEPTH)
-            header_longs = np.fromfile(
-                pp_file, dtype=dtype, count=NUM_LONG_HEADERS
-            )
+            header_longs = np.fromfile(pp_file, dtype=dtype, count=NUM_LONG_HEADERS)
             # Nothing returned => EOF
             if len(header_longs) == 0:
                 break
             # Get the FLOAT header entries
             dtype = "%cf%d" % (dtype_endian_char, PP_WORD_DEPTH)
-            header_floats = np.fromfile(
-                pp_file, dtype=dtype, count=NUM_FLOAT_HEADERS
-            )
+            header_floats = np.fromfile(pp_file, dtype=dtype, count=NUM_FLOAT_HEADERS)
             header = tuple(header_longs) + tuple(header_floats)
 
             # Make a PPField of the appropriate sub-class (depends on header
@@ -1973,10 +1921,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 # Change data dtype for a little-ended file.
                 dtype = str(dtype)
                 if dtype[0] != ">":
-                    msg = (
-                        "Unexpected dtype {!r} can't be converted to "
-                        "little-endian"
-                    )
+                    msg = "Unexpected dtype {!r} can't be converted to little-endian"
                     raise ValueError(msg)
 
                 dtype = np.dtype("<" + dtype[1:])
@@ -2184,9 +2129,7 @@ def load_pairs_from_fields(pp_fields):
 
     """
     load_pairs_from_fields = iris.fileformats.rules.load_pairs_from_fields
-    return load_pairs_from_fields(
-        pp_fields, iris.fileformats.pp_load_rules.convert
-    )
+    return load_pairs_from_fields(pp_fields, iris.fileformats.pp_load_rules.convert)
 
 
 def _load_cubes_variable_loader(
@@ -2223,9 +2166,7 @@ def _load_cubes_variable_loader(
             iris.fileformats.pp_load_rules.convert,
         )
 
-    result = iris.fileformats.rules.load_cubes(
-        filenames, callback, loader, pp_filter
-    )
+    result = iris.fileformats.rules.load_cubes(filenames, callback, loader, pp_filter)
 
     if um_fast_load.STRUCTURED_LOAD_CONTROLS.loads_use_structured:
         # We need an additional concatenate-like operation to combine cubes
@@ -2362,9 +2303,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         for name, positions in pp_field.HEADER_DEFN:
             # Establish whether field name is integer or real
             default = (
-                0
-                if positions[0] <= NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET
-                else 0.0
+                0 if positions[0] <= NUM_LONG_HEADERS - UM_TO_PP_HEADER_OFFSET else 0.0
             )
             # Establish whether field position is scalar or composite
             if len(positions) > 1:

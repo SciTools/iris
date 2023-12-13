@@ -33,9 +33,7 @@ class Test_get_xy_grids(tests.IrisTest):
             (0, 1),
         )
         cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.arange(100, 112).reshape(3, 4), "longitude"
-            ),
+            iris.coords.AuxCoord(np.arange(100, 112).reshape(3, 4), "longitude"),
             (0, 1),
         )
         x, y = iris.analysis.cartography.get_xy_grids(cube)
@@ -48,14 +46,10 @@ class Test_get_xy_grids(tests.IrisTest):
             (0, 1, 2),
         )
         cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.arange(100, 160).reshape(5, 3, 4), "longitude"
-            ),
+            iris.coords.AuxCoord(np.arange(100, 160).reshape(5, 3, 4), "longitude"),
             (0, 1, 2),
         )
-        self.assertRaises(
-            ValueError, iris.analysis.cartography.get_xy_grids, cube
-        )
+        self.assertRaises(ValueError, iris.analysis.cartography.get_xy_grids, cube)
 
 
 if __name__ == "__main__":

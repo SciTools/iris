@@ -98,9 +98,7 @@ class TestConventionsAttributes(tests.IrisTest):
 
         self.assertEqual(
             res.attributes["Conventions"],
-            "{}, {}, {}".format(
-                CF_CONVENTIONS_VERSION, "convention1", "convention2"
-            ),
+            "{}, {}, {}".format(CF_CONVENTIONS_VERSION, "convention1", "convention2"),
         )
 
 

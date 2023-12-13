@@ -39,9 +39,7 @@ class Test(tests.IrisTest):
         )
         # Repeat for a discontiguity on the topmost bounds.
         self.testcube_discontig_top = full2d_global()
-        make_bounds_discontiguous_at_point(
-            self.testcube_discontig_top, 2, 4, in_y=True
-        )
+        make_bounds_discontiguous_at_point(self.testcube_discontig_top, 2, 4, in_y=True)
 
         # Repeat for a discontiguity on the botommost bounds.
         self.testcube_discontig_along_bottom = full2d_global()

@@ -145,9 +145,7 @@ class TestZonalMean_global(tests.IrisTest):
         sx_coord = self.src.coord(axis="x")
         sy_coord = self.src.coord(axis="y")
         x_coord = sx_coord.copy(points, bounds=bounds)
-        grid = iris.cube.Cube(
-            np.zeros([sy_coord.points.size, x_coord.points.size])
-        )
+        grid = iris.cube.Cube(np.zeros([sy_coord.points.size, x_coord.points.size]))
         grid.add_dim_coord(sy_coord, 0)
         grid.add_dim_coord(x_coord, 1)
 
@@ -183,9 +181,7 @@ class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
         grid_x.coord_system = grid_crs
         grid_y = sy_coord.copy(np.linspace(-10, 10, 100))
         grid_y.coord_system = grid_crs
-        grid = iris.cube.Cube(
-            np.zeros([grid_y.points.size, grid_x.points.size])
-        )
+        grid = iris.cube.Cube(np.zeros([grid_y.points.size, grid_x.points.size]))
         grid.add_dim_coord(grid_y, 0)
         grid.add_dim_coord(grid_x, 1)
 

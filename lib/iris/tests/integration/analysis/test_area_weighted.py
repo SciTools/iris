@@ -17,9 +17,7 @@ class AreaWeightedTests(tests.IrisTest):
     def setUp(self):
         # Prepare a cube and a template
 
-        cube_file_path = tests.get_data_path(
-            ["NetCDF", "regrid", "regrid_xyt.nc"]
-        )
+        cube_file_path = tests.get_data_path(["NetCDF", "regrid", "regrid_xyt.nc"])
         self.cube = iris.load_cube(cube_file_path)
 
         template_file_path = tests.get_data_path(

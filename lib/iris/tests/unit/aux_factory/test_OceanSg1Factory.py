@@ -171,12 +171,8 @@ class Test_make_coord(tests.IrisTest):
         return result
 
     def setUp(self):
-        self.s = DimCoord(
-            np.linspace(-0.985, -0.014, 36), units="1", long_name="s"
-        )
-        self.c = DimCoord(
-            np.linspace(-0.959, -0.001, 36), units="1", long_name="c"
-        )
+        self.s = DimCoord(np.linspace(-0.985, -0.014, 36), units="1", long_name="s")
+        self.c = DimCoord(np.linspace(-0.959, -0.001, 36), units="1", long_name="c")
         self.eta = AuxCoord(
             np.arange(-1, 3, dtype=np.float64).reshape(2, 2),
             long_name="eta",

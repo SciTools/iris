@@ -381,9 +381,7 @@ class _Lenient(threading.local):
                 active = self.__dict__["active"]
                 if active is not None and active in self:
                     services = self.__dict__[active]
-                    if isinstance(services, str) or not isinstance(
-                        services, Iterable
-                    ):
+                    if isinstance(services, str) or not isinstance(services, Iterable):
                         services = (services,)
                     result = service in services
         return result

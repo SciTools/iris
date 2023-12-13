@@ -57,8 +57,7 @@ class MixinCombineRegions:
         n_facesperregion = n_faces // n_regions
         i_face_regions = (i_faces // n_facesperregion) % n_regions
         region_inds = [
-            np.where(i_face_regions == i_region)[0]
-            for i_region in range(n_regions)
+            np.where(i_face_regions == i_region)[0] for i_region in range(n_regions)
         ]
         # NOTE: this produces 7 regions, with near-adjacent value ranges but
         # with some points "moved" to an adjacent region.
@@ -90,9 +89,7 @@ class MixinCombineRegions:
                 self._parametrised_cache_filename(n_cubesphere, "regioncubes"),
             )
 
-    def setup(
-        self, n_cubesphere, imaginary_data=True, create_result_cube=True
-    ):
+    def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
         """
         The combine-tests "standard" setup operation.
 
@@ -132,9 +129,7 @@ class MixinCombineRegions:
                 # This has the same lazy-array attributes, but is allocated by
                 # creating chunks on demand instead of loading from file.
                 data = cube.lazy_data()
-                data = da.zeros(
-                    data.shape, dtype=data.dtype, chunks=data.chunksize
-                )
+                data = da.zeros(data.shape, dtype=data.dtype, chunks=data.chunksize)
                 cube.data = data
 
         if create_result_cube:

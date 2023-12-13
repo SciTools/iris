@@ -100,9 +100,7 @@ class Test_save(tests.IrisTest):
         field = DummyPPField()._ready_for_save()
         field.bmdi = -123.4
         # Make float32 data, as float64 default produces an extra warning.
-        field.data = np.ma.masked_array(
-            [1.0, field.bmdi, 3.0], dtype=np.float32
-        )
+        field.data = np.ma.masked_array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
         with self.assertWarnsRegex(IrisMaskValueMatchWarning, msg):
             with self.temp_filename(".pp") as temp_filename:
@@ -160,9 +158,7 @@ class Test_coord_system(tests.IrisTest):
         field = DummyPPField()
         field.bplat = bplat
         field.bplon = bplon
-        with mock.patch(
-            "iris.fileformats.pp.iris.coord_systems"
-        ) as mock_cs_mod:
+        with mock.patch("iris.fileformats.pp.iris.coord_systems") as mock_cs_mod:
             result = field.coord_system()
         if not rotated:
             # It should return a standard unrotated CS.

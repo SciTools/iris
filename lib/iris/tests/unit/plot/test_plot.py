@@ -61,9 +61,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        iplt.plot(
-            self.lat_lon_cube.coord("longitude"), self.lat_lon_cube, axes=ax
-        )
+        iplt.plot(self.lat_lon_cube.coord("longitude"), self.lat_lon_cube, axes=ax)
         plt.close(fig)
 
 
@@ -84,12 +82,8 @@ class TestTrajectoryWrap(tests.IrisTest):
         if cs is None:
             cs = self.geog_cs
         return (
-            coords.AuxCoord(
-                lons, "longitude", units="degrees", coord_system=cs
-            ),
-            coords.AuxCoord(
-                lats, "latitude", units="degrees", coord_system=cs
-            ),
+            coords.AuxCoord(lons, "longitude", units="degrees", coord_system=cs),
+            coords.AuxCoord(lats, "latitude", units="degrees", coord_system=cs),
         )
 
     def assertPathsEqual(self, expected, actual):

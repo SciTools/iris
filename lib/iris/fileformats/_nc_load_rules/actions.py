@@ -286,9 +286,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
-    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[
-        coord_type
-    ]
+    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[coord_type]
     if coord_grid_class is None:
         # Coordinates not identified with a specific grid-type class (latlon,
         # rotated or projected) are always built, but can have no coord-system.

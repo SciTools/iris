@@ -61,9 +61,7 @@ def _subsampled_coord(coord, subsamplefactor):
         raise ValueError("The coordinate must have bounds.")
     new_coord = coord[::subsamplefactor]
     new_bounds = new_coord.bounds.copy()
-    new_bounds[:, 1] = coord.bounds[
-        (subsamplefactor - 1) :: subsamplefactor, 1
-    ]
+    new_bounds[:, 1] = coord.bounds[(subsamplefactor - 1) :: subsamplefactor, 1]
     new_bounds[-1, 1] = coord.bounds[-1, 1]
     new_coord = coord.copy(points=new_coord.points, bounds=new_bounds)
     return new_coord
@@ -109,9 +107,7 @@ def _resampled_coord(coord, samplefactor):
     lower = lower + delta
     upper = upper - delta
     samples = int(len(bounds) * samplefactor)
-    new_points, step = np.linspace(
-        lower, upper, samples, endpoint=False, retstep=True
-    )
+    new_points, step = np.linspace(lower, upper, samples, endpoint=False, retstep=True)
     new_points += step * 0.5
     new_coord = coord.copy(points=new_points)
     new_coord.guess_bounds()
@@ -477,9 +473,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(lon, 1)
         dest.add_aux_coord(src.coord("grid_latitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lat_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lat_cross_section.cml",))
         # Constant latitude, data order [x, z]
         # Using original and transposing the result should give the
         # same answer.
@@ -487,9 +481,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lat_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lat_cross_section.cml",))
 
         # Constant longitude
         src = self.realistic_cube[0, :, :, 10]
@@ -501,9 +493,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(lat, 1)
         dest.add_aux_coord(src.coord("grid_longitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lon_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lon_cross_section.cml",))
         # Constant longitude, data order [y, z]
         # Using original and transposing the result should give the
         # same answer.
@@ -511,9 +501,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lon_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lon_cross_section.cml",))
 
     def test_scalar_source_cube(self):
         src = self.simple_cube[1, 2]

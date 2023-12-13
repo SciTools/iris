@@ -89,15 +89,11 @@ def _create_um_files(
         three_rec = six_rec / 2
 
         new_field.blev = level_1**2 * six_rec - six_rec
-        new_field.brsvd1 = (
-            level_1**2 * six_rec + (six_rec * level_1) - three_rec
-        )
+        new_field.brsvd1 = level_1**2 * six_rec + (six_rec * level_1) - three_rec
 
         brsvd2_simulated = np.linspace(0.995, 0, len_z)
         shift = min(len_z, 2)
-        bhrlev_simulated = np.concatenate(
-            [np.ones(shift), brsvd2_simulated[:-shift]]
-        )
+        bhrlev_simulated = np.concatenate([np.ones(shift), brsvd2_simulated[:-shift]])
         new_field.brsvd2 = brsvd2_simulated[level_]
         new_field.bhrlev = bhrlev_simulated[level_]
 

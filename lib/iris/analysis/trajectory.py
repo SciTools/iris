@@ -180,9 +180,7 @@ class Trajectory:
             # as the new `index` dimension created by interpolating.
             src_anon_dims = self._src_cube_anon_dims(cube)
             interp_anon_dims = self._src_cube_anon_dims(interpolated_cube)
-            (anon_dim_index,) = list(
-                set(interp_anon_dims) - set(src_anon_dims)
-            )
+            (anon_dim_index,) = list(set(interp_anon_dims) - set(src_anon_dims))
             # Add the new coord to the interpolated cube.
             interpolated_cube.add_dim_coord(index_coord, anon_dim_index)
         return interpolated_cube
@@ -250,9 +248,7 @@ def interpolate(cube, sample_points, method=None):
     # about to sample,
     # and then adding a new dimension to accommodate all the sample points.
     remaining = [
-        (dim, size)
-        for dim, size in enumerate(cube.shape)
-        if dim not in squish_my_dims
+        (dim, size) for dim, size in enumerate(cube.shape) if dim not in squish_my_dims
     ]
     new_data_shape = [size for dim, size in remaining]
     new_data_shape.append(trajectory_size)
@@ -440,9 +436,7 @@ def interpolate(cube, sample_points, method=None):
         )
         # Rearrange the data dimensions and the fancy indices into that order.
         source_data = source_data.transpose(dims_order)
-        fancy_source_indices = [
-            fancy_source_indices[i_dim] for i_dim in dims_order
-        ]
+        fancy_source_indices = [fancy_source_indices[i_dim] for i_dim in dims_order]
 
         # Apply the fancy indexing to get all the result data points.
         new_cube.data = source_data[tuple(fancy_source_indices)]
@@ -454,8 +448,7 @@ def interpolate(cube, sample_points, method=None):
             if not squish_my_dims.isdisjoint(cube.coord_dims(coord))
         ]
         new_cube_coords = [
-            new_cube.coord(column_coord.name())
-            for column_coord in column_coords
+            new_cube.coord(column_coord.name()) for column_coord in column_coords
         ]
         all_point_indices = np.array(column_indexes)
         single_point_test_cube = cube[column_indexes[0]]
@@ -475,14 +468,11 @@ def interpolate(cube, sample_points, method=None):
             # So here, we translate cube indexes into *coord* indexes.
             src_coord_dims = cube.coord_dims(src_coord)
             fancy_coord_index_arrays = [
-                list(all_point_indices[:, src_dim])
-                for src_dim in src_coord_dims
+                list(all_point_indices[:, src_dim]) for src_dim in src_coord_dims
             ]
 
             # Fill the new coord with all the correct points from the old one.
-            new_cube_coord.points = src_coord.points[
-                tuple(fancy_coord_index_arrays)
-            ]
+            new_cube_coord.points = src_coord.points[tuple(fancy_coord_index_arrays)]
             # NOTE: the new coords do *not* have bounds.
 
     return new_cube
@@ -628,22 +618,16 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             sample_space_cube.remove_coord(coord)
 
     # Order the sample point coords according to the sample space cube coords.
-    sample_space_coord_names = [
-        coord.name() for coord in sample_space_cube.coords()
-    ]
+    sample_space_coord_names = [coord.name() for coord in sample_space_cube.coords()]
     new_order = [
-        sample_space_coord_names.index(name)
-        for name in sample_point_coord_names
+        sample_space_coord_names.index(name) for name in sample_point_coord_names
     ]
     coord_values = np.array([coord_values[i] for i in new_order])
     sample_point_coord_names = [sample_point_coord_names[i] for i in new_order]
 
-    sample_space_coords = (
-        sample_space_cube.dim_coords + sample_space_cube.aux_coords
-    )
+    sample_space_coords = sample_space_cube.dim_coords + sample_space_cube.aux_coords
     sample_space_coords_and_dims = [
-        (coord, sample_space_cube.coord_dims(coord))
-        for coord in sample_space_coords
+        (coord, sample_space_cube.coord_dims(coord)) for coord in sample_space_coords
     ]
 
     if cache is not None and cube in cache:
@@ -656,9 +640,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             dtype=float,
         )
         for d, ndi in enumerate(np.ndindex(sample_space_cube.data.shape)):
-            for c, (coord, coord_dims) in enumerate(
-                sample_space_coords_and_dims
-            ):
+            for c, (coord, coord_dims) in enumerate(sample_space_coords_and_dims):
                 # Index of this datum along this coordinate (could be n-D).
                 if coord_dims:
                     keys = tuple(ndi[ind] for ind in coord_dims)
@@ -794,13 +776,8 @@ class UnstructuredNearestNeigbourRegridder:
             raise ValueError(msg)
         src_x_coord = src_cube.coord(axis="x")
         src_y_coord = src_cube.coord(axis="y")
-        if src_cube.coord_dims(src_x_coord) != src_cube.coord_dims(
-            src_y_coord
-        ):
-            msg = (
-                "Source cube X and Y coordinates must have the same "
-                "cube dimensions."
-            )
+        if src_cube.coord_dims(src_x_coord) != src_cube.coord_dims(src_y_coord):
+            msg = "Source cube X and Y coordinates must have the same cube dimensions."
             raise ValueError(msg)
 
         # Record *copies* of the original grid coords, in the desired
@@ -843,9 +820,7 @@ class UnstructuredNearestNeigbourRegridder:
                         "Coordinate {!r} has units of {!r}, which does not "
                         'convert to "degrees".'
                     )
-                    raise ValueError(
-                        msg.format(coord.name(), str(coord.units))
-                    )
+                    raise ValueError(msg.format(coord.name(), str(coord.units)))
         else:
             # Check that source and target have the same X and Y units.
             if (

@@ -117,9 +117,7 @@ class TestCoordMask(tests.IrisTest, MaskCubeMixin):
             np.testing.assert_array_equal(subcube.data.mask, mask_coord.points)
 
     def test_mask_cube_2d_second_dim(self):
-        mask_coord = iris.coords.AuxCoord(
-            [0, 0, 1, 1], long_name="mask", units=1
-        )
+        mask_coord = iris.coords.AuxCoord([0, 0, 1, 1], long_name="mask", units=1)
         returned = mask_cube(self.cube, mask_coord, in_place=False, dim=1)
         self.assertOriginalMetadata(returned, "simple_2d")
         for subcube in returned.slices("foo"):
@@ -155,9 +153,7 @@ class TestCubeMask(tests.IrisTest, MaskCubeMixin):
         self.assertIs(returned, None)
 
     def test_mask_cube_2d_create_new_dim(self):
-        mask = iris.cube.Cube(
-            [[0, 1, 0], [0, 0, 1]], long_name="mask", units=1
-        )
+        mask = iris.cube.Cube([[0, 1, 0], [0, 0, 1]], long_name="mask", units=1)
 
         broadcast_coord = iris.coords.DimCoord([1, 2], long_name="baz")
         mask.add_dim_coord(broadcast_coord, 0)

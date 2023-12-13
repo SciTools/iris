@@ -86,8 +86,7 @@ class Test__summary_content(tests.IrisTest):
         # Check the dimension names used as column headings are split out and
         # formatted correctly.
         expected_coord_names = [
-            c.name().replace("_", " ")
-            for c in self.cube.coords(dim_coords=True)
+            c.name().replace("_", " ") for c in self.cube.coords(dim_coords=True)
         ]
         result_coord_names = self.representer.names[1:]
         for result in result_coord_names:
@@ -146,9 +145,7 @@ class Test__get_bits(tests.IrisTest):
     def test_headings__auxcoords(self):
         contents = self.representer.sections_data["Auxiliary coordinates:"]
         content_str = ",".join(content for content in contents)
-        aux_coords = [
-            c.name() for c in self.cube.aux_coords if c.shape != (1,)
-        ]
+        aux_coords = [c.name() for c in self.cube.aux_coords if c.shape != (1,)]
         for coord in aux_coords:
             self.assertIn(coord, content_str)
 
@@ -162,18 +159,14 @@ class Test__get_bits(tests.IrisTest):
     def test_headings__cellmeasures(self):
         contents = self.representer.sections_data["Cell measures:"]
         content_str = ",".join(content for content in contents)
-        cell_measures = [
-            c.name() for c in self.cube.cell_measures() if c.shape != (1,)
-        ]
+        cell_measures = [c.name() for c in self.cube.cell_measures() if c.shape != (1,)]
         for coord in cell_measures:
             self.assertIn(coord, content_str)
 
     def test_headings__ancillaryvars(self):
         contents = self.representer.sections_data["Ancillary variables:"]
         content_str = ",".join(content for content in contents)
-        ancillary_variables = [
-            c.name() for c in self.cube.ancillary_variables()
-        ]
+        ancillary_variables = [c.name() for c in self.cube.ancillary_variables()]
         for coord in ancillary_variables:
             self.assertIn(coord, content_str)
 
@@ -189,9 +182,7 @@ class Test__get_bits(tests.IrisTest):
     def test_headings__scalarcoords(self):
         contents = self.representer.sections_data["Scalar coordinates:"]
         content_str = ",".join(content for content in contents)
-        scalar_coords = [
-            c.name() for c in self.cube.coords() if c.shape == (1,)
-        ]
+        scalar_coords = [c.name() for c in self.cube.coords() if c.shape == (1,)]
         for coord in scalar_coords:
             self.assertIn(coord, content_str)
 
@@ -370,9 +361,7 @@ class Test__make_content(tests.IrisTest):
         self.assertIn(
             '<td class="iris-title iris-word-cell">Mesh</td>', self.mesh_result
         )
-        mesh_coord_names = [
-            c.name() for c in self.mesh_cube.coords(mesh_coords=True)
-        ]
+        mesh_coord_names = [c.name() for c in self.mesh_cube.coords(mesh_coords=True)]
         for coord_name in mesh_coord_names:
             self.assertIn(coord_name, self.result)
 
@@ -407,9 +396,7 @@ class Test__make_content__string_attrs(tests.IrisTest):
         return result
 
     def test_simple_string_attribute(self):
-        html = self._cube_stringattribute_html(
-            "single-string", "single string"
-        )
+        html = self._cube_stringattribute_html("single-string", "single string")
         self.assertString(html)
 
     def test_long_string_attribute(self):

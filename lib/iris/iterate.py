@@ -113,9 +113,7 @@ def izip(*cubes, **kwargs):
         # Loop over dimensioned coords in each cube.
         for dim in range(len(cube.shape)):
             if dim not in requested_dims:
-                dimensioned_iter_coords.update(
-                    cube.coords(contains_dimension=dim)
-                )
+                dimensioned_iter_coords.update(cube.coords(contains_dimension=dim))
         dimensioned_iter_coords_by_cube.append(dimensioned_iter_coords)
 
     # Check for multidimensional coords - current implementation cannot
@@ -169,9 +167,7 @@ def izip(*cubes, **kwargs):
                     category=IrisUserWarning,
                 )
 
-    return _ZipSlicesIterator(
-        cubes, requested_dims_by_cube, ordered, coords_by_cube
-    )
+    return _ZipSlicesIterator(cubes, requested_dims_by_cube, ordered, coords_by_cube)
 
 
 class _ZipSlicesIterator(Iterator):
@@ -192,12 +188,11 @@ class _ZipSlicesIterator(Iterator):
         # mapping of values (itertool.izip won't catch this).
         if len(requested_dims_by_cube) != len(cubes):
             raise ValueError(
-                "requested_dims_by_cube parameter is not the same"
-                " length as cubes."
+                "requested_dims_by_cube parameter is not the same length as cubes."
             )
         if len(coords_by_cube) != len(cubes):
             raise ValueError(
-                "coords_by_cube parameter is not the same length " "as cubes."
+                "coords_by_cube parameter is not the same length as cubes."
             )
 
         # Create an all encompassing dims_index called master_dims_index that
@@ -222,9 +217,7 @@ class _ZipSlicesIterator(Iterator):
                 # Loop over coords in this dimension (could be just one).
                 for coord in cube_coords:
                     # Search for coord in master_dimensioned_coord_list.
-                    for j, master_coords in enumerate(
-                        master_dimensioned_coord_list
-                    ):
+                    for j, master_coords in enumerate(master_dimensioned_coord_list):
                         # Use coord wrapper with desired equality
                         # functionality.
                         if _CoordWrapper(coord) in master_coords:

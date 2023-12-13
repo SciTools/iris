@@ -84,9 +84,7 @@ __all__ = [
 
 
 def _output_dir() -> Path:
-    test_output_dir = Path(__file__).parents[1] / Path(
-        "result_image_comparison"
-    )
+    test_output_dir = Path(__file__).parents[1] / Path("result_image_comparison")
 
     if not os.access(test_output_dir, os.W_OK):
         if not os.access(Path("."), os.W_OK):
@@ -222,9 +220,7 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
                     _create_missing(phash)
                 else:
                     figure.savefig(result_path)
-                    msg = (
-                        "Bad phash {} with hamming distance {} " "for test {}."
-                    )
+                    msg = "Bad phash {} with hamming distance {} for test {}."
                     msg = msg.format(phash, distance, test_id)
                     if _DISPLAY_FIGURES:
                         emsg = "Image comparison would have failed: {}"

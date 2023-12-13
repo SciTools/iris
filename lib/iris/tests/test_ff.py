@@ -80,9 +80,7 @@ class TestFFHeader(tests.IrisTest):
         )
         self.assertEqual(self.ff_header.integer_constants.shape, (46,))
         self.assertEqual(self.ff_header.real_constants.shape, (38,))
-        self.assertEqual(
-            self.ff_header.level_dependent_constants.shape, (71, 8)
-        )
+        self.assertEqual(self.ff_header.level_dependent_constants.shape, (71, 8))
         self.assertIsNone(self.ff_header.row_dependent_constants)
         self.assertIsNone(self.ff_header.column_dependent_constants)
         self.assertIsNone(self.ff_header.fields_of_constants)
@@ -119,9 +117,7 @@ class TestFF2PP2Cube(tests.IrisTest):
             cube = cubes.pop(0)
             standard_name = cube.standard_name
             cube_by_name[standard_name] += 1
-            filename = "{}_{}.cml".format(
-                standard_name, cube_by_name[standard_name]
-            )
+            filename = "{}_{}.cml".format(standard_name, cube_by_name[standard_name])
             self.assertCML(cube, ("FF", filename))
 
     def test_raw_to_table_count(self):
@@ -195,12 +191,12 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
         self.assertArrayEqual(
             x_coord,
             field.x,
-            ("x_coord was incorrect for " "stash {}".format(stash)),
+            ("x_coord was incorrect for stash {}".format(stash)),
         )
         self.assertArrayEqual(
             y_coord,
             field.y,
-            ("y_coord was incorrect for " "stash {}".format(stash)),
+            ("y_coord was incorrect for stash {}".format(stash)),
         )
 
     def test_p(self):

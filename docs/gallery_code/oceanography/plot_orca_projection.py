@@ -37,9 +37,7 @@ def main():
 
     pcarree = projections["PlateCarree"]
     # Transform cube to target projection
-    new_cube, extent = iris.analysis.cartography.project(
-        cube, pcarree, nx=400, ny=200
-    )
+    new_cube, extent = iris.analysis.cartography.project(cube, pcarree, nx=400, ny=200)
 
     # Plot data in each projection
     for name in sorted(projections):

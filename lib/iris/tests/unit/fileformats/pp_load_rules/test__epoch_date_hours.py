@@ -16,9 +16,7 @@ import cf_units
 from cf_units import Unit
 from cftime import datetime as nc_datetime
 
-from iris.fileformats.pp_load_rules import (
-    _epoch_date_hours as epoch_hours_call,
-)
+from iris.fileformats.pp_load_rules import _epoch_date_hours as epoch_hours_call
 
 #
 # Run tests for each of the possible calendars from PPfield.calendar().
@@ -43,9 +41,7 @@ class TestEpochHours__standard(tests.IrisTest):
         self.assertEqual(result, -17259936.0)
 
     def test_year_0(self):
-        test_date = nc_datetime(
-            0, 1, 1, calendar=self.calendar, has_year_zero=True
-        )
+        test_date = nc_datetime(0, 1, 1, calendar=self.calendar, has_year_zero=True)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17268720.0)
 
@@ -95,9 +91,7 @@ class TestEpochHours__360day(tests.IrisTest):
         self.assertEqual(result, -17012160.0)
 
     def test_year_0(self):
-        test_date = nc_datetime(
-            0, 1, 1, calendar=self.calendar, has_year_zero=True
-        )
+        test_date = nc_datetime(0, 1, 1, calendar=self.calendar, has_year_zero=True)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17020800.0)
 
@@ -123,9 +117,7 @@ class TestEpochHours__365day(tests.IrisTest):
         self.assertEqual(result, -17248440.0)
 
     def test_year_0(self):
-        test_date = nc_datetime(
-            0, 1, 1, calendar=self.calendar, has_year_zero=True
-        )
+        test_date = nc_datetime(0, 1, 1, calendar=self.calendar, has_year_zero=True)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17257200.0)
 
@@ -141,9 +133,7 @@ class TestEpochHours__invalid_calendar(tests.IrisTest):
         # Setup a unit with an unrecognised calendar
         hrs_unit = Unit("hours since epoch", calendar=self.calendar)
         # Test against a date with year=0, which requires calendar correction.
-        test_date = nc_datetime(
-            0, 1, 1, calendar=self.calendar, has_year_zero=True
-        )
+        test_date = nc_datetime(0, 1, 1, calendar=self.calendar, has_year_zero=True)
         # Check that this causes an error.
         with self.assertRaisesRegex(ValueError, "unrecognised calendar"):
             epoch_hours_call(hrs_unit, test_date)

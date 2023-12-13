@@ -43,24 +43,16 @@ class TestFastCallbackLocationInfo(Mixin_FieldTest, tests.IrisTest):
 
     def test_callback_collations_filepaths(self):
         self.assertEqual(len(self.callback_collations), 2)
-        self.assertEqual(
-            self.callback_collations[0].data_filepath, self.test_filepath
-        )
-        self.assertEqual(
-            self.callback_collations[1].data_filepath, self.test_filepath
-        )
+        self.assertEqual(self.callback_collations[0].data_filepath, self.test_filepath)
+        self.assertEqual(self.callback_collations[1].data_filepath, self.test_filepath)
 
     def test_callback_collations_field_indices(self):
-        self.assertEqual(
-            self.callback_collations[0].data_field_indices.dtype, np.int64
-        )
+        self.assertEqual(self.callback_collations[0].data_field_indices.dtype, np.int64)
         self.assertArrayEqual(
             self.callback_collations[0].data_field_indices, [[1, 3], [5, 7]]
         )
 
-        self.assertEqual(
-            self.callback_collations[1].data_field_indices.dtype, np.int64
-        )
+        self.assertEqual(self.callback_collations[1].data_field_indices.dtype, np.int64)
         self.assertArrayEqual(
             self.callback_collations[1].data_field_indices, [[0, 2], [4, 6]]
         )

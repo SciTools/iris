@@ -30,11 +30,7 @@ from iris.analysis._area_weighted import (
     _regrid_area_weighted_rectilinear_src_and_grid__perform,
     _regrid_area_weighted_rectilinear_src_and_grid__prepare,
 )
-from iris.analysis._interpolation import (
-    get_xy_coords,
-    get_xy_dim_coords,
-    snapshot_grid,
-)
+from iris.analysis._interpolation import get_xy_coords, get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import (
     _regrid_weighted_curvilinear_to_rectilinear__perform,
     _regrid_weighted_curvilinear_to_rectilinear__prepare,
@@ -55,9 +51,7 @@ wmsg = (
 warn_deprecated(wmsg)
 
 
-def regrid_area_weighted_rectilinear_src_and_grid(
-    src_cube, grid_cube, mdtol=0
-):
+def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
     """
     Return a new cube with data values calculated using the area weighted
     mean of data values from src_grid regridded onto the horizontal grid of
@@ -205,9 +199,7 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     regrid_info = _regrid_weighted_curvilinear_to_rectilinear__prepare(
         src_cube, weights, grid_cube
     )
-    result = _regrid_weighted_curvilinear_to_rectilinear__perform(
-        src_cube, regrid_info
-    )
+    result = _regrid_weighted_curvilinear_to_rectilinear__perform(src_cube, regrid_info)
     return result
 
 
@@ -368,9 +360,7 @@ class _ProjectedUnstructuredRegridder:
 
         tgt_projection = tgt_x_coord.coord_system.as_cartopy_projection()
         tgt_x, tgt_y = _meshgrid(tgt_x_coord.points, tgt_y_coord.points)
-        projected_tgt_grid = projection.transform_points(
-            tgt_projection, tgt_x, tgt_y
-        )
+        projected_tgt_grid = projection.transform_points(tgt_projection, tgt_x, tgt_y)
 
         # Prepare the result data array.
         # XXX TODO: Deal with masked src_data
@@ -392,9 +382,7 @@ class _ProjectedUnstructuredRegridder:
             src_index[xy_dim] = slice(None)
             src_subset = src_data[tuple(src_index)]
             tgt_index = (
-                index[:xy_dim]
-                + (slice(None), slice(None))
-                + index[xy_dim + 1 :]
+                index[:xy_dim] + (slice(None), slice(None)) + index[xy_dim + 1 :]
             )
             data[tgt_index] = scipy.interpolate.griddata(
                 projected_src_points[..., :2],
@@ -576,8 +564,7 @@ class _ProjectedUnstructuredRegridder:
             )
         if src_cs is None:
             raise ValueError(
-                "'src' lateral geographic coordinates have "
-                "no coordinate system."
+                "'src' lateral geographic coordinates have no coordinate system."
             )
 
         # Check the source grid units.
@@ -589,8 +576,7 @@ class _ProjectedUnstructuredRegridder:
 
         if src_x_dim != src_y_dim:
             raise ValueError(
-                "'src' lateral geographic coordinates should map "
-                "the same dimension."
+                "'src' lateral geographic coordinates should map the same dimension."
             )
         src_xy_dim = src_x_dim
 

@@ -145,9 +145,7 @@ class DataManager:
         is_real = self._real_array is not None
         emsg = "Unexpected data state, got {}lazy and {}real data."
         state = is_lazy ^ is_real
-        assert state, emsg.format(
-            "" if is_lazy else "no ", "" if is_real else "no "
-        )
+        assert state, emsg.format("" if is_lazy else "no ", "" if is_real else "no ")
 
     def _deepcopy(self, memo, data=None):
         """
@@ -245,9 +243,7 @@ class DataManager:
 
         # Determine whether the class instance has been created,
         # as this method is called from within the __init__.
-        init_done = (
-            self._lazy_array is not None or self._real_array is not None
-        )
+        init_done = self._lazy_array is not None or self._real_array is not None
 
         if init_done and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional

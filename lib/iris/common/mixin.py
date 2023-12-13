@@ -44,9 +44,7 @@ def _get_valid_standard_name(name):
                 name_is_valid &= std_name_modifier in valid_std_name_modifiers
 
             if not name_is_valid:
-                raise ValueError(
-                    "{!r} is not a valid standard_name".format(name)
-                )
+                raise ValueError("{!r} is not a valid standard_name".format(name))
 
     return name
 
@@ -214,9 +212,7 @@ class CFVariableMixin:
 
     @attributes.setter
     def attributes(self, attributes):
-        self._metadata_manager.attributes = LimitedAttributeDict(
-            attributes or {}
-        )
+        self._metadata_manager.attributes = LimitedAttributeDict(attributes or {})
 
     @property
     def metadata(self):
@@ -244,15 +240,11 @@ class CFVariableMixin:
                 else:
                     # Generic iterable/container with no associated keys.
                     missing = [
-                        field
-                        for field in fields
-                        if not hasattr(metadata, field)
+                        field for field in fields if not hasattr(metadata, field)
                     ]
 
                     if missing:
-                        missing = ", ".join(
-                            map(lambda i: "{!r}".format(i), missing)
-                        )
+                        missing = ", ".join(map(lambda i: "{!r}".format(i), missing))
                         emsg = "Invalid {!r} metadata, require {} to be specified."
                         raise TypeError(emsg.format(type(arg), missing))
 

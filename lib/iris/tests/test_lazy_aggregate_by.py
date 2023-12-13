@@ -16,14 +16,10 @@ class TestLazyAggregateBy(test_aggregate_by.TestAggregateBy):
 
         self.cube_single.data = as_lazy_data(self.cube_single.data)
         self.cube_multi.data = as_lazy_data(self.cube_multi.data)
-        self.cube_single_masked.data = as_lazy_data(
-            self.cube_single_masked.data
-        )
+        self.cube_single_masked.data = as_lazy_data(self.cube_single_masked.data)
         self.cube_multi_masked.data = as_lazy_data(self.cube_multi_masked.data)
         self.cube_easy.data = as_lazy_data(self.cube_easy.data)
-        self.cube_easy_weighted.data = as_lazy_data(
-            self.cube_easy_weighted.data
-        )
+        self.cube_easy_weighted.data = as_lazy_data(self.cube_easy_weighted.data)
 
         assert self.cube_single.has_lazy_data()
         assert self.cube_multi.has_lazy_data()
@@ -48,9 +44,7 @@ class TestLazyAggregateByWeightedByCube(TestLazyAggregateBy):
     def setUp(self):
         super().setUp()
 
-        self.weights_single = self.cube_single[:, 0, 0].copy(
-            self.weights_single
-        )
+        self.weights_single = self.cube_single[:, 0, 0].copy(self.weights_single)
         self.weights_single.units = "m2"
         self.weights_multi = self.cube_multi[:, 0, 0].copy(self.weights_multi)
         self.weights_multi.units = "m2"

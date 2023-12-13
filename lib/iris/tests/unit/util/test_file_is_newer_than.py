@@ -60,9 +60,7 @@ class TestFileIsNewer(tests.IrisTest):
         else:
             source_paths = [self._name2path(name) for name in source_names]
         # Check result is as expected.
-        self.assertEqual(
-            boolean_result, file_is_newer_than(result_path, source_paths)
-        )
+        self.assertEqual(boolean_result, file_is_newer_than(result_path, source_paths))
 
     def test_no_sources(self):
         self._test(True, "example_result", [])
@@ -84,9 +82,7 @@ class TestFileIsNewer(tests.IrisTest):
         self._test(False, "example_result", ["newer_source_2"])
 
     def test_multiple_ok(self):
-        self._test(
-            True, "example_result", ["older_source_1", "older_source_2"]
-        )
+        self._test(True, "example_result", ["older_source_1", "older_source_2"])
 
     def test_multiple_fail(self):
         self._test(

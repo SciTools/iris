@@ -32,12 +32,8 @@ EXTRAPOLATE = "extrapolate"
 class ThreeDimCube(tests.IrisTest):
     def setUp(self):
         cube = stock.simple_3d_w_multidim_coords()
-        cube.add_aux_coord(
-            iris.coords.DimCoord(np.arange(2), "height", units="1"), 0
-        )
-        cube.add_dim_coord(
-            iris.coords.DimCoord(np.arange(3), "latitude", units="1"), 1
-        )
+        cube.add_aux_coord(iris.coords.DimCoord(np.arange(2), "height", units="1"), 0)
+        cube.add_dim_coord(iris.coords.DimCoord(np.arange(3), "latitude", units="1"), 1)
         cube.add_dim_coord(
             iris.coords.DimCoord(np.arange(4), "longitude", units="1"), 2
         )
@@ -78,9 +74,7 @@ class Test___init____validation(ThreeDimCube):
     def test_interpolator_overspecified_scalar(self):
         # Over specification by means of interpolating over one dimension
         # coordinate and a scalar coordinate (not mapped to a dimension).
-        self.cube.add_aux_coord(
-            iris.coords.AuxCoord(1, long_name="scalar"), None
-        )
+        self.cube.add_aux_coord(iris.coords.AuxCoord(1, long_name="scalar"), None)
 
         msg = (
             "Coordinates repeat a data dimension - "
@@ -111,14 +105,9 @@ class Test___init____validation(ThreeDimCube):
         self.cube.add_aux_coord(
             iris.coords.AuxCoord([0, 3, 2], long_name="non-monotonic"), 1
         )
-        msg = (
-            "Cannot interpolate over the non-monotonic coordinate "
-            "non-monotonic."
-        )
+        msg = "Cannot interpolate over the non-monotonic coordinate non-monotonic."
         with self.assertRaisesRegex(ValueError, msg):
-            RectilinearInterpolator(
-                self.cube, ["non-monotonic"], LINEAR, EXTRAPOLATE
-            )
+            RectilinearInterpolator(self.cube, ["non-monotonic"], LINEAR, EXTRAPOLATE)
 
 
 class Test___call___1D(ThreeDimCube):
@@ -130,9 +119,7 @@ class Test___call___1D(ThreeDimCube):
 
     def test_interpolate_bad_coord_name(self):
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            RectilinearInterpolator(
-                self.cube, ["doesn't exist"], LINEAR, EXTRAPOLATE
-            )
+            RectilinearInterpolator(self.cube, ["doesn't exist"], LINEAR, EXTRAPOLATE)
 
     def test_interpolate_data_single(self):
         # Single sample point.
@@ -261,9 +248,7 @@ class Test___call___1D_circular(ThreeDimCube):
     # Note: all these test data interpolation.
     def setUp(self):
         ThreeDimCube.setUp(self)
-        self.cube.coord("longitude")._points = np.linspace(
-            0, 360, 4, endpoint=False
-        )
+        self.cube.coord("longitude")._points = np.linspace(0, 360, 4, endpoint=False)
         self.cube.coord("longitude").circular = True
         self.cube.coord("longitude").units = "degrees"
         self.interpolator = RectilinearInterpolator(
@@ -334,15 +319,11 @@ class Test___call___1D_circular(ThreeDimCube):
 
     def test_fully_wrapped_not_circular(self):
         cube = stock.lat_lon_cube()
-        new_long = cube.coord("longitude").copy(
-            cube.coord("longitude").points + 710
-        )
+        new_long = cube.coord("longitude").copy(cube.coord("longitude").points + 710)
         cube.remove_coord("longitude")
         cube.add_dim_coord(new_long, 1)
 
-        interpolator = RectilinearInterpolator(
-            cube, ["longitude"], LINEAR, EXTRAPOLATE
-        )
+        interpolator = RectilinearInterpolator(cube, ["longitude"], LINEAR, EXTRAPOLATE)
         res = interpolator([-10])
         self.assertArrayEqual(res.data, cube[:, 1].data)
 
@@ -480,9 +461,7 @@ class Test___call___2D_non_contiguous(ThreeDimCube):
             self.assertArrayEqual(coord_res, coord_expected)
 
     def test_orthogonal_cube(self):
-        result_cube = self.interpolator(
-            [np.int64([0, 1, 1]), np.int32([0, 1])]
-        )
+        result_cube = self.interpolator([np.int64([0, 1, 1]), np.int32([0, 1])])
         result_path = (
             "experimental",
             "analysis",
@@ -549,9 +528,7 @@ class Test___call___time(tests.IrisTest):
         time_coord = iris.coords.DimCoord(
             np.arange(0.0, 48.0, 12.0), "time", units="hours since epoch"
         )
-        height_coord = iris.coords.DimCoord(
-            np.arange(3), "altitude", units="m"
-        )
+        height_coord = iris.coords.DimCoord(np.arange(3), "altitude", units="m")
         cube.add_dim_coord(time_coord, 0)
         cube.add_dim_coord(height_coord, 1)
         return RectilinearInterpolator(cube, ["time"], method, EXTRAPOLATE)
@@ -602,9 +579,7 @@ class Test___call___time(tests.IrisTest):
             ]
         )
         self.assertEqual(result.coord("time").points.dtype, float)
-        self.assertArrayEqual(
-            result.data, [[3, 4, 5], [3, 4, 5], [6, 7, 8], [6, 7, 8]]
-        )
+        self.assertArrayEqual(result.data, [[3, 4, 5], [3, 4, 5], [6, 7, 8], [6, 7, 8]])
 
 
 if __name__ == "__main__":

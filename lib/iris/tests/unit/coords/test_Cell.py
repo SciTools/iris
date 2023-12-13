@@ -53,9 +53,7 @@ class Test___common_cmp__(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        self.assert_raises_on_comparison(
-            cell, dt, TypeError, "different calendars"
-        )
+        self.assert_raises_on_comparison(cell, dt, TypeError, "different calendars")
 
     def test_PartialDateTime_unbounded_cell(self):
         # Check that cell comparison works with PartialDateTimes.
@@ -254,9 +252,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(cell == n)
             bool(cell != n)
         except:  # noqa
-            self.fail(
-                "Result of comparison could not be used as a truth value"
-            )
+            self.fail("Result of comparison could not be used as a truth value")
 
     def test_cell_rhs(self):
         cell = Cell(point=1.5)
@@ -270,9 +266,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(n == cell)
             bool(n != cell)
         except:  # noqa
-            self.fail(
-                "Result of comparison could not be used as a truth value"
-            )
+            self.fail("Result of comparison could not be used as a truth value")
 
 
 if __name__ == "__main__":

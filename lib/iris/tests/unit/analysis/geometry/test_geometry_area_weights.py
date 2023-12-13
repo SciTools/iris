@@ -31,9 +31,7 @@ class Test(tests.IrisTest):
         self.data = np.empty((4, 2, 2))
         dim_coords_and_dims = [(y_coord, (1,)), (x_coord, (2,))]
         self.cube = Cube(self.data, dim_coords_and_dims=dim_coords_and_dims)
-        self.geometry = shapely.geometry.Polygon(
-            [(3, 3), (3, 50), (50, 50), (50, 3)]
-        )
+        self.geometry = shapely.geometry.Polygon([(3, 3), (3, 50), (50, 50), (50, 3)])
 
     def test_no_overlap(self):
         geometry = shapely.geometry.Polygon([(4, 4), (4, 6), (6, 6), (6, 4)])
@@ -42,18 +40,12 @@ class Test(tests.IrisTest):
 
     def test_overlap(self):
         weights = geometry_area_weights(self.cube, self.geometry)
-        expected = np.repeat(
-            [[[0.0, 0.0], [0.0, 1.0]]], self.data.shape[0], axis=0
-        )
+        expected = np.repeat([[[0.0, 0.0], [0.0, 1.0]]], self.data.shape[0], axis=0)
         self.assertArrayEqual(weights, expected)
 
     def test_overlap_normalize(self):
-        weights = geometry_area_weights(
-            self.cube, self.geometry, normalize=True
-        )
-        expected = np.repeat(
-            [[[0.0, 0.0], [0.0, 0.25]]], self.data.shape[0], axis=0
-        )
+        weights = geometry_area_weights(self.cube, self.geometry, normalize=True)
+        expected = np.repeat([[[0.0, 0.0], [0.0, 0.25]]], self.data.shape[0], axis=0)
         self.assertArrayEqual(weights, expected)
 
     @tests.skip_data
@@ -104,9 +96,7 @@ class Test(tests.IrisTest):
         miny = 84.99998474121094
         maxy = 89.99998474121094
         geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        geometry_overshoot = shapely.geometry.box(
-            minx, miny, maxx_overshoot, maxy
-        )
+        geometry_overshoot = shapely.geometry.box(minx, miny, maxx_overshoot, maxy)
         weights = geometry_area_weights(cube, geometry)
         weights_overshoot = geometry_area_weights(cube, geometry_overshoot)
         target = np.array(
@@ -145,12 +135,9 @@ class Test(tests.IrisTest):
             weights = geometry_area_weights(cube, geometry)
             self.assertEqual(
                 str(w[-1].message),
-                "The geometry exceeds the "
-                "cube's y dimension at the upper end.",
+                "The geometry exceeds the cube's y dimension at the upper end.",
             )
-            self.assertTrue(
-                issubclass(w[-1].category, IrisGeometryExceedWarning)
-            )
+            self.assertTrue(issubclass(w[-1].category, IrisGeometryExceedWarning))
         target = np.array(
             [
                 [0, top_cell_half, top_cell_half, 0],

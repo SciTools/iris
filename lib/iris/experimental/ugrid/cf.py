@@ -65,9 +65,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                 f"{nc_var_name}"
                             )
                             if warn:
-                                warnings.warn(
-                                    message, category=IrisCfMissingVarWarning
-                                )
+                                warnings.warn(message, category=IrisCfMissingVarWarning)
                         else:
                             # Restrict to non-string type i.e. not a
                             # CFLabelVariable.
@@ -148,9 +146,7 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                 # Restrict to non-string type i.e. not a
                                 # CFLabelVariable.
                                 if not cf._is_str_dtype(variables[name]):
-                                    result[
-                                        name
-                                    ] = CFUGridAuxiliaryCoordinateVariable(
+                                    result[name] = CFUGridAuxiliaryCoordinateVariable(
                                         name, variables[name]
                                     )
                                 else:
@@ -204,9 +200,7 @@ class CFUGridMeshVariable(cf.CFVariable):
                 # We are looking for all mesh variables. Check if THIS variable
                 #  is a mesh using its own attributes.
                 if getattr(nc_var, "cf_role", "") == "mesh_topology":
-                    result[nc_var_name] = CFUGridMeshVariable(
-                        nc_var_name, nc_var
-                    )
+                    result[nc_var_name] = CFUGridMeshVariable(nc_var_name, nc_var)
 
             # Check for mesh variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
@@ -221,16 +215,12 @@ class CFUGridMeshVariable(cf.CFVariable):
                             f"referenced by netCDF variable {nc_var_name}"
                         )
                         if warn:
-                            warnings.warn(
-                                message, category=IrisCfMissingVarWarning
-                            )
+                            warnings.warn(message, category=IrisCfMissingVarWarning)
                     else:
                         # Restrict to non-string type i.e. not a
                         # CFLabelVariable.
                         if not cf._is_str_dtype(variables[name]):
-                            result[name] = CFUGridMeshVariable(
-                                name, variables[name]
-                            )
+                            result[name] = CFUGridMeshVariable(name, variables[name])
                         else:
                             message = (
                                 f"Ignoring variable {name}, identified as a "
@@ -238,9 +228,7 @@ class CFUGridMeshVariable(cf.CFVariable):
                                 f"variable."
                             )
                             if warn:
-                                warnings.warn(
-                                    message, category=IrisCfLabelVarWarning
-                                )
+                                warnings.warn(message, category=IrisCfLabelVarWarning)
 
         return result
 

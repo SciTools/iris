@@ -18,9 +18,7 @@ import iris.exceptions
 import iris.fileformats.um_cf_map
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])
-ReferenceTarget = collections.namedtuple(
-    "ReferenceTarget", ("name", "transform")
-)
+ReferenceTarget = collections.namedtuple("ReferenceTarget", ("name", "transform"))
 
 
 class ConcreteReferenceTarget:
@@ -166,20 +164,17 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                         attributes=src.attributes,
                     )
                     dims = [
-                        cube.coord_dims(src_coord)[0]
-                        for src_coord in src.dim_coords
+                        cube.coord_dims(src_coord)[0] for src_coord in src.dim_coords
                     ]
                     cube.add_aux_coord(new_coord, dims)
                     args.append(new_coord)
                 else:
                     raise _ReferenceError(
-                        "Unable to regrid reference for"
-                        " {!r}".format(arg.name)
+                        "Unable to regrid reference for {!r}".format(arg.name)
                     )
             else:
                 raise _ReferenceError(
-                    "The source data contains no "
-                    "field(s) for {!r}.".format(arg.name)
+                    "The source data contains no field(s) for {!r}.".format(arg.name)
                 )
         else:
             # If it wasn't a Reference, then arg is a dictionary
@@ -228,9 +223,7 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
         # So we can use `iris.analysis.interpolate.linear()` later,
         # ensure each target coord is either a scalar or maps to a
         # single, distinct dimension.
-        target_dims = [
-            target_cube.coord_dims(coord) for coord in target_coords
-        ]
+        target_dims = [target_cube.coord_dims(coord) for coord in target_coords]
         target_dims = list(filter(None, target_dims))
         unique_dims = set()
         for dims in target_dims:
@@ -251,9 +244,7 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
                 result_cube = cubes[i]
             except ValueError:
                 # Not already cached, so do the hard work of interpolating.
-                result_cube = _regrid_to_target(
-                    src_cube, target_coords, target_cube
-                )
+                result_cube = _regrid_to_target(src_cube, target_coords, target_cube)
                 # Add it to the cache.
                 grids.append(target_coords)
                 cubes.append(result_cube)
@@ -282,9 +273,7 @@ class Loader(collections.namedtuple("Loader", _loader_attrs)):
             A callable that converts a field object into a Cube.
 
         """
-        return tuple.__new__(
-            cls, (field_generator, field_generator_kwargs, converter)
-        )
+        return tuple.__new__(cls, (field_generator, field_generator_kwargs, converter))
 
 
 ConversionMetadata = collections.namedtuple(
@@ -374,9 +363,7 @@ def _load_pairs_from_fields_and_filenames(
 
         # Post modify the new cube with a user-callback.
         # This is an ordinary Iris load callback, so it takes the filename.
-        cube = iris.io.run_callback(
-            user_callback_wrapper, cube, field, filename
-        )
+        cube = iris.io.run_callback(user_callback_wrapper, cube, field, filename)
         # Callback mechanism may return None, which must not be yielded.
         if cube is None:
             continue

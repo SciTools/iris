@@ -42,9 +42,7 @@ _CF_PARSE = re.compile(
 
 # NetCDF variable attributes handled by the netCDF4 module and
 # therefore automatically classed as "used" attributes.
-_CF_ATTRS_IGNORE = set(
-    ["_FillValue", "add_offset", "missing_value", "scale_factor"]
-)
+_CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
 
 #: Supported dimensionless vertical coordinate reference surface/phemomenon
 #: formula terms. Ref: [CF] Appendix D.
@@ -104,8 +102,7 @@ class CFVariable(metaclass=ABCMeta):
         elif isinstance(target, str):
             if target not in variables:
                 raise ValueError(
-                    "Cannot identify unknown target CF-netCDF variable %r"
-                    % target
+                    "Cannot identify unknown target CF-netCDF variable %r" % target
                 )
             target = {target: variables[target]}
         else:
@@ -195,9 +192,7 @@ class CFVariable(metaclass=ABCMeta):
 
     def cf_attrs(self):
         """Return a list of all attribute name and value pairs of the CF-netCDF variable."""
-        return tuple(
-            (attr, self.getncattr(attr)) for attr in sorted(self._nc_attrs)
-        )
+        return tuple((attr, self.getncattr(attr)) for attr in sorted(self._nc_attrs))
 
     def cf_attrs_ignored(self):
         """Return a list of all ignored attribute name and value pairs of the CF-netCDF variable."""
@@ -208,9 +203,7 @@ class CFVariable(metaclass=ABCMeta):
 
     def cf_attrs_used(self):
         """Return a list of all accessed attribute name and value pairs of the CF-netCDF variable."""
-        return tuple(
-            (attr, self.getncattr(attr)) for attr in sorted(self._cf_attrs)
-        )
+        return tuple((attr, self.getncattr(attr)) for attr in sorted(self._cf_attrs))
 
     def cf_attrs_unused(self):
         """Return a list of all non-accessed attribute name and value pairs of the CF-netCDF variable."""
@@ -380,9 +373,7 @@ class CFBoundaryVariable(CFVariable):
                                 category=iris.exceptions.IrisCfMissingVarWarning,
                             )
                     else:
-                        result[name] = CFBoundaryVariable(
-                            name, variables[name]
-                        )
+                        result[name] = CFBoundaryVariable(name, variables[name])
 
         return result
 
@@ -409,9 +400,9 @@ class CFBoundaryVariable(CFVariable):
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the bounds extent dimension.
-            result = set(source[:-1]).issubset(target) or set(
-                source[1:]
-            ).issubset(target)
+            result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
+                target
+            )
         return result
 
 
@@ -455,9 +446,7 @@ class CFClimatologyVariable(CFVariable):
                                 category=iris.exceptions.IrisCfMissingVarWarning,
                             )
                     else:
-                        result[name] = CFClimatologyVariable(
-                            name, variables[name]
-                        )
+                        result[name] = CFClimatologyVariable(name, variables[name])
 
         return result
 
@@ -484,9 +473,9 @@ class CFClimatologyVariable(CFVariable):
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the climatology extent dimension.
-            result = set(source[:-1]).issubset(target) or set(
-                source[1:]
-            ).issubset(target)
+            result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
+                target
+            )
         return result
 
 
@@ -505,9 +494,7 @@ class CFCoordinateVariable(CFVariable):
     """
 
     @classmethod
-    def identify(
-        cls, variables, ignore=None, target=None, warn=True, monotonic=False
-    ):
+    def identify(cls, variables, ignore=None, target=None, warn=True, monotonic=False):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
 
@@ -532,9 +519,7 @@ class CFCoordinateVariable(CFVariable):
                     or nc_var.shape == (1,)
                     or iris.util.monotonic(data)
                 ):
-                    result[nc_var_name] = CFCoordinateVariable(
-                        nc_var_name, nc_var
-                    )
+                    result[nc_var_name] = CFCoordinateVariable(nc_var_name, nc_var)
             else:
                 result[nc_var_name] = CFCoordinateVariable(nc_var_name, nc_var)
 
@@ -599,9 +584,7 @@ class _CFFormulaTermsVariable(CFVariable):
                                 )
                         else:
                             if variable_name not in result:
-                                result[
-                                    variable_name
-                                ] = _CFFormulaTermsVariable(
+                                result[variable_name] = _CFFormulaTermsVariable(
                                     variable_name,
                                     variables[variable_name],
                                     nc_var_name,
@@ -664,9 +647,7 @@ class CFGridMappingVariable(CFVariable):
                                 category=iris.exceptions.IrisCfMissingVarWarning,
                             )
                     else:
-                        result[name] = CFGridMappingVariable(
-                            name, variables[name]
-                        )
+                        result[name] = CFGridMappingVariable(name, variables[name])
 
         return result
 
@@ -831,9 +812,9 @@ class CFLabelVariable(CFVariable):
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore label string length dimension.
-            result = set(source[:-1]).issubset(target) or set(
-                source[1:]
-            ).issubset(target)
+            result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
+                target
+            )
         return result
 
 
@@ -1017,9 +998,7 @@ class CFGroup(MutableMapping):
 
     def __getitem__(self, name):
         if name not in self._cf_variables:
-            raise KeyError(
-                "Cannot get unknown CF-netCDF variable name %r" % str(name)
-            )
+            raise KeyError("Cannot get unknown CF-netCDF variable name %r" % str(name))
 
         return self._cf_variables[name]
 
@@ -1069,9 +1048,7 @@ class CFReader:
         if isinstance(file_source, str):
             # Create from filepath : open it + own it (=close when we die).
             self._filename = os.path.expanduser(file_source)
-            self._dataset = _thread_safe_nc.DatasetWrapper(
-                self._filename, mode="r"
-            )
+            self._dataset = _thread_safe_nc.DatasetWrapper(self._filename, mode="r")
             self._own_file = True
         else:
             # We have been passed an open dataset.
@@ -1155,9 +1132,7 @@ class CFReader:
         self.cf_group.global_attributes.update(attr_dict)
 
         # Identify and register all CF formula terms.
-        formula_terms = _CFFormulaTermsVariable.identify(
-            self._dataset.variables
-        )
+        formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
 
         for cf_var in formula_terms.values():
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
@@ -1176,9 +1151,7 @@ class CFReader:
         )
 
         for name in data_variable_names:
-            self.cf_group[name] = CFDataVariable(
-                name, self._dataset.variables[name]
-            )
+            self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
 
     def _build_cf_groups(self):
         """Build the first order relationships between CF-netCDF variables."""
@@ -1239,9 +1212,7 @@ class CFReader:
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
                 # Add global netCDF attributes.
-                cf_group.global_attributes.update(
-                    self.cf_group.global_attributes
-                )
+                cf_group.global_attributes.update(self.cf_group.global_attributes)
                 # Add appropriate "dimensioned" CF coordinate variables.
                 cf_group.update(
                     {
@@ -1262,10 +1233,7 @@ class CFReader:
                 # Add appropriate formula terms.
                 for cf_var in self.cf_group.formula_terms.values():
                     for cf_root in cf_var.cf_terms_by_root:
-                        if (
-                            cf_root in cf_group
-                            and cf_var.cf_name not in cf_group
-                        ):
+                        if cf_root in cf_group and cf_var.cf_name not in cf_group:
                             # Sanity check dimensionality.
                             if cf_var.spans(cf_variable):
                                 cf_group[cf_var.cf_name] = cf_var
@@ -1312,10 +1280,7 @@ class CFReader:
                 if isinstance(terms, str) or not isinstance(terms, Iterable):
                     terms = [terms]
                 cf_var_name = cf_var.cf_name
-                if (
-                    cf_term in terms
-                    and cf_var_name not in self.cf_group.promoted
-                ):
+                if cf_term in terms and cf_var_name not in self.cf_group.promoted:
                     data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
                     self.cf_group.promoted[cf_var_name] = data_var
                     _build(data_var)
@@ -1329,9 +1294,7 @@ class CFReader:
                 cf_name not in self.cf_group.data_variables
                 and cf_name not in self.cf_group.promoted
             ):
-                data_var = CFDataVariable(
-                    cf_name, self.cf_group[cf_name].cf_data
-                )
+                data_var = CFDataVariable(cf_name, self.cf_group[cf_name].cf_data)
                 self.cf_group.promoted[cf_name] = data_var
                 _build(data_var)
             # Determine whether there are still any ignored variables

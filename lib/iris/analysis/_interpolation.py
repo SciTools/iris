@@ -85,9 +85,7 @@ def extend_circular_data(data, coord_dim):
     coord_slice_in_cube[coord_dim] = slice(0, 1)
 
     mod = ma if ma.isMaskedArray(data) else np
-    data = mod.concatenate(
-        (data, data[tuple(coord_slice_in_cube)]), axis=coord_dim
-    )
+    data = mod.concatenate((data, data[tuple(coord_slice_in_cube)]), axis=coord_dim)
     return data
 
 
@@ -139,16 +137,14 @@ def get_xy_coords(cube, dim_coords=False):
     x_coords = cube.coords(axis="x", dim_coords=dim_coords)
     if len(x_coords) != 1 or x_coords[0].ndim != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D x "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D x coordinate.".format(cube.name())
         )
     x_coord = x_coords[0]
 
     y_coords = cube.coords(axis="y", dim_coords=dim_coords)
     if len(y_coords) != 1 or y_coords[0].ndim != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D y "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D y coordinate.".format(cube.name())
         )
     y_coord = y_coords[0]
 
@@ -284,9 +280,7 @@ class RectilinearInterpolator:
     def _account_for_inverted(self, data):
         if np.any(self._coord_decreasing):
             dim_slices = [slice(None)] * data.ndim
-            for interp_dim, flip in zip(
-                self._interp_dims, self._coord_decreasing
-            ):
+            for interp_dim, flip in zip(self._interp_dims, self._coord_decreasing):
                 if flip:
                     dim_slices[interp_dim] = slice(-1, None, -1)
             data = data[tuple(dim_slices)]
@@ -435,9 +429,7 @@ class RectilinearInterpolator:
                 # Only DimCoords can be circular.
                 if circular:
                     coord_points = extend_circular_coord(coord, coord_points)
-                offset = 0.5 * (
-                    coord_points.max() + coord_points.min() - modulus
-                )
+                offset = 0.5 * (coord_points.max() + coord_points.min() - modulus)
                 self._circulars.append(
                     (circular, modulus, index, coord_dims[0], offset)
                 )
@@ -466,17 +458,13 @@ class RectilinearInterpolator:
         for coord in self._src_coords:
             if coord.ndim != 1:
                 raise ValueError(
-                    "Interpolation coords must be 1-d for "
-                    "rectilinear interpolation."
+                    "Interpolation coords must be 1-d for rectilinear interpolation."
                 )
 
             if not isinstance(coord, DimCoord):
                 # Check monotonic.
                 if not iris.util.monotonic(coord.points, strict=True):
-                    msg = (
-                        "Cannot interpolate over the non-"
-                        "monotonic coordinate {}."
-                    )
+                    msg = "Cannot interpolate over the non-monotonic coordinate {}."
                     raise ValueError(msg.format(coord.name()))
 
     def _interpolated_dtype(self, dtype):
@@ -541,9 +529,7 @@ class RectilinearInterpolator:
             for dim in range(self._src_cube.ndim):
                 if dim not in data_dims:
                     strides.insert(dim, 0)
-            data = as_strided(
-                data, strides=strides, shape=self._src_cube.shape
-            )
+            data = as_strided(data, strides=strides, shape=self._src_cube.shape)
 
         data = self._account_for_inverted(data)
         # Calculate the transpose order to shuffle the interpolated dimensions
@@ -553,9 +539,7 @@ class RectilinearInterpolator:
         di = self._interp_dims
         ds = sorted(dims, key=lambda d: d not in di)
         dmap = {d: di.index(d) if d in di else ds.index(d) for d in dims}
-        interp_order, _ = zip(
-            *sorted(dmap.items(), key=operator.itemgetter(1))
-        )
+        interp_order, _ = zip(*sorted(dmap.items(), key=operator.itemgetter(1)))
         _, src_order = zip(*sorted(dmap.items(), key=operator.itemgetter(0)))
 
         # Prepare the sample points for interpolation and calculate the
@@ -619,13 +603,9 @@ class RectilinearInterpolator:
         """
         if len(sample_points) != len(self._src_coords):
             msg = "Expected sample points for {} coordinates, got {}."
-            raise ValueError(
-                msg.format(len(self._src_coords), len(sample_points))
-            )
+            raise ValueError(msg.format(len(self._src_coords), len(sample_points)))
 
-        sample_points = _canonical_sample_points(
-            self._src_coords, sample_points
-        )
+        sample_points = _canonical_sample_points(self._src_coords, sample_points)
 
         data = self._src_cube.data
         # Interpolate the cube payload.
@@ -670,9 +650,7 @@ class RectilinearInterpolator:
             else:
                 if set(dims).intersection(set(self._interp_dims)):
                     # Interpolate the coordinate payload.
-                    new_coord = self._resample_coord(
-                        sample_points, coord, dims
-                    )
+                    new_coord = self._resample_coord(sample_points, coord, dims)
                 else:
                     new_coord = coord.copy()
             return new_coord, dims

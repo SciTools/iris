@@ -87,9 +87,7 @@ class Test__optimised_chunks(tests.IrisTest):
         ]
         err_fmt = "Result of optimising chunks {} was {}, expected {}"
         for shape, expected in given_shapes_and_resulting_chunks:
-            chunks = _optimum_chunksize(
-                shape, shape, limit=self.FIXED_CHUNKSIZE_LIMIT
-            )
+            chunks = _optimum_chunksize(shape, shape, limit=self.FIXED_CHUNKSIZE_LIMIT)
             msg = err_fmt.format(shape, chunks, expected)
             self.assertEqual(chunks, expected, msg)
 
@@ -146,17 +144,13 @@ class Test__optimised_chunks(tests.IrisTest):
             result = _optimum_chunksize(
                 chunks=chunks, shape=shape, limit=limit, dtype=np.dtype("b1")
             )
-            msg = err_fmt_main.format(
-                chunks, shape, limit, result, expected_result
-            )
+            msg = err_fmt_main.format(chunks, shape, limit, result, expected_result)
             self.assertEqual(result, expected_result, msg)
 
     def test_default_chunksize(self):
         # Check that the "ideal" chunksize is taken from the dask config.
         with dask.config.set({"array.chunk-size": "20b"}):
-            chunks = _optimum_chunksize(
-                (1, 8), shape=(400, 20), dtype=np.dtype("f4")
-            )
+            chunks = _optimum_chunksize((1, 8), shape=(400, 20), dtype=np.dtype("f4"))
             self.assertEqual(chunks, (1, 4))
 
     def test_default_chunks_limiting(self):

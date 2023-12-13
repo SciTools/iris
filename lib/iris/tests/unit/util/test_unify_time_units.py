@@ -90,9 +90,7 @@ class Test(tests.IrisTest):
 
     def test_multiple_time_coords_in_cube(self):
         cube0, cube1 = self.simple_1d_time_cubes()
-        units = cf_units.Unit(
-            "days since 1980-05-02 00:00:00", calendar="standard"
-        )
+        units = cf_units.Unit("days since 1980-05-02 00:00:00", calendar="standard")
         aux_coord = iris.coords.AuxCoord(
             72, standard_name="forecast_reference_time", units=units
         )
@@ -134,9 +132,7 @@ class Test(tests.IrisTest):
     def test_units_dtype_int_float(self):
         cube0, cube1 = self.simple_1d_time_cubes()
         cube0.coord("time").points = np.array([1, 2, 3, 4, 5], dtype=int)
-        cube1.coord("time").points = np.array(
-            [1, 2, 3, 4, 5], dtype=np.float64
-        )
+        cube1.coord("time").points = np.array([1, 2, 3, 4, 5], dtype=np.float64)
         cubelist = iris.cube.CubeList([cube0, cube1])
         unify_time_units(cubelist)
         assert len(cubelist.concatenate()) == 1

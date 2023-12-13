@@ -13,9 +13,7 @@ import iris.tests as tests  # isort: skip
 
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Mixin__grid_mapping(Mixin__nc_load_actions):
@@ -280,9 +278,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         else:
             expected_dim_coords += x_coords
 
-        self.assertEqual(
-            set(expected_dim_coords), set(cube.coords(dim_coords=True))
-        )
+        self.assertEqual(set(expected_dim_coords), set(cube.coords(dim_coords=True)))
         if cube_no_xycoords:
             self.assertEqual(expected_dim_coords, [])
             x_coord = None
@@ -293,9 +289,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
             self.assertEqual(len(y_coords), 1)
             (y_coord,) = y_coords
 
-        self.assertEqual(
-            set(expected_aux_coords), set(cube.coords(dim_coords=False))
-        )
+        self.assertEqual(set(expected_aux_coords), set(cube.coords(dim_coords=False)))
 
         if x_coord:
             if xco_stdname is None:
@@ -406,9 +400,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # Notes:
         #     * behaviours all the same as 'test_bad_gridmapping_nameproperty'
         warning = "Missing.*grid mapping variable 'grid'"
-        result = self.run_testcase(
-            warning_regex=warning, gridmapvar_name="grid_2"
-        )
+        result = self.run_testcase(warning_regex=warning, gridmapvar_name="grid_2")
         self.check_result(result, cube_no_cs=True)
 
     def test_latlon_bad_latlon_unit(self):
@@ -453,9 +445,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * dim-coords identified : lat+lon
         #     * coords built: lat+lon coords ROTATED, with coord-system
         #         - "rotated" means that they have a different name + units
-        result = self.run_testcase(
-            mapping_type_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON
-        )
+        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON)
         self.check_result(result, cube_cstype=ics.RotatedGeogCS)
 
     #
@@ -482,9 +472,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         self.check_result(result, cube_cstype=ics.AlbersEqualArea)
 
     def test_mapping_geostationary(self):
-        result = self.run_testcase(
-            mapping_type_name=hh.CF_GRID_MAPPING_GEOSTATIONARY
-        )
+        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_GEOSTATIONARY)
         self.check_result(result, cube_cstype=ics.Geostationary)
 
     def test_mapping_lambert_azimuthal(self):
@@ -500,9 +488,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         self.check_result(result, cube_cstype=ics.LambertConformal)
 
     def test_mapping_mercator(self):
-        result = self.run_testcase(
-            mapping_type_name=hh.CF_GRID_MAPPING_MERCATOR
-        )
+        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_MERCATOR)
         self.check_result(result, cube_cstype=ics.Mercator)
 
     def test_mapping_stereographic(self):
@@ -514,15 +500,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         self.check_result(result, cube_cstype=ics.PolarStereographic)
 
     def test_mapping_transverse_mercator(self):
-        result = self.run_testcase(
-            mapping_type_name=hh.CF_GRID_MAPPING_TRANSVERSE
-        )
+        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_TRANSVERSE)
         self.check_result(result, cube_cstype=ics.TransverseMercator)
 
     def test_mapping_vertical_perspective(self):
-        result = self.run_testcase(
-            mapping_type_name=hh.CF_GRID_MAPPING_VERTICAL
-        )
+        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_VERTICAL)
         self.check_result(result, cube_cstype=ics.VerticalPerspective)
 
     def test_mapping_unsupported(self):
@@ -539,9 +521,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * NO grid-mapping is identified (or coord-system built)
         #     * There is no warning for this : it fails silently.
         #         TODO: perhaps there _should_ be a warning in such cases ?
-        result = self.run_testcase(
-            mapping_type_name=hh.CF_GRID_MAPPING_AZIMUTHAL
-        )
+        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_AZIMUTHAL)
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
     def test_mapping_undefined(self):
@@ -717,9 +697,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             yco_name="projection_y",
             yco_units="m",
         )
-        self.check_result(
-            result, cube_no_cs=True, xco_stdname=False, yco_stdname=False
-        )
+        self.check_result(result, cube_no_cs=True, xco_stdname=False, yco_stdname=False)
 
     def test_mapping__mismatch__nonll_coords_rotated_system(self):
         # Rules Triggered:
@@ -738,9 +716,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             yco_name="projection_y",
             yco_units="m",
         )
-        self.check_result(
-            result, cube_no_cs=True, xco_stdname=False, yco_stdname=False
-        )
+        self.check_result(result, cube_no_cs=True, xco_stdname=False, yco_stdname=False)
 
     def test_mapping__mismatch__nonll_coords_missing_system(self):
         # Rules Triggered:
@@ -760,9 +736,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             yco_name="projection_y",
             yco_units="m",
         )
-        self.check_result(
-            result, cube_no_cs=True, xco_stdname=False, yco_stdname=False
-        )
+        self.check_result(result, cube_no_cs=True, xco_stdname=False, yco_stdname=False)
 
 
 class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
@@ -811,9 +785,7 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
         #     * a grid-mapping is recognised, but discarded, as in this case
         #       there are no dim-coords to reference it.
         result = self.run_testcase(xco_is_dim=False, yco_is_dim=False)
-        self.check_result(
-            result, xco_is_aux=True, yco_is_aux=True, cube_no_cs=True
-        )
+        self.check_result(result, xco_is_aux=True, yco_is_aux=True, cube_no_cs=True)
 
     def test_aux_lon_rotated(self):
         # Rotated-style lat + lon coords, X is an aux-coord.
@@ -873,9 +845,7 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
         #     * in terms of rule triggering, this is not distinct from the
         #       "normal" case : but latitude is now created as an aux-coord.
         warning = "must be.* monotonic"
-        result = self.run_testcase(
-            warning_regex=warning, yco_values=[0.0, 0.0]
-        )
+        result = self.run_testcase(warning_regex=warning, yco_values=[0.0, 0.0])
         self.check_result(result, yco_is_aux=True)
 
 

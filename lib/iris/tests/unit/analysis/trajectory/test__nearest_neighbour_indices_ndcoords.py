@@ -14,9 +14,7 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.analysis.trajectory import (
-    _nearest_neighbour_indices_ndcoords as nn_ndinds,
-)
+from iris.analysis.trajectory import _nearest_neighbour_indices_ndcoords as nn_ndinds
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 
@@ -43,12 +41,8 @@ class Test2d(tests.IrisTest):
         self.assertEqual(result, [(1, 2), (0, 0), (0, 1)])
 
     def test_latlon_simple_2d(self):
-        co_y = DimCoord(
-            [10.0, 20.0], standard_name="latitude", units="degrees"
-        )
-        co_x = DimCoord(
-            [1.0, 2.0, 3.0], standard_name="longitude", units="degrees"
-        )
+        co_y = DimCoord([10.0, 20.0], standard_name="latitude", units="degrees")
+        co_x = DimCoord([1.0, 2.0, 3.0], standard_name="longitude", units="degrees")
         cube = Cube(np.zeros((2, 3)))
         cube.add_dim_coord(co_y, 0)
         cube.add_dim_coord(co_x, 1)
@@ -57,12 +51,8 @@ class Test2d(tests.IrisTest):
         self.assertEqual(result, [(1, 2)])
 
     def test_latlon_multiple_2d(self):
-        co_y = DimCoord(
-            [10.0, 20.0], standard_name="latitude", units="degrees"
-        )
-        co_x = DimCoord(
-            [1.0, 2.0, 3.0], standard_name="longitude", units="degrees"
-        )
+        co_y = DimCoord([10.0, 20.0], standard_name="latitude", units="degrees")
+        co_x = DimCoord([1.0, 2.0, 3.0], standard_name="longitude", units="degrees")
         cube = Cube(np.zeros((2, 3)))
         cube.add_dim_coord(co_y, 0)
         cube.add_dim_coord(co_x, 1)

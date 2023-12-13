@@ -104,8 +104,7 @@ class CubeRepresentation:
             "Attributes:",
         ]
         self.sections_data = {
-            name: None
-            for name in self.vector_section_names + self.scalar_section_names
+            name: None for name in self.vector_section_names + self.scalar_section_names
         }
         # 'Scalar-cell-measures' is currently alone amongst the scalar sections,
         # in displaying only a 'name' and no 'value' field.
@@ -134,9 +133,7 @@ class CubeRepresentation:
         # Add the dim_coord names that participate in the associated data
         # dimensions.
         for dim in range(len(self.cube.shape)):
-            dim_coords = self.cube.coords(
-                contains_dimension=dim, dim_coords=True
-            )
+            dim_coords = self.cube.coords(contains_dimension=dim, dim_coords=True)
             if dim_coords:
                 dim_names[dim] = dim_coords[0].name()
             else:
@@ -191,28 +188,20 @@ class CubeRepresentation:
 
         """
         # Header row.
-        tlc_template = (
-            '<th class="iris iris-word-cell">{self.name} ({self.units})</th>'
-        )
+        tlc_template = '<th class="iris iris-word-cell">{self.name} ({self.units})</th>'
         top_left_cell = tlc_template.format(self=self)
         cells = ['<tr class="iris">', top_left_cell]
         for dim_name in self.names:
-            cells.append(
-                '<th class="iris iris-word-cell">{}</th>'.format(dim_name)
-            )
+            cells.append('<th class="iris iris-word-cell">{}</th>'.format(dim_name))
         cells.append("</tr>")
         return "\n".join(cell for cell in cells)
 
     def _make_shapes_row(self):
         """Add a row to show data / dimensions shape."""
-        title_cell = (
-            '<td class="iris-word-cell iris-subheading-cell">Shape</td>'
-        )
+        title_cell = '<td class="iris-word-cell iris-subheading-cell">Shape</td>'
         cells = ['<tr class="iris">', title_cell]
         for shape in self.shapes:
-            cells.append(
-                '<td class="iris iris-inclusion-cell">{}</td>'.format(shape)
-            )
+            cells.append('<td class="iris iris-inclusion-cell">{}</td>'.format(shape))
         cells.append("</tr>")
         return "\n".join(cell for cell in cells)
 
@@ -244,9 +233,7 @@ class CubeRepresentation:
             )
             # Add blank cells for the rest of the rows.
             for _ in range(self.ndims):
-                row.append(
-                    template.format(html_cls=' class="iris-title"', content="")
-                )
+                row.append(template.format(html_cls=' class="iris-title"', content=""))
         else:
             # This is not a title row.
             # Deal with name of coord/attr etc. first.
@@ -259,9 +246,7 @@ class CubeRepresentation:
             )
             # One further item or more than that?
             if col_span != 0:
-                html_cls = ' class="{}" colspan="{}"'.format(
-                    "iris-word-cell", col_span
-                )
+                html_cls = ' class="{}" colspan="{}"'.format("iris-word-cell", col_span)
                 row.append(template.format(html_cls=html_cls, content=body))
             else:
                 # "Inclusion" - `x` or `-`.
@@ -298,9 +283,7 @@ class CubeRepresentation:
                             title = line[:split_point].strip()
                             body = line[split_point + 2 :].strip()
 
-                    elements.extend(
-                        self._make_row(title, body=body, col_span=colspan)
-                    )
+                    elements.extend(self._make_row(title, body=body, col_span=colspan))
         return "\n".join(element for element in elements)
 
     def repr_html(self):
@@ -402,9 +385,7 @@ class CubeListRepresentation:
     def make_content(self):
         html = []
         for i, cube in enumerate(self.cubelist):
-            title = "{i}: {summary}".format(
-                i=i, summary=cube.summary(shorten=True)
-            )
+            title = "{i}: {summary}".format(i=i, summary=cube.summary(shorten=True))
             title = escape(title)
             content = cube._repr_html_()
             html.append(
@@ -417,6 +398,4 @@ class CubeListRepresentation:
     def repr_html(self):
         contents = self.make_content()
         contents_str = "\n".join(contents)
-        return self._template.format(
-            uid=self.cubelist_id, contents=contents_str
-        )
+        return self._template.format(uid=self.cubelist_id, contents=contents_str)

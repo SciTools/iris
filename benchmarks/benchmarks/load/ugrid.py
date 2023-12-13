@@ -97,9 +97,7 @@ class DataRealisationTime(DataRealisation):
     param_names = ["number of time steps"]
 
     def setup(self, *args):
-        self.setup_common(
-            dataset_name="Realisation", n_faces=1, n_times=args[0]
-        )
+        self.setup_common(dataset_name="Realisation", n_faces=1, n_times=args[0])
 
 
 class Callback:

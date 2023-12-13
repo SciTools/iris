@@ -80,9 +80,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         edge_nodes = Connectivity(conns, cf_role="edge_node_connectivity")
         connectivities.append(edge_nodes)
 
-        edge_x = AuxCoord(
-            2100 + arr.arange(n_edges), standard_name="longitude"
-        )
+        edge_x = AuxCoord(2100 + arr.arange(n_edges), standard_name="longitude")
         edge_y = AuxCoord(2200 + arr.arange(n_edges), standard_name="latitude")
         edge_coords_and_axes = [(edge_x, "x"), (edge_y, "y")]
 
@@ -97,9 +95,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         connectivities.append(face_nodes)
 
         # Some numbers for the edge coordinates.
-        face_x = AuxCoord(
-            3100 + arr.arange(n_faces), standard_name="longitude"
-        )
+        face_x = AuxCoord(3100 + arr.arange(n_faces), standard_name="longitude")
         face_y = AuxCoord(3200 + arr.arange(n_faces), standard_name="latitude")
         face_coords_and_axes = [(face_x, "x"), (face_y, "y")]
 
@@ -127,9 +123,7 @@ def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
     return result
 
 
-def sample_mesh_cube(
-    nomesh_faces=None, n_z=2, with_parts=False, **meshcoord_kwargs
-):
+def sample_mesh_cube(nomesh_faces=None, n_z=2, with_parts=False, **meshcoord_kwargs):
     """
     Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a Mesh).
 
@@ -168,9 +162,7 @@ def sample_mesh_cube(
         )
         n_faces = meshx.shape[0]
 
-    mesh_dimco = DimCoord(
-        np.arange(n_faces), long_name="i_mesh_face", units="1"
-    )
+    mesh_dimco = DimCoord(np.arange(n_faces), long_name="i_mesh_face", units="1")
 
     auxco_x = AuxCoord(np.zeros(n_faces), long_name="mesh_face_aux", units="1")
 

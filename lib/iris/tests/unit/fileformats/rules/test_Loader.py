@@ -23,9 +23,7 @@ class Test___init__(tests.IrisTest):
             )
         self.assertEqual(warn.call_count, 0)
         self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
-        self.assertIs(
-            loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS
-        )
+        self.assertIs(loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS)
         self.assertIs(loader.converter, mock.sentinel.CONVERTER)
 
     def test_normal_with_explicit_none(self):
@@ -37,9 +35,7 @@ class Test___init__(tests.IrisTest):
             )
         self.assertEqual(warn.call_count, 0)
         self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
-        self.assertIs(
-            loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS
-        )
+        self.assertIs(loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS)
         self.assertIs(loader.converter, mock.sentinel.CONVERTER)
 
 

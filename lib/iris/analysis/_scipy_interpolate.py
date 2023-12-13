@@ -25,9 +25,7 @@ def _ndim_coords_from_arrays(points, ndim=None):
         p = np.broadcast_arrays(*points)
         for j in range(1, len(p)):
             if p[j].shape != p[0].shape:
-                raise ValueError(
-                    "coordinate arrays do not have the same shape"
-                )
+                raise ValueError("coordinate arrays do not have the same shape")
         points = np.empty(p[0].shape + (len(points),), dtype=float)
         for j, item in enumerate(p):
             points[..., j] = item
@@ -123,9 +121,7 @@ class _RegularGridInterpolator:
 
         self.fill_value = fill_value
         if fill_value is not None:
-            if hasattr(values, "dtype") and not np.can_cast(
-                fill_value, values.dtype
-            ):
+            if hasattr(values, "dtype") and not np.can_cast(fill_value, values.dtype):
                 raise ValueError(
                     "fill_value must be either 'None' or "
                     "of a type compatible with values"
@@ -134,13 +130,10 @@ class _RegularGridInterpolator:
         for i, p in enumerate(points):
             if not np.all(np.diff(p) > 0.0):
                 raise ValueError(
-                    "The points in dimension %d must be strictly "
-                    "ascending" % i
+                    "The points in dimension %d must be strictly ascending" % i
                 )
             if not np.asarray(p).ndim == 1:
-                raise ValueError(
-                    "The points in dimension %d must be " "1-dimensional" % i
-                )
+                raise ValueError("The points in dimension %d must be 1-dimensional" % i)
             if not values.shape[i] == len(p):
                 raise ValueError(
                     "There are %d points and %d values in "
@@ -240,18 +233,13 @@ class _RegularGridInterpolator:
             )
 
             corners = itertools.product(
-                *[
-                    [(i, 1 - n), (i + 1, n)]
-                    for i, n in zip(indices, norm_distances)
-                ]
+                *[[(i, 1 - n), (i + 1, n)] for i, n in zip(indices, norm_distances)]
             )
             shape = self.values.shape[:ndim]
 
             for i, corner in enumerate(corners):
                 corner_indices = [ci for ci, cw in corner]
-                n_indices = np.ravel_multi_index(
-                    corner_indices, shape, mode="wrap"
-                )
+                n_indices = np.ravel_multi_index(corner_indices, shape, mode="wrap")
                 col_indices[i::n_src_values_per_result_value] = n_indices
                 for ci, cw in corner:
                     weights[i::n_src_values_per_result_value] *= cw
@@ -300,9 +288,7 @@ class _RegularGridInterpolator:
         if method == "linear":
             result = self._evaluate_linear_sparse(indices)
         elif method == "nearest":
-            result = self._evaluate_nearest(
-                indices, norm_distances, out_of_bounds
-            )
+            result = self._evaluate_nearest(indices, norm_distances, out_of_bounds)
         if not self.bounds_error and self.fill_value is not None:
             result[out_of_bounds] = self.fill_value
 

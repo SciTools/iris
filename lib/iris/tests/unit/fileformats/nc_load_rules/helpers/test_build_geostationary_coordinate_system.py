@@ -22,9 +22,7 @@ from iris.fileformats._nc_load_rules.helpers import (
 
 
 class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
-    def _test(
-        self, inverse_flattening=False, replace_props=None, remove_props=None
-    ):
+    def _test(self, inverse_flattening=False, replace_props=None, remove_props=None):
         """
         Generic test that can check vertical perspective validity with or
         without inverse flattening.
@@ -74,9 +72,7 @@ class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
         self._test(remove_props=["false_easting", "false_northing"])
 
     def test_false_offsets_none(self):
-        self._test(
-            replace_props={"false_easting": None, "false_northing": None}
-        )
+        self._test(replace_props={"false_easting": None, "false_northing": None})
 
 
 if __name__ == "__main__":

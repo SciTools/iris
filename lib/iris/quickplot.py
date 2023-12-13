@@ -62,9 +62,7 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
         bar = plt.colorbar(
             result, ax=axes, orientation="horizontal", drawedges=draw_edges
         )
-        has_known_units = not (
-            cube.units.is_unknown() or cube.units.is_no_unit()
-        )
+        has_known_units = not (cube.units.is_unknown() or cube.units.is_no_unit())
         if has_known_units and cube.units != cf_units.Unit("1"):
             # Use shortest unit representation for anything other than time
             if _use_symbol(cube.units):
@@ -89,10 +87,7 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
         axes.set_xlabel(_title(plot_defn.coords[0], with_units=True))
         axes.set_ylabel(_title(cube, with_units=True))
     else:
-        msg = (
-            "Unexpected number of dimensions ({}) given to "
-            "_label.".format(ndims)
-        )
+        msg = "Unexpected number of dimensions ({}) given to _label.".format(ndims)
         raise ValueError(msg)
 
 
@@ -130,9 +125,7 @@ def _label_1d_plot(*args, **kwargs):
     axes = kwargs.pop("axes", None)
 
     if len(kwargs) != 0:
-        msg = "Unexpected kwargs {} given to _label_1d_plot".format(
-            kwargs.keys()
-        )
+        msg = "Unexpected kwargs {} given to _label_1d_plot".format(kwargs.keys())
         raise ValueError(msg)
 
     if axes is None:

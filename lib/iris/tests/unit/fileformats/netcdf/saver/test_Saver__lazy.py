@@ -34,9 +34,7 @@ class Test__create_cf_bounds(test_Saver.Test__create_cf_bounds):
     def climatology_3d():
         cube = stock.climatology_3d()
         aux_coord = AuxCoord.from_coord(cube.coord("time"))
-        lazy_coord = aux_coord.copy(
-            aux_coord.lazy_points(), aux_coord.lazy_bounds()
-        )
+        lazy_coord = aux_coord.copy(aux_coord.lazy_points(), aux_coord.lazy_bounds())
         cube.replace_coord(lazy_coord)
         return cube
 
@@ -102,9 +100,7 @@ class TestStreamed(tests.IrisTest):
 
     def test_lazy_streamed_coord(self):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
-        lazy_coord = aux_coord.copy(
-            aux_coord.lazy_points(), aux_coord.lazy_bounds()
-        )
+        lazy_coord = aux_coord.copy(aux_coord.lazy_points(), aux_coord.lazy_bounds())
         self.cube.replace_coord(lazy_coord)
         self.save_common(self.cube)
         self.assertTrue(self.store_watch.called)

@@ -141,9 +141,7 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(
-        self, datum_support=False, pandas_ndim=False, save_split_attrs=False
-    ):
+    def __init__(self, datum_support=False, pandas_ndim=False, save_split_attrs=False):
         """
         A container for run-time options controls.
 
@@ -190,9 +188,7 @@ class Future(threading.local):
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
         msg = "Future(datum_support={}, pandas_ndim={}, save_split_attrs={})"
-        return msg.format(
-            self.datum_support, self.pandas_ndim, self.save_split_attrs
-        )
+        return msg.format(self.datum_support, self.pandas_ndim, self.save_split_attrs)
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
@@ -478,8 +474,7 @@ def sample_data_path(*path_to_join):
         target = os.path.join(iris_sample_data.path, target)
     else:
         raise ImportError(
-            "Please install the 'iris-sample-data' package to "
-            "access sample data."
+            "Please install the 'iris-sample-data' package to access sample data."
         )
     if not glob.glob(target):
         raise ValueError(

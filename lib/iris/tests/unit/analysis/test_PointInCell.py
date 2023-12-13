@@ -21,9 +21,7 @@ class Test_regridder(tests.IrisTest):
             "iris.analysis.CurvilinearRegridder",
             return_value=mock.sentinel.regridder,
         ) as ecr:
-            regridder = point_in_cell.regridder(
-                mock.sentinel.src, mock.sentinel.target
-            )
+            regridder = point_in_cell.regridder(mock.sentinel.src, mock.sentinel.target)
 
         ecr.assert_called_once_with(
             mock.sentinel.src, mock.sentinel.target, mock.sentinel.weights

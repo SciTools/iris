@@ -66,9 +66,7 @@ class TestIdentify(tests.IrisTest):
         }
 
         # ONLY expecting ref_subject, excluding ref_not_subject.
-        expected = {
-            subject_name: CFUGridMeshVariable(subject_name, ref_subject)
-        }
+        expected = {subject_name: CFUGridMeshVariable(subject_name, ref_subject)}
         result = CFUGridMeshVariable.identify(vars_all)
         self.assertDictEqual(expected, result)
 
@@ -107,8 +105,7 @@ class TestIdentify(tests.IrisTest):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source_vars = {
-            name: named_variable(name)
-            for name in ("ref_source_1", "ref_source_2")
+            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
             setattr(var, self.cf_identity, subject_name)
@@ -121,21 +118,16 @@ class TestIdentify(tests.IrisTest):
         )
 
         # ONLY expecting ref_subject, excluding ref_not_subject.
-        expected = {
-            subject_name: CFUGridMeshVariable(subject_name, ref_subject)
-        }
+        expected = {subject_name: CFUGridMeshVariable(subject_name, ref_subject)}
         result = CFUGridMeshVariable.identify(vars_all)
         self.assertDictEqual(expected, result)
 
     def test_two_refs(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name) for name in subject_names
-        }
+        ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source_vars = {
-            name: named_variable(name)
-            for name in ("ref_source_1", "ref_source_2")
+            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, self.cf_identity, subject_names[ix])
@@ -183,13 +175,10 @@ class TestIdentify(tests.IrisTest):
 
     def test_ignore(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name) for name in subject_names
-        }
+        ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source_vars = {
-            name: named_variable(name)
-            for name in ("ref_source_1", "ref_source_2")
+            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, self.cf_identity, subject_names[ix])
@@ -206,16 +195,12 @@ class TestIdentify(tests.IrisTest):
                 expected_name, ref_subject_vars[expected_name]
             )
         }
-        result = CFUGridMeshVariable.identify(
-            vars_all, ignore=subject_names[1]
-        )
+        result = CFUGridMeshVariable.identify(vars_all, ignore=subject_names[1])
         self.assertDictEqual(expected, result)
 
     def test_target(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name) for name in subject_names
-        }
+        ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         source_names = ("ref_source_1", "ref_source_2")
         ref_source_vars = {name: named_variable(name) for name in source_names}
@@ -256,9 +241,7 @@ class TestIdentify(tests.IrisTest):
 
         # Missing warning.
         warn_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"
-        with pytest.warns(
-            iris.exceptions.IrisCfMissingVarWarning, match=warn_regex
-        ):
+        with pytest.warns(iris.exceptions.IrisCfMissingVarWarning, match=warn_regex):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)
@@ -267,12 +250,8 @@ class TestIdentify(tests.IrisTest):
 
         # String variable warning.
         warn_regex = r".*is a CF-netCDF label variable.*"
-        vars_all[subject_name] = netcdf_ugrid_variable(
-            subject_name, "", np.bytes_
-        )
-        with pytest.warns(
-            iris.exceptions.IrisCfLabelVarWarning, match=warn_regex
-        ):
+        vars_all[subject_name] = netcdf_ugrid_variable(subject_name, "", np.bytes_)
+        with pytest.warns(iris.exceptions.IrisCfLabelVarWarning, match=warn_regex):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)

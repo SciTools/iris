@@ -42,8 +42,7 @@ def _construct_delta_coord(coord):
     circular = getattr(coord, "circular", False)
     if coord.shape == (1,) and not circular:
         raise ValueError(
-            "Cannot take interval differences of a single "
-            "valued coordinate."
+            "Cannot take interval differences of a single valued coordinate."
         )
 
     if circular:
@@ -93,9 +92,7 @@ def _construct_midpoint_coord(coord, circular=None):
     if coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(coord)
     if coord.shape == (1,) and not circular:
-        raise ValueError(
-            "Cannot take the midpoints of a single valued " "coordinate."
-        )
+        raise ValueError("Cannot take the midpoints of a single valued coordinate.")
 
     # Calculate the delta of the coordinate
     # (this deals with circularity nicely).
@@ -201,9 +198,7 @@ cube_delta(temperature_cube, 'pressure')
             )
         )
 
-    delta_cube.rename(
-        "change_in_{}_wrt_{}".format(delta_cube.name(), coord.name())
-    )
+    delta_cube.rename("change_in_{}_wrt_{}".format(delta_cube.name(), coord.name()))
 
     return delta_cube
 
@@ -282,9 +277,7 @@ def differentiate(cube, coord_to_differentiate):
     delta_cube = iris.analysis.maths.divide(delta_cube, delta_coord, delta_dim)
 
     # Update the standard name
-    delta_cube.rename(
-        "derivative_of_{}_wrt_{}".format(cube.name(), coord.name())
-    )
+    delta_cube.rename("derivative_of_{}_wrt_{}".format(cube.name(), coord.name()))
     return delta_cube
 
 
@@ -578,9 +571,7 @@ def curl(i_cube, j_cube, k_cube=None):
     if bad_coords:
         raise ValueError(
             "Some coordinates are different ({}), consider "
-            "resampling.".format(
-                ", ".join(group.name() for group in bad_coords)
-            )
+            "resampling.".format(", ".join(group.name() for group in bad_coords))
         )
 
     # Get the dim_coord, or None if none exist, for the xyz dimensions
@@ -672,9 +663,7 @@ def curl(i_cube, j_cube, k_cube=None):
             spherical = True
 
         if not spherical:
-            raise ValueError(
-                "Cannot take the curl over a non-spherical " "ellipsoid."
-            )
+            raise ValueError("Cannot take the curl over a non-spherical ellipsoid.")
 
         lon_coord = x_coord.copy()
         lat_coord = y_coord.copy()
@@ -722,9 +711,7 @@ def curl(i_cube, j_cube, k_cube=None):
         d_k_cube_dphi = _curl_differentiate(k_cube, lon_coord)
         d_k_cube_dphi = _curl_regrid(d_k_cube_dphi, prototype_diff)
         if d_k_cube_dphi is not None:
-            d_k_cube_dphi = iris.analysis.maths.divide(
-                d_k_cube_dphi, lat_cos_coord
-            )
+            d_k_cube_dphi = iris.analysis.maths.divide(d_k_cube_dphi, lat_cos_coord)
         dri_dr = _curl_differentiate(r * i_cube, z_coord)
         if dri_dr is not None:
             dri_dr.units = dri_dr.units * r_unit
@@ -789,10 +776,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
 
     # Make a dictionary of {direction: phenomenon quantity}
     cube_directions, cube_phenomena = zip(
-        *[
-            re.match(vector_qty, std_name).groups()
-            for std_name in cube_standard_names
-        ]
+        *[re.match(vector_qty, std_name).groups() for std_name in cube_standard_names]
     )
 
     # Check that there is only one distinct phenomenon
@@ -817,8 +801,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     # If we didn't get a match, raise an Exception
     if direction is None:
         direction_string = "; ".join(
-            ", ".join(possible_direction)
-            for possible_direction in directional_names
+            ", ".join(possible_direction) for possible_direction in directional_names
         )
         raise ValueError(
             "{} are not recognised vector cube_directions. "

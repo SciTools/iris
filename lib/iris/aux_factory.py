@@ -14,11 +14,7 @@ import cf_units
 import dask.array as da
 import numpy as np
 
-from iris.common import (
-    CFVariableMixin,
-    CoordMetadata,
-    metadata_manager_factory,
-)
+from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
 from iris.exceptions import IrisIgnoringBoundsWarning
 
@@ -302,8 +298,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
                 # no transpose is needed.
                 if derived_dims:
                     keys = tuple(
-                        slice(None) if dim in derived_dims else 0
-                        for dim in range(ndim)
+                        slice(None) if dim in derived_dims else 0 for dim in range(ndim)
                     )
                     nd_points = nd_points[keys]
             else:
@@ -340,13 +335,9 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
             if coord:
                 # Get the bounds or points as consistent with the Cube.
                 if coord.nbounds:
-                    nd_values = self._nd_bounds(
-                        coord, dependency_dims[key], ndim
-                    )
+                    nd_values = self._nd_bounds(coord, dependency_dims[key], ndim)
                 else:
-                    nd_values = self._nd_points(
-                        coord, dependency_dims[key], ndim
-                    )
+                    nd_values = self._nd_points(coord, dependency_dims[key], ndim)
 
                 # Restrict to just the dimensions relevant to the
                 # derived coord. NB. These are always in Cube-order, so
@@ -383,9 +374,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
 
     """
 
-    def __init__(
-        self, pressure_at_top=None, sigma=None, surface_air_pressure=None
-    ):
+    def __init__(self, pressure_at_top=None, sigma=None, surface_air_pressure=None):
         """Creates an atmosphere sigma coordinate factory with the formula:
 
         p(n, k, j, i) = pressure_at_top + sigma(k) *
@@ -441,9 +430,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
                     f"Coordinate '{coord.name()}' has bounds. These will "
                     "be disregarded"
                 )
-                warnings.warn(
-                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                )
+                warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         # Check units
         if sigma.units.is_unknown():
@@ -451,8 +438,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
             sigma.units = cf_units.Unit("1")
         if not sigma.units.is_dimensionless():
             raise ValueError(
-                f"Invalid units: 'sigma' must be dimensionless, got "
-                f"'{sigma.units}'"
+                f"Invalid units: 'sigma' must be dimensionless, got " f"'{sigma.units}'"
             )
         if pressure_at_top.units != surface_air_pressure.units:
             raise ValueError(
@@ -480,9 +466,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
     @staticmethod
     def _derive(pressure_at_top, sigma, surface_air_pressure):
         """Derive coordinate."""
-        return pressure_at_top + sigma * (
-            surface_air_pressure - pressure_at_top
-        )
+        return pressure_at_top + sigma * (surface_air_pressure - pressure_at_top)
 
     def make_coord(self, coord_dims_func):
         """
@@ -512,9 +496,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
         # Bounds
         bounds = None
         if self.sigma.nbounds:
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             pressure_at_top = nd_values_by_key["pressure_at_top"]
             sigma = nd_values_by_key["sigma"]
             surface_air_pressure = nd_values_by_key["surface_air_pressure"]
@@ -536,13 +518,9 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
                     "disregarded",
                     category=IrisIgnoringBoundsWarning,
                 )
-                surface_air_pressure_pts = nd_points_by_key[
-                    "surface_air_pressure"
-                ]
+                surface_air_pressure_pts = nd_points_by_key["surface_air_pressure"]
                 bds_shape = list(surface_air_pressure_pts.shape) + [1]
-                surface_air_pressure = surface_air_pressure_pts.reshape(
-                    bds_shape
-                )
+                surface_air_pressure = surface_air_pressure_pts.reshape(bds_shape)
             bounds = self._derive(pressure_at_top, sigma, surface_air_pressure)
 
         # Create coordinate
@@ -588,20 +566,18 @@ class HybridHeightFactory(AuxCoordFactory):
 
         if delta and delta.nbounds not in (0, 2):
             raise ValueError(
-                "Invalid delta coordinate: must have either 0 or" " 2 bounds."
+                "Invalid delta coordinate: must have either 0 or 2 bounds."
             )
         if sigma and sigma.nbounds not in (0, 2):
             raise ValueError(
-                "Invalid sigma coordinate: must have either 0 or" " 2 bounds."
+                "Invalid sigma coordinate: must have either 0 or 2 bounds."
             )
         if orography and orography.nbounds:
             msg = (
                 "Orography coordinate {!r} has bounds."
                 " These will be disregarded.".format(orography.name())
             )
-            warnings.warn(
-                msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-            )
+            warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         self.delta = delta
         self.sigma = sigma
@@ -609,16 +585,10 @@ class HybridHeightFactory(AuxCoordFactory):
 
         self.standard_name = "altitude"
         if delta is None and orography is None:
-            emsg = (
-                "Unable to determine units: no delta or orography "
-                "available."
-            )
+            emsg = "Unable to determine units: no delta or orography available."
             raise ValueError(emsg)
         if delta and orography and delta.units != orography.units:
-            emsg = (
-                "Incompatible units: delta and orography must have "
-                "the same units."
-            )
+            emsg = "Incompatible units: delta and orography must have the same units."
             raise ValueError(emsg)
         self.units = (delta and delta.units) or orography.units
         if not self.units.is_convertible("m"):
@@ -671,13 +641,9 @@ class HybridHeightFactory(AuxCoordFactory):
         )
 
         bounds = None
-        if (self.delta and self.delta.nbounds) or (
-            self.sigma and self.sigma.nbounds
-        ):
+        if (self.delta and self.delta.nbounds) or (self.sigma and self.sigma.nbounds):
             # Build the bounds array.
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             delta = nd_values_by_key["delta"]
             sigma = nd_values_by_key["sigma"]
             orography = nd_values_by_key["orography"]
@@ -688,8 +654,7 @@ class HybridHeightFactory(AuxCoordFactory):
                 raise ValueError("Invalid sigma coordinate bounds.")
             if orography.shape[-1:] not in [(), (1,)]:
                 warnings.warn(
-                    "Orography coordinate has bounds. "
-                    "These are being disregarded.",
+                    "Orography coordinate has bounds. These are being disregarded.",
                     category=IrisIgnoringBoundsWarning,
                     stacklevel=2,
                 )
@@ -728,15 +693,13 @@ class HybridHeightFactory(AuxCoordFactory):
         if self.delta is old_coord:
             if new_coord and new_coord.nbounds not in (0, 2):
                 raise ValueError(
-                    "Invalid delta coordinate:"
-                    " must have either 0 or 2 bounds."
+                    "Invalid delta coordinate: must have either 0 or 2 bounds."
                 )
             self.delta = new_coord
         elif self.sigma is old_coord:
             if new_coord and new_coord.nbounds not in (0, 2):
                 raise ValueError(
-                    "Invalid sigma coordinate:"
-                    " must have either 0 or 2 bounds."
+                    "Invalid sigma coordinate: must have either 0 or 2 bounds."
                 )
             self.sigma = new_coord
         elif self.orography is old_coord:
@@ -745,9 +708,7 @@ class HybridHeightFactory(AuxCoordFactory):
                     "Orography coordinate {!r} has bounds."
                     " These will be disregarded.".format(new_coord.name())
                 )
-                warnings.warn(
-                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                )
+                warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
             self.orography = new_coord
 
 
@@ -803,20 +764,18 @@ class HybridPressureFactory(AuxCoordFactory):
         # Check bounds.
         if delta and delta.nbounds not in (0, 2):
             raise ValueError(
-                "Invalid delta coordinate: must have either 0 or" " 2 bounds."
+                "Invalid delta coordinate: must have either 0 or 2 bounds."
             )
         if sigma and sigma.nbounds not in (0, 2):
             raise ValueError(
-                "Invalid sigma coordinate: must have either 0 or" " 2 bounds."
+                "Invalid sigma coordinate: must have either 0 or 2 bounds."
             )
         if surface_air_pressure and surface_air_pressure.nbounds:
             msg = (
                 "Surface pressure coordinate {!r} has bounds. These will"
                 " be disregarded.".format(surface_air_pressure.name())
             )
-            warnings.warn(
-                msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-            )
+            warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         # Check units.
         if sigma is not None and sigma.units.is_unknown():
@@ -890,13 +849,9 @@ class HybridPressureFactory(AuxCoordFactory):
         )
 
         bounds = None
-        if (self.delta and self.delta.nbounds) or (
-            self.sigma and self.sigma.nbounds
-        ):
+        if (self.delta and self.delta.nbounds) or (self.sigma and self.sigma.nbounds):
             # Build the bounds array.
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             delta = nd_values_by_key["delta"]
             sigma = nd_values_by_key["sigma"]
             surface_air_pressure = nd_values_by_key["surface_air_pressure"]
@@ -911,13 +866,9 @@ class HybridPressureFactory(AuxCoordFactory):
                     "These are being disregarded.",
                     category=IrisIgnoringBoundsWarning,
                 )
-                surface_air_pressure_pts = nd_points_by_key[
-                    "surface_air_pressure"
-                ]
+                surface_air_pressure_pts = nd_points_by_key["surface_air_pressure"]
                 bds_shape = list(surface_air_pressure_pts.shape) + [1]
-                surface_air_pressure = surface_air_pressure_pts.reshape(
-                    bds_shape
-                )
+                surface_air_pressure = surface_air_pressure_pts.reshape(bds_shape)
 
             bounds = self._derive(delta, sigma, surface_air_pressure)
 
@@ -982,9 +933,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
     def _check_dependencies(sigma, eta, depth, depth_c, nsigma, zlev):
         # Check for sufficient factory coordinates.
         if zlev is None:
-            raise ValueError(
-                "Unable to determine units: no zlev coordinate available."
-            )
+            raise ValueError("Unable to determine units: no zlev coordinate available.")
         if nsigma is None:
             raise ValueError("Missing nsigma coordinate.")
 
@@ -1023,15 +972,12 @@ class OceanSigmaZFactory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warnings.warn(
-                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                )
+                warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         for coord, term in ((depth_c, "depth_c"), (nsigma, "nsigma")):
             if coord is not None and coord.shape != (1,):
-                msg = (
-                    "Expected scalar {} coordinate {!r}: "
-                    "got shape {!r}.".format(term, coord.name(), coord.shape)
+                msg = "Expected scalar {} coordinate {!r}: got shape {!r}.".format(
+                    term, coord.name(), coord.shape
                 )
                 raise ValueError(msg)
 
@@ -1080,9 +1026,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
             zlev=self.zlev,
         )
 
-    def _derive(
-        self, sigma, eta, depth, depth_c, zlev, nsigma, coord_dims_func
-    ):
+    def _derive(self, sigma, eta, depth, depth_c, zlev, nsigma, coord_dims_func):
         # Calculate the index of the 'z' dimension in the input arrays.
         # First find the cube 'z' dimension ...
         [cube_z_dim] = coord_dims_func(self.dependencies["zlev"])
@@ -1094,11 +1038,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         # Note: all the inputs have the same number of dimensions >= 1, except
         # for any missing dependencies, which have scalar values.
         allshapes = np.array(
-            [
-                el.shape
-                for el in (sigma, eta, depth, depth_c, zlev)
-                if el.ndim > 0
-            ]
+            [el.shape for el in (sigma, eta, depth, depth_c, zlev) if el.ndim > 0]
         )
         result_shape = list(np.max(allshapes, axis=0))
         ndims = len(result_shape)
@@ -1130,23 +1070,17 @@ class OceanSigmaZFactory(AuxCoordFactory):
         if len(result_shape) > 1:
             result_chunks = [1] * len(result_shape)
             result_chunks[-2:] = result_shape[-2:]
-        ones_full_result = da.ones(
-            result_shape, chunks=result_chunks, dtype=zlev.dtype
-        )
+        ones_full_result = da.ones(result_shape, chunks=result_chunks, dtype=zlev.dtype)
 
         # Expand nsigma_levs to its full required shape : needed as the
         # calculated result may have a fixed size of 1 in some dimensions.
         result_nsigma_levs = nsigma_levs * ones_full_result[z_slices_nsigma]
 
         # Likewise, expand zlev to its full required shape.
-        result_rest_levs = (
-            zlev[z_slices_rest] * ones_full_result[z_slices_rest]
-        )
+        result_rest_levs = zlev[z_slices_rest] * ones_full_result[z_slices_rest]
 
         # Combine nsigma and 'rest' levels for the final result.
-        result = da.concatenate(
-            [result_nsigma_levs, result_rest_levs], axis=z_dim
-        )
+        result = da.concatenate([result_nsigma_levs, result_rest_levs], axis=z_dim)
         return result
 
     def make_coord(self, coord_dims_func):
@@ -1181,16 +1115,12 @@ class OceanSigmaZFactory(AuxCoordFactory):
         bounds = None
         if self.zlev.nbounds or (self.sigma and self.sigma.nbounds):
             # Build the bounds array.
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             valid_shapes = [(), (1,), (2,)]
             for key in ("sigma", "zlev"):
                 if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                     name = self.dependencies[key].name()
-                    msg = "Invalid bounds for {} " "coordinate {!r}.".format(
-                        key, name
-                    )
+                    msg = "Invalid bounds for {} coordinate {!r}.".format(key, name)
                     raise ValueError(msg)
             valid_shapes.pop()
             for key in ("eta", "depth", "depth_c", "nsigma"):
@@ -1200,9 +1130,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warnings.warn(
-                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                    )
+                    warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1283,9 +1211,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warnings.warn(
-                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                )
+                warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         # Check units.
         if sigma is not None and sigma.units.is_unknown():
@@ -1347,16 +1273,12 @@ class OceanSigmaFactory(AuxCoordFactory):
         bounds = None
         if self.sigma and self.sigma.nbounds:
             # Build the bounds array.
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             valid_shapes = [(), (1,), (2,)]
             key = "sigma"
             if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                 name = self.dependencies[key].name()
-                msg = "Invalid bounds for {} " "coordinate {!r}.".format(
-                    key, name
-                )
+                msg = "Invalid bounds for {} coordinate {!r}.".format(key, name)
                 raise ValueError(msg)
             valid_shapes.pop()
             for key in ("eta", "depth"):
@@ -1366,9 +1288,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warnings.warn(
-                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                    )
+                    warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1426,13 +1346,7 @@ class OceanSg1Factory(AuxCoordFactory):
     @staticmethod
     def _check_dependencies(s, c, eta, depth, depth_c):
         # Check for sufficient factory coordinates.
-        if (
-            eta is None
-            or s is None
-            or c is None
-            or depth is None
-            or depth_c is None
-        ):
+        if eta is None or s is None or c is None or depth is None or depth_c is None:
             msg = (
                 "Unable to construct Ocean s-coordinate, generic form 1 "
                 "factory due to insufficient source coordinates."
@@ -1463,14 +1377,11 @@ class OceanSg1Factory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warnings.warn(
-                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                )
+                warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         if depth_c is not None and depth_c.shape != (1,):
-            msg = (
-                "Expected scalar {} coordinate {!r}: "
-                "got shape {!r}.".format(term, coord.name(), coord.shape)
+            msg = "Expected scalar {} coordinate {!r}: got shape {!r}.".format(
+                term, coord.name(), coord.shape
             )
             raise ValueError(msg)
 
@@ -1545,16 +1456,12 @@ class OceanSg1Factory(AuxCoordFactory):
         bounds = None
         if self.s.nbounds or (self.c and self.c.nbounds):
             # Build the bounds array.
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             valid_shapes = [(), (1,), (2,)]
             key = "s"
             if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                 name = self.dependencies[key].name()
-                msg = "Invalid bounds for {} " "coordinate {!r}.".format(
-                    key, name
-                )
+                msg = "Invalid bounds for {} coordinate {!r}.".format(key, name)
                 raise ValueError(msg)
             valid_shapes.pop()
             for key in ("eta", "depth", "depth_c"):
@@ -1564,9 +1471,7 @@ class OceanSg1Factory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warnings.warn(
-                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                    )
+                    warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1596,9 +1501,7 @@ class OceanSg1Factory(AuxCoordFactory):
 class OceanSFactory(AuxCoordFactory):
     """Defines an Ocean s-coordinate factory."""
 
-    def __init__(
-        self, s=None, eta=None, depth=None, a=None, b=None, depth_c=None
-    ):
+    def __init__(self, s=None, eta=None, depth=None, a=None, b=None, depth_c=None):
         """
         Creates an Ocean s-coordinate factory with the formula:
 
@@ -1660,16 +1563,13 @@ class OceanSFactory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warnings.warn(
-                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                )
+                warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         coords = ((a, "a"), (b, "b"), (depth_c, "depth_c"))
         for coord, term in coords:
             if coord is not None and coord.shape != (1,):
-                msg = (
-                    "Expected scalar {} coordinate {!r}: "
-                    "got shape {!r}.".format(term, coord.name(), coord.shape)
+                msg = "Expected scalar {} coordinate {!r}: got shape {!r}.".format(
+                    term, coord.name(), coord.shape
                 )
                 raise ValueError(msg)
 
@@ -1679,9 +1579,8 @@ class OceanSFactory(AuxCoordFactory):
             s.units = cf_units.Unit("1")
 
         if s is not None and not s.units.is_dimensionless():
-            msg = (
-                "Invalid units: s coordinate {!r} "
-                "must be dimensionless.".format(s.name())
+            msg = "Invalid units: s coordinate {!r} must be dimensionless.".format(
+                s.name()
             )
             raise ValueError(msg)
 
@@ -1746,16 +1645,12 @@ class OceanSFactory(AuxCoordFactory):
         bounds = None
         if self.s.nbounds:
             # Build the bounds array.
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             valid_shapes = [(), (1,), (2,)]
             key = "s"
             if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                 name = self.dependencies[key].name()
-                msg = "Invalid bounds for {} " "coordinate {!r}.".format(
-                    key, name
-                )
+                msg = "Invalid bounds for {} coordinate {!r}.".format(key, name)
                 raise ValueError(msg)
             valid_shapes.pop()
             for key in ("eta", "depth", "a", "b", "depth_c"):
@@ -1765,9 +1660,7 @@ class OceanSFactory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warnings.warn(
-                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                    )
+                    warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1829,13 +1722,7 @@ class OceanSg2Factory(AuxCoordFactory):
     @staticmethod
     def _check_dependencies(s, c, eta, depth, depth_c):
         # Check for sufficient factory coordinates.
-        if (
-            eta is None
-            or s is None
-            or c is None
-            or depth is None
-            or depth_c is None
-        ):
+        if eta is None or s is None or c is None or depth is None or depth_c is None:
             msg = (
                 "Unable to construct Ocean s-coordinate, generic form 2 "
                 "factory due to insufficient source coordinates."
@@ -1866,14 +1753,11 @@ class OceanSg2Factory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warnings.warn(
-                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                )
+                warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
         if depth_c is not None and depth_c.shape != (1,):
-            msg = (
-                "Expected scalar depth_c coordinate {!r}: "
-                "got shape {!r}.".format(depth_c.name(), depth_c.shape)
+            msg = "Expected scalar depth_c coordinate {!r}: got shape {!r}.".format(
+                depth_c.name(), depth_c.shape
             )
             raise ValueError(msg)
 
@@ -1948,16 +1832,12 @@ class OceanSg2Factory(AuxCoordFactory):
         bounds = None
         if self.s.nbounds or (self.c and self.c.nbounds):
             # Build the bounds array.
-            nd_values_by_key = self._remap_with_bounds(
-                dependency_dims, derived_dims
-            )
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
             valid_shapes = [(), (1,), (2,)]
             key = "s"
             if nd_values_by_key[key].shape[-1:] not in valid_shapes:
                 name = self.dependencies[key].name()
-                msg = "Invalid bounds for {} " "coordinate {!r}.".format(
-                    key, name
-                )
+                msg = "Invalid bounds for {} coordinate {!r}.".format(key, name)
                 raise ValueError(msg)
             valid_shapes.pop()
             for key in ("eta", "depth", "depth_c"):
@@ -1967,9 +1847,7 @@ class OceanSg2Factory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warnings.warn(
-                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
-                    )
+                    warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)

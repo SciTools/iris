@@ -216,9 +216,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
     def test_minimal(self):
-        result = self.coord_representations(
-            long_name=None, units=None, shape=(1,)
-        )
+        result = self.coord_representations(long_name=None, units=None, shape=(1,))
         expected = [
             "<AuxCoord: unknown / (unknown)  [0.]>",
             "AuxCoord :  unknown / (unknown)",
@@ -287,19 +285,11 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
     def test_dtype_date(self):
         # Note: test with a date 'longer' than the built-in one in
         # 'sample_coord(dates=True)', because it includes a time-of-day
-        full_date_unit = Unit(
-            "days since 1892-05-17 03:00:25", calendar="360_day"
-        )
+        full_date_unit = Unit("days since 1892-05-17 03:00:25", calendar="360_day")
         result = self.coord_representations(units=full_date_unit)
         expected = [
-            (
-                "<AuxCoord: x / (days since 1892-05-17 03:00:25)  "
-                "[...]  shape(5,)>"
-            ),
-            (
-                "AuxCoord :  x / (days since 1892-05-17 03:00:25, "
-                "360_day calendar)"
-            ),
+            ("<AuxCoord: x / (days since 1892-05-17 03:00:25)  [...]  shape(5,)>"),
+            ("AuxCoord :  x / (days since 1892-05-17 03:00:25, 360_day calendar)"),
             "    points: [",
             "        1892-05-17 03:00:25, 1892-05-18 03:00:25,",
             "        1892-05-19 03:00:25, 1892-05-20 03:00:25,",
@@ -403,9 +393,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
     def test_scalar_masked(self):
-        result = self.coord_representations(
-            shape=(1,), bounded=True, masked=True
-        )
+        result = self.coord_representations(shape=(1,), bounded=True, masked=True)
         expected = [
             "<AuxCoord: x / (m)  [--]+bounds>",
             "AuxCoord :  x / (m)",
@@ -457,10 +445,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         # Completely truncated representations
         result = self.coord_representations(shape=(150,), bounded=True)
         expected = [
-            (
-                "<AuxCoord: x / (m)  [ 0., 1., ..., 148., 149.]+bounds  "
-                "shape(150,)>"
-            ),
+            ("<AuxCoord: x / (m)  [ 0., 1., ..., 148., 149.]+bounds  shape(150,)>"),
             "AuxCoord :  x / (m)",
             "    points: [  0.,   1., ..., 148., 149.]",
             "    bounds: [",
@@ -685,9 +670,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
     def test_integers_masked_long(self):
-        result = self.coord_representations(
-            shape=(20,), datatype=int, masked=True
-        )
+        result = self.coord_representations(shape=(20,), datatype=int, masked=True)
         expected = [
             "<AuxCoord: x / (m)  [0 , --, ..., 18, --]  shape(20,)>",
             "AuxCoord :  x / (m)",
@@ -742,10 +725,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
         coord = coord[:1]  # Just to make it a bit shorter
         result = self.repr_str_strings(coord)
         expected = [
-            (
-                "<DimCoord: time / (days since 1970-01-01 00:00:00-00)  "
-                "[...]+bounds>"
-            ),
+            ("<DimCoord: time / (days since 1970-01-01 00:00:00-00)  [...]+bounds>"),
             (
                 "DimCoord :  time / (days since 1970-01-01 00:00:00-00, "
                 "standard calendar)"

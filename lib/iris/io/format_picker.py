@@ -198,8 +198,7 @@ class FormatSpecification:
         """
         if not isinstance(file_element, FileElement):
             raise ValueError(
-                "file_element must be an instance of FileElement, got %r"
-                % file_element
+                "file_element must be an instance of FileElement, got %r" % file_element
             )
 
         self._file_element = file_element

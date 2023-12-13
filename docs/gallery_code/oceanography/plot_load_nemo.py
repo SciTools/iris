@@ -51,11 +51,7 @@ def main():
     lon_string = "{:.3f}\u00B0 {}".format(
         abs(lon_point), "E" if lon_point > 0.0 else "W"
     )
-    plt.title(
-        "{} at {} {}".format(
-            cube.long_name.capitalize(), lat_string, lon_string
-        )
-    )
+    plt.title("{} at {} {}".format(cube.long_name.capitalize(), lat_string, lon_string))
 
     iplt.show()
 

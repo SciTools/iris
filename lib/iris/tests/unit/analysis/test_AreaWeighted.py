@@ -28,9 +28,7 @@ class Test(tests.IrisTest):
             "iris.analysis.AreaWeightedRegridder",
             return_value=mock.sentinel.regridder,
         ) as awr:
-            regridder = area_weighted.regridder(
-                mock.sentinel.src, mock.sentinel.target
-            )
+            regridder = area_weighted.regridder(mock.sentinel.src, mock.sentinel.target)
 
         awr.assert_called_once_with(
             mock.sentinel.src, mock.sentinel.target, mdtol=mdtol

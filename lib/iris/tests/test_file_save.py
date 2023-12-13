@@ -42,9 +42,7 @@ def save_by_filename(filename1, filename2, cube, saver_fn, iosaver=None):
     )  # Optional iris.io.find_saver passed in from test
 
 
-def save_by_filehandle(
-    filehandle1, filehandle2, cube, fn_saver, binary_mode=True
-):
+def save_by_filehandle(filehandle1, filehandle2, cube, fn_saver, binary_mode=True):
     """Saves a cube to two different filehandles using iris.save and the save method of the object representing the file type directly"""
     mode = "wb" if binary_mode else "w"
 
@@ -86,9 +84,7 @@ class TestSavePP(TestSaveMethods):
 
     def test_filename(self):
         # Save using iris.save and pp.save
-        save_by_filename(
-            self.temp_filename1, self.temp_filename2, self.cube1, pp.save
-        )
+        save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, pp.save)
 
         # Compare files
         self.assertEqual(
@@ -149,9 +145,7 @@ class TestSaveDot(TestSaveMethods):
 
     def test_filename(self):
         # Save using iris.save and dot.save
-        save_by_filename(
-            self.temp_filename1, self.temp_filename2, self.cube1, dot.save
-        )
+        save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save)
 
         # Compare files
         self.assertEqual(
@@ -203,8 +197,7 @@ class TestSaveDot(TestSaveMethods):
         self.assertEqual(
             data,
             sio.getvalue(),
-            "Mismatch in data when comparing iris bytesio save "
-            "and dot.save.",
+            "Mismatch in data when comparing iris bytesio save and dot.save.",
         )
 
 

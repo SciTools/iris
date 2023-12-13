@@ -108,9 +108,7 @@ class _NamedTupleMeta(ABCMeta):
         for base in bases:
             if hasattr(base, "_fields"):
                 base_names = getattr(base, "_fields")
-                is_abstract = getattr(
-                    base_names, "__isabstractmethod__", False
-                )
+                is_abstract = getattr(base_names, "__isabstractmethod__", False)
                 if not is_abstract:
                     if (not isinstance(base_names, Iterable)) or isinstance(
                         base_names, str
@@ -177,9 +175,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
             if _LENIENT(self.__eq__) or _LENIENT(self.equal):
                 # Perform "lenient" equality.
-                logger.debug(
-                    "lenient", extra=dict(cls=self.__class__.__name__)
-                )
+                logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
                 result = self._compare_lenient(other)
             else:
                 # Perform "strict" equality.
@@ -242,19 +238,13 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         field_strings = []
         for field in self._fields:
             value = getattr(self, field)
-            if (
-                value is None
-                or isinstance(value, (str, Mapping))
-                and not value
-            ):
+            if value is None or isinstance(value, (str, Mapping)) and not value:
                 continue
             field_strings.append(f"{field}={value}")
 
         return f"{type(self).__name__}({', '.join(field_strings)})"
 
-    def _api_common(
-        self, other, func_service, func_operation, action, lenient=None
-    ):
+    def _api_common(self, other, func_service, func_operation, action, lenient=None):
         """
         Common entry-point for lenient metadata API methods.
 
@@ -283,14 +273,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         """
         # Ensure that we have similar class instances.
-        if (
-            not hasattr(other, "__class__")
-            or other.__class__ is not self.__class__
-        ):
+        if not hasattr(other, "__class__") or other.__class__ is not self.__class__:
             emsg = "Cannot {} {!r} with {!r}."
-            raise TypeError(
-                emsg.format(action, self.__class__.__name__, type(other))
-            )
+            raise TypeError(emsg.format(action, self.__class__.__name__, type(other)))
 
         if lenient is None:
             result = func_operation(other)
@@ -449,11 +434,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             # Note that, we use "_members" not "_fields".
             # Lenient equality explicitly ignores the "var_name" member.
             result = all(
-                [
-                    func(field)
-                    for field in BaseMetadata._members
-                    if field != "var_name"
-                ]
+                [func(field) for field in BaseMetadata._members if field != "var_name"]
             )
 
         return result
@@ -659,9 +640,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             other, self.difference, self._difference, "differ", lenient=lenient
         )
         result = (
-            None
-            if all([item is None for item in result])
-            else self.__class__(*result)
+            None if all([item is None for item in result]) else self.__class__(*result)
         )
         return result
 
@@ -886,11 +865,7 @@ class CellMeasureMetadata(BaseMetadata):
 
         """
         # Perform "strict" difference for "measure".
-        value = (
-            None
-            if self.measure == other.measure
-            else (self.measure, other.measure)
-        )
+        value = None if self.measure == other.measure else (self.measure, other.measure)
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
         result.append(value)
@@ -1128,11 +1103,7 @@ class CubeMetadata(BaseMetadata):
 
         """
         # Perform "strict" combination for "cell_methods".
-        value = (
-            self.cell_methods
-            if self.cell_methods == other.cell_methods
-            else None
-        )
+        value = self.cell_methods if self.cell_methods == other.cell_methods else None
         # Perform lenient combination of the other parent members.
         result = super()._combine_lenient(other)
         result.append(value)
@@ -1355,15 +1326,11 @@ class DimCoordMetadata(CoordMetadata):
         # The "circular" member is not part of lenient equivalence.
         return super()._compare_lenient(other)
 
-    @wraps(
-        CoordMetadata._difference_lenient, assigned=("__doc__",), updated=()
-    )
+    @wraps(CoordMetadata._difference_lenient, assigned=("__doc__",), updated=())
     def _difference_lenient(self, other):
         # Perform "strict" difference for "circular".
         value = (
-            None
-            if self.circular == other.circular
-            else (self.circular, other.circular)
+            None if self.circular == other.circular else (self.circular, other.circular)
         )
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
@@ -1478,20 +1445,14 @@ def metadata_filter(
 
     if standard_name is not None:
         result = [
-            instance
-            for instance in result
-            if instance.standard_name == standard_name
+            instance for instance in result if instance.standard_name == standard_name
         ]
 
     if long_name is not None:
-        result = [
-            instance for instance in result if instance.long_name == long_name
-        ]
+        result = [instance for instance in result if instance.long_name == long_name]
 
     if var_name is not None:
-        result = [
-            instance for instance in result if instance.var_name == var_name
-        ]
+        result = [instance for instance in result if instance.var_name == var_name]
 
     if attributes is not None:
         if not isinstance(attributes, Mapping):
@@ -1520,22 +1481,16 @@ def metadata_filter(
                 axis = guess_coord_axis(instance)
             return axis
 
-        result = [
-            instance for instance in result if get_axis(instance) == axis
-        ]
+        result = [instance for instance in result if get_axis(instance) == axis]
 
     if obj is not None:
-        if hasattr(obj, "__class__") and issubclass(
-            obj.__class__, BaseMetadata
-        ):
+        if hasattr(obj, "__class__") and issubclass(obj.__class__, BaseMetadata):
             target_metadata = obj
         else:
             target_metadata = obj.metadata
 
         result = [
-            instance
-            for instance in result
-            if instance.metadata == target_metadata
+            instance for instance in result if instance.metadata == target_metadata
         ]
 
     return result
@@ -1593,10 +1548,7 @@ def _factory_cache(cls):
 
     def __repr__(self):
         args = ", ".join(
-            [
-                "{}={!r}".format(field, getattr(self, field))
-                for field in self._fields
-            ]
+            ["{}={!r}".format(field, getattr(self, field)) for field in self._fields]
         )
         return "{}({})".format(self.__class__.__name__, args)
 

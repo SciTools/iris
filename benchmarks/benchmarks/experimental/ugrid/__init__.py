@@ -53,9 +53,7 @@ class Connectivity(UGridCommon):
         super().setup(n_faces)
 
     def create(self):
-        return ugrid.Connectivity(
-            indices=self.array, cf_role="face_node_connectivity"
-        )
+        return ugrid.Connectivity(indices=self.array, cf_role="face_node_connectivity")
 
     def time_indices(self, n_faces):
         _ = self.object.indices

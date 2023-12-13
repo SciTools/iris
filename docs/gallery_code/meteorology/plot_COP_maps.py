@@ -152,12 +152,8 @@ def main():
     fig, ax_array = plt.subplots(1, 2, figsize=(12, 5))
 
     # Loop over our scenarios to make a plot for each.
-    for ax, experiment, label in zip(
-        ax_array, ["E1", "A1B"], ["E1", "A1B-Image"]
-    ):
-        exp_cube = scenarios.extract_cube(
-            iris.Constraint(Experiment=experiment)
-        )
+    for ax, experiment, label in zip(ax_array, ["E1", "A1B"], ["E1", "A1B-Image"]):
+        exp_cube = scenarios.extract_cube(iris.Constraint(Experiment=experiment))
         time_coord = exp_cube.coord("time")
 
         # Calculate the difference from the preindustial control run.

@@ -33,9 +33,7 @@ def _create_file__xios_common(func_name, **kwargs):
         print(func(temp_file_dir, **kwargs_), end="")
 
     args_hash = hash_args(**kwargs)
-    save_path = (BENCHMARK_DATA / f"{func_name}_{args_hash}").with_suffix(
-        ".nc"
-    )
+    save_path = (BENCHMARK_DATA / f"{func_name}_{args_hash}").with_suffix(".nc")
     if not REUSE_DATA or not save_path.is_file():
         # The xios functions take control of save location so need to move to
         #  a more specific name that allows reuse.
@@ -105,13 +103,9 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
     arg_list = [n_nodes, n_faces, n_edges]
     args_hash = hash_args(*arg_list)
-    save_path = (BENCHMARK_DATA / f"sample_mesh_{args_hash}").with_suffix(
-        ".nc"
-    )
+    save_path = (BENCHMARK_DATA / f"sample_mesh_{args_hash}").with_suffix(".nc")
     if not REUSE_DATA or not save_path.is_file():
-        _ = run_function_elsewhere(
-            _external, *arg_list, save_path=str(save_path)
-        )
+        _ = run_function_elsewhere(_external, *arg_list, save_path=str(save_path))
     with PARSE_UGRID_ON_LOAD.context():
         if not lazy_values:
             # Realise everything.
@@ -149,9 +143,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
         save_mesh(new_meshcoord.mesh, save_path_)
 
     args_hash = hash_args(**sample_mesh_kwargs)
-    save_path = (
-        BENCHMARK_DATA / f"sample_mesh_coord_{args_hash}"
-    ).with_suffix(".nc")
+    save_path = (BENCHMARK_DATA / f"sample_mesh_coord_{args_hash}").with_suffix(".nc")
     if not REUSE_DATA or not save_path.is_file():
         _ = run_function_elsewhere(
             _external,

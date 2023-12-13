@@ -34,9 +34,7 @@ def main():
     # Add the polynomial fit values to the time series to take
     # full advantage of Iris plotting functionality.
     long_name = "degree_{}_polynomial_fit_of_{}".format(degree, cube.name())
-    fit = iris.coords.AuxCoord(
-        y_fitted, long_name=long_name, units=location.units
-    )
+    fit = iris.coords.AuxCoord(y_fitted, long_name=long_name, units=location.units)
     location.add_aux_coord(fit, 0)
 
     qplt.plot(location.coord("time"), location, label="data")

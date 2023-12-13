@@ -59,8 +59,7 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
                     self.assertIsNot(
                         pts,
                         self.pts_real,
-                        "Points array is the same instance as the provided "
-                        "array.",
+                        "Points array is the same instance as the provided array.",
                     )
                 else:
                     # the original points were cast to a test dtype.
@@ -86,8 +85,7 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
                     self.assertIsNot(
                         pts,
                         self.pts_real,
-                        "Bounds array is the same instance as the provided "
-                        "array.",
+                        "Bounds array is the same instance as the provided array.",
                     )
                 else:
                     # the original bounds were cast to a test dtype.
@@ -470,9 +468,7 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
                 main_points = main_coord.core_points()
                 sub_points = sub_coord.core_points()
                 sub_main_points = main_points[:2, 1]
-                self.assertEqualRealArraysAndDtypes(
-                    sub_points, sub_main_points
-                )
+                self.assertEqualRealArraysAndDtypes(sub_points, sub_main_points)
                 self.assertArraysDoNotShareData(
                     sub_points,
                     sub_main_points,
@@ -483,9 +479,7 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
                 main_bounds = main_coord.core_bounds()
                 sub_bounds = sub_coord.core_bounds()
                 sub_main_bounds = main_bounds[:2, 1]
-                self.assertEqualRealArraysAndDtypes(
-                    sub_bounds, sub_main_bounds
-                )
+                self.assertEqualRealArraysAndDtypes(sub_bounds, sub_main_bounds)
                 self.assertArraysDoNotShareData(
                     sub_bounds,
                     sub_main_bounds,

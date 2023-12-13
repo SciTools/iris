@@ -68,9 +68,7 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
         result = first_dtype
     else:
         operand_dtypes = (
-            (first_dtype, second_dtype)
-            if second_dtype is not None
-            else (first_dtype,)
+            (first_dtype, second_dtype) if second_dtype is not None else (first_dtype,)
         )
         arrays = [np.array([1], dtype=dtype) for dtype in operand_dtypes]
         result = op(*arrays).dtype
@@ -92,9 +90,7 @@ def _get_dtype(operand):
         An instance of :class:`numpy.dtype`
 
     """
-    return (
-        np.min_scalar_type(operand) if np.isscalar(operand) else operand.dtype
-    )
+    return np.min_scalar_type(operand) if np.isscalar(operand) else operand.dtype
 
 
 def abs(cube, in_place=False):
@@ -123,9 +119,7 @@ def abs(cube, in_place=False):
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.abs, cube.dtype, in_place=in_place)
     op = da.absolute if cube.has_lazy_data() else np.abs
-    return _math_op_common(
-        cube, op, cube.units, new_dtype=new_dtype, in_place=in_place
-    )
+    return _math_op_common(cube, op, cube.units, new_dtype=new_dtype, in_place=in_place)
 
 
 def intersection_of_cubes(cube, other_cube):
@@ -188,14 +182,11 @@ def intersection_of_cubes(cube, other_cube):
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
 
-    coord_comp = iris.analysis._dimensional_metadata_comparison(
-        cube, other_cube
-    )
+    coord_comp = iris.analysis._dimensional_metadata_comparison(cube, other_cube)
 
     if coord_comp["ungroupable_and_dimensioned"]:
         raise ValueError(
-            "Cubes do not share all coordinates in common, "
-            "cannot intersect."
+            "Cubes do not share all coordinates in common, cannot intersect."
         )
 
     # cubes must have matching coordinates
@@ -216,9 +207,7 @@ def _assert_is_cube(cube):
     from iris.cube import Cube
 
     if not isinstance(cube, Cube):
-        raise TypeError(
-            'The "cube" argument must be an instance of ' "iris.cube.Cube."
-        )
+        raise TypeError('The "cube" argument must be an instance of ' "iris.cube.Cube.")
 
 
 @_lenient_client(services=SERVICES)
@@ -735,9 +724,7 @@ def log10(cube, in_place=False):
     )
 
 
-def apply_ufunc(
-    ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False
-):
+def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False):
     """
     Apply a `numpy universal function
     <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube
@@ -789,9 +776,7 @@ def apply_ufunc(
     """
 
     if not isinstance(ufunc, np.ufunc):
-        ufunc_name = getattr(
-            ufunc, "__name__", "function passed to apply_ufunc"
-        )
+        ufunc_name = getattr(ufunc, "__name__", "function passed to apply_ufunc")
         emsg = f"{ufunc_name} is not recognised, it is not an instance of numpy.ufunc"
         raise TypeError(emsg)
 
@@ -934,9 +919,9 @@ def _binary_op_common(
         elif ma.is_masked(rhs) and not isinstance(cube.data, ma.MaskedArray):
             cube.data = ma.array(cube.data)
 
-    elif isinstance(
-        cube.core_data(), ma.MaskedArray
-    ) and iris._lazy_data.is_lazy_data(rhs):
+    elif isinstance(cube.core_data(), ma.MaskedArray) and iris._lazy_data.is_lazy_data(
+        rhs
+    ):
         # Workaround for #2987.  numpy#15200 discusses the general problem.
         cube = cube.copy(cube.lazy_data())
 
@@ -977,8 +962,7 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
             except iris.exceptions.CoordinateNotFoundError:
                 raise ValueError(
                     "Could not determine dimension for %s. "
-                    "Use %s(cube, coord, dim=dim)"
-                    % (operation_name, operation_name)
+                    "Use %s(cube, coord, dim=dim)" % (operation_name, operation_name)
                 )
 
     if other.ndim != 1:
@@ -1161,10 +1145,7 @@ class IFunc:
             args = [
                 param
                 for param in sig.parameters.values()
-                if (
-                    param.kind != param.KEYWORD_ONLY
-                    and param.default is param.empty
-                )
+                if (param.kind != param.KEYWORD_ONLY and param.default is param.empty)
             ]
             self.nin = len(args)
 

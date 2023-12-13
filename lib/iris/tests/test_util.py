@@ -26,9 +26,7 @@ import iris.util
 class TestMonotonic(tests.IrisTest):
     def assertMonotonic(self, array, direction=None, **kwargs):
         if direction is not None:
-            mono, dir = iris.util.monotonic(
-                array, return_direction=True, **kwargs
-            )
+            mono, dir = iris.util.monotonic(array, return_direction=True, **kwargs)
             if not mono:
                 self.fail("Array was not monotonic:/n %r" % array)
             if dir != np.sign(direction):
@@ -92,15 +90,11 @@ class TestClipString(tests.IrisTest):
         # Test with a clip length that means the string will be clipped
 
         clip_length = 109
-        result = iris.util.clip_string(
-            self.test_string, clip_length, self.rider
-        )
+        result = iris.util.clip_string(self.test_string, clip_length, self.rider)
 
         # Check the length is between what we requested ( + rider length) and the length of the original string
         self.assertTrue(
-            clip_length + len(self.rider)
-            <= len(result)
-            < len(self.test_string),
+            clip_length + len(self.rider) <= len(result) < len(self.test_string),
             "String was not clipped.",
         )
 
@@ -114,9 +108,7 @@ class TestClipString(tests.IrisTest):
         # Test with a clip length that is longer than the string
 
         clip_length = 10999
-        result = iris.util.clip_string(
-            self.test_string, clip_length, self.rider
-        )
+        result = iris.util.clip_string(self.test_string, clip_length, self.rider)
         self.assertEqual(
             len(result),
             len(self.test_string),
@@ -132,9 +124,7 @@ class TestClipString(tests.IrisTest):
     def test_invalid_clip_lengths(self):
         # Clip values less than or equal to zero are not valid
         for clip_length in [0, -100]:
-            result = iris.util.clip_string(
-                self.test_string, clip_length, self.rider
-            )
+            result = iris.util.clip_string(self.test_string, clip_length, self.rider)
             self.assertEqual(
                 len(result),
                 len(self.test_string),
@@ -150,9 +140,7 @@ class TestClipString(tests.IrisTest):
             self.test_string, arg_dict["clip_length"], arg_dict["rider"]
         )
 
-        self.assertLess(
-            len(result), len(self.test_string), "String was not clipped."
-        )
+        self.assertLess(len(result), len(self.test_string), "String was not clipped.")
 
         rider_returned = result[-len(arg_dict["rider"]) :]
         self.assertEqual(
@@ -165,9 +153,7 @@ class TestClipString(tests.IrisTest):
 
         # Since this string has no spaces, clip_string will not be able to gracefully clip it
         # but will instead clip it exactly where the user specified
-        result = iris.util.clip_string(
-            no_space_string, clip_length, self.rider
-        )
+        result = iris.util.clip_string(no_space_string, clip_length, self.rider)
 
         expected_length = clip_length + len(self.rider)
 
@@ -187,9 +173,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_b = stock.realistic_4d()
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "compatible_cubes.str.txt")
@@ -203,9 +187,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_b.attributes["Conventions"] = "CF-1.6"
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_attr.str.txt")
@@ -217,9 +199,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.standard_name = "relative_humidity"
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_name.str.txt")
@@ -231,9 +211,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.units = cf_units.Unit("m")
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_unit.str.txt")
@@ -245,9 +223,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         )
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_meth.str.txt")
@@ -266,9 +242,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
 
         with self.temp_filename() as filename:
             with open(filename, "w") as f:
-                iris.util.describe_diff(
-                    test_cube_a, test_cube_b, output_file=f
-                )
+                iris.util.describe_diff(test_cube_a, test_cube_b, output_file=f)
                 f.close()
 
             self.assertFilesEqual(filename, "incompatible_cubes.str.txt")

@@ -34,9 +34,7 @@ def main():
     qplt.contourf(windspeed, 20)
 
     # Show the lake on the current axes.
-    lakes = cfeat.NaturalEarthFeature(
-        "physical", "lakes", "50m", facecolor="none"
-    )
+    lakes = cfeat.NaturalEarthFeature("physical", "lakes", "50m", facecolor="none")
     plt.gca().add_feature(lakes)
 
     # Add arrows to show the wind vectors.

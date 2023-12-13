@@ -127,10 +127,7 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     try:
         cube_data, src_data = np.broadcast_arrays(cube.data, src_data)
     except ValueError:
-        emsg = (
-            "Cannot broadcast the cube and src_levels with "
-            "shapes {} and {}."
-        )
+        emsg = "Cannot broadcast the cube and src_levels with shapes {} and {}."
         raise ValueError(emsg.format(cube.shape, src_data.shape))
 
     tgt_levels = np.asarray(tgt_levels)

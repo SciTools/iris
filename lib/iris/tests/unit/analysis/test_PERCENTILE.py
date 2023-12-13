@@ -172,9 +172,7 @@ class ScipyAggregateMixin:
         if self.lazy:
             data = as_lazy_data(data)
 
-        self.agg_method(
-            data, axis=axis, percent=percent, alphap=0.6, betap=0.5
-        )
+        self.agg_method(data, axis=axis, percent=percent, alphap=0.6, betap=0.5)
 
         # Trigger calculation for lazy case.
         as_concrete_data(data)
@@ -222,9 +220,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
             "mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
-            PERCENTILE.aggregate(
-                data, axis=0, percent=50, fast_percentile_method=True
-            )
+            PERCENTILE.aggregate(data, axis=0, percent=50, fast_percentile_method=True)
 
     def test_masked_mdtol_0(self):
         # Using (3,11) because np.percentile returns a masked array anyway with
@@ -261,9 +257,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
             fast_percentile_method=True,
             method="nearest",
         )
-        self.assertEqual(
-            mocked_percentile.call_args.kwargs["method"], "nearest"
-        )
+        self.assertEqual(mocked_percentile.call_args.kwargs["method"], "nearest")
 
 
 class MultiAxisMixin:
@@ -381,9 +375,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
 
         self.assertTrue(is_lazy_data(result))
         as_concrete_data(result)
-        self.assertEqual(
-            mocked_percentile.call_args.kwargs["method"], "nearest"
-        )
+        self.assertEqual(mocked_percentile.call_args.kwargs["method"], "nearest")
 
 
 class Test_lazy_aggregate(

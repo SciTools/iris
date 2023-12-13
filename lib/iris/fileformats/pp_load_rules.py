@@ -215,8 +215,7 @@ def _convert_vertical_coords(
 
     # Pressure.
     if (lbvc == 8) and (
-        len(lbcode) != 5
-        or (len(lbcode) == 5 and 1 not in [lbcode.ix, lbcode.iy])
+        len(lbcode) != 5 or (len(lbcode) == 5 and 1 not in [lbcode.ix, lbcode.iy])
     ):
         coord = _dim_or_aux(blev, long_name="pressure", units="hPa")
         coords_and_dims.append((coord, dim))
@@ -334,16 +333,13 @@ def _reshape_vector_args(values_and_dims):
         value = np.asarray(value)
         if len(dims) != value.ndim:
             raise ValueError(
-                "Lengths of dimension-mappings must match "
-                "input array dimensions."
+                "Lengths of dimension-mappings must match input array dimensions."
             )
         # Save dim sizes in original order.
         original_shape = value.shape
         if dims:
             # Transpose values to put its dims in the target order.
-            dims_order = sorted(
-                range(len(dims)), key=lambda i_dim: dims[i_dim]
-            )
+            dims_order = sorted(range(len(dims)), key=lambda i_dim: dims[i_dim])
             value = value.transpose(dims_order)
         if max_dim != -1:
             # Reshape to add any extra *1 dims.
@@ -437,9 +433,7 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
     orig_points_dtype = np.asarray(points).dtype
     bounds = None
     if lower_and_upper_bounds is not None:
-        lower_bounds, upper_bounds = np.broadcast_arrays(
-            *lower_and_upper_bounds
-        )
+        lower_bounds, upper_bounds = np.broadcast_arrays(*lower_and_upper_bounds)
         orig_bounds_dtype = lower_bounds.dtype
         bounds = np.vstack((lower_bounds, upper_bounds)).T
 
@@ -449,9 +443,7 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
 
     points, bounds = _collapse_degenerate_points_and_bounds(points, bounds)
 
-    used_dims = tuple(
-        i_dim for i_dim in range(points.ndim) if points.shape[i_dim] > 1
-    )
+    used_dims = tuple(i_dim for i_dim in range(points.ndim) if points.shape[i_dim] > 1)
     reshape_inds = tuple([points.shape[dim] for dim in used_dims])
     points = points.reshape(reshape_inds)
     points = points.astype(orig_points_dtype)
@@ -702,9 +694,7 @@ def _convert_time_coords(
         )
     ):
         coords_and_dims.append(
-            _new_coord_and_dims(
-                do_vector, "time", epoch_hours_unit, t1_epoch_hours
-            )
+            _new_coord_and_dims(do_vector, "time", epoch_hours_unit, t1_epoch_hours)
         )
 
     if (
@@ -726,9 +716,7 @@ def _convert_time_coords(
             )
         )
         coords_and_dims.append(
-            _new_coord_and_dims(
-                do_vector, "time", epoch_hours_unit, t1_epoch_hours
-            )
+            _new_coord_and_dims(do_vector, "time", epoch_hours_unit, t1_epoch_hours)
         )
         coords_and_dims.append(
             _new_coord_and_dims(
@@ -823,12 +811,7 @@ def _convert_time_coords(
             )
         )
 
-    if (
-        (len(lbcode) == 5)
-        and (lbcode[-1] == 3)
-        and (lbtim.ib == 2)
-        and (lbtim.ic == 2)
-    ):
+    if (len(lbcode) == 5) and (lbcode[-1] == 3) and (lbtim.ib == 2) and (lbtim.ic == 2):
         coords_and_dims.append(
             _new_coord_and_dims(
                 do_vector,
@@ -944,14 +927,10 @@ def convert(f):
     factories.extend(vertical_factories)
 
     # Realization (aka ensemble) (--> scalar coordinates)
-    aux_coords_and_dims.extend(
-        _convert_scalar_realization_coords(lbrsvd4=f.lbrsvd[3])
-    )
+    aux_coords_and_dims.extend(_convert_scalar_realization_coords(lbrsvd4=f.lbrsvd[3]))
 
     # Pseudo-level coordinate (--> scalar coordinates)
-    aux_coords_and_dims.extend(
-        _convert_scalar_pseudo_level_coords(lbuser5=f.lbuser[4])
-    )
+    aux_coords_and_dims.extend(_convert_scalar_pseudo_level_coords(lbuser5=f.lbuser[4]))
 
     # All the other rules.
     (
@@ -1135,12 +1114,7 @@ def _all_other_rules(f):
         )
 
     # "Normal" (i.e. not cross-sectional) lats+lons (--> vector coordinates)
-    if (
-        f.bdx != 0.0
-        and f.bdx != f.bmdi
-        and len(f.lbcode) != 5
-        and f.lbcode[0] == 1
-    ):
+    if f.bdx != 0.0 and f.bdx != f.bmdi and len(f.lbcode) != 5 and f.lbcode[0] == 1:
         dim_coords_and_dims.append(
             (
                 DimCoord.from_regular(
@@ -1156,12 +1130,7 @@ def _all_other_rules(f):
             )
         )
 
-    if (
-        f.bdx != 0.0
-        and f.bdx != f.bmdi
-        and len(f.lbcode) != 5
-        and f.lbcode[0] == 2
-    ):
+    if f.bdx != 0.0 and f.bdx != f.bmdi and len(f.lbcode) != 5 and f.lbcode[0] == 2:
         dim_coords_and_dims.append(
             (
                 DimCoord.from_regular(
@@ -1178,12 +1147,7 @@ def _all_other_rules(f):
             )
         )
 
-    if (
-        f.bdy != 0.0
-        and f.bdy != f.bmdi
-        and len(f.lbcode) != 5
-        and f.lbcode[0] == 1
-    ):
+    if f.bdy != 0.0 and f.bdy != f.bmdi and len(f.lbcode) != 5 and f.lbcode[0] == 1:
         dim_coords_and_dims.append(
             (
                 DimCoord.from_regular(
@@ -1198,12 +1162,7 @@ def _all_other_rules(f):
             )
         )
 
-    if (
-        f.bdy != 0.0
-        and f.bdy != f.bmdi
-        and len(f.lbcode) != 5
-        and f.lbcode[0] == 2
-    ):
+    if f.bdy != 0.0 and f.bdy != f.bmdi and len(f.lbcode) != 5 and f.lbcode[0] == 2:
         dim_coords_and_dims.append(
             (
                 DimCoord.from_regular(
@@ -1253,11 +1212,7 @@ def _all_other_rules(f):
         )
 
     # Cross-sectional vertical level types (--> vector coordinates)
-    if (
-        len(f.lbcode) == 5
-        and f.lbcode.iy == 2
-        and (f.bdy == 0 or f.bdy == f.bmdi)
-    ):
+    if len(f.lbcode) == 5 and f.lbcode.iy == 2 and (f.bdy == 0 or f.bdy == f.bmdi):
         dim_coords_and_dims.append(
             (
                 DimCoord(
@@ -1285,12 +1240,7 @@ def _all_other_rules(f):
             )
         )
 
-    if (
-        len(f.lbcode) == 5
-        and f.lbcode.ix == 10
-        and f.bdx != 0
-        and f.bdx != f.bmdi
-    ):
+    if len(f.lbcode) == 5 and f.lbcode.ix == 10 and f.bdx != 0 and f.bdx != f.bmdi:
         dim_coords_and_dims.append(
             (
                 DimCoord.from_regular(
@@ -1305,30 +1255,18 @@ def _all_other_rules(f):
             )
         )
 
-    if (
-        len(f.lbcode) == 5
-        and f.lbcode.iy == 1
-        and (f.bdy == 0 or f.bdy == f.bmdi)
-    ):
+    if len(f.lbcode) == 5 and f.lbcode.iy == 1 and (f.bdy == 0 or f.bdy == f.bmdi):
         dim_coords_and_dims.append(
             (
-                DimCoord(
-                    f.y, long_name="pressure", units="hPa", bounds=f.y_bounds
-                ),
+                DimCoord(f.y, long_name="pressure", units="hPa", bounds=f.y_bounds),
                 0,
             )
         )
 
-    if (
-        len(f.lbcode) == 5
-        and f.lbcode.ix == 1
-        and (f.bdx == 0 or f.bdx == f.bmdi)
-    ):
+    if len(f.lbcode) == 5 and f.lbcode.ix == 1 and (f.bdx == 0 or f.bdx == f.bmdi):
         dim_coords_and_dims.append(
             (
-                DimCoord(
-                    f.x, long_name="pressure", units="hPa", bounds=f.x_bounds
-                ),
+                DimCoord(f.x, long_name="pressure", units="hPa", bounds=f.x_bounds),
                 1,
             )
         )
@@ -1383,9 +1321,7 @@ def _all_other_rules(f):
         dim_coords_and_dims.append(
             (
                 DimCoord(
-                    np.linspace(
-                        t1_epoch_days, t2_epoch_days, f.lbrow, endpoint=False
-                    ),
+                    np.linspace(t1_epoch_days, t2_epoch_days, f.lbrow, endpoint=False),
                     standard_name="time",
                     units=epoch_days_unit,
                     bounds=f.y_bounds,
@@ -1395,12 +1331,7 @@ def _all_other_rules(f):
         )
 
     # Site number (--> scalar coordinate)
-    if (
-        len(f.lbcode) == 5
-        and f.lbcode[-1] == 1
-        and f.lbcode.ix == 13
-        and f.bdx != 0
-    ):
+    if len(f.lbcode) == 5 and f.lbcode[-1] == 1 and f.lbcode.ix == 13 and f.bdx != 0:
         dim_coords_and_dims.append(
             (
                 DimCoord.from_regular(
@@ -1518,9 +1449,7 @@ def _all_other_rules(f):
                         coord.guess_bounds()
             unhandled_lbproc = False
         elif f.lbcode == 101:
-            cell_methods.append(
-                CellMethod(zone_method, coords="grid_longitude")
-            )
+            cell_methods.append(CellMethod(zone_method, coords="grid_longitude"))
             for coord, _dim in dim_coords_and_dims:
                 if coord.standard_name == "grid_longitude":
                     if len(coord.points) == 1:
@@ -1550,11 +1479,7 @@ def _all_other_rules(f):
             um_minor = (f.lbsrce // 10000) % 100
             attributes["um_version"] = "{:d}.{:d}".format(um_major, um_minor)
 
-    if (
-        f.lbuser[6] != 0
-        or (f.lbuser[3] // 1000) != 0
-        or (f.lbuser[3] % 1000) != 0
-    ):
+    if f.lbuser[6] != 0 or (f.lbuser[3] // 1000) != 0 or (f.lbuser[3] % 1000) != 0:
         attributes["STASH"] = f.stash
 
     if str(f.stash) in STASH_TO_CF:

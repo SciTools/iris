@@ -69,12 +69,8 @@ def main():
     # Apply each filter using the rolling_window method used with the weights
     # keyword argument. A weighted sum is required because the magnitude of
     # the weights are just as important as their relative sizes.
-    soi24 = soi.rolling_window(
-        "time", iris.analysis.SUM, len(wgts24), weights=wgts24
-    )
-    soi84 = soi.rolling_window(
-        "time", iris.analysis.SUM, len(wgts84), weights=wgts84
-    )
+    soi24 = soi.rolling_window("time", iris.analysis.SUM, len(wgts24), weights=wgts24)
+    soi84 = soi.rolling_window("time", iris.analysis.SUM, len(wgts84), weights=wgts84)
 
     # Plot the SOI time series and both filtered versions.
     plt.figure(figsize=(9, 4))

@@ -150,9 +150,7 @@ class TestLbfcProduction(tests.IrisTest):
 
     def test_bad_name_units_to_lbfc_0(self):
         # Check that badly-formed / unrecognised cases yield LBFC == 0.
-        self.check_cube_name_units_yields_lbfc(
-            "sea_ice_temperature", "degC", 0
-        )
+        self.check_cube_name_units_yields_lbfc("sea_ice_temperature", "degC", 0)
         self.check_cube_name_units_yields_lbfc("Junk_Name", "K", 0)
 
 
@@ -238,9 +236,7 @@ class TestTimeMean(tests.IrisTest):
         tc = cube.coord(axis="t")
         expected = tc.units.num2date(0)
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual = pp_field.t1
 
@@ -251,9 +247,7 @@ class TestTimeMean(tests.IrisTest):
         tc = cube.coord(axis="t")
         expected = tc.units.num2date(15)
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual = pp_field.t1
 
@@ -264,9 +258,7 @@ class TestTimeMean(tests.IrisTest):
         tc = cube.coord(axis="t")
         expected = tc.units.num2date(30)
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual = pp_field.t2
 
@@ -276,9 +268,7 @@ class TestTimeMean(tests.IrisTest):
         cube = _get_single_time_cube(set_time_mean=False)
         expected = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual = pp_field.t2
         self.assertEqual(expected, actual)
@@ -289,9 +279,7 @@ class TestTimeMean(tests.IrisTest):
         cube = _get_single_time_cube()
         mock_lbft = mock.sentinel.lbft
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             pp_field.lbft = mock_lbft
             verify(cube, pp_field)
         actual = pp_field.lbft
@@ -303,9 +291,7 @@ class TestTimeMean(tests.IrisTest):
         expected_ib = 0
         expected_ic = 2  # 360 day calendar
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual_ib = pp_field.lbtim.ib
         actual_ic = pp_field.lbtim.ic
@@ -318,9 +304,7 @@ class TestTimeMean(tests.IrisTest):
         expected_ib = 2  # Time mean
         expected_ic = 2  # 360 day calendar
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual_ib = pp_field.lbtim.ib
         actual_ic = pp_field.lbtim.ic
@@ -332,9 +316,7 @@ class TestTimeMean(tests.IrisTest):
         cube = _get_single_time_cube()
         expected = 0
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual = pp_field.lbproc
 
@@ -344,9 +326,7 @@ class TestTimeMean(tests.IrisTest):
         cube = _get_single_time_cube(set_time_mean=True)
         expected = 128
 
-        with mock.patch(
-            "iris.fileformats.pp.PPField3", autospec=True
-        ) as pp_field:
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
             verify(cube, pp_field)
         actual = pp_field.lbproc
 

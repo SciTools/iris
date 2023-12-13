@@ -264,9 +264,7 @@ class NimrodField:
             elif self.datum_len == 4:
                 numpy_dtype = np.int32
             else:
-                raise TranslationError(
-                    "Undefined datum length " "%d" % self.datum_type
-                )
+                raise TranslationError("Undefined datum length %d" % self.datum_type)
         # 2:byte
         elif self.datum_type == 2:
             numpy_dtype = np.byte
@@ -328,9 +326,7 @@ def load_cubes(filenames, callback=None):
 
                     # Were we given a callback?
                     if callback is not None:
-                        cube = iris.io.run_callback(
-                            callback, cube, field, filename
-                        )
+                        cube = iris.io.run_callback(callback, cube, field, filename)
                     if cube is None:
                         continue
 
