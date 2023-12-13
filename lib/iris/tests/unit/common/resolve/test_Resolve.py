@@ -439,7 +439,7 @@ class Test__dim_coverage(tests.IrisTest):
         ]
         column_parts = [x for x in zip(*parts)]
         self.metadata, self.coords, self.dims = [list(x) for x in column_parts]
-        self.dims = [dim for dim, in self.dims]
+        self.dims = [dim for (dim,) in self.dims]
         for metadata, coord, dims in parts:
             item = _Item(metadata=metadata, coord=coord, dims=dims)
             self.items.append(item)

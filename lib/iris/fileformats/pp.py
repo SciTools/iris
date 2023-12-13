@@ -1794,8 +1794,9 @@ def _create_field_data(field, data_shape, land_mask_field=None):
             # Check whether this field uses a land or a sea mask.
             if field.lbpack.n3 not in (1, 2):
                 raise ValueError(
-                    "Unsupported mask compression : "
-                    "lbpack.n3 = {}.".format(field.lbpack.n3)
+                    "Unsupported mask compression : lbpack.n3 = {}.".format(
+                        field.lbpack.n3
+                    )
                 )
             if field.lbpack.n3 == 2:
                 # Sea-mask packing : points are inverse of the land-mask.
