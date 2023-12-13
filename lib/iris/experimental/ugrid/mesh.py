@@ -145,8 +145,8 @@ class Connectivity(_DimensionalMetadata):
 
         * standard_name (str):
             CF standard name of the connectivity.
-            (Note, this is not expected by the UGRID conventions, but will be
-            handled in Iris' standard way if provided).
+            This is not expected by the UGRID conventions, but will be
+            handled in Iris' standard way if provided.
         * long_name (str):
             Descriptive name of the connectivity.
         * var_name (str):
@@ -154,8 +154,8 @@ class Connectivity(_DimensionalMetadata):
         * units (cf_units.Unit):
             The :class:`~cf_units.Unit` of the connectivity's values.
             Can be a string, which will be converted to a Unit object.
-            (Note, this is not expected by the UGRID conventions, but will be
-            handled in Iris' standard way if provided).
+            This is not expected by the UGRID conventions, but will be
+            handled in Iris' standard way if provided.
         * attributes (dict):
             A dictionary containing other cf and user-defined attributes.
         * start_index (int):
