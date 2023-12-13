@@ -145,8 +145,8 @@ class Connectivity(_DimensionalMetadata):
 
         * standard_name (str):
             CF standard name of the connectivity.
-            This is not expected by the UGRID conventions, but will be
-            handled in Iris' standard way if provided.
+            (NOTE: this is not expected by the UGRID conventions, but will be
+            handled in Iris' standard way if provided).
         * long_name (str):
             Descriptive name of the connectivity.
         * var_name (str):
@@ -154,8 +154,8 @@ class Connectivity(_DimensionalMetadata):
         * units (cf_units.Unit):
             The :class:`~cf_units.Unit` of the connectivity's values.
             Can be a string, which will be converted to a Unit object.
-            This is not expected by the UGRID conventions, but will be
-            handled in Iris' standard way if provided.
+            (NOTE: this is not expected by the UGRID conventions, but will be
+            handled in Iris' standard way if provided).
         * attributes (dict):
             A dictionary containing other cf and user-defined attributes.
         * start_index (int):
@@ -582,13 +582,15 @@ class Mesh(CFVariableMixin):
         edge_dimension=None,
         face_dimension=None,
     ):
-        """.. note::
+        """Mesh initialise.
 
-        The purpose of the :attr:`node_dimension`, :attr:`edge_dimension` and
-        :attr:`face_dimension` properties are to preserve the original NetCDF
-        variable dimension names. Note that, only :attr:`edge_dimension` and
-        :attr:`face_dimension` are UGRID attributes, and are only present for
-        :attr:`topology_dimension` ``>=2``.
+        .. note::
+
+            The purpose of the :attr:`node_dimension`, :attr:`edge_dimension` and
+            :attr:`face_dimension` properties are to preserve the original NetCDF
+            variable dimension names. Note that, only :attr:`edge_dimension` and
+            :attr:`face_dimension` are UGRID attributes, and are only present for
+            :attr:`topology_dimension` ``>=2``.
 
         """
         # TODO: support volumes.
