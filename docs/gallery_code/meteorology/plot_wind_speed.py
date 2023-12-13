@@ -1,5 +1,4 @@
-"""
-Plotting Wind Direction Using Quiver
+"""Plotting Wind Direction Using Quiver
 ====================================
 
 This example demonstrates using quiver to plot wind speed contours and wind

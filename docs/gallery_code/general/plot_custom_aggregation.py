@@ -1,5 +1,4 @@
-"""
-Calculating a Custom Statistic
+"""Calculating a Custom Statistic
 ==============================
 
 This example shows how to define and use a custom
@@ -28,8 +27,7 @@ from iris.util import rolling_window
 # Note: in order to meet the requirements of iris.analysis.Aggregator, it must
 # do the calculation over an arbitrary (given) data axis.
 def count_spells(data, threshold, axis, spell_length):
-    """
-    Function to calculate the number of points in a sequence where the value
+    """Function to calculate the number of points in a sequence where the value
     has exceeded a threshold value for at least a certain number of timepoints.
 
     Generalised to operate on multiple time sequences arranged on a specific

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provide conversion to and from Pandas data structures.
+"""Provide conversion to and from Pandas data structures.
 
 See also: https://pandas.pydata.org/
 
@@ -32,8 +31,7 @@ from iris.exceptions import IrisIgnoringWarning
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
-    """
-    Create a Coord or other dimensional metadata from a Pandas index or columns array.
+    """Create a Coord or other dimensional metadata from a Pandas index or columns array.
 
     If no calendar is specified for a time series, Standard is assumed.
 
@@ -78,9 +76,7 @@ def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
 
 
 def _add_iris_coord(cube, name, points, dim, calendar=None):
-    """
-    Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array.
-    """
+    """Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array."""
     # Most functionality has been abstracted to _get_dimensional_metadata,
     #  allowing reuse in as_cube() and as_cubes().
     coord = _get_dimensional_metadata(name, points, calendar)
@@ -92,8 +88,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
 
 
 def _series_index_unique(pandas_series: pandas.Series):
-    """
-    Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
+    """Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
 
     Iterates through grouping single index levels, then combinations of 2
     levels, then 3 etcetera, until single :class:`~pandas.Series` values per
@@ -127,8 +122,7 @@ def as_cube(
     copy=True,
     calendars=None,
 ):
-    """
-    Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
+    """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
     .. deprecated:: 3.3.0
 
@@ -198,8 +192,7 @@ def as_cubes(
     cell_measure_cols=None,
     ancillary_variable_cols=None,
 ):
-    """
-    Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
+    """Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
     The index of `pandas_structure` will be used for generating the
     :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`\\ s.
@@ -569,8 +562,7 @@ def _make_cell_measures_list(cube):
 
 
 def as_series(cube, copy=True):
-    """
-    Convert a 1D cube to a Pandas Series.
+    """Convert a 1D cube to a Pandas Series.
 
     .. deprecated:: 3.4.0
         This function is scheduled for removal in a future release, being
@@ -625,8 +617,7 @@ def as_data_frame(
     add_cell_measures=False,
     add_ancillary_variables=False,
 ):
-    """
-    Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
+    """Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
     flattened into a long-style :class:`~pandas.DataFrame`.  Other

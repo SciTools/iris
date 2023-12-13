@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Support for conservative regridding via ESMPy.
+"""Support for conservative regridding via ESMPy.
 
 .. note::
 
@@ -41,8 +40,7 @@ _CRS_TRUELATLON = ccrs.Geodetic()
 
 
 def _convert_latlons(crs, x_array, y_array):
-    """
-    Convert x+y coords in a given crs to (x,y) values in true-lat-lons.
+    """Convert x+y coords in a given crs to (x,y) values in true-lat-lons.
 
     .. note::
 
@@ -55,8 +53,7 @@ def _convert_latlons(crs, x_array, y_array):
 
 
 def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
-    """
-    Create an ESMPy ESMF.Field on given coordinates.
+    """Create an ESMPy ESMF.Field on given coordinates.
 
     Create a ESMF.Grid from the coordinates, defining corners and centre
     positions as lats+lons.
@@ -146,8 +143,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
 
 
 def regrid_conservative_via_esmpy(source_cube, grid_cube):
-    """
-    Perform a conservative regridding with ESMPy.
+    """Perform a conservative regridding with ESMPy.
 
     .. note ::
 

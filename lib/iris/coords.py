@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Definitions of coordinates and other dimensional metadata.
+"""Definitions of coordinates and other dimensional metadata.
 
 """
 
@@ -41,10 +40,7 @@ DEFAULT_IGNORE_AXIS = False
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
-    """
-    Superclass for dimensional metadata.
-
-    """
+    """Superclass for dimensional metadata."""
 
     _MODE_ADD = 1
     _MODE_SUB = 2
@@ -73,8 +69,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         units=None,
         attributes=None,
     ):
-        """
-        Constructs a single dimensional metadata object.
+        """Constructs a single dimensional metadata object.
 
         Args:
 
@@ -129,8 +124,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         self._bounds_dm = None  # Only ever set on Coord-derived instances.
 
     def __getitem__(self, keys):
-        """
-        Returns a new dimensional metadata whose values are obtained by
+        """Returns a new dimensional metadata whose values are obtained by
         conventional array indexing.
 
         .. note::
@@ -168,8 +162,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return new_metadata
 
     def copy(self, values=None):
-        """
-        Returns a copy of this dimensional metadata object.
+        """Returns a copy of this dimensional metadata object.
 
         Kwargs:
 
@@ -190,8 +183,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     @abstractmethod
     def cube_dims(self, cube):
-        """
-        Identify the cube dims of any _DimensionalMetadata object.
+        """Identify the cube dims of any _DimensionalMetadata object.
 
         Return the dimensions in the cube of a matching _DimensionalMetadata
         object, if any.
@@ -248,15 +240,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             self._values_dm.data = values
 
     def _lazy_values(self):
-        """
-        Returns a lazy array representing the dimensional metadata values.
-
-        """
+        """Returns a lazy array representing the dimensional metadata values."""
         return self._values_dm.lazy_data()
 
     def _core_values(self):
-        """
-        The values array of this dimensional metadata which may be a NumPy
+        """The values array of this dimensional metadata which may be a NumPy
         array or a dask array.
 
         """
@@ -267,8 +255,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _has_lazy_values(self):
-        """
-        Returns a boolean indicating whether the metadata's values array is a
+        """Returns a boolean indicating whether the metadata's values array is a
         lazy dask array or not.
 
         """
@@ -284,8 +271,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         convert_dates=True,
         _section_indices=None,
     ):
-        r"""
-        Make a printable text summary.
+        r"""Make a printable text summary.
 
         Parameters
         ----------
@@ -644,8 +630,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return hash(id(self))
 
     def __binary_operator__(self, other, mode_constant):
-        """
-        Common code which is called by add, sub, mul and div
+        """Common code which is called by add, sub, mul and div
 
         Mode constant is one of ADD, SUB, MUL, DIV, RDIV
 
@@ -771,8 +756,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         self.units = unit
 
     def is_compatible(self, other, ignore=None):
-        """
-        Return whether the current dimensional metadata object is compatible
+        """Return whether the current dimensional metadata object is compatible
         with another.
 
         """
@@ -793,8 +777,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def dtype(self):
-        """
-        The NumPy dtype of the current dimensional metadata object, as
+        """The NumPy dtype of the current dimensional metadata object, as
         specified by its values.
 
         """
@@ -802,16 +785,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def ndim(self):
-        """
-        Return the number of dimensions of the current dimensional metadata
+        """Return the number of dimensions of the current dimensional metadata
         object.
 
         """
         return self._values_dm.ndim
 
     def has_bounds(self):
-        """
-        Return a boolean indicating whether the current dimensional metadata
+        """Return a boolean indicating whether the current dimensional metadata
         object has a bounds array.
 
         """
@@ -825,8 +806,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.shape
 
     def xml_element(self, doc):
-        """
-        Create the :class:`xml.dom.minidom.Element` that describes this
+        """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`_DimensionalMetadata`.
 
         Args:
@@ -919,8 +899,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _value_type_name(self):
-        """
-        A simple, readable name for the data type of the dimensional metadata
+        """A simple, readable name for the data type of the dimensional metadata
         values.
 
         """
@@ -948,8 +927,7 @@ class AncillaryVariable(_DimensionalMetadata):
         units=None,
         attributes=None,
     ):
-        """
-        Constructs a single ancillary variable.
+        """Constructs a single ancillary variable.
 
         Args:
 
@@ -993,8 +971,7 @@ class AncillaryVariable(_DimensionalMetadata):
         self._values = data
 
     def lazy_data(self):
-        """
-        Return a lazy array representing the ancillary variable's data.
+        """Return a lazy array representing the ancillary variable's data.
 
         Accessing this method will never cause the data values to be loaded.
         Similarly, calling methods on, or indexing, the returned Array
@@ -1010,24 +987,21 @@ class AncillaryVariable(_DimensionalMetadata):
         return super()._lazy_values()
 
     def core_data(self):
-        """
-        The data array at the core of this ancillary variable, which may be a
+        """The data array at the core of this ancillary variable, which may be a
         NumPy array or a dask array.
 
         """
         return super()._core_values()
 
     def has_lazy_data(self):
-        """
-        Return a boolean indicating whether the ancillary variable's data array
+        """Return a boolean indicating whether the ancillary variable's data array
         is a lazy dask array or not.
 
         """
         return super()._has_lazy_values()
 
     def cube_dims(self, cube):
-        """
-        Return the cube dimensions of this AncillaryVariable.
+        """Return the cube dimensions of this AncillaryVariable.
 
         Equivalent to "cube.ancillary_variable_dims(self)".
 
@@ -1036,8 +1010,7 @@ class AncillaryVariable(_DimensionalMetadata):
 
 
 class CellMeasure(AncillaryVariable):
-    """
-    A CF Cell Measure, providing area or volume properties of a cell
+    """A CF Cell Measure, providing area or volume properties of a cell
     where these cannot be inferred from the Coordinates and
     Coordinate Reference System.
 
@@ -1053,8 +1026,7 @@ class CellMeasure(AncillaryVariable):
         attributes=None,
         measure=None,
     ):
-        """
-        Constructs a single cell measure.
+        """Constructs a single cell measure.
 
         Args:
 
@@ -1111,8 +1083,7 @@ class CellMeasure(AncillaryVariable):
         self._metadata_manager.measure = measure
 
     def cube_dims(self, cube):
-        """
-        Return the cube dimensions of this CellMeasure.
+        """Return the cube dimensions of this CellMeasure.
 
         Equivalent to "cube.cell_measure_dims(self)".
 
@@ -1120,8 +1091,7 @@ class CellMeasure(AncillaryVariable):
         return cube.cell_measure_dims(self)
 
     def xml_element(self, doc):
-        """
-        Create the :class:`xml.dom.minidom.Element` that describes this
+        """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`CellMeasure`.
 
         Args:
@@ -1166,8 +1136,7 @@ class CoordExtent(
         min_inclusive=True,
         max_inclusive=True,
     ):
-        """
-        Create a CoordExtent for the specified coordinate and range of
+        """Create a CoordExtent for the specified coordinate and range of
         values.
 
         Args:
@@ -1210,8 +1179,7 @@ BOUND_POSITION_END = 1
 
 
 def _get_2d_coord_bound_grid(bounds):
-    """
-    Creates a grid using the bounds of a 2D coordinate with 4 sided cells.
+    """Creates a grid using the bounds of a 2D coordinate with 4 sided cells.
 
     Assumes that the four vertices of the cells are in an anti-clockwise order
     (bottom-left, bottom-right, top-right, top-left).
@@ -1253,8 +1221,7 @@ def _get_2d_coord_bound_grid(bounds):
 
 
 class Cell(namedtuple("Cell", ["point", "bound"])):
-    """
-    An immutable representation of a single cell of a coordinate, including the
+    """An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
 
     Notes on cell comparison:
@@ -1290,10 +1257,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
     __array_priority__ = 100
 
     def __new__(cls, point=None, bound=None):
-        """
-        Construct a Cell from point or point-and-bound information.
-
-        """
+        """Construct a Cell from point or point-and-bound information."""
         if point is None:
             raise ValueError("Point must be defined.")
 
@@ -1341,8 +1305,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return hash((self.point, bound))
 
     def __eq__(self, other):
-        """
-        Compares Cell equality depending on the type of the object to be
+        """Compares Cell equality depending on the type of the object to be
         compared.
 
         """
@@ -1372,8 +1335,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return result
 
     def __common_cmp__(self, other, operator_method):
-        """
-        Common method called by the rich comparison operators. The method of
+        """Common method called by the rich comparison operators. The method of
         checking equality depends on the type of the object to be compared.
 
         Cell vs Cell comparison is used to define a strict order.
@@ -1479,8 +1441,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
             return str(self.point)
 
     def contains_point(self, point):
-        """
-        For a bounded cell, returns whether the given point lies within the
+        """For a bounded cell, returns whether the given point lies within the
         bounds.
 
         .. note:: The test carried out is equivalent to min(bound)
@@ -1493,10 +1454,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
 
 
 class Coord(_DimensionalMetadata):
-    """
-    Abstract base class for coordinates.
-
-    """
+    """Abstract base class for coordinates."""
 
     _values_array_name = "points"
 
@@ -1513,8 +1471,7 @@ class Coord(_DimensionalMetadata):
         coord_system=None,
         climatological=False,
     ):
-        """
-        Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
+        """Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
 
         Args:
 
@@ -1582,8 +1539,7 @@ class Coord(_DimensionalMetadata):
         self._ignore_axis = DEFAULT_IGNORE_AXIS
 
     def copy(self, points=None, bounds=None):
-        """
-        Returns a copy of this coordinate.
+        """Returns a copy of this coordinate.
 
         Kwargs:
 
@@ -1654,8 +1610,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def bounds(self):
-        """
-        The coordinate bounds values, as a NumPy array,
+        """The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
 
         .. note:: The shape of the bound array should be: ``points.shape +
@@ -1694,8 +1649,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def climatological(self):
-        """
-        A boolean that controls whether the coordinate is a climatological
+        """A boolean that controls whether the coordinate is a climatological
         time axis, in which case the bounds represent a climatological period
         rather than a normal period.
 
@@ -1730,8 +1684,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def ignore_axis(self):
-        """
-        A boolean that controls whether guess_coord_axis acts on this
+        """A boolean that controls whether guess_coord_axis acts on this
         coordinate.
 
         Defaults to False, and when set to True it will be skipped by
@@ -1747,8 +1700,7 @@ class Coord(_DimensionalMetadata):
         self._ignore_axis = value
 
     def lazy_points(self):
-        """
-        Return a lazy array representing the coord points.
+        """Return a lazy array representing the coord points.
 
         Accessing this method will never cause the points values to be loaded.
         Similarly, calling methods on, or indexing, the returned Array
@@ -1764,8 +1716,7 @@ class Coord(_DimensionalMetadata):
         return super()._lazy_values()
 
     def lazy_bounds(self):
-        """
-        Return a lazy array representing the coord bounds.
+        """Return a lazy array representing the coord bounds.
 
         Accessing this method will never cause the bounds values to be loaded.
         Similarly, calling methods on, or indexing, the returned Array
@@ -1785,16 +1736,14 @@ class Coord(_DimensionalMetadata):
         return lazy_bounds
 
     def core_points(self):
-        """
-        The points array at the core of this coord, which may be a NumPy array
+        """The points array at the core of this coord, which may be a NumPy array
         or a dask array.
 
         """
         return super()._core_values()
 
     def core_bounds(self):
-        """
-        The points array at the core of this coord, which may be a NumPy array
+        """The points array at the core of this coord, which may be a NumPy array
         or a dask array.
 
         """
@@ -1806,16 +1755,14 @@ class Coord(_DimensionalMetadata):
         return result
 
     def has_lazy_points(self):
-        """
-        Return a boolean indicating whether the coord's points array is a
+        """Return a boolean indicating whether the coord's points array is a
         lazy dask array or not.
 
         """
         return super()._has_lazy_values()
 
     def has_lazy_bounds(self):
-        """
-        Return a boolean indicating whether the coord's bounds array is a
+        """Return a boolean indicating whether the coord's bounds array is a
         lazy dask array or not.
 
         """
@@ -1834,8 +1781,7 @@ class Coord(_DimensionalMetadata):
         return hash(id(self))
 
     def cube_dims(self, cube):
-        """
-        Return the cube dimensions of this Coord.
+        """Return the cube dimensions of this Coord.
 
         Equivalent to "cube.coord_dims(self)".
 
@@ -1843,8 +1789,7 @@ class Coord(_DimensionalMetadata):
         return cube.coord_dims(self)
 
     def convert_units(self, unit):
-        r"""
-        Change the coordinate's units, converting the values in its points
+        r"""Change the coordinate's units, converting the values in its points
         and bounds arrays.
 
         For example, if a coordinate's :attr:`~iris.coords.Coord.units`
@@ -1863,8 +1808,7 @@ class Coord(_DimensionalMetadata):
         super().convert_units(unit=unit)
 
     def cells(self):
-        """
-        Returns an iterable of Cell instances for this Coord.
+        """Returns an iterable of Cell instances for this Coord.
 
         For example::
 
@@ -1914,8 +1858,7 @@ class Coord(_DimensionalMetadata):
             )
 
     def _discontiguity_in_bounds(self, rtol=1e-5, atol=1e-8):
-        """
-        Checks that the bounds of the coordinate are contiguous.
+        """Checks that the bounds of the coordinate are contiguous.
 
         Kwargs:
         * rtol: (float)
@@ -2005,8 +1948,7 @@ class Coord(_DimensionalMetadata):
         return contiguous, diffs
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
-        """
-        Return True if, and only if, this Coord is bounded with contiguous
+        """Return True if, and only if, this Coord is bounded with contiguous
         bounds to within the specified relative and absolute tolerances.
 
         1D coords are contiguous if the upper bound of a cell aligns,
@@ -2035,8 +1977,7 @@ class Coord(_DimensionalMetadata):
         return contiguous
 
     def contiguous_bounds(self):
-        """
-        Returns the N+1 bound values for a contiguous bounded 1D coordinate
+        """Returns the N+1 bound values for a contiguous bounded 1D coordinate
         of length N, or the (N+1, M+1) bound values for a contiguous bounded 2D
         coordinate of shape (N, M).
 
@@ -2100,8 +2041,7 @@ class Coord(_DimensionalMetadata):
         return True
 
     def is_compatible(self, other, ignore=None):
-        """
-        Return whether the coordinate is compatible with another.
+        """Return whether the coordinate is compatible with another.
 
         Compatibility is determined by comparing
         :meth:`iris.coords.Coord.name()`, :attr:`iris.coords.Coord.units`,
@@ -2131,8 +2071,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def bounds_dtype(self):
-        """
-        The NumPy dtype of the coord's bounds. Will be `None` if the coord
+        """The NumPy dtype of the coord's bounds. Will be `None` if the coord
         does not have bounds.
 
         """
@@ -2143,10 +2082,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def nbounds(self):
-        """
-        Return the number of bounds that this coordinate has (0 for no bounds).
-
-        """
+        """Return the number of bounds that this coordinate has (0 for no bounds)."""
         nbounds = 0
         if self.has_bounds():
             nbounds = self._bounds_dm.shape[-1]
@@ -2157,8 +2093,7 @@ class Coord(_DimensionalMetadata):
         return self._bounds_dm is not None
 
     def cell(self, index):
-        """
-        Return the single :class:`Cell` instance which results from slicing the
+        """Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
@@ -2182,8 +2117,7 @@ class Coord(_DimensionalMetadata):
         return Cell(point, bound)
 
     def collapsed(self, dims_to_collapse=None):
-        """
-        Returns a copy of this coordinate, which has been collapsed along
+        """Returns a copy of this coordinate, which has been collapsed along
         the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
@@ -2280,8 +2214,7 @@ class Coord(_DimensionalMetadata):
         return coord
 
     def _guess_bounds(self, bound_position=0.5):
-        """
-        Return bounds for this coordinate based on its points.
+        """Return bounds for this coordinate based on its points.
 
         Kwargs:
 
@@ -2341,8 +2274,7 @@ class Coord(_DimensionalMetadata):
         return bounds
 
     def guess_bounds(self, bound_position=0.5):
-        """
-        Add contiguous bounds to a coordinate, calculated from its points.
+        """Add contiguous bounds to a coordinate, calculated from its points.
 
         Puts a cell boundary at the specified fraction between each point and
         the next, plus extrapolated lowermost and uppermost bound points, so
@@ -2374,8 +2306,7 @@ class Coord(_DimensionalMetadata):
         self.bounds = self._guess_bounds(bound_position)
 
     def intersect(self, other, return_indices=False):
-        """
-        Returns a new coordinate from the intersection of two coordinates.
+        """Returns a new coordinate from the intersection of two coordinates.
 
         Both coordinates must be compatible as defined by
         :meth:`~iris.coords.Coord.is_compatible`.
@@ -2420,8 +2351,7 @@ class Coord(_DimensionalMetadata):
             return self[self_intersect_indices]
 
     def nearest_neighbour_index(self, point):
-        """
-        Returns the index of the cell nearest to the given point.
+        """Returns the index of the cell nearest to the given point.
 
         Only works for one-dimensional coordinates.
 
@@ -2516,8 +2446,7 @@ class Coord(_DimensionalMetadata):
         return result_index
 
     def xml_element(self, doc):
-        """
-        Create the :class:`xml.dom.minidom.Element` that describes this
+        """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`Coord`.
 
         Args:
@@ -2551,8 +2480,7 @@ _regular_points = lru_cache(iris.util.regular_points)
 
 
 class DimCoord(Coord):
-    """
-    A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
+    """A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
     permitted in a :class:`DimCoord`.
 
     """
@@ -2573,8 +2501,7 @@ class DimCoord(Coord):
         climatological=False,
         with_bounds=False,
     ):
-        """
-        Create a :class:`DimCoord` with regularly spaced points, and
+        """Create a :class:`DimCoord` with regularly spaced points, and
         optionally bounds.
 
         The majority of the arguments are defined as for
@@ -2635,8 +2562,7 @@ class DimCoord(Coord):
         circular=False,
         climatological=False,
     ):
-        """
-        Create a 1D, numeric, and strictly monotonic coordinate with **immutable** points and bounds.
+        """Create a 1D, numeric, and strictly monotonic coordinate with **immutable** points and bounds.
 
         Missing values are not permitted.
 
@@ -2707,8 +2633,7 @@ class DimCoord(Coord):
         self.circular = circular
 
     def __deepcopy__(self, memo):
-        """
-        coord.__deepcopy__() -> Deep copy of coordinate.
+        """coord.__deepcopy__() -> Deep copy of coordinate.
 
         Used if copy.deepcopy is called on a coordinate.
 
@@ -2773,8 +2698,7 @@ class DimCoord(Coord):
         return coord
 
     def _new_points_requirements(self, points):
-        """
-        Confirm that a new set of coord points adheres to the requirements for
+        """Confirm that a new set of coord points adheres to the requirements for
         :class:`~iris.coords.DimCoord` points, being:
             * points are scalar or 1D,
             * points are numeric,
@@ -2820,8 +2744,7 @@ class DimCoord(Coord):
             points.flags.writeable = False
 
     def _new_bounds_requirements(self, bounds):
-        """
-        Confirm that a new set of coord bounds adheres to the requirements for
+        """Confirm that a new set of coord bounds adheres to the requirements for
         :class:`~iris.coords.DimCoord` bounds, being:
             * bounds are compatible in shape with the points
             * bounds are numeric,
@@ -2914,8 +2837,7 @@ class DimCoord(Coord):
         return True
 
     def xml_element(self, doc):
-        """
-        Create the :class:`xml.dom.minidom.Element` that describes this
+        """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`DimCoord`.
 
         Args:
@@ -2935,14 +2857,10 @@ class DimCoord(Coord):
 
 
 class AuxCoord(Coord):
-    """
-    A CF auxiliary coordinate.
-
-    """
+    """A CF auxiliary coordinate."""
 
     def __init__(self, *args, **kwargs):
-        """
-        Create a coordinate with **mutable** points and bounds.
+        """Create a coordinate with **mutable** points and bounds.
 
         Args:
 
@@ -2997,10 +2915,7 @@ class AuxCoord(Coord):
 
 
 class CellMethod(iris.util._OrderedHashable):
-    """
-    Represents a sub-cell pre-processing operation.
-
-    """
+    """Represents a sub-cell pre-processing operation."""
 
     # Declare the attribute names relevant to the _OrderedHashable behaviour.
     _names = ("method", "coord_names", "intervals", "comments")
@@ -3019,8 +2934,7 @@ class CellMethod(iris.util._OrderedHashable):
     comments = None
 
     def __init__(self, method, coords=None, intervals=None, comments=None):
-        """
-        Args:
+        """Args:
 
         * method:
             The name of the operation.
@@ -3104,8 +3018,7 @@ class CellMethod(iris.util._OrderedHashable):
         return NotImplemented
 
     def xml_element(self, doc):
-        """
-        Create the :class:`xml.dom.minidom.Element` that describes this
+        """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`CellMethod`.
 
         Args:

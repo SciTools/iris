@@ -1,5 +1,4 @@
-"""
-Plotting Wind Direction Using Barbs
+"""Plotting Wind Direction Using Barbs
 ===================================
 
 This example demonstrates using barbs to plot wind speed contours and wind

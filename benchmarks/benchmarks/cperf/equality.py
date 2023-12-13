@@ -2,16 +2,14 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Equality benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
+"""Equality benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
 """
 from .. import on_demand_benchmark
 from . import SingleDiagnosticMixin
 
 
 class EqualityMixin(SingleDiagnosticMixin):
-    """
-    Uses :class:`SingleDiagnosticMixin` as the realistic case will be comparing
+    """Uses :class:`SingleDiagnosticMixin` as the realistic case will be comparing
     :class:`~iris.cube.Cube`\\ s that have been loaded from file.
     """
 
@@ -26,9 +24,8 @@ class EqualityMixin(SingleDiagnosticMixin):
 
 @on_demand_benchmark
 class CubeEquality(EqualityMixin):
-    """
-    Benchmark time and memory costs of comparing LFRic and UM
-     :class:`~iris.cube.Cube`\\ s.
+    """Benchmark time and memory costs of comparing LFRic and UM
+    :class:`~iris.cube.Cube`\\ s.
     """
 
     def _comparison(self):

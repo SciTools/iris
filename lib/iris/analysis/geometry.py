@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Various utilities related to geometric operations.
+"""Various utilities related to geometric operations.
 
 .. note::
     This module requires :mod:`shapely`.
@@ -19,8 +18,7 @@ import iris.exceptions
 
 
 def _extract_relevant_cube_slice(cube, geometry):
-    """
-    Given a shapely geometry object, this helper method returns
+    """Given a shapely geometry object, this helper method returns
     the tuple
     (subcube, x_coord_of_subcube, y_coord_of_subcube,
      (min_x_index, min_y_index, max_x_index, max_y_index))
@@ -137,8 +135,7 @@ def _extract_relevant_cube_slice(cube, geometry):
 
 
 def geometry_area_weights(cube, geometry, normalize=False):
-    """
-    Returns the array of weights corresponding to the area of overlap between
+    """Returns the array of weights corresponding to the area of overlap between
     the cells of cube's horizontal grid, and the given shapely geometry.
 
     The returned array is suitable for use with :const:`iris.analysis.MEAN`.

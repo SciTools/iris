@@ -14,8 +14,7 @@ import iris
 @tests.skip_data
 class TestGeoTiffExport(tests.IrisTest):
     def check_tiff_header(self, tiff_filename, expect_keys, expect_entries):
-        """
-        Checks the given tiff file's metadata contains the expected keys,
+        """Checks the given tiff file's metadata contains the expected keys,
         and some matching values (not all).
 
         """

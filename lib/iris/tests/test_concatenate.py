@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test the cube concatenate mechanism.
+"""Test the cube concatenate mechanism.
 
 """
 
@@ -34,8 +33,7 @@ def _make_cube(
     offset=0,
     scalar=None,
 ):
-    """
-    A convenience test function that creates a custom 2D cube.
+    """A convenience test function that creates a custom 2D cube.
 
     Args:
 
@@ -170,8 +168,7 @@ def _make_cube(
 
 
 def _make_cube_3d(x, y, z, data, aux=None, offset=0):
-    """
-    A convenience test function that creates a custom 3D cube.
+    """A convenience test function that creates a custom 3D cube.
 
     Args:
 
@@ -266,8 +263,7 @@ def _make_cube_3d(x, y, z, data, aux=None, offset=0):
 
 
 def concatenate(cubes, order=None):
-    """
-    Explicitly force the contiguous major order of cube data
+    """Explicitly force the contiguous major order of cube data
     alignment to ensure consistent CML crc32 checksums.
 
     Defaults to contiguous 'C' row-major order.

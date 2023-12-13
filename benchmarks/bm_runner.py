@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Argparse conveniences for executing common types of benchmark runs.
+"""Argparse conveniences for executing common types of benchmark runs.
 """
 
 from abc import ABC, abstractmethod
@@ -68,9 +67,7 @@ def _check_requirements(package: str) -> None:
 
 
 def _prep_data_gen_env() -> None:
-    """
-    Create/access a separate, unchanging environment for generating test data.
-    """
+    """Create/access a separate, unchanging environment for generating test data."""
 
     python_version = "3.11"
     data_gen_var = "DATA_GEN_PYTHON"
@@ -133,9 +130,7 @@ def _setup_common() -> None:
 
 
 def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
-    """
-    Run through a list of commits comparing each one to the next.
-    """
+    """Run through a list of commits comparing each one to the next."""
     commits = [commit[:8] for commit in commits]
     for i in range(len(commits) - 1):
         before = commits[i]
@@ -154,8 +149,7 @@ def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
 
 
 def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) -> None:
-    """
-    If running under GitHub Actions: record the results in report(s).
+    """If running under GitHub Actions: record the results in report(s).
 
     Posting the reports is done by :func:`_gh_post_reports`, which must be run
     within a separate action to comply with GHA's security limitations.
@@ -287,8 +281,7 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
 
 
 def _gh_post_reports() -> None:
-    """
-    If running under GitHub Actions: post pre-prepared benchmark reports.
+    """If running under GitHub Actions: post pre-prepared benchmark reports.
 
     Reports are prepared by :func:`_gh_create_reports`, which must be run
     within a separate action to comply with GHA's security limitations.
@@ -341,8 +334,7 @@ class _SubParserGenerator(ABC):
     @staticmethod
     @abstractmethod
     def func(args: argparse.Namespace):
-        """
-        The function to return when the subparser is parsed.
+        """The function to return when the subparser is parsed.
 
         `func` is then called, performing the user's selected sub-command.
 

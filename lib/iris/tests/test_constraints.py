@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test the constrained cube loading mechanism.
+"""Test the constrained cube loading mechanism.
 
 """
 
@@ -110,10 +109,7 @@ class TestSimple(tests.IrisTest):
 
 
 class ConstraintMixin:
-    """
-    Mix-in class for attributes & utilities common to the "normal" and "strict" test cases.
-
-    """
+    """Mix-in class for attributes & utilities common to the "normal" and "strict" test cases."""
 
     def setUp(self):
         self.dec_path = tests.get_data_path(["PP", "globClim1", "dec_subset.pp"])

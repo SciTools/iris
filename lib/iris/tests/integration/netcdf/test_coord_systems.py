@@ -203,8 +203,7 @@ data:
 
 
 class TestLoadMinimalGeostationary(tests.IrisTest):
-    """
-    Check we can load data with a geostationary grid-mapping, even when the
+    """Check we can load data with a geostationary grid-mapping, even when the
     'false-easting' and 'false_northing' properties are missing.
 
     """

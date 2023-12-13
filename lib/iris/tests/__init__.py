@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides testing capabilities and customisations specific to Iris.
+"""Provides testing capabilities and customisations specific to Iris.
 
 .. note:: This module needs to control the matplotlib backend, so it
           **must** be imported before ``matplotlib.pyplot``.
@@ -153,8 +152,7 @@ def _assert_masked_array(assertion, a, b, strict, **kwargs):
 
 
 def assert_masked_array_equal(a, b, strict=False):
-    """
-    Check that masked arrays are equal. This requires the
+    """Check that masked arrays are equal. This requires the
     unmasked values and masks to be identical.
 
     Args:
@@ -174,8 +172,7 @@ def assert_masked_array_equal(a, b, strict=False):
 
 
 def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
-    """
-    Check that masked arrays are almost equal. This requires the
+    """Check that masked arrays are almost equal. This requires the
     masks to be identical, and the unmasked values to be almost
     equal.
 
@@ -233,8 +230,7 @@ class IrisTest(unittest.TestCase):
 
     @staticmethod
     def get_data_path(relative_path):
-        """
-        Return the absolute path to a data file when given the relative path
+        """Return the absolute path to a data file when given the relative path
         as a string, or sequence of strings.
 
         """
@@ -270,8 +266,7 @@ class IrisTest(unittest.TestCase):
 
     @staticmethod
     def get_result_path(relative_path):
-        """
-        Returns the absolute path to a result file when given the relative path
+        """Returns the absolute path to a result file when given the relative path
         as a string, or sequence of strings.
 
         """
@@ -280,8 +275,7 @@ class IrisTest(unittest.TestCase):
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
     def result_path(self, basename=None, ext=""):
-        """
-        Return the full path to a test result, generated from the \
+        """Return the full path to a test result, generated from the \
         calling file, class and, optionally, method.
 
         Optional kwargs :
@@ -333,8 +327,7 @@ class IrisTest(unittest.TestCase):
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags="-h"):
-        """
-        Test that the CDL for the given netCDF file matches the contents
+        """Test that the CDL for the given netCDF file matches the contents
         of the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
@@ -402,8 +395,7 @@ class IrisTest(unittest.TestCase):
         self._check_same(cdl, reference_path, type_comparison_name="CDL")
 
     def assertCML(self, cubes, reference_filename=None, checksum=True):
-        """
-        Test that the CML for the given cubes matches the contents of
+        """Test that the CML for the given cubes matches the contents of
         the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
@@ -517,8 +509,7 @@ class IrisTest(unittest.TestCase):
             shutil.copy(test_filename, reference_path)
 
     def assertString(self, string, reference_filename=None):
-        """
-        Test that `string` matches the contents of the reference file.
+        """Test that `string` matches the contents of the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
@@ -559,10 +550,7 @@ class IrisTest(unittest.TestCase):
                 reference_fh.writelines(part.encode("utf-8") for part in item)
 
     def assertXMLElement(self, obj, reference_filename):
-        """
-        Calls the xml_element method given obj and asserts the result is the same as the test file.
-
-        """
+        """Calls the xml_element method given obj and asserts the result is the same as the test file."""
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
         # sort the attributes on xml elements before testing against known good state.
@@ -589,8 +577,7 @@ class IrisTest(unittest.TestCase):
 
     @contextlib.contextmanager
     def assertLogs(self, logger=None, level=None, msg_regex=None):
-        """
-        An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
+        """An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
         which also exercises the logger's message formatting.
 
         Also adds the ``msg_regex`` kwarg:
@@ -641,8 +628,7 @@ class IrisTest(unittest.TestCase):
     assertMaskedArrayAlmostEqual = staticmethod(assert_masked_array_almost_equal)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
-        """
-        Check arrays are equal, within given relative + absolute tolerances.
+        """Check arrays are equal, within given relative + absolute tolerances.
 
         Args:
 
@@ -706,15 +692,12 @@ class IrisTest(unittest.TestCase):
             os.remove(filename)
 
     def file_checksum(self, file_path):
-        """
-        Generate checksum from file.
-        """
+        """Generate checksum from file."""
         with open(file_path, "rb") as in_file:
             return zlib.crc32(in_file.read())
 
     def _unique_id(self):
-        """
-        Returns the unique ID for the current assertion.
+        """Returns the unique ID for the current assertion.
 
         The ID is composed of two parts: a unique ID for the current test
         (which is itself composed of the module, class, and test names), and
@@ -766,8 +749,7 @@ class IrisTest(unittest.TestCase):
             os.makedirs(dir_path)
 
     def check_graphic(self):
-        """
-        Check the hash of the current matplotlib figure matches the expected
+        """Check the hash of the current matplotlib figure matches the expected
         image hash for the current graphic test.
 
         To create missing image test results, set the IRIS_TEST_CREATE_MISSING
@@ -790,8 +772,7 @@ class IrisTest(unittest.TestCase):
         self.testcase_patches.clear()
 
     def patch(self, *args, **kwargs):
-        """
-        Install a mock.patch, to be removed after the current test.
+        """Install a mock.patch, to be removed after the current test.
 
         The patch is created with mock.patch(*args, **kwargs).
 
@@ -826,8 +807,7 @@ class IrisTest(unittest.TestCase):
         return start_result
 
     def assertArrayShapeStats(self, result, shape, mean, std_dev, rtol=1e-6):
-        """
-        Assert that the result, a cube, has the provided shape and that the
+        """Assert that the result, a cube, has the provided shape and that the
         mean and standard deviation of the data array are also as provided.
         Thus build confidence that a cube processing operation, such as a
         cube.regrid, has maintained its behaviour.
@@ -838,8 +818,7 @@ class IrisTest(unittest.TestCase):
         self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
 
     def assertDictEqual(self, lhs, rhs, msg=None):
-        """
-        This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
+        """This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
         in order to cope with dictionary comparison where the value of a key may
         be a numpy array.
 
@@ -918,8 +897,7 @@ class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
 
 
 def skip_data(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of
+    """Decorator to choose whether to run tests, based on the availability of
     external data.
 
     Example usage:
@@ -940,8 +918,7 @@ def skip_data(fn):
 
 
 def skip_gdal(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of the
+    """Decorator to choose whether to run tests, based on the availability of the
     GDAL library.
 
     Example usage:
@@ -982,8 +959,7 @@ skip_stratify = unittest.skipIf(
 
 
 def no_warnings(func):
-    """
-    Provides a decorator to ensure that there are no warnings raised
+    """Provides a decorator to ensure that there are no warnings raised
     within the test, otherwise the test will fail.
 
     """
@@ -1003,8 +979,7 @@ def no_warnings(func):
 
 
 def env_bin_path(exe_name: AnyStr = None):
-    """
-    Return a Path object for (an executable in) the environment bin directory.
+    """Return a Path object for (an executable in) the environment bin directory.
 
     Parameters
     ----------

@@ -1,5 +1,4 @@
-"""
-Colouring Anomaly Data With Logarithmic Scaling
+"""Colouring Anomaly Data With Logarithmic Scaling
 ===============================================
 
 In this example, we need to plot anomaly data where the values have a

@@ -10,10 +10,7 @@ import iris
 
 
 class PPTest:
-    """
-    A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest.
-
-    """
+    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest."""
 
     @contextlib.contextmanager
     def cube_save_test(
@@ -23,8 +20,7 @@ class PPTest:
         reference_pp_path=None,
         **kwargs,
     ):
-        """
-        A context manager for testing the saving of Cubes to PP files.
+        """A context manager for testing the saving of Cubes to PP files.
 
         Args:
 

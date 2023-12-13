@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Cube functions for iteration in step.
+"""Cube functions for iteration in step.
 
 """
 
@@ -19,8 +18,7 @@ __all__ = ["izip"]
 
 
 def izip(*cubes, **kwargs):
-    """
-    Return an iterator for iterating over a collection of cubes in step.
+    """Return an iterator for iterating over a collection of cubes in step.
 
     If the input cubes have dimensions for which there are no common
     coordinates, those dimensions will be treated as orthogonal. The
@@ -171,8 +169,7 @@ def izip(*cubes, **kwargs):
 
 
 class _ZipSlicesIterator(Iterator):
-    """
-    Extension to _SlicesIterator (see cube.py) to support iteration over a
+    """Extension to _SlicesIterator (see cube.py) to support iteration over a
     collection of cubes in step.
 
     """
@@ -284,8 +281,7 @@ class _ZipSlicesIterator(Iterator):
 
 
 class _CoordWrapper:
-    """
-    Class for creating a coordinate wrapper that allows the use of an
+    """Class for creating a coordinate wrapper that allows the use of an
     alternative equality function based on metadata rather than
     metadata + points/bounds.
 

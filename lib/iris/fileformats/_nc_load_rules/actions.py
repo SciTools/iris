@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Replacement code for the Pyke rules.
+"""Replacement code for the Pyke rules.
 
 For now, we are still emulating various aspects of how our original Pyke-based
 code used the Pyke 'engine' to hold translation data, both Pyke-specific and
@@ -537,8 +536,7 @@ def action_formula_term(engine, formula_term_fact):
 
 
 def run_actions(engine):
-    """
-    Run all actions for a cube.
+    """Run all actions for a cube.
 
     This is the top-level "activation" function which runs all the appropriate
     rules actions to translate facts and build all the cube elements.

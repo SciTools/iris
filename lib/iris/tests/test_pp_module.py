@@ -56,8 +56,7 @@ class TestPPCopy(tests.IrisTest):
 
 class IrisPPTest(tests.IrisTest):
     def check_pp(self, pp_fields, reference_filename):
-        """
-        Checks the given iterable of PPField objects matches the reference file, or creates the
+        """Checks the given iterable of PPField objects matches the reference file, or creates the
         reference file if it doesn't exist.
 
         """

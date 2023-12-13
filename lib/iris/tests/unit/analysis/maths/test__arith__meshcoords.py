@@ -59,8 +59,7 @@ class TestBroadcastingWithMesh(
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
 ):
-    """
-    Run all the broadcasting tests on cubes with meshes.
+    """Run all the broadcasting tests on cubes with meshes.
 
     NOTE: there is a fair amount of special-case code to support this, built
     into the CubeArithmeticBroadcastingTestMixin baseclass.

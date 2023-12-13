@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Support for "fast" loading of structured UM files in iris load functions,
+"""Support for "fast" loading of structured UM files in iris load functions,
 i.e. :meth:`iris.load` and its associates.
 
 This provides a context manager to enable structured loading via all the iris
@@ -48,8 +47,7 @@ class FieldCollation(BasicFieldCollation):
     # class, now renamed 'BasicFieldCollation'.
 
     def __init__(self, fields, filepath):
-        """
-        Args:
+        """Args:
 
         * fields (iterable of :class:`iris.fileformats.pp.PPField`):
             The fields in the collation.
@@ -67,8 +65,7 @@ class FieldCollation(BasicFieldCollation):
 
     @property
     def data_field_indices(self):
-        """
-        Field indices of the contained PPFields in the input file.
+        """Field indices of the contained PPFields in the input file.
 
         This records the original file location of the individual data fields
         contained, within the input datafile.
@@ -155,8 +152,7 @@ _HINTS = {name: i for i, name in zip(range(len(_HINT_COORDS)), _HINT_COORDS)}
 
 
 def _convert_collation(collation):
-    """
-    Converts a FieldCollation into the corresponding items of Cube
+    """Converts a FieldCollation into the corresponding items of Cube
     metadata.
 
     Args:
@@ -397,8 +393,7 @@ STRUCTURED_LOAD_CONTROLS = StructuredLoadFlags()
 
 @contextmanager
 def structured_um_loading():
-    """
-    Load cubes from structured UM Fieldsfile and PP files.
+    """Load cubes from structured UM Fieldsfile and PP files.
 
     "Structured" loading is a streamlined, fast load operation, to be used
     **only** on fieldsfiles or PP files whose fields repeat regularly over
@@ -541,8 +536,7 @@ def structured_um_loading():
 
 @contextmanager
 def _raw_structured_loading():
-    """
-    Private context manager called by :func:`iris.load_raw` to prevent
+    """Private context manager called by :func:`iris.load_raw` to prevent
     structured loading from concatenating its result cubes in that case.
 
     """

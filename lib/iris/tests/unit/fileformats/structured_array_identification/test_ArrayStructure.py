@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the
+"""Unit tests for the
 :mod:`iris.fileformats._structured_array_identification.ArrayStructure` class.
 
 """
@@ -130,8 +129,7 @@ class TestArrayStructure_from_array(tests.IrisTest):
 
 
 class nd_array_and_dims_cases:
-    """
-    Defines the test functionality for nd_array_and_dims. This class
+    """Defines the test functionality for nd_array_and_dims. This class
     isn't actually the test case - see the C order and F order subclasses
     for those.
 

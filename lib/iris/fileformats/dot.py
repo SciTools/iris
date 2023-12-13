@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
+"""Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 """
 
@@ -56,8 +55,7 @@ DOT_AVAILABLE = _dot_path() is not None
 
 
 def save(cube, target):
-    """
-    Save a dot representation of the cube.
+    """Save a dot representation of the cube.
 
     Args
     ----
@@ -87,8 +85,7 @@ def save(cube, target):
 
 
 def save_png(source, target, launch=False):
-    """
-    Produce a "dot" instance diagram by calling dot and optionally launching
+    """Produce a "dot" instance diagram by calling dot and optionally launching
     the resulting image.
 
     Args
@@ -151,8 +148,7 @@ def save_png(source, target, launch=False):
 
 
 def cube_text(cube):
-    """
-    Return a DOT text representation a `iris.cube.Cube`.
+    """Return a DOT text representation a `iris.cube.Cube`.
 
     Args
     ----
@@ -282,8 +278,7 @@ digraph CubeGraph{
 
 
 def _coord_text(label, coord):
-    """
-    Return a string containing the dot representation for a single coordinate
+    """Return a string containing the dot representation for a single coordinate
     node.
 
     Args
@@ -313,8 +308,7 @@ def _coord_text(label, coord):
 
 
 def _coord_system_text(cs, uid):
-    """
-    Return a string containing the dot representation for a single coordinate
+    """Return a string containing the dot representation for a single coordinate
     system node.
 
     Args
@@ -341,8 +335,7 @@ def _coord_system_text(cs, uid):
 
 
 def _dot_node(indent, id, name, attributes):
-    """
-    Return a string containing the dot representation for a single node.
+    """Return a string containing the dot representation for a single node.
 
     Args
     ----

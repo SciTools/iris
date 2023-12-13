@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :mod:`iris.coords` module.
+"""Unit tests for the :mod:`iris.coords` module.
 
 Provides test methods and classes common to
 :class:`~iris.tests.unit.coords.test_AuxCoord` and

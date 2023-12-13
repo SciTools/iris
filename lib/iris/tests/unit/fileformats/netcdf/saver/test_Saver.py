@@ -847,8 +847,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         return cube
 
     def _grid_mapping_variable(self, coord_system):
-        """
-        Return a mock netCDF variable that represents the conversion
+        """Return a mock netCDF variable that represents the conversion
         of the given coordinate system.
 
         """
@@ -874,8 +873,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         return grid_variable
 
     def _variable_attributes(self, coord_system):
-        """
-        Return the attributes dictionary for the grid mapping variable
+        """Return the attributes dictionary for the grid mapping variable
         that is created from the given coordinate system.
 
         """

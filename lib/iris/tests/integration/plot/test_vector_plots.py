@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test some key usages of :func:`iris.plot.quiver`.
+"""Test some key usages of :func:`iris.plot.quiver`.
 
 """
 
@@ -28,8 +27,7 @@ if tests.MPL_AVAILABLE:
 
 @tests.skip_plot
 class MixinVectorPlotCases:
-    """
-    Test examples mixin, used by separate barb, quiver + streamplot classes.
+    """Test examples mixin, used by separate barb, quiver + streamplot classes.
 
     NOTE: at present for barb and quiver only, as streamplot does not support
     arbitrary coordinates.

@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""
-Definitions of how Iris objects should be represented.
+"""Definitions of how Iris objects should be represented.
 
 """
 
@@ -13,8 +12,7 @@ import re
 
 
 class CubeRepresentation:
-    """
-    Produce representations of a :class:`~iris.cube.Cube`.
+    """Produce representations of a :class:`~iris.cube.Cube`.
 
     This includes:
 
@@ -120,8 +118,7 @@ class CubeRepresentation:
         self.units = escape(str(self.cube.units))
 
     def _get_dim_names(self):
-        """
-        Get dimension-describing coordinate names, or '--' if no coordinate]
+        """Get dimension-describing coordinate names, or '--' if no coordinate]
         describes the dimension.
 
         Note: borrows from `cube.summary`.
@@ -151,8 +148,7 @@ class CubeRepresentation:
         return self.cube_str.split("\n")
 
     def _get_bits(self, bits):
-        """
-        Parse the body content (`bits`) of the cube string in preparation for
+        """Parse the body content (`bits`) of the cube string in preparation for
         being converted into table rows.
 
         """
@@ -181,8 +177,7 @@ class CubeRepresentation:
             self.sections_data[str_heading_name] = content
 
     def _make_header(self):
-        """
-        Make the table header. This is similar to the summary of the cube,
+        """Make the table header. This is similar to the summary of the cube,
         but does not include dim shapes. These are included on the next table
         row down, and produced with `make_shapes_row`.
 
@@ -206,8 +201,7 @@ class CubeRepresentation:
         return "\n".join(cell for cell in cells)
 
     def _make_row(self, title, body=None, col_span=0):
-        """
-        Produce one row for the table body; i.e.
+        """Produce one row for the table body; i.e.
             <tr><td>Coord name</td><td>x</td><td>-</td>...</tr>
 
         `body` contains the content for each cell not in the left-most (title)

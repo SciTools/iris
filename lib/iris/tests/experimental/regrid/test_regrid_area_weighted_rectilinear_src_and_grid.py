@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test area weighted regridding.
+"""Test area weighted regridding.
 
 """
 
@@ -34,8 +33,7 @@ RESULT_DIR = (
 def _scaled_and_offset_grid(
     cube, x_scalefactor, y_scalefactor, x_offset=0.0, y_offset=0.0
 ):
-    """
-    Return a cube with a horizontal grid that is scaled and offset
+    """Return a cube with a horizontal grid that is scaled and offset
     from the horizontal grid of `src`.
 
     """
@@ -47,8 +45,7 @@ def _scaled_and_offset_grid(
 
 
 def _subsampled_coord(coord, subsamplefactor):
-    """
-    Return a coordinate that is a subsampled copy of `coord`.
+    """Return a coordinate that is a subsampled copy of `coord`.
 
     .. note:: `subsamplefactor` must be an integer >= 1.
 
@@ -68,8 +65,7 @@ def _subsampled_coord(coord, subsamplefactor):
 
 
 def _subsampled_grid(cube, x_subsamplefactor, y_subsamplefactor):
-    """
-    Return a cube that has a horizontal grid that is a subsampled
+    """Return a cube that has a horizontal grid that is a subsampled
     version of the horizontal grid of `cube`.
 
     .. note:: The two subsamplefactors must both be integers >= 1.
@@ -94,8 +90,7 @@ def _subsampled_grid(cube, x_subsamplefactor, y_subsamplefactor):
 
 
 def _resampled_coord(coord, samplefactor):
-    """
-    Return a coordinate that has the same extent as `coord` but has
+    """Return a coordinate that has the same extent as `coord` but has
     `samplefactor` times as many points and bounds.
 
     """
@@ -115,8 +110,7 @@ def _resampled_coord(coord, samplefactor):
 
 
 def _resampled_grid(cube, x_samplefactor, y_samplefactor):
-    """
-    Return a cube that has the same horizontal extent as `cube` but has
+    """Return a cube that has the same horizontal extent as `cube` but has
     a reduced (or increased) number of points (and bounds) along the X and Y
     dimensions.
 
@@ -589,8 +583,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
 
     @tests.skip_data
     def test_non_circular_subset(self):
-        """
-        Test regridding behaviour when the source grid has circular latitude.
+        """Test regridding behaviour when the source grid has circular latitude.
 
         This tests the specific case when the longitude coordinate of the
         source grid has the `circular` attribute as `False` but otherwise spans
@@ -626,8 +619,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
 
     @tests.skip_data
     def test__proper_non_circular_subset(self):
-        """
-        Test regridding behaviour when the source grid has circular latitude.
+        """Test regridding behaviour when the source grid has circular latitude.
 
         This tests the specific case when the longitude coordinate of the
         source grid does not span the full 360 degrees. Target cells which span

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test pickling of Iris objects.
+"""Test pickling of Iris objects.
 
 """
 
@@ -23,10 +22,7 @@ from iris._lazy_data import as_concrete_data, as_lazy_data
 
 class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
-        """
-        Returns a generator of ("pickle protocol number", object) tuples.
-
-        """
+        """Returns a generator of ("pickle protocol number", object) tuples."""
         for protocol in range(1 + pickle.HIGHEST_PROTOCOL):
             bio = io.BytesIO()
             pickle.dump(obj, bio, protocol)

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :func:`iris.util.equalise_attributes` function.
+"""Unit tests for the :func:`iris.util.equalise_attributes` function.
 
 """
 
@@ -154,8 +153,7 @@ class TestEqualiseAttributes(tests.IrisTest):
 
 
 class TestSplitattributes:
-    """
-    Extra testing for cases where attributes differ specifically by type
+    """Extra testing for cases where attributes differ specifically by type
 
     That is, where there is a new possibility of 'mismatch' due to the newer "typing"
     of attributes as global or local.

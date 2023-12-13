@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides objects describing cube summaries.
+"""Provides objects describing cube summaries.
 """
 import re
 
@@ -76,9 +75,7 @@ def array_repr(arr):
 
 
 def value_repr(value, quote_strings=False, clip_strings=False):
-    """
-    Produce a single-line printable version of an attribute or scalar value.
-    """
+    """Produce a single-line printable version of an attribute or scalar value."""
     if hasattr(value, "dtype"):
         value = array_repr(value)
     elif isinstance(value, str):
@@ -262,10 +259,7 @@ class CellMethodSection(Section):
 
 
 class CubeSummary:
-    """
-    This class provides a structure for output representations of an Iris cube.
-
-    """
+    """This class provides a structure for output representations of an Iris cube."""
 
     def __init__(self, cube, name_padding=35):
         self.header = FullHeader(cube, name_padding)

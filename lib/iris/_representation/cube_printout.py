@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides text printouts of Iris cubes.
+"""Provides text printouts of Iris cubes.
 
 """
 from copy import deepcopy
@@ -12,8 +11,7 @@ from iris._representation.cube_summary import CubeSummary
 
 
 class Table:
-    """
-    A container of text strings in rows + columns, that can format its content
+    """A container of text strings in rows + columns, that can format its content
     into a string per row, with contents in columns of fixed width.
 
     Supports left- or right- aligned columns, alignment being set "per row".
@@ -52,8 +50,7 @@ class Table:
             # - a crude alternative to proper column spanning
 
     def add_row(self, cols, aligns, i_col_unlimited=None):
-        """
-        Create a new row at the bottom.
+        """Create a new row at the bottom.
 
         Args:
         * cols (list of string):
@@ -120,8 +117,7 @@ class Table:
 
 
 class CubePrinter:
-    """
-    An object created from a
+    """An object created from a
     :class:`iris._representation.CubeSummary`, which provides
     text printout of a :class:`iris.cube.Cube`.
 
@@ -135,8 +131,7 @@ class CubePrinter:
     N_INDENT_EXTRA = 4
 
     def __init__(self, cube_or_summary):
-        """
-        An object that provides a printout of a cube.
+        """An object that provides a printout of a cube.
 
         Args:
 
@@ -266,8 +261,7 @@ class CubePrinter:
 
     @staticmethod
     def _decorated_table(table, name_padding=None):
-        """
-        Return a modified table with added characters in the header.
+        """Return a modified table with added characters in the header.
 
         Note: 'name_padding' sets a minimum width for the name column (#0).
 
@@ -324,8 +318,7 @@ class CubePrinter:
         return result
 
     def to_string(self, oneline=False, name_padding=35):
-        """
-        Produce a printable summary.
+        """Produce a printable summary.
 
         Args:
         * oneline (bool):

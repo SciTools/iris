@@ -1,5 +1,4 @@
-"""
-Deriving the Coriolis Frequency Over the Globe
+"""Deriving the Coriolis Frequency Over the Globe
 ==============================================
 
 This code computes the Coriolis frequency and stores it in a cube with

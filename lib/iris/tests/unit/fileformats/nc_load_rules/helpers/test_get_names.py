@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 get_names`.
 
 """
@@ -20,8 +19,7 @@ from iris.fileformats._nc_load_rules.helpers import get_names
 
 
 class TestGetNames(tests.IrisTest):
-    """
-    The tests included in this class cover all the variations of possible
+    """The tests included in this class cover all the variations of possible
     combinations of the following inputs:
     * standard_name = [None, 'projection_y_coordinate', 'latitude_coordinate']
     * long_name = [None, 'lat_long_name']

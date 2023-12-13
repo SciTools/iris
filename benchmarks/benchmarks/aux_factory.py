@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-AuxFactory benchmark tests.
+"""AuxFactory benchmark tests.
 
 """
 
@@ -20,8 +19,7 @@ class FactoryCommon:
     #       * remove NotImplementedError
     #       * combine setup_common into setup
 
-    """
-    A base class running a generalised suite of benchmarks for any factory.
+    """A base class running a generalised suite of benchmarks for any factory.
     Factory to be specified in a subclass.
 
     ASV will run the benchmarks within this class for any subclasses.

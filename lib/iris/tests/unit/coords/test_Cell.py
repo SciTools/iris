@@ -140,8 +140,7 @@ class Test___eq__(tests.IrisTest):
 
 
 class Test_contains_point(tests.IrisTest):
-    """
-    Test that contains_point works for combinations of datetime,
+    """Test that contains_point works for combinations of datetime,
     cf.datatime, and PartialDateTime objects"""
 
     def test_datetime_PartialDateTime_point(self):
@@ -236,8 +235,7 @@ class Test_contains_point(tests.IrisTest):
 
 
 class Test_numpy_comparison(tests.IrisTest):
-    """
-    Unit tests to check that the results of comparisons with numpy types can be
+    """Unit tests to check that the results of comparisons with numpy types can be
     used as truth values."""
 
     def test_cell_lhs(self):

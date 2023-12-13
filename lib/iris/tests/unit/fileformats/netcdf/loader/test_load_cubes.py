@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :func:`iris.fileformats.netcdf.load_cubes` function.
+"""Unit tests for the :func:`iris.fileformats.netcdf.load_cubes` function.
 
 todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
  switching to use netcdf.load_cubes() instead of iris.load()/load_cube().

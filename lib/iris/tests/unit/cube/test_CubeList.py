@@ -507,8 +507,7 @@ class Test_extract_cubes__noconstraint(ExtractCubesMixin, tests.IrisTest):
 
 
 class ExtractCubesSingleConstraintMixin(ExtractCubesMixin):
-    """
-    Common code for testing extract_cubes with a single constraint.
+    """Common code for testing extract_cubes with a single constraint.
     Generalised, so that we can do the same tests for a "bare" constraint,
     and a list containing a single [constraint].
 
@@ -571,9 +570,7 @@ class Test_extract_cubes__list_single_constraint(
 
 
 class Test_extract_cubes__multi_constraints(ExtractCubesMixin, tests.IrisTest):
-    """
-    Testing when the 'constraints' arg is a list of multiple constraints.
-    """
+    """Testing when the 'constraints' arg is a list of multiple constraints."""
 
     def test_empty(self):
         # Always fails.
@@ -688,8 +685,7 @@ class Test_CubeList_copy(tests.IrisTest):
 
 
 class TestHtmlRepr:
-    """
-    Confirm that Cubelist._repr_html_() creates a fresh
+    """Confirm that Cubelist._repr_html_() creates a fresh
     :class:`iris.experimental.representation.CubeListRepresentation` object, and uses
     it in the expected way.
 

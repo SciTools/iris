@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Statistical operations between cubes.
+"""Statistical operations between cubes.
 
 """
 
@@ -22,8 +21,7 @@ def pearsonr(
     mdtol=1.0,
     common_mask=False,
 ):
-    """
-    Calculate the Pearson's r correlation coefficient over specified
+    """Calculate the Pearson's r correlation coefficient over specified
     dimensions.
 
     Args:

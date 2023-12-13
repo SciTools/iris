@@ -165,8 +165,7 @@ def _read_chars(infile, num):
 
 
 class NimrodField:
-    """
-    A data field from a NIMROD file.
+    """A data field from a NIMROD file.
 
     Capable of converting itself into a :class:`~iris.cube.Cube`
 
@@ -178,8 +177,7 @@ class NimrodField:
     """
 
     def __init__(self, from_file=None):
-        """
-        Create a NimrodField object and optionally read from an open file.
+        """Create a NimrodField object and optionally read from an open file.
 
         Example::
 
@@ -242,8 +240,7 @@ class NimrodField:
             )
 
     def _read_data(self, infile):
-        """
-        Read the data array: int8, int16, int32 or float32
+        """Read the data array: int8, int16, int32 or float32
 
         (surrounded by 4-byte length, at start and end)
 
@@ -293,8 +290,7 @@ class NimrodField:
 
 
 def load_cubes(filenames, callback=None):
-    """
-    Loads cubes from a list of NIMROD filenames.
+    """Loads cubes from a list of NIMROD filenames.
 
     Args:
 

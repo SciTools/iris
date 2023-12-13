@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Experimental module for importing/exporting raster data from Iris cubes using
+"""Experimental module for importing/exporting raster data from Iris cubes using
 the GDAL library.
 
 See also: `GDAL - Geospatial Data Abstraction Library <https://www.gdal.org>`_.
@@ -42,8 +41,7 @@ _GDAL_DATATYPES = {
 
 
 def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, ftype):
-    """
-    Use GDAL WriteArray to export data as a 32-bit raster image.
+    """Use GDAL WriteArray to export data as a 32-bit raster image.
     Requires the array data to be of the form: North-at-top
     and West-on-left.
 
@@ -99,8 +97,7 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, f
 
 
 def export_geotiff(cube, fname):
-    """
-    Writes cube data to raster file format as a PixelIsArea GeoTiff image.
+    """Writes cube data to raster file format as a PixelIsArea GeoTiff image.
 
     .. deprecated:: 3.2.0
 

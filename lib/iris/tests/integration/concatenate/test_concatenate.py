@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Integration tests for concatenating cubes with differing time coord epochs
+"""Integration tests for concatenating cubes with differing time coord epochs
 using :func:`iris.util.unify_time_units`.
 
 """

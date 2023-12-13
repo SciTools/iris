@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :class:`iris.fileformats.netcdf.Saver` class.
+"""Unit tests for the :class:`iris.fileformats.netcdf.Saver` class.
 
 WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
 :mod:`iris.tests.unit.fileformats.netcdf.test_Saver__lazy.`
@@ -41,8 +40,7 @@ def build_mesh(
     conn_role_kwargs=None,  # mapping {connectivity-role: connectivity-kwargs}
     mesh_kwargs=None,
 ):
-    """
-    Make a test mesh.
+    """Make a test mesh.
 
     Mesh has faces edges, face-coords and edge-coords, numbers of which can be
     controlled.
@@ -129,8 +127,7 @@ def build_mesh(
 
 
 def make_mesh(basic=True, **kwargs):
-    """
-    Create a test mesh, with some built-in 'standard' settings.
+    """Create a test mesh, with some built-in 'standard' settings.
 
     Kwargs:
 
@@ -194,8 +191,7 @@ def default_mesh():
 
 
 def make_cube(mesh=None, location="face", **kwargs):
-    """
-    Create a test cube, based on a given mesh + location.
+    """Create a test cube, based on a given mesh + location.
 
     Kwargs:
 
@@ -236,8 +232,7 @@ _VAR_DIMS = "<variable dimensions>"
 
 
 def scan_dataset(filepath):
-    """
-    Snapshot a netcdf dataset (the key metadata).
+    """Snapshot a netcdf dataset (the key metadata).
 
     Returns:
         dimsdict, varsdict
@@ -263,8 +258,7 @@ def scan_dataset(filepath):
 
 
 def vars_w_props(varsdict, **kwargs):
-    """
-    Subset a vars dict, {name:props}, returning only those where each
+    """Subset a vars dict, {name:props}, returning only those where each
     <attribute>=<value>, defined by the given keywords.
     Except that '<key>="*"' means that '<key>' merely _exists_, with any value.
 
@@ -303,8 +297,7 @@ def vars_meshnames(vars):
 
 
 def vars_meshdim(vars, location, mesh_name=None):
-    """
-    Extract a dim-name for a given element location.
+    """Extract a dim-name for a given element location.
 
     Args:
         * vars (varsdict):
@@ -344,8 +337,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         shutil.rmtree(cls.temp_dir)
 
     def check_save_cubes(self, cube_or_cubes):
-        """
-        Write cubes to a new file in the common temporary directory.
+        """Write cubes to a new file in the common temporary directory.
 
         Use a name unique to this testcase, to avoid any clashes.
 
@@ -657,9 +649,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(v_b[_VAR_DIMS], ["Mesh2d_faces", "height"])
 
     def test_mixed_aux_coords(self):
-        """
-        ``coordinates`` attribute should include mesh location coords and 'normal' coords.
-        """
+        """``coordinates`` attribute should include mesh location coords and 'normal' coords."""
 
         cube = make_cube()
         mesh_dim = cube.mesh_dim()
@@ -694,8 +684,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         shutil.rmtree(cls.temp_dir)
 
     def check_save_mesh(self, mesh):
-        """
-        Write a mesh to a new file in the common temporary directory.
+        """Write a mesh to a new file in the common temporary directory.
 
         Use a name unique to this testcase, to avoid any clashes.
 
@@ -712,8 +701,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         return tempfile_path
 
     def test_connectivity_dim_order(self):
-        """
-        Test a mesh with some connectivities in the 'other' order.
+        """Test a mesh with some connectivities in the 'other' order.
 
         This should also create a property with the dimension name.
 

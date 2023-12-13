@@ -22,8 +22,7 @@ _TEST_N_BOUNDS = 4
 
 
 def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
-    """
-    Make a test mesh.
+    """Make a test mesh.
 
     Mesh has nodes, plus faces and/or edges, with face-coords and edge-coords,
     numbers of which can be controlled.
@@ -110,8 +109,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
 
 def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
-    """
-    Create a test MeshCoord.
+    """Create a test MeshCoord.
 
     The creation args are defaulted, including the mesh.
     If not provided as an arg, a new mesh is created with sample_mesh().
@@ -124,8 +122,7 @@ def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
 
 
 def sample_mesh_cube(nomesh_faces=None, n_z=2, with_parts=False, **meshcoord_kwargs):
-    """
-    Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a Mesh).
+    """Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a Mesh).
 
     Result contains : dimcoords for both dims; an auxcoord on the unstructured dim; 2 mesh-coords.
     By default, the mesh is provided by :func:`sample_mesh`, so coordinates and connectivity  are not realistic.

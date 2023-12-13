@@ -1,5 +1,4 @@
-"""
-Load a Time Series of Data From the NEMO Model
+"""Load a Time Series of Data From the NEMO Model
 ==============================================
 
 This example demonstrates how to load multiple files containing data output by

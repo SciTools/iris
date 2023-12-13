@@ -1,5 +1,4 @@
-"""
-Loading a Cube From a Custom File Format
+"""Loading a Cube From a Custom File Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This example shows how a custom text file can be loaded using the standard Iris
@@ -90,8 +89,7 @@ COLUMN_NAMES = [
 
 
 def load_NAME_III(filename):
-    """
-    Loads the Met Office's NAME III grid output files returning headers, column
+    """Loads the Met Office's NAME III grid output files returning headers, column
     definitions and data arrays as 3 separate lists.
 
     """
@@ -180,9 +178,7 @@ def load_NAME_III(filename):
 
 
 def NAME_to_cube(filenames, callback):
-    """
-    Returns a generator of cubes given a list of filenames and a callback.
-    """
+    """Returns a generator of cubes given a list of filenames and a callback."""
 
     for filename in filenames:
         header, column_headings, data_arrays = load_NAME_III(filename)

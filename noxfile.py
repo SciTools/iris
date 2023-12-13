@@ -1,5 +1,4 @@
-"""
-Perform test automation with nox.
+"""Perform test automation with nox.
 
 For further details, see https://nox.thea.codes/en/stable/#
 
@@ -69,8 +68,7 @@ def venv_changed(session: nox.sessions.Session) -> bool:
 
 
 def cache_venv(session: nox.sessions.Session) -> None:
-    """
-    Cache the nox session environment.
+    """Cache the nox session environment.
 
     This consists of saving a hexdigest (sha256) of the associated
     conda lock file.
@@ -90,8 +88,7 @@ def cache_venv(session: nox.sessions.Session) -> None:
 
 
 def cache_cartopy(session: nox.sessions.Session) -> None:
-    """
-    Determine whether to cache the cartopy natural earth shapefiles.
+    """Determine whether to cache the cartopy natural earth shapefiles.
 
     Parameters
     ----------
@@ -108,8 +105,7 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
 
 def prepare_venv(session: nox.sessions.Session) -> None:
-    """
-    Create and cache the nox session conda environment, and additionally
+    """Create and cache the nox session conda environment, and additionally
     provide conda environment package details and info.
 
     Note that, iris is installed into the environment using pip.
@@ -167,8 +163,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
 @nox.session(python=PY_VER, venv_backend="conda")
 def tests(session: nox.sessions.Session):
-    """
-    Perform iris system, integration and unit tests.
+    """Perform iris system, integration and unit tests.
 
     Coverage testing is enabled if the "--coverage" or "-c" flag is used.
 
@@ -194,8 +189,7 @@ def tests(session: nox.sessions.Session):
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def doctest(session: nox.sessions.Session):
-    """
-    Perform iris doctests and gallery.
+    """Perform iris doctests and gallery.
 
     Parameters
     ----------
@@ -222,8 +216,7 @@ def doctest(session: nox.sessions.Session):
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def gallery(session: nox.sessions.Session):
-    """
-    Perform iris gallery doc-tests.
+    """Perform iris gallery doc-tests.
 
     Parameters
     ----------
@@ -244,8 +237,7 @@ def gallery(session: nox.sessions.Session):
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def linkcheck(session: nox.sessions.Session):
-    """
-    Perform iris doc link check.
+    """Perform iris doc link check.
 
     Parameters
     ----------
@@ -271,8 +263,7 @@ def linkcheck(session: nox.sessions.Session):
 
 @nox.session(python=PY_VER, venv_backend="conda")
 def wheel(session: nox.sessions.Session):
-    """
-    Perform iris local wheel install and import test.
+    """Perform iris local wheel install and import test.
 
     Parameters
     ----------

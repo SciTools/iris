@@ -1,5 +1,4 @@
-"""
-Multi-Line Temperature Profile Plot
+"""Multi-Line Temperature Profile Plot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 """

@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 # !/usr/bin/env python
-"""
-Contains Iris graphic testing utilities
+"""Contains Iris graphic testing utilities
 
 By default, this module sets the matplotlib backend to "agg". But when
 this module is imported it checks ``sys.argv`` for the flag "-d". If
@@ -153,8 +152,7 @@ def fully_qualify(test_id: str, repo: str) -> Dict[str, str]:
 
 
 def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
-    """
-    Check the hash of the current matplotlib figure matches the expected
+    """Check the hash of the current matplotlib figure matches the expected
     image hash for the current graphic test.
 
     To create missing image test results, set the IRIS_TEST_CREATE_MISSING
@@ -263,8 +261,7 @@ class GraphicsTestMixin:
 
 
 def skip_plot(fn: Callable) -> Callable:
-    """
-    Decorator to choose whether to run tests, based on the availability of the
+    """Decorator to choose whether to run tests, based on the availability of the
     matplotlib library.
 
     Example usage:

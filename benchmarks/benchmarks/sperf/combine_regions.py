@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
+"""Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
 """
 import os.path
 
@@ -86,8 +85,7 @@ class Mixin:
             )
 
     def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
-        """
-        The combine-tests "standard" setup operation.
+        """The combine-tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.
@@ -138,8 +136,7 @@ class Mixin:
         self.temp_save_path.unlink(missing_ok=True)
 
     def fix_dask_settings(self):
-        """
-        Fix "standard" dask behaviour for time+space testing.
+        """Fix "standard" dask behaviour for time+space testing.
 
         Currently this is single-threaded mode, with known chunksize,
         which is optimised for space saving so we can test largest data.
@@ -169,8 +166,7 @@ class Mixin:
 
 @on_demand_benchmark
 class CreateCube(Mixin):
-    """
-    Time+memory costs of creating a combined-regions cube.
+    """Time+memory costs of creating a combined-regions cube.
 
     The result is lazy, and we don't do the actual calculation.
 
@@ -191,9 +187,7 @@ class CreateCube(Mixin):
 
 @on_demand_benchmark
 class ComputeRealData(Mixin):
-    """
-    Time+memory costs of computing combined-regions data.
-    """
+    """Time+memory costs of computing combined-regions data."""
 
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
@@ -205,8 +199,7 @@ class ComputeRealData(Mixin):
 
 @on_demand_benchmark
 class SaveData(Mixin):
-    """
-    Test saving *only*, having replaced the input cube data with 'imaginary'
+    """Test saving *only*, having replaced the input cube data with 'imaginary'
     array data, so that input data is not loaded from disk during the save
     operation.
 
@@ -227,8 +220,7 @@ class SaveData(Mixin):
 
 @on_demand_benchmark
 class FileStreamedCalc(Mixin):
-    """
-    Test the whole cost of file-to-file streaming.
+    """Test the whole cost of file-to-file streaming.
     Uses the combined cube which is based on lazy data loading from the region
     cubes on disk.
     """

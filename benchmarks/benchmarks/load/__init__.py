@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-File loading benchmark tests.
+"""File loading benchmark tests.
 
 Where applicable benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
@@ -143,8 +142,7 @@ class ManyVars:
 
 
 class StructuredFF:
-    """
-    Test structured loading of a large-ish fieldsfile.
+    """Test structured loading of a large-ish fieldsfile.
 
     Structured load of the larger size should show benefit over standard load,
     avoiding the cost of merging.

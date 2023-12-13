@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Defines a Trajectory class, and a routine to extract a sub-cube along a
+"""Defines a Trajectory class, and a routine to extract a sub-cube along a
 trajectory.
 
 """
@@ -39,8 +38,7 @@ class Trajectory:
     """A series of given waypoints with pre-calculated sample points."""
 
     def __init__(self, waypoints, sample_count=10):
-        """
-        Defines a trajectory using a sequence of waypoints.
+        """Defines a trajectory using a sequence of waypoints.
 
         For example::
 
@@ -116,8 +114,7 @@ class Trajectory:
         )
 
     def _get_interp_points(self):
-        """
-        Translate `self.sampled_points` to the format expected by the
+        """Translate `self.sampled_points` to the format expected by the
         interpolator.
 
         Returns:
@@ -132,8 +129,7 @@ class Trajectory:
         return [(k, v) for k, v in points.items()]
 
     def _src_cube_anon_dims(self, cube):
-        """
-        A helper method to locate the index of anonymous dimensions on the
+        """A helper method to locate the index of anonymous dimensions on the
         interpolation target, ``cube``.
 
         Returns:
@@ -144,8 +140,7 @@ class Trajectory:
         return list(set(range(cube.ndim)) - set(named_dims))
 
     def interpolate(self, cube, method=None):
-        """
-        Calls :func:`~iris.analysis.trajectory.interpolate` to interpolate
+        """Calls :func:`~iris.analysis.trajectory.interpolate` to interpolate
         ``cube`` on the defined trajectory.
 
         Assumes that the coordinate names supplied in the waypoints
@@ -187,8 +182,7 @@ class Trajectory:
 
 
 def interpolate(cube, sample_points, method=None):
-    """
-    Extract a sub-cube at the given n-dimensional points.
+    """Extract a sub-cube at the given n-dimensional points.
 
     Args:
 
@@ -487,8 +481,7 @@ def _ll_to_cart(lon, lat):
 
 
 def _cartesian_sample_points(sample_points, sample_point_coord_names):
-    """
-    Replace geographic lat/lon with cartesian xyz.
+    """Replace geographic lat/lon with cartesian xyz.
     Generates coords suitable for nearest point calculations with
     `scipy.spatial.cKDTree`.
 
@@ -538,8 +531,7 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
 
 
 def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
-    """
-    Returns the indices to select the data value(s) closest to the given
+    """Returns the indices to select the data value(s) closest to the given
     coordinate point values.
 
     'sample_points' is of the form [[coord-or-coord-name, point-value(s)]*].
@@ -706,8 +698,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
 
 
 class UnstructuredNearestNeigbourRegridder:
-    """
-    Encapsulate the operation of :meth:`iris.analysis.trajectory.interpolate`
+    """Encapsulate the operation of :meth:`iris.analysis.trajectory.interpolate`
     with given source and target grids.
 
     This is the type used by the :class:`~iris.analysis.UnstructuredNearest`
@@ -718,8 +709,7 @@ class UnstructuredNearestNeigbourRegridder:
     # TODO: cache the necessary bits of the operation so reuse can actually
     # be more efficient.
     def __init__(self, src_cube, target_grid_cube):
-        """
-        A nearest-neighbour regridder to perform regridding from the source
+        """A nearest-neighbour regridder to perform regridding from the source
         grid to the target grid.
 
         This can then be applied to any source data with the same structure as

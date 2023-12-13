@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the function :func:\
+"""Unit tests for the function :func:\
 `iris.fileformats.um._fast_load_structured_fields.group_structured_fields`.
 
 """
@@ -18,8 +17,7 @@ from iris.fileformats.um._fast_load_structured_fields import group_structured_fi
 
 
 def _convert_to_vector(value, length, default):
-    """
-    Return argument (or default) in a list of length 'length'.
+    """Return argument (or default) in a list of length 'length'.
 
     The 'value' arg must either be scalar, or a list of length 'length'.
     A value of None is replaced by the default.

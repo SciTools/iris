@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""
-Utility operations specific to unstructured data.
+"""Utility operations specific to unstructured data.
 
 """
 from typing import AnyStr, Iterable, Union
@@ -20,8 +19,7 @@ def recombine_submeshes(
     submesh_cubes: Union[Iterable[Cube], Cube],
     index_coord_name: AnyStr = "i_mesh_index",
 ) -> Cube:
-    """
-    Put data from sub-meshes back onto the original full mesh.
+    """Put data from sub-meshes back onto the original full mesh.
 
     The result is a cube like ``mesh_cube``, but with its data replaced by a
     combination of the data in the ``submesh_cubes``.

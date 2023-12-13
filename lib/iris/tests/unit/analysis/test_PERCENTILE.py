@@ -19,8 +19,7 @@ from iris.analysis import PERCENTILE
 
 
 class AggregateMixin:
-    """
-    Percentile aggregation tests for both numpy and scipy methods within lazy
+    """Percentile aggregation tests for both numpy and scipy methods within lazy
     and real percentile aggregation.
 
     """
@@ -89,8 +88,7 @@ class AggregateMixin:
 
 
 class ScipyAggregateMixin:
-    """
-    Tests for calculations specific to the default (scipy) function.  Includes
+    """Tests for calculations specific to the default (scipy) function.  Includes
     tests on masked data and tests to verify that the function is called with
     the expected keywords.  Needs to be used with AggregateMixin, as some of
     these tests reuse its method.
@@ -261,8 +259,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
 
 
 class MultiAxisMixin:
-    """
-    Tests for axis passed as a tuple.  Only relevant for lazy aggregation since
+    """Tests for axis passed as a tuple.  Only relevant for lazy aggregation since
     axis is always specified as int for real aggregation.
 
     """

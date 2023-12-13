@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the engine.activate() call within the
+"""Unit tests for the engine.activate() call within the
 `iris.fileformats.netcdf._load_cube` function.
 
 Here, *specifically* testcases relating to grid-mappings and dim-coords.
@@ -34,8 +33,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         xco_is_dim=True,
         yco_is_dim=True,
     ):
-        """
-        Create a CDL string for a testcase.
+        """Create a CDL string for a testcase.
 
         This is the "master" routine for creating all our testcases.
         Kwarg options modify a simple default testcase with a latlon grid.
@@ -257,8 +255,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         xco_stdname=True,
         yco_stdname=True,
     ):
-        """
-        Check key properties of a result cube.
+        """Check key properties of a result cube.
 
         Various options control the expected things which are tested.
         """

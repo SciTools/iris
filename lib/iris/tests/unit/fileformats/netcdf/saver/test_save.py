@@ -215,8 +215,7 @@ class Test_fill_value(tests.IrisTest):
 
 
 class Test_HdfSaveBug(tests.IrisTest):
-    """
-    Check for a known problem with netcdf4.
+    """Check for a known problem with netcdf4.
 
     If you create dimension with the same name as an existing variable, there
     is a specific problem, relating to HDF so limited to netcdf-4 formats.
@@ -268,8 +267,7 @@ class Test_HdfSaveBug(tests.IrisTest):
         return result
 
     def assertSameCubes(self, cube1, cube2):
-        """
-        A special tolerant cube compare.
+        """A special tolerant cube compare.
 
         Ignore any 'Conventions' attributes.
         Ignore all var-names.
@@ -353,8 +351,7 @@ class Test_HdfSaveBug(tests.IrisTest):
 
 
 class Test_compute_usage:
-    """
-    Test the operation  of the save function 'compute' keyword.
+    """Test the operation  of the save function 'compute' keyword.
 
     In actual use, this keyword controls 'delayed saving'.  That is tested elsewhere,
     in testing the 'Saver' class itself.

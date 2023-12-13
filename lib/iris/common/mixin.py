@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides common metadata mixin behaviour.
+"""Provides common metadata mixin behaviour.
 
 """
 
@@ -50,8 +49,7 @@ def _get_valid_standard_name(name):
 
 
 class LimitedAttributeDict(dict):
-    """
-    A specialised 'dict' subclass, which forbids (errors) certain attribute names.
+    """A specialised 'dict' subclass, which forbids (errors) certain attribute names.
 
     Used for the attribute dictionaries of all Iris data objects (that is,
     :class:`CFVariableMixin` and its subclasses).
@@ -147,8 +145,7 @@ class CFVariableMixin:
         return self._metadata_manager.name(default=default, token=token)
 
     def rename(self, name):
-        """
-        Changes the human-readable name.
+        """Changes the human-readable name.
 
         If 'name' is a valid standard name it will assign it to
         :attr:`standard_name`, otherwise it will assign it to

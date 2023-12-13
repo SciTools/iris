@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :class:`iris.common.metadata.CubeMetadata`.
+"""Unit tests for the :class:`iris.common.metadata.CubeMetadata`.
 
 """
 
@@ -107,8 +106,7 @@ def op_leniency(request):
 
 @pytest.fixture(params=["primaryAA", "primaryAX", "primaryAB"])
 def primary_values(request):
-    """
-    Parametrize over the possible non-trivial pairs of operation values.
+    """Parametrize over the possible non-trivial pairs of operation values.
 
     The parameters all provide two attribute values which are the left- and right-hand
     arguments to the tested operation.  The attribute values are single characters from
@@ -166,8 +164,7 @@ _TEST_ATTRNAME = "_test_attr_"
 
 
 def extract_attribute_value(split_dict, extract_global):
-    """
-    Extract a test-attribute value from a split-attribute dictionary.
+    """Extract a test-attribute value from a split-attribute dictionary.
 
     Parameters
     ----------
@@ -188,8 +185,7 @@ def extract_attribute_value(split_dict, extract_global):
 
 
 def extract_result_value(input, extract_global):
-    """
-    Extract the values(s) of the main test attribute from an operation result.
+    """Extract the values(s) of the main test attribute from an operation result.
 
     Parameters
     ----------
@@ -229,8 +225,7 @@ def extract_result_value(input, extract_global):
 
 
 def make_attrsdict(value):
-    """
-    Return a dictionary containing a test attribute with the given value.
+    """Return a dictionary containing a test attribute with the given value.
 
     If the value is "X", the attribute is absent (result is empty dict).
     """
@@ -250,8 +245,7 @@ def check_splitattrs_testcase(
     check_global_not_local: bool = True,
     check_reversed: bool = False,
 ):
-    """
-    Test a metadata operation with split-attributes against known expected results.
+    """Test a metadata operation with split-attributes against known expected results.
 
     Parameters
     ----------
@@ -348,8 +342,7 @@ def check_splitattrs_testcase(
 
 
 class MixinSplitattrsMatrixTests:
-    """
-    Define split-attributes tests to perform on all the metadata operations.
+    """Define split-attributes tests to perform on all the metadata operations.
 
     This is inherited by the testclass for each operation :
     i.e. Test___eq__, Test_combine and Test_difference
@@ -365,8 +358,7 @@ class MixinSplitattrsMatrixTests:
         primary_is_global_not_local,
         order_reversed,
     ):
-        """
-        Check the basic operation against the expected result from _ALL_RESULTS.
+        """Check the basic operation against the expected result from _ALL_RESULTS.
 
         Parametrisation checks this for all combinations of various factors :
 
@@ -403,8 +395,7 @@ class MixinSplitattrsMatrixTests:
         primary_values,
         secondary_values,
     ):
-        """
-        Check that results are (mostly) independent of the "other" type attributes.
+        """Check that results are (mostly) independent of the "other" type attributes.
 
         The operation on attributes of the 'primary' type (global/local) should be
         basically unaffected by those of the 'secondary' type (--> local/global).

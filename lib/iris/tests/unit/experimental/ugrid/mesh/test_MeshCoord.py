@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
+"""Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
 
 """
 # Import iris.tests first so that some things can be initialised before
@@ -104,8 +103,7 @@ class Test__readonly_properties(tests.IrisTest):
 
 
 class Test__inherited_properties(tests.IrisTest):
-    """
-    Check the settability and effect on equality of the common BaseMetadata
+    """Check the settability and effect on equality of the common BaseMetadata
     properties inherited from Coord : i.e. names/units/attributes.
 
     Though copied from the mesh at creation, they are also changeable.
@@ -515,8 +513,7 @@ class Test_auxcoord_conversion(tests.IrisTest):
 
 
 class Test_MeshCoord__dataviews(tests.IrisTest):
-    """
-    Fuller testing of points and bounds calculations and behaviour.
+    """Fuller testing of points and bounds calculations and behaviour.
     Including connectivity missing-points (non-square faces).
 
     """

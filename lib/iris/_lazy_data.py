@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Routines for lazy data handling.
+"""Routines for lazy data handling.
 
 To avoid replicating implementation-dependent test and conversion code.
 
@@ -20,10 +19,7 @@ import numpy.ma as ma
 
 
 def non_lazy(func):
-    """
-    Turn a lazy function into a function that returns a result immediately.
-
-    """
+    """Turn a lazy function into a function that returns a result immediately."""
 
     @wraps(func)
     def inner(*args, **kwargs):
@@ -35,8 +31,7 @@ def non_lazy(func):
 
 
 def is_lazy_data(data):
-    """
-    Return whether the argument is an Iris 'lazy' data array.
+    """Return whether the argument is an Iris 'lazy' data array.
 
     At present, this means simply a :class:`dask.array.Array`.
     We determine this by checking for a "compute" property.
@@ -47,8 +42,7 @@ def is_lazy_data(data):
 
 
 def is_lazy_masked_data(data):
-    """
-    Return True if the argument is both an Iris 'lazy' data array and the
+    """Return True if the argument is both an Iris 'lazy' data array and the
     underlying array is of masked type.  Otherwise return False.
 
     """
@@ -64,8 +58,7 @@ def _optimum_chunksize_internals(
     dims_fixed=None,
     dask_array_chunksize=dask.config.get("array.chunk-size"),
 ):
-    """
-    Reduce or increase an initial chunk shape to get close to a chosen ideal
+    """Reduce or increase an initial chunk shape to get close to a chosen ideal
     size, while prioritising the splitting of the earlier (outer) dimensions
     and keeping intact the later (inner) ones.
 
@@ -225,8 +218,7 @@ def _optimum_chunksize(
 def as_lazy_data(
     data, chunks=None, asarray=False, dims_fixed=None, dask_chunking=False
 ):
-    """
-    Convert the input array `data` to a :class:`dask.array.Array`.
+    """Convert the input array `data` to a :class:`dask.array.Array`.
 
     Args:
 
@@ -300,8 +292,7 @@ def as_lazy_data(
 
 
 def _co_realise_lazy_arrays(arrays):
-    """
-    Compute multiple lazy arrays and return a list of real values.
+    """Compute multiple lazy arrays and return a list of real values.
 
     All the arrays are computed together, so they can share results for common
     graph elements.
@@ -334,8 +325,7 @@ def _co_realise_lazy_arrays(arrays):
 
 
 def as_concrete_data(data):
-    """
-    Return the actual content of a lazy array, as a numpy array.
+    """Return the actual content of a lazy array, as a numpy array.
     If the input data is a NumPy `ndarray` or masked array, return it
     unchanged.
 
@@ -357,8 +347,7 @@ def as_concrete_data(data):
 
 
 def multidim_lazy_stack(stack):
-    """
-    Recursively build a multidimensional stacked dask array.
+    """Recursively build a multidimensional stacked dask array.
 
     This is needed because :meth:`dask.array.Array.stack` only accepts a
     1-dimensional list.
@@ -385,8 +374,7 @@ def multidim_lazy_stack(stack):
 
 
 def co_realise_cubes(*cubes):
-    """
-    Fetch 'real' data for multiple cubes, in a shared calculation.
+    """Fetch 'real' data for multiple cubes, in a shared calculation.
 
     This computes any lazy data, equivalent to accessing each `cube.data`.
     However, lazy calculations and data fetches can be shared between the
@@ -421,8 +409,7 @@ def co_realise_cubes(*cubes):
 
 
 def lazy_elementwise(lazy_array, elementwise_op):
-    """
-    Apply a (numpy-style) elementwise array operation to a lazy array.
+    """Apply a (numpy-style) elementwise array operation to a lazy array.
 
     Elementwise means that it performs a independent calculation at each point
     of the input, producing a result array of the same shape.
