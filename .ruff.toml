@@ -29,6 +29,7 @@ lint.ignore = [
     "D417",  # Missing argument descriptions in the docstring
     "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
+    "D104",  # Missing docstring in public package
     "D106",  # Missing docstring in public nested class
     # (D-3) Temporary, before an initial review, either fix ocurrenvces or move to (2).
     "D100",  # Missing docstring in public module
