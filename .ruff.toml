@@ -260,4 +260,5 @@ lint.ignore = [
 
     # Ruff-specific rules (RUF)
     # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
-    "RUF
+    "RUF",
+]
