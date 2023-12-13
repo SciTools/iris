@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Calculus operations on :class:`iris.cube.Cube` instances.
+"""Calculus operations on :class:`iris.cube.Cube` instances.
 
 See also: :mod:`NumPy <numpy>`.
 
@@ -30,7 +29,8 @@ __all__ = ["cube_delta", "curl", "differentiate"]
 
 
 def _construct_delta_coord(coord):
-    """
+    """Return a coordinate of deltas between the given coordinate's points.
+
     Return a coordinate of deltas between the given coordinate's points.
     If the original coordinate has length n and is circular then the
     result will be a coordinate of length n, otherwise the result will be
@@ -63,7 +63,8 @@ def _construct_delta_coord(coord):
 
 
 def _construct_midpoint_coord(coord, circular=None):
-    """
+    """Return a coordinate of mid-points from the given coordinate.
+
     Return a coordinate of mid-points from the given coordinate. If the
     given coordinate has length n and the circular flag set then the
     result will be a coordinate of length n, otherwise the result will be
@@ -128,30 +129,26 @@ def _construct_midpoint_coord(coord, circular=None):
 
 
 def cube_delta(cube, coord):
-    """
-    Given a cube calculate the difference between each value in the
-    given coord's direction.
+    """Given a cube calculate the difference between each value in the coord's direction.
 
-
-    Args:
-
-    * coord
+    Parameters
+    ----------
+    coord :
         either a Coord instance or the unique name of a coordinate in the cube.
         If a Coord instance is provided, it does not necessarily have to
         exist in the cube.
 
-    Example usage::
+    Examples
+    --------
+    ::
 
-        change_in_temperature_wrt_pressure = \
-cube_delta(temperature_cube, 'pressure')
+        change_in_temperature_wrt_pressure = cube_delta(temperature_cube, 'pressure')
 
     .. note:: Missing data support not yet implemented.
 
     .. note::
-
             This function does not maintain laziness when called; it realises data.
             See more at :doc:`/userguide/real_and_lazy_data`.
-
 
     """
     # handle the case where a user passes a coordinate name
@@ -205,19 +202,22 @@ cube_delta(temperature_cube, 'pressure')
 
 
 def differentiate(cube, coord_to_differentiate):
-    r"""
+    r"""Calculate the differential of a given cube.
+
     Calculate the differential of a given cube with respect to the
     coord_to_differentiate.
 
-    Args:
-
-    * coord_to_differentiate:
+    Parameters
+    ----------
+    coord_to_differentiate :
         Either a Coord instance or the unique name of a coordinate which
         exists in the cube.
         If a Coord instance is provided, it does not necessarily have to
         exist on the cube.
 
-    Example usage::
+    Examples
+    --------
+    ::
 
         u_wind_acceleration = differentiate(u_wind_cube, 'forecast_time')
 
@@ -251,13 +251,13 @@ def differentiate(cube, coord_to_differentiate):
     where `c` and `b` represent the input coordinate values and bounds,
     and `C` and `B` the output coordinate values and bounds.
 
-    .. note:: Difference method used is the same as :func:`cube_delta`
+    .. note::
+        Difference method used is the same as :func:`cube_delta`
         and therefore has the same limitations.
 
     .. note:: Spherical differentiation does not occur in this routine.
 
     .. note::
-
             This function does not maintain laziness when called; it realises data.
             See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -283,7 +283,8 @@ def differentiate(cube, coord_to_differentiate):
 
 
 def _curl_subtract(a, b):
-    """
+    """Straight forward wrapper to :func:`iris.analysis.maths.subtract`.
+
     Simple wrapper to :func:`iris.analysis.maths.subtract` to subtract
     two cubes, which deals with None in a way that makes sense in the
     context of curl.
@@ -308,7 +309,8 @@ def _curl_subtract(a, b):
 
 
 def _curl_differentiate(cube, coord):
-    """
+    """Straight forward wrapper to :func:`differentiate`.
+
     Simple wrapper to :func:`differentiate` to differentiate a cube and
     deal with None in a way that makes sense in the context of curl.
 
@@ -331,7 +333,8 @@ def _curl_differentiate(cube, coord):
 
 
 def _curl_regrid(cube, prototype):
-    """
+    """Straight forward wrapper to :ref`iris.cube.Cube.regridded`.
+
     Simple wrapper to :ref`iris.cube.Cube.regridded` to deal with None
     in a way that makes sense in the context of curl.
 
@@ -351,7 +354,8 @@ def _curl_regrid(cube, prototype):
 
 
 def _copy_cube_transformed(src_cube, data, coord_func):
-    """
+    """Return a new cube with the given data with the coordinates transformed.
+
     Returns a new cube based on the src_cube, but with the given data,
     and with the coordinates transformed via coord_func.
 
@@ -412,12 +416,11 @@ def _curl_change_z(src_cube, z_coord, prototype_diff):
 
 
 def _coord_sin(coord):
-    """
-    Return a coordinate which represents sin(coord).
+    """Return a coordinate which represents sin(coord).
 
-    Args:
-
-    * coord
+    Parameters
+    ----------
+    coord :
         Coord instance with values in either degrees or radians
 
     """
@@ -425,12 +428,11 @@ def _coord_sin(coord):
 
 
 def _coord_cos(coord):
-    """
-    Return a coordinate which represents cos(coord).
+    """Return a coordinate which represents cos(coord).
 
-    Args:
-
-    * coord
+    Parameters
+    ----------
+    coord :
         Coord instance with values in either degrees or radians
 
     """
@@ -438,14 +440,13 @@ def _coord_cos(coord):
 
 
 def _trig_method(coord, trig_function):
-    """
-    Return a coordinate which represents trig_function(coord).
+    """Return a coordinate which represents trig_function(coord).
 
-    Args:
-
-    * coord
+    Parameters
+    ----------
+    coord :
         Coord instance with points values in either degrees or radians
-    * trig_function
+    trig_function :
         Reference to a trigonometric function e.g. numpy.sin
 
     """
@@ -465,7 +466,8 @@ def _trig_method(coord, trig_function):
 
 
 def curl(i_cube, j_cube, k_cube=None):
-    r"""
+    r"""Calculate the 2 or 3-dimensional spherical or cartesian curl.
+
     Calculate the 2-dimensional or 3-dimensional spherical or cartesian
     curl of the given vector of cubes.
 
@@ -473,20 +475,21 @@ def curl(i_cube, j_cube, k_cube=None):
     cube to possess a vertical or z-like coordinate (representing some form
     of height or pressure).  This can be a scalar or dimension coordinate.
 
-    Args:
-
-    * i_cube
+    Parameters
+    ----------
+    i_cube :
         The i cube of the vector to operate on
-    * j_cube
+    j_cube :
         The j cube of the vector to operate on
-
-    Kwargs:
-
-    * k_cube
+    k_cube : optional
         The k cube of the vector to operate on
 
-    Return (i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube)
+    Returns
+    -------
+    List of cubes i_cmpt_curl_cube, j_cmpt_curl_cube, k_cmpt_curl_cube
 
+    Notes
+    -----
     If the k-cube is not passed in then the 2-dimensional curl will
     be calculated, yielding the result: [None, None, k_cube].
     If the k-cube is passed in, the 3-dimensional curl will
@@ -501,50 +504,47 @@ def curl(i_cube, j_cube, k_cube=None):
     GeogCS or RotatedGeogCS, the spherical curl will be calculated; otherwise
     the cartesian curl will be calculated:
 
-        Cartesian curl
+    * Cartesian curl
+        * When cartesian calculus is used, i_cube is the u component,
+          j_cube is the v component and k_cube is the w component.
 
-            When cartesian calculus is used, i_cube is the u component,
-            j_cube is the v component and k_cube is the w component.
+          The Cartesian curl is defined as:
 
-            The Cartesian curl is defined as:
+          .. math::
 
-            .. math::
+              \nabla\times \vec u =
+              (\frac{\delta w}{\delta y} - \frac{\delta v}{\delta z})\vec a_i
+              -
+              (\frac{\delta w}{\delta x} - \frac{\delta u}{\delta z})\vec a_j
+              +
+              (\frac{\delta v}{\delta x} - \frac{\delta u}{\delta y})\vec a_k
 
-                \nabla\times \vec u =
-                (\frac{\delta w}{\delta y} - \frac{\delta v}{\delta z})\vec a_i
-                -
-                (\frac{\delta w}{\delta x} - \frac{\delta u}{\delta z})\vec a_j
-                +
-                (\frac{\delta v}{\delta x} - \frac{\delta u}{\delta y})\vec a_k
+    * Spherical curl
+        * When spherical calculus is used, i_cube is the :math:`\phi` vector
+          component (e.g. eastward), j_cube is the :math:`\theta` component
+          (e.g. northward) and k_cube is the radial component.
 
-        Spherical curl
+          The spherical curl is defined as:
 
-            When spherical calculus is used, i_cube is the :math:`\phi` vector
-            component (e.g. eastward), j_cube is the :math:`\theta` component
-            (e.g. northward) and k_cube is the radial component.
+          .. math::
 
-            The spherical curl is defined as:
+              \nabla\times \vec A = \frac{1}{r cos \theta}
+              (\frac{\delta}{\delta \theta}
+              (\vec A_\phi cos \theta) -
+              \frac{\delta \vec A_\theta}{\delta \phi}) \vec r +
+              \frac{1}{r}(\frac{1}{cos \theta}
+              \frac{\delta \vec A_r}{\delta \phi} -
+              \frac{\delta}{\delta r} (r \vec A_\phi))\vec \theta +
+              \frac{1}{r}
+              (\frac{\delta}{\delta r}(r \vec A_\theta) -
+              \frac{\delta \vec A_r}{\delta \theta}) \vec \phi
 
-            .. math::
-
-                \nabla\times \vec A = \frac{1}{r cos \theta}
-                (\frac{\delta}{\delta \theta}
-                (\vec A_\phi cos \theta) -
-                \frac{\delta \vec A_\theta}{\delta \phi}) \vec r +
-                \frac{1}{r}(\frac{1}{cos \theta}
-                \frac{\delta \vec A_r}{\delta \phi} -
-                \frac{\delta}{\delta r} (r \vec A_\phi))\vec \theta +
-                \frac{1}{r}
-                (\frac{\delta}{\delta r}(r \vec A_\theta) -
-                \frac{\delta \vec A_r}{\delta \theta}) \vec \phi
-
-            where phi is longitude, theta is latitude.
+          where phi is longitude, theta is latitude.
 
     .. note::
 
             This function does not maintain laziness when called; it realises data.
             See more at :doc:`/userguide/real_and_lazy_data`.
-
 
     """
     # Get the vector quantity names.
@@ -735,7 +735,8 @@ def curl(i_cube, j_cube, k_cube=None):
 
 
 def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
-    """
+    """Given spatially dependent cubes, return a list of the spatial coordinate names.
+
     Given 2 or 3 spatially dependent cubes, return a list of the spatial
     coordinate names with appropriate phenomenon name.
 
@@ -750,7 +751,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
         (['u', 'v', 'w'], 'wind')
 
     Notes
-    ------
+    -----
             This function maintains laziness when called; it does not realise data.
             See more at :doc:`/userguide/real_and_lazy_data`.
 

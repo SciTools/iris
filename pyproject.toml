@@ -90,6 +90,8 @@ ignore = [
     preview = false
     select = [
         "ALL",
+        # list specific rules to include that is skipped using numpy convention.
+        "D212",  # Multi-line docstring summary should start at the first line
     ]
 
 [tool.ruff.lint.isort]

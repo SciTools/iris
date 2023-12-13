@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-A package for handling multi-dimensional data and associated metadata.
+"""A package for handling multi-dimensional data and associated metadata.
 
 .. note ::
 
@@ -34,57 +33,57 @@ To persist a cube to the file-system, use the :func:`save` function.
 
 All the load functions share very similar arguments:
 
-    * uris:
-        Either a single filename/URI expressed as a string or
-        :class:`pathlib.PurePath`, or an iterable of filenames/URIs.
+* uris:
+    Either a single filename/URI expressed as a string or
+    :class:`pathlib.PurePath`, or an iterable of filenames/URIs.
 
-        Filenames can contain `~` or `~user` abbreviations, and/or
-        Unix shell-style wildcards (e.g. `*` and `?`). See the
-        standard library function :func:`os.path.expanduser` and
-        module :mod:`fnmatch` for more details.
+    Filenames can contain `~` or `~user` abbreviations, and/or
+    Unix shell-style wildcards (e.g. `*` and `?`). See the
+    standard library function :func:`os.path.expanduser` and
+    module :mod:`fnmatch` for more details.
 
-        .. warning::
+    .. warning::
 
-            If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP Data Sources are supported.
 
-    * constraints:
-        Either a single constraint, or an iterable of constraints.
-        Each constraint can be either a string, an instance of
-        :class:`iris.Constraint`, or an instance of
-        :class:`iris.AttributeConstraint`.  If the constraint is a string
-        it will be used to match against cube.name().
+* constraints:
+    Either a single constraint, or an iterable of constraints.
+    Each constraint can be either a string, an instance of
+    :class:`iris.Constraint`, or an instance of
+    :class:`iris.AttributeConstraint`.  If the constraint is a string
+    it will be used to match against cube.name().
 
-        .. _constraint_egs:
+    .. _constraint_egs:
 
-        For example::
+    For example::
 
-            # Load air temperature data.
-            load_cube(uri, 'air_temperature')
+        # Load air temperature data.
+        load_cube(uri, 'air_temperature')
 
-            # Load data with a specific model level number.
-            load_cube(uri, iris.Constraint(model_level_number=1))
+        # Load data with a specific model level number.
+        load_cube(uri, iris.Constraint(model_level_number=1))
 
-            # Load data with a specific STASH code.
-            load_cube(uri, iris.AttributeConstraint(STASH='m01s00i004'))
+        # Load data with a specific STASH code.
+        load_cube(uri, iris.AttributeConstraint(STASH='m01s00i004'))
 
-    * callback:
-        A function to add metadata from the originating field and/or URI which
-        obeys the following rules:
+* callback:
+    A function to add metadata from the originating field and/or URI which
+    obeys the following rules:
 
-        1. Function signature must be: ``(cube, field, filename)``.
-        2. Modifies the given cube inplace, unless a new cube is
-           returned by the function.
-        3. If the cube is to be rejected the callback must raise
-           an :class:`iris.exceptions.IgnoreCubeException`.
+    1. Function signature must be: ``(cube, field, filename)``.
+    2. Modifies the given cube inplace, unless a new cube is
+        returned by the function.
+    3. If the cube is to be rejected the callback must raise
+        an :class:`iris.exceptions.IgnoreCubeException`.
 
-        For example::
+    For example::
 
-            def callback(cube, field, filename):
-                # Extract ID from filenames given as: <prefix>__<exp_id>
-                experiment_id = filename.split('__')[1]
-                experiment_coord = iris.coords.AuxCoord(
-                    experiment_id, long_name='experiment_id')
-                cube.add_aux_coord(experiment_coord)
+        def callback(cube, field, filename):
+            # Extract ID from filenames given as: <prefix>__<exp_id>
+            experiment_id = filename.split('__')[1]
+            experiment_coord = iris.coords.AuxCoord(
+                experiment_id, long_name='experiment_id')
+            cube.add_aux_coord(experiment_coord)
 
 """
 
@@ -142,8 +141,7 @@ class Future(threading.local):
     """Run-time configuration controller."""
 
     def __init__(self, datum_support=False, pandas_ndim=False, save_split_attrs=False):
-        """
-        A container for run-time options controls.
+        r"""Container for run-time options controls.
 
         To adjust the values simply update the relevant attribute from
         within your code. For example::
@@ -218,9 +216,7 @@ class Future(threading.local):
 
     @contextlib.contextmanager
     def context(self, **kwargs):
-        """
-        Return a context manager which allows temporary modification of
-        the option values for the active thread.
+        """Return context manager for temp modification of option values for the active thread.
 
         On entry to the `with` statement, all keyword arguments are
         applied to the Future object. On exit from the `with`
@@ -263,7 +259,7 @@ else:
 
 
 def _generate_cubes(uris, callback, constraints):
-    """Returns a generator of cubes given the URIs and a callback."""
+    """Return a generator of cubes given the URIs and a callback."""
     if isinstance(uris, str) or not isinstance(uris, Iterable):
         # Make a string, or other single item, into an iterable.
         uris = [uris]
@@ -304,26 +300,24 @@ def _load_collection(uris, constraints=None, callback=None):
 
 
 def load(uris, constraints=None, callback=None):
-    """
-    Loads any number of Cubes for each constraint.
+    """Load any number of Cubes for each constraint.
 
     For a full description of the arguments, please see the module
     documentation for :mod:`iris`.
 
-    Args:
-
-    * uris:
+    Parameters
+    ----------
+    uris : str or :class:`pathlib.PurePath`
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
         If supplying a URL, only OPeNDAP Data Sources are supported.
-
-    Kwargs:
-
-    * constraints:
+    constraints : optional
         One or more constraints.
-    * callback:
+    callback : optional
         A modifier/filter function.
 
-    Returns:
+    Returns
+    -------
+    :class:`iris.cube.CubeList`
         An :class:`iris.cube.CubeList`. Note that there is no inherent order
         to this :class:`iris.cube.CubeList` and it should be treated as if it
         were random.
@@ -333,27 +327,24 @@ def load(uris, constraints=None, callback=None):
 
 
 def load_cube(uris, constraint=None, callback=None):
-    """
-    Loads a single cube.
+    """Load a single cube.
 
     For a full description of the arguments, please see the module
     documentation for :mod:`iris`.
 
-    Args:
-
-    * uris:
+    Parameters
+    ----------
+    uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
         If supplying a URL, only OPeNDAP Data Sources are supported.
-
-    Kwargs:
-
-    * constraints:
+    constraints : optional
         A constraint.
-    * callback:
+    callback : optional
         A modifier/filter function.
 
-    Returns:
-        An :class:`iris.cube.Cube`.
+    Returns
+    -------
+    :class:`iris.cube.Cube`
 
     """
     constraints = iris._constraints.list_of_constraints(constraint)
@@ -373,26 +364,24 @@ def load_cube(uris, constraint=None, callback=None):
 
 
 def load_cubes(uris, constraints=None, callback=None):
-    """
-    Loads exactly one Cube for each constraint.
+    """Load exactly one Cube for each constraint.
 
     For a full description of the arguments, please see the module
     documentation for :mod:`iris`.
 
-    Args:
-
-    * uris:
+    Parameters
+    ----------
+    uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
         If supplying a URL, only OPeNDAP Data Sources are supported.
-
-    Kwargs:
-
-    * constraints:
+    constraints : optional
         One or more constraints.
-    * callback:
+    callback : optional
         A modifier/filter function.
 
-    Returns:
+    Returns
+    -------
+    :class:`iris.cube.CubeList`
         An :class:`iris.cube.CubeList`. Note that there is no inherent order
         to this :class:`iris.cube.CubeList` and it should be treated as if it
         were random.
@@ -413,8 +402,7 @@ def load_cubes(uris, constraints=None, callback=None):
 
 
 def load_raw(uris, constraints=None, callback=None):
-    """
-    Loads non-merged cubes.
+    """Load non-merged cubes.
 
     This function is provided for those occasions where the automatic
     combination of cubes into higher-dimensional cubes is undesirable.
@@ -425,21 +413,19 @@ def load_raw(uris, constraints=None, callback=None):
     For a full description of the arguments, please see the module
     documentation for :mod:`iris`.
 
-    Args:
-
-    * uris:
+    Parameters
+    ----------
+    uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
         If supplying a URL, only OPeNDAP Data Sources are supported.
-
-    Kwargs:
-
-    * constraints:
+    constraints : optional
         One or more constraints.
-    * callback:
+    callback : optional
         A modifier/filter function.
 
-    Returns:
-        An :class:`iris.cube.CubeList`.
+    Returns
+    -------
+    :class:`iris.cube.CubeList`
 
     """
     from iris.fileformats.um._fast_load import _raw_structured_loading
@@ -452,8 +438,7 @@ save = iris.io.save
 
 
 def sample_data_path(*path_to_join):
-    """
-    Given the sample data resource, returns the full path to the file.
+    """Given the sample data resource, returns the full path to the file.
 
     .. note::
 
@@ -487,10 +472,16 @@ def sample_data_path(*path_to_join):
 
 
 def use_plugin(plugin_name):
-    """
-    Convenience function to import a plugin
+    """Import a plugin.
 
-    For example::
+    Parameters
+    ----------
+    plugin_name : str
+        Name of plugin.
+
+    Examples
+    --------
+    The following::
 
         use_plugin("my_plugin")
 
