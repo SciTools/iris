@@ -83,6 +83,7 @@ def decode_uri(uri, default="file"):
     In addition to well-formed URIs, it also supports bare file paths as strings
     or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
     accepted.
+
     It also supports 'bare objects', i.e. anything which is not a string.
     These are identified with a scheme of 'data', and returned unchanged.
 
