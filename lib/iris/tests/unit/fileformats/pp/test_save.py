@@ -56,10 +56,7 @@ def test_realization():
 
 
 def _pp_save_ppfield_values(cube):
-    """
-    Emulate saving a cube as PP, and capture the resulting PP field values.
-
-    """
+    """Emulate saving a cube as PP, and capture the resulting PP field values."""
     # Create a test object to stand in for a real PPField.
     pp_field = mock.MagicMock(spec=pp.PPField3)
     # Add minimal content required by the pp.save operation.
@@ -224,8 +221,7 @@ class Test_Save__LbprocProduction(tests.IrisTest):
 
 
 class TestTimeMean(tests.IrisTest):
-    """
-    Tests that time mean cell method is converted to pp appropriately.
+    """Tests that time mean cell method is converted to pp appropriately.
 
     Pattern is pairs of tests - one with time mean method, and one without, to
     show divergent behaviour.

@@ -1,5 +1,4 @@
-"""
-Deriving Exner Pressure and Air Temperature
+"""Deriving Exner Pressure and Air Temperature
 ===========================================
 
 This example shows some processing of cubes in order to derive further related
@@ -21,8 +20,7 @@ import iris.quickplot as qplt
 
 
 def limit_colorbar_ticks(contour_object):
-    """
-    Takes a contour object which has an associated colorbar and limits the
+    """Takes a contour object which has an associated colorbar and limits the
     number of ticks on the colorbar to 4.
 
     """

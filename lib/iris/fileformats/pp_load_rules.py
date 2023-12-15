@@ -58,8 +58,7 @@ def _convert_vertical_coords(
     brlev,
     dim=None,
 ):
-    """
-    Encode scalar or vector vertical level values from PP headers as CM data
+    """Encode scalar or vector vertical level values from PP headers as CM data
     components.
 
     Args:
@@ -303,8 +302,7 @@ def _convert_vertical_coords(
 
 
 def _reshape_vector_args(values_and_dims):
-    """
-    Reshape a group of (array, dimensions-mapping) onto all dimensions.
+    """Reshape a group of (array, dimensions-mapping) onto all dimensions.
 
     The resulting arrays are all mapped over the same dimensions; as many as
     the maximum dimension number found in the inputs.  Those dimensions not
@@ -352,8 +350,7 @@ def _reshape_vector_args(values_and_dims):
 
 
 def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
-    """
-    Collapse points (and optionally bounds) in any dimensions over which all
+    """Collapse points (and optionally bounds) in any dimensions over which all
     values are the same.
 
     All dimensions are tested, and if degenerate are reduced to length 1.
@@ -400,8 +397,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
 
 
 def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
-    """
-    Reduce the dimensionality of arrays of coordinate points (and optionally
+    """Reduce the dimensionality of arrays of coordinate points (and optionally
     bounds).
 
     Dimensions over which all values are the same are reduced to size 1, using
@@ -460,8 +456,7 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
 def _new_coord_and_dims(
     is_vector_operation, name, units, points, lower_and_upper_bounds=None
 ):
-    """
-    Make a new (coordinate, cube_dims) pair with the given points, name, units
+    """Make a new (coordinate, cube_dims) pair with the given points, name, units
     and optional bounds.
 
     In 'vector' style operation, the data arrays must have same number of
@@ -507,8 +502,7 @@ _HOURS_UNIT = cf_units.Unit("hours")
 
 
 def _epoch_date_hours_internals(epoch_hours_unit, datetime):
-    """
-    Return an 'hours since epoch' number for a date.
+    """Return an 'hours since epoch' number for a date.
 
     Args:
     * epoch_hours_unit (:class:`cf_unit.Unit'):
@@ -616,8 +610,7 @@ def _convert_time_coords(
     t2_dims=(),
     lbft_dims=(),
 ):
-    """
-    Make time coordinates from the time metadata.
+    """Make time coordinates from the time metadata.
 
     Args:
 
@@ -828,8 +821,7 @@ def _convert_time_coords(
 
 
 def _model_level_number(lblev):
-    """
-    Return model level number for an LBLEV value.
+    """Return model level number for an LBLEV value.
 
     Args:
 
@@ -852,8 +844,7 @@ def _model_level_number(lblev):
 
 
 def _convert_scalar_realization_coords(lbrsvd4):
-    """
-    Encode scalar 'realization' (aka ensemble) numbers as CM data.
+    """Encode scalar 'realization' (aka ensemble) numbers as CM data.
 
     Returns a list of coords_and_dims.
 
@@ -868,8 +859,7 @@ def _convert_scalar_realization_coords(lbrsvd4):
 
 
 def _convert_scalar_pseudo_level_coords(lbuser5):
-    """
-    Encode scalar pseudo-level values as CM data.
+    """Encode scalar pseudo-level values as CM data.
 
     Returns a list of coords_and_dims.
 
@@ -883,8 +873,7 @@ def _convert_scalar_pseudo_level_coords(lbuser5):
 
 
 def convert(f):
-    """
-    Converts a PP field into the corresponding items of Cube metadata.
+    """Converts a PP field into the corresponding items of Cube metadata.
 
     Args:
 
@@ -959,8 +948,7 @@ def convert(f):
 
 
 def _all_other_rules(f):
-    """
-    This deals with all the other rules that have not been factored into any of
+    """This deals with all the other rules that have not been factored into any of
     the other convert_scalar_coordinate functions above.
 
     """

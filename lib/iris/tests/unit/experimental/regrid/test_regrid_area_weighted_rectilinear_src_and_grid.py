@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function
+"""Test function
 :func:`iris.experimental.regrid.regrid_area_weighted_rectilinear_src_and_grid`.
 
 """

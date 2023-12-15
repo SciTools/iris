@@ -617,8 +617,7 @@ class TestPcolormesh(tests.GraphicsTest, SliceMixin):
 
 
 def check_warnings(method):
-    """
-    Decorator that adds a catch_warnings and filter to assert
+    """Decorator that adds a catch_warnings and filter to assert
     the method being decorated issues a UserWarning.
 
     """
@@ -640,8 +639,7 @@ def check_warnings(method):
 
 
 def ignore_warnings(method):
-    """
-    Decorator that adds a catch_warnings and filter to suppress
+    """Decorator that adds a catch_warnings and filter to suppress
     any warnings issues by the method being decorated.
 
     """
@@ -656,8 +654,7 @@ def ignore_warnings(method):
 
 
 class CheckForWarningsMetaclass(type):
-    """
-    Metaclass that adds a further test for each base class test
+    """Metaclass that adds a further test for each base class test
     that checks that each test raises a UserWarning. Each base
     class test is then overridden to ignore warnings in order to
     check the underlying functionality.
@@ -699,8 +696,7 @@ class CheckForWarningsMetaclass(type):
 class TestPcolorNoBounds(
     tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
-    """
-    Test the iris.plot.pcolor routine on a cube with coordinates
+    """Test the iris.plot.pcolor routine on a cube with coordinates
     that have no bounds.
 
     """
@@ -715,8 +711,7 @@ class TestPcolorNoBounds(
 class TestPcolormeshNoBounds(
     tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
-    """
-    Test the iris.plot.pcolormesh routine on a cube with coordinates
+    """Test the iris.plot.pcolormesh routine on a cube with coordinates
     that have no bounds.
 
     """

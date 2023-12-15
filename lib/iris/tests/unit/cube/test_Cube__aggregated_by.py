@@ -618,8 +618,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         return out_cube
 
     def test_basic(self):
-        """
-        Check the least complicated version works (set climatological, set
+        """Check the least complicated version works (set climatological, set
         points correctly).
         """
         result = self.get_result()
@@ -636,8 +635,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(categorised_coord.climatological)
 
     def test_2d_other_coord(self):
-        """
-        Check that we can handle aggregation applying to a 2d AuxCoord that
+        """Check that we can handle aggregation applying to a 2d AuxCoord that
         covers the aggregation dimension and another one.
         """
         result = self.get_result(partially_aligned=True)
@@ -658,8 +656,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(part_aligned_coord.climatological)
 
     def test_2d_timelike_other_coord(self):
-        """
-        Check that we can handle aggregation applying to a 2d AuxCoord that
+        """Check that we can handle aggregation applying to a 2d AuxCoord that
         covers the aggregation dimension and another one.
         """
         result = self.get_result(
@@ -680,9 +677,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertTrue(part_aligned_coord.climatological)
 
     def test_transposed(self):
-        """
-        Check that we can handle the axis of aggregation being a different one.
-        """
+        """Check that we can handle the axis of aggregation being a different one."""
         result = self.get_result(transpose=True)
 
         aligned_coord = result.coord("aligned")
@@ -707,9 +702,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertTrue(aligned_coord.climatological)
 
     def test_multiple_agg_coords(self):
-        """
-        Check that we can aggregate on multiple coords on the same axis.
-        """
+        """Check that we can aggregate on multiple coords on the same axis."""
         result = self.get_result(second_categorised=True)
 
         aligned_coord = result.coord("aligned")
@@ -731,8 +724,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(categorised_coord2.climatological)
 
     def test_non_climatological_units(self):
-        """
-        Check that the failure to set the climatological flag on an incompatible
+        """Check that the failure to set the climatological flag on an incompatible
         unit is handled quietly.
         """
         result = self.get_result(invalid_units=True)
@@ -743,8 +735,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(aligned_coord.climatological)
 
     def test_clim_in_clim_op(self):
-        """
-        Check the least complicated version works (set climatological, set
+        """Check the least complicated version works (set climatological, set
         points correctly). For the input coordinate to be climatological, it
         must have bounds
         """
@@ -763,8 +754,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         self.assertFalse(categorised_coord.climatological)
 
     def test_clim_in_no_clim_op(self):
-        """
-        Check the least complicated version works (set climatological, set
+        """Check the least complicated version works (set climatological, set
         points correctly). For the input coordinate to be climatological, it
         must have bounds.
         """
@@ -797,8 +787,7 @@ class Test_aggregated_by__derived(tests.IrisTest):
         self.aggregator = iris.analysis.MEAN
 
     def test_grouped_dim(self):
-        """
-        Check that derived coordinates are maintained when the coordinates they
+        """Check that derived coordinates are maintained when the coordinates they
         derive from are aggregated.
         """
         result = self.cube.aggregated_by(
@@ -817,8 +806,7 @@ class Test_aggregated_by__derived(tests.IrisTest):
         assert np.array_equal(expected_bounds, result.coord("altitude").bounds)
 
     def test_ungrouped_dim(self):
-        """
-        Check that derived coordinates are preserved when aggregating along a
+        """Check that derived coordinates are preserved when aggregating along a
         different axis.
         """
         result = self.cube.aggregated_by(

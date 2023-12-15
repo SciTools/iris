@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Tests to check the validity of replacing
+"""Tests to check the validity of replacing
 "iris.analysis._interpolate.regrid`('nearest')" with
 "iris.cube.Cube.regrid(scheme=iris.analysis.Nearest())".
 

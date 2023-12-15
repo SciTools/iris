@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Cube functions for coordinate categorisation.
+"""Cube functions for coordinate categorisation.
 
 All the functions provided here add a new coordinate to a cube.
     * The function :func:`add_categorised_coord` performs a generic
@@ -24,8 +23,7 @@ import iris.coords
 
 
 def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
-    """
-    Add a new coordinate to a cube, by categorising an existing one.
+    """Add a new coordinate to a cube, by categorising an existing one.
 
     Make a new :class:`iris.coords.AuxCoord` from mapped values, and add
     it to the cube.
@@ -90,8 +88,7 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
 
 # Private "helper" function
 def _pt_date(coord, time):
-    """
-    Return the datetime of a time-coordinate point.
+    """Return the datetime of a time-coordinate point.
 
     Args:
 
@@ -151,8 +148,7 @@ def add_day_of_month(cube, coord, name="day_of_month"):
 
 
 def add_day_of_year(cube, coord, name="day_of_year"):
-    """
-    Add a categorical day-of-year coordinate, values 1..365
+    """Add a categorical day-of-year coordinate, values 1..365
     (1..366 in leap years).
 
     """
@@ -212,8 +208,7 @@ def add_hour(cube, coord, name="hour"):
 
 
 def _months_in_season(season):
-    """
-    Returns a list of month numbers corresponding to each month in the
+    """Returns a list of month numbers corresponding to each month in the
     given season.
 
     """
@@ -263,8 +258,7 @@ def _validate_seasons(seasons):
 
 
 def _month_year_adjusts(seasons, use_year_at_season_start=False):
-    """
-    Compute the year adjustments required for each month.
+    """Compute the year adjustments required for each month.
 
     These adjustments ensure that no season spans two years by assigning months
     to the **next** year (use_year_at_season_start is False) or the
@@ -307,8 +301,7 @@ def _month_season_numbers(seasons):
 
 
 def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son")):
-    """
-    Add a categorical season-of-year coordinate, with user specified
+    """Add a categorical season-of-year coordinate, with user specified
     seasons.
 
     Args:
@@ -347,8 +340,7 @@ def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son"))
 def add_season_number(
     cube, coord, name="season_number", seasons=("djf", "mam", "jja", "son")
 ):
-    """
-    Add a categorical season-of-year coordinate, values 0..N-1 where
+    """Add a categorical season-of-year coordinate, values 0..N-1 where
     N is the number of user specified seasons.
 
     Args:
@@ -391,8 +383,7 @@ def add_season_year(
     seasons=("djf", "mam", "jja", "son"),
     use_year_at_season_start=False,
 ):
-    """
-    Add a categorical year-of-season coordinate, with user specified seasons.
+    """Add a categorical year-of-season coordinate, with user specified seasons.
 
     Parameters
     ----------
@@ -432,8 +423,7 @@ def add_season_year(
 
 
 def add_season_membership(cube, coord, season, name="season_membership"):
-    """
-    Add a categorical season membership coordinate for a user specified
+    """Add a categorical season membership coordinate for a user specified
     season.
 
     The coordinate has the value True for every time that is within the

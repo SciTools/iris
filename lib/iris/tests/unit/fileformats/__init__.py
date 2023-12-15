@@ -43,8 +43,7 @@ class TestField(tests.IrisTest):
     def assertCoordsAndDimsListsMatch(
         self, coords_and_dims_got, coords_and_dims_expected
     ):
-        """
-        Check that coords_and_dims lists are equivalent.
+        """Check that coords_and_dims lists are equivalent.
 
         The arguments are lists of pairs of (coordinate, dimensions).
         The elements are compared one-to-one, by coordinate name (so the order

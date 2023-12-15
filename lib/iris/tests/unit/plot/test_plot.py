@@ -67,8 +67,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 
 @tests.skip_plot
 class TestTrajectoryWrap(tests.IrisTest):
-    """
-    Test that a line plot of geographic coordinates wraps around the end of the
+    """Test that a line plot of geographic coordinates wraps around the end of the
     coordinates rather than plotting across the map.
 
     """
@@ -87,8 +86,7 @@ class TestTrajectoryWrap(tests.IrisTest):
         )
 
     def assertPathsEqual(self, expected, actual):
-        """
-        Assert that the given paths are equal once STOP vertices have been
+        """Assert that the given paths are equal once STOP vertices have been
         removed
 
         """
@@ -101,8 +99,7 @@ class TestTrajectoryWrap(tests.IrisTest):
         self.assertArrayEqual(expected.codes, actual.codes)
 
     def check_paths(self, expected_path, expected_path_crs, lines, axes):
-        """
-        Check that the paths in `lines` match the given expected paths when
+        """Check that the paths in `lines` match the given expected paths when
         plotted on the given geoaxes
 
         """

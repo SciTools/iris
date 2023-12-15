@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Code for fast loading of structured UM data.
+"""Code for fast loading of structured UM data.
 
 This module defines which pp-field elements take part in structured loading,
 and provides creation of :class:`BasicFieldCollation` objects from lists of
@@ -21,8 +20,7 @@ from iris.fileformats.um._optimal_array_structuring import optimal_array_structu
 
 
 class BasicFieldCollation:
-    """
-    An object representing a group of UM fields with array structure that can
+    """An object representing a group of UM fields with array structure that can
     be vectorized into a single cube.
 
     For example:
@@ -47,8 +45,7 @@ class BasicFieldCollation:
     """
 
     def __init__(self, fields):
-        """
-        Args:
+        """Args:
 
         * fields (iterable of :class:`iris.fileformats.pp.PPField`):
             The fields in the collation.
@@ -111,8 +108,7 @@ class BasicFieldCollation:
 
     @property
     def element_arrays_and_dims(self):
-        """
-        Value arrays for vector metadata elements.
+        """Value arrays for vector metadata elements.
 
         A dictionary mapping element_name: (value_array, dims).
 
@@ -168,8 +164,7 @@ class BasicFieldCollation:
     _TIME_ELEMENT_MULTIPLIERS = np.cumprod([1, 60, 60, 24, 31, 12])[::-1]
 
     def _time_comparable_int(self, yr, mon, dat, hr, min, sec):
-        """
-        Return a single unique number representing a date-time tuple.
+        """Return a single unique number representing a date-time tuple.
 
         This calculation takes no account of the time field's real calendar,
         instead giving every month 31 days, which preserves the required
@@ -237,8 +232,7 @@ class BasicFieldCollation:
 
 
 def _um_collation_key_function(field):
-    """
-    Standard collation key definition for fast structured field loading.
+    """Standard collation key definition for fast structured field loading.
 
     The elements used here are the minimum sufficient to define the
     'phenomenon', as described for :meth:`group_structured_fields`.
@@ -268,8 +262,7 @@ def _um_collation_key_function(field):
 def group_structured_fields(
     field_iterator, collation_class=BasicFieldCollation, **collation_kwargs
 ):
-    """
-    Collect structured fields into identified groups whose fields can be
+    """Collect structured fields into identified groups whose fields can be
     combined to form a single cube.
 
     Args:

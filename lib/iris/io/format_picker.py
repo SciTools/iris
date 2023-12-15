@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provide convenient file format identification.
+"""Provide convenient file format identification.
 
 A module to provide convenient file format identification through a combination
 of filename extension and file based *magic* numbers.
@@ -49,8 +48,7 @@ import struct
 
 
 class FormatAgent:
-    """
-    Identifies format of a given file by interrogating its children instances.
+    """Identifies format of a given file by interrogating its children instances.
 
     The FormatAgent class is the containing object which is responsible for
     identifying the format of a given file by interrogating its children
@@ -87,8 +85,7 @@ class FormatAgent:
         )
 
     def get_spec(self, basename, buffer_obj):
-        """
-        Pick the first FormatSpecification.
+        """Pick the first FormatSpecification.
 
         Pick the first FormatSpecification which can handle the given
         filename and file/buffer object.
@@ -155,8 +152,7 @@ class FormatAgent:
 
 @functools.total_ordering
 class FormatSpecification:
-    """
-    Provides the base class for file type definition.
+    """Provides the base class for file type definition.
 
     Every FormatSpecification instance has a name which can be accessed with
     the :attr:`FormatSpecification.name` property and a FileElement, such as
@@ -174,8 +170,7 @@ class FormatSpecification:
         priority=0,
         constraint_aware_handler=False,
     ):
-        """
-        Construct a new FormatSpecification.
+        """Construct a new FormatSpecification.
 
         Parameters
         ----------
@@ -272,8 +267,7 @@ class FormatSpecification:
 
 
 class FileElement:
-    """
-    Represents a specific aspect of a FileFormat.
+    """Represents a specific aspect of a FileFormat.
 
     Represents a specific aspect of a FileFormat which can be identified using
     the given element getter function.
@@ -281,8 +275,7 @@ class FileElement:
     """
 
     def __init__(self, requires_fh=True):
-        """
-        Construct a new file element, which may require a file buffer.
+        """Construct a new file element, which may require a file buffer.
 
         Parameters
         ----------
@@ -348,8 +341,7 @@ class LeadingLine(FileElement):
 
 
 class UriProtocol(FileElement):
-    """
-    Return the scheme and part from a URI, using :func:`~iris.io.decode_uri`.
+    """Return the scheme and part from a URI, using :func:`~iris.io.decode_uri`.
 
     A :class:`FileElement` that returns the "scheme" and "part" from a URI,
     using :func:`~iris.io.decode_uri`.
@@ -367,8 +359,7 @@ class UriProtocol(FileElement):
 
 
 class DataSourceObjectProtocol(FileElement):
-    """
-    A :class:`FileElement` that simply returns the URI entry itself.
+    """A :class:`FileElement` that simply returns the URI entry itself.
 
     This enables a arbitrary non-string data object to be passed, subject to
     subsequent checks on the object itself (specified in the handler).
@@ -379,8 +370,7 @@ class DataSourceObjectProtocol(FileElement):
         super().__init__(requires_fh=False)
 
     def get_element(self, basename, file_handle):
-        """
-        In this context, there should *not* be a file opened by the handler.
+        """In this context, there should *not* be a file opened by the handler.
 
         Just return 'basename', which in this case is not a name, or even a
         string, but a passed 'data object'.

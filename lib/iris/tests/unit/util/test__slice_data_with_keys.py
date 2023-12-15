@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.util._slice_data_with_keys`.
+"""Test function :func:`iris.util._slice_data_with_keys`.
 
 Note: much of the functionality really belongs to the other routines,
 :func:`iris.util._build_full_slice_given_keys`, and

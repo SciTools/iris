@@ -4,8 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 
-"""
-This system test module is useful to identify if some of the key components required for Iris are available.
+"""This system test module is useful to identify if some of the key components required for Iris are available.
 
 The system tests can be run with ``python setup.py test --system-tests``.
 

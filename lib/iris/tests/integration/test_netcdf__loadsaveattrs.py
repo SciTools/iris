@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Integration tests for loading and saving netcdf file attributes.
+"""Integration tests for loading and saving netcdf file attributes.
 
 Notes:
 (1) attributes in netCDF files can be either "global attributes", or variable
@@ -98,8 +97,7 @@ def check_captured_warnings(
     captured_warnings: List[warnings.WarningMessage],
     allow_possible_legacy_warning: bool = False,
 ):
-    """
-    Compare captured warning messages with a list of regexp-matches.
+    """Compare captured warning messages with a list of regexp-matches.
 
     We allow them to occur in any order, and replace each actual result in the list
     with its matching regexp, if any, as this makes failure results much easier to
@@ -150,8 +148,7 @@ def check_captured_warnings(
 class MixinAttrsTesting:
     @staticmethod
     def _calling_testname():
-        """
-        Search up the callstack for a function named "test_*", and return the name for
+        """Search up the callstack for a function named "test_*", and return the name for
         use as a test identifier.
 
         Idea borrowed from :meth:`iris.tests.IrisTest.result_path`.
@@ -175,8 +172,7 @@ class MixinAttrsTesting:
 
     @pytest.fixture(autouse=True)
     def make_tempdir(self, tmp_path_factory):
-        """
-        Automatically-run fixture to activate the 'tmp_path_factory' fixture on *every*
+        """Automatically-run fixture to activate the 'tmp_path_factory' fixture on *every*
         test: Make a directory for temporary files, and record it on the test instance.
 
         N.B. "tmp_path_factory" is a standard PyTest fixture, which provides a dirpath
@@ -214,8 +210,7 @@ class MixinAttrsTesting:
         var_values_file2: Union[None, str, dict] = None,
         cubes: bool = False,
     ):
-        """
-        Create temporary input netcdf files, or cubes, with specific content.
+        """Create temporary input netcdf files, or cubes, with specific content.
 
         Creates a temporary netcdf test file (or two) with the given global and
         variable-local attributes.  Or build cubes, similarly.
@@ -299,8 +294,7 @@ class MixinAttrsTesting:
         values: Union[List, List[List]],
         create_cubes_or_files: str = "files",
     ) -> None:
-        """
-        Create testcase inputs (files or cubes) with specified attributes.
+        """Create testcase inputs (files or cubes) with specified attributes.
 
         Parameters
         ----------
@@ -365,8 +359,7 @@ class MixinAttrsTesting:
         cubes: Iterable[Cube] = None,
         oldstyle_combined: bool = False,
     ):
-        """
-        Return testcase results from an output file or cubes in a standardised form.
+        """Return testcase results from an output file or cubes in a standardised form.
 
         Unpick the global+local values of the attribute ``self.attrname``, resulting
         from a test operation.
@@ -657,8 +650,7 @@ def matrix_results():
 
 
 class TestRoundtrip(MixinAttrsTesting):
-    """
-    Test handling of attributes in roundtrip netcdf-iris-netcdf.
+    """Test handling of attributes in roundtrip netcdf-iris-netcdf.
 
     This behaviour should be (almost) unchanged by the adoption of
     split-attribute handling.
@@ -680,8 +672,7 @@ class TestRoundtrip(MixinAttrsTesting):
         return do_split
 
     def run_roundtrip_testcase(self, attr_name, values):
-        """
-        Initialise the testcase from the passed-in controls, configure the input
+        """Initialise the testcase from the passed-in controls, configure the input
         files and run a save-load roundtrip to produce the output file.
 
         The name of the attribute, and the input and output temporary filepaths are
@@ -708,8 +699,7 @@ class TestRoundtrip(MixinAttrsTesting):
         self.captured_warnings = captured_warnings
 
     def check_roundtrip_results(self, expected, expected_warnings=None):
-        """
-        Run checks on the generated output file.
+        """Run checks on the generated output file.
 
         The counterpart to :meth:`run_roundtrip_testcase`, with similar arguments.
         Check existence (or not) of a global attribute, and a number of local
@@ -1049,8 +1039,7 @@ class TestRoundtrip(MixinAttrsTesting):
 
 
 class TestLoad(MixinAttrsTesting):
-    """
-    Test loading of file attributes into Iris cube attribute dictionaries.
+    """Test loading of file attributes into Iris cube attribute dictionaries.
 
     Tests loading of various combinations to cube dictionaries, treated as a
     single combined result (i.e. not split).  This behaviour should be (almost)
@@ -1321,10 +1310,7 @@ class TestLoad(MixinAttrsTesting):
 
 
 class TestSave(MixinAttrsTesting):
-    """
-    Test saving from cube attributes dictionary (various categories) into files.
-
-    """
+    """Test saving from cube attributes dictionary (various categories) into files."""
 
     # Parametrise all tests over split/unsplit saving.
     @pytest.fixture(params=_SPLIT_PARAM_VALUES, ids=_SPLIT_PARAM_IDS, autouse=True)
@@ -1354,8 +1340,7 @@ class TestSave(MixinAttrsTesting):
         self.captured_warnings = captured_warnings
 
     def run_save_testcase_legacytype(self, attr_name: str, values: list):
-        """
-        Legacy-type means : before cubes had split attributes.
+        """Legacy-type means : before cubes had split attributes.
 
         This just means we have only one "set" of cubes, with ***no*** distinct global
         attribute.

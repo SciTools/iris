@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for :class:`iris.analysis._interpolation.RectilinearInterpolator`.
+"""Unit tests for :class:`iris.analysis._interpolation.RectilinearInterpolator`.
 
 """
 
@@ -330,17 +329,16 @@ class Test___call___1D_circular(ThreeDimCube):
 
 class Test___call___1D_singlelendim(ThreeDimCube):
     def setUp(self):
-        """
-        thingness / (1)                     (wibble: 2; latitude: 1)
-             Dimension coordinates:
-                  wibble                           x            -
-                  latitude                         -            x
-             Auxiliary coordinates:
-                  height                           x            -
-                  bar                              -            x
-                  foo                              -            x
-             Scalar coordinates:
-                  longitude: 0
+        """thingness / (1)                     (wibble: 2; latitude: 1)
+        Dimension coordinates:
+             wibble                           x            -
+             latitude                         -            x
+        Auxiliary coordinates:
+             height                           x            -
+             bar                              -            x
+             foo                              -            x
+        Scalar coordinates:
+             longitude: 0
         """
         ThreeDimCube.setUp(self)
         self.cube = self.cube[:, 0:1, 0]

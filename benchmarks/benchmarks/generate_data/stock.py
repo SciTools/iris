@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Wrappers for using :mod:`iris.tests.stock` methods for benchmarking.
+"""Wrappers for using :mod:`iris.tests.stock` methods for benchmarking.
 
 See :mod:`benchmarks.generate_data` for an explanation of this structure.
 """
@@ -50,8 +49,7 @@ def _create_file__xios_common(func_name, **kwargs):
 def create_file__xios_2d_face_half_levels(
     temp_file_dir, dataset_name, n_faces=866, n_times=1
 ):
-    """
-    Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_2d_face_half_levels`.
+    """Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_2d_face_half_levels`.
 
     Have taken control of temp_file_dir
 
@@ -70,8 +68,7 @@ def create_file__xios_2d_face_half_levels(
 def create_file__xios_3d_face_half_levels(
     temp_file_dir, dataset_name, n_faces=866, n_times=1, n_levels=38
 ):
-    """
-    Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_3d_face_half_levels`.
+    """Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_3d_face_half_levels`.
 
     Have taken control of temp_file_dir
 
@@ -117,8 +114,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
 
 def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
-    """
-    Wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
+    """Wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
 
     Parameters deviate from the original as cannot pass a
     :class:`iris.experimental.ugrid.Mesh to the separate Python instance - must

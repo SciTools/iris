@@ -1,5 +1,4 @@
-"""
-Oceanographic Profiles and T-S Diagrams
+"""Oceanographic Profiles and T-S Diagrams
 =======================================
 
 This example demonstrates how to plot vertical profiles of different

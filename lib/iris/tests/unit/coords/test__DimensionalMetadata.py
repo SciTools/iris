@@ -37,8 +37,7 @@ class Test___init____abstractmethod(tests.IrisTest):
 
 
 class Mixin__string_representations:
-    """
-    Common testcode for generic `__str__`, `__repr__` and `summary` methods.
+    """Common testcode for generic `__str__`, `__repr__` and `summary` methods.
 
     Effectively, __str__ and __repr__ are thin wrappers around `summary`.
     These are used by all the subclasses : notably Coord/DimCoord/AuxCoord,
@@ -60,8 +59,7 @@ class Mixin__string_representations:
     """
 
     def repr_str_strings(self, dm, linewidth=55):
-        """
-        Return a simple combination of repr and str printouts.
+        """Return a simple combination of repr and str printouts.
 
         N.B. we control linewidth to make the outputs easier to compare.
         """
@@ -165,8 +163,7 @@ class Mixin__string_representations:
         return coord
 
     def coord_representations(self, *args, **kwargs):
-        """
-        Create a test coord and return its string representations.
+        """Create a test coord and return its string representations.
 
         Pass args+kwargs to 'sample_coord' and return the 'repr_str_strings'.
 
@@ -175,8 +172,7 @@ class Mixin__string_representations:
         return self.repr_str_strings(coord)
 
     def assertLines(self, list_of_expected_lines, string_result):
-        """
-        Assert equality between a result and expected output lines.
+        """Assert equality between a result and expected output lines.
 
         For convenience, the 'expected lines' are joined with a '\\n',
         because a list of strings is nicer to construct in code.
@@ -187,8 +183,7 @@ class Mixin__string_representations:
 
 
 class Test__print_common(Mixin__string_representations, tests.IrisTest):
-    """
-    Test aspects of __str__ and __repr__ output common to all
+    """Test aspects of __str__ and __repr__ output common to all
     _DimensionalMetadata instances.
     I.E. those from CFVariableMixin, plus values array (data-manager).
 
@@ -683,8 +678,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
 
 
 class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
-    """
-    Test Coord-specific aspects of __str__ and __repr__ output.
+    """Test Coord-specific aspects of __str__ and __repr__ output.
 
     Aspects :
     * DimCoord / AuxCoord
@@ -756,8 +750,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
 
 
 class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
-    """
-    Limited testing of other _DimensionalMetadata subclasses.
+    """Limited testing of other _DimensionalMetadata subclasses.
 
     * AncillaryVariable
     * CellMeasure
@@ -911,9 +904,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
 
 
 class Test_summary(Mixin__string_representations, tests.IrisTest):
-    """
-    Test the controls of the 'summary' method.
-    """
+    """Test the controls of the 'summary' method."""
 
     def test_shorten(self):
         coord = self.sample_coord()

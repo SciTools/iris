@@ -18,14 +18,10 @@ from iris.util import _meshgrid
 
 
 class AreaWeightedRegridder:
-    """
-    This class provides support for performing area-weighted regridding.
-
-    """
+    """This class provides support for performing area-weighted regridding."""
 
     def __init__(self, src_grid_cube, target_grid_cube, mdtol=1):
-        """
-        Create an area-weighted regridder for conversions between the source
+        """Create an area-weighted regridder for conversions between the source
         and target grids.
 
         Args:
@@ -80,8 +76,7 @@ class AreaWeightedRegridder:
         ) = _regrid_info
 
     def __call__(self, cube):
-        """
-        Regrid this :class:`~iris.cube.Cube` onto the target grid of
+        """Regrid this :class:`~iris.cube.Cube` onto the target grid of
         this :class:`AreaWeightedRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -138,8 +133,7 @@ class AreaWeightedRegridder:
 
 
 def _get_xy_coords(cube):
-    """
-    Return the x and y coordinates from a cube.
+    """Return the x and y coordinates from a cube.
 
     This function will preferentially return a pair of dimension
     coordinates (if there are more than one potential x or y dimension
@@ -221,8 +215,7 @@ def _get_xy_coords(cube):
 
 
 def _get_bounds_in_units(coord, units, dtype):
-    """
-    Return a copy of coord's bounds in the specified units and dtype.
+    """Return a copy of coord's bounds in the specified units and dtype.
 
     Return as contiguous bounds.
     """
@@ -234,8 +227,7 @@ def _get_bounds_in_units(coord, units, dtype):
 
 
 def _regrid_area_weighted_rectilinear_src_and_grid__prepare(src_cube, grid_cube):
-    """
-    First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+    """First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
 
     Check inputs and calculate related info. The 'regrid info' returned
     can be re-used over many 2d slices.
@@ -377,8 +369,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(src_cube, grid_cube)
 def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     src_cube, regrid_info, mdtol
 ):
-    """
-    Second (regrid) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+    """Second (regrid) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
 
     Perform the prepared regrid calculation on a single 2d cube.
 
@@ -454,8 +445,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
 
 
 def _get_coord_to_coord_matrix_info(src_bounds, tgt_bounds, circular=False, mod=None):
-    """
-    First part of weight calculation.
+    """First part of weight calculation.
 
     Calculate the weights contribution from a single pair of
     coordinate bounds. Search for pairs of overlapping source and
@@ -554,8 +544,7 @@ def _get_coord_to_coord_matrix_info(src_bounds, tgt_bounds, circular=False, mod=
 
 
 def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
-    """
-    Second part of weight calculation.
+    """Second part of weight calculation.
 
     Combine the weights contributions from both pairs of coordinate
     bounds (i.e. the source/target pairs for the x and y coords).
@@ -591,8 +580,7 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
 
 
 def _standard_regrid_no_masks(data, weights, tgt_shape):
-    """
-    Regrid unmasked data to an unmasked result.
+    """Regrid unmasked data to an unmasked result.
 
     Assumes that the first two dimensions are the x-y grid.
     """
@@ -611,8 +599,7 @@ def _standard_regrid_no_masks(data, weights, tgt_shape):
 
 
 def _standard_regrid(data, weights, tgt_shape, mdtol):
-    """
-    Regrid data and handle masks.
+    """Regrid data and handle masks.
 
     Assumes that the first two dimensions are the x-y grid.
     """

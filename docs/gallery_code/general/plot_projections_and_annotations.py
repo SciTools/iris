@@ -1,5 +1,4 @@
-"""
-Plotting in Different Projections
+"""Plotting in Different Projections
 =================================
 
 This example shows how to overlay data and graphics in different projections,

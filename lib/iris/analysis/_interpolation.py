@@ -33,8 +33,7 @@ EXTRAPOLATION_MODES = {
 
 
 def _canonical_sample_points(coords, sample_points):
-    """
-    Return the canonical form of the points values.
+    """Return the canonical form of the points values.
 
     Ensures that any points supplied as datetime objects, or similar,
     are converted to their numeric form.
@@ -58,8 +57,7 @@ def _canonical_sample_points(coords, sample_points):
 
 
 def extend_circular_coord(coord, points):
-    """
-    Return coordinates points with a shape extended by one
+    """Return coordinates points with a shape extended by one
     This is common when dealing with circular coordinates.
 
     """
@@ -69,8 +67,7 @@ def extend_circular_coord(coord, points):
 
 
 def extend_circular_coord_and_data(coord, data, coord_dim):
-    """
-    Return coordinate points and a data array with a shape extended by one
+    """Return coordinate points and a data array with a shape extended by one
     in the coord_dim axis. This is common when dealing with circular
     coordinates.
 
@@ -90,8 +87,7 @@ def extend_circular_data(data, coord_dim):
 
 
 def get_xy_dim_coords(cube):
-    """
-    Return the x and y dimension coordinates from a cube.
+    """Return the x and y dimension coordinates from a cube.
 
     This function raises a ValueError if the cube does not contain one and
     only one set of x and y dimension coordinates. It also raises a ValueError
@@ -111,8 +107,7 @@ def get_xy_dim_coords(cube):
 
 
 def get_xy_coords(cube, dim_coords=False):
-    """
-    Return the x and y coordinates from a cube.
+    """Return the x and y coordinates from a cube.
 
     This function raises a ValueError if the cube does not contain one and
     only one set of x and y coordinates. It also raises a ValueError
@@ -159,8 +154,7 @@ def get_xy_coords(cube, dim_coords=False):
 
 
 def snapshot_grid(cube):
-    """
-    Helper function that returns deep copies of lateral (dimension) coordinates
+    """Helper function that returns deep copies of lateral (dimension) coordinates
     from a cube.
 
     """
@@ -169,15 +163,13 @@ def snapshot_grid(cube):
 
 
 class RectilinearInterpolator:
-    """
-    This class provides support for performing nearest-neighbour or
+    """This class provides support for performing nearest-neighbour or
     linear interpolation over one or more orthogonal dimensions.
 
     """
 
     def __init__(self, src_cube, coords, method, extrapolation_mode):
-        """
-        Perform interpolation over one or more orthogonal coordinates.
+        """Perform interpolation over one or more orthogonal coordinates.
 
         Args:
 
@@ -256,8 +248,7 @@ class RectilinearInterpolator:
         return self._mode
 
     def _account_for_circular(self, points, data):
-        """
-        Extend the given data array, and re-centralise coordinate points
+        """Extend the given data array, and re-centralise coordinate points
         for circular (1D) coordinates.
 
         """
@@ -287,8 +278,7 @@ class RectilinearInterpolator:
         return data
 
     def _interpolate(self, data, interp_points):
-        """
-        Interpolate a data array over N dimensions.
+        """Interpolate a data array over N dimensions.
 
         Create and cache the underlying interpolator instance before invoking
         it to perform interpolation over the data at the given coordinate point
@@ -364,10 +354,7 @@ class RectilinearInterpolator:
         return result
 
     def _resample_coord(self, sample_points, coord, coord_dims):
-        """
-        Interpolate the given coordinate at the provided sample points.
-
-        """
+        """Interpolate the given coordinate at the provided sample points."""
         # NB. This section is ripe for improvement:
         # - Internally self._points() expands coord.points to the same
         #   N-dimensional shape as the cube's data, but it doesn't
@@ -391,8 +378,7 @@ class RectilinearInterpolator:
         return new_coord
 
     def _setup(self):
-        """
-        Perform initial start-up configuration and validation based on the
+        """Perform initial start-up configuration and validation based on the
         cube and the specified coordinates to be interpolated over.
 
         """
@@ -443,8 +429,7 @@ class RectilinearInterpolator:
         self._validate()
 
     def _validate(self):
-        """
-        Perform all sanity checks to ensure that the interpolation request
+        """Perform all sanity checks to ensure that the interpolation request
         over the cube with the specified coordinates is valid and can be
         performed.
 
@@ -468,8 +453,7 @@ class RectilinearInterpolator:
                     raise ValueError(msg.format(coord.name()))
 
     def _interpolated_dtype(self, dtype):
-        """
-        Determine the minimum base dtype required by the
+        """Determine the minimum base dtype required by the
         underlying interpolator.
 
         """
@@ -480,8 +464,7 @@ class RectilinearInterpolator:
         return result
 
     def _points(self, sample_points, data, data_dims=None):
-        """
-        Interpolate the given data values at the specified list of orthogonal
+        """Interpolate the given data values at the specified list of orthogonal
         (coord, points) pairs.
 
         Args:
@@ -579,8 +562,7 @@ class RectilinearInterpolator:
         return result
 
     def __call__(self, sample_points, collapse_scalar=True):
-        """
-        Construct a cube from the specified orthogonal interpolation points.
+        """Construct a cube from the specified orthogonal interpolation points.
 
         Args:
 

@@ -1,5 +1,4 @@
-"""
-Test Data Showing Inset Plots
+"""Test Data Showing Inset Plots
 =============================
 
 This example demonstrates the use of a single 3D data cube with time, latitude

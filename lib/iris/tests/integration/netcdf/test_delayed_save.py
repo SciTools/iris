@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Integration tests for delayed saving.
+"""Integration tests for delayed saving.
 """
 import re
 import warnings
@@ -61,8 +60,7 @@ class Test__lazy_stream_data:
         cube = realistic_4d()
 
         def fix_array(array):
-            """
-            Make a new, custom array to replace the provided cube/coord data.
+            """Make a new, custom array to replace the provided cube/coord data.
             Optionally provide default-fill-value collisions, and/or replace with lazy
             content.
             """

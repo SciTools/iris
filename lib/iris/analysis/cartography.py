@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Various utilities and numeric transformations relevant to cartography.
+"""Various utilities and numeric transformations relevant to cartography.
 
 """
 
@@ -54,8 +53,7 @@ PartialDifferential = namedtuple("PartialDifferential", "dx1 dy1")
 
 
 def wrap_lons(lons, base, period):
-    """
-    Wrap longitude values into the range between base and base+period.
+    """Wrap longitude values into the range between base and base+period.
 
     .. testsetup::
 
@@ -78,8 +76,7 @@ def wrap_lons(lons, base, period):
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
-    """
-    Convert arrays of rotated-pole longitudes and latitudes to unrotated
+    """Convert arrays of rotated-pole longitudes and latitudes to unrotated
     arrays of longitudes and latitudes. The values of ``pole_lon`` and
     ``pole_lat`` should describe the location of the rotated pole that
     describes the arrays of rotated-pole longitudes and latitudes.
@@ -122,8 +119,7 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
 
 
 def rotate_pole(lons, lats, pole_lon, pole_lat):
-    """
-    Convert arrays of longitudes and latitudes to arrays of rotated-pole
+    """Convert arrays of longitudes and latitudes to arrays of rotated-pole
     longitudes and latitudes. The values of ``pole_lon`` and ``pole_lat``
     should describe the rotated pole that the arrays of longitudes and
     latitudes are to be rotated onto.
@@ -187,8 +183,7 @@ def _get_lon_lat_coords(cube):
 
 
 def _xy_range(cube, mode=None):
-    """
-    Return the x & y range of this Cube.
+    """Return the x & y range of this Cube.
 
     Args:
 
@@ -252,8 +247,7 @@ def _xy_range(cube, mode=None):
 
 
 def get_xy_grids(cube):
-    """
-    Return 2D X and Y points for a given cube.
+    """Return 2D X and Y points for a given cube.
 
     Args:
 
@@ -286,8 +280,7 @@ def get_xy_grids(cube):
 
 
 def get_xy_contiguous_bounded_grids(cube):
-    """
-    Return 2d arrays for x and y bounds.
+    """Return 2d arrays for x and y bounds.
 
     Returns array of shape (n+1, m+1).
 
@@ -354,8 +347,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
 
 
 def area_weights(cube, normalize=False):
-    r"""
-    Returns an array of area weights, with the same dimensions as the cube.
+    r"""Returns an array of area weights, with the same dimensions as the cube.
 
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
     dimensions.
@@ -474,8 +466,7 @@ def area_weights(cube, normalize=False):
 
 
 def cosine_latitude_weights(cube):
-    r"""
-    Returns an array of latitude weights, with the same dimensions as
+    r"""Returns an array of latitude weights, with the same dimensions as
     the cube. The weights are the cosine of latitude.
 
     These are n-dimensional latitude weights repeated over the dimensions
@@ -561,8 +552,7 @@ def cosine_latitude_weights(cube):
 
 
 def project(cube, target_proj, nx=None, ny=None):
-    """
-    Nearest neighbour regrid to a specified target projection.
+    """Nearest neighbour regrid to a specified target projection.
 
     Return a new cube that is the result of projecting a cube with 1 or 2
     dimensional latitude-longitude coordinates from its coordinate system into
@@ -859,8 +849,7 @@ def project(cube, target_proj, nx=None, ny=None):
 
 
 def _transform_xy(crs_from, x, y, crs_to):
-    """
-    Shorthand function to transform 2d points between coordinate
+    """Shorthand function to transform 2d points between coordinate
     reference systems.
 
     Args:
@@ -879,8 +868,7 @@ def _transform_xy(crs_from, x, y, crs_to):
 
 
 def _inter_crs_differentials(crs1, x, y, crs2):
-    """
-    Calculate coordinate partial differentials from crs1 to crs2.
+    """Calculate coordinate partial differentials from crs1 to crs2.
 
     Returns dx2/dx1, dy2/dx1, dx2/dy1 and dy2/dy1, at given locations.
 
@@ -930,8 +918,7 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
 
 def _crs_distance_differentials(crs, x, y):
-    """
-    Calculate d(distance) / d(x) and ... / d(y) for a coordinate
+    """Calculate d(distance) / d(x) and ... / d(y) for a coordinate
     reference system at specified locations.
 
     Args:
@@ -963,8 +950,7 @@ def _crs_distance_differentials(crs, x, y):
 
 
 def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
-    """
-    Transform distance vectors from one coordinate reference system to
+    """Transform distance vectors from one coordinate reference system to
     another, preserving magnitude and physical direction.
 
     Args:
@@ -996,8 +982,7 @@ def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
 
 
 def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, dy2):
-    """
-    Return a mask that can be applied to data array to mask elements
+    """Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
     errors introduced by the transformation between coordinate systems.
 
@@ -1041,8 +1026,7 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
 
 
 def rotate_winds(u_cube, v_cube, target_cs):
-    r"""
-    Transform wind vectors to a different coordinate system.
+    r"""Transform wind vectors to a different coordinate system.
 
     The input cubes contain U and V components parallel to the local X and Y
     directions of the input grid at each point.

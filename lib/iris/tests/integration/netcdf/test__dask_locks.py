@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :mod:`iris.fileformats.netcdf._dask_locks` package.
+"""Unit tests for the :mod:`iris.fileformats.netcdf._dask_locks` package.
 
 Note: these integration tests replace any unit testing of this module, due to its total
 dependence on Dask, and even on Dask's implementation details rather than supported

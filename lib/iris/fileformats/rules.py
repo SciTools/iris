@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Generalised mechanisms for metadata translation and cube construction.
+"""Generalised mechanisms for metadata translation and cube construction.
 
 """
 
@@ -103,8 +102,7 @@ def scalar_cell_method(cube, method, coord_name):
 
 
 def has_aux_factory(cube, aux_factory_class):
-    """
-    Try to find an class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    """Try to find an class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type on the cube.
 
     """
@@ -115,8 +113,7 @@ def has_aux_factory(cube, aux_factory_class):
 
 
 def aux_factory(cube, aux_factory_class):
-    """
-    Return the class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    """Return the class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type from a cube.
 
     """
@@ -200,8 +197,7 @@ def _regrid_to_target(src_cube, target_coords, target_cube):
 
 
 def _ensure_aligned(regrid_cache, src_cube, target_cube):
-    """
-    Returns a version of `src_cube` suitable for use as an AuxCoord
+    """Returns a version of `src_cube` suitable for use as an AuxCoord
     on `target_cube`, or None if no version can be made.
 
     """
@@ -255,8 +251,7 @@ _loader_attrs = ("field_generator", "field_generator_kwargs", "converter")
 
 class Loader(collections.namedtuple("Loader", _loader_attrs)):
     def __new__(cls, field_generator, field_generator_kwargs, converter):
-        """
-        Create a definition of a field-based Cube loader.
+        """Create a definition of a field-based Cube loader.
 
         Args:
 
@@ -390,8 +385,7 @@ def _load_pairs_from_fields_and_filenames(
 
 
 def load_pairs_from_fields(fields, converter):
-    """
-    Convert an iterable of fields into an iterable of Cubes using the
+    """Convert an iterable of fields into an iterable of Cubes using the
     provided converter.
 
     Args:

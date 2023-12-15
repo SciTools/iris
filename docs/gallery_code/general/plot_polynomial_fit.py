@@ -1,5 +1,4 @@
-"""
-Fitting a Polynomial
+"""Fitting a Polynomial
 ====================
 
 This example demonstrates computing a polynomial fit to 1D data from an Iris

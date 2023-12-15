@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test the cube merging mechanism.
+"""Test the cube merging mechanism.
 
 """
 
@@ -27,10 +26,7 @@ import iris.tests.stock
 
 
 class MergeMixin:
-    """
-    Mix-in class for attributes & utilities common to these test cases.
-
-    """
+    """Mix-in class for attributes & utilities common to these test cases."""
 
     def test_normal_cubes(self):
         cubes = iris.load(self._data_path)
@@ -1028,8 +1024,7 @@ class TestCubeMergeWithAncils(tests.IrisTest):
 
 
 class TestCubeMerge__split_attributes__error_messages(tests.IrisTest):
-    """
-    Specific tests for the detection and wording of attribute-mismatch errors.
+    """Specific tests for the detection and wording of attribute-mismatch errors.
 
     In particular, the adoption of 'split' attributes with the new
     :class:`iris.cube.CubeAttrsDict` introduces some more subtle possible discrepancies
@@ -1038,8 +1033,7 @@ class TestCubeMerge__split_attributes__error_messages(tests.IrisTest):
     """
 
     def _check_merge_error(self, attrs_1, attrs_2, expected_message):
-        """
-        Check the error from a merge failure caused by a mismatch of attributes.
+        """Check the error from a merge failure caused by a mismatch of attributes.
 
         Build a pair of cubes with given attributes, merge them + check for a match
         to the expected error message.

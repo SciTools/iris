@@ -1,5 +1,4 @@
-"""
-Cross Section Plots
+"""Cross Section Plots
 ===================
 
 This example demonstrates contour plots of a cross-sectioned multi-dimensional

@@ -1,5 +1,4 @@
-"""
-Global Average Annual Temperature Maps
+"""Global Average Annual Temperature Maps
 ======================================
 
 Produces maps of global temperature forecasts from the A1B and E1 scenarios.
@@ -33,8 +32,7 @@ import iris.plot as iplt
 
 
 def cop_metadata_callback(cube, field, filename):
-    """
-    A function which adds an "Experiment" coordinate which comes from the
+    """A function which adds an "Experiment" coordinate which comes from the
     filename.
     """
 

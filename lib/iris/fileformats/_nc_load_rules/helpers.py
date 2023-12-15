@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-All the pure-Python 'helper' functions which were previously included in the
+"""All the pure-Python 'helper' functions which were previously included in the
 Pyke rules database 'fc_rules_cf.krb'.
 
 The 'action' routines now call these, as the rules used to do.
@@ -259,8 +258,7 @@ class _WarnComboIgnoringCfLoad(
 
 
 def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
-    """
-    Split a CF cell_methods attribute string into a list of zero or more cell
+    """Split a CF cell_methods attribute string into a list of zero or more cell
     methods, each of which is then parsed with a regex to return a list of match
     objects.
 
@@ -324,17 +322,14 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
 
 
 class UnknownCellMethodWarning(iris.exceptions.IrisUnknownCellMethodWarning):
-    """
-    Backwards compatible form of :class:`iris.exceptions.IrisUnknownCellMethodWarning`.
-    """
+    """Backwards compatible form of :class:`iris.exceptions.IrisUnknownCellMethodWarning`."""
 
     # TODO: remove at the next major release.
     pass
 
 
 def parse_cell_methods(nc_cell_methods):
-    """
-    Parse a CF cell_methods attribute string into a tuple of zero or
+    """Parse a CF cell_methods attribute string into a tuple of zero or
     more CellMethod instances.
 
     Args:
@@ -485,8 +480,7 @@ def build_cube_metadata(engine):
 
 ################################################################################
 def _get_ellipsoid(cf_grid_var):
-    """
-    Return a :class:`iris.coord_systems.GeogCS` using the relevant properties of
+    """Return a :class:`iris.coord_systems.GeogCS` using the relevant properties of
     `cf_grid_var`. Returns None if no relevant properties are specified.
     """
     major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
@@ -569,8 +563,7 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
-    """
-    Create a transverse Mercator coordinate system from the CF-netCDF
+    """Create a transverse Mercator coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -613,8 +606,7 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
-    """
-    Create a Lambert conformal conic coordinate system from the CF-netCDF
+    """Create a Lambert conformal conic coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -644,8 +636,7 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_stereographic_coordinate_system(engine, cf_grid_var):
-    """
-    Create a stereographic coordinate system from the CF-netCDF
+    """Create a stereographic coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -679,8 +670,7 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_polar_stereographic_coordinate_system(engine, cf_grid_var):
-    """
-    Create a polar stereographic coordinate system from the CF-netCDF
+    """Create a polar stereographic coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -715,8 +705,7 @@ def build_polar_stereographic_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_mercator_coordinate_system(engine, cf_grid_var):
-    """
-    Create a Mercator coordinate system from the CF-netCDF
+    """Create a Mercator coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -746,8 +735,7 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
-    """
-    Create a lambert azimuthal equal area coordinate system from the CF-netCDF
+    """Create a lambert azimuthal equal area coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -775,8 +763,7 @@ def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
-    """
-    Create a albers conical equal area coordinate system from the CF-netCDF
+    """Create a albers conical equal area coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -806,8 +793,7 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
-    """
-    Create a vertical perspective coordinate system from the CF-netCDF
+    """Create a vertical perspective coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -839,8 +825,7 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_geostationary_coordinate_system(engine, cf_grid_var):
-    """
-    Create a geostationary coordinate system from the CF-netCDF
+    """Create a geostationary coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -874,8 +859,7 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
-    """
-    Create an oblique mercator coordinate system from the CF-netCDF
+    """Create an oblique mercator coordinate system from the CF-netCDF
     grid mapping variable.
 
     """
@@ -1005,8 +989,7 @@ def get_names(cf_coord_var, coord_name, attributes):
 
 ################################################################################
 def get_cf_bounds_var(cf_coord_var):
-    """
-    Return the CF variable representing the bounds of a coordinate
+    """Return the CF variable representing the bounds of a coordinate
     variable.
 
     """
@@ -1041,8 +1024,7 @@ def get_cf_bounds_var(cf_coord_var):
 
 ################################################################################
 def reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var):
-    """
-    Return a bounds_data array with the vertex dimension as the most
+    """Return a bounds_data array with the vertex dimension as the most
     rapidly varying.
 
     .. note::
@@ -1379,8 +1361,7 @@ def build_ancil_var(engine, cf_av_var):
 
 ################################################################################
 def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
-    """
-    Determine whether the CF coordinate variable is a latitude/longitude variable.
+    """Determine whether the CF coordinate variable is a latitude/longitude variable.
 
     Ref: [CF] Section 4.1 Latitude Coordinate.
          [CF] Section 4.2 Longitude Coordinate.
@@ -1454,8 +1435,7 @@ def is_longitude(engine, cf_name):
 
 ################################################################################
 def is_projection_x_coordinate(engine, cf_name):
-    """
-    Determine whether the CF coordinate variable is a
+    """Determine whether the CF coordinate variable is a
     projection_x_coordinate variable.
 
     """
@@ -1468,8 +1448,7 @@ def is_projection_x_coordinate(engine, cf_name):
 
 ################################################################################
 def is_projection_y_coordinate(engine, cf_name):
-    """
-    Determine whether the CF coordinate variable is a
+    """Determine whether the CF coordinate variable is a
     projection_y_coordinate variable.
 
     """
@@ -1482,8 +1461,7 @@ def is_projection_y_coordinate(engine, cf_name):
 
 ################################################################################
 def is_time(engine, cf_name):
-    """
-    Determine whether the CF coordinate variable is a time variable.
+    """Determine whether the CF coordinate variable is a time variable.
 
     Ref: [CF] Section 4.4 Time Coordinate.
 

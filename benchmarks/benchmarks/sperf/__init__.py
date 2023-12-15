@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
+"""Benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
 
 SPerf = assessing performance against a series of increasingly large LFRic
 datasets.

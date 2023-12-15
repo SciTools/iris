@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Equality benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
+"""Equality benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
 """
 from .. import on_demand_benchmark
 from . import FileMixin
@@ -11,8 +10,7 @@ from . import FileMixin
 
 @on_demand_benchmark
 class CubeEquality(FileMixin):
-    """
-    Benchmark time and memory costs of comparing :class:`~iris.cube.Cube`\\ s
+    """Benchmark time and memory costs of comparing :class:`~iris.cube.Cube`\\ s
      with attached :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es.
 
     Uses :class:`FileMixin` as the realistic case will be comparing

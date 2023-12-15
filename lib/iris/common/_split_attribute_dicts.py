@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Dictionary operations for dealing with the CubeAttrsDict "split"-style attribute
+"""Dictionary operations for dealing with the CubeAttrsDict "split"-style attribute
 dictionaries.
 
 The idea here is to convert a split-dictionary into a "plain" one for calculations,
@@ -22,8 +21,7 @@ from functools import wraps
 
 
 def _convert_splitattrs_to_pairedkeys_dict(dic):
-    """
-    Convert a split-attributes dictionary to a "normal" dict.
+    """Convert a split-attributes dictionary to a "normal" dict.
 
     Transform a :class:`~iris.cube.CubeAttributesDict` "split" attributes dictionary
     into a 'normal' :class:`dict`, with paired keys of the form ('global', name) or
@@ -51,8 +49,7 @@ def _convert_splitattrs_to_pairedkeys_dict(dic):
 
 
 def _convert_pairedkeys_dict_to_splitattrs(dic):
-    """
-    Convert an input with global/local paired keys back into a split-attrs dict.
+    """Convert an input with global/local paired keys back into a split-attrs dict.
 
     For now, this is always and only a :class:`iris.cube.CubeAttrsDict`.
     """
@@ -70,8 +67,7 @@ def _convert_pairedkeys_dict_to_splitattrs(dic):
 
 
 def adjust_for_split_attribute_dictionaries(operation):
-    """
-    Decorator to make a function of attribute-dictionaries work with split attributes.
+    """Decorator to make a function of attribute-dictionaries work with split attributes.
 
     The wrapped function of attribute-dictionaries is currently always one of "equals",
     "combine" or "difference", with signatures like :

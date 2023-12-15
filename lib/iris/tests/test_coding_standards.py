@@ -64,8 +64,7 @@ def test_netcdf4_import():
 
 
 def test_python_versions():
-    """
-    This test is designed to fail whenever Iris' supported Python versions are
+    """This test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
     latest_supported = "3.11"
@@ -126,8 +125,7 @@ def test_python_versions():
 
 
 def test_categorised_warnings():
-    """
-    To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
+    """To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
     :class:`iris.exceptions.IrisUserWarning`.
@@ -184,8 +182,7 @@ def test_categorised_warnings():
 class TestLicenseHeaders(tests.IrisTest):
     @staticmethod
     def whatchanged_parse(whatchanged_output):
-        """
-        Returns a generator of tuples of data parsed from
+        """Returns a generator of tuples of data parsed from
         "git whatchanged --pretty='TIME:%at". The tuples are of the form
         ``(filename, last_commit_datetime)``
 
@@ -209,8 +206,7 @@ class TestLicenseHeaders(tests.IrisTest):
 
     @staticmethod
     def last_change_by_fname():
-        """
-        Return a dictionary of all the files under git which maps to
+        """Return a dictionary of all the files under git which maps to
         the datetime of their last modification in the git history.
 
         .. note::

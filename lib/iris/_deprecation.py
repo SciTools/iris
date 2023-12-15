@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Utilities for producing runtime deprecation messages.
+"""Utilities for producing runtime deprecation messages.
 
 """
 
@@ -11,8 +10,7 @@ import warnings
 
 
 class IrisDeprecation(UserWarning):
-    """
-    An Iris deprecation warning.
+    """An Iris deprecation warning.
 
     Note this subclasses UserWarning for backwards compatibility with Iris'
     original deprecation warnings. Should subclass DeprecationWarning at the
@@ -23,8 +21,7 @@ class IrisDeprecation(UserWarning):
 
 
 def warn_deprecated(msg, stacklevel=2):
-    """
-    Issue an Iris deprecation warning.
+    """Issue an Iris deprecation warning.
 
     Calls :func:`warnings.warn', to emit the message 'msg' as a
     :class:`warnings.warning`, of the subclass :class:`IrisDeprecationWarning`.

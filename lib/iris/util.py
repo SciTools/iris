@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Miscellaneous utility functions.
+"""Miscellaneous utility functions.
 
 """
 
@@ -29,8 +28,7 @@ import iris.exceptions
 
 
 def broadcast_to_shape(array, shape, dim_map):
-    """
-    Broadcast an array to a given shape.
+    """Broadcast an array to a given shape.
 
     Each dimension of the array must correspond to a dimension in the
     given shape. The result is a read-only view (see :func:`numpy.broadcast_to`).
@@ -101,8 +99,7 @@ def broadcast_to_shape(array, shape, dim_map):
 
 
 def delta(ndarray, dimension, circular=False):
-    """
-    Calculates the difference between values along a given dimension.
+    """Calculates the difference between values along a given dimension.
 
     Args:
 
@@ -165,8 +162,7 @@ def delta(ndarray, dimension, circular=False):
 
 
 def describe_diff(cube_a, cube_b, output_file=None):
-    """
-    Prints the differences that prevent compatibility between two cubes, as
+    """Prints the differences that prevent compatibility between two cubes, as
     defined by :meth:`iris.cube.Cube.is_compatible()`.
 
     Args:
@@ -238,8 +234,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
 
 
 def guess_coord_axis(coord):
-    """
-    Returns a "best guess" axis name of the coordinate.
+    """Returns a "best guess" axis name of the coordinate.
 
     Heuristic categorisation of the coordinate into either label
     'T', 'Z', 'Y', 'X' or None.
@@ -291,8 +286,7 @@ def guess_coord_axis(coord):
 
 
 def rolling_window(a, window=1, step=1, axis=-1):
-    """
-    Make an ndarray with a rolling window of the last dimension
+    """Make an ndarray with a rolling window of the last dimension
 
     Args:
 
@@ -364,8 +358,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
 
 
 def array_equal(array1, array2, withnans=False):
-    """
-    Returns whether two arrays have the same shape and elements.
+    """Returns whether two arrays have the same shape and elements.
 
     Args:
 
@@ -407,8 +400,7 @@ def array_equal(array1, array2, withnans=False):
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
-    """
-    Returns whether two numbers are almost equal, allowing for the finite
+    """Returns whether two numbers are almost equal, allowing for the finite
     precision of floating point numbers.
 
     .. deprecated:: 3.2.0
@@ -442,8 +434,7 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
 
 
 def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
-    """
-    Provides a convenient way of defining a 3 element inequality such as
+    """Provides a convenient way of defining a 3 element inequality such as
     ``a < number < b``.
 
     Arguments:
@@ -490,8 +481,7 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
 
 
 def reverse(cube_or_array, coords_or_dims):
-    """
-    Reverse the cube or array along the given dimensions.
+    """Reverse the cube or array along the given dimensions.
 
     Args:
 
@@ -586,8 +576,7 @@ def reverse(cube_or_array, coords_or_dims):
 
 
 def monotonic(array, strict=False, return_direction=False):
-    """
-    Return whether the given 1d array is monotonic.
+    """Return whether the given 1d array is monotonic.
 
     Note that, the array must not contain missing data.
 
@@ -653,8 +642,7 @@ def monotonic(array, strict=False, return_direction=False):
 
 
 def column_slices_generator(full_slice, ndims):
-    """
-    Given a full slice full of tuples, return a dictionary mapping old
+    """Given a full slice full of tuples, return a dictionary mapping old
     data dimensions to new and a generator which gives the successive
     slices needed to index correctly (across columns).
 
@@ -727,8 +715,7 @@ def column_slices_generator(full_slice, ndims):
 
 
 def _build_full_slice_given_keys(keys, ndim):
-    """
-    Given the keys passed to a __getitem__ call, build an equivalent
+    """Given the keys passed to a __getitem__ call, build an equivalent
     tuple of keys which span ndims.
 
     """
@@ -791,8 +778,7 @@ def _build_full_slice_given_keys(keys, ndim):
 
 
 def _slice_data_with_keys(data, keys):
-    """
-    Index an array-like object as "data[keys]", with orthogonal indexing.
+    """Index an array-like object as "data[keys]", with orthogonal indexing.
 
     Args:
 
@@ -837,8 +823,7 @@ def _slice_data_with_keys(data, keys):
 
 
 def _wrap_function_for_method(function, docstring=None):
-    """
-    Returns a wrapper function modified to be suitable for use as a
+    """Returns a wrapper function modified to be suitable for use as a
     method.
 
     The wrapper function renames the first argument as "self" and allows
@@ -884,8 +869,7 @@ def _wrap_function_for_method(function, docstring=None):
 
 
 class _MetaOrderedHashable(ABCMeta):
-    """
-    A metaclass that ensures that non-abstract subclasses of _OrderedHashable
+    """A metaclass that ensures that non-abstract subclasses of _OrderedHashable
     without an explicit __init__ method are given a default __init__ method
     with the appropriate method signature.
 
@@ -930,8 +914,7 @@ class _MetaOrderedHashable(ABCMeta):
 
 @functools.total_ordering
 class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
-    """
-    Convenience class for creating "immutable", hashable, and ordered classes.
+    """Convenience class for creating "immutable", hashable, and ordered classes.
 
     Instance identity is defined by the specific list of attribute names
     declared in the abstract attribute "_names". Subclasses must declare the
@@ -951,8 +934,7 @@ class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
     @property
     @abstractmethod
     def _names(self):
-        """
-        Override this attribute to declare the names of all the attributes
+        """Override this attribute to declare the names of all the attributes
         relevant to the hash/comparison semantics.
 
         """
@@ -1019,8 +1001,7 @@ def create_temp_filename(suffix=""):
 
 
 def clip_string(the_str, clip_length=70, rider="..."):
-    """
-    Returns a clipped version of the string based on the specified clip
+    """Returns a clipped version of the string based on the specified clip
     length and whether or not any graceful clip points can be found.
 
     If the string to be clipped is shorter than the specified clip
@@ -1075,8 +1056,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
 
 def format_array(arr):
-    """
-    Returns the given array as a string, using the python builtin str
+    """Returns the given array as a string, using the python builtin str
     function on a piecewise basis.
 
     Useful for xml representation of arrays.
@@ -1103,8 +1083,7 @@ def format_array(arr):
 
 
 def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
-    """
-    Create a new axis as the leading dimension of the cube, promoting a scalar
+    """Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
 
     Args:
@@ -1228,8 +1207,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
 
 
 def squeeze(cube):
-    """
-    Removes any dimension of length one. If it has an associated DimCoord or
+    """Removes any dimension of length one. If it has an associated DimCoord or
     AuxCoord, this becomes a scalar coord.
 
     Args:
@@ -1264,8 +1242,7 @@ def squeeze(cube):
 
 
 def file_is_newer_than(result_path, source_paths):
-    """
-    Return whether the 'result' file has a later modification time than all of
+    """Return whether the 'result' file has a later modification time than all of
     the 'source' files.
 
     If a stored result depends entirely on known 'sources', it need only be
@@ -1321,8 +1298,7 @@ def file_is_newer_than(result_path, source_paths):
 
 
 def is_regular(coord):
-    """
-    Determine if the given coord is regular.
+    """Determine if the given coord is regular.
 
     Notes
     ------
@@ -1339,8 +1315,7 @@ def is_regular(coord):
 
 
 def regular_step(coord):
-    """
-    Return the regular step from a coord or fail.
+    """Return the regular step from a coord or fail.
 
     Notes
     ------
@@ -1423,8 +1398,7 @@ def points_step(points):
 
 
 def unify_time_units(cubes):
-    """
-    Performs an in-place conversion of the time units of all time coords in the
+    """Performs an in-place conversion of the time units of all time coords in the
     cubes in a given iterable. One common epoch is defined for each calendar
     found in the cubes to prevent units being defined with inconsistencies
     between epoch and calendar. During this process, all time coordinates have
@@ -1460,8 +1434,7 @@ def unify_time_units(cubes):
 
 
 def _is_circular(points, modulus, bounds=None):
-    """
-    Determine whether the provided points or bounds are circular in nature
+    """Determine whether the provided points or bounds are circular in nature
     relative to the modulus value.
 
     If the bounds are provided then these are checked for circularity rather
@@ -1528,8 +1501,7 @@ def _is_circular(points, modulus, bounds=None):
 
 
 def promote_aux_coord_to_dim_coord(cube, name_or_coord):
-    """
-    Promotes an AuxCoord on the cube to a DimCoord. This AuxCoord must be
+    """Promotes an AuxCoord on the cube to a DimCoord. This AuxCoord must be
     associated with a single cube dimension. If the AuxCoord is associated
     with a dimension that already has a DimCoord, that DimCoord gets
     demoted to an AuxCoord.
@@ -1656,8 +1628,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
 
 def demote_dim_coord_to_aux_coord(cube, name_or_coord):
-    """
-    Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
+    """Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
 
     The DimCoord is demoted to an auxiliary coordinate on the cube.
     The dimension of the cube that was associated with the DimCoord becomes
@@ -1752,8 +1723,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
 @functools.wraps(np.meshgrid)
 def _meshgrid(*xi, **kwargs):
-    """
-    @numpy v1.13, the dtype of each output n-D coordinate is the same as its
+    """@numpy v1.13, the dtype of each output n-D coordinate is the same as its
     associated input 1D coordinate. This is not the case prior to numpy v1.13,
     where the output dtype is cast up to its highest resolution, regardlessly.
 
@@ -1771,8 +1741,7 @@ def _meshgrid(*xi, **kwargs):
 
 
 def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
-    """
-    Searches the 'x' and 'y' coord on the cube for discontiguities in the
+    """Searches the 'x' and 'y' coord on the cube for discontiguities in the
     bounds array, returned as a boolean array (True for all cells which are
     discontiguous with the cell immediately above them or to their right).
 
@@ -1866,8 +1835,7 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
 
 
 def _mask_array(array, points_to_mask, in_place=False):
-    """
-    Apply masking to array where points_to_mask is True/non-zero.  Designed to
+    """Apply masking to array where points_to_mask is True/non-zero.  Designed to
     work with iris.analysis.maths._binary_op_common so array and points_to_mask
     will be broadcastable to each other.  array and points_to_mask may be numpy
     or dask types (or one of each).
@@ -1920,8 +1888,7 @@ def _mask_array(array, points_to_mask, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def mask_cube(cube, points_to_mask, in_place=False, dim=None):
-    """
-    Masks any cells in the cube's data array which correspond to cells marked
+    """Masks any cells in the cube's data array which correspond to cells marked
     ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be
     specified as a :class:`numpy.ndarray`, :class:`dask.array.Array`,
     :class:`iris.coords.Coord` or :class:`iris.cube.Cube`, following the same
@@ -1988,8 +1955,7 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
 
 
 def equalise_attributes(cubes):
-    """
-    Delete cube attributes that are not identical over all cubes in a group.
+    """Delete cube attributes that are not identical over all cubes in a group.
 
     This function deletes any attributes which are not the same for all the
     given cubes.  The cubes will then have identical attributes, and the
@@ -2065,8 +2031,7 @@ def equalise_attributes(cubes):
 
 
 def is_masked(array):
-    """
-    Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
+    """Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
 
     Parameters
     ----------
@@ -2093,8 +2058,7 @@ def is_masked(array):
 
 
 def _strip_metadata_from_dims(cube, dims):
-    """
-    Remove ancillary variables and cell measures that map to specific dimensions.
+    """Remove ancillary variables and cell measures that map to specific dimensions.
 
     Returns a cube copy with (possibly) some cell-measures and ancillary variables removed.
 

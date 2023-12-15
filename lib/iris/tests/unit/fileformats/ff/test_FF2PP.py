@@ -69,8 +69,7 @@ class Test____iter__(tests.IrisTest):
 class Test__extract_field__LBC_format(tests.IrisTest):
     @contextlib.contextmanager
     def mock_for_extract_field(self, fields, x=None, y=None):
-        """
-        A context manager to ensure FF2PP._extract_field gets a field
+        """A context manager to ensure FF2PP._extract_field gets a field
         instance looking like the next one in the "fields" iterable from
         the "make_pp_field" call.
 

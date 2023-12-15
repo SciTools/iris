@@ -1,5 +1,4 @@
-"""
-Zonal Mean Diagram of Air Temperature
+"""Zonal Mean Diagram of Air Temperature
 =====================================
 This example demonstrates aligning a linear plot and a cartographic plot using Matplotlib.
 """

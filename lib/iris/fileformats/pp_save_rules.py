@@ -24,8 +24,7 @@ from iris.util import is_regular, regular_step
 
 
 def _basic_coord_system_rules(cube, pp):
-    """
-    Rules for setting the coord system of the PP field.
+    """Rules for setting the coord system of the PP field.
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -75,8 +74,7 @@ def _um_version_rules(cube, pp):
 
 
 def _stash_rules(cube, pp):
-    """
-    Attributes rules for setting the STASH attribute of the PP field.
+    """Attributes rules for setting the STASH attribute of the PP field.
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -95,8 +93,7 @@ def _stash_rules(cube, pp):
 
 
 def _general_time_rules(cube, pp):
-    """
-    Rules for setting time metadata of the PP field.
+    """Rules for setting time metadata of the PP field.
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -366,8 +363,7 @@ def _general_time_rules(cube, pp):
 
 
 def _calendar_rules(cube, pp):
-    """
-    Rules for setting the calendar of the PP field.
+    """Rules for setting the calendar of the PP field.
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -389,8 +385,7 @@ def _calendar_rules(cube, pp):
 
 
 def _grid_and_pole_rules(cube, pp):
-    """
-    Rules for setting the horizontal grid and pole location of the PP field.
+    """Rules for setting the horizontal grid and pole location of the PP field.
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -468,8 +463,7 @@ def _grid_and_pole_rules(cube, pp):
 
 
 def _non_std_cross_section_rules(cube, pp):
-    """
-    Rules for applying non-standard cross-sections to the PP field.
+    """Rules for applying non-standard cross-sections to the PP field.
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -596,8 +590,7 @@ def _non_std_cross_section_rules(cube, pp):
 
 
 def _lbproc_rules(cube, pp):
-    """
-    Rules for setting the processing code of the PP field.
+    """Rules for setting the processing code of the PP field.
 
     Note: `pp.lbproc` must be set to 0 before these rules are run.
 
@@ -641,8 +634,7 @@ def _lbproc_rules(cube, pp):
 
 
 def _vertical_rules(cube, pp):
-    """
-    Rules for setting vertical levels for the PP field.
+    """Rules for setting vertical levels for the PP field.
 
     Args:
         cube: the cube being saved as a series of PP fields.
@@ -823,8 +815,7 @@ def _vertical_rules(cube, pp):
 
 
 def _all_other_rules(cube, pp):
-    """
-    Fields currently managed by these rules:
+    """Fields currently managed by these rules:
 
     * lbfc (field code)
     * lbrsvd[3] (ensemble member number)

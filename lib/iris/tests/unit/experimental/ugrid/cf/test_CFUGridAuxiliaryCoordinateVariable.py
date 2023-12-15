@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridAuxiliaryCoordinateVariable` class.
+"""Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridAuxiliaryCoordinateVariable` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.

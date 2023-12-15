@@ -9,8 +9,7 @@ from iris.fileformats._structured_array_identification import GroupStructure
 
 
 def _optimal_dimensioning_structure(structure, element_priorities):
-    """
-    Uses the structure options provided by the
+    """Uses the structure options provided by the
     :class:`~iris.fileformats._structured_array_identification.GroupStructure`
     to determine the optimal array structure for the :class:`FieldCollation`.
 
@@ -50,8 +49,7 @@ def _optimal_dimensioning_structure(structure, element_priorities):
 
 
 def optimal_array_structure(ordering_elements, actual_values_elements=None):
-    """
-    Calculate an optimal array replication structure for a set of vectors.
+    """Calculate an optimal array replication structure for a set of vectors.
 
     Args:
 

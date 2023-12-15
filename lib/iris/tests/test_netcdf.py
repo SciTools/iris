@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test CF-NetCDF file loading and saving.
+"""Test CF-NetCDF file loading and saving.
 
 """
 
@@ -339,8 +338,7 @@ class TestNetCDFLoad(tests.IrisTest):
         )
 
     def test_ukmo__um_stash_source_priority(self):
-        """
-        Test that ukmo__um_stash_source is converted into a STASH code with a
+        """Test that ukmo__um_stash_source is converted into a STASH code with a
         higher priority than um_stash_source.
         """
         # Note: using a CDL string as a test data reference, rather than a binary file.

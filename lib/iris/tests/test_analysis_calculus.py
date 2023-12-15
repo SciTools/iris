@@ -422,10 +422,7 @@ class TestCalculusSimple1(tests.IrisTest):
 
 
 def build_cube(data, spherical=False):
-    """
-    Create a cube suitable for testing.
-
-    """
+    """Create a cube suitable for testing."""
     cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
 
     nx = data.shape[-1]

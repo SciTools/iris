@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 # !/usr/bin/env python
-"""
-Provides "diff-like" comparison of images.
+"""Provides "diff-like" comparison of images.
 
 Currently relies on matplotlib for image processing so limited to PNG format.
 
@@ -36,9 +35,7 @@ _RESULT_NAME_PATTERN = re.compile(graphics.RESULT_PREFIX + r"(.*).png")
 
 
 def extract_test_key(result_image_name):
-    """
-    Extracts the name of the test which a result image refers to
-    """
+    """Extracts the name of the test which a result image refers to"""
     name_match = _RESULT_NAME_PATTERN.match(str(result_image_name))
     if name_match:
         test_key = name_match.group(1)

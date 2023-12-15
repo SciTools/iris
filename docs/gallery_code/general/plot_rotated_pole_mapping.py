@@ -1,5 +1,4 @@
-"""
-Rotated Pole Mapping
+"""Rotated Pole Mapping
 =====================
 
 This example uses several visualisation methods to achieve an array of

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot`
+"""Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot`
 interface.
 
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
@@ -134,8 +133,7 @@ def _valid_bound_dim_coord(coord):
 
 
 def _get_plot_defn(cube, mode, ndims=2):
-    """
-    Return data and plot-axis coords given a cube & a mode of either
+    """Return data and plot-axis coords given a cube & a mode of either
     POINT_MODE or BOUND_MODE.
 
     """
@@ -257,8 +255,7 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
 
 
 def _invert_yaxis(v_coord, axes=None):
-    """
-    Inverts the y-axis of the current plot based on conditions:
+    """Inverts the y-axis of the current plot based on conditions:
 
         * If the y-axis is already inverted we don't want to re-invert it.
         * If v_coord is None then it will not have any attributes.
@@ -279,8 +276,7 @@ def _invert_yaxis(v_coord, axes=None):
 
 
 def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
-    """
-    Checks that any discontiguities in the bounds of the given coordinate only
+    """Checks that any discontiguities in the bounds of the given coordinate only
     occur where the data is masked.
 
     Where a discontinuity occurs the grid created for plotting will not be
@@ -703,8 +699,7 @@ def _get_geodesic_params(globe):
 
 
 def _shift_plot_sections(u_object, u, v):
-    """
-    Shifts subsections of u by multiples of 360 degrees within ranges
+    """Shifts subsections of u by multiples of 360 degrees within ranges
     defined by the points where the line should cross over the 0/360 degree
     longitude boundary.
 
@@ -815,8 +810,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
 
 def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
-    """
-    This function is equivalend to _draw_two_1d_from_points but expects two
+    """This function is equivalend to _draw_two_1d_from_points but expects two
     y-axis variables rather than one (such as is required for .fill_between). It
     can't be used where the y-axis variables are string coordinates. The y-axis
     variable provided first has precedence where the two differ on whether the
@@ -859,8 +853,7 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
 
 def _replace_axes_with_cartopy_axes(cartopy_proj):
-    """
-    Replace non-cartopy subplot/axes with a cartopy alternative
+    """Replace non-cartopy subplot/axes with a cartopy alternative
     based on the provided projection. If the current axes are already an
     instance of :class:`cartopy.mpl.geoaxes.GeoAxes` then no action is taken.
 
@@ -892,8 +885,7 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
 
 
 def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
-    """
-    Replace the current non-cartopy axes with
+    """Replace the current non-cartopy axes with
     :class:`cartopy.mpl.geoaxes.GeoAxes` and return the appropriate kwargs dict
     based on the provided coordinates and kwargs.
 
@@ -959,8 +951,7 @@ def _check_geostationary_coords_and_convert(x, y, kwargs):
 
 
 def _map_common(draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwargs):
-    """
-    Draw the given cube on a map using its points or bounds.
+    """Draw the given cube on a map using its points or bounds.
 
     "Mode" parameter will switch functionality between POINT or BOUND plotting.
 
@@ -1047,8 +1038,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwar
 
 
 def contour(cube, *args, **kwargs):
-    """
-    Draws contour lines based on the given Cube.
+    """Draws contour lines based on the given Cube.
 
     Kwargs:
 
@@ -1077,8 +1067,7 @@ def contour(cube, *args, **kwargs):
 
 
 def contourf(cube, *args, **kwargs):
-    """
-    Draws filled contours based on the given Cube.
+    """Draws filled contours based on the given Cube.
 
     Kwargs:
 
@@ -1162,8 +1151,7 @@ def contourf(cube, *args, **kwargs):
 
 
 def default_projection(cube):
-    """
-    Return the primary map projection for the given cube.
+    """Return the primary map projection for the given cube.
 
     Using the returned projection, one can create a cartopy map with::
 
@@ -1183,8 +1171,7 @@ def default_projection(cube):
 
 
 def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
-    """
-    Return the cube's extents ``(x0, x1, y0, y1)`` in its default projection.
+    """Return the cube's extents ``(x0, x1, y0, y1)`` in its default projection.
 
     Keyword arguments:
 
@@ -1300,8 +1287,7 @@ def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def outline(cube, coords=None, color="k", linewidth=None, axes=None):
-    """
-    Draws cell outlines based on the given Cube.
+    """Draws cell outlines based on the given Cube.
 
     Kwargs:
 
@@ -1345,8 +1331,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
 
 
 def pcolor(cube, *args, **kwargs):
-    """
-    Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot the cube against.
@@ -1384,8 +1369,7 @@ def pcolor(cube, *args, **kwargs):
 
 
 def pcolormesh(cube, *args, **kwargs):
-    """
-    Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot against each
@@ -1421,8 +1405,7 @@ def pcolormesh(cube, *args, **kwargs):
 
 
 def points(cube, *args, **kwargs):
-    """
-    Draws sample point positions based on the given Cube.
+    """Draws sample point positions based on the given Cube.
 
     Kwargs:
 
@@ -1454,8 +1437,7 @@ def points(cube, *args, **kwargs):
 
 
 def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
-    """
-    Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
+    """Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
 
     Returns arguments (x, y, u, v), to be passed to the underlying matplotlib
     call.
@@ -1495,8 +1477,7 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
 
 
 def barbs(u_cube, v_cube, *args, **kwargs):
-    """
-    Draws a barb plot from two vector component cubes. Triangles, full-lines
+    """Draws a barb plot from two vector component cubes. Triangles, full-lines
     and half-lines represent increments of 50, 10 and 5 respectively.
 
     Args:
@@ -1550,8 +1531,7 @@ def barbs(u_cube, v_cube, *args, **kwargs):
 
 
 def quiver(u_cube, v_cube, *args, **kwargs):
-    """
-    Draws an arrow plot from two vector component cubes.
+    """Draws an arrow plot from two vector component cubes.
 
     Args:
 
@@ -1605,8 +1585,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """
-    Draws a line plot based on the given cube(s) or coordinate(s).
+    """Draws a line plot based on the given cube(s) or coordinate(s).
 
     The first one or two arguments may be cubes or coordinates to plot.
     Each of the following is valid::
@@ -1657,8 +1636,7 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """
-    Draws a scatter plot based on the given cube(s) or coordinate(s).
+    """Draws a scatter plot based on the given cube(s) or coordinate(s).
 
     Args:
 
@@ -1694,8 +1672,7 @@ def scatter(x, y, *args, **kwargs):
 
 
 def fill_between(x, y1, y2, *args, **kwargs):
-    """
-    Plots y1 and y2 against x, and fills the space between them.
+    """Plots y1 and y2 against x, and fills the space between them.
 
     Args:
 
@@ -1736,8 +1713,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
 
 
 def hist(x, *args, **kwargs):
-    """
-    Compute and plot a histogram.
+    """Compute and plot a histogram.
 
     Args:
 
@@ -1774,8 +1750,7 @@ show = plt.show
 
 
 def symbols(x, y, symbols, size, axes=None, units="inches"):
-    """
-    Draws fixed-size symbols.
+    """Draws fixed-size symbols.
 
     See :mod:`iris.symbols` for available symbols.
 
@@ -1846,8 +1821,7 @@ def symbols(x, y, symbols, size, axes=None, units="inches"):
 
 
 def citation(text, figure=None, axes=None):
-    """
-    Add a text citation to a plot.
+    """Add a text citation to a plot.
 
     Places an anchored text citation in the bottom right
     hand corner of the plot.
@@ -1878,8 +1852,7 @@ def citation(text, figure=None, axes=None):
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):
-    """
-    Animates the given cube iterator.
+    """Animates the given cube iterator.
 
     Parameters
     ----------

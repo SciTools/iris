@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Scripts for generating supporting data for benchmarking.
+"""Scripts for generating supporting data for benchmarking.
 
 Data generated using Iris should use :func:`run_function_elsewhere`, which
 means that data is generated using a fixed version of Iris and a fixed
@@ -60,8 +59,7 @@ REUSE_DATA = True
 
 
 def run_function_elsewhere(func_to_run, *args, **kwargs):
-    """
-    Run a given function using the :const:`DATA_GEN_PYTHON` executable.
+    """Run a given function using the :const:`DATA_GEN_PYTHON` executable.
 
     This structure allows the function to be written natively.
 
@@ -101,8 +99,7 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
 
 @contextmanager
 def load_realised():
-    """
-    Force NetCDF loading with realised arrays.
+    """Force NetCDF loading with realised arrays.
 
     Since passing between data generation and benchmarking environments is via
     file loading, but some benchmarks are only meaningful if starting with real

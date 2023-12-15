@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Integration tests for NetCDF-UGRID file loading.
+"""Integration tests for NetCDF-UGRID file loading.
 
 todo: fold these tests into netcdf tests when experimental.ugrid is folded into
  standard behaviour.

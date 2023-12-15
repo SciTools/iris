@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Automatic collation of cubes into higher-dimensional cubes.
+"""Automatic collation of cubes into higher-dimensional cubes.
 
 Typically the cube merge process is handled by
 :method:`iris.cube.CubeList.merge`.
@@ -35,8 +34,7 @@ import iris.util
 # Private namedtuple wrapper classes.
 #
 class _Template(namedtuple("Template", ["dims", "points", "bounds", "kwargs"])):
-    """
-    Common framework from which to build a dimension or auxiliary coordinate.
+    """Common framework from which to build a dimension or auxiliary coordinate.
 
     Args:
 
@@ -63,8 +61,7 @@ class _Template(namedtuple("Template", ["dims", "points", "bounds", "kwargs"])):
 class _CoordMetaData(
     namedtuple("CoordMetaData", ["points_dtype", "bounds_dtype", "kwargs"])
 ):
-    """
-    Bespoke metadata required to build a dimension or auxiliary coordinate.
+    """Bespoke metadata required to build a dimension or auxiliary coordinate.
 
     Args:
 
@@ -85,8 +82,7 @@ class _CoordMetaData(
 
 
 class _CoordAndDims(namedtuple("CoordAndDims", ["coord", "dims"])):
-    """
-    Container for a coordinate and the associated data dimension/s
+    """Container for a coordinate and the associated data dimension/s
     spanned over a :class:`iris.cube.Cube`.
 
     Args:
@@ -106,8 +102,7 @@ class _CoordAndDims(namedtuple("CoordAndDims", ["coord", "dims"])):
 class _ScalarCoordPayload(
     namedtuple("ScalarCoordPayload", ["defns", "values", "metadata"])
 ):
-    """
-    Container for all scalar coordinate data and metadata represented
+    """Container for all scalar coordinate data and metadata represented
     within a :class:`iris.cube.Cube`.
 
     All scalar coordinate related data is sorted into ascending order
@@ -136,8 +131,7 @@ class _ScalarCoordPayload(
 class _VectorCoordPayload(
     namedtuple("VectorCoordPayload", ["dim_coords_and_dims", "aux_coords_and_dims"])
 ):
-    """
-    Container for all vector coordinate data and metadata represented
+    """Container for all vector coordinate data and metadata represented
     within a :class:`iris.cube.Cube`.
 
     Args:
@@ -160,8 +154,7 @@ class _VectorCoordPayload(
 
 
 class _CoordPayload(namedtuple("CoordPayload", ["scalar", "vector", "factory_defns"])):
-    """
-    Container for all the scalar and vector coordinate data and
+    """Container for all the scalar and vector coordinate data and
     metadata, and auxiliary coordinate factories represented within a
     :class:`iris.cube.Cube`.
 
@@ -219,8 +212,7 @@ class _CoordPayload(namedtuple("CoordPayload", ["scalar", "vector", "factory_def
                 )
 
     def match_signature(self, signature, error_on_mismatch):
-        """
-        Return whether this _CoordPayload matches the corresponding
+        """Return whether this _CoordPayload matches the corresponding
         aspects of a _CoordSignature.
 
         Args:
@@ -292,8 +284,7 @@ class _CoordSignature(
         ],
     )
 ):
-    """
-    Criterion for identifying a specific type of :class:`iris.cube.Cube`
+    """Criterion for identifying a specific type of :class:`iris.cube.Cube`
     based on its scalar and vector coordinate data and metadata, and
     auxiliary coordinate factories.
 
@@ -334,8 +325,7 @@ class _CubeSignature(
         ],
     )
 ):
-    """
-    Criterion for identifying a specific type of :class:`iris.cube.Cube`
+    """Criterion for identifying a specific type of :class:`iris.cube.Cube`
     based on its metadata.
 
     Args:
@@ -416,8 +406,7 @@ class _CubeSignature(
         return msgs
 
     def match(self, other, error_on_mismatch):
-        """
-        Return whether this _CubeSignature equals another.
+        """Return whether this _CubeSignature equals another.
 
         This is the first step to determine if two "cubes" (either a
         real Cube or a ProtoCube) can be merged, by considering:
@@ -462,8 +451,7 @@ class _CubeSignature(
 
 
 class _Skeleton(namedtuple("Skeleton", ["scalar_values", "data"])):
-    """
-    Basis of a source-cube, containing the associated scalar coordinate values
+    """Basis of a source-cube, containing the associated scalar coordinate values
     and data payload of a :class:`iris.cube.Cube`.
 
     Args:
@@ -483,8 +471,7 @@ class _Skeleton(namedtuple("Skeleton", ["scalar_values", "data"])):
 
 
 class _FactoryDefn(namedtuple("_FactoryDefn", ["class_", "dependency_defns"])):
-    """
-    The information required to identify and rebuild a single AuxCoordFactory.
+    """The information required to identify and rebuild a single AuxCoordFactory.
 
     Args:
 
@@ -501,8 +488,7 @@ class _FactoryDefn(namedtuple("_FactoryDefn", ["class_", "dependency_defns"])):
 
 
 class _Relation(namedtuple("Relation", ["separable", "inseparable"])):
-    """
-    Categorisation of the candidate dimensions belonging to a
+    """Categorisation of the candidate dimensions belonging to a
     :class:`ProtoCube` into separable 'independent' dimensions, and
     inseparable dependent dimensions.
 
@@ -523,8 +509,7 @@ _COMBINATION_JOIN = "-"
 
 
 def _is_combination(name):
-    """
-    Determine whether the candidate dimension is an 'invented' combination
+    """Determine whether the candidate dimension is an 'invented' combination
     of candidate dimensions.
 
     Args:
@@ -540,8 +525,7 @@ def _is_combination(name):
 
 
 def build_indexes(positions):
-    """
-    Construct a mapping for each candidate dimension that maps for each
+    """Construct a mapping for each candidate dimension that maps for each
     of its scalar values the set of values for each of the other candidate
     dimensions.
 
@@ -606,8 +590,7 @@ def build_indexes(positions):
 
 
 def _separable_pair(name, index):
-    """
-    Determine whether the candidate dimension is separable.
+    """Determine whether the candidate dimension is separable.
 
     A candidate dimension X and Y are separable if each scalar
     value of X maps to the same set of scalar values of Y.
@@ -635,8 +618,7 @@ def _separable_pair(name, index):
 
 
 def _separable(name, indexes):
-    """
-    Determine the candidate dimensions that are separable and
+    """Determine the candidate dimensions that are separable and
     inseparable relative to the provided candidate dimension.
 
     A candidate dimension X and Y are separable if each scalar
@@ -670,8 +652,7 @@ def _separable(name, indexes):
 
 
 def derive_relation_matrix(indexes):
-    """
-    Construct a mapping for each candidate dimension that specifies
+    """Construct a mapping for each candidate dimension that specifies
     which of the other candidate dimensions are separable or inseparable.
 
     A candidate dimension X and Y are separable if each scalar value of
@@ -712,8 +693,7 @@ def derive_relation_matrix(indexes):
 
 
 def derive_groups(relation_matrix):
-    """
-    Determine all related (chained) groups of inseparable candidate dimensions.
+    """Determine all related (chained) groups of inseparable candidate dimensions.
 
     If candidate dimension A is inseparable for B and C, and B is inseparable
     from D, and E is inseparable from F. Then the groups are ABCD and EF.
@@ -748,8 +728,7 @@ def derive_groups(relation_matrix):
 
 
 def _derive_separable_group(relation_matrix, group):
-    """
-    Determine which candidate dimensions in the group are separable.
+    """Determine which candidate dimensions in the group are separable.
 
     Args:
 
@@ -774,8 +753,7 @@ def _derive_separable_group(relation_matrix, group):
 
 
 def _is_dependent(dependent, independent, positions, function_mapping=None):
-    """
-    Determine whether there exists a one-to-one functional relationship
+    """Determine whether there exists a one-to-one functional relationship
     between the independent candidate dimension/s and the dependent
     candidate dimension.
 
@@ -824,8 +802,7 @@ def _is_dependent(dependent, independent, positions, function_mapping=None):
 
 
 def _derive_consistent_groups(relation_matrix, separable_group):
-    """
-    Determine the largest combinations of candidate dimensions within the
+    """Determine the largest combinations of candidate dimensions within the
     separable group that are self consistently separable from one another.
 
     If the candidate dimension A is separable from the candidate dimensions
@@ -873,8 +850,7 @@ def _derive_consistent_groups(relation_matrix, separable_group):
 def _build_separable_group(
     space, group, separable_consistent_groups, positions, function_matrix
 ):
-    """
-    Update the space with the first separable consistent group that
+    """Update the space with the first separable consistent group that
     satisfies a valid functional relationship with all other candidate
     dimensions in the group.
 
@@ -938,8 +914,7 @@ def _build_separable_group(
 
 
 def _build_inseparable_group(space, group, positions, function_matrix):
-    """
-    Update the space with the first valid scalar functional relationship
+    """Update the space with the first valid scalar functional relationship
     between a candidate dimension within the group and all other
     candidate dimensions.
 
@@ -1006,8 +981,7 @@ def _build_inseparable_group(space, group, positions, function_matrix):
 
 
 def _build_combination_group(space, group, positions, function_matrix):
-    """
-    Update the space with the new combined or invented dimension
+    """Update the space with the new combined or invented dimension
     that each member of this inseparable group depends on.
 
     As no functional relationship between members of the group can be
@@ -1061,8 +1035,7 @@ def _build_combination_group(space, group, positions, function_matrix):
 
 
 def derive_space(groups, relation_matrix, positions, function_matrix=None):
-    """
-    Determine the relationship between all the candidate dimensions.
+    """Determine the relationship between all the candidate dimensions.
 
     Args:
       * groups:
@@ -1122,15 +1095,13 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
 
 
 class ProtoCube:
-    """
-    Framework for merging source-cubes into one or more higher
+    """Framework for merging source-cubes into one or more higher
     dimensional cubes.
 
     """
 
     def __init__(self, cube):
-        """
-        Create a new ProtoCube from the given cube and record the cube
+        """Create a new ProtoCube from the given cube and record the cube
         as a source-cube.
 
         """
@@ -1210,8 +1181,7 @@ class ProtoCube:
         raise iris.exceptions.DuplicateDataError(msg)
 
     def merge(self, unique=True):
-        """
-        Returns the list of cubes resulting from merging the registered
+        """Returns the list of cubes resulting from merging the registered
         source-cubes.
 
         Kwargs:
@@ -1309,8 +1279,7 @@ class ProtoCube:
         return merged_cubes
 
     def register(self, cube, error_on_mismatch=False):
-        """
-        Add a compatible :class:`iris.cube.Cube` as a source-cube for
+        """Add a compatible :class:`iris.cube.Cube` as a source-cube for
         merging under this :class:`ProtoCube`.
 
         A cube will be deemed compatible based on the signature of the
@@ -1348,8 +1317,7 @@ class ProtoCube:
         return match
 
     def _guess_axis(self, name):
-        """
-        Returns a "best guess" axis name of the candidate dimension.
+        """Returns a "best guess" axis name of the candidate dimension.
 
         Heuristic categoration of the candidate dimension
         (i.e. scalar_defn index) into either label 'T', 'Z', 'Y', 'X'
@@ -1376,8 +1344,7 @@ class ProtoCube:
         return axis
 
     def _define_space(self, space, positions, indexes, function_matrix):
-        """
-        Given the derived :class:`ProtoCube` space, define this space in
+        """Given the derived :class:`ProtoCube` space, define this space in
         terms of its dimensionality, shape, coordinates and associated
         coordinate to space dimension mappings.
 
@@ -1553,8 +1520,7 @@ class ProtoCube:
         self._shape.extend(signature.data_shape)
 
     def _get_cube(self, data):
-        """
-        Return a fully constructed cube for the given data, containing
+        """Return a fully constructed cube for the given data, containing
         all its coordinates and metadata.
 
         """
@@ -1594,8 +1560,7 @@ class ProtoCube:
         return cube
 
     def _nd_index(self, position):
-        """
-        Returns the n-dimensional index of this source-cube (position),
+        """Returns the n-dimensional index of this source-cube (position),
         within the merged cube.
 
         """
@@ -1617,8 +1582,7 @@ class ProtoCube:
         return tuple(index)
 
     def _build_coordinates(self):
-        """
-        Build the dimension and auxiliary coordinates for the final
+        """Build the dimension and auxiliary coordinates for the final
         merged cube given that the final dimensionality of the target
         merged cube is known and the associated dimension/s that each
         coordinate maps onto in that merged cube.
@@ -1689,8 +1653,7 @@ class ProtoCube:
             aux_coords_and_dims.append(_CoordAndDims(item.coord, dims))
 
     def _build_signature(self, cube):
-        """
-        Generate the signature that defines this cube.
+        """Generate the signature that defines this cube.
 
         Args:
 
@@ -1720,8 +1683,7 @@ class ProtoCube:
         self._skeletons.append(skeleton)
 
     def _extract_coord_payload(self, cube):
-        """
-        Extract all relevant coordinate data and metadata from the cube.
+        """Extract all relevant coordinate data and metadata from the cube.
 
         In particular, for each scalar coordinate determine its definition,
         its cell (point and bound) value and all other scalar coordinate

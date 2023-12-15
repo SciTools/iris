@@ -927,8 +927,7 @@ class TestOperations1D(TestMeshCommon):
         self.assertEqual("foo", self.mesh.node_dimension)
 
     def test_remove_connectivities(self):
-        """
-        Test that remove() mimics the connectivities() method correctly,
+        """Test that remove() mimics the connectivities() method correctly,
         and prevents removal of mandatory connectivities.
 
         """

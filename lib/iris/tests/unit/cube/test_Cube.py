@@ -956,14 +956,12 @@ class Test_rolling_window(tests.IrisTest):
 
 
 class Test_slices_dim_order(tests.IrisTest):
-    """
-    This class tests the capability of iris.cube.Cube.slices(), including its
+    """This class tests the capability of iris.cube.Cube.slices(), including its
     ability to correctly re-order the dimensions.
     """
 
     def setUp(self):
-        """
-        setup a 4D iris cube, each dimension is length 1.
+        """setup a 4D iris cube, each dimension is length 1.
         The dimensions are;
             dim1: time
             dim2: height
@@ -978,8 +976,7 @@ class Test_slices_dim_order(tests.IrisTest):
 
     @staticmethod
     def expected_cube_setup(dim1name, dim2name, dim3name):
-        """
-        input:
+        """input:
         ------
             dim1name: str
                 name of the first dimension coordinate
@@ -999,8 +996,7 @@ class Test_slices_dim_order(tests.IrisTest):
         return cube
 
     def check_order(self, dim1, dim2, dim3, dim_to_remove):
-        """
-        does two things:
+        """does two things:
         (1) slices the 4D cube in dim1, dim2, dim3 (and removes the scalar
         coordinate) and
         (2) sets up a 3D cube with dim1, dim2, dim3.
@@ -1951,8 +1947,7 @@ class Test_copy(tests.IrisTest):
 
 
 def _add_test_meshcube(self, nomesh=False, n_z=2, **meshcoord_kwargs):
-    """
-    Common setup action : Create a standard mesh test cube with a variety of coords, and save the cube and various of
+    """Common setup action : Create a standard mesh test cube with a variety of coords, and save the cube and various of
     its components as properties of the 'self' TestCase.
 
     """
@@ -1973,8 +1968,7 @@ def _add_test_meshcube(self, nomesh=False, n_z=2, **meshcoord_kwargs):
 
 
 class Test_coords__mesh_coords(tests.IrisTest):
-    """
-    Checking *only* the new "mesh_coords" keyword of the coord/coords methods.
+    """Checking *only* the new "mesh_coords" keyword of the coord/coords methods.
 
     This is *not* attached to the existing tests for this area, as they are
     very old and patchy legacy tests.  See: iris.tests.test_cdm.TestQueryCoord.
@@ -1986,8 +1980,7 @@ class Test_coords__mesh_coords(tests.IrisTest):
         _add_test_meshcube(self)
 
     def _assert_lists_equal(self, items_a, items_b):
-        """
-        Check that two lists of coords, cubes etc contain the same things.
+        """Check that two lists of coords, cubes etc contain the same things.
         Lists must contain the same items, including any repeats, but can be in
         a different order.
 
@@ -2103,8 +2096,7 @@ class Test_mesh_dim(tests.IrisTest):
 
 
 class Test__init__mesh(tests.IrisTest):
-    """
-    Test that creation with mesh-coords functions, and prevents a cube having
+    """Test that creation with mesh-coords functions, and prevents a cube having
     incompatible mesh-coords.
 
     """
@@ -2220,8 +2212,7 @@ class Test__init__mesh(tests.IrisTest):
 
 
 class Test__add_aux_coord__mesh(tests.IrisTest):
-    """
-    Test that "Cube.add_aux_coord" functions with a mesh-coord, and prevents a
+    """Test that "Cube.add_aux_coord" functions with a mesh-coord, and prevents a
     cube having incompatible mesh-coords.
 
     """
@@ -2297,10 +2288,7 @@ class Test__add_aux_coord__mesh(tests.IrisTest):
 
 
 class Test__add_dim_coord__mesh(tests.IrisTest):
-    """
-    Test that "Cube.add_dim_coord" cannot work with a mesh-coord.
-
-    """
+    """Test that "Cube.add_dim_coord" cannot work with a mesh-coord."""
 
     def test(self):
         # Create a mesh with only 2 faces, so coord *can't* be non-monotonic.
@@ -2312,8 +2300,7 @@ class Test__add_dim_coord__mesh(tests.IrisTest):
 
 
 class Test__eq__mesh(tests.IrisTest):
-    """
-    Check that cubes with meshes support == as expected.
+    """Check that cubes with meshes support == as expected.
 
     Note: there is no special code for this in iris.cube.Cube : it is
     provided by the coord comparisons.
@@ -2992,8 +2979,7 @@ def simplecube():
 
 
 class Test__dimensional_metadata:
-    """
-    Tests for the "Cube._dimensional_data" method.
+    """Tests for the "Cube._dimensional_data" method.
 
     NOTE: test could all be static methods, but that adds a line to each definition.
     """
@@ -3054,8 +3040,7 @@ class Test__dimensional_metadata:
 
 
 class TestReprs:
-    """
-    Confirm that str(cube), repr(cube) and cube.summary() work by creating a fresh
+    """Confirm that str(cube), repr(cube) and cube.summary() work by creating a fresh
     :class:`iris._representation.cube_printout.CubePrinter` object, and using it
     in the expected ways.
 
@@ -3112,8 +3097,7 @@ class TestReprs:
 
 
 class TestHtmlRepr:
-    """
-    Confirm that Cube._repr_html_() creates a fresh
+    """Confirm that Cube._repr_html_() creates a fresh
     :class:`iris.experimental.representation.CubeRepresentation` object, and uses it
     in the expected way.
 

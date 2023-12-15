@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Code to implement vector rotation by angles, and inferring gridcell angles
+"""Code to implement vector rotation by angles, and inferring gridcell angles
 from coordinate points and bounds.
 
 """
@@ -15,8 +14,7 @@ import iris
 
 
 def _3d_xyz_from_latlon(lon, lat):
-    """
-    Return locations of (lon, lat) in 3D space.
+    """Return locations of (lon, lat) in 3D space.
 
     Args:
 
@@ -45,8 +43,7 @@ def _3d_xyz_from_latlon(lon, lat):
 
 
 def _latlon_from_xyz(xyz):
-    """
-    Return arrays of lons+lats angles from xyz locations.
+    """Return arrays of lons+lats angles from xyz locations.
 
     Args:
 
@@ -70,8 +67,7 @@ def _latlon_from_xyz(xyz):
 
 
 def _angle(p, q, r):
-    """
-    Estimate grid-angles to true-Eastward direction from positions in the same
+    """Estimate grid-angles to true-Eastward direction from positions in the same
     grid row, but at increasing column (grid-Eastward) positions.
 
     {P, Q, R} are locations of consecutive points in the same grid row.
@@ -135,8 +131,7 @@ def _angle(p, q, r):
 
 
 def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
-    """
-    Calculate gridcell orientations for an arbitrary 2-dimensional grid.
+    """Calculate gridcell orientations for an arbitrary 2-dimensional grid.
 
     The input grid is defined by two 2-dimensional coordinate arrays with the
     same dimensions (ny, nx), specifying the geolocations of a 2D mesh.
@@ -394,8 +389,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
 
 
 def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwargs=None):
-    """
-    Rotate distance vectors from grid-oriented to true-latlon-oriented.
+    """Rotate distance vectors from grid-oriented to true-latlon-oriented.
 
     Can also rotate by arbitrary angles, if they are passed in.
 

@@ -32,9 +32,7 @@ TIME_UNIT = cf_units.Unit(
 
 
 class TranslationWarning(IrisNimrodTranslationWarning):
-    """
-    Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`.
-    """
+    """Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`."""
 
     # TODO: remove at the next major release.
     pass
@@ -91,16 +89,12 @@ def name(cube, field, handle_metadata_errors):
 
 
 def remove_unprintable_chars(input_str):
-    """
-    Remove unprintable characters from a string and return the result.
-
-    """
+    """Remove unprintable characters from a string and return the result."""
     return "".join(c if c in string.printable else " " for c in input_str).strip()
 
 
 def units(cube, field):
-    """
-    Set the cube's units from the field.
+    """Set the cube's units from the field.
 
     Takes into account nimrod unit strings of the form unit*?? where the data
     needs to converted by dividing by ??. Also converts units we know Iris
@@ -243,8 +237,7 @@ def reference_time(cube, field):
 
 
 def forecast_period(cube):
-    """
-    Add a forecast_period coord based on existing time and
+    """Add a forecast_period coord based on existing time and
     forecast_reference_time coords.
 
     Must be run after time() and reference_time()
@@ -278,10 +271,7 @@ def forecast_period(cube):
 
 
 def mask_cube(cube, field):
-    """
-    Update cube.data to be a masked array if appropriate.
-
-    """
+    """Update cube.data to be a masked array if appropriate."""
     dtype = cube.dtype
     masked_points = None
     if field.datum_type == 1:
@@ -303,8 +293,7 @@ def experiment(cube, field):
 
 
 def proj_biaxial_ellipsoid(field, handle_metadata_errors):
-    """
-    Return the correct dictionary of arguments needed to define an
+    """Return the correct dictionary of arguments needed to define an
     iris.coord_systems.GeogCS.
 
     Based firstly on the value given by ellipsoid, then by grid if ellipsoid is
@@ -350,8 +339,7 @@ def proj_biaxial_ellipsoid(field, handle_metadata_errors):
 
 
 def set_british_national_grid_defaults(field, handle_metadata_errors):
-    """
-    Check for missing coord-system meta-data and set default values for
+    """Check for missing coord-system meta-data and set default values for
     the Ordnance Survey GB Transverse Mercator projection. Some Radarnet
     files are missing these.
 
@@ -467,8 +455,7 @@ def horizontal_grid(cube, field, handle_metadata_errors):
 
 
 def vertical_coord(cube, field):
-    """
-    Add a vertical coord to the cube, with bounds, if appropriate.
+    """Add a vertical coord to the cube, with bounds, if appropriate.
     Handles special numbers for "at-sea-level" (8888) and "at-ground-level"
     (9999).
 
@@ -660,8 +647,7 @@ def attributes(cube, field):
 
 
 def known_threshold_coord(field):
-    """
-    Supplies known threshold coord meta-data for known use cases.
+    """Supplies known threshold coord meta-data for known use cases.
 
     threshold_value_alt exists because some meta-data are mis-assigned in the
     Nimrod data.
@@ -709,8 +695,7 @@ def known_threshold_coord(field):
 
 
 def probability_coord(cube, field, handle_metadata_errors):
-    """
-    Add a coord relating to probability meta-data from the header to the
+    """Add a coord relating to probability meta-data from the header to the
     cube if appropriate.
 
     Must be run after the name method.
@@ -894,8 +879,7 @@ def time_averaging(cube, field):
 
 
 def run(field, handle_metadata_errors=True):
-    """
-    Convert a NIMROD field to an Iris cube.
+    """Convert a NIMROD field to an Iris cube.
 
     Args
     ----

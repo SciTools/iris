@@ -1,5 +1,4 @@
-"""
-Seasonal Ensemble Model Plots
+"""Seasonal Ensemble Model Plots
 =============================
 
 This example demonstrates the loading of a lagged ensemble dataset from the
@@ -27,8 +26,7 @@ import iris.plot as iplt
 
 
 def realization_metadata(cube, field, fname):
-    """
-    A function which modifies the cube's metadata to add a "realization"
+    """A function which modifies the cube's metadata to add a "realization"
     (ensemble member) coordinate from the filename if one doesn't already exist
     in the cube.
 

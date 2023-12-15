@@ -20,8 +20,7 @@ def sample_attrs() -> CubeAttrsDict:
 
 
 def check_content(attrs, locals=None, globals=None, matches=None):
-    """
-    Check a CubeAttrsDict for expected properties.
+    """Check a CubeAttrsDict for expected properties.
 
     Its ".globals" and ".locals" must match 'locals' and 'globals' args
     -- except that, if 'matches' is provided, it is a CubeAttrsDict, whose

@@ -30,8 +30,7 @@ def full2d_global():
 
 class MaskCubeMixin:
     def assertOriginalMetadata(self, cube, func):
-        """
-        Check metadata matches that of input cube.  func is a string indicating
+        """Check metadata matches that of input cube.  func is a string indicating
         which function created the original cube.
 
         """

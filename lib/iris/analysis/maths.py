@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Basic mathematical and statistical operations.
+"""Basic mathematical and statistical operations.
 
 """
 
@@ -33,8 +32,7 @@ logger = get_logger(__name__)
 
 @lru_cache(maxsize=128, typed=True)
 def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
-    """
-    Get the numpy dtype corresponding to the result of applying a unary or
+    """Get the numpy dtype corresponding to the result of applying a unary or
     binary operation to arguments of specified dtype.
 
     Args:
@@ -76,8 +74,7 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
 
 
 def _get_dtype(operand):
-    """
-    Get the numpy dtype corresponding to the numeric data in the object
+    """Get the numpy dtype corresponding to the numeric data in the object
     provided.
 
     Args:
@@ -94,8 +91,7 @@ def _get_dtype(operand):
 
 
 def abs(cube, in_place=False):
-    """
-    Calculate the absolute values of the data in the Cube provided.
+    """Calculate the absolute values of the data in the Cube provided.
 
     Args:
 
@@ -123,8 +119,7 @@ def abs(cube, in_place=False):
 
 
 def intersection_of_cubes(cube, other_cube):
-    """
-    Return the two Cubes of intersection given two Cubes.
+    """Return the two Cubes of intersection given two Cubes.
 
     .. note:: The intersection of cubes function will ignore all single valued
         coordinates in checking the intersection.
@@ -212,8 +207,7 @@ def _assert_is_cube(cube):
 
 @_lenient_client(services=SERVICES)
 def add(cube, other, dim=None, in_place=False):
-    """
-    Calculate the sum of two cubes, or the sum of a cube and a coordinate or
+    """Calculate the sum of two cubes, or the sum of a cube and a coordinate or
     array or scalar value.
 
     When summing two cubes, they must both have the same coordinate systems and
@@ -268,8 +262,7 @@ def add(cube, other, dim=None, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def subtract(cube, other, dim=None, in_place=False):
-    """
-    Calculate the difference between two cubes, or the difference between
+    """Calculate the difference between two cubes, or the difference between
     a cube and a coordinate or array or scalar value.
 
     When differencing two cubes, they must both have the same coordinate systems
@@ -331,8 +324,7 @@ def _add_subtract_common(
     dim=None,
     in_place=False,
 ):
-    """
-    Function which shares common code between addition and subtraction
+    """Function which shares common code between addition and subtraction
     of cubes.
 
     operation_function   - function which does the operation
@@ -375,8 +367,7 @@ def _add_subtract_common(
 
 @_lenient_client(services=SERVICES)
 def multiply(cube, other, dim=None, in_place=False):
-    """
-    Calculate the product of two cubes, or the product of a cube and a coordinate
+    """Calculate the product of two cubes, or the product of a cube and a coordinate
     or array or scalar value.
 
     When multiplying two cubes, they must both have the same coordinate systems
@@ -443,8 +434,7 @@ def multiply(cube, other, dim=None, in_place=False):
 
 
 def _inplace_common_checks(cube, other, math_op):
-    """
-    Check whether an inplace math operation can take place between `cube` and
+    """Check whether an inplace math operation can take place between `cube` and
     `other`. It cannot if `cube` has integer data and `other` has float data
     as the operation will always produce float data that cannot be 'safely'
     cast back to the integer data of `cube`.
@@ -463,8 +453,7 @@ def _inplace_common_checks(cube, other, math_op):
 
 @_lenient_client(services=SERVICES)
 def divide(cube, other, dim=None, in_place=False):
-    """
-    Calculate the ratio of two cubes, or the ratio of a cube and a coordinate
+    """Calculate the ratio of two cubes, or the ratio of a cube and a coordinate
     or array or scalar value.
 
     When dividing a cube by another cube, they must both have the same coordinate
@@ -537,8 +526,7 @@ def divide(cube, other, dim=None, in_place=False):
 
 
 def exponentiate(cube, exponent, in_place=False):
-    """
-    Returns the result of the given cube to the power of a scalar.
+    """Returns the result of the given cube to the power of a scalar.
 
     Args:
 
@@ -593,8 +581,7 @@ def exponentiate(cube, exponent, in_place=False):
 
 
 def exp(cube, in_place=False):
-    """
-    Calculate the exponential (exp(x)) of the cube.
+    """Calculate the exponential (exp(x)) of the cube.
 
     Args:
 
@@ -628,8 +615,7 @@ def exp(cube, in_place=False):
 
 
 def log(cube, in_place=False):
-    """
-    Calculate the natural logarithm (base-e logarithm) of the cube.
+    """Calculate the natural logarithm (base-e logarithm) of the cube.
 
     Args:
 
@@ -663,8 +649,7 @@ def log(cube, in_place=False):
 
 
 def log2(cube, in_place=False):
-    """
-    Calculate the base-2 logarithm of the cube.
+    """Calculate the base-2 logarithm of the cube.
 
     Args:
 
@@ -694,8 +679,7 @@ def log2(cube, in_place=False):
 
 
 def log10(cube, in_place=False):
-    """
-    Calculate the base-10 logarithm of the cube.
+    """Calculate the base-10 logarithm of the cube.
 
     Args:
 
@@ -725,8 +709,7 @@ def log10(cube, in_place=False):
 
 
 def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False):
-    """
-    Apply a `numpy universal function
+    """Apply a `numpy universal function
     <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube
     or pair of cubes.
 
@@ -844,8 +827,7 @@ def _binary_op_common(
     in_place=False,
     sanitise_metadata=True,
 ):
-    """
-    Function which shares common code between binary operations.
+    """Function which shares common code between binary operations.
 
     operation_function   - function which does the operation
                            (e.g. numpy.divide)
@@ -988,8 +970,7 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 
 def _sanitise_metadata(cube, unit):
-    """
-    As part of the maths metadata contract, clear the necessary or
+    """As part of the maths metadata contract, clear the necessary or
     unsupported metadata from the resultant cube of the maths operation.
 
     """
@@ -1063,13 +1044,10 @@ def _math_op_common(
 
 
 class IFunc:
-    """
-    :class:`IFunc` class for functions that can be applied to an iris cube.
-    """
+    """:class:`IFunc` class for functions that can be applied to an iris cube."""
 
     def __init__(self, data_func, units_func):
-        """
-        Create an ifunc from a data function and units function.
+        """Create an ifunc from a data function and units function.
 
         Args:
 
@@ -1192,8 +1170,7 @@ class IFunc:
         new_name=None,
         **kwargs_data_func,
     ):
-        """
-        Applies the ifunc to the cube(s).
+        """Applies the ifunc to the cube(s).
 
         Args:
 

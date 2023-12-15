@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for :meth:`iris.fileformats.netcdf.saver.Saver._lazy_stream_data`.
+"""Unit tests for :meth:`iris.fileformats.netcdf.saver.Saver._lazy_stream_data`.
 
 The behaviour of this method is complex, and this only tests certain aspects.
 The testing of the dask delayed operations and file writing are instead covered by
@@ -119,8 +118,7 @@ class Test__lazy_stream_data:
             cf_var._data_array == mock.sentinel.exact_data_array
 
     def test_warnings(self, compute, data_form):
-        """
-        For real data, fill-value warnings are issued immediately.
+        """For real data, fill-value warnings are issued immediately.
         For lazy data, warnings are returned from computing a delayed completion.
         For 'emulated' data (direct array transfer), no checks + no warnings ever.
 

@@ -20,8 +20,7 @@ NCGEN_PATHSTR = str(env_bin_path("ncgen"))
 
 
 def ncgen_from_cdl(cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str):
-    """
-    Generate a test netcdf file from cdl.
+    """Generate a test netcdf file from cdl.
 
     Source is CDL in either a string or a file.
     If given a string, will either save a CDL file, or pass text directly.

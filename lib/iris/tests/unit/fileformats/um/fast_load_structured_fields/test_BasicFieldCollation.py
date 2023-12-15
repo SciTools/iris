@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the class
+"""Unit tests for the class
 :class:`iris.fileformats.um._fast_load_structured_fields.BasicFieldCollation`.
 
 """

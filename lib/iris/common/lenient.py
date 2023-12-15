@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides the infrastructure to support lenient client/service behaviour.
+"""Provides the infrastructure to support lenient client/service behaviour.
 
 """
 
@@ -31,8 +30,7 @@ _LENIENT_PROTECTED = ("active", "enable")
 
 
 def _lenient_client(*dargs, services=None):
-    """
-    Decorator that allows a client function/method to declare at runtime that
+    """Decorator that allows a client function/method to declare at runtime that
     it is executing and requires lenient behaviour from a prior registered
     lenient service function/method.
 
@@ -93,8 +91,7 @@ def _lenient_client(*dargs, services=None):
 
         @wraps(func)
         def lenient_client_inner_naked(*args, **kwargs):
-            """
-            Closure wrapper function to register the wrapped function/method
+            """Closure wrapper function to register the wrapped function/method
             as active at runtime before executing it.
 
             """
@@ -114,8 +111,7 @@ def _lenient_client(*dargs, services=None):
         def lenient_client_outer(func):
             @wraps(func)
             def lenient_client_inner(*args, **kwargs):
-                """
-                Closure wrapper function to register the wrapped function/method
+                """Closure wrapper function to register the wrapped function/method
                 as active at runtime before executing it.
 
                 """
@@ -131,8 +127,7 @@ def _lenient_client(*dargs, services=None):
 
 
 def _lenient_service(*dargs):
-    """
-    Decorator that allows a function/method to declare that it supports lenient
+    """Decorator that allows a function/method to declare that it supports lenient
     behaviour as a service.
 
     Registration is at Python interpreter parse time.
@@ -198,8 +193,7 @@ def _lenient_service(*dargs):
 
 
 def _qualname(func):
-    """
-    Return the fully qualified function/method string name.
+    """Return the fully qualified function/method string name.
 
     Args:
 
@@ -222,8 +216,7 @@ def _qualname(func):
 
 class Lenient(threading.local):
     def __init__(self, **kwargs):
-        """
-        A container for managing the run-time lenient features and options.
+        """A container for managing the run-time lenient features and options.
 
         Kwargs:
 
@@ -287,8 +280,7 @@ class Lenient(threading.local):
 
     @contextmanager
     def context(self, **kwargs):
-        """
-        Return a context manager which allows temporary modification of the
+        """Return a context manager which allows temporary modification of the
         lenient option state within the scope of the context manager.
 
         On entry to the context manager, all provided keyword arguments are
@@ -325,8 +317,7 @@ class Lenient(threading.local):
 
 class _Lenient(threading.local):
     def __init__(self, *args, **kwargs):
-        """
-        A container for managing the run-time lenient services and client
+        """A container for managing the run-time lenient services and client
         options for pre-defined functions/methods.
 
         Args:
@@ -361,8 +352,7 @@ class _Lenient(threading.local):
             self.register_client(client, services)
 
     def __call__(self, func):
-        """
-        Determine whether it is valid for the function/method to provide a
+        """Determine whether it is valid for the function/method to provide a
         lenient service at runtime to the actively executing lenient client.
 
         Args:
@@ -440,8 +430,7 @@ class _Lenient(threading.local):
 
     @contextmanager
     def context(self, *args, **kwargs):
-        """
-        Return a context manager which allows temporary modification of
+        """Return a context manager which allows temporary modification of
         the lenient option state for the active thread.
 
         On entry to the context manager, all provided keyword arguments are
@@ -515,8 +504,7 @@ class _Lenient(threading.local):
 
     @enable.setter
     def enable(self, state):
-        """
-        Set the activate state of the lenient services.
+        """Set the activate state of the lenient services.
 
         Setting the state to `False` disables all lenient services, and
         setting the state to `True` enables all lenient services.
@@ -534,8 +522,7 @@ class _Lenient(threading.local):
         self.__dict__["enable"] = state
 
     def register_client(self, func, services, append=False):
-        """
-        Add the provided mapping of lenient client function/method to
+        """Add the provided mapping of lenient client function/method to
         required lenient service function/methods.
 
         Args:
@@ -578,8 +565,7 @@ class _Lenient(threading.local):
         self.__dict__[func] = services
 
     def register_service(self, func):
-        """
-        Add the provided function/method as providing a lenient service and
+        """Add the provided function/method as providing a lenient service and
         activate it.
 
         Args:
@@ -600,8 +586,7 @@ class _Lenient(threading.local):
         self.__dict__[func] = True
 
     def unregister_client(self, func):
-        """
-        Remove the provided function/method as a lenient client using lenient services.
+        """Remove the provided function/method as a lenient client using lenient services.
 
         Args:
 
@@ -627,8 +612,7 @@ class _Lenient(threading.local):
             raise ValueError(emsg)
 
     def unregister_service(self, func):
-        """
-        Remove the provided function/method as providing a lenient service.
+        """Remove the provided function/method as providing a lenient service.
 
         Args:
 

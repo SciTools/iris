@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""
-Iris' data model representation of CF UGrid's Mesh and its constituent parts.
+"""Iris' data model representation of CF UGrid's Mesh and its constituent parts.
 
 Eventual destination: dedicated module in :mod:`iris` root.
 
@@ -85,8 +84,7 @@ Mesh2DConnectivities = namedtuple(
 
 
 class Connectivity(_DimensionalMetadata):
-    """
-    A CF-UGRID topology connectivity, describing the topological relationship
+    """A CF-UGRID topology connectivity, describing the topological relationship
     between two types of mesh element. One or more connectivities make up a
     CF-UGRID topology - a constituent of a CF-UGRID mesh.
 
@@ -119,8 +117,7 @@ class Connectivity(_DimensionalMetadata):
         start_index=0,
         location_axis=0,
     ):
-        """
-        Constructs a single connectivity.
+        """Constructs a single connectivity.
 
         Args:
 
@@ -221,8 +218,7 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def cf_role(self):
-        """
-        The category of topological relationship that this connectivity
+        """The category of topological relationship that this connectivity
         describes.
         **Read-only** - validity of :attr:`indices` is dependent on
         :attr:`cf_role`. A new :class:`Connectivity` must therefore be defined
@@ -233,8 +229,7 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def location(self):
-        """
-        Derived from the connectivity's :attr:`cf_role` - the first part, e.g.
+        """Derived from the connectivity's :attr:`cf_role` - the first part, e.g.
         ``face`` in ``face_node_connectivity``. Refers to the elements that
         vary along the :attr:`location_axis` of the connectivity's
         :attr:`indices` array.
@@ -244,8 +239,7 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def connected(self):
-        """
-        Derived from the connectivity's :attr:`cf_role` - the second part, e.g.
+        """Derived from the connectivity's :attr:`cf_role` - the second part, e.g.
         ``node`` in ``face_node_connectivity``. Refers to the elements indexed
         by the values in the connectivity's :attr:`indices` array.
 
@@ -254,8 +248,7 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def start_index(self):
-        """
-        The base value of the connectivity's :attr:`indices` array; either
+        """The base value of the connectivity's :attr:`indices` array; either
         ``0`` or ``1``.
         **Read-only** - validity of :attr:`indices` is dependent on
         :attr:`start_index`. A new :class:`Connectivity` must therefore be
@@ -266,8 +259,7 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def location_axis(self):
-        """
-        The axis of the connectivity's :attr:`indices` array that varies
+        """The axis of the connectivity's :attr:`indices` array that varies
         over the connectivity's :attr:`location` elements. Either ``0`` or ``1``.
         **Read-only** - validity of :attr:`indices` is dependent on
         :attr:`location_axis`. Use :meth:`transpose` to create a new, transposed
@@ -278,8 +270,7 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def connected_axis(self):
-        """
-        Derived as the alternate value of :attr:`location_axis` - each must
+        """Derived as the alternate value of :attr:`location_axis` - each must
         equal either ``0`` or ``1``. The axis of the connectivity's
         :attr:`indices` array that varies over the :attr:`connected` elements
         associated with each :attr:`location` element.
@@ -289,8 +280,7 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def indices(self):
-        """
-        The index values describing the topological relationship of the
+        """The index values describing the topological relationship of the
         connectivity, as a NumPy array. Masked points indicate a
         :attr:`location` element  with fewer :attr:`connected` elements than
         other :attr:`location` elements described in this array - unused index
@@ -304,8 +294,7 @@ class Connectivity(_DimensionalMetadata):
         return self._values
 
     def indices_by_location(self, indices=None):
-        """
-        Return a view of the indices array with :attr:`location_axis` **always** as
+        """Return a view of the indices array with :attr:`location_axis` **always** as
         the first axis - transposed if necessary. Can optionally pass in an
         identically shaped array on which to perform this operation (e.g. the
         output from :meth:`core_indices` or :meth:`lazy_indices`).
@@ -402,8 +391,7 @@ class Connectivity(_DimensionalMetadata):
             )
 
     def validate_indices(self):
-        """
-        Perform a thorough validity check of this connectivity's
+        """Perform a thorough validity check of this connectivity's
         :attr:`indices`. Includes checking the number of :attr:`connected`
         elements associated with each :attr:`location` element (specified using
         masks on the :attr:`indices` array) against the :attr:`cf_role`.
@@ -447,8 +435,7 @@ class Connectivity(_DimensionalMetadata):
         return eq
 
     def transpose(self):
-        """
-        Create a new :class:`Connectivity`, identical to this one but with the
+        """Create a new :class:`Connectivity`, identical to this one but with the
         :attr:`indices` array transposed and the :attr:`location_axis` value flipped.
 
         Returns:
@@ -470,8 +457,7 @@ class Connectivity(_DimensionalMetadata):
         return new_connectivity
 
     def lazy_indices(self):
-        """
-        Return a lazy array representing the connectivity's indices.
+        """Return a lazy array representing the connectivity's indices.
 
         Accessing this method will never cause the :attr:`indices` values to be
         loaded. Similarly, calling methods on, or indexing, the returned Array
@@ -487,8 +473,7 @@ class Connectivity(_DimensionalMetadata):
         return super()._lazy_values()
 
     def core_indices(self):
-        """
-        The indices array at the core of this connectivity, which may be a
+        """The indices array at the core of this connectivity, which may be a
         NumPy array or a Dask array.
 
         Returns:
@@ -498,8 +483,7 @@ class Connectivity(_DimensionalMetadata):
         return super()._core_values()
 
     def has_lazy_indices(self):
-        """
-        Return a boolean indicating whether the connectivity's :attr:`indices`
+        """Return a boolean indicating whether the connectivity's :attr:`indices`
         array is a lazy Dask array or not.
 
         Returns:
@@ -509,8 +493,7 @@ class Connectivity(_DimensionalMetadata):
         return super()._has_lazy_values()
 
     def lazy_location_lengths(self):
-        """
-        Return a lazy array representing the number of :attr:`connected`
+        """Return a lazy array representing the number of :attr:`connected`
         elements associated with each of the connectivity's :attr:`location`
         elements, accounting for masks if present.
 
@@ -533,8 +516,7 @@ class Connectivity(_DimensionalMetadata):
         return max_location_size - location_mask_counts
 
     def location_lengths(self):
-        """
-        Return a NumPy array representing the number of :attr:`connected`
+        """Return a NumPy array representing the number of :attr:`connected`
         elements associated with each of the connectivity's :attr:`location`
         elements, accounting for masks if present.
 
@@ -562,8 +544,7 @@ class Connectivity(_DimensionalMetadata):
 
 
 class Mesh(CFVariableMixin):
-    """
-    A container representing the UGRID ``cf_role`` ``mesh_topology``, supporting
+    """A container representing the UGRID ``cf_role`` ``mesh_topology``, supporting
     1D network, 2D triangular, and 2D flexible mesh topologies.
 
     .. note::
@@ -601,7 +582,8 @@ class Mesh(CFVariableMixin):
         edge_dimension=None,
         face_dimension=None,
     ):
-        """
+        """Mesh initialise.
+
         .. note::
 
             The purpose of the :attr:`node_dimension`, :attr:`edge_dimension` and
@@ -677,8 +659,7 @@ class Mesh(CFVariableMixin):
 
     @classmethod
     def from_coords(cls, *coords):
-        """
-        Construct a :class:`Mesh` by derivation from one or more
+        """Construct a :class:`Mesh` by derivation from one or more
         :class:`~iris.coords.Coord`\\ s.
 
         The :attr:`~Mesh.topology_dimension`, :class:`~iris.coords.Coord`
@@ -906,8 +887,7 @@ class Mesh(CFVariableMixin):
         return result
 
     def summary(self, shorten=False):
-        """
-        Return a string representation of the Mesh.
+        """Return a string representation of the Mesh.
 
         Parameters
         ----------
@@ -1076,8 +1056,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def all_connectivities(self):
-        """
-        All the :class:`~iris.experimental.ugrid.mesh.Connectivity` instances
+        """All the :class:`~iris.experimental.ugrid.mesh.Connectivity` instances
         of the :class:`Mesh`.
 
         """
@@ -1085,16 +1064,12 @@ class Mesh(CFVariableMixin):
 
     @property
     def all_coords(self):
-        """
-        All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`Mesh`.
-
-        """
+        """All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`Mesh`."""
         return self._coord_manager.all_members
 
     @property
     def boundary_node_connectivity(self):
-        """
-        The *optional* UGRID ``boundary_node_connectivity``
+        """The *optional* UGRID ``boundary_node_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`.
 
@@ -1103,8 +1078,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def edge_coords(self):
-        """
-        The *optional* UGRID ``edge`` :class:`~iris.coords.AuxCoord` coordinates
+        """The *optional* UGRID ``edge`` :class:`~iris.coords.AuxCoord` coordinates
         of the :class:`Mesh`.
 
         """
@@ -1112,8 +1086,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def edge_dimension(self):
-        """
-        The *optionally required* UGRID NetCDF variable name for the ``edge``
+        """The *optionally required* UGRID NetCDF variable name for the ``edge``
         dimension.
 
         """
@@ -1129,8 +1102,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def edge_face_connectivity(self):
-        """
-        The *optional* UGRID ``edge_face_connectivity``
+        """The *optional* UGRID ``edge_face_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`.
 
@@ -1139,8 +1111,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def edge_node_connectivity(self):
-        """
-        The UGRID ``edge_node_connectivity``
+        """The UGRID ``edge_node_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
         of ``1``, and *optionally required* for
@@ -1151,8 +1122,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def face_coords(self):
-        """
-        The *optional* UGRID ``face`` :class:`~iris.coords.AuxCoord` coordinates
+        """The *optional* UGRID ``face`` :class:`~iris.coords.AuxCoord` coordinates
         of the :class:`Mesh`.
 
         """
@@ -1160,8 +1130,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def face_dimension(self):
-        """
-        The *optionally required* UGRID NetCDF variable name for the ``face``
+        """The *optionally required* UGRID NetCDF variable name for the ``face``
         dimension.
 
         """
@@ -1186,8 +1155,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def face_edge_connectivity(self):
-        """
-        The *optional* UGRID ``face_edge_connectivity``
+        """The *optional* UGRID ``face_edge_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`.
 
@@ -1197,8 +1165,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def face_face_connectivity(self):
-        """
-        The *optional* UGRID ``face_face_connectivity``
+        """The *optional* UGRID ``face_face_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`.
 
@@ -1207,8 +1174,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def face_node_connectivity(self):
-        """
-        The UGRID ``face_node_connectivity``
+        """The UGRID ``face_node_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
         of ``2``, and *optionally required* for :attr:`Mesh.topology_dimension`
@@ -1219,8 +1185,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def node_coords(self):
-        """
-        The **required** UGRID ``node`` :class:`~iris.coords.AuxCoord` coordinates
+        """The **required** UGRID ``node`` :class:`~iris.coords.AuxCoord` coordinates
         of the :class:`Mesh`.
 
         """
@@ -1240,8 +1205,7 @@ class Mesh(CFVariableMixin):
         self._metadata_manager.node_dimension = node_dimension
 
     def add_connectivities(self, *connectivities):
-        """
-        Add one or more :class:`~iris.experimental.ugrid.mesh.Connectivity` instances to the :class:`Mesh`.
+        """Add one or more :class:`~iris.experimental.ugrid.mesh.Connectivity` instances to the :class:`Mesh`.
 
         Args:
 
@@ -1262,8 +1226,7 @@ class Mesh(CFVariableMixin):
         face_x=None,
         face_y=None,
     ):
-        """
-        Add one or more :class:`~iris.coords.AuxCoord` coordinates to the :class:`Mesh`.
+        """Add one or more :class:`~iris.coords.AuxCoord` coordinates to the :class:`Mesh`.
 
         Kwargs:
 
@@ -1312,8 +1275,7 @@ class Mesh(CFVariableMixin):
         contains_edge=None,
         contains_face=None,
     ):
-        """
-        Return all :class:`~iris.experimental.ugrid.mesh.Connectivity`
+        """Return all :class:`~iris.experimental.ugrid.mesh.Connectivity`
         instances from the :class:`Mesh` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1407,8 +1369,7 @@ class Mesh(CFVariableMixin):
         contains_edge=None,
         contains_face=None,
     ):
-        """
-        Return a single :class:`~iris.experimental.ugrid.mesh.Connectivity`
+        """Return a single :class:`~iris.experimental.ugrid.mesh.Connectivity`
         from the :class:`Mesh` that matches the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1509,8 +1470,7 @@ class Mesh(CFVariableMixin):
         include_edges=None,
         include_faces=None,
     ):
-        """
-        Return a single :class:`~iris.coords.AuxCoord` coordinate from the
+        """Return a single :class:`~iris.coords.AuxCoord` coordinate from the
         :class:`Mesh` that matches the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1599,8 +1559,7 @@ class Mesh(CFVariableMixin):
         include_edges=None,
         include_faces=None,
     ):
-        """
-        Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`Mesh` that
+        """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`Mesh` that
         match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1684,8 +1643,7 @@ class Mesh(CFVariableMixin):
         contains_edge=None,
         contains_face=None,
     ):
-        """
-        Remove one or more :class:`~iris.experimental.ugrid.mesh.Connectivity`
+        """Remove one or more :class:`~iris.experimental.ugrid.mesh.Connectivity`
         from the :class:`Mesh` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1775,8 +1733,7 @@ class Mesh(CFVariableMixin):
         include_edges=None,
         include_faces=None,
     ):
-        """
-        Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`Mesh`
+        """Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`Mesh`
         that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1852,8 +1809,7 @@ class Mesh(CFVariableMixin):
         return self._coord_manager.remove(**kwargs)
 
     def xml_element(self, doc):
-        """
-        Create the :class:`xml.dom.minidom.Element` that describes this
+        """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`Mesh`.
 
         Args:
@@ -1883,8 +1839,7 @@ class Mesh(CFVariableMixin):
     #     # return the lazy AuxCoord(...), AuxCoord(...)
 
     def to_MeshCoord(self, location, axis):
-        """
-        Generate a :class:`~iris.experimental.ugrid.mesh.MeshCoord` that
+        """Generate a :class:`~iris.experimental.ugrid.mesh.MeshCoord` that
         references the current :class:`Mesh`, and passing through the
         ``location`` and ``axis`` arguments.
 
@@ -1910,8 +1865,7 @@ class Mesh(CFVariableMixin):
         return MeshCoord(mesh=self, location=location, axis=axis)
 
     def to_MeshCoords(self, location):
-        """
-        Generate a tuple of
+        """Generate a tuple of
         :class:`~iris.experimental.ugrid.mesh.MeshCoord`\\ s, each referencing
         the current :class:`Mesh`, one for each :attr:`AXES` value, passing
         through the ``location`` argument.
@@ -1936,8 +1890,7 @@ class Mesh(CFVariableMixin):
         return tuple(result)
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
-        """
-        Reset the name used for the NetCDF variable representing the ``node``,
+        """Reset the name used for the NetCDF variable representing the ``node``,
         ``edge`` and/or ``face`` dimension to ``None``.
 
         Kwargs:
@@ -1958,8 +1911,7 @@ class Mesh(CFVariableMixin):
         return self._set_dimension_names(node, edge, face, reset=True)
 
     def dimension_names(self, node=None, edge=None, face=None):
-        """
-        Assign the name to be used for the NetCDF variable representing
+        """Assign the name to be used for the NetCDF variable representing
         the ``node``, ``edge`` and ``face`` dimension.
 
         The default value of ``None`` will not be assigned to clear the
@@ -1990,8 +1942,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def topology_dimension(self):
-        """
-        The UGRID ``topology_dimension`` attribute represents the highest
+        """The UGRID ``topology_dimension`` attribute represents the highest
         dimensionality of all the geometric elements (node, edge, face) represented
         within the :class:`Mesh`.
 
@@ -2000,9 +1951,7 @@ class Mesh(CFVariableMixin):
 
 
 class _Mesh1DCoordinateManager:
-    """
-
-    TBD: require clarity on coord_systems validation
+    """TBD: require clarity on coord_systems validation
     TBD: require clarity on __eq__ support
     TBD: rationalise self.coords() logic with other manager and Cube
 
@@ -2191,8 +2140,7 @@ class _Mesh1DCoordinateManager:
                 setattr(self, member_y, coords[1])
 
     def add(self, node_x=None, node_y=None, edge_x=None, edge_y=None):
-        """
-        use self.remove(edge_x=True) to remove a coordinate e.g., using the
+        """use self.remove(edge_x=True) to remove a coordinate e.g., using the
         pattern self.add(edge_x=None) will not remove the edge_x coordinate
 
         """
@@ -2682,8 +2630,7 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
 
 
 class MeshCoord(AuxCoord):
-    """
-    Geographic coordinate values of data on an unstructured mesh.
+    """Geographic coordinate values of data on an unstructured mesh.
 
     A MeshCoord references a `~iris.experimental.ugrid.mesh.Mesh`.
     When contained in a `~iris.cube.Cube` it connects the cube to the Mesh.
@@ -2878,8 +2825,7 @@ class MeshCoord(AuxCoord):
         return self.copy()
 
     def copy(self, points=None, bounds=None):
-        """
-        Make a copy of the MeshCoord.
+        """Make a copy of the MeshCoord.
 
         Kwargs:
 
@@ -2904,8 +2850,7 @@ class MeshCoord(AuxCoord):
         return new_coord
 
     def __deepcopy__(self, memo):
-        """
-        Make this equivalent to "shallow" copy, returning a new MeshCoord based
+        """Make this equivalent to "shallow" copy, returning a new MeshCoord based
         on the same Mesh.
 
         Required to prevent cube copying from copying the Mesh, which would
@@ -2991,8 +2936,7 @@ class MeshCoord(AuxCoord):
         return result
 
     def _construct_access_arrays(self):
-        """
-        Build lazy points and bounds arrays, providing dynamic access via the
+        """Build lazy points and bounds arrays, providing dynamic access via the
         Mesh, according to the location and axis.
 
         Returns:

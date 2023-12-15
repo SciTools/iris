@@ -24,8 +24,7 @@ from iris.util import _meshgrid, guess_coord_axis
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):
-    """
-    Transform 2d points between cartopy coordinate reference systems.
+    """Transform 2d points between cartopy coordinate reference systems.
 
     NOTE: copied private function from iris.analysis.cartography.
 
@@ -45,8 +44,7 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
 
 
 def _regrid_weighted_curvilinear_to_rectilinear__prepare(src_cube, weights, grid_cube):
-    """
-    First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
+    """First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
     Check inputs and calculate the sparse regrid matrix and related info.
     The 'regrid info' returned can be re-used over many cubes.
@@ -276,8 +274,7 @@ def _curvilinear_to_rectilinear_regrid_data(
     dims,
     regrid_info,
 ):
-    """
-    Part of 'regrid_weighted_curvilinear_to_rectilinear' which acts on the data.
+    """Part of 'regrid_weighted_curvilinear_to_rectilinear' which acts on the data.
 
     Perform the prepared regrid calculation on an array.
 
@@ -347,8 +344,7 @@ def _curvilinear_to_rectilinear_regrid_data(
 
 
 def _regrid_weighted_curvilinear_to_rectilinear__perform(src_cube, regrid_info):
-    """
-    Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
+    """Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
     Perform the prepared regrid calculation on a single cube.
 
@@ -372,15 +368,13 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(src_cube, regrid_info):
 
 
 class CurvilinearRegridder:
-    """
-    This class provides support for performing point-in-cell regridding
+    """This class provides support for performing point-in-cell regridding
     between a curvilinear source grid and a rectilinear target grid.
 
     """
 
     def __init__(self, src_grid_cube, target_grid_cube, weights=None):
-        """
-        Create a regridder for conversions between the source
+        """Create a regridder for conversions between the source
         and target grids.
 
         Args:
@@ -415,8 +409,7 @@ class CurvilinearRegridder:
 
     @staticmethod
     def _get_horizontal_coord(cube, axis):
-        """
-        Gets the horizontal coordinate on the supplied cube along the
+        """Gets the horizontal coordinate on the supplied cube along the
         specified axis.
 
         Args:
@@ -441,8 +434,7 @@ class CurvilinearRegridder:
         return coords[0]
 
     def __call__(self, src):
-        """
-        Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
         this :class:`_CurvilinearRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -493,15 +485,13 @@ class CurvilinearRegridder:
 
 
 class RectilinearRegridder:
-    """
-    This class provides support for performing nearest-neighbour or
+    """This class provides support for performing nearest-neighbour or
     linear regridding between source and target grids.
 
     """
 
     def __init__(self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode):
-        """
-        Create a regridder for conversions between the source
+        """Create a regridder for conversions between the source
         and target grids.
 
         Args:
@@ -563,8 +553,7 @@ class RectilinearRegridder:
 
     @staticmethod
     def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
-        """
-        Convert the rectilinear grid coordinates to a curvilinear grid in
+        """Convert the rectilinear grid coordinates to a curvilinear grid in
         the source coordinate system.
 
         The `grid_x_coord` and `grid_y_coord` must share a common coordinate
@@ -610,8 +599,7 @@ class RectilinearRegridder:
         method="linear",
         extrapolation_mode="nanmask",
     ):
-        """
-        Regrid the given data from the src grid to the sample grid.
+        """Regrid the given data from the src grid to the sample grid.
 
         The result will be a MaskedArray if either/both of:
          - the source array is a MaskedArray,
@@ -857,8 +845,7 @@ class RectilinearRegridder:
                 raise ValueError(msg)
 
     def __call__(self, src):
-        """
-        Regrid this :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`RectilinearRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -974,8 +961,7 @@ class RectilinearRegridder:
 
 
 def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback):
-    r"""
-    Return a new cube for the result of regridding.
+    r"""Return a new cube for the result of regridding.
     Returned cube represents the result of regridding the source cube
     onto the horizontal coordinates (e.g. latitude) of the target cube.
     All the metadata and coordinates of the result cube are copied from

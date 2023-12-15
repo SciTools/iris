@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-r"""
-The purpose of this module is to provide utilities for the identification
+r"""The purpose of this module is to provide utilities for the identification
 of multi-dimensional structure in a flat sequence of homogeneous objects.
 One application of this is to efficiently identify a higher dimensional
 structure from a sorted sequence of PPField instances; for an example, given
@@ -48,16 +47,14 @@ import numpy as np
 
 
 class _UnstructuredArrayException(Exception):
-    """
-    Raised when an array has been incorrectly assumed to be
+    """Raised when an array has been incorrectly assumed to be
     structured in a specific way.
 
     """
 
 
 class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_values"])):
-    """
-    Represents the identified structure of an array, where stride is the
+    """Represents the identified structure of an array, where stride is the
     step between each unique value being seen in order in the flattened
     version of the array.
 
@@ -95,8 +92,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
 
     @property
     def size(self):
-        """
-        The ``size`` attribute is the number of the unique values in the
+        """The ``size`` attribute is the number of the unique values in the
         original array. It is **not** the length of the original array.
 
         """
@@ -118,8 +114,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
         return not (self == other)
 
     def construct_array(self, size):
-        """
-        The inverse operation of :func:`ArrayStructure.from_array`, returning
+        """The inverse operation of :func:`ArrayStructure.from_array`, returning
         a 1D array of the given length with the appropriate repetition
         pattern.
 
@@ -130,8 +125,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
         )
 
     def nd_array_and_dims(self, original_array, target_shape, order="c"):
-        """
-        Given a 1D array, and a target shape, construct an ndarray
+        """Given a 1D array, and a target shape, construct an ndarray
         and associated dimensions.
 
         Raises an _UnstructuredArrayException if no optimised shape array can
@@ -205,8 +199,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
 
     @classmethod
     def from_array(cls, arr):
-        """
-        Return the computed ArrayStructure for the given flat array
+        """Return the computed ArrayStructure for the given flat array
         (if a structure exists, otherwise return None).
 
         """
@@ -291,17 +284,14 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
 
 
 class GroupStructure:
-    """
-    The GroupStructure class represents a collection of array structures along
+    """The GroupStructure class represents a collection of array structures along
     with additional information such as the length of the arrays and the array
     order in which they are found (row-major or column-major).
 
     """
 
     def __init__(self, length, component_structure, array_order="c"):
-        """
-        group_component_to_array - a dictionary. See also TODO
-        """
+        """group_component_to_array - a dictionary. See also TODO"""
         #: The size common to all of the original arrays and used to determine
         #: possible shape configurations.
         self.length = length
@@ -317,8 +307,7 @@ class GroupStructure:
 
     @classmethod
     def from_component_arrays(cls, component_arrays, array_order="c"):
-        """
-        Given a dictionary of component name to flattened numpy array,
+        """Given a dictionary of component name to flattened numpy array,
         return an :class:`GroupStructure` instance which is representative
         of the underlying array structures.
 
@@ -340,8 +329,7 @@ class GroupStructure:
         return cls(sizes[0], cmpt_structure, array_order=array_order)
 
     def _potentially_flattened_components(self):
-        """
-        Return a generator of the components which could form non-trivial
+        """Return a generator of the components which could form non-trivial
         (i.e. ``length > 1``) array dimensions.
 
         """
@@ -354,8 +342,7 @@ class GroupStructure:
         return self._array_order == "c"
 
     def possible_structures(self):
-        """
-        Return a tuple containing the possible structures that this group
+        """Return a tuple containing the possible structures that this group
         could have.
 
         A structure in this case is an iterable of
@@ -456,8 +443,7 @@ class GroupStructure:
         return "\n".join(result)
 
     def build_arrays(self, shape, elements_arrays):
-        """
-        Given the target shape, and a dictionary mapping name to 1D array of
+        """Given the target shape, and a dictionary mapping name to 1D array of
         :attr:`.length`, return a dictionary mapping element name to
         ``(ndarray, dims)``.
 

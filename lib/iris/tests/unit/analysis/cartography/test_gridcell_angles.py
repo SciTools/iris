@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the function
+"""Unit tests for the function
 :func:`iris.analysis.cartography.gridcell_angles`.
 
 """
@@ -22,8 +21,7 @@ from iris.tests.stock import lat_lon_cube, sample_2d_latlons
 
 
 def _2d_multicells_testcube(cellsize_degrees=1.0):
-    """
-    Create a test cube with a grid of X and Y points, where each gridcell
+    """Create a test cube with a grid of X and Y points, where each gridcell
     is independent (disjoint), arranged at an angle == the x-coord point.
 
     """

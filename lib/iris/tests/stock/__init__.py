@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-A collection of routines which create standard Cubes/files for test purposes.
+"""A collection of routines which create standard Cubes/files for test purposes.
 
 """
 import iris.tests as tests  # isort:skip
@@ -29,8 +28,7 @@ from ._stock_2d_latlons import (  # noqa
 
 
 def lat_lon_cube():
-    """
-    Returns a cube with a latitude and longitude suitable for testing
+    """Returns a cube with a latitude and longitude suitable for testing
     saving to PP/NetCDF etc.
 
     """
@@ -54,8 +52,7 @@ def lat_lon_cube():
 
 
 def global_pp():
-    """
-    Returns a two-dimensional cube derived from PP/aPPglob1/global.pp.
+    """Returns a two-dimensional cube derived from PP/aPPglob1/global.pp.
 
     The standard_name and unit attributes are added to compensate for the
     broken STASH encoding in that file.
@@ -79,8 +76,7 @@ def simple_pp():
 
 
 def simple_1d(with_bounds=True):
-    """
-    Returns an abstract, one-dimensional cube.
+    """Returns an abstract, one-dimensional cube.
 
     >>> print(simple_1d())
     thingness                           (foo: 11)
@@ -109,8 +105,7 @@ def simple_1d(with_bounds=True):
 
 
 def simple_2d(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_2d())
     thingness                           (bar: 3; foo: 4)
@@ -151,8 +146,7 @@ def simple_2d(with_bounds=True):
 
 
 def simple_2d_w_multidim_coords(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_2d_w_multidim_coords())
     thingness                           (*ANONYMOUS*: 3; *ANONYMOUS*: 4)
@@ -173,8 +167,7 @@ def simple_2d_w_multidim_coords(with_bounds=True):
 
 
 def simple_3d_w_multidim_coords(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_3d_w_multidim_coords())
     thingness                           (wibble: 2; *ANONYMOUS*: 3; *ANONYMOUS*: 4)
@@ -251,8 +244,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
 
 
 def simple_3d():
-    """
-    Returns an abstract three dimensional cube.
+    """Returns an abstract three dimensional cube.
 
     >>> print(simple_3d())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
@@ -291,8 +283,7 @@ def simple_3d():
 
 
 def simple_3d_mask():
-    """
-    Returns an abstract three dimensional cube that has data masked.
+    """Returns an abstract three dimensional cube that has data masked.
 
     >>> print(simple_3d_mask())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
@@ -318,8 +309,7 @@ def simple_3d_mask():
 
 
 def track_1d(duplicate_x=False):
-    """
-    Returns a one-dimensional track through two-dimensional space.
+    """Returns a one-dimensional track through two-dimensional space.
 
     >>> print(track_1d())
     air_temperature                     (y, x: 11)
@@ -396,8 +386,7 @@ def simple_2d_w_multidim_and_scalars():
 
 
 def simple_2d_w_cell_measure_ancil_var():
-    """
-    Returns a two dimensional cube with a CellMeasure and AncillaryVariable.
+    """Returns a two dimensional cube with a CellMeasure and AncillaryVariable.
 
     >>> print(simple_2d_w_cell_measure_ancil_var())
     thingness / (1)                     (bar: 3; foo: 4)
@@ -425,8 +414,7 @@ def simple_2d_w_cell_measure_ancil_var():
 
 
 def hybrid_height():
-    """
-    Returns a two-dimensional (Z, X), hybrid-height cube.
+    """Returns a two-dimensional (Z, X), hybrid-height cube.
 
     >>> print(hybrid_height())
     TODO: Update!
@@ -527,8 +515,7 @@ def simple_4d_with_hybrid_height():
 
 
 def realistic_3d():
-    """
-    Returns a realistic 3d cube.
+    """Returns a realistic 3d cube.
 
     >>> print(repr(realistic_3d()))
     <iris 'Cube' of air_potential_temperature (time: 7; grid_latitude: 9;
@@ -573,8 +560,7 @@ def realistic_3d():
 
 
 def realistic_4d():
-    """
-    Returns a realistic 4d cube.
+    """Returns a realistic 4d cube.
 
     >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;
@@ -664,8 +650,7 @@ def realistic_4d():
 
 
 def realistic_4d_no_derived():
-    """
-    Returns a realistic 4d cube without hybrid height
+    """Returns a realistic 4d cube without hybrid height
 
     >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;
@@ -730,8 +715,7 @@ def realistic_4d_w_missing_data():
 
 
 def ocean_sigma_z():
-    """
-    Return a sample cube with an
+    """Return a sample cube with an
     :class:`iris.aux_factory.OceanSigmaZFactory` vertical coordinate.
 
     This is a fairly small cube with real coordinate arrays.  The coordinate
