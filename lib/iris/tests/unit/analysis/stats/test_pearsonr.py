@@ -112,6 +112,26 @@ class TestLazy(tests.IrisTest):
         ]
         self.assertArrayAlmostEqual(r.data, np.array(r_by_slice))
 
+    def test_broadcast_transpose_cubes_weighted(self):
+        # Reference is calculated with no transposition.
+        r_ref = stats.pearsonr(
+            self.cube_a,
+            self.cube_b[0, :, :],
+            ["latitude", "longitude"],
+            weights=self.weights[0, :, :],
+        )
+
+        self.cube_a.transpose()
+        r_test = stats.pearsonr(
+            self.cube_a,
+            self.cube_b[0, :, :],
+            ["latitude", "longitude"],
+            weights=self.weights[0, :, :],
+        )
+
+        # Should get the same result, but transposed.
+        self.assertArrayAlmostEqual(r_test.data, r_ref.data.T)
+
     def test_weight_error(self):
         with self.assertRaises(ValueError):
             stats.pearsonr(
