@@ -78,7 +78,7 @@ class Test(tests.IrisTest):
         def myclient():
             """myclient doc-string."""
 
-        self.assertEqual(myclient.__doc__, "myclient doc-string")
+        self.assertEqual(myclient.__doc__, "myclient doc-string.")
 
     def test_call_no_kwargs(self):
         @_lenient_client()
@@ -171,7 +171,7 @@ class Test(tests.IrisTest):
         def myclient():
             """myclient doc-string."""
 
-        self.assertEqual(myclient.__doc__, "myclient doc-string")
+        self.assertEqual(myclient.__doc__, "myclient doc-string.")
 
 
 if __name__ == "__main__":
