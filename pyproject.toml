@@ -66,6 +66,8 @@ extend-exclude = [
     "um_cf_map.py",
     "docs/src/sphinxext",
     "tools",
+    # excluded else the gallery page title breaks the make html
+    "docs/gallery_code"  # TREMTEST
 ]
 line-length = 88
 src = [
@@ -93,6 +95,13 @@ ignore = [
         # list specific rules to include that is skipped using numpy convention.
         "D212",  # Multi-line docstring summary should start at the first line
     ]
+
+# TREMTEST
+#[too.ruff.per-file-ignores]
+# Ignore D400: "First line should end witrh a period."  
+#              Otherwise it breaks the gallery titles.
+#"docs/gallery_code/general/plot_custom_file_loading.py" = ["D400"]
+#"docs/gallery_code/general/*" = ["D400"]
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true

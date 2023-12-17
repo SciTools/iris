@@ -29,7 +29,9 @@ class Iris:
     @staticmethod
     def _import(module_name, reset_colormaps=False):
         """Have experimented with adding sleep() commands into the imported
-        modules. The results reveal:
+        modules.
+
+        The results reveal:
 
         ASV avoids invoking `import x` if nothing gets called in the
         benchmark (some imports were timed, but only those where calls

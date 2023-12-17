@@ -1,5 +1,5 @@
 class ExampleClass:
-    """Class Summary"""
+    """Class Summary."""
 
     def __init__(self, arg1, arg2):
         """Purpose section description.
