@@ -33,7 +33,7 @@ class Constraint:
         ----------
         name : str or None, optional
             If a string, it is used as the name to match against the
-            :attr:`iris.cube.Cube.names` property. TREMTEST
+            :attr:`iris.cube.Cube.names` property.
         cube_func : callable or None, optional
             If a callable, it must accept a Cube as its first and only argument
             and return either True or False.
