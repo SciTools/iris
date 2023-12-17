@@ -969,6 +969,7 @@ def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback)
         - Horizontal coordinates are copied from the target cube.
         - Auxiliary coordinates which span the grid dimensions are
           ignored.
+
     Parameters
     ----------
     data : array

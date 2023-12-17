@@ -973,7 +973,7 @@ class PPField(metaclass=ABCMeta):
     @property
     def stash(self):
         """Stash property giving access to the associated STASH object,
-        now supporting __eq__
+        now supporting __eq__.
 
         """
         if (
@@ -1052,7 +1052,7 @@ class PPField(metaclass=ABCMeta):
     @property
     def data(self):
         """:class:`numpy.ndarray` representing the multidimensional data
-        of the pp file
+        of the pp file.
 
         """
         if is_lazy_data(self._data):
@@ -1126,7 +1126,8 @@ class PPField(metaclass=ABCMeta):
 
     def save(self, file_handle):
         """Save the PPField to the given file object.
-        (typically created with :func:`open`)::
+
+        Typically created with :func:`open`::
 
             # to append the field to a file
             with open(filename, 'ab') as fh:
@@ -1976,7 +1977,7 @@ def _convert_constraints(constraints):
 
     def pp_filter(field):
         """Return True if field is to be kept,
-        False if field does not match filter
+        False if field does not match filter.
 
         """
         res = True

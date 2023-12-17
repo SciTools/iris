@@ -803,7 +803,7 @@ def as_data_frame(
     """
 
     def merge_metadata(meta_var_list):
-        """Add auxiliary cube metadata to the DataFrame"""
+        """Add auxiliary cube metadata to the DataFrame."""
         nonlocal data_frame
         for meta_var_name, meta_var_index, meta_var in meta_var_list:
             if not meta_var_index:

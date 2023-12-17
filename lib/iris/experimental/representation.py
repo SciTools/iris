@@ -202,7 +202,7 @@ class CubeRepresentation:
 
     def _make_row(self, title, body=None, col_span=0):
         """Produce one row for the table body; i.e.
-            <tr><td>Coord name</td><td>x</td><td>-</td>...</tr>
+            <tr><td>Coord name</td><td>x</td><td>-</td>...</tr>.
 
         `body` contains the content for each cell not in the left-most (title)
                column.

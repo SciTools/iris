@@ -87,7 +87,7 @@ class TestTrajectoryWrap(tests.IrisTest):
 
     def assertPathsEqual(self, expected, actual):
         """Assert that the given paths are equal once STOP vertices have been
-        removed
+        removed.
 
         """
         expected = expected.cleaned()
@@ -100,7 +100,7 @@ class TestTrajectoryWrap(tests.IrisTest):
 
     def check_paths(self, expected_path, expected_path_crs, lines, axes):
         """Check that the paths in `lines` match the given expected paths when
-        plotted on the given geoaxes
+        plotted on the given geoaxes.
 
         """
 

@@ -1953,7 +1953,7 @@ class Mesh(CFVariableMixin):
 class _Mesh1DCoordinateManager:
     """TBD: require clarity on coord_systems validation
     TBD: require clarity on __eq__ support
-    TBD: rationalise self.coords() logic with other manager and Cube
+    TBD: rationalise self.coords() logic with other manager and Cube.
 
     """
 
@@ -2141,7 +2141,7 @@ class _Mesh1DCoordinateManager:
 
     def add(self, node_x=None, node_y=None, edge_x=None, edge_y=None):
         """use self.remove(edge_x=True) to remove a coordinate e.g., using the
-        pattern self.add(edge_x=None) will not remove the edge_x coordinate
+        pattern self.add(edge_x=None) will not remove the edge_x coordinate.
 
         """
         self._add(MeshNodeCoords(node_x, node_y))

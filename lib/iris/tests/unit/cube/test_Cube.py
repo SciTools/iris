@@ -966,7 +966,7 @@ class Test_slices_dim_order(tests.IrisTest):
             dim1: time
             dim2: height
             dim3: latitude
-            dim4: longitude
+            dim4: longitude.
         """
         self.cube = iris.cube.Cube(np.array([[[[8.0]]]]))
         self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [0])
@@ -976,7 +976,9 @@ class Test_slices_dim_order(tests.IrisTest):
 
     @staticmethod
     def expected_cube_setup(dim1name, dim2name, dim3name):
-        """input:
+        """expected_cube_setup.
+
+        input:
         ------
             dim1name: str
                 name of the first dimension coordinate
@@ -996,7 +998,9 @@ class Test_slices_dim_order(tests.IrisTest):
         return cube
 
     def check_order(self, dim1, dim2, dim3, dim_to_remove):
-        """does two things:
+        """check_order.
+
+        Does two things:
         (1) slices the 4D cube in dim1, dim2, dim3 (and removes the scalar
         coordinate) and
         (2) sets up a 3D cube with dim1, dim2, dim3.

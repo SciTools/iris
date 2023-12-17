@@ -198,7 +198,7 @@ class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
 
 
 class Test_GeogCS_equality(tests.IrisTest):
-    """Test cached values don't break GeogCS equality"""
+    """Test cached values don't break GeogCS equality."""
 
     def test_as_cartopy_globe(self):
         cs_const = GeogCS(6543210, 6500000)
@@ -250,7 +250,7 @@ class Test_GeogCS_equality(tests.IrisTest):
 
 
 class Test_GeogCS_mutation(tests.IrisTest):
-    "Test that altering attributes of a GeogCS instance behaves as expected"
+    "Test that altering attributes of a GeogCS instance behaves as expected."
 
     def test_semi_major_axis_change(self):
         # Clear datum

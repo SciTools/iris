@@ -258,7 +258,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
 
 
 class FakePPEnvironment:
-    """fake a minimal PP environment for use in cross-section coords, as in PP save rules"""
+    """fake a minimal PP environment for use in cross-section coords, as in PP save rules."""
 
     y = [1, 2, 3, 4]
     z = [111, 222, 333, 444]
@@ -372,7 +372,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
 
 def fields_from_cube(cubes):
     """Return an iterator of PP fields generated from saving the given cube(s)
-    to a temporary file, and then subsequently loading them again
+    to a temporary file, and then subsequently loading them again.
 
     """
     with tempfile.NamedTemporaryFile("w+b", suffix=".pp") as tmp_file:

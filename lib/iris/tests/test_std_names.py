@@ -11,7 +11,7 @@ from iris.std_names import CF_STANDARD_NAMES_TABLE_VERSION, STD_NAMES
 
 class TestStandardNames(tests.IrisTest):
     """standard_names.py is a machine generated file which contains a single dictionary
-    called STD_NAMES
+    called STD_NAMES.
     """
 
     longMessage = True

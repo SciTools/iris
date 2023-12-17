@@ -53,7 +53,7 @@ class CoordSystem(metaclass=ABCMeta):
     grid_mapping_name = None
 
     def __eq__(self, other):
-        """Override equality
+        """Override equality.
 
         The `_globe` and `_crs` attributes are not compared because they are
         cached properties and completely derived from other attributes. The

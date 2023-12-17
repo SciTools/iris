@@ -55,7 +55,7 @@ def activate_pandas_ndim():
     "ignore:.*as_series has been deprecated.*:iris._deprecation.IrisDeprecation"
 )
 class TestAsSeries(tests.IrisTest):
-    """Test conversion of 1D cubes to Pandas using as_series()"""
+    """Test conversion of 1D cubes to Pandas using as_series()."""
 
     def test_no_dim_coord(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
@@ -162,7 +162,7 @@ class TestAsSeries(tests.IrisTest):
     "ignore:You are using legacy 2-dimensional behaviour.*:FutureWarning"
 )
 class TestAsDataFrame(tests.IrisTest):
-    """Test conversion of 2D cubes to Pandas using as_data_frame()"""
+    """Test conversion of 2D cubes to Pandas using as_data_frame()."""
 
     def test_no_dim_coords(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo")
@@ -317,7 +317,7 @@ class TestAsDataFrame(tests.IrisTest):
 
 @skip_pandas
 class TestAsDataFrameNDim(tests.IrisTest):
-    """Test conversion of n-dimensional cubes to Pandas using as_data_frame()"""
+    """Test conversion of n-dimensional cubes to Pandas using as_data_frame()."""
 
     @pytest.fixture(autouse=True)
     def _activate_pandas_ndim(self, activate_pandas_ndim):

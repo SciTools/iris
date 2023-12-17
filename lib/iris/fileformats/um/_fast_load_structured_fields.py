@@ -45,7 +45,9 @@ class BasicFieldCollation:
     """
 
     def __init__(self, fields):
-        """Args:
+        """BasicFieldCollation initialise.
+
+        Args:
 
         * fields (iterable of :class:`iris.fileformats.pp.PPField`):
             The fields in the collation.

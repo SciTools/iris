@@ -782,7 +782,7 @@ _load_cube_once_cache = {}
 
 
 def load_cube_once(filename, constraint):
-    """Same syntax as load_cube, but will only load a file once,
+    """Same syntax as load_cube, but will only load a file once,.
 
     then cache the answer in a dictionary.
 

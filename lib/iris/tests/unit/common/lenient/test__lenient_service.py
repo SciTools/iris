@@ -67,7 +67,7 @@ class Test(tests.IrisTest):
     def test_call_naked_doc(self):
         @_lenient_service
         def myservice():
-            """myservice doc-string"""
+            """myservice doc-string."""
 
         self.assertEqual(myservice.__doc__, "myservice doc-string")
 
@@ -105,7 +105,7 @@ class Test(tests.IrisTest):
     def test_call_doc(self):
         @_lenient_service()
         def myservice():
-            """myservice doc-string"""
+            """myservice doc-string."""
 
         self.assertEqual(myservice.__doc__, "myservice doc-string")
 
