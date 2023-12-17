@@ -752,7 +752,7 @@ def _is_single_item(testee):
 
 
 class CubeAttrsDict(MutableMapping):
-    """A :class:`dict`\\-like object for :attr:`iris.cube.Cube.attributes`,
+    r"""A :class:`dict`\\-like object for :attr:`iris.cube.Cube.attributes`,
     providing unified user access to combined cube "local" and "global" attributes
     dictionaries, with the access behaviour of an ordinary (single) dictionary.
 
@@ -2018,7 +2018,7 @@ class Cube(CFVariableMixin):
         dim_coords=None,
         mesh_coords=None,
     ):
-        """Return a list of coordinates from the :class:`Cube` that match the
+        r"""Return a list of coordinates from the :class:`Cube` that match the
         provided criteria.
 
         .. seealso::
@@ -2184,7 +2184,7 @@ class Cube(CFVariableMixin):
         dim_coords=None,
         mesh_coords=None,
     ):
-        """Return a single coordinate from the :class:`Cube` that matches the
+        r"""Return a single coordinate from the :class:`Cube` that matches the
         provided criteria.
 
         .. note::
@@ -2359,7 +2359,7 @@ class Cube(CFVariableMixin):
 
     @property
     def mesh(self):
-        """Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        r"""Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
         associated with the cube, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
@@ -2379,7 +2379,7 @@ class Cube(CFVariableMixin):
 
     @property
     def location(self):
-        """Return the mesh "location" of the cube data, if the cube has any
+        r"""Return the mesh "location" of the cube data, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
@@ -2398,7 +2398,7 @@ class Cube(CFVariableMixin):
         return result
 
     def mesh_dim(self):
-        """Return the cube dimension of the mesh, if the cube has any
+        r"""Return the cube dimension of the mesh, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
