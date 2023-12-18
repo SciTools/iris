@@ -7,7 +7,7 @@ which are calculated by combining air pressure, air potential temperature and
 specific humidity. Finally, the two new cubes are presented side-by-side in a
 plot.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker

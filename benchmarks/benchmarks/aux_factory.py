@@ -29,7 +29,7 @@ class FactoryCommon:
     """
 
     def setup(self):
-        """Prevent ASV instantiating (must therefore override setup() in any subclasses.)"""
+        """Prevent ASV instantiating (must therefore override setup() in any subclasses.)."""
         raise NotImplementedError
 
     def setup_common(self):

@@ -297,7 +297,7 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(cube[0][(0, 2), (1, 3)], ("netcdf", "netcdf_deferred_mix_1.cml"))
 
     def test_um_stash_source(self):
-        """Test that um_stash_source is converted into a STASH code"""
+        """Test that um_stash_source is converted into a STASH code."""
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {
@@ -382,7 +382,7 @@ class TestNetCDFLoad(tests.IrisTest):
         )
 
     def test_bad_um_stash_source(self):
-        """Test that um_stash_source not in strict MSI form is kept"""
+        """Test that um_stash_source not in strict MSI form is kept."""
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {

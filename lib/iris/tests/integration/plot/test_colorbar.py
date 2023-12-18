@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test interaction between :mod:`iris.plot` and
-:func:`matplotlib.pyplot.colorbar`
+:func:`matplotlib.pyplot.colorbar`.
 
 """
 

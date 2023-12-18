@@ -231,7 +231,7 @@ class TestLoadCubes(tests.IrisTest):
 
 
 class Test_scalar_cell_method(tests.IrisTest):
-    """Tests for iris.fileformats.rules.scalar_cell_method() function"""
+    """Tests for iris.fileformats.rules.scalar_cell_method() function."""
 
     def setUp(self):
         self.cube = stock.simple_2d()

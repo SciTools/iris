@@ -184,7 +184,7 @@ class TestLicenseHeaders(tests.IrisTest):
     def whatchanged_parse(whatchanged_output):
         r"""Returns a generator of tuples of data parsed from
         "git whatchanged --pretty='TIME:%at". The tuples are of the form
-        ``(filename, last_commit_datetime)``
+        ``(filename, last_commit_datetime)``.
 
         Sample input::
 

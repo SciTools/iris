@@ -737,7 +737,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
     def test_clim_in_clim_op(self):
         """Check the least complicated version works (set climatological, set
         points correctly). For the input coordinate to be climatological, it
-        must have bounds
+        must have bounds.
         """
         result = self.get_result(bounds=True, already_climatological=True)
 

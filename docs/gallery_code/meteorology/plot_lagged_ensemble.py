@@ -15,7 +15,7 @@ GloSea4 model, which is then used to produce two types of plot:
   better approach would be to take the climatological mean, calibrated to the
   model, from each ensemble member.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker

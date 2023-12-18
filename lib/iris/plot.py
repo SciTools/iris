@@ -255,7 +255,7 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
 
 
 def _invert_yaxis(v_coord, axes=None):
-    """Inverts the y-axis of the current plot based on conditions:
+    """Inverts the y-axis of the current plot based on conditions.
 
         * If the y-axis is already inverted we don't want to re-invert it.
         * If v_coord is None then it will not have any attributes.

@@ -11,7 +11,7 @@ We also add some lines and text annotations drawn in various projections.
 
 We plot these over a specified region, in two different map projections.
 
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

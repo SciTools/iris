@@ -650,7 +650,7 @@ def realistic_4d():
 
 
 def realistic_4d_no_derived():
-    """Returns a realistic 4d cube without hybrid height
+    """Returns a realistic 4d cube without hybrid height.
 
     >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;

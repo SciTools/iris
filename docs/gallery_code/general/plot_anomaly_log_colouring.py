@@ -22,7 +22,7 @@ functions of the same names (i.e., :obj:`matplotlib.pyplot.pcolor`
 and :obj:`matplotlib.pyplot.pcolormesh`).
 See also: https://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.colors as mcols

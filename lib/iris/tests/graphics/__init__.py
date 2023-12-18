@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Contains Iris graphic testing utilities
+"""Contains Iris graphic testing utilities.
 
 By default, this module sets the matplotlib backend to "agg". But when
 this module is imported it checks ``sys.argv`` for the flag "-d". If

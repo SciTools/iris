@@ -21,7 +21,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     """Given a shapely geometry object, this helper method returns
     the tuple
     (subcube, x_coord_of_subcube, y_coord_of_subcube,
-     (min_x_index, min_y_index, max_x_index, max_y_index))
+     (min_x_index, min_y_index, max_x_index, max_y_index)).
 
     If cube and geometry don't overlap, returns None.
 

@@ -4,7 +4,7 @@
 This example demonstrates a contour plot of global air temperature. The plot
 title and the labels for the axes are automatically derived from the metadata.
 
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

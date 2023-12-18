@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Wrapper for animating iris cubes using iris or matplotlib plotting functions
+"""Wrapper for animating iris cubes using iris or matplotlib plotting functions.
 
 Notes
 -----

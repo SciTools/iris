@@ -211,7 +211,7 @@ def _calc_integration_period(time_avgs):
 
 
 def _parse_units(units):
-    """Return a known :class:`cf_units.Unit` given a NAME unit
+    """Return a known :class:`cf_units.Unit` given a NAME unit.
 
     .. note::
 
