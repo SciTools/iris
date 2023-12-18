@@ -58,21 +58,9 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#pyupgrade-up
     "UP",
 
-    # flake8-2020 (YTT)
-    # https://docs.astral.sh/ruff/rules/#flake8-2020-ytt
-    "YTT",
-
     # flake8-annotations (ANN)
     # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
     "ANN",
-
-    # flake8-async (ASYNC)
-    # https://docs.astral.sh/ruff/rules/#flake8-async-async
-    "ASYNC",
-
-    # flake8-trio (TRIO)
-    # https://docs.astral.sh/ruff/rules/#flake8-trio-trio
-    "TRIO",
 
     # flake8-bandit (S)
     # https://docs.astral.sh/ruff/rules/#flake8-bandit-s
@@ -98,10 +86,6 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flake8-commas-com
     "COM",
 
-    # flake8-copyright (CPY)
-    # https://docs.astral.sh/ruff/rules/#flake8-copyright-cpy
-    "CPY",
-
     # flake8-comprehensions (C4)
     # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
     "C4",
@@ -109,14 +93,6 @@ lint.ignore = [
     # flake8-datetimez (DTZ)
     # https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
     "DTZ",
-
-    # flake8-debugger (T10)
-    # https://docs.astral.sh/ruff/rules/#flake8-debugger-t10
-    "T10",
-
-    # flake8-django (DJ)
-    # https://docs.astral.sh/ruff/rules/#flake8-django-dj
-    "DJ",
 
     # flake8-errmsg (EM)
     # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
@@ -129,10 +105,6 @@ lint.ignore = [
     # flake8-future-annotations (FA)
     # https://docs.astral.sh/ruff/rules/#flake8-future-annotations-fa
     "FA",
-
-    # flake8-implicit-str-concat (ISC)
-    # https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
-    "ISC",
 
     # flake8-import-conventions (ICN)
     # https://docs.astral.sh/ruff/rules/#flake8-import-conventions-icn
@@ -162,10 +134,6 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flake8-pytest-style-pt
     "PT",
 
-    # flake8-quotes (Q)
-    # https://docs.astral.sh/ruff/rules/#flake8-quotes-q
-    "Q",
-
     # flake8-raise (RSE)
     # https://docs.astral.sh/ruff/rules/#flake8-raise-rse
     "RSE",
@@ -193,10 +161,6 @@ lint.ignore = [
     # flake8-type-checking (TCH)
     # https://docs.astral.sh/ruff/rules/#flake8-type-checking-tch
     "TCH",
-
-    # flake8-gettext (INT)
-    # https://docs.astral.sh/ruff/rules/#flake8-gettext-int
-    "INT",
 
     # flake8-unused-arguments (ARG)
     # https://docs.astral.sh/ruff/rules/#flake8-unused-arguments-arg
@@ -242,21 +206,9 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#numpy-specific-rules-npy
     "NPY",
 
-    # Airflow (AIR)
-    # https://docs.astral.sh/ruff/rules/#airflow-air
-    "AIR",
-
     # Perflint (PERF)
     # https://docs.astral.sh/ruff/rules/#perflint-perf
     "PERF",
-
-    # refurb (FURB)
-    # https://docs.astral.sh/ruff/rules/#refurb-furb
-    "FURB",
-
-    # flake8-logging (LOG)
-    # https://docs.astral.sh/ruff/rules/#flake8-logging-log
-    "LOG",
 
     # Ruff-specific rules (RUF)
     # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
