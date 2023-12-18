@@ -82,6 +82,11 @@ preview = false
 ignore = [
     # NOTE: Non-permanent exclusions should be added to the ".ruff.toml" file.
 
+    # flake8-commas (COM)
+    # https://docs.astral.sh/ruff/rules/#flake8-commas-com
+    "COM812",  # Trailing comma missing.
+    "COM819",  # Trailing comma prohibited.
+
     # flake8-implicit-str-concat (ISC)
     # https://docs.astral.sh/ruff/rules/single-line-implicit-string-concatenation/
     # NOTE: This rule may cause conflicts when used with "ruff format".
