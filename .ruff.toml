@@ -102,9 +102,9 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flake8-future-annotations-fa
     "FA",
 
-    # flake8-import-conventions (ICN)
-    # https://docs.astral.sh/ruff/rules/#flake8-import-conventions-icn
-    "ICN",
+    # flake8-implicit-str-concat (ISC)
+    # https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
+    "ISC",
 
     # flake8-logging-format (G)
     # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g

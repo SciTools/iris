@@ -26,15 +26,15 @@ import filelock
 # Test for availability of matplotlib.
 # (And remove matplotlib as an iris.tests dependency.)
 try:
-    import matplotlib
+    import matplotlib as mpl
 
     # Override any user settings e.g. from matplotlibrc file.
-    matplotlib.rcdefaults()
+    mpl.rcdefaults()
     # Set backend *after* rcdefaults, as we don't want that overridden (#3846).
-    matplotlib.use("agg")
+    mpl.use("agg")
     # Standardise the figure size across matplotlib versions.
     # This permits matplotlib png image comparison.
-    matplotlib.rcParams["figure.figsize"] = [8.0, 6.0]
+    mpl.rcParams["figure.figsize"] = [8.0, 6.0]
     import matplotlib.pyplot as plt
 except ImportError:
     MPL_AVAILABLE = False
