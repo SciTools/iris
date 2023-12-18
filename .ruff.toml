@@ -42,7 +42,6 @@ lint.ignore = [
     "D211",  # No blank lines allowed before class docstring
     "D214",  # Section is over-indented
     "D300",  # triple double quotes `""" / Use triple single quotes `'''`
-    "D400",  # First line should end with a period
     "D401",  # First line of docstring should be in imperative mood: ...
     "D403",  # First word of the first line should be capitalized
     "D404",  # First word of the docstring should not be "This"
