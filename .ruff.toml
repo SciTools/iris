@@ -198,9 +198,9 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flynt-fly
     "FLY",
 
-    # NumPy-specific rules (NPY)
-    # https://docs.astral.sh/ruff/rules/#numpy-specific-rules-npy
-    "NPY",
+    # Airflow (AIR)
+    # https://docs.astral.sh/ruff/rules/#airflow-air
+    "AIR",
 
     # Perflint (PERF)
     # https://docs.astral.sh/ruff/rules/#perflint-perf

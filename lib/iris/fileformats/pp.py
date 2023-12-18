@@ -1217,7 +1217,7 @@ class PPField(metaclass=ABCMeta):
                     ia //= PP_WORD_DEPTH
                 else:
                     # ia is the datalength in WORDS
-                    ia = np.product(extra_elem.shape)
+                    ia = np.prod(extra_elem.shape)
                     # flip the byteorder if the data is not big-endian
                     if extra_elem.dtype.newbyteorder(">") != extra_elem.dtype:
                         # take a copy of the extra data when byte swapping
