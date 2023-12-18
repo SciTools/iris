@@ -16,7 +16,7 @@ from cf_units import Unit
 import cftime
 import numpy as np
 import numpy.ma as ma
-import pandas
+import pandas as pd
 
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
@@ -44,7 +44,7 @@ def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
 
     # Convert out of NumPy's own datetime format.
     if np.issubdtype(values.dtype, np.datetime64):
-        values = pandas.to_datetime(values)
+        values = pd.to_datetime(values)
 
     # Convert pandas datetime objects to python datetime objects.
     if isinstance(values, DatetimeIndex):
@@ -87,7 +87,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         cube.add_aux_coord(coord, dim)
 
 
-def _series_index_unique(pandas_series: pandas.Series):
+def _series_index_unique(pandas_series: pd.Series):
     """Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
 
     Iterates through grouping single index levels, then combinations of 2
@@ -192,7 +192,7 @@ def as_cubes(
     cell_measure_cols=None,
     ancillary_variable_cols=None,
 ):
-    """Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
+    r"""Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
     The index of `pandas_structure` will be used for generating the
     :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`\\ s.
@@ -357,7 +357,7 @@ def as_cubes(
     cell_measure_cols = cell_measure_cols or []
     ancillary_variable_cols = ancillary_variable_cols or []
 
-    is_series = isinstance(pandas_structure, pandas.Series)
+    is_series = isinstance(pandas_structure, pd.Series)
 
     if copy:
         pandas_structure = pandas_structure.copy()
@@ -604,7 +604,7 @@ def as_series(cube, copy=True):
     index = None
     if cube.dim_coords:
         index = _as_pandas_coord(cube.dim_coords[0])
-    series = pandas.Series(data, index)
+    series = pd.Series(data, index)
     if not copy:
         _assert_shared(data, series)
     return series
@@ -617,7 +617,7 @@ def as_data_frame(
     add_cell_measures=False,
     add_ancillary_variables=False,
 ):
-    """Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
+    r"""Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
     flattened into a long-style :class:`~pandas.DataFrame`.  Other
@@ -811,16 +811,16 @@ def as_data_frame(
                 # dimension over the whole DataFrame
                 data_frame[meta_var_name] = meta_var.squeeze()
             else:
-                meta_df = pandas.DataFrame(
+                meta_df = pd.DataFrame(
                     meta_var.ravel(),
                     columns=[meta_var_name],
-                    index=pandas.MultiIndex.from_product(
+                    index=pd.MultiIndex.from_product(
                         [coords[i] for i in meta_var_index],
                         names=[coord_names[i] for i in meta_var_index],
                     ),
                 )
                 # Merge to main data frame
-                data_frame = pandas.merge(
+                data_frame = pd.merge(
                     data_frame,
                     meta_df,
                     left_index=True,
@@ -847,8 +847,8 @@ def as_data_frame(
         # Extract dim coord information: separate lists for dim names and dim values
         coord_names, coords = _make_dim_coord_list(cube)
         # Make base DataFrame
-        index = pandas.MultiIndex.from_product(coords, names=coord_names)
-        data_frame = pandas.DataFrame(data.ravel(), columns=[cube.name()], index=index)
+        index = pd.MultiIndex.from_product(coords, names=coord_names)
+        data_frame = pd.DataFrame(data.ravel(), columns=[cube.name()], index=index)
 
         if add_aux_coords:
             data_frame = merge_metadata(_make_aux_coord_list(cube))
@@ -889,7 +889,7 @@ def as_data_frame(
         if cube.coords(dimensions=[1]):
             columns = _as_pandas_coord(cube.coord(dimensions=[1]))
 
-        data_frame = pandas.DataFrame(data, index, columns)
+        data_frame = pd.DataFrame(data, index, columns)
         if not copy:
             _assert_shared(data, data_frame)
 

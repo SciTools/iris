@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Extensions to Iris' NetCDF loading to allow the construction of
+r"""Extensions to Iris' NetCDF loading to allow the construction of
 :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es from UGRID data in the file.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
@@ -143,7 +143,7 @@ def load_mesh(uris, var_name=None):
 
 
 def load_meshes(uris, var_name=None):
-    """Load :class:`~iris.experimental.ugrid.mesh.Mesh` objects from one or more NetCDF files.
+    r"""Load :class:`~iris.experimental.ugrid.mesh.Mesh` objects from one or more NetCDF files.
 
     Parameters
     ----------

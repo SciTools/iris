@@ -1,8 +1,8 @@
+#!/usr/bin/env python
 # Copyright Iris contributors
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-# !/usr/bin/env python
 """Provides "diff-like" comparison of images.
 
 Currently relies on matplotlib for image processing so limited to PNG format.

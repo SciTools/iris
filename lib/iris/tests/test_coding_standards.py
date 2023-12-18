@@ -125,7 +125,7 @@ def test_python_versions():
 
 
 def test_categorised_warnings():
-    """To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
+    r"""To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
     :class:`iris.exceptions.IrisUserWarning`.
@@ -182,7 +182,7 @@ def test_categorised_warnings():
 class TestLicenseHeaders(tests.IrisTest):
     @staticmethod
     def whatchanged_parse(whatchanged_output):
-        """Returns a generator of tuples of data parsed from
+        r"""Returns a generator of tuples of data parsed from
         "git whatchanged --pretty='TIME:%at". The tuples are of the form
         ``(filename, last_commit_datetime)``.
 

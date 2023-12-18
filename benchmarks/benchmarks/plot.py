@@ -5,14 +5,14 @@
 """Plot benchmark tests.
 
 """
-import matplotlib
+import matplotlib as mpl
 import numpy as np
 
 from iris import coords, cube, plot
 
 from . import ARTIFICIAL_DIM_SIZE
 
-matplotlib.use("agg")
+mpl.use("agg")
 
 
 class AuxSort:
