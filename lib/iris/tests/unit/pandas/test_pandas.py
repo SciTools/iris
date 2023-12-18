@@ -26,18 +26,18 @@ from iris._deprecation import IrisDeprecation
 # used by matplotlib for handling dates.
 default_units_registry = copy.copy(matplotlib.units.registry)
 try:
-    import pandas
+    import pandas as pd
 except ImportError:
     # Disable all these tests if pandas is not installed.
-    pandas = None
+    pd = None
 matplotlib.units.registry = default_units_registry
 
 skip_pandas = pytest.mark.skipif(
-    pandas is None,
+    pd is None,
     reason='Test(s) require "pandas", ' "which is not available.",
 )
 
-if pandas is not None:
+if pd is not None:
     from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
     from iris.cube import Cube, CubeList
     import iris.pandas
@@ -234,7 +234,7 @@ class TestAsDataFrame(tests.IrisTest):
         days_to_2000 = 365 * 30 + 7
         # pandas Timestamp class cannot handle floats in pandas <v0.12
         timestamps = [
-            pandas.Timestamp(int(nanoseconds_per_day * (days_to_2000 + day_offset)))
+            pd.Timestamp(int(nanoseconds_per_day * (days_to_2000 + day_offset)))
             for day_offset in day_offsets
         ]
         assert all(data_frame.columns == timestamps)
@@ -588,7 +588,7 @@ class TestAsDataFrameNDim(tests.IrisTest):
 )
 class TestSeriesAsCube(tests.IrisTest):
     def test_series_simple(self):
-        series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
+        series = pd.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         self.assertCML(
             iris.pandas.as_cube(series),
             tests.get_result_path(("pandas", "as_cube", "series_simple.cml")),
@@ -599,7 +599,7 @@ class TestSeriesAsCube(tests.IrisTest):
             def __repr__(self):
                 return "A Thing"
 
-        series = pandas.Series(
+        series = pd.Series(
             [0, 1, 2, 3, 4],
             index=[Thing(), Thing(), Thing(), Thing(), Thing()],
         )
@@ -609,14 +609,14 @@ class TestSeriesAsCube(tests.IrisTest):
         )
 
     def test_series_masked(self):
-        series = pandas.Series([0, float("nan"), 2, np.nan, 4], index=[5, 6, 7, 8, 9])
+        series = pd.Series([0, float("nan"), 2, np.nan, 4], index=[5, 6, 7, 8, 9])
         self.assertCML(
             iris.pandas.as_cube(series),
             tests.get_result_path(("pandas", "as_cube", "series_masked.cml")),
         )
 
     def test_series_datetime_standard(self):
-        series = pandas.Series(
+        series = pd.Series(
             [0, 1, 2, 3, 4],
             index=[
                 datetime.datetime(2001, 1, 1, 1, 1, 1),
@@ -634,7 +634,7 @@ class TestSeriesAsCube(tests.IrisTest):
         )
 
     def test_series_cftime_360(self):
-        series = pandas.Series(
+        series = pd.Series(
             [0, 1, 2, 3, 4],
             index=[
                 cftime.datetime(2001, 1, 1, 1, 1, 1),
@@ -650,13 +650,13 @@ class TestSeriesAsCube(tests.IrisTest):
         )
 
     def test_copy_true(self):
-        series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
+        series = pd.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         cube = iris.pandas.as_cube(series)
         cube.data[0] = 99
         assert series[5] == 0
 
     def test_copy_false(self):
-        series = pandas.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
+        series = pd.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         cube = iris.pandas.as_cube(series, copy=False)
         cube.data[0] = 99
         assert series[5] == 99
@@ -668,7 +668,7 @@ class TestSeriesAsCube(tests.IrisTest):
 )
 class TestDataFrameAsCube(tests.IrisTest):
     def test_data_frame_simple(self):
-        data_frame = pandas.DataFrame(
+        data_frame = pd.DataFrame(
             [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
             index=[10, 11],
             columns=[12, 13, 14, 15, 16],
@@ -679,7 +679,7 @@ class TestDataFrameAsCube(tests.IrisTest):
         )
 
     def test_data_frame_nonotonic(self):
-        data_frame = pandas.DataFrame(
+        data_frame = pd.DataFrame(
             [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
             index=[10, 10],
             columns=[12, 12, 14, 15, 16],
@@ -690,7 +690,7 @@ class TestDataFrameAsCube(tests.IrisTest):
         )
 
     def test_data_frame_masked(self):
-        data_frame = pandas.DataFrame(
+        data_frame = pd.DataFrame(
             [[0, float("nan"), 2, 3, 4], [5, 6, 7, np.nan, 9]],
             index=[10, 11],
             columns=[12, 13, 14, 15, 16],
@@ -701,7 +701,7 @@ class TestDataFrameAsCube(tests.IrisTest):
         )
 
     def test_data_frame_multidim(self):
-        data_frame = pandas.DataFrame(
+        data_frame = pd.DataFrame(
             [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
             index=[0, 1],
             columns=["col_1", "col_2", "col_3", "col_4", "col_5"],
@@ -712,7 +712,7 @@ class TestDataFrameAsCube(tests.IrisTest):
         )
 
     def test_data_frame_cftime_360(self):
-        data_frame = pandas.DataFrame(
+        data_frame = pd.DataFrame(
             [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
             index=[
                 cftime.datetime(2001, 1, 1, 1, 1, 1),
@@ -728,7 +728,7 @@ class TestDataFrameAsCube(tests.IrisTest):
         )
 
     def test_data_frame_datetime_standard(self):
-        data_frame = pandas.DataFrame(
+        data_frame = pd.DataFrame(
             [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
             index=[
                 datetime.datetime(2001, 1, 1, 1, 1, 1),
@@ -744,13 +744,13 @@ class TestDataFrameAsCube(tests.IrisTest):
         )
 
     def test_copy_true(self):
-        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+        data_frame = pd.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         cube = iris.pandas.as_cube(data_frame)
         cube.data[0, 0] = 99
         assert data_frame[0][0] == 0
 
     def test_copy_false(self):
-        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+        data_frame = pd.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         cube = iris.pandas.as_cube(data_frame, copy=False)
         cube.data[0, 0] = 99
         assert data_frame[0][0] == 99
@@ -759,7 +759,7 @@ class TestDataFrameAsCube(tests.IrisTest):
 @skip_pandas
 class TestFutureAndDeprecation:
     def test_as_cube_deprecation_warning(self):
-        data_frame = pandas.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+        data_frame = pd.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         with pytest.warns(IrisDeprecation, match="as_cube has been deprecated"):
             _ = iris.pandas.as_cube(data_frame)
 
@@ -794,10 +794,10 @@ class TestPandasAsCubes(tests.IrisTest):
         ]
 
         if index_levels == 1:
-            index = pandas.Index(index_values[0], name=index_names[0])
+            index = pd.Index(index_values[0], name=index_names[0])
             data_length = index_length
         elif index_levels > 1:
-            index = pandas.MultiIndex.from_product(index_values, names=index_names)
+            index = pd.MultiIndex.from_product(index_values, names=index_names)
             data_length = index.nunique()
         else:
             index = None
@@ -806,9 +806,9 @@ class TestPandasAsCubes(tests.IrisTest):
         data = np.arange(data_length) * 10
 
         if is_series:
-            class_ = pandas.Series
+            class_ = pd.Series
         else:
-            class_ = pandas.DataFrame
+            class_ = pd.DataFrame
 
         return class_(data, index=index)
 
@@ -1013,13 +1013,13 @@ class TestPandasAsCubes(tests.IrisTest):
         assert result == [expected_cube_0, expected_cube_1]
 
     def test_empty_series(self):
-        series = pandas.Series(dtype=object)
+        series = pd.Series(dtype=object)
         result = iris.pandas.as_cubes(series)
 
         assert result == CubeList()
 
     def test_empty_dataframe(self):
-        df = pandas.DataFrame()
+        df = pd.DataFrame()
         result = iris.pandas.as_cubes(df)
 
         assert result == CubeList()
@@ -1165,7 +1165,7 @@ class TestPandasAsCubes(tests.IrisTest):
         datetime_args = [(1971, 1, 1, i, 0, 0) for i in df.index.values]
         if mode == "index":
             values = [datetime.datetime(*a) for a in datetime_args]
-            df.index = pandas.Index(values, name=coord_name)
+            df.index = pd.Index(values, name=coord_name)
         elif mode == "numpy":
             values = [datetime.datetime(*a) for a in datetime_args]
             df[coord_name] = values
