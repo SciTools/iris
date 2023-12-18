@@ -1229,7 +1229,7 @@ class CubeMetadata(BaseMetadata):
 
 
 class DimCoordMetadata(CoordMetadata):
-    """Metadata container for a :class:`~iris.coords.DimCoord`"""
+    """Metadata container for a :class:`~iris.coords.DimCoord`."""
 
     # The "circular" member is stateful only, and does not participate
     # in lenient/strict equivalence.

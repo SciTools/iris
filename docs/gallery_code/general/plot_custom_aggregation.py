@@ -11,7 +11,7 @@ In this case, we have a 240-year sequence of yearly average surface temperature
 over North America, and we want to calculate in how many years these exceed a
 certain temperature over a spell of 5 years or more.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 import numpy as np

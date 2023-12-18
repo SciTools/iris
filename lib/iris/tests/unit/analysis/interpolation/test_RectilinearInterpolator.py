@@ -338,7 +338,7 @@ class Test___call___1D_singlelendim(ThreeDimCube):
              bar                              -            x
              foo                              -            x
         Scalar coordinates:
-             longitude: 0
+             longitude: 0.
         """
         ThreeDimCube.setUp(self)
         self.cube = self.cube[:, 0:1, 0]

@@ -286,7 +286,7 @@ def guess_coord_axis(coord):
 
 
 def rolling_window(a, window=1, step=1, axis=-1):
-    """Make an ndarray with a rolling window of the last dimension
+    """Make an ndarray with a rolling window of the last dimension.
 
     Args:
 

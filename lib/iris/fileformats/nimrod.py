@@ -240,7 +240,7 @@ class NimrodField:
             )
 
     def _read_data(self, infile):
-        """Read the data array: int8, int16, int32 or float32
+        """Read the data array: int8, int16, int32 or float32.
 
         (surrounded by 4-byte length, at start and end)
 

@@ -630,7 +630,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return hash(id(self))
 
     def __binary_operator__(self, other, mode_constant):
-        """Common code which is called by add, sub, mul and div
+        """Common code which is called by add, sub, mul and div.
 
         Mode constant is one of ADD, SUB, MUL, DIV, RDIV
 
@@ -2470,7 +2470,7 @@ class Coord(_DimensionalMetadata):
         return element
 
     def _xml_id_extra(self, unique_value):
-        """Coord specific stuff for the xml id"""
+        """Coord specific stuff for the xml id."""
         unique_value += str(self.coord_system).encode("utf-8") + b"\0"
         return unique_value
 
@@ -2934,7 +2934,9 @@ class CellMethod(iris.util._OrderedHashable):
     comments = None
 
     def __init__(self, method, coords=None, intervals=None, comments=None):
-        """Args:
+        """Call Method initialise.
+
+        Args:
 
         * method:
             The name of the operation.
@@ -2993,7 +2995,7 @@ class CellMethod(iris.util._OrderedHashable):
         self._init(method, tuple(_coords), tuple(_intervals), tuple(_comments))
 
     def __str__(self):
-        """Return a custom string representation of CellMethod"""
+        """Return a custom string representation of CellMethod."""
         # Group related coord names intervals and comments together
         coord_string = " ".join([f"{coord}:" for coord in self.coord_names])
         method_string = str(self.method)

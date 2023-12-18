@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 """Infra-structure for unstructured mesh support, based on
-CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/
+CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/.
 
 .. note::
 

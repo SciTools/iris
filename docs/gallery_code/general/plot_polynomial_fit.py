@@ -5,7 +5,7 @@ This example demonstrates computing a polynomial fit to 1D data from an Iris
 cube, adding the fit to the cube's metadata, and plotting both the 1D data and
 the fit.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 import numpy as np

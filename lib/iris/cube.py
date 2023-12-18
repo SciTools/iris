@@ -188,14 +188,14 @@ class CubeList(list):
         return CubeList(list.__add__(self, other))
 
     def __getitem__(self, keys):
-        """x.__getitem__(y) <==> x[y]"""
+        """x.__getitem__(y) <==> x[y]."""
         result = super().__getitem__(keys)
         if isinstance(result, list):
             result = CubeList(result)
         return result
 
     def __getslice__(self, start, stop):
-        """x.__getslice__(i, j) <==> x[i:j]
+        """x.__getslice__(i, j) <==> x[i:j].
 
         Use of negative indices is not supported.
 
@@ -209,7 +209,7 @@ class CubeList(list):
         return super(CubeList, self).__iadd__(CubeList(other_cubes))
 
     def __setitem__(self, key, cube_or_sequence):
-        """Set self[key] to cube or sequence of cubes"""
+        """Set self[key] to cube or sequence of cubes."""
         if isinstance(key, int):
             # should have single cube.
             self._assert_is_cube(cube_or_sequence)

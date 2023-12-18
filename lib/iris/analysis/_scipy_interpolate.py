@@ -41,7 +41,7 @@ def _ndim_coords_from_arrays(points, ndim=None):
 # 9aeaafb32/scipy/interpolate/interpolate.py#L1400
 class _RegularGridInterpolator:
 
-    """Interpolation on a regular grid in arbitrary dimensions
+    """Interpolation on a regular grid in arbitrary dimensions.
 
     The data must be defined on a regular grid; the grid spacing however may be
     uneven.  Linear and nearest-neighbour interpolation are supported. After
@@ -139,7 +139,7 @@ class _RegularGridInterpolator:
         self.values = values
 
     def __call__(self, xi, method=None):
-        """Interpolation at coordinates
+        """Interpolation at coordinates.
 
         Parameters
         ----------

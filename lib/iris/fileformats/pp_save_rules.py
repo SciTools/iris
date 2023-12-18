@@ -815,7 +815,7 @@ def _vertical_rules(cube, pp):
 
 
 def _all_other_rules(cube, pp):
-    """Fields currently managed by these rules:
+    """Fields currently managed by these rules.
 
     * lbfc (field code)
     * lbrsvd[3] (ensemble member number)

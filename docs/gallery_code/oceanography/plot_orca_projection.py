@@ -9,7 +9,7 @@ First, the data is projected into the PlateCarree coordinate reference system.
 Second four pcolormesh plots are created from this projected dataset,
 using different projections for the output image.
 
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

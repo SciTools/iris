@@ -52,7 +52,7 @@ In the ``main()`` function the filenames are loaded via the ``iris.load_cube``
 function which automatically invokes the ``FormatSpecification`` we defined.
 The cube returned from the load function is then used to produce a plot.
 
-"""
+"""  # noqa: D400
 
 import datetime
 

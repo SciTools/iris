@@ -24,7 +24,7 @@ class TestGetNames(tests.IrisTest):
     * standard_name = [None, 'projection_y_coordinate', 'latitude_coordinate']
     * long_name = [None, 'lat_long_name']
     * var_name = ['grid_latitude', 'lat_var_name']
-    * coord_name = [None, 'latitude']
+    * coord_name = [None, 'latitude'].
 
     standard_name, var_name and coord_name each contain a different valid CF
     standard name so that it is clear which is being used to set the resulting

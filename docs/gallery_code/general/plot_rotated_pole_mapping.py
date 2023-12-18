@@ -9,7 +9,7 @@ differing images, including:
  * Block plot of contiguous bounded data
  * Non native projection and a Natural Earth shaded relief image underlay
 
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

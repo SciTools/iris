@@ -8,7 +8,7 @@ are co-located in space in this case.
 For the second plot, the data used for the arrows is normalised to produce
 arrows with a uniform size on the plot.
 
-"""
+"""  # noqa: D400
 
 import cartopy.feature as cfeat
 import matplotlib.pyplot as plt
