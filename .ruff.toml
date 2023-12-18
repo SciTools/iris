@@ -98,10 +98,6 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
     "EM",
 
-    # flake8-executable (EXE)
-    # https://docs.astral.sh/ruff/rules/#flake8-executable-exe
-    "EXE",
-
     # flake8-future-annotations (FA)
     # https://docs.astral.sh/ruff/rules/#flake8-future-annotations-fa
     "FA",
