@@ -659,7 +659,7 @@ class Mesh(CFVariableMixin):
 
     @classmethod
     def from_coords(cls, *coords):
-        """Construct a :class:`Mesh` by derivation from one or more
+        r"""Construct a :class:`Mesh` by derivation from one or more
         :class:`~iris.coords.Coord`\\ s.
 
         The :attr:`~Mesh.topology_dimension`, :class:`~iris.coords.Coord`
@@ -1865,7 +1865,7 @@ class Mesh(CFVariableMixin):
         return MeshCoord(mesh=self, location=location, axis=axis)
 
     def to_MeshCoords(self, location):
-        """Generate a tuple of
+        r"""Generate a tuple of
         :class:`~iris.experimental.ugrid.mesh.MeshCoord`\\ s, each referencing
         the current :class:`Mesh`, one for each :attr:`AXES` value, passing
         through the ``location`` argument.

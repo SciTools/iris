@@ -20,7 +20,7 @@ from .actions import run_actions
 
 
 class FactEntity:
-    """An object with an 'entity_lists' property  which is a dict of 'FactList's.
+    r"""An object with an 'entity_lists' property  which is a dict of 'FactList's.
 
     A Factlist, in turn, is an object with property 'case_specific_facts',
     which is a list of tuples of strings

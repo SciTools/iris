@@ -172,7 +172,7 @@ class Mixin__string_representations:
         return self.repr_str_strings(coord)
 
     def assertLines(self, list_of_expected_lines, string_result):
-        """Assert equality between a result and expected output lines.
+        r"""Assert equality between a result and expected output lines.
 
         For convenience, the 'expected lines' are joined with a '\\n',
         because a list of strings is nicer to construct in code.

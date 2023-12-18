@@ -192,7 +192,7 @@ def as_cubes(
     cell_measure_cols=None,
     ancillary_variable_cols=None,
 ):
-    """Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
+    r"""Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
     The index of `pandas_structure` will be used for generating the
     :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`\\ s.
@@ -617,7 +617,7 @@ def as_data_frame(
     add_cell_measures=False,
     add_ancillary_variables=False,
 ):
-    """Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
+    r"""Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
     flattened into a long-style :class:`~pandas.DataFrame`.  Other

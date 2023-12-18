@@ -525,7 +525,7 @@ def _is_combination(name):
 
 
 def build_indexes(positions):
-    """Construct a mapping for each candidate dimension that maps for each
+    r"""Construct a mapping for each candidate dimension that maps for each
     of its scalar values the set of values for each of the other candidate
     dimensions.
 
