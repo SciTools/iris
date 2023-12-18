@@ -69,7 +69,7 @@ class Test__lazy_stream_data:
                     dmin, dmax = 0, 255
                 else:
                     dmin, dmax = array.min(), array.max()
-                array = np.random.uniform(dmin, dmax, size=array.shape)
+                array = np.random.default_rng().uniform(dmin, dmax, size=array.shape)
 
                 if data_is_maskedbytes:
                     array = array.astype("u1")
