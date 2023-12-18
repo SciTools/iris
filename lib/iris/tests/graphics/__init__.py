@@ -2,7 +2,6 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-# !/usr/bin/env python
 """Contains Iris graphic testing utilities.
 
 By default, this module sets the matplotlib backend to "agg". But when
