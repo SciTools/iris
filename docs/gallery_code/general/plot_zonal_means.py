@@ -1,7 +1,7 @@
 """Zonal Mean Diagram of Air Temperature
 =====================================
 This example demonstrates aligning a linear plot and a cartographic plot using Matplotlib.
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

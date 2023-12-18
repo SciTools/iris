@@ -26,7 +26,7 @@ References
     Further details on the aggregation functionality being used in this example
     can be found in :ref:`cube-statistics`.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -4,7 +4,7 @@
 Demonstrates plotting data that are defined on a polar stereographic
 projection.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 

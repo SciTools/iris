@@ -19,7 +19,7 @@ References
     Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21,
     doi:10.1029/2009EO210001.
 
-"""
+"""  # noqa: D400
 
 import os.path
 

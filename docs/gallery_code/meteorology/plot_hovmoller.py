@@ -6,7 +6,7 @@ over plot ticks and labels. The data comes from the Met Office OSTIA project
 and has been pre-processed to calculate the monthly mean sea surface
 temperature.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt

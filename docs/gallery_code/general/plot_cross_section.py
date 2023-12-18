@@ -4,7 +4,7 @@
 This example demonstrates contour plots of a cross-sectioned multi-dimensional
 cube which features a hybrid height vertical coordinate system.
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 

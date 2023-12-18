@@ -18,7 +18,7 @@ References
     Trenberth K. E. (1984) Signal Versus Noise in the Southern Oscillation.
     Monthly Weather Review, Vol 112, pp 326-332
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 import numpy as np
