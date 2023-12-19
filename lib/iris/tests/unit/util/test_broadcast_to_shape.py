@@ -96,9 +96,7 @@ class Test_broadcast_to_shape(tests.IrisTest):
         mocked_compute.assert_not_called()
         for i in range(3):
             for j in range(4):
-                self.assertMaskedArrayEqual(
-                    b[i, j, :].compute(), m[0].compute()
-                )
+                self.assertMaskedArrayEqual(b[i, j, :].compute(), m[0].compute())
         assert b.chunks == ((1, 1, 1), (2, 2), (2, 2, 1))
 
     def test_masked_degenerate(self):
