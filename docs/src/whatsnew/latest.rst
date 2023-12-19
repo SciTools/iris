@@ -99,6 +99,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ added the option to specify the Dask chunks of the target
    array in :func:`iris.util.broadcast_to_shape`. (:pull:`5620`)
 
+#. `@schlunma`_ allowed :func:`iris.analysis.cartography.area_weights` to
+   return dask arrays with arbitrary chunks. (:pull:`TBA`)
+
 🔥 Deprecations
 ===============
 

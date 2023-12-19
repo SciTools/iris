@@ -28,7 +28,7 @@ import iris.exceptions
 
 
 def broadcast_to_shape(array, shape, dim_map, chunks=None):
-    """Broadcast an array to a given shape."""
+    """Broadcast an array to a given shape.
 
     Each dimension of the array must correspond to a dimension in the
     given shape. The result is a read-only view (see :func:`numpy.broadcast_to`).
@@ -88,9 +88,7 @@ def broadcast_to_shape(array, shape, dim_map, chunks=None):
                 # dimensions that have size 1 in the source array.
                 if array.shape[src_idx] != 1:
                     chunks[tgt_idx] = array.chunks[src_idx]
-        broadcast = functools.partial(
-            da.broadcast_to, shape=shape, chunks=chunks
-        )
+        broadcast = functools.partial(da.broadcast_to, shape=shape, chunks=chunks)
     else:
         broadcast = functools.partial(np.broadcast_to, shape=shape)
 
