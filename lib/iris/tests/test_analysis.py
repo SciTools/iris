@@ -1156,6 +1156,55 @@ class TestAreaWeights(tests.IrisTest):
 
 
 @tests.skip_data
+class TestLazyAreaWeights:
+    @pytest.mark.parametrize("normalize", [True, False])
+    @pytest.mark.parametrize("chunks", [None, (2, 3, 4)])
+    @pytest.mark.parametrize(
+        "cube_data",
+        [np.ones((4, 3, 4)), da.ones((4, 3, 4), chunks=(1, 3, 4))],
+    )
+    def test_lazy_area_weights(self, cube_data, chunks, normalize):
+        small_cube = iris.tests.stock.simple_3d()[[0, 0, 0, 0], :, :]
+        small_cube.data = cube_data
+        small_cube.coord("latitude").guess_bounds()
+        small_cube.coord("longitude").guess_bounds()
+
+        area_weights = iris.analysis.cartography.area_weights(
+            small_cube,
+            normalize=normalize,
+            compute=False,
+            chunks=chunks,
+        )
+
+        assert isinstance(area_weights, da.Array)
+
+        # Check that chunksizes are as expected
+        if chunks is not None:
+            assert area_weights.chunksize == chunks
+        else:
+            if isinstance(cube_data, da.Array):
+                assert area_weights.chunksize == cube_data.chunksize
+            else:
+                assert area_weights.chunksize == (4, 3, 4)
+
+        # Check that actual weights are as expected
+        if normalize:
+            expected_2d = [
+                [0.03661165, 0.03661165, 0.03661165, 0.03661165],
+                [0.1767767, 0.1767767, 0.1767767, 0.1767767],
+                [0.03661165, 0.03661165, 0.03661165, 0.03661165],
+            ]
+        else:
+            expected_2d = [
+                [1.86536150e13, 1.86536150e13, 1.86536150e13, 1.86536150e13],
+                [9.00676206e13, 9.00676206e13, 9.00676206e13, 9.00676206e13],
+                [1.86536150e13, 1.86536150e13, 1.86536150e13, 1.86536150e13],
+            ]
+        expected = np.broadcast_to(expected_2d, (4, 3, 4))
+        np.testing.assert_allclose(area_weights.compute(), expected)
+
+
+@tests.skip_data
 class TestAreaWeightGeneration(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.realistic_4d()

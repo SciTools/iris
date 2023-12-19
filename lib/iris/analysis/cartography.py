@@ -346,7 +346,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     return np.abs(areas)
 
 
-def area_weights(cube, normalize=False):
+def area_weights(cube, normalize=False, compute=True, chunks=None):
     r"""Returns an array of area weights, with the same dimensions as the cube.
 
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
@@ -362,6 +362,15 @@ def area_weights(cube, normalize=False):
     * normalize (False/True):
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
+
+    * compute (False/True):
+        If False, return a lazy dask array. If True, return a numpy array.
+
+    * chunks (:class:`tuple`):
+        If compute is False and a value is provided, then the result will use
+        these chunks instead of the same chunks as the cube data. The values
+        provided here will only be used along dimensions that are not latitude
+        or longitude.
 
     The cube must have coordinates 'latitude' and 'longitude' with bounds.
 
@@ -445,7 +454,13 @@ def area_weights(cube, normalize=False):
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
-    ll_weights = _quadrant_area(lat.bounds, lon.bounds, radius_of_earth)
+    if compute:
+        lat_bounds = lat.bounds
+        lon_bounds = lon.bounds
+    else:
+        lat_bounds = lat.lazy_bounds()
+        lon_bounds = lon.lazy_bounds()
+    ll_weights = _quadrant_area(lat_bounds, lon_bounds, radius_of_earth)
 
     # Normalize the weights if necessary.
     if normalize:
@@ -460,7 +475,14 @@ def area_weights(cube, normalize=False):
         if dim is not None:
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(ll_weights, cube.shape, broadcast_dims)
+    broadcast_kwargs = {}
+    if not compute:
+        if chunks is None:
+            chunks = cube.lazy_data().chunksize
+        broadcast_kwargs["chunks"] = chunks
+    broad_weights = iris.util.broadcast_to_shape(
+        ll_weights, cube.shape, broadcast_dims, **broadcast_kwargs
+    )
 
     return broad_weights
 
