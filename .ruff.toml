@@ -48,7 +48,6 @@ lint.ignore = [
     "D407",  # Missing dashed underline after section
     "D409",  # Section underline should match the length of its name
     "D410",  # Missing blank line after section
-    "D411",  # Missing blank line before section
     "D412",  # No blank lines allowed between a section header and its content 
 
     # pyupgrade (UP)
