@@ -341,12 +341,12 @@ def _dot_node(indent, id, name, attributes):
     ----------
     id :
         The ID of the node.
-    name : 
+    name :
         The visual name of the node.
     attributes:
         An iterable of (name, value) attribute pairs.
 
-    """ # noqa: D411
+    """  # noqa: D411
     attributes = r"\n".join("%s: %s" % item for item in attributes)
     template = """%(indent)s"%(id)s" [
 %(indent)s    label = "%(name)s|%(attributes)s"
