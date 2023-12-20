@@ -18,7 +18,6 @@ class FactoryCommon:
     #       * make class an ABC
     #       * remove NotImplementedError
     #       * combine setup_common into setup
-
     """A base class running a generalised suite of benchmarks for any factory.
     Factory to be specified in a subclass.
 

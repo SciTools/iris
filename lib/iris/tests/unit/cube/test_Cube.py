@@ -961,7 +961,7 @@ class Test_slices_dim_order(tests.IrisTest):
     """
 
     def setUp(self):
-        """setup a 4D iris cube, each dimension is length 1.
+        """Setup a 4D iris cube, each dimension is length 1.
         The dimensions are;
             dim1: time
             dim2: height

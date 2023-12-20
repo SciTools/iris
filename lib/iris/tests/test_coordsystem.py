@@ -250,7 +250,7 @@ class Test_GeogCS_equality(tests.IrisTest):
 
 
 class Test_GeogCS_mutation(tests.IrisTest):
-    "Test that altering attributes of a GeogCS instance behaves as expected."
+    """Test that altering attributes of a GeogCS instance behaves as expected."""
 
     def test_semi_major_axis_change(self):
         # Clear datum

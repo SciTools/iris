@@ -482,8 +482,8 @@ def cosine_latitude_weights(cube):
 
            w_l = \cos \phi_l
 
-    Examples:
-
+    Examples
+    --------
     Compute weights suitable for averaging type operations::
 
         from iris.analysis.cartography import cosine_latitude_weights

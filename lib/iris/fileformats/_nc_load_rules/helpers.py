@@ -266,10 +266,10 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
 
     * nc_cell_methods: The value of the cell methods attribute to be split.
 
-    Returns:
-
-    * nc_cell_methods_matches: A list of the re.Match objects associated with
-      each parsed cell method
+    Returns
+    -------
+    nc_cell_methods_matches: list of re.Match objects
+        A list of re.Match objects associated with each parsed cell method
 
     Splitting is done based on words followed by colons outside of any brackets.
     Validation of anything other than being laid out in the expected format is
@@ -337,10 +337,9 @@ def parse_cell_methods(nc_cell_methods):
     * nc_cell_methods (str):
         The value of the cell methods attribute to be parsed.
 
-    Returns:
-
-    * cell_methods
-        An iterable of :class:`iris.coords.CellMethod`.
+    Returns
+    -------
+    iterable of :class:`iris.coords.CellMethod`.
 
     Multiple coordinates, intervals and comments are supported.
     If a method has a non-standard name a warning will be issued, but the

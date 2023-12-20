@@ -503,7 +503,7 @@ def build_cube(data, spherical=False):
 
 class TestCalculusWKnownSolutions(tests.IrisTest):
     def get_coord_pts(self, cube):
-        """return (x_pts, x_ones, y_pts, y_ones, z_pts, z_ones) for the given cube."""
+        """Return (x_pts, x_ones, y_pts, y_ones, z_pts, z_ones) for the given cube."""
         x = cube.coord(axis="X")
         y = cube.coord(axis="Y")
         z = cube.coord(axis="Z")

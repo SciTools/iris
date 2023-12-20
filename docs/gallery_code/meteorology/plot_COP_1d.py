@@ -11,7 +11,6 @@ Model (Johns et al. 2011; Lowe et al. 2009).
 
 References
 ----------
-
    Johns T.C., et al. (2011) Climate change under aggressive mitigation: the
    ENSEMBLES multi-model experiment. Climate Dynamics, Vol 37, No. 9-10,
    doi:10.1007/s00382-011-1005-5.
