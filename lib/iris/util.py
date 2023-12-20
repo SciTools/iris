@@ -67,7 +67,7 @@ def broadcast_to_shape(array, shape, dim_map):
         result = broadcast_to_shape(a, (96, 48, 12), (1, 0))
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -138,7 +138,7 @@ def delta(ndarray, dimension, circular=False):
             array([90, 90, 90, 90])
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -192,7 +192,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
         scope of this function.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -248,7 +248,7 @@ def guess_coord_axis(coord):
         'T', 'Z', 'Y', 'X', or None.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -321,7 +321,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
                [ 6.,  7.,  8.]])
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -377,7 +377,7 @@ def array_equal(array1, array2, withnans=False):
     with additional support for arrays of strings and NaN-tolerant operation.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -412,7 +412,7 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
        will return False.
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -465,7 +465,7 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
            print(i, between_3_and_6(i))
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -523,7 +523,7 @@ def reverse(cube_or_array, coords_or_dims):
           [15 14 13 12]]]
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -601,7 +601,7 @@ def monotonic(array, strict=False, return_direction=False):
             ``(monotonic_status, direction)``
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -656,7 +656,7 @@ def column_slices_generator(full_slice, ndims):
     approach of [(3, 5), : , (1, 6, 8)] for column based indexing.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1031,7 +1031,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
         original string is returned unaltered.
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -1064,7 +1064,7 @@ def format_array(arr):
     For customisations, use the :mod:`numpy.core.arrayprint` directly.
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1116,7 +1116,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
         (1, 360, 360)
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -1228,7 +1228,7 @@ def squeeze(cube):
         (360, 360)
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1301,7 +1301,7 @@ def is_regular(coord):
     """Determine if the given coord is regular.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -1318,7 +1318,7 @@ def regular_step(coord):
     """Return the regular step from a coord or fail.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1354,7 +1354,7 @@ def regular_points(zeroth, step, count):
         The number of point values.
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -1380,7 +1380,7 @@ def points_step(points):
 
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -1413,7 +1413,7 @@ def unify_time_units(cubes):
         An iterable containing :class:`iris.cube.Cube` instances.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1559,7 +1559,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
                 time                             x              -              -
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1688,7 +1688,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
                 year                            x              -              -
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1784,7 +1784,7 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         iplt.pcolormesh(masked_cube_slice)
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1972,7 +1972,7 @@ def equalise_attributes(cubes):
         A list of dicts holding the removed attributes.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -2044,7 +2044,7 @@ def is_masked(array):
         Whether or not the array has any masks.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 

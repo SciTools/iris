@@ -154,7 +154,7 @@ def contour(cube, *args, **kwargs):
     See :func:`iris.plot.contour` for details of valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -185,7 +185,7 @@ def contourf(cube, *args, **kwargs):
     See :func:`iris.plot.contourf` for details of valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -216,7 +216,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         width in patch.linewidth in matplotlibrc is used.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -235,7 +235,7 @@ def pcolor(cube, *args, **kwargs):
     See :func:`iris.plot.pcolor` for details of valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -252,7 +252,7 @@ def pcolormesh(cube, *args, **kwargs):
     See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -270,7 +270,7 @@ def points(cube, *args, **kwargs):
     See :func:`iris.plot.points` for details of valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -290,7 +290,7 @@ def plot(*args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -309,7 +309,7 @@ def scatter(x, y, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -327,7 +327,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -344,7 +344,7 @@ def hist(x, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """

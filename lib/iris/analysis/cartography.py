@@ -65,7 +65,7 @@ def wrap_lons(lons, base, period):
         [-175.   30.  160.   75.]
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -258,7 +258,7 @@ def get_xy_grids(cube):
         x, y = get_xy_grids(cube)
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -289,7 +289,7 @@ def get_xy_contiguous_bounded_grids(cube):
         xs, ys = get_xy_contiguous_bounded_grids(cube)
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -499,7 +499,7 @@ def cosine_latitude_weights(cube):
         weights = np.sqrt(cosine_latitude_weights(cube))
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """

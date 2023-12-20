@@ -205,7 +205,7 @@ class Resolve:
         >>> resolver = Resolve(cube1, cube2)
         >>> results = [resolver.cube(data) for data in payload]
 
-    """  # noqa: D214
+    """  # noqa: D214, D410
 
     def __init__(self, lhs=None, rhs=None):
         """Resolve the provided ``lhs`` :class:`~iris.cube.Cube` operand and
@@ -2475,6 +2475,7 @@ class Resolve:
                     time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
                 Cell methods:
                     0                           time: mean (interval: 6 hour)
+
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'E1'
@@ -2542,6 +2543,7 @@ class Resolve:
                     time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
                 Cell methods:
                     0                           time: mean (interval: 6 hour)
+
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'E1'
