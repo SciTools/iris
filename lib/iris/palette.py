@@ -117,7 +117,7 @@ def cmap_norm(cube):
         :class:`iris.palette.SymmetricNormalize`
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 

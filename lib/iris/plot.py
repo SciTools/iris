@@ -1057,7 +1057,7 @@ def contour(cube, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1085,7 +1085,7 @@ def contourf(cube, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1159,7 +1159,7 @@ def default_projection(cube):
         ax = plt.ax(projection=default_projection(cube))
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1181,7 +1181,7 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
             The default is iris.coords.POINT_MODE.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1223,7 +1223,7 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
     """Plots orography defined at cell boundaries from the given Cube.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -1262,7 +1262,7 @@ def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
     """Plots orography defined at sample points from the given Cube.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -1311,7 +1311,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
         provided.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1357,7 +1357,7 @@ def pcolor(cube, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1395,7 +1395,7 @@ def pcolormesh(cube, *args, **kwargs):
     valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1424,7 +1424,7 @@ def points(cube, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1516,7 +1516,7 @@ def barbs(u_cube, v_cube, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1570,7 +1570,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1620,7 +1620,7 @@ def plot(*args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1656,7 +1656,7 @@ def scatter(x, y, *args, **kwargs):
     valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1695,7 +1695,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1729,7 +1729,7 @@ def hist(x, *args, **kwargs):
     keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1778,7 +1778,7 @@ def symbols(x, y, symbols, size, axes=None, units="inches"):
         The unit for the symbol size.
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1906,7 +1906,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     >>> iplt.show()
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
