@@ -4517,7 +4517,8 @@ x            -               -
             Notice that the forecast_period dimension now represents the 4
             possible windows of size 3 from the original cube.
 
-        """  # noqa: D214, D411
+        """  # noqa: D214, D410, D411
+
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None

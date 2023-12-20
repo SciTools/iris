@@ -209,7 +209,7 @@ def interpolate(cube, sample_points, method=None):
         interpolated_cube = interpolate(cube, sample_points)
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """

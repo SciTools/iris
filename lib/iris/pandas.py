@@ -217,7 +217,7 @@ def as_cubes(
         :class:`~iris.coords.AncillaryVariable` objects.
 
     Returns
-    --------
+    -------
     :class:`~iris.cube.CubeList`
         One :class:`~iris.cube.Cube` for each column not referenced in
         `aux_coord_cols`/`cell_measure_cols`/`ancillary_variable_cols`.
@@ -584,7 +584,7 @@ def as_series(cube, copy=True):
     make sure it is not masked and use copy=False.
 
     Notes
-    ------
+    -----
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
@@ -797,7 +797,7 @@ def as_data_frame(
     Name: surface_temperature, Length: 419904, dtype: float32
 
     Notes
-    ------
+    -----
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """

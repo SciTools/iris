@@ -107,7 +107,7 @@ def abs(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -154,7 +154,7 @@ def intersection_of_cubes(cube, other_cube):
           cube1, cube2 = (intersections[0], intersections[1])
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -236,7 +236,7 @@ def add(cube, other, dim=None, in_place=False):
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -289,7 +289,7 @@ def subtract(cube, other, dim=None, in_place=False):
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -392,7 +392,7 @@ def multiply(cube, other, dim=None, in_place=False):
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -476,7 +476,7 @@ def divide(cube, other, dim=None, in_place=False):
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -542,7 +542,7 @@ def exponentiate(cube, exponent, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -593,7 +593,7 @@ def exp(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -623,7 +623,7 @@ def log(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -657,7 +657,7 @@ def log2(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -687,7 +687,7 @@ def log10(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 

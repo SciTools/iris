@@ -42,8 +42,6 @@ lint.ignore = [
     "D405",  # Section name should be properly capitalized
     "D406",  # Section name should end with a newline
     "D407",  # Missing dashed underline after section
-    "D409",  # Section underline should match the length of its name
-    "D410",  # Missing blank line after section
 
     # pyupgrade (UP)
     # https://docs.astral.sh/ruff/rules/#pyupgrade-up
