@@ -17,8 +17,7 @@ import iris.analysis.stats as stats
 from iris.exceptions import CoordinateNotFoundError
 
 
-@tests.skip_data
-class TestLazy(tests.IrisTest):
+class Mixin:
     def setUp(self):
         # 3D cubes:
         cube_temp = iris.load_cube(
@@ -34,6 +33,9 @@ class TestLazy(tests.IrisTest):
         cube_temp.coord("longitude").guess_bounds()
         self.weights = iris.analysis.cartography.area_weights(cube_temp)
 
+
+@tests.skip_data
+class TestLazy(Mixin, tests.IrisTest):
     def test_perfect_corr(self):
         r = stats.pearsonr(self.cube_a, self.cube_a, ["latitude", "longitude"])
         self.assertArrayEqual(r.data, np.array([1.0] * 6))
@@ -41,10 +43,6 @@ class TestLazy(tests.IrisTest):
     def test_perfect_corr_all_dims(self):
         r = stats.pearsonr(self.cube_a, self.cube_a)
         self.assertArrayEqual(r.data, np.array([1.0]))
-
-    def test_incompatible_cubes(self):
-        with self.assertRaises(ValueError):
-            stats.pearsonr(self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude")
 
     def test_compatible_cubes(self):
         r = stats.pearsonr(self.cube_a, self.cube_b, ["latitude", "longitude"])
@@ -59,10 +57,6 @@ class TestLazy(tests.IrisTest):
                 0.81278484,
             ],
         )
-
-    def test_single_coord(self):
-        # Smoke test that single coord can be passed as single string.
-        stats.pearsonr(self.cube_a, self.cube_b, "latitude")
 
     def test_broadcast_cubes(self):
         r1 = stats.pearsonr(
@@ -193,9 +187,20 @@ class TestReal(TestLazy):
         for cube in [self.cube_a, self.cube_b]:
             cube.data
 
+
+class TestCoordHandling(Mixin, tests.IrisTest):
     def test_lenient_handling(self):
+        # Smoke test that mismatched var_name does not prevent operation.
         self.cube_a.coord("time").var_name = "wibble"
         stats.pearsonr(self.cube_a, self.cube_b)
+
+    def test_incompatible_cubes(self):
+        with self.assertRaises(ValueError):
+            stats.pearsonr(self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude")
+
+    def test_single_coord(self):
+        # Smoke test that single coord can be passed as single string.
+        stats.pearsonr(self.cube_a, self.cube_b, "latitude")
 
 
 if __name__ == "__main__":
