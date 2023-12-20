@@ -56,7 +56,7 @@ def venv_populated(session: nox.sessions.Session) -> bool:
 
 def venv_changed(session: nox.sessions.Session) -> bool:
     """Returns True if the installed session is different.
-     
+
     Compares to that specified in the lockfile.
     """
     changed = False

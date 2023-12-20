@@ -141,7 +141,7 @@ class Test___eq__(tests.IrisTest):
 
 class Test_contains_point(tests.IrisTest):
     """Test that contains_point works for combinations.
-     
+
     Combinations of datetime, cf.datatime, and PartialDateTime objects.
     """
 

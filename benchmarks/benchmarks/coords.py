@@ -46,7 +46,7 @@ class CoordCommon:
         """Create an instance of the benchmarked factory.
 
         Create method is specified in the subclass.
-        """        
+        """
         self.create()
 
 

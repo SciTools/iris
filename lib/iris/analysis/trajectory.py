@@ -17,7 +17,7 @@ import iris.coords
 
 class _Segment:
     """A single trajectory line segment.
-    
+
     Two points, as described in the Trajectory class.
     """
 
