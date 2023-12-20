@@ -43,8 +43,10 @@ class CoordCommon:
         self.component = self.create()
 
     def time_create(self):
-        """Create an instance of the benchmarked coord. create method is
-        specified in the subclass."""
+        """Create an instance of the benchmarked factory.
+
+        Create method is specified in the subclass.
+        """        
         self.create()
 
 

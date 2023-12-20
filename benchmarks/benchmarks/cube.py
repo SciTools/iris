@@ -45,8 +45,11 @@ class ComponentCommon:
         raise NotImplementedError
 
     def create(self):
-        """Generic cube creation. cube_kwargs allow dynamic inclusion of
-        different components; specified in subclasses."""
+        """Generic cube creation.
+        
+        cube_kwargs allow dynamic inclusion of different components; 
+        specified in subclasses.
+        """
         return cube.Cube(data=data_2d, **self.cube_kwargs)
 
     def setup_common(self):

@@ -16,8 +16,10 @@ import iris.coords
 
 
 class _Segment:
-    """A single trajectory line segment: Two points, as described in the
-    Trajectory class."""
+    """A single trajectory line segment.
+    
+    Two points, as described in the Trajectory class.
+    """
 
     def __init__(self, p0, p1):
         # check keys

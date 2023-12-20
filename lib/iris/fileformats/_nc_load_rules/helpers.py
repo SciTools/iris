@@ -1542,8 +1542,11 @@ def is_rotated_longitude(engine, cf_name):
 
 ################################################################################
 def has_supported_mercator_parameters(engine, cf_name):
-    """Determine whether the CF grid mapping variable has the supported
-    values for the parameters of the Mercator projection."""
+    """Determine whether the CF grid mapping variable has the supported values.
+
+    Determine whether the CF grid mapping variable has the supported
+    values for the parameters of the Mercator projection.
+    """
 
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
@@ -1567,7 +1570,8 @@ def has_supported_mercator_parameters(engine, cf_name):
 ################################################################################
 def has_supported_polar_stereographic_parameters(engine, cf_name):
     """Determine whether the CF grid mapping variable has the supported
-    values for the parameters of the Polar Stereographic projection."""
+    values for the parameters of the Polar Stereographic projection.
+    """
 
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
