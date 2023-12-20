@@ -51,8 +51,8 @@ def broadcast_to_shape(array, shape, dim_map):
         to, so the first element of *dim_map* gives the index of *shape*
         that corresponds to the first dimension of *array* etc.
 
-    Examples:
-
+    Examples
+    --------
     Broadcasting an array of shape (2, 3) to the shape (5, 2, 6, 3)
     where the first dimension of the array corresponds to the second
     element of the desired shape and the second dimension of the array
@@ -303,7 +303,6 @@ def rolling_window(a, window=1, step=1, axis=-1):
         Axis to take the rolling window over
 
     Returns:
-
         Array that is a view of the original array with an added dimension
         of the size of the given window at axis + 1.
 
@@ -590,15 +589,13 @@ def monotonic(array, strict=False, return_direction=False):
         or -1 for negative. The direction is meaningless if the array is
         not monotonic.
 
-    Returns:
-
-    * monotonic_status (boolean)
+    Returns
+    -------
+    monotonic_status : bool
         Whether the array was monotonic.
 
         If the return_direction flag was given then the returned value
-        will be:
-
-            ``(monotonic_status, direction)``
+        will be: ``(monotonic_status, direction)``
 
     Notes
     ------
@@ -1761,16 +1758,18 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         The absolute value tolerance to apply in coordinate bounds
         checking.
 
-    Returns:
-
-    * result (`numpy.ndarray` of bool) :
+    Returns
+    -------
+    result : `numpy.ndarray` of bool
         true/false map of which cells in the cube XY grid have
         discontiguities in the coordinate points array.
 
         This can be used as the input array for
         :func:`iris.util.mask_cube`.
 
-    Examples::
+    Examples
+    --------
+    ::
 
         # Find any unknown discontiguities in your cube's x and y arrays:
         discontiguities = iris.util.find_discontiguities(cube)
@@ -1896,7 +1895,6 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         Cube containing data that requires masking.
 
@@ -1913,13 +1911,11 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
 
     Returns
     -------
-
     iris.cube.Cube
         A cube whose data array is masked at points specified by ``points_to_mask``.
 
     Notes
     -----
-
     If either ``cube`` or ``points_to_mask`` is lazy, the result will be lazy.
 
     This function maintains laziness when called; it does not realise data.
@@ -1966,9 +1962,9 @@ def equalise_attributes(cubes):
     * cubes (iterable of :class:`iris.cube.Cube`):
         A collection of cubes to compare and adjust.
 
-    Returns:
-
-    * removed (list):
+    Returns
+    -------
+    list
         A list of dicts holding the removed attributes.
 
     Notes

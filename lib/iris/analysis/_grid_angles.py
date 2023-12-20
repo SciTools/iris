@@ -22,9 +22,9 @@ def _3d_xyz_from_latlon(lon, lat):
         Arrays of longitudes and latitudes, in degrees.
         Both the same shape.
 
-    Returns:
-
-    * xyz : (array, dtype=float64)
+    Returns
+    -------
+    xyz : array, dtype=float64
         Cartesian coordinates on a unit sphere.
         Shape is (3, <input-shape>).
         The x / y / z coordinates are in xyz[0 / 1 / 2].
@@ -52,9 +52,9 @@ def _latlon_from_xyz(xyz):
         Shape (3, <input_points_dimensions>).
         x / y / z values are in xyz[0 / 1 / 2],
 
-    Returns:
-
-    * lonlat : (array)
+    Returns
+    -------
+    lonlat : array
         longitude and latitude position angles, in degrees.
         Shape (2, <input_points_dimensions>).
         The longitudes / latitudes are in lonlat[0 / 1].
@@ -104,9 +104,9 @@ def _angle(p, q, r):
         Shape is (2, <input_points_dimensions>).
         Longitudes / latitudes are in array[0 / 1].
 
-    Returns:
-
-    * angle : (float array)
+    Returns
+    -------
+    angle : float array
         Grid angles relative to true-East, in degrees.
         Positive when grid-East is anticlockwise from true-East.
         Shape is same as <input_points_dimensions>.
@@ -178,23 +178,22 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
         takes an angles between the average of the left-hand and right-hand
         pairs of corners.  The default is 'mid-lhs, mid-rhs'.
 
-    Returns:
-
-        angles : (2-dimensional cube)
-
-            Cube of angles of grid-x vector from true Eastward direction for
-            each gridcell, in degrees.
-            It also has "true" longitude and latitude coordinates, with no
-            coordinate system.
-            When the input has coords, then the output ones are identical if
-            the inputs are true-latlons, otherwise they are transformed
-            true-latlon versions.
-            When the input has bounded coords, then the output coords have
-            matching bounds and centrepoints (possibly transformed).
-            When the input is 2d arrays, or has unbounded coords, then the
-            output coords have matching points and no bounds.
-            When the input is 3d arrays, then the output coords have matching
-            bounds, and the centrepoints are an average of the 4 boundpoints.
+    Returns
+    -------
+    angles : 2-dimensional cube
+        Cube of angles of grid-x vector from true Eastward direction for
+        each gridcell, in degrees.
+        It also has "true" longitude and latitude coordinates, with no
+        coordinate system.
+        When the input has coords, then the output ones are identical if
+        the inputs are true-latlons, otherwise they are transformed
+        true-latlon versions.
+        When the input has bounded coords, then the output coords have
+        matching bounds and centrepoints (possibly transformed).
+        When the input is 2d arrays, or has unbounded coords, then the
+        output coords have matching points and no bounds.
+        When the input is 3d arrays, then the output coords have matching
+        bounds, and the centrepoints are an average of the 4 boundpoints.
 
     """
     cube = None
@@ -423,15 +422,17 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
         Additional keyword args to be passed to the :func:`gridcell_angles`
         method, if it is used.
 
-    Returns:
+    Returns
+    -------
+    true_u, true_v : cube
+        Cubes of true-north oriented vector components.
+        Units are same as inputs.
 
-        true_u, true_v : (cube)
-            Cubes of true-north oriented vector components.
-            Units are same as inputs.
+    Notes
+    -----
+    .. note::
 
-        .. Note::
-
-            Vector magnitudes will always be the same as the inputs.
+        Vector magnitudes will always be the same as the inputs.
 
     .. note::
 
