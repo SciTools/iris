@@ -30,7 +30,6 @@ class ComponentCommon:
     #       * make class an ABC
     #       * remove NotImplementedError
     #       * combine setup_common into setup
-
     """A base class running a generalised suite of benchmarks for cubes that
     include a specified component (e.g. Coord, CellMeasure etc.). Component to
     be specified in a subclass.
