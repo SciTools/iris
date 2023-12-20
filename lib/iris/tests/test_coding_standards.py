@@ -136,9 +136,9 @@ def test_categorised_warnings():
     .. code-block:: python
 
         class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
-            \"""
+            \"\"\"
             One-off combination of warning classes - enhances user filtering.
-            \"""
+            \"\"\"
             pass
 
     """
