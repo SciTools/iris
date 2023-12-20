@@ -2475,7 +2475,6 @@ class Resolve:
                     time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
                 Cell methods:
                     0                           time: mean (interval: 6 hour)
-
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'E1'
@@ -2494,7 +2493,7 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             False
 
-        """  # noqa: D214, D411
+        """  # noqa: D214, D410, D411
         result = None
         if self.mapping is not None:
             result = self._src_cube.ndim == len(self.mapping)
