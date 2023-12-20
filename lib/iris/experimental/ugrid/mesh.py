@@ -2140,7 +2140,7 @@ class _Mesh1DCoordinateManager:
                 setattr(self, member_y, coords[1])
 
     def add(self, node_x=None, node_y=None, edge_x=None, edge_y=None):
-        """use self.remove(edge_x=True) to remove a coordinate e.g., using the
+        """Use self.remove(edge_x=True) to remove a coordinate e.g., using the
         pattern self.add(edge_x=None) will not remove the edge_x coordinate.
 
         """

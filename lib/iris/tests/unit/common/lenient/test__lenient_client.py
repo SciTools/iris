@@ -76,7 +76,7 @@ class Test(tests.IrisTest):
     def test_call_naked_doc(self):
         @_lenient_client
         def myclient():
-            """myclient doc-string."""
+            """Myclient doc-string."""
 
         self.assertEqual(myclient.__doc__, "myclient doc-string.")
 
@@ -169,7 +169,7 @@ class Test(tests.IrisTest):
     def test_call_doc(self):
         @_lenient_client()
         def myclient():
-            """myclient doc-string."""
+            """Myclient doc-string."""
 
         self.assertEqual(myclient.__doc__, "myclient doc-string.")
 

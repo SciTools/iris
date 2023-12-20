@@ -40,7 +40,6 @@ def _ndim_coords_from_arrays(points, ndim=None):
 # source: https://github.com/scipy/scipy/blob/b94a5d5ccc08dddbc88453477ff2625\
 # 9aeaafb32/scipy/interpolate/interpolate.py#L1400
 class _RegularGridInterpolator:
-
     """Interpolation on a regular grid in arbitrary dimensions.
 
     The data must be defined on a regular grid; the grid spacing however may be

@@ -329,7 +329,9 @@ class Test___call___1D_circular(ThreeDimCube):
 
 class Test___call___1D_singlelendim(ThreeDimCube):
     def setUp(self):
-        """thingness / (1)                     (wibble: 2; latitude: 1)
+        """Setup.
+
+        thingness / (1)                     (wibble: 2; latitude: 1)
         Dimension coordinates:
              wibble                           x            -
              latitude                         -            x
