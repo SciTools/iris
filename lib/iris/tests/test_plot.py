@@ -543,7 +543,8 @@ class SliceMixin:
     """Mixin class providing tests for each 2-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
-    and self.results to be a dictionary containing the desired test results."""
+    and self.results to be a dictionary containing the desired test results.
+    """
 
     def test_yx(self):
         cube = self.wind[0, 0, :, :]
@@ -727,7 +728,8 @@ class Slice1dMixin:
     """Mixin class providing tests for each 1-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
-    and self.results to be a dictionary containing the desired test results."""
+    and self.results to be a dictionary containing the desired test results.
+    """
 
     def test_x(self):
         cube = self.wind[0, 0, 0, :]

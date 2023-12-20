@@ -225,8 +225,10 @@ class TestPackedData(tests.IrisTest):
         self._single_test("u1", "single_packed_unsigned.cdl")
 
     def test_single_packed_manual_scale(self):
-        """Test saving a single CF-netCDF file with packing with scale
-        factor and add_offset set manually."""
+        """Test saving a single CF-netCDF file.
+
+        File with packing with scale factor and add_offset set manually.
+        """
         self._single_test("i2", "single_packed_manual.cdl", manual=True)
 
     def _multi_test(self, CDLfilename, multi_dtype=False):

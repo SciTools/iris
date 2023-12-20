@@ -40,8 +40,10 @@ class UGridCommon:
         raise NotImplementedError
 
     def time_create(self, *params):
-        """Create an instance of the benchmarked object. create() method is
-        specified in the subclass."""
+        """Create an instance of the benchmarked object.
+
+        create() method is specified in the subclass.
+        """
         self.create()
 
 

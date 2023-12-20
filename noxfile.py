@@ -47,14 +47,18 @@ def session_cachefile(session: nox.sessions.Session) -> Path:
 
 
 def venv_populated(session: nox.sessions.Session) -> bool:
-    """Returns True if the conda venv has been created
-    and the list of packages in the lockfile installed."""
+    """List of packages in the lockfile installed.
+
+    Returns True if the conda venv has been created.
+    """
     return session_cachefile(session).is_file()
 
 
 def venv_changed(session: nox.sessions.Session) -> bool:
-    """Returns True if the installed session is different to that specified
-    in the lockfile."""
+    """Returns True if the installed session is different.
+
+    Compares to that specified in the lockfile.
+    """
     changed = False
     cache = session_cachefile(session)
     lockfile = session_lockfile(session)
