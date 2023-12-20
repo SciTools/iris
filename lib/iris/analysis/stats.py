@@ -8,10 +8,12 @@ import dask.array as da
 import numpy as np
 
 import iris
-from iris.common import Resolve
+from iris.common import SERVICES, Resolve
+from iris.common.lenient import _lenient_client
 from iris.util import _mask_array
 
 
+@_lenient_client(services=SERVICES)
 def pearsonr(
     cube_a,
     cube_b,

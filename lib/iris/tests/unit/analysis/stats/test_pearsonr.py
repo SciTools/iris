@@ -193,6 +193,10 @@ class TestReal(TestLazy):
         for cube in [self.cube_a, self.cube_b]:
             cube.data
 
+    def test_lenient_handling(self):
+        self.cube_a.coord("time").var_name = "wibble"
+        stats.pearsonr(self.cube_a, self.cube_b)
+
 
 if __name__ == "__main__":
     tests.main()
