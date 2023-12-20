@@ -4522,7 +4522,7 @@ x            -               -
             possible windows of size 3 from the original cube.
 
         """  # noqa: D214, D410, D411
-        
+
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
