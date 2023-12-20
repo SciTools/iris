@@ -636,7 +636,7 @@ def _convert_time_coords(
 
     Returns
     -------
-    list of (coordinate, dims) tuples. 
+    list of (coordinate, dims) tuples.
         The coordinates are instance of
         :class:`iris.coords.DimCoord` if possible, otherwise they are instance
         of :class:`iris.coords.AuxCoord`. When the coordinate is of length one,

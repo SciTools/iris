@@ -1770,7 +1770,7 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     Examples
     --------
     ::
-    
+
         # Find any unknown discontiguities in your cube's x and y arrays:
         discontiguities = iris.util.find_discontiguities(cube)
 

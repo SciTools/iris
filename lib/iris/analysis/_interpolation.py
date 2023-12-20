@@ -298,7 +298,7 @@ class RectilinearInterpolator:
 
         Returns
         -------
-        :class:`np.ndarray`.  
+        :class:`np.ndarray`.
             Its shape is "points_shape + extra_shape",
             where "extra_shape" is the remaining non-interpolated dimensions of
             the data array (i.e. 'data.shape[N:]'), and "points_shape" is the
