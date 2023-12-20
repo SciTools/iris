@@ -30,7 +30,7 @@ def _optimal_dimensioning_structure(structure, element_priorities):
 
     Returns
     -------
-    array structure or an empty list 
+    array structure or an empty list
         The determined optimal array structure or an empty list if no structure
         options were determined.
 
