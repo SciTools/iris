@@ -343,6 +343,7 @@ def _dot_node(indent, id, name, attributes):
         The ID of the node.
     name :
         The visual name of the node.
+
     attributes:
         An iterable of (name, value) attribute pairs.
     """  # noqa: D410, D411
