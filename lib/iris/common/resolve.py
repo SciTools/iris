@@ -2542,7 +2542,6 @@ class Resolve:
                     time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
                 Cell methods:
                     0                           time: mean (interval: 6 hour)
-
                 Attributes:
                     Conventions                 'CF-1.5'
                     Model scenario              'E1'
@@ -2555,5 +2554,5 @@ class Resolve:
             >>> Resolve(cube2, cube1).shape
             (240, 37, 49)
 
-        """  # noqa: D214, D411
+        """  # noqa: D214, D410, D411
         return self._broadcast_shape
