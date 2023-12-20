@@ -218,7 +218,6 @@ def add(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         First operand to add.
 
@@ -234,7 +233,6 @@ def add(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes
@@ -273,7 +271,6 @@ def subtract(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         Cube from which to subtract.
 
@@ -289,7 +286,6 @@ def subtract(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes
@@ -378,7 +374,6 @@ def multiply(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         First operand to multiply.
 
@@ -394,7 +389,6 @@ def multiply(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes
@@ -464,7 +458,6 @@ def divide(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         Numerator.
 
@@ -480,7 +473,6 @@ def divide(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes

@@ -28,8 +28,9 @@ def _optimal_dimensioning_structure(structure, element_priorities):
         A dictionary mapping structure element names to their priority as
         defined by their input order to :func:`~optimal_array_structure`.
 
-    Returns:
-
+    Returns
+    -------
+    array structure or an empty list 
         The determined optimal array structure or an empty list if no structure
         options were determined.
 
@@ -69,7 +70,6 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     priority when associating dimensions with specific elements.
 
     Returns:
-
         dims_shape, primary_elements, element_arrays_and_dims, where:
 
         * 'dims_shape' is the shape of the vector dimensions chosen.

@@ -772,7 +772,6 @@ class CubeAttrsDict(MutableMapping):
 
     Examples
     --------
-
         >>> from iris.cube import Cube
         >>> cube = Cube([0])
         >>> # CF defines 'history' as global by default.
@@ -829,7 +828,6 @@ class CubeAttrsDict(MutableMapping):
 
         Examples
         --------
-
             >>> from iris.cube import CubeAttrsDict
             >>> # CF defines 'history' as global by default.
             >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
@@ -2364,11 +2362,11 @@ class Cube(CFVariableMixin):
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
-        Returns:
-
-        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh` or None):
+        Returns
+        -------
+        mesh : :class:`iris.experimental.ugrid.mesh.Mesh` or None
             The mesh of the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`\\s,
+            :class:`~iris.experimental.ugrid.MeshCoord`'s,
             or ``None``.
 
         """
@@ -2383,13 +2381,12 @@ class Cube(CFVariableMixin):
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
-        Returns:
-
-        * location (str or None):
+        Returns
+        -------
+        location : str or None
             The mesh location of the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`\\s
-            (i.e. one of 'face' / 'edge' / 'node'),
-            or ``None``.
+            :class:`~iris.experimental.ugrid.MeshCoord`'s
+            (i.e. one of 'face' / 'edge' / 'node'), or ``None``.
 
         """
         result = self._any_meshcoord()
@@ -2402,10 +2399,10 @@ class Cube(CFVariableMixin):
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
-        Returns:
-
-        * mesh_dim (int, or None):
-            the cube dimension which the cube
+        Returns
+        -------
+        mesh_dim : int or None
+            The cube dimension which the cube
             :class:`~iris.experimental.ugrid.MeshCoord`\\s map to,
             or ``None``.
 
@@ -4191,7 +4188,6 @@ class Cube(CFVariableMixin):
 
         Examples
         --------
-
             >>> import iris
             >>> import iris.analysis
             >>> import iris.coord_categorisation as cat

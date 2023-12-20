@@ -296,9 +296,10 @@ class RectilinearInterpolator:
             The other (leading) dimensions index over the different required
             sample points.
 
-        Returns:
-
-            A :class:`np.ndarray`.  Its shape is "points_shape + extra_shape",
+        Returns
+        -------
+        :class:`np.ndarray`.  
+            Its shape is "points_shape + extra_shape",
             where "extra_shape" is the remaining non-interpolated dimensions of
             the data array (i.e. 'data.shape[N:]'), and "points_shape" is the
             leading dimensions of interp_points,

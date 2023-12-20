@@ -317,9 +317,9 @@ def _reshape_vector_args(values_and_dims):
         Input arrays with associated mapping dimension numbers.
         The length of each 'dims' must match the ndims of the 'value'.
 
-    Returns:
-
-    * reshaped_arrays (iterable of arrays).
+    Returns
+    -------
+    reshaped_arrays : iterable of arrays
         The inputs, transposed and reshaped onto common target dimensions.
 
     """
@@ -371,9 +371,9 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
         dimension (typically of length 2) when compared to the  points array
         i.e. bounds.shape = points.shape + (nvertex,)
 
-    Returns:
-
-        A (points, bounds) tuple.
+    Returns
+    -------
+    (points, bounds) tuple.
 
     """
     array = points
@@ -634,9 +634,10 @@ def _convert_time_coords(
         to (). The length of each dims tuple should equal the dimensionality
         of the corresponding array of values.
 
-    Returns:
-
-        A list of (coordinate, dims) tuples. The coordinates are instance of
+    Returns
+    -------
+    list of (coordinate, dims) tuples. 
+        The coordinates are instance of
         :class:`iris.coords.DimCoord` if possible, otherwise they are instance
         of :class:`iris.coords.AuxCoord`. When the coordinate is of length one,
         the `dims` value is None rather than an empty tuple.

@@ -11,7 +11,6 @@ less than 7 years.
 
 References
 ----------
-
     Duchon C. E. (1979) Lanczos Filtering in One and Two Dimensions.
     Journal of Applied Meteorology, Vol 18, pp 1016-1022.
 
