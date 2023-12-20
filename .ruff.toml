@@ -39,7 +39,6 @@ lint.ignore = [
     "D205",  # 1 blank line required between summary line and description
     "D401",  # First line of docstring should be in imperative mood: ...
     "D404",  # First word of the docstring should not be "This"
-    "D405",  # Section name should be properly capitalized
     "D406",  # Section name should end with a newline
     "D407",  # Missing dashed underline after section
 

@@ -1621,7 +1621,8 @@ class Cube(CFVariableMixin):
         Raises a ValueError if a cell_measure with identical metadata already
         exists on the cube.
 
-        See also
+        See Also
+        --------
         :meth:`Cube.remove_cell_measure()<iris.cube.Cube.remove_cell_measure>`.
 
         """
@@ -2513,7 +2514,8 @@ class Cube(CFVariableMixin):
             (b) a ancillary_variable instance with metadata equal to that of
             the desired ancillary_variables.
 
-        See also
+        See Also
+        --------
         :meth:`Cube.ancillary_variable()<iris.cube.Cube.ancillary_variable>`.
 
         """
