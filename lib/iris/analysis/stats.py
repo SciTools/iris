@@ -102,6 +102,8 @@ def pearsonr(
 
     # Interpret coords as array dimensions.
     corr_dims = set()
+    if isinstance(corr_coords, str):
+        corr_coords = [corr_coords]
     for coord in corr_coords:
         corr_dims.update(cube_1.coord_dims(coord))
 

@@ -60,6 +60,10 @@ class TestLazy(tests.IrisTest):
             ],
         )
 
+    def test_single_coord(self):
+        # Smoke test that single coord can be passed as single string.
+        stats.pearsonr(self.cube_a, self.cube_b, "latitude")
+
     def test_broadcast_cubes(self):
         r1 = stats.pearsonr(
             self.cube_a, self.cube_b[0, :, :], ["latitude", "longitude"]
