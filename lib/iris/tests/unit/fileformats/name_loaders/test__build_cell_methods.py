@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for :func:`iris.fileformats.name_loaders._build_cell_methods`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :func:`iris.fileformats.name_loaders._build_cell_methods`.
 
 """
 
@@ -15,6 +13,7 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import iris.coords
+from iris.exceptions import IrisLoadWarning
 from iris.fileformats.name_loaders import _build_cell_methods
 
 
@@ -101,10 +100,11 @@ class Tests(tests.IrisTest):
         with mock.patch("warnings.warn") as warn:
             _ = _build_cell_methods(av_or_int, coord_name)
         expected_msg = (
-            "Unknown {} statistic: {!r}. Unable to "
-            "create cell method.".format(coord_name, unrecognised_heading)
+            "Unknown {} statistic: {!r}. Unable to create cell method.".format(
+                coord_name, unrecognised_heading
+            )
         )
-        warn.assert_called_with(expected_msg)
+        warn.assert_called_with(expected_msg, category=IrisLoadWarning)
 
     def test_unrecognised_similar_to_no_averaging(self):
         unrecognised_headings = [
@@ -126,10 +126,11 @@ class Tests(tests.IrisTest):
             with mock.patch("warnings.warn") as warn:
                 _ = _build_cell_methods(av_or_int, coord_name)
             expected_msg = (
-                "Unknown {} statistic: {!r}. Unable to "
-                "create cell method.".format(coord_name, unrecognised_heading)
+                "Unknown {} statistic: {!r}. Unable to create cell method.".format(
+                    coord_name, unrecognised_heading
+                )
             )
-            warn.assert_called_with(expected_msg)
+            warn.assert_called_with(expected_msg, category=IrisLoadWarning)
 
 
 if __name__ == "__main__":

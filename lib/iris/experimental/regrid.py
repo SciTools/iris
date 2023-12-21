@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Regridding functions.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Regridding functions.
 
 .. note::
 
@@ -31,11 +29,7 @@ from iris.analysis._area_weighted import (
     _regrid_area_weighted_rectilinear_src_and_grid__perform,
     _regrid_area_weighted_rectilinear_src_and_grid__prepare,
 )
-from iris.analysis._interpolation import (
-    get_xy_coords,
-    get_xy_dim_coords,
-    snapshot_grid,
-)
+from iris.analysis._interpolation import get_xy_coords, get_xy_dim_coords, snapshot_grid
 from iris.analysis._regrid import (
     _regrid_weighted_curvilinear_to_rectilinear__perform,
     _regrid_weighted_curvilinear_to_rectilinear__prepare,
@@ -43,6 +37,7 @@ from iris.analysis._regrid import (
 import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
+from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid
 
 wmsg = (
@@ -55,11 +50,8 @@ wmsg = (
 warn_deprecated(wmsg)
 
 
-def regrid_area_weighted_rectilinear_src_and_grid(
-    src_cube, grid_cube, mdtol=0
-):
-    """
-    Return a new cube with data values calculated using the area weighted
+def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
+    """Return a new cube with data values calculated using the area weighted
     mean of data values from src_grid regridded onto the horizontal grid of
     grid_cube.
 
@@ -133,8 +125,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(
 
 
 def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
-    r"""
-    Return a new cube with the data values calculated using the weighted
+    r"""Return a new cube with the data values calculated using the weighted
     mean of data values from :data:`src_cube` and the weights from
     :data:`weights` regridded onto the horizontal grid of :data:`grid_cube`.
 
@@ -205,15 +196,12 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     regrid_info = _regrid_weighted_curvilinear_to_rectilinear__prepare(
         src_cube, weights, grid_cube
     )
-    result = _regrid_weighted_curvilinear_to_rectilinear__perform(
-        src_cube, regrid_info
-    )
+    result = _regrid_weighted_curvilinear_to_rectilinear__perform(src_cube, regrid_info)
     return result
 
 
 class PointInCell:
-    """
-    This class describes the point-in-cell regridding scheme for use
+    """This class describes the point-in-cell regridding scheme for use
     typically with :meth:`iris.cube.Cube.regrid()`.
 
     .. warning::
@@ -226,8 +214,7 @@ class PointInCell:
     """
 
     def __init__(self, weights=None):
-        """
-        Point-in-cell regridding scheme suitable for regridding over one
+        """Point-in-cell regridding scheme suitable for regridding over one
         or more orthogonal coordinates.
 
         .. warning::
@@ -248,14 +235,10 @@ class PointInCell:
 
 
 class _ProjectedUnstructuredRegridder:
-    """
-    This class provides regridding that uses scipy.interpolate.griddata.
-
-    """
+    """This class provides regridding that uses scipy.interpolate.griddata."""
 
     def __init__(self, src_cube, tgt_grid_cube, method, projection=None):
-        """
-        Create a regridder for conversions between the source
+        """Create a regridder for conversions between the source
         and target grids.
 
         Args:
@@ -355,10 +338,7 @@ class _ProjectedUnstructuredRegridder:
         projection,
         method,
     ):
-        """
-        Regrids input data from the source to the target. Calculation is.
-
-        """
+        """Regrids input data from the source to the target. Calculation is."""
         # Transform coordinates into the projection the interpolation will be
         # performed in.
         src_projection = src_x_coord.coord_system.as_cartopy_projection()
@@ -368,9 +348,7 @@ class _ProjectedUnstructuredRegridder:
 
         tgt_projection = tgt_x_coord.coord_system.as_cartopy_projection()
         tgt_x, tgt_y = _meshgrid(tgt_x_coord.points, tgt_y_coord.points)
-        projected_tgt_grid = projection.transform_points(
-            tgt_projection, tgt_x, tgt_y
-        )
+        projected_tgt_grid = projection.transform_points(tgt_projection, tgt_x, tgt_y)
 
         # Prepare the result data array.
         # XXX TODO: Deal with masked src_data
@@ -392,9 +370,7 @@ class _ProjectedUnstructuredRegridder:
             src_index[xy_dim] = slice(None)
             src_subset = src_data[tuple(src_index)]
             tgt_index = (
-                index[:xy_dim]
-                + (slice(None), slice(None))
-                + index[xy_dim + 1 :]
+                index[:xy_dim] + (slice(None), slice(None)) + index[xy_dim + 1 :]
             )
             data[tgt_index] = scipy.interpolate.griddata(
                 projected_src_points[..., :2],
@@ -416,8 +392,7 @@ class _ProjectedUnstructuredRegridder:
         grid_y_coord,
         regrid_callback,
     ):
-        """
-        Return a new Cube for the result of regridding the source Cube onto
+        """Return a new Cube for the result of regridding the source Cube onto
         the new grid.
 
         All the metadata and coordinates of the result Cube are copied from
@@ -538,12 +513,11 @@ class _ProjectedUnstructuredRegridder:
                     "Cannot update aux_factory {!r} because of dropped"
                     " coordinates.".format(factory.name())
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=IrisImpossibleUpdateWarning)
         return result
 
     def __call__(self, src_cube):
-        """
-        Regrid this :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`UnstructuredProjectedRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -576,8 +550,7 @@ class _ProjectedUnstructuredRegridder:
             )
         if src_cs is None:
             raise ValueError(
-                "'src' lateral geographic coordinates have "
-                "no coordinate system."
+                "'src' lateral geographic coordinates have no coordinate system."
             )
 
         # Check the source grid units.
@@ -589,8 +562,7 @@ class _ProjectedUnstructuredRegridder:
 
         if src_x_dim != src_y_dim:
             raise ValueError(
-                "'src' lateral geographic coordinates should map "
-                "the same dimension."
+                "'src' lateral geographic coordinates should map the same dimension."
             )
         src_xy_dim = src_x_dim
 
@@ -626,8 +598,7 @@ class _ProjectedUnstructuredRegridder:
 
 
 class ProjectedUnstructuredLinear:
-    """
-    This class describes the linear regridding scheme which uses the
+    """This class describes the linear regridding scheme which uses the
     scipy.interpolate.griddata to regrid unstructured data on to a grid.
 
     The source cube and the target cube will be projected into a common
@@ -636,8 +607,7 @@ class ProjectedUnstructuredLinear:
     """
 
     def __init__(self, projection=None):
-        """
-        Linear regridding scheme that uses scipy.interpolate.griddata on
+        """Linear regridding scheme that uses scipy.interpolate.griddata on
         projected unstructured data.
 
         .. note::
@@ -667,8 +637,7 @@ class ProjectedUnstructuredLinear:
         warn_deprecated(wmsg)
 
     def regridder(self, src_cube, target_grid):
-        """
-        Creates a linear regridder to perform regridding, using
+        """Creates a linear regridder to perform regridding, using
         scipy.interpolate.griddata from unstructured source points to the
         target grid. The regridding calculation is performed in the given
         projection.
@@ -703,8 +672,7 @@ class ProjectedUnstructuredLinear:
 
 
 class ProjectedUnstructuredNearest:
-    """
-    This class describes the nearest regridding scheme which uses the
+    """This class describes the nearest regridding scheme which uses the
     scipy.interpolate.griddata to regrid unstructured data on to a grid.
 
     The source cube and the target cube will be projected into a common
@@ -719,8 +687,7 @@ class ProjectedUnstructuredNearest:
     """
 
     def __init__(self, projection=None):
-        """
-        Nearest regridding scheme that uses scipy.interpolate.griddata on
+        """Nearest regridding scheme that uses scipy.interpolate.griddata on
         projected unstructured data.
 
         .. note::
@@ -752,8 +719,7 @@ class ProjectedUnstructuredNearest:
         warn_deprecated(wmsg)
 
     def regridder(self, src_cube, target_grid):
-        """
-        Creates a nearest-neighbour regridder to perform regridding, using
+        """Creates a nearest-neighbour regridder to perform regridding, using
         scipy.interpolate.griddata from unstructured source points to the
         target grid. The regridding calculation is performed in the given
         projection.

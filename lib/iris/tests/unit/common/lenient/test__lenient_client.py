@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :func:`iris.common.lenient._lenient_client`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :func:`iris.common.lenient._lenient_client`.
 
 """
 
@@ -41,9 +39,7 @@ class Test(tests.IrisTest):
         def func():
             pass
 
-        emsg = (
-            "Invalid lenient client, got both arguments and keyword arguments"
-        )
+        emsg = "Invalid lenient client, got both arguments and keyword arguments"
         with self.assertRaisesRegex(AssertionError, emsg):
             _lenient_client(func, services=func)
 
@@ -80,9 +76,9 @@ class Test(tests.IrisTest):
     def test_call_naked_doc(self):
         @_lenient_client
         def myclient():
-            """myclient doc-string"""
+            """Myclient doc-string."""
 
-        self.assertEqual(myclient.__doc__, "myclient doc-string")
+        self.assertEqual(myclient.__doc__, "Myclient doc-string.")
 
     def test_call_no_kwargs(self):
         @_lenient_client()
@@ -173,9 +169,9 @@ class Test(tests.IrisTest):
     def test_call_doc(self):
         @_lenient_client()
         def myclient():
-            """myclient doc-string"""
+            """Myclient doc-string."""
 
-        self.assertEqual(myclient.__doc__, "myclient doc-string")
+        self.assertEqual(myclient.__doc__, "Myclient doc-string.")
 
 
 if __name__ == "__main__":

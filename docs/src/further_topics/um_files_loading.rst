@@ -1,5 +1,3 @@
-.. _um_files_loading:
-
 .. testsetup::
 
     import numpy as np
@@ -12,6 +10,8 @@
 
     np.set_printoptions(precision=8)
 
+
+.. _um_files_loading:
 
 ===================================
 Iris Handling of PP and Fieldsfiles
@@ -31,14 +31,14 @@ Notes:
 #.  Iris treats Fieldsfile data almost exactly as if it were PP  -- i.e. it
     treats each field's lookup table entry like a PP header.
 #.  The Iris data model is based on
-    `NetCDF CF conventions <http://cfconventions.org/>`_, so most of this can
+    `NetCDF CF conventions <https://cfconventions.org/>`_, so most of this can
     also be seen as a metadata translation between PP and CF terms, but it is
     easier to discuss in terms of Iris elements.
 
 For details of Iris terms (cubes, coordinates, attributes), refer to
 :ref:`Iris data structures <iris_data_structures>`.
 
-For details of CF conventions, see http://cfconventions.org/.
+For details of CF conventions, see https://cfconventions.org/.
 
 Overview of Loading Process
 ---------------------------
@@ -125,21 +125,21 @@ with latitude and longitude axes are also supported).
 For an ordinary latitude-longitude grid, the cubes have coordinates called
 'longitude' and 'latitude':
 
- *  These are mapped to the appropriate data dimensions.
- *  They have units of 'degrees'.
- *  They have a coordinate system of type :class:`iris.coord_systems.GeogCS`.
- *  The coordinate points are normally set to the regular sequence
-    ``ZDX/Y + BDX/Y * (1 .. LBNPT/LBROW)`` (*except*, if BDX/BDY is zero, the
-    values are taken from the extra data vector X/Y, if present).
- *  If X/Y_LOWER_BOUNDS extra data is available, this appears as bounds values
-    of the horizontal coordinates.
+*  These are mapped to the appropriate data dimensions.
+*  They have units of 'degrees'.
+*  They have a coordinate system of type :class:`iris.coord_systems.GeogCS`.
+*  The coordinate points are normally set to the regular sequence
+   ``ZDX/Y + BDX/Y * (1 .. LBNPT/LBROW)`` (*except*, if BDX/BDY is zero, the
+   values are taken from the extra data vector X/Y, if present).
+*  If X/Y_LOWER_BOUNDS extra data is available, this appears as bounds values
+   of the horizontal coordinates.
 
 For **rotated** latitude-longitude coordinates (as for LBCODE=101), the
 horizontal coordinates differ only slightly --
 
- *  The names are 'grid_latitude' and 'grid_longitude'.
- *  The coord_system is a :class:`iris.coord_systems.RotatedGeogCS`, created
-    with a pole defined by BPLAT, BPLON.
+*  The names are 'grid_latitude' and 'grid_longitude'.
+*  The coord_system is a :class:`iris.coord_systems.RotatedGeogCS`, created
+   with a pole defined by BPLAT, BPLON.
 
 For example:
     >>> # Load a PP field.
@@ -304,10 +304,9 @@ For hybrid height levels (LBVC=65):
     multidimensional or non-monotonic.
 
 See an example printout of a hybrid height cube,
-:ref:`here <hybrid_cube_printout>`:
-
-    Notice that this contains all of the above coordinates --
-    'model_level_number', 'sigma', 'level_height' and the derived 'altitude'.
+:ref:`here <hybrid_cube_printout>`.  Notice that this contains all of the 
+above coordinates -- ``model_level_number``, ``sigma``, ``level_height`` and
+the derived ``altitude``.
 
 .. note::
 
@@ -336,7 +335,7 @@ Time Information
 
 In Iris (as in CF) times and time intervals are both expressed as simple
 numbers, following the approach of the
-`UDUNITS project <http://www.unidata.ucar.edu/software/udunits/>`_.
+`UDUNITS project <https://www.unidata.ucar.edu/software/udunits/>`_.
 These values are stored as cube coordinates, where the scaling and calendar
 information is contained in the :attr:`~iris.coords.Coord.units` property.
 
@@ -364,7 +363,7 @@ Data at a single measurement timepoint (LBTIM.IB=0):
     defined according to LBTIM.IC.
 
 Values forecast from T2, valid at T1 (LBTIM.IB=1):
-    Coordinates ``time` and ``forecast_reference_time`` are created from the T1
+    Coordinates ``time`` and ``forecast_reference_time`` are created from the T1
     and T2 values, respectively.  These have no bounds, and units of
     'hours since 1970-01-01 00:00:00', with the appropriate calendar.
     A ``forecast_period`` coordinate is also created, with values T1-T2, no
@@ -383,12 +382,11 @@ these may become dimensions of the resulting data cube.  This will depend on
 the values actually present in the source fields for each of the elements.
 
 See an example printout of a forecast data cube,
-:ref:`here <cube-statistics_forecast_printout>` :
-
-    Notice that this example contains all of the above coordinates -- 'time',
-    'forecast_period' and 'forecast_reference_time'.  In this case the data are
-    forecasts, so 'time' is a dimension, 'forecast_period' varies with time and
-    'forecast_reference_time' is a constant.
+:ref:`here <cube-statistics_forecast_printout>`.  Notice that this example
+contains all of the above coordinates -- ``time``, ``forecast_period`` and
+``forecast_reference_time``.  In this case the data are forecasts, so ``time``
+is a dimension, ``forecast_period``` varies with time and 
+``forecast_reference_time`` is a constant.
 
 
 Statistical Measures

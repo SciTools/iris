@@ -58,7 +58,7 @@ Features
 
 * Use the latest release of Cartopy, v0.8.0.
 
-.. _OPeNDAP: http://www.opendap.org/about
+.. _OPeNDAP: https://www.opendap.org
 .. _exp-regrid:
 
 Experimental Regridding Enhancements
@@ -132,7 +132,7 @@ Cubes can now be loaded directly from the internet, via OPeNDAP_.
 
 For example::
 
-        cubes = iris.load("http://geoport.whoi.edu/thredds/dodsC/bathy/gom15")
+        cubes = iris.load("https://geoport.whoi.edu/thredds/dodsC/bathy/gom15")
 
 
 .. _geotiff_export:

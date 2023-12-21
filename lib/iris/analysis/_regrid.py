@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import copy
 import functools
@@ -20,12 +19,12 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid, guess_coord_axis
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):
-    """
-    Transform 2d points between cartopy coordinate reference systems.
+    """Transform 2d points between cartopy coordinate reference systems.
 
     NOTE: copied private function from iris.analysis.cartography.
 
@@ -44,11 +43,8 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
     return pts[..., 0], pts[..., 1]
 
 
-def _regrid_weighted_curvilinear_to_rectilinear__prepare(
-    src_cube, weights, grid_cube
-):
-    """
-    First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
+def _regrid_weighted_curvilinear_to_rectilinear__prepare(src_cube, weights, grid_cube):
+    """First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
     Check inputs and calculate the sparse regrid matrix and related info.
     The 'regrid info' returned can be re-used over many cubes.
@@ -87,10 +83,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
         raise ValueError(msg.format(sx.name(), sy.name()))
 
     if sx.coord_system is None:
-        msg = (
-            "The source X and Y coordinates must have a defined "
-            "coordinate system."
-        )
+        msg = "The source X and Y coordinates must have a defined coordinate system."
         raise ValueError(msg)
 
     if tx.units != ty.units:
@@ -101,10 +94,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
         raise ValueError(msg.format(tx.name(), ty.name()))
 
     if tx.coord_system is None:
-        msg = (
-            "The target X and Y coordinates must have a defined "
-            "coordinate system."
-        )
+        msg = "The target X and Y coordinates must have a defined coordinate system."
         raise ValueError(msg)
 
     if tx.coord_system != ty.coord_system:
@@ -117,24 +107,15 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(
     if weights is None:
         weights = np.ones(sx.shape)
     if weights.shape != sx.shape:
-        msg = (
-            "Provided weights must have the same shape as the X and Y "
-            "coordinates."
-        )
+        msg = "Provided weights must have the same shape as the X and Y coordinates."
         raise ValueError(msg)
 
     if not tx.has_bounds() or not tx.is_contiguous():
-        msg = (
-            "The target grid cube x ({!r})coordinate requires "
-            "contiguous bounds."
-        )
+        msg = "The target grid cube x ({!r})coordinate requires contiguous bounds."
         raise ValueError(msg.format(tx.name()))
 
     if not ty.has_bounds() or not ty.is_contiguous():
-        msg = (
-            "The target grid cube y ({!r}) coordinate requires "
-            "contiguous bounds."
-        )
+        msg = "The target grid cube y ({!r}) coordinate requires contiguous bounds."
         raise ValueError(msg.format(ty.name()))
 
     def _src_align_and_flatten(coord):
@@ -293,8 +274,7 @@ def _curvilinear_to_rectilinear_regrid_data(
     dims,
     regrid_info,
 ):
-    """
-    Part of 'regrid_weighted_curvilinear_to_rectilinear' which acts on the data.
+    """Part of 'regrid_weighted_curvilinear_to_rectilinear' which acts on the data.
 
     Perform the prepared regrid calculation on an array.
 
@@ -329,9 +309,7 @@ def _curvilinear_to_rectilinear_regrid_data(
             sum_weights = valid_src_cells @ sparse_matrix.T
         data = r_data
     if sum_weights is None:
-        sum_weights = (
-            np.ones(data_shape).reshape(-1, grid_size) @ sparse_matrix.T
-        )
+        sum_weights = np.ones(data_shape).reshape(-1, grid_size) @ sparse_matrix.T
     # Work out where output cells are missing all contributions.
     # This allows for where 'rows' contains output cells that have no
     # data because of missing input points.
@@ -365,11 +343,8 @@ def _curvilinear_to_rectilinear_regrid_data(
     return result
 
 
-def _regrid_weighted_curvilinear_to_rectilinear__perform(
-    src_cube, regrid_info
-):
-    """
-    Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
+def _regrid_weighted_curvilinear_to_rectilinear__perform(src_cube, regrid_info):
+    """Second (regrid) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
     Perform the prepared regrid calculation on a single cube.
 
@@ -393,15 +368,13 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
 
 
 class CurvilinearRegridder:
-    """
-    This class provides support for performing point-in-cell regridding
+    """This class provides support for performing point-in-cell regridding
     between a curvilinear source grid and a rectilinear target grid.
 
     """
 
     def __init__(self, src_grid_cube, target_grid_cube, weights=None):
-        """
-        Create a regridder for conversions between the source
+        """Create a regridder for conversions between the source
         and target grids.
 
         Args:
@@ -436,8 +409,7 @@ class CurvilinearRegridder:
 
     @staticmethod
     def _get_horizontal_coord(cube, axis):
-        """
-        Gets the horizontal coordinate on the supplied cube along the
+        """Gets the horizontal coordinate on the supplied cube along the
         specified axis.
 
         Args:
@@ -455,14 +427,14 @@ class CurvilinearRegridder:
         coords = cube.coords(axis=axis, dim_coords=False)
         if len(coords) != 1:
             raise ValueError(
-                "Cube {!r} must contain a single 1D {} "
-                "coordinate.".format(cube.name(), axis)
+                "Cube {!r} must contain a single 1D {} coordinate.".format(
+                    cube.name(), axis
+                )
             )
         return coords[0]
 
     def __call__(self, src):
-        """
-        Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
         this :class:`_CurvilinearRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -502,10 +474,8 @@ class CurvilinearRegridder:
         slice_cube = next(src.slices(sx))
         if self._regrid_info is None:
             # Calculate the basic regrid info just once.
-            self._regrid_info = (
-                _regrid_weighted_curvilinear_to_rectilinear__prepare(
-                    slice_cube, self.weights, self._target_cube
-                )
+            self._regrid_info = _regrid_weighted_curvilinear_to_rectilinear__prepare(
+                slice_cube, self.weights, self._target_cube
             )
         result = _regrid_weighted_curvilinear_to_rectilinear__perform(
             src, self._regrid_info
@@ -515,17 +485,13 @@ class CurvilinearRegridder:
 
 
 class RectilinearRegridder:
-    """
-    This class provides support for performing nearest-neighbour or
+    """This class provides support for performing nearest-neighbour or
     linear regridding between source and target grids.
 
     """
 
-    def __init__(
-        self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode
-    ):
-        """
-        Create a regridder for conversions between the source
+    def __init__(self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode):
+        """Create a regridder for conversions between the source
         and target grids.
 
         Args:
@@ -587,8 +553,7 @@ class RectilinearRegridder:
 
     @staticmethod
     def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
-        """
-        Convert the rectilinear grid coordinates to a curvilinear grid in
+        """Convert the rectilinear grid coordinates to a curvilinear grid in
         the source coordinate system.
 
         The `grid_x_coord` and `grid_y_coord` must share a common coordinate
@@ -634,8 +599,7 @@ class RectilinearRegridder:
         method="linear",
         extrapolation_mode="nanmask",
     ):
-        """
-        Regrid the given data from the src grid to the sample grid.
+        """Regrid the given data from the src grid to the sample grid.
 
         The result will be a MaskedArray if either/both of:
          - the source array is a MaskedArray,
@@ -881,8 +845,7 @@ class RectilinearRegridder:
                 raise ValueError(msg)
 
     def __call__(self, src):
-        """
-        Regrid this :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`RectilinearRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -969,9 +932,7 @@ class RectilinearRegridder:
             extrapolation_mode=self._extrapolation_mode,
         )
 
-        data = map_complete_blocks(
-            src, regrid, (y_dim, x_dim), sample_grid_x.shape
-        )
+        data = map_complete_blocks(src, regrid, (y_dim, x_dim), sample_grid_x.shape)
 
         # Wrap up the data as a Cube.
         _regrid_callback = functools.partial(
@@ -999,11 +960,8 @@ class RectilinearRegridder:
         return result
 
 
-def _create_cube(
-    data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback
-):
-    r"""
-    Return a new cube for the result of regridding.
+def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback):
+    r"""Return a new cube for the result of regridding.
     Returned cube represents the result of regridding the source cube
     onto the horizontal coordinates (e.g. latitude) of the target cube.
     All the metadata and coordinates of the result cube are copied from
@@ -1011,6 +969,7 @@ def _create_cube(
         - Horizontal coordinates are copied from the target cube.
         - Auxiliary coordinates which span the grid dimensions are
           ignored.
+
     Parameters
     ----------
     data : array
@@ -1029,6 +988,7 @@ def _create_cube(
     regrid_callback : callable
         The routine that will be used to calculate the interpolated
         values of any reference surfaces.
+
     Returns
     -------
     cube
@@ -1074,11 +1034,7 @@ def _create_cube(
 
             def dim_offset(dim):
                 offset = sum(
-                    [
-                        d <= dim
-                        for d in (grid_dim_x, grid_dim_y)
-                        if d is not None
-                    ]
+                    [d <= dim for d in (grid_dim_x, grid_dim_y) if d is not None]
                 )
                 if offset and num_tgt_dims == 1:
                     offset -= 1
@@ -1103,8 +1059,7 @@ def _create_cube(
         # Determine which of the reference surface's dimensions span the X
         # and Y dimensions of the source cube.
         relative_surface_dims = [
-            surface_dims.index(dim) if dim is not None else None
-            for dim in src_dims
+            surface_dims.index(dim) if dim is not None else None for dim in src_dims
         ]
         surface = regrid_callback(
             src_surface_coord.points,
@@ -1136,6 +1091,6 @@ def _create_cube(
                 "Cannot update aux_factory {!r} because of dropped"
                 " coordinates.".format(factory.name())
             )
-            warnings.warn(msg)
+            warnings.warn(msg, category=IrisImpossibleUpdateWarning)
 
     return result

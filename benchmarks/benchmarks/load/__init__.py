@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-File loading benchmark tests.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""File loading benchmark tests.
 
 Where applicable benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
@@ -27,7 +25,7 @@ class LoadAndRealise:
     # For data generation
     timeout = 600.0
     params = [
-        [(2, 2, 2), (1280, 960, 5), (2, 2, 1000)],
+        [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
         ["FF", "PP", "NetCDF"],
     ]
@@ -69,7 +67,7 @@ class LoadAndRealise:
 
 
 class STASHConstraint:
-    # xyz sizes mimic LoadAndRealise to maximise file re-use.
+    # xyz sizes mimic LoadAndRealise to maximise file reuse.
     params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"]]
     param_names = ["xyz", "file_format"]
 
@@ -78,14 +76,10 @@ class STASHConstraint:
         file_path_dict = {}
         for xyz in self.params[0]:
             x, y, z = xyz
-            file_path_dict[xyz] = create_um_files(
-                x, y, z, 1, False, file_type_args
-            )
+            file_path_dict[xyz] = create_um_files(x, y, z, 1, False, file_type_args)
         return file_path_dict
 
-    def setup(
-        self, file_path_dict: dict, xyz: tuple, file_format: str
-    ) -> None:
+    def setup(self, file_path_dict: dict, xyz: tuple, file_format: str) -> None:
         self.file_path = file_path_dict[xyz][file_format]
 
     def time_stash_constraint(self, _, __, ___) -> None:
@@ -105,9 +99,7 @@ class TimeConstraint:
             )
         return file_path_dict
 
-    def setup(
-        self, file_path_dict: dict, time_dim_len: int, file_format: str
-    ) -> None:
+    def setup(self, file_path_dict: dict, time_dim_len: int, file_format: str) -> None:
         self.file_path = file_path_dict[time_dim_len][file_format]
         self.time_constr = Constraint(time=lambda cell: cell.point.year < 3)
 
@@ -150,8 +142,7 @@ class ManyVars:
 
 
 class StructuredFF:
-    """
-    Test structured loading of a large-ish fieldsfile.
+    """Test structured loading of a large-ish fieldsfile.
 
     Structured load of the larger size should show benefit over standard load,
     avoiding the cost of merging.

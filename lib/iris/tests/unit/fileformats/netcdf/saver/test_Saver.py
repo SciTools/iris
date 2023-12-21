@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -24,13 +23,16 @@ from iris.coord_systems import (
     LambertAzimuthalEqualArea,
     LambertConformal,
     Mercator,
+    ObliqueMercator,
     RotatedGeogCS,
+    RotatedMercator,
     Stereographic,
     TransverseMercator,
     VerticalPerspective,
 )
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisMaskValueMatchWarning
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
 
@@ -242,9 +244,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, least_significant_digit=1)
             cube_saved = iris.load_cube(nc_path)
-            self.assertEqual(
-                cube_saved.attributes["least_significant_digit"], 1
-            )
+            self.assertEqual(cube_saved.attributes["least_significant_digit"], 1)
             self.assertFalse(np.all(cube.data == cube_saved.data))
             self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
 
@@ -454,9 +454,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
             ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(
-                ds.variables["longitude"].valid_range, vrange
-            )
+            self.assertArrayEqual(ds.variables["longitude"].valid_range, vrange)
             ds.close()
 
     def test_valid_min_saved(self):
@@ -555,7 +553,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">f4")
         fill_value = 1
         with self.assertWarnsRegex(
-            UserWarning,
+            IrisMaskValueMatchWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
@@ -567,7 +565,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">i1")
         fill_value = 1
         with self.assertWarnsRegex(
-            UserWarning,
+            IrisMaskValueMatchWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
@@ -579,7 +577,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">f4")
         cube.data[0, 0] = _thread_safe_nc.default_fillvals["f4"]
         with self.assertWarnsRegex(
-            UserWarning,
+            IrisMaskValueMatchWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube):
@@ -639,9 +637,7 @@ class Test_cf_valid_var_name(tests.IrisTest):
 
     def test_no_hyphen(self):
         # CF explicitly prohibits hyphen, even though it is fine in NetCDF.
-        self.assertEqual(
-            Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf"
-        )
+        self.assertEqual(Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf")
 
 
 class _Common__check_attribute_compliance:
@@ -787,9 +783,7 @@ class Test_check_attribute_compliance__exception_handling(
         msg = 'Both "valid_range" and "valid_min"'
         with Saver("nonexistent test file", "NETCDF4") as saver:
             with self.assertRaisesRegex(ValueError, msg):
-                saver.check_attribute_compliance(
-                    self.container, self.data_dtype
-                )
+                saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
 class Test__cf_coord_identity(tests.IrisTest):
@@ -853,8 +847,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         return cube
 
     def _grid_mapping_variable(self, coord_system):
-        """
-        Return a mock netCDF variable that represents the conversion
+        """Return a mock netCDF variable that represents the conversion
         of the given coordinate system.
 
         """
@@ -876,14 +869,11 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         Saver._create_cf_grid_mapping(saver, cube, variable)
 
         self.assertEqual(create_var_fn.call_count, 1)
-        self.assertEqual(
-            variable.grid_mapping, grid_variable.grid_mapping_name
-        )
+        self.assertEqual(variable.grid_mapping, grid_variable.grid_mapping_name)
         return grid_variable
 
     def _variable_attributes(self, coord_system):
-        """
-        Return the attributes dictionary for the grid mapping variable
+        """Return the attributes dictionary for the grid mapping variable
         that is created from the given coordinate system.
 
         """
@@ -1063,6 +1053,50 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             "longitude_of_prime_meridian": 0,
         }
         self._test(coord_system, expected)
+
+    def test_oblique_cs(self):
+        # Some none-default settings to confirm all parameters are being
+        #  handled.
+
+        kwargs_rotated = dict(
+            latitude_of_projection_origin=90.0,
+            longitude_of_projection_origin=45.0,
+            false_easting=1000000.0,
+            false_northing=-2000000.0,
+            scale_factor_at_projection_origin=0.939692620786,
+            ellipsoid=GeogCS(1),
+        )
+
+        # Same as rotated, but with azimuth too.
+        oblique_azimuth = dict(azimuth_of_central_line=45.0)
+        kwargs_oblique = dict(kwargs_rotated, **oblique_azimuth)
+
+        expected_rotated = dict(
+            # Automatically converted to oblique_mercator in line with CF 1.11 .
+            grid_mapping_name=b"oblique_mercator",
+            # Azimuth should be automatically populated.
+            azimuth_of_central_line=90.0,
+            **kwargs_rotated,
+        )
+        # Convert the ellipsoid
+        expected_rotated.update(
+            dict(
+                earth_radius=expected_rotated.pop("ellipsoid").semi_major_axis,
+                longitude_of_prime_meridian=0.0,
+            )
+        )
+
+        # Same as rotated, but different azimuth.
+        expected_oblique = dict(expected_rotated, **oblique_azimuth)
+
+        oblique = ObliqueMercator(**kwargs_oblique)
+        rotated = RotatedMercator(**kwargs_rotated)
+
+        for coord_system, expected in [
+            (oblique, expected_oblique),
+            (rotated, expected_rotated),
+        ]:
+            self._test(coord_system, expected)
 
 
 if __name__ == "__main__":

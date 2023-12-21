@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test pickling of Iris objects.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test pickling of Iris objects.
 
 """
 
@@ -24,10 +22,7 @@ from iris._lazy_data import as_concrete_data, as_lazy_data
 
 class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
-        """
-        Returns a generator of ("pickle protocol number", object) tuples.
-
-        """
+        """Returns a generator of ("pickle protocol number", object) tuples."""
         for protocol in range(1 + pickle.HIGHEST_PROTOCOL):
             bio = io.BytesIO()
             pickle.dump(obj, bio, protocol)
@@ -49,13 +44,9 @@ class TestPickle(tests.IrisTest):
 
     @tests.skip_data
     def test_cube_pickle(self):
-        cube = iris.load_cube(
-            tests.get_data_path(("PP", "globClim1", "theta.pp"))
-        )
+        cube = iris.load_cube(tests.get_data_path(("PP", "globClim1", "theta.pp")))
         self.assertTrue(cube.has_lazy_data())
-        self.assertCML(
-            cube, ("cube_io", "pickling", "theta.cml"), checksum=False
-        )
+        self.assertCML(cube, ("cube_io", "pickling", "theta.cml"), checksum=False)
 
         for p, recon_cube in self.pickle_then_unpickle(cube):
             self.assertTrue(recon_cube.has_lazy_data())
@@ -104,9 +95,7 @@ class TestPickle(tests.IrisTest):
                 ("cube_io", "pickling", "single_cube.cml"),
             )
 
-            for cube_orig, cube_reconstruct in zip(
-                cubelist, reconstructed_cubelist
-            ):
+            for cube_orig, cube_reconstruct in zip(cubelist, reconstructed_cubelist):
                 self.assertArrayEqual(cube_orig.data, cube_reconstruct.data)
                 self.assertEqual(cube_orig, cube_reconstruct)
 

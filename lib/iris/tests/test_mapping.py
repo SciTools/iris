@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Tests map creation.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Tests map creation.
 
 """
 
@@ -105,9 +103,7 @@ class TestUnmappable(tests.GraphicsTest):
 class TestMappingSubRegion(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
-        cube_path = tests.get_data_path(
-            ("PP", "aPProt1", "rotatedMHtimecube.pp")
-        )
+        cube_path = tests.get_data_path(("PP", "aPProt1", "rotatedMHtimecube.pp"))
         cube = iris.load_cube(cube_path)[0]
         # make the data smaller to speed things up.
         self.cube = cube[::10, ::10]
@@ -160,9 +156,7 @@ class TestLowLevel(tests.GraphicsTest):
         self.cube = iris.tests.stock.global_pp()
         self.few = 4
         self.few_levels = list(range(280, 300, 5))
-        self.many_levels = np.linspace(
-            self.cube.data.min(), self.cube.data.max(), 40
-        )
+        self.many_levels = np.linspace(self.cube.data.min(), self.cube.data.max(), 40)
 
     def test_simple(self):
         iplt.contour(self.cube)
@@ -221,9 +215,7 @@ class TestBoundedCube(tests.GraphicsTest):
             [0.0, 360.0, -89.99995422, 89.99998474],
         )
         np_testing.assert_array_almost_equal(
-            iplt.default_projection_extent(
-                self.cube, mode=iris.coords.BOUND_MODE
-            ),
+            iplt.default_projection_extent(self.cube, mode=iris.coords.BOUND_MODE),
             [-1.875046, 358.124954, -90, 90],
         )
 

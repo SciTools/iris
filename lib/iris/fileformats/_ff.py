@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides UK Met Office Fields File (FF) format specific capabilities.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
@@ -13,7 +11,11 @@ import warnings
 
 import numpy as np
 
-from iris.exceptions import NotYetImplementedError
+from iris.exceptions import (
+    IrisDefaultingWarning,
+    IrisLoadWarning,
+    NotYetImplementedError,
+)
 from iris.fileformats._ff_cross_references import STASH_TRANS
 
 from . import pp
@@ -118,9 +120,14 @@ REAL_POLE_LAT = 4
 REAL_POLE_LON = 5
 
 
+class _WarnComboLoadingDefaulting(IrisDefaultingWarning, IrisLoadWarning):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
 class Grid:
-    """
-    An abstract class representing the default/file-level grid
+    """An abstract class representing the default/file-level grid
     definition for a FieldsFile.
 
     """
@@ -132,8 +139,7 @@ class Grid:
         real_constants,
         horiz_grid_type,
     ):
-        """
-        Create a Grid from the relevant sections of the FFHeader.
+        """Create a Grid from the relevant sections of the FFHeader.
 
         Args:
 
@@ -177,8 +183,7 @@ class Grid:
         raise NotImplementedError()
 
     def vectors(self, subgrid):
-        """
-        Return the X and Y coordinate vectors for the given sub-grid of
+        """Return the X and Y coordinate vectors for the given sub-grid of
         this grid.
 
         Args:
@@ -202,10 +207,7 @@ class Grid:
 
 
 class ArakawaC(Grid):
-    """
-    An abstract class representing an Arakawa C-grid.
-
-    """
+    """An abstract class representing an Arakawa C-grid."""
 
     def _x_vectors(self):
         x_p, x_u = None, None
@@ -220,8 +222,7 @@ class ArakawaC(Grid):
         return x_p, x_u
 
     def regular_x(self, subgrid):
-        """
-        Return the "zeroth" value and step for the X coordinate on the
+        """Return the "zeroth" value and step for the X coordinate on the
         given sub-grid of this grid.
 
         Args:
@@ -240,8 +241,7 @@ class ArakawaC(Grid):
         return bzx, bdx
 
     def regular_y(self, subgrid):
-        """
-        Return the "zeroth" value and step for the Y coordinate on the
+        """Return the "zeroth" value and step for the Y coordinate on the
         given sub-grid of this grid.
 
         Args:
@@ -261,8 +261,7 @@ class ArakawaC(Grid):
 
 
 class NewDynamics(ArakawaC):
-    """
-    An Arakawa C-grid as used by UM New Dynamics.
+    """An Arakawa C-grid as used by UM New Dynamics.
 
     The theta and u points are at the poles.
 
@@ -280,8 +279,7 @@ class NewDynamics(ArakawaC):
 
 
 class ENDGame(ArakawaC):
-    """
-    An Arakawa C-grid as used by UM ENDGame.
+    """An Arakawa C-grid as used by UM ENDGame.
 
     The v points are at the poles.
 
@@ -299,16 +297,12 @@ class ENDGame(ArakawaC):
 
 
 class FFHeader:
-    """
-    A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile.
-
-    """
+    """A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile."""
 
     GRID_STAGGERING_CLASS = {3: NewDynamics, 6: ENDGame}
 
     def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
-        """
-        Create a FieldsFile header instance by reading the
+        """Create a FieldsFile header instance by reading the
         FIXED_LENGTH_HEADER section of the FieldsFile, making the names
         defined in FF_HEADER available as attributes of a FFHeader instance.
 
@@ -403,8 +397,7 @@ class FFHeader:
         return is_referenceable
 
     def shape(self, name):
-        """
-        Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER
+        """Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER
         pointer attribute.
 
         Args:
@@ -431,7 +424,8 @@ class FFHeader:
             grid_class = NewDynamics
             warnings.warn(
                 "Staggered grid type: {} not currently interpreted, assuming "
-                "standard C-grid".format(self.grid_staggering)
+                "standard C-grid".format(self.grid_staggering),
+                category=_WarnComboLoadingDefaulting,
             )
         grid = grid_class(
             self.column_dependent_constants,
@@ -443,16 +437,10 @@ class FFHeader:
 
 
 class FF2PP:
-    """
-    A class to extract the individual PPFields from within a FieldsFile.
+    """A class to extract the individual PPFields from within a FieldsFile."""
 
-    """
-
-    def __init__(
-        self, filename, read_data=False, word_depth=DEFAULT_FF_WORD_DEPTH
-    ):
-        """
-        Create a FieldsFile to Post Process instance that returns a generator
+    def __init__(self, filename, read_data=False, word_depth=DEFAULT_FF_WORD_DEPTH):
+        """Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
 
         Args:
@@ -524,9 +512,7 @@ class FF2PP:
             boundary_width = pack_dims.x_halo + pack_dims.rim_width
             y_height, x_width = field.lbrow, field.lbnpt
             mid_height = y_height - 2 * boundary_height
-            data_words = (
-                boundary_height * x_width * 2 + boundary_width * mid_height * 2
-            )
+            data_words = boundary_height * x_width * 2 + boundary_width * mid_height * 2
 
         data_depth = data_words * word_depth
         return data_depth, data_type
@@ -554,7 +540,7 @@ class FF2PP:
                 "may be incorrect, not having taken into account the "
                 "boundary size."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, category=IrisLoadWarning)
         else:
             range2 = field_dim[0] - res_low
             range1 = field_dim[0] - halo_dim * res_low
@@ -570,17 +556,15 @@ class FF2PP:
         return field_dim
 
     def _adjust_field_for_lbc(self, field):
-        """
-        Make an LBC field look like a 'normal' field for rules processing.
-
-        """
+        """Make an LBC field look like a 'normal' field for rules processing."""
         # Set LBTIM to indicate the specific time encoding for LBCs,
         # i.e. t1=forecast, t2=reference
         lbtim_default = 11
         if field.lbtim not in (0, lbtim_default):
             raise ValueError(
-                "LBC field has LBTIM of {:d}, expected only "
-                "0 or {:d}.".format(field.lbtim, lbtim_default)
+                "LBC field has LBTIM of {:d}, expected only 0 or {:d}.".format(
+                    field.lbtim, lbtim_default
+                )
             )
         field.lbtim = lbtim_default
 
@@ -589,8 +573,9 @@ class FF2PP:
         lbvc_default = 65
         if field.lbvc not in (0, lbvc_default):
             raise ValueError(
-                "LBC field has LBVC of {:d}, expected only "
-                "0 or {:d}.".format(field.lbvc, lbvc_default)
+                "LBC field has LBVC of {:d}, expected only 0 or {:d}.".format(
+                    field.lbvc, lbvc_default
+                )
             )
         field.lbvc = lbvc_default
         # Specifying a vertical encoding scheme means a usable vertical
@@ -628,14 +613,14 @@ class FF2PP:
                     "The LBC has a bdy less than 0. No "
                     "case has previously been seen of "
                     "this, and the decompression may be "
-                    "erroneous."
+                    "erroneous.",
+                    category=IrisLoadWarning,
                 )
             field.bzx -= field.bdx * boundary_packing.x_halo
             field.bzy -= field.bdy * boundary_packing.y_halo
 
     def _fields_over_all_levels(self, field):
-        """
-        Replicate the field over all model levels, setting LBLEV for each.
+        """Replicate the field over all model levels, setting LBLEV for each.
 
         This is appropriate for LBC data.
         Yields an iterator producing a sequence of distinct field objects.
@@ -741,7 +726,8 @@ class FF2PP:
                                 "which has not been explicitly "
                                 "handled by the fieldsfile loader."
                                 " Assuming the data is on a P grid"
-                                ".".format(stash, subgrid)
+                                ".".format(stash, subgrid),
+                                category=_WarnComboLoadingDefaulting,
                             )
 
                     field.x, field.y = grid.vectors(subgrid)
@@ -757,14 +743,18 @@ class FF2PP:
                                 "STASH to grid type mapping. Picking the P "
                                 "position as the cell type".format(stash)
                             )
-                            warnings.warn(msg)
+                            warnings.warn(
+                                msg,
+                                category=_WarnComboLoadingDefaulting,
+                            )
                         field.bzx, field.bdx = grid.regular_x(subgrid)
                         field.bzy, field.bdy = grid.regular_y(subgrid)
                         field.bplat = grid.pole_lat
                         field.bplon = grid.pole_lon
                     elif no_x or no_y:
                         warnings.warn(
-                            "Partially missing X or Y coordinate values."
+                            "Partially missing X or Y coordinate values.",
+                            category=IrisLoadWarning,
                         )
 
                     # Check for LBC fields.
@@ -810,15 +800,14 @@ class FF2PP:
                         "Input field skipped as PPField creation failed :"
                         " error = {!r}"
                     )
-                    warnings.warn(msg.format(str(valerr)))
+                    warnings.warn(msg.format(str(valerr)), category=IrisLoadWarning)
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())
 
 
 def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
-    """
-    Replacement :func:`numpy.fromfile` due to python3 performance issues.
+    """Replacement :func:`numpy.fromfile` due to python3 performance issues.
 
     Args:
 
@@ -851,8 +840,7 @@ def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
 
 
 def load_cubes(filenames, callback, constraints=None):
-    """
-    Loads cubes from a list of fields files filenames.
+    """Loads cubes from a list of fields files filenames.
 
     Args:
 
@@ -876,8 +864,7 @@ def load_cubes(filenames, callback, constraints=None):
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
-    """
-    Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
+    """Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
 
     .. seealso::
 

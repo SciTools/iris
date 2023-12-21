@@ -8,7 +8,7 @@ Iris
 **A powerful, format-agnostic, community-driven Python package for analysing
 and visualising Earth science data.**
 
-Iris implements a data model based on the `CF conventions <http://cfconventions.org>`_
+Iris implements a data model based on the `CF conventions <https://cfconventions.org>`_
 giving you a powerful, format-agnostic interface for working with your data.
 It excels when working with multi-dimensional Earth Science data, where tabular
 representations become unwieldy and inefficient.
@@ -187,19 +187,20 @@ The legacy support resources:
 
 
 .. toctree::
-   :caption: Iris API
-   :maxdepth: 1
-   :hidden:
-
-   Iris API <generated/api/iris>
-
-
-.. toctree::
    :caption: What's New in Iris
    :maxdepth: 1
    :name: whats_new_index
    :hidden:
 
    whatsnew/index
+
+
+.. toctree::
+   :caption: Iris API
+   :maxdepth: 1
+   :hidden:
+
+   Iris API <generated/api/iris>
+
 
 .. todolist::

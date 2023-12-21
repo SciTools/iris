@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Basic mathematical and statistical operations.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Basic mathematical and statistical operations.
 
 """
 
@@ -34,8 +32,7 @@ logger = get_logger(__name__)
 
 @lru_cache(maxsize=128, typed=True)
 def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
-    """
-    Get the numpy dtype corresponding to the result of applying a unary or
+    """Get the numpy dtype corresponding to the result of applying a unary or
     binary operation to arguments of specified dtype.
 
     Args:
@@ -69,9 +66,7 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
         result = first_dtype
     else:
         operand_dtypes = (
-            (first_dtype, second_dtype)
-            if second_dtype is not None
-            else (first_dtype,)
+            (first_dtype, second_dtype) if second_dtype is not None else (first_dtype,)
         )
         arrays = [np.array([1], dtype=dtype) for dtype in operand_dtypes]
         result = op(*arrays).dtype
@@ -79,8 +74,7 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
 
 
 def _get_dtype(operand):
-    """
-    Get the numpy dtype corresponding to the numeric data in the object
+    """Get the numpy dtype corresponding to the numeric data in the object
     provided.
 
     Args:
@@ -93,14 +87,11 @@ def _get_dtype(operand):
         An instance of :class:`numpy.dtype`
 
     """
-    return (
-        np.min_scalar_type(operand) if np.isscalar(operand) else operand.dtype
-    )
+    return np.min_scalar_type(operand) if np.isscalar(operand) else operand.dtype
 
 
 def abs(cube, in_place=False):
-    """
-    Calculate the absolute values of the data in the Cube provided.
+    """Calculate the absolute values of the data in the Cube provided.
 
     Args:
 
@@ -116,7 +107,7 @@ def abs(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -124,14 +115,11 @@ def abs(cube, in_place=False):
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.abs, cube.dtype, in_place=in_place)
     op = da.absolute if cube.has_lazy_data() else np.abs
-    return _math_op_common(
-        cube, op, cube.units, new_dtype=new_dtype, in_place=in_place
-    )
+    return _math_op_common(cube, op, cube.units, new_dtype=new_dtype, in_place=in_place)
 
 
 def intersection_of_cubes(cube, other_cube):
-    """
-    Return the two Cubes of intersection given two Cubes.
+    """Return the two Cubes of intersection given two Cubes.
 
     .. note:: The intersection of cubes function will ignore all single valued
         coordinates in checking the intersection.
@@ -166,7 +154,7 @@ def intersection_of_cubes(cube, other_cube):
           cube1, cube2 = (intersections[0], intersections[1])
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -189,14 +177,11 @@ def intersection_of_cubes(cube, other_cube):
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
 
-    coord_comp = iris.analysis._dimensional_metadata_comparison(
-        cube, other_cube
-    )
+    coord_comp = iris.analysis._dimensional_metadata_comparison(cube, other_cube)
 
     if coord_comp["ungroupable_and_dimensioned"]:
         raise ValueError(
-            "Cubes do not share all coordinates in common, "
-            "cannot intersect."
+            "Cubes do not share all coordinates in common, cannot intersect."
         )
 
     # cubes must have matching coordinates
@@ -217,15 +202,12 @@ def _assert_is_cube(cube):
     from iris.cube import Cube
 
     if not isinstance(cube, Cube):
-        raise TypeError(
-            'The "cube" argument must be an instance of ' "iris.cube.Cube."
-        )
+        raise TypeError('The "cube" argument must be an instance of ' "iris.cube.Cube.")
 
 
 @_lenient_client(services=SERVICES)
 def add(cube, other, dim=None, in_place=False):
-    """
-    Calculate the sum of two cubes, or the sum of a cube and a coordinate or
+    """Calculate the sum of two cubes, or the sum of a cube and a coordinate or
     array or scalar value.
 
     When summing two cubes, they must both have the same coordinate systems and
@@ -236,7 +218,6 @@ def add(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         First operand to add.
 
@@ -252,11 +233,10 @@ def add(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -280,8 +260,7 @@ def add(cube, other, dim=None, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def subtract(cube, other, dim=None, in_place=False):
-    """
-    Calculate the difference between two cubes, or the difference between
+    """Calculate the difference between two cubes, or the difference between
     a cube and a coordinate or array or scalar value.
 
     When differencing two cubes, they must both have the same coordinate systems
@@ -292,7 +271,6 @@ def subtract(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         Cube from which to subtract.
 
@@ -308,11 +286,10 @@ def subtract(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -343,8 +320,7 @@ def _add_subtract_common(
     dim=None,
     in_place=False,
 ):
-    """
-    Function which shares common code between addition and subtraction
+    """Function which shares common code between addition and subtraction
     of cubes.
 
     operation_function   - function which does the operation
@@ -387,8 +363,7 @@ def _add_subtract_common(
 
 @_lenient_client(services=SERVICES)
 def multiply(cube, other, dim=None, in_place=False):
-    """
-    Calculate the product of two cubes, or the product of a cube and a coordinate
+    """Calculate the product of two cubes, or the product of a cube and a coordinate
     or array or scalar value.
 
     When multiplying two cubes, they must both have the same coordinate systems
@@ -399,7 +374,6 @@ def multiply(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         First operand to multiply.
 
@@ -415,11 +389,10 @@ def multiply(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -455,8 +428,7 @@ def multiply(cube, other, dim=None, in_place=False):
 
 
 def _inplace_common_checks(cube, other, math_op):
-    """
-    Check whether an inplace math operation can take place between `cube` and
+    """Check whether an inplace math operation can take place between `cube` and
     `other`. It cannot if `cube` has integer data and `other` has float data
     as the operation will always produce float data that cannot be 'safely'
     cast back to the integer data of `cube`.
@@ -475,8 +447,7 @@ def _inplace_common_checks(cube, other, math_op):
 
 @_lenient_client(services=SERVICES)
 def divide(cube, other, dim=None, in_place=False):
-    """
-    Calculate the ratio of two cubes, or the ratio of a cube and a coordinate
+    """Calculate the ratio of two cubes, or the ratio of a cube and a coordinate
     or array or scalar value.
 
     When dividing a cube by another cube, they must both have the same coordinate
@@ -487,7 +458,6 @@ def divide(cube, other, dim=None, in_place=False):
 
     Parameters
     ----------
-
     cube : iris.cube.Cube
         Numerator.
 
@@ -503,11 +473,10 @@ def divide(cube, other, dim=None, in_place=False):
 
     Returns
     -------
-
     iris.cube.Cube
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -549,8 +518,7 @@ def divide(cube, other, dim=None, in_place=False):
 
 
 def exponentiate(cube, exponent, in_place=False):
-    """
-    Returns the result of the given cube to the power of a scalar.
+    """Returns the result of the given cube to the power of a scalar.
 
     Args:
 
@@ -574,7 +542,7 @@ def exponentiate(cube, exponent, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -605,8 +573,7 @@ def exponentiate(cube, exponent, in_place=False):
 
 
 def exp(cube, in_place=False):
-    """
-    Calculate the exponential (exp(x)) of the cube.
+    """Calculate the exponential (exp(x)) of the cube.
 
     Args:
 
@@ -626,7 +593,7 @@ def exp(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -640,8 +607,7 @@ def exp(cube, in_place=False):
 
 
 def log(cube, in_place=False):
-    """
-    Calculate the natural logarithm (base-e logarithm) of the cube.
+    """Calculate the natural logarithm (base-e logarithm) of the cube.
 
     Args:
 
@@ -657,7 +623,7 @@ def log(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -675,8 +641,7 @@ def log(cube, in_place=False):
 
 
 def log2(cube, in_place=False):
-    """
-    Calculate the base-2 logarithm of the cube.
+    """Calculate the base-2 logarithm of the cube.
 
     Args:
 
@@ -692,7 +657,7 @@ def log2(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -706,8 +671,7 @@ def log2(cube, in_place=False):
 
 
 def log10(cube, in_place=False):
-    """
-    Calculate the base-10 logarithm of the cube.
+    """Calculate the base-10 logarithm of the cube.
 
     Args:
 
@@ -723,7 +687,7 @@ def log10(cube, in_place=False):
         An instance of :class:`iris.cube.Cube`.
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -736,12 +700,9 @@ def log10(cube, in_place=False):
     )
 
 
-def apply_ufunc(
-    ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False
-):
-    """
-    Apply a `numpy universal function
-    <http://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube
+def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False):
+    """Apply a `numpy universal function
+    <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube
     or pair of cubes.
 
     .. note:: Many of the numpy.ufunc have been implemented explicitly in Iris
@@ -790,9 +751,7 @@ def apply_ufunc(
     """
 
     if not isinstance(ufunc, np.ufunc):
-        ufunc_name = getattr(
-            ufunc, "__name__", "function passed to apply_ufunc"
-        )
+        ufunc_name = getattr(ufunc, "__name__", "function passed to apply_ufunc")
         emsg = f"{ufunc_name} is not recognised, it is not an instance of numpy.ufunc"
         raise TypeError(emsg)
 
@@ -860,8 +819,7 @@ def _binary_op_common(
     in_place=False,
     sanitise_metadata=True,
 ):
-    """
-    Function which shares common code between binary operations.
+    """Function which shares common code between binary operations.
 
     operation_function   - function which does the operation
                            (e.g. numpy.divide)
@@ -935,9 +893,9 @@ def _binary_op_common(
         elif ma.is_masked(rhs) and not isinstance(cube.data, ma.MaskedArray):
             cube.data = ma.array(cube.data)
 
-    elif isinstance(
-        cube.core_data(), ma.MaskedArray
-    ) and iris._lazy_data.is_lazy_data(rhs):
+    elif isinstance(cube.core_data(), ma.MaskedArray) and iris._lazy_data.is_lazy_data(
+        rhs
+    ):
         # Workaround for #2987.  numpy#15200 discusses the general problem.
         cube = cube.copy(cube.lazy_data())
 
@@ -978,8 +936,7 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
             except iris.exceptions.CoordinateNotFoundError:
                 raise ValueError(
                     "Could not determine dimension for %s. "
-                    "Use %s(cube, coord, dim=dim)"
-                    % (operation_name, operation_name)
+                    "Use %s(cube, coord, dim=dim)" % (operation_name, operation_name)
                 )
 
     if other.ndim != 1:
@@ -988,7 +945,8 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
     if other.has_bounds():
         warnings.warn(
             "Using {!r} with a bounded coordinate is not well "
-            "defined; ignoring bounds.".format(operation_name)
+            "defined; ignoring bounds.".format(operation_name),
+            category=iris.exceptions.IrisIgnoringBoundsWarning,
         )
 
     points = other.points
@@ -1004,8 +962,7 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 
 def _sanitise_metadata(cube, unit):
-    """
-    As part of the maths metadata contract, clear the necessary or
+    """As part of the maths metadata contract, clear the necessary or
     unsupported metadata from the resultant cube of the maths operation.
 
     """
@@ -1079,13 +1036,10 @@ def _math_op_common(
 
 
 class IFunc:
-    """
-    :class:`IFunc` class for functions that can be applied to an iris cube.
-    """
+    """:class:`IFunc` class for functions that can be applied to an iris cube."""
 
     def __init__(self, data_func, units_func):
-        """
-        Create an ifunc from a data function and units function.
+        """Create an ifunc from a data function and units function.
 
         Args:
 
@@ -1161,10 +1115,7 @@ class IFunc:
             args = [
                 param
                 for param in sig.parameters.values()
-                if (
-                    param.kind != param.KEYWORD_ONLY
-                    and param.default is param.empty
-                )
+                if (param.kind != param.KEYWORD_ONLY and param.default is param.empty)
             ]
             self.nin = len(args)
 
@@ -1211,8 +1162,7 @@ class IFunc:
         new_name=None,
         **kwargs_data_func,
     ):
-        """
-        Applies the ifunc to the cube(s).
+        """Applies the ifunc to the cube(s).
 
         Args:
 

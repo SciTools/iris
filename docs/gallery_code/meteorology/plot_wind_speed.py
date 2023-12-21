@@ -1,5 +1,4 @@
-"""
-Plotting Wind Direction Using Quiver
+"""Plotting Wind Direction Using Quiver
 ====================================
 
 This example demonstrates using quiver to plot wind speed contours and wind
@@ -9,7 +8,7 @@ are co-located in space in this case.
 For the second plot, the data used for the arrows is normalised to produce
 arrows with a uniform size on the plot.
 
-"""
+"""  # noqa: D400
 
 import cartopy.feature as cfeat
 import matplotlib.pyplot as plt
@@ -34,9 +33,7 @@ def main():
     qplt.contourf(windspeed, 20)
 
     # Show the lake on the current axes.
-    lakes = cfeat.NaturalEarthFeature(
-        "physical", "lakes", "50m", facecolor="none"
-    )
+    lakes = cfeat.NaturalEarthFeature("physical", "lakes", "50m", facecolor="none")
     plt.gca().add_feature(lakes)
 
     # Add arrows to show the wind vectors.

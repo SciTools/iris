@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Cube functions for iteration in step.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Cube functions for iteration in step.
 
 """
 
@@ -14,12 +12,13 @@ import warnings
 
 import numpy as np
 
+from iris.exceptions import IrisUserWarning
+
 __all__ = ["izip"]
 
 
 def izip(*cubes, **kwargs):
-    """
-    Return an iterator for iterating over a collection of cubes in step.
+    """Return an iterator for iterating over a collection of cubes in step.
 
     If the input cubes have dimensions for which there are no common
     coordinates, those dimensions will be treated as orthogonal. The
@@ -59,7 +58,7 @@ def izip(*cubes, **kwargs):
         ...    pass
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
@@ -112,9 +111,7 @@ def izip(*cubes, **kwargs):
         # Loop over dimensioned coords in each cube.
         for dim in range(len(cube.shape)):
             if dim not in requested_dims:
-                dimensioned_iter_coords.update(
-                    cube.coords(contains_dimension=dim)
-                )
+                dimensioned_iter_coords.update(cube.coords(contains_dimension=dim))
         dimensioned_iter_coords_by_cube.append(dimensioned_iter_coords)
 
     # Check for multidimensional coords - current implementation cannot
@@ -164,17 +161,15 @@ def izip(*cubes, **kwargs):
                 warnings.warn(
                     "Iterating over coordinate '%s' in step whose "
                     "definitions match but whose values "
-                    "differ." % coord_a.name()
+                    "differ." % coord_a.name(),
+                    category=IrisUserWarning,
                 )
 
-    return _ZipSlicesIterator(
-        cubes, requested_dims_by_cube, ordered, coords_by_cube
-    )
+    return _ZipSlicesIterator(cubes, requested_dims_by_cube, ordered, coords_by_cube)
 
 
 class _ZipSlicesIterator(Iterator):
-    """
-    Extension to _SlicesIterator (see cube.py) to support iteration over a
+    """Extension to _SlicesIterator (see cube.py) to support iteration over a
     collection of cubes in step.
 
     """
@@ -190,12 +185,11 @@ class _ZipSlicesIterator(Iterator):
         # mapping of values (itertool.izip won't catch this).
         if len(requested_dims_by_cube) != len(cubes):
             raise ValueError(
-                "requested_dims_by_cube parameter is not the same"
-                " length as cubes."
+                "requested_dims_by_cube parameter is not the same length as cubes."
             )
         if len(coords_by_cube) != len(cubes):
             raise ValueError(
-                "coords_by_cube parameter is not the same length " "as cubes."
+                "coords_by_cube parameter is not the same length as cubes."
             )
 
         # Create an all encompassing dims_index called master_dims_index that
@@ -220,9 +214,7 @@ class _ZipSlicesIterator(Iterator):
                 # Loop over coords in this dimension (could be just one).
                 for coord in cube_coords:
                     # Search for coord in master_dimensioned_coord_list.
-                    for j, master_coords in enumerate(
-                        master_dimensioned_coord_list
-                    ):
+                    for j, master_coords in enumerate(master_dimensioned_coord_list):
                         # Use coord wrapper with desired equality
                         # functionality.
                         if _CoordWrapper(coord) in master_coords:
@@ -289,8 +281,7 @@ class _ZipSlicesIterator(Iterator):
 
 
 class _CoordWrapper:
-    """
-    Class for creating a coordinate wrapper that allows the use of an
+    """Class for creating a coordinate wrapper that allows the use of an
     alternative equality function based on metadata rather than
     metadata + points/bounds.
 

@@ -1,16 +1,13 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides the capability to load netCDF files and interpret them
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 References:
-
-[CF]  NetCDF Climate and Forecast (CF) Metadata conventions.
-[NUG] NetCDF User's Guide, https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/
+    [CF]  NetCDF Climate and Forecast (CF) Metadata conventions.
+    [NUG] NetCDF User's Guide, https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/
 
 """
 
@@ -23,6 +20,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
+import iris.exceptions
 from iris.fileformats.netcdf import _thread_safe_nc
 import iris.util
 
@@ -42,9 +40,7 @@ _CF_PARSE = re.compile(
 
 # NetCDF variable attributes handled by the netCDF4 module and
 # therefore automatically classed as "used" attributes.
-_CF_ATTRS_IGNORE = set(
-    ["_FillValue", "add_offset", "missing_value", "scale_factor"]
-)
+_CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
 
 #: Supported dimensionless vertical coordinate reference surface/phemomenon
 #: formula terms. Ref: [CF] Appendix D.
@@ -104,8 +100,7 @@ class CFVariable(metaclass=ABCMeta):
         elif isinstance(target, str):
             if target not in variables:
                 raise ValueError(
-                    "Cannot identify unknown target CF-netCDF variable %r"
-                    % target
+                    "Cannot identify unknown target CF-netCDF variable %r" % target
                 )
             target = {target: variables[target]}
         else:
@@ -115,8 +110,7 @@ class CFVariable(metaclass=ABCMeta):
 
     @abstractmethod
     def identify(self, variables, ignore=None, target=None, warn=True):
-        """
-        Identify all variables that match the criterion for this CF-netCDF variable class.
+        """Identify all variables that match the criterion for this CF-netCDF variable class.
 
         Args:
 
@@ -139,8 +133,7 @@ class CFVariable(metaclass=ABCMeta):
         pass
 
     def spans(self, cf_variable):
-        """
-        Determine whether the dimensionality of this variable
+        """Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -195,9 +188,7 @@ class CFVariable(metaclass=ABCMeta):
 
     def cf_attrs(self):
         """Return a list of all attribute name and value pairs of the CF-netCDF variable."""
-        return tuple(
-            (attr, self.getncattr(attr)) for attr in sorted(self._nc_attrs)
-        )
+        return tuple((attr, self.getncattr(attr)) for attr in sorted(self._nc_attrs))
 
     def cf_attrs_ignored(self):
         """Return a list of all ignored attribute name and value pairs of the CF-netCDF variable."""
@@ -208,9 +199,7 @@ class CFVariable(metaclass=ABCMeta):
 
     def cf_attrs_used(self):
         """Return a list of all accessed attribute name and value pairs of the CF-netCDF variable."""
-        return tuple(
-            (attr, self.getncattr(attr)) for attr in sorted(self._cf_attrs)
-        )
+        return tuple((attr, self.getncattr(attr)) for attr in sorted(self._cf_attrs))
 
     def cf_attrs_unused(self):
         """Return a list of all non-accessed attribute name and value pairs of the CF-netCDF variable."""
@@ -224,8 +213,7 @@ class CFVariable(metaclass=ABCMeta):
         self._cf_attrs = set([item[0] for item in self.cf_attrs_ignored()])
 
     def add_formula_term(self, root, term):
-        """
-        Register the participation of this CF-netCDF variable in a CF-netCDF formula term.
+        """Register the participation of this CF-netCDF variable in a CF-netCDF formula term.
 
         Args:
 
@@ -241,8 +229,7 @@ class CFVariable(metaclass=ABCMeta):
         self.cf_terms_by_root[root] = term
 
     def has_formula_terms(self):
-        """
-        Determine whether this CF-netCDF variable participates in a CF-netcdf formula term.
+        """Determine whether this CF-netCDF variable participates in a CF-netcdf formula term.
 
         Returns:
             Boolean.
@@ -252,8 +239,7 @@ class CFVariable(metaclass=ABCMeta):
 
 
 class CFAncillaryDataVariable(CFVariable):
-    """
-    A CF-netCDF ancillary data variable is a variable that provides metadata
+    """A CF-netCDF ancillary data variable is a variable that provides metadata
     about the individual values of another data variable.
 
     Identified by the CF-netCDF variable attribute 'ancillary_variables'.
@@ -280,7 +266,10 @@ class CFAncillaryDataVariable(CFVariable):
                         if name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF ancillary data variable %r, referenced by netCDF variable %r"
-                                warnings.warn(message % (name, nc_var_name))
+                                warnings.warn(
+                                    message % (name, nc_var_name),
+                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                )
                         else:
                             result[name] = CFAncillaryDataVariable(
                                 name, variables[name]
@@ -290,8 +279,7 @@ class CFAncillaryDataVariable(CFVariable):
 
 
 class CFAuxiliaryCoordinateVariable(CFVariable):
-    """
-    A CF-netCDF auxiliary coordinate variable is any netCDF variable that contains
+    """A CF-netCDF auxiliary coordinate variable is any netCDF variable that contains
     coordinate data, but is not a CF-netCDF coordinate variable by definition.
 
     There is no relationship between the name of a CF-netCDF auxiliary coordinate
@@ -323,7 +311,10 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
                         if name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF auxiliary coordinate variable %r, referenced by netCDF variable %r"
-                                warnings.warn(message % (name, nc_var_name))
+                                warnings.warn(
+                                    message % (name, nc_var_name),
+                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                )
                         else:
                             # Restrict to non-string type i.e. not a CFLabelVariable.
                             if not _is_str_dtype(variables[name]):
@@ -335,8 +326,7 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
 
 
 class CFBoundaryVariable(CFVariable):
-    """
-    A CF-netCDF boundary variable is associated with a CF-netCDF variable that contains
+    """A CF-netCDF boundary variable is associated with a CF-netCDF variable that contains
     coordinate data. When a data value provides information about conditions in a cell
     occupying a region of space/time or some other dimension, the boundary variable
     provides a description of cell extent.
@@ -369,17 +359,17 @@ class CFBoundaryVariable(CFVariable):
                     if name not in variables:
                         if warn:
                             message = "Missing CF-netCDF boundary variable %r, referenced by netCDF variable %r"
-                            warnings.warn(message % (name, nc_var_name))
+                            warnings.warn(
+                                message % (name, nc_var_name),
+                                category=iris.exceptions.IrisCfMissingVarWarning,
+                            )
                     else:
-                        result[name] = CFBoundaryVariable(
-                            name, variables[name]
-                        )
+                        result[name] = CFBoundaryVariable(name, variables[name])
 
         return result
 
     def spans(self, cf_variable):
-        """
-        Determine whether the dimensionality of this variable
+        """Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -400,15 +390,14 @@ class CFBoundaryVariable(CFVariable):
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the bounds extent dimension.
-            result = set(source[:-1]).issubset(target) or set(
-                source[1:]
-            ).issubset(target)
+            result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
+                target
+            )
         return result
 
 
 class CFClimatologyVariable(CFVariable):
-    """
-    A CF-netCDF climatology variable is associated with a CF-netCDF variable that contains
+    """A CF-netCDF climatology variable is associated with a CF-netCDF variable that contains
     coordinate data. When a data value provides information about conditions in a cell
     occupying a region of space/time or some other dimension, the climatology variable
     provides a climatological description of cell extent.
@@ -441,17 +430,17 @@ class CFClimatologyVariable(CFVariable):
                     if name not in variables:
                         if warn:
                             message = "Missing CF-netCDF climatology variable %r, referenced by netCDF variable %r"
-                            warnings.warn(message % (name, nc_var_name))
+                            warnings.warn(
+                                message % (name, nc_var_name),
+                                category=iris.exceptions.IrisCfMissingVarWarning,
+                            )
                     else:
-                        result[name] = CFClimatologyVariable(
-                            name, variables[name]
-                        )
+                        result[name] = CFClimatologyVariable(name, variables[name])
 
         return result
 
     def spans(self, cf_variable):
-        """
-        Determine whether the dimensionality of this variable
+        """Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -472,15 +461,14 @@ class CFClimatologyVariable(CFVariable):
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the climatology extent dimension.
-            result = set(source[:-1]).issubset(target) or set(
-                source[1:]
-            ).issubset(target)
+            result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
+                target
+            )
         return result
 
 
 class CFCoordinateVariable(CFVariable):
-    """
-    A CF-netCDF coordinate variable is a one-dimensional variable with the same name
+    """A CF-netCDF coordinate variable is a one-dimensional variable with the same name
     as its dimension, and it is defined as a numeric data type with values that are
     ordered monotonically. Missing values are not allowed in CF-netCDF coordinate
     variables. Also see [NUG] Section 2.3.1.
@@ -493,9 +481,7 @@ class CFCoordinateVariable(CFVariable):
     """
 
     @classmethod
-    def identify(
-        cls, variables, ignore=None, target=None, warn=True, monotonic=False
-    ):
+    def identify(cls, variables, ignore=None, target=None, warn=True, monotonic=False):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
 
@@ -520,9 +506,7 @@ class CFCoordinateVariable(CFVariable):
                     or nc_var.shape == (1,)
                     or iris.util.monotonic(data)
                 ):
-                    result[nc_var_name] = CFCoordinateVariable(
-                        nc_var_name, nc_var
-                    )
+                    result[nc_var_name] = CFCoordinateVariable(nc_var_name, nc_var)
             else:
                 result[nc_var_name] = CFCoordinateVariable(nc_var_name, nc_var)
 
@@ -530,10 +514,7 @@ class CFCoordinateVariable(CFVariable):
 
 
 class CFDataVariable(CFVariable):
-    """
-    A CF-netCDF variable containing data pay-load that maps to an Iris :class:`iris.cube.Cube`.
-
-    """
+    """A CF-netCDF variable containing data pay-load that maps to an Iris :class:`iris.cube.Cube`."""
 
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -541,8 +522,7 @@ class CFDataVariable(CFVariable):
 
 
 class _CFFormulaTermsVariable(CFVariable):
-    """
-    A CF-netCDF formula terms variable corresponds to a term in a formula that
+    """A CF-netCDF formula terms variable corresponds to a term in a formula that
     allows dimensional vertical coordinate values to be computed from dimensionless
     vertical coordinate values and associated variables at specific grid points.
 
@@ -582,13 +562,12 @@ class _CFFormulaTermsVariable(CFVariable):
                             if warn:
                                 message = "Missing CF-netCDF formula term variable %r, referenced by netCDF variable %r"
                                 warnings.warn(
-                                    message % (variable_name, nc_var_name)
+                                    message % (variable_name, nc_var_name),
+                                    category=iris.exceptions.IrisCfMissingVarWarning,
                                 )
                         else:
                             if variable_name not in result:
-                                result[
-                                    variable_name
-                                ] = _CFFormulaTermsVariable(
+                                result[variable_name] = _CFFormulaTermsVariable(
                                     variable_name,
                                     variables[variable_name],
                                     nc_var_name,
@@ -611,8 +590,7 @@ class _CFFormulaTermsVariable(CFVariable):
 
 
 class CFGridMappingVariable(CFVariable):
-    """
-    A CF-netCDF grid mapping variable contains a list of specific attributes that
+    """A CF-netCDF grid mapping variable contains a list of specific attributes that
     define a particular grid mapping. A CF-netCDF grid mapping variable must contain
     the attribute 'grid_mapping_name'.
 
@@ -646,18 +624,18 @@ class CFGridMappingVariable(CFVariable):
                     if name not in variables:
                         if warn:
                             message = "Missing CF-netCDF grid mapping variable %r, referenced by netCDF variable %r"
-                            warnings.warn(message % (name, nc_var_name))
+                            warnings.warn(
+                                message % (name, nc_var_name),
+                                category=iris.exceptions.IrisCfMissingVarWarning,
+                            )
                     else:
-                        result[name] = CFGridMappingVariable(
-                            name, variables[name]
-                        )
+                        result[name] = CFGridMappingVariable(name, variables[name])
 
         return result
 
 
 class CFLabelVariable(CFVariable):
-    """
-    A CF-netCDF CF label variable is any netCDF variable that contain string
+    """A CF-netCDF CF label variable is any netCDF variable that contain string
     textual information, or labels.
 
     Identified by the CF-netCDF variable attribute 'coordinates'.
@@ -685,7 +663,10 @@ class CFLabelVariable(CFVariable):
                         if name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF label variable %r, referenced by netCDF variable %r"
-                                warnings.warn(message % (name, nc_var_name))
+                                warnings.warn(
+                                    message % (name, nc_var_name),
+                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                )
                         else:
                             # Register variable, but only allow string type.
                             var = variables[name]
@@ -695,8 +676,7 @@ class CFLabelVariable(CFVariable):
         return result
 
     def cf_label_data(self, cf_data_var):
-        """
-        Return the associated CF-netCDF label variable strings.
+        """Return the associated CF-netCDF label variable strings.
 
         Args:
 
@@ -762,8 +742,7 @@ class CFLabelVariable(CFVariable):
         return data
 
     def cf_label_dimensions(self, cf_data_var):
-        """
-        Return the name of the associated CF-netCDF label variable data dimensions.
+        """Return the name of the associated CF-netCDF label variable data dimensions.
 
         Args:
 
@@ -790,8 +769,7 @@ class CFLabelVariable(CFVariable):
         )
 
     def spans(self, cf_variable):
-        """
-        Determine whether the dimensionality of this variable
+        """Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -812,15 +790,14 @@ class CFLabelVariable(CFVariable):
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore label string length dimension.
-            result = set(source[:-1]).issubset(target) or set(
-                source[1:]
-            ).issubset(target)
+            result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
+                target
+            )
         return result
 
 
 class CFMeasureVariable(CFVariable):
-    """
-    A CF-netCDF measure variable is a variable that contains cell areas or volumes.
+    """A CF-netCDF measure variable is a variable that contains cell areas or volumes.
 
     Identified by the CF-netCDF variable attribute 'cell_measures'.
 
@@ -857,7 +834,8 @@ class CFMeasureVariable(CFVariable):
                             if warn:
                                 message = "Missing CF-netCDF measure variable %r, referenced by netCDF variable %r"
                                 warnings.warn(
-                                    message % (variable_name, nc_var_name)
+                                    message % (variable_name, nc_var_name),
+                                    category=iris.exceptions.IrisCfMissingVarWarning,
                                 )
                         else:
                             result[variable_name] = CFMeasureVariable(
@@ -871,8 +849,7 @@ class CFMeasureVariable(CFVariable):
 
 ################################################################################
 class CFGroup(MutableMapping):
-    """
-    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
+    """Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
     Conventions' variables and netCDF global attributes.
 
     """
@@ -949,8 +926,7 @@ class CFGroup(MutableMapping):
 
     @property
     def non_data_variable_names(self):
-        """
-        :class:`set` of the names of the CF-netCDF variables that are not
+        """:class:`set` of the names of the CF-netCDF variables that are not
         the data pay-load.
 
         """
@@ -997,9 +973,7 @@ class CFGroup(MutableMapping):
 
     def __getitem__(self, name):
         if name not in self._cf_variables:
-            raise KeyError(
-                "Cannot get unknown CF-netCDF variable name %r" % str(name)
-            )
+            raise KeyError("Cannot get unknown CF-netCDF variable name %r" % str(name))
 
         return self._cf_variables[name]
 
@@ -1022,8 +996,7 @@ class CFGroup(MutableMapping):
 
 ################################################################################
 class CFReader:
-    """
-    This class allows the contents of a netCDF file to be interpreted according
+    """This class allows the contents of a netCDF file to be interpreted according
     to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
     """
@@ -1049,9 +1022,7 @@ class CFReader:
         if isinstance(file_source, str):
             # Create from filepath : open it + own it (=close when we die).
             self._filename = os.path.expanduser(file_source)
-            self._dataset = _thread_safe_nc.DatasetWrapper(
-                self._filename, mode="r"
-            )
+            self._dataset = _thread_safe_nc.DatasetWrapper(self._filename, mode="r")
             self._own_file = True
         else:
             # We have been passed an open dataset.
@@ -1069,7 +1040,8 @@ class CFReader:
         ]:
             warnings.warn(
                 "Optimise CF-netCDF loading by converting data from NetCDF3 "
-                'to NetCDF4 file format using the "nccopy" command.'
+                'to NetCDF4 file format using the "nccopy" command.',
+                category=iris.exceptions.IrisLoadWarning,
             )
 
         self._check_monotonic = monotonic
@@ -1134,9 +1106,7 @@ class CFReader:
         self.cf_group.global_attributes.update(attr_dict)
 
         # Identify and register all CF formula terms.
-        formula_terms = _CFFormulaTermsVariable.identify(
-            self._dataset.variables
-        )
+        formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
 
         for cf_var in formula_terms.values():
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
@@ -1155,9 +1125,7 @@ class CFReader:
         )
 
         for name in data_variable_names:
-            self.cf_group[name] = CFDataVariable(
-                name, self._dataset.variables[name]
-            )
+            self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
 
     def _build_cf_groups(self):
         """Build the first order relationships between CF-netCDF variables."""
@@ -1210,14 +1178,15 @@ class CFReader:
                                 cf_variable.dimensions,
                             )
                         )
-                        warnings.warn(msg)
+                        warnings.warn(
+                            msg,
+                            category=iris.exceptions.IrisCfNonSpanningVarWarning,
+                        )
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
                 # Add global netCDF attributes.
-                cf_group.global_attributes.update(
-                    self.cf_group.global_attributes
-                )
+                cf_group.global_attributes.update(self.cf_group.global_attributes)
                 # Add appropriate "dimensioned" CF coordinate variables.
                 cf_group.update(
                     {
@@ -1238,10 +1207,7 @@ class CFReader:
                 # Add appropriate formula terms.
                 for cf_var in self.cf_group.formula_terms.values():
                     for cf_root in cf_var.cf_terms_by_root:
-                        if (
-                            cf_root in cf_group
-                            and cf_var.cf_name not in cf_group
-                        ):
+                        if cf_root in cf_group and cf_var.cf_name not in cf_group:
                             # Sanity check dimensionality.
                             if cf_var.spans(cf_variable):
                                 cf_group[cf_var.cf_name] = cf_var
@@ -1261,7 +1227,10 @@ class CFReader:
                                         cf_variable.dimensions,
                                     )
                                 )
-                                warnings.warn(msg)
+                                warnings.warn(
+                                    msg,
+                                    category=iris.exceptions.IrisCfNonSpanningVarWarning,
+                                )
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group
@@ -1285,10 +1254,7 @@ class CFReader:
                 if isinstance(terms, str) or not isinstance(terms, Iterable):
                     terms = [terms]
                 cf_var_name = cf_var.cf_name
-                if (
-                    cf_term in terms
-                    and cf_var_name not in self.cf_group.promoted
-                ):
+                if cf_term in terms and cf_var_name not in self.cf_group.promoted:
                     data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
                     self.cf_group.promoted[cf_var_name] = data_var
                     _build(data_var)
@@ -1302,9 +1268,7 @@ class CFReader:
                 cf_name not in self.cf_group.data_variables
                 and cf_name not in self.cf_group.promoted
             ):
-                data_var = CFDataVariable(
-                    cf_name, self.cf_group[cf_name].cf_data
-                )
+                data_var = CFDataVariable(cf_name, self.cf_group[cf_name].cf_data)
                 self.cf_group.promoted[cf_name] = data_var
                 _build(data_var)
             # Determine whether there are still any ignored variables
@@ -1329,8 +1293,7 @@ class CFReader:
 
 
 def _getncattr(dataset, attr, default=None):
-    """
-    Simple wrapper round `netCDF4.Dataset.getncattr` to make it behave
+    """Simple wrapper round `netCDF4.Dataset.getncattr` to make it behave
     more like `getattr`.
 
     """

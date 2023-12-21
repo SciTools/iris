@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # -*- coding: utf-8 -*-
 #
@@ -16,7 +15,6 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 # ----------------------------------------------------------------------------
 
 import datetime
@@ -196,7 +194,7 @@ copybutton_line_continuation_character = "\\"
 todo_include_todos = True
 
 # api generation configuration
-autodoc_member_order = "groupwise"
+autodoc_member_order = "alphabetical"
 autodoc_default_flags = ["show-inheritance"]
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
@@ -295,6 +293,10 @@ html_theme_options = {
     "navigation_depth": 3,
     "show_prev_next": True,
     "navbar_align": "content",
+    # removes the search box from the top bar
+    "navbar_persistent": [],
+    # TODO: review if 6 links is too crowded.
+    "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
     "twitter_url": "https://twitter.com/scitools_iris",
     # icons available: https://fontawesome.com/v5.15/icons?d=gallery&m=free
@@ -326,6 +328,14 @@ html_theme_options = {
         "image_dark": "_static/iris-logo-title-dark.svg",
     },
 }
+
+# if we are building via Read The Docs and it is the latest (not stable)
+if on_rtd and rtd_version == "latest":
+    html_theme_options["announcement"] = f"""
+        You are viewing the <b>latest</b> unreleased documentation
+        <strong>{version}</strong>. You can switch to a
+        <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
+        version."""
 
 rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
 commit_sha = rev_parse.stdout.decode().strip()
@@ -368,21 +378,23 @@ html_js_files = [
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
-    "http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
-    "http://cfconventions.org",
-    "http://code.google.com/p/msysgit/downloads/list",
-    "http://effbot.org",
+    "https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
+    "https://cfconventions.org",
+    "https://code.google.com/p/msysgit/downloads/list",
+    "https://effbot.org",
     "https://help.github.com",
     "https://docs.github.com",
     "https://github.com",
-    "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "http://schacon.github.com/git",
-    "http://scitools.github.com/cartopy",
-    "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
+    "https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
+    "https://scitools.github.com/cartopy",
+    "https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",
-    "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
-    "http://www.nationalarchives.gov.uk/doc/open-government-licence",
+    "https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
+    "https://www.nationalarchives.gov.uk/doc/open-government-licence",
     "https://www.metoffice.gov.uk/",
+    "https://biggus.readthedocs.io/",
+    "https://stickler-ci.com/",
+    "https://twitter.com/scitools_iris",
 ]
 
 # list of sources to exclude from the build.

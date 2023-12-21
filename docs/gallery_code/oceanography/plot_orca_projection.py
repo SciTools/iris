@@ -1,5 +1,4 @@
-"""
-Tri-Polar Grid Projected Plotting
+"""Tri-Polar Grid Projected Plotting
 =================================
 
 This example demonstrates cell plots of data on the semi-structured ORCA2 model
@@ -10,7 +9,7 @@ First, the data is projected into the PlateCarree coordinate reference system.
 Second four pcolormesh plots are created from this projected dataset,
 using different projections for the output image.
 
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -37,9 +36,7 @@ def main():
 
     pcarree = projections["PlateCarree"]
     # Transform cube to target projection
-    new_cube, extent = iris.analysis.cartography.project(
-        cube, pcarree, nx=400, ny=200
-    )
+    new_cube, extent = iris.analysis.cartography.project(cube, pcarree, nx=400, ny=200)
 
     # Plot data in each projection
     for name in sorted(projections):

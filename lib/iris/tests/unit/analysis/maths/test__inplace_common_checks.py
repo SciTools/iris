@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the function :func:`iris.analysis.maths._inplace_common_checks`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the function :func:`iris.analysis.maths._inplace_common_checks`.
 
 """
 
@@ -43,9 +41,7 @@ class Test(tests.IrisTest):
         self.emsg = "Cannot perform inplace {}".format(self.op)
 
     def test_float_cubes(self):
-        result = _inplace_common_checks(
-            self.float_cube, self.float_cube, self.op
-        )
+        result = _inplace_common_checks(self.float_cube, self.float_cube, self.op)
         self.assertIsNone(result)
 
     def test_int_cubes(self):
@@ -53,21 +49,15 @@ class Test(tests.IrisTest):
         self.assertIsNone(result)
 
     def test_uint_cubes(self):
-        result = _inplace_common_checks(
-            self.uint_cube, self.uint_cube, self.op
-        )
+        result = _inplace_common_checks(self.uint_cube, self.uint_cube, self.op)
         self.assertIsNone(result)
 
     def test_float_cube_int_cube(self):
-        result = _inplace_common_checks(
-            self.float_cube, self.int_cube, self.op
-        )
+        result = _inplace_common_checks(self.float_cube, self.int_cube, self.op)
         self.assertIsNone(result)
 
     def test_float_cube_uint_cube(self):
-        result = _inplace_common_checks(
-            self.float_cube, self.uint_cube, self.op
-        )
+        result = _inplace_common_checks(self.float_cube, self.uint_cube, self.op)
         self.assertIsNone(result)
 
     def test_int_cube_float_cube(self):
@@ -79,33 +69,23 @@ class Test(tests.IrisTest):
             _inplace_common_checks(self.uint_cube, self.float_cube, self.op)
 
     def test_float_cube__scalar_int(self):
-        result = _inplace_common_checks(
-            self.float_cube, self.scalar_int, self.op
-        )
+        result = _inplace_common_checks(self.float_cube, self.scalar_int, self.op)
         self.assertIsNone(result)
 
     def test_float_cube__scalar_float(self):
-        result = _inplace_common_checks(
-            self.float_cube, self.scalar_float, self.op
-        )
+        result = _inplace_common_checks(self.float_cube, self.scalar_float, self.op)
         self.assertIsNone(result)
 
     def test_float_cube__int_array(self):
-        result = _inplace_common_checks(
-            self.float_cube, self.int_data, self.op
-        )
+        result = _inplace_common_checks(self.float_cube, self.int_data, self.op)
         self.assertIsNone(result)
 
     def test_float_cube__float_array(self):
-        result = _inplace_common_checks(
-            self.float_cube, self.float_data, self.op
-        )
+        result = _inplace_common_checks(self.float_cube, self.float_data, self.op)
         self.assertIsNone(result)
 
     def test_int_cube__scalar_int(self):
-        result = _inplace_common_checks(
-            self.int_cube, self.scalar_int, self.op
-        )
+        result = _inplace_common_checks(self.int_cube, self.scalar_int, self.op)
         self.assertIsNone(result)
 
     def test_int_cube_uint_cube(self):
@@ -113,9 +93,7 @@ class Test(tests.IrisTest):
         self.assertIsNone(result)
 
     def test_uint_cube_uint_cube(self):
-        result = _inplace_common_checks(
-            self.uint_cube, self.uint_cube, self.op
-        )
+        result = _inplace_common_checks(self.uint_cube, self.uint_cube, self.op)
         self.assertIsNone(result)
 
     def test_uint_cube_int_cube(self):

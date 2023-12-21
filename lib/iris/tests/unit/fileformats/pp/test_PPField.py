@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp.PPField` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -13,6 +12,7 @@ from unittest import mock
 
 import numpy as np
 
+from iris.exceptions import IrisDefaultingWarning, IrisMaskValueMatchWarning
 import iris.fileformats.pp as pp
 from iris.fileformats.pp import PPField, SplittableInt
 
@@ -91,7 +91,7 @@ class Test_save(tests.IrisTest):
         data_64 = np.linspace(0, 1, num=10, endpoint=False).reshape(2, 5)
         checksum_32 = field_checksum(data_64.astype(">f4"))
         msg = "Downcasting array precision from float64 to float32 for save."
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisDefaultingWarning, msg):
             checksum_64 = field_checksum(data_64.astype(">f8"))
         self.assertEqual(checksum_32, checksum_64)
 
@@ -100,11 +100,9 @@ class Test_save(tests.IrisTest):
         field = DummyPPField()._ready_for_save()
         field.bmdi = -123.4
         # Make float32 data, as float64 default produces an extra warning.
-        field.data = np.ma.masked_array(
-            [1.0, field.bmdi, 3.0], dtype=np.float32
-        )
+        field.data = np.ma.masked_array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisMaskValueMatchWarning, msg):
             with self.temp_filename(".pp") as temp_filename:
                 with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)
@@ -116,7 +114,7 @@ class Test_save(tests.IrisTest):
         # Make float32 data, as float64 default produces an extra warning.
         field.data = np.array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
-        with self.assertWarnsRegex(UserWarning, msg):
+        with self.assertWarnsRegex(IrisMaskValueMatchWarning, msg):
             with self.temp_filename(".pp") as temp_filename:
                 with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)
@@ -160,9 +158,7 @@ class Test_coord_system(tests.IrisTest):
         field = DummyPPField()
         field.bplat = bplat
         field.bplon = bplon
-        with mock.patch(
-            "iris.fileformats.pp.iris.coord_systems"
-        ) as mock_cs_mod:
+        with mock.patch("iris.fileformats.pp.iris.coord_systems") as mock_cs_mod:
             result = field.coord_system()
         if not rotated:
             # It should return a standard unrotated CS.

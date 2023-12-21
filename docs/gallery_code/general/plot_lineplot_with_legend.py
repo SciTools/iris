@@ -1,8 +1,7 @@
-"""
-Multi-Line Temperature Profile Plot
+"""Multi-Line Temperature Profile Plot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 

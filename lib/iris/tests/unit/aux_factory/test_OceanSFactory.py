@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the
 `iris.aux_factory.OceanSFactory` class.
 
 """
@@ -169,9 +167,7 @@ class Test_dependencies(tests.IrisTest):
 class Test_make_coord(tests.IrisTest):
     @staticmethod
     def coord_dims(coord):
-        mapping = dict(
-            s=(0,), eta=(1, 2), depth=(1, 2), a=(), b=(), depth_c=()
-        )
+        mapping = dict(s=(0,), eta=(1, 2), depth=(1, 2), a=(), b=(), depth_c=())
         return mapping[coord.name()]
 
     @staticmethod

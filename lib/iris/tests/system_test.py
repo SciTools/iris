@@ -1,12 +1,10 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 
-"""
-This system test module is useful to identify if some of the key components required for Iris are available.
+"""This system test module is useful to identify if some of the key components required for Iris are available.
 
 The system tests can be run with ``python setup.py test --system-tests``.
 
@@ -46,22 +44,16 @@ class TestSystemInitial(tests.IrisTest):
             1,
         )
         cm.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.array([9], "i8"), "forecast_period", units="hours"
-            )
+            iris.coords.AuxCoord(np.array([9], "i8"), "forecast_period", units="hours")
         )
         hours_since_epoch = cf_units.Unit(
             "hours since epoch", cf_units.CALENDAR_STANDARD
         )
         cm.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.array([3], "i8"), "time", units=hours_since_epoch
-            )
+            iris.coords.AuxCoord(np.array([3], "i8"), "time", units=hours_since_epoch)
         )
         cm.add_aux_coord(
-            iris.coords.AuxCoord(
-                np.array([99], "i8"), long_name="pressure", units="Pa"
-            )
+            iris.coords.AuxCoord(np.array([99], "i8"), long_name="pressure", units="Pa")
         )
 
         filetypes = (".nc", ".pp")
@@ -70,9 +62,7 @@ class TestSystemInitial(tests.IrisTest):
             iris.save(cm, saved_tmpfile)
 
             new_cube = iris.load_cube(saved_tmpfile)
-            self.assertCML(
-                new_cube, ("system", "supported_filetype_%s.cml" % filetype)
-            )
+            self.assertCML(new_cube, ("system", "supported_filetype_%s.cml" % filetype))
 
     def test_imports_general(self):
         if tests.MPL_AVAILABLE:

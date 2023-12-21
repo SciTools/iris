@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides objects for building up expressions useful for pattern matching.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provide objects for building up expressions useful for pattern matching."""
 
 from collections.abc import Iterable, Mapping
 import operator
@@ -17,7 +13,8 @@ import iris.exceptions
 
 
 class Constraint:
-    """
+    """Cubes can be pattern matched and filtered according to specific criteria.
+
     Constraints are the mechanism by which cubes can be pattern matched and
     filtered according to specific criteria.
 
@@ -27,22 +24,23 @@ class Constraint:
     """
 
     def __init__(self, name=None, cube_func=None, coord_values=None, **kwargs):
-        """
+        """Use for filtering cube loading or cube list extraction.
+
         Creates a new instance of a Constraint which can be used for filtering
         cube loading or cube list extraction.
 
-        Args:
-
-        * name:   string or None
+        Parameters
+        ----------
+        name : str or None, optional
             If a string, it is used as the name to match against the
-            `~iris.cube.Cube.names` property.
-        * cube_func:   callable or None
+            :attr:`iris.cube.Cube.names` property.
+        cube_func : callable or None, optional
             If a callable, it must accept a Cube as its first and only argument
             and return either True or False.
-        * coord_values:   dict or None
+        coord_values : dict or None, optional
             If a dict, it must map coordinate name to the condition on the
             associated coordinate.
-        * `**kwargs`:
+        **kwargs :
             The remaining keyword arguments are converted to coordinate
             constraints. The name of the argument gives the name of a
             coordinate, and the value of the argument is the condition to meet
@@ -63,6 +61,8 @@ class Constraint:
               returning True or False if the value of the Cell is desired.
               e.g. ``model_level_number=lambda cell: 5 < cell < 10``
 
+        Examples
+        --------
         The :ref:`user guide <loading_iris_cubes>` covers cube much of
         constraining in detail, however an example which uses all of the
         features of this class is given here for completeness::
@@ -102,9 +102,7 @@ class Constraint:
         if not (name is None or isinstance(name, str)):
             raise TypeError("name must be None or string, got %r" % name)
         if not (cube_func is None or callable(cube_func)):
-            raise TypeError(
-                "cube_func must be None or callable, got %r" % cube_func
-            )
+            raise TypeError("cube_func must be None or callable, got %r" % cube_func)
         if not (coord_values is None or isinstance(coord_values, Mapping)):
             raise TypeError(
                 "coord_values must be None or a "
@@ -127,9 +125,7 @@ class Constraint:
 
         self._coord_constraints = []
         for coord_name, coord_thing in self._coord_values.items():
-            self._coord_constraints.append(
-                _CoordConstraint(coord_name, coord_thing)
-            )
+            self._coord_constraints.append(_CoordConstraint(coord_name, coord_thing))
 
     def __eq__(self, other):
         # Equivalence is defined, but is naturally limited for any Constraints
@@ -137,7 +133,7 @@ class Constraint:
         # attributes/names/coords :  These can only be == if they contain the
         # *same* callable object (i.e. same object identity).
         eq = (
-            type(other) == Constraint
+            isinstance(other, Constraint)
             and self._name == other._name
             and self._cube_func == other._cube_func
             and self._coord_constraints == other._coord_constraints
@@ -166,7 +162,8 @@ class Constraint:
         return "Constraint(%s)" % ", ".join("%s=%r" % (k, v) for k, v in args)
 
     def _coordless_match(self, cube):
-        """
+        """Return whether this constraint matches the given cube.
+
         Return whether this constraint matches the given cube when not
         taking coordinates into account.
 
@@ -181,7 +178,8 @@ class Constraint:
         return match
 
     def extract(self, cube):
-        """
+        """Return the subset of the given cube which matches this constraint.
+
         Return the subset of the given cube which matches this constraint,
         else return None.
 
@@ -225,9 +223,10 @@ class ConstraintCombination(Constraint):
     """Represents the binary combination of two Constraint instances."""
 
     def __init__(self, lhs, rhs, operator):
-        """
-        A ConstraintCombination instance is created by providing two
-        Constraint instances and the appropriate :mod:`operator`.
+        """Instance created by providing two Constraint instances.
+
+        Instance created by providing two Constraint instances and the
+        appropriate :mod:`operator`.
 
         """
         try:
@@ -244,7 +243,7 @@ class ConstraintCombination(Constraint):
 
     def __eq__(self, other):
         eq = (
-            type(other) == ConstraintCombination
+            isinstance(other, ConstraintCombination)
             and self.lhs == other.lhs
             and self.rhs == other.rhs
             and self.operator == other.operator
@@ -268,24 +267,23 @@ class ConstraintCombination(Constraint):
         )
 
     def _CIM_extract(self, cube):
-        return self.operator(
-            self.lhs._CIM_extract(cube), self.rhs._CIM_extract(cube)
-        )
+        return self.operator(self.lhs._CIM_extract(cube), self.rhs._CIM_extract(cube))
 
 
 class _CoordConstraint:
     """Represents the atomic elements which might build up a Constraint."""
 
     def __init__(self, coord_name, coord_thing):
-        """
+        """Create a coordinate constraint.
+
         Create a coordinate constraint given the coordinate name and a
         thing to compare it with.
 
-        Arguments:
-
-        * coord_name  -  string
+        Parameters
+        ----------
+        coord_name : str
             The name of the coordinate to constrain
-        * coord_thing
+        coord_thing :
             The object to compare
 
         """
@@ -300,7 +298,7 @@ class _CoordConstraint:
 
     def __eq__(self, other):
         eq = (
-            type(other) == _CoordConstraint
+            isinstance(other, _CoordConstraint)
             and self.coord_name == other.coord_name
             and self._coord_thing == other._coord_thing
         )
@@ -311,11 +309,7 @@ class _CoordConstraint:
         return id(self)
 
     def extract(self, cube):
-        """
-        Returns the the column based indices of the given cube which
-        match the constraint.
-
-        """
+        """Return the column based indices of the cube which match the constraint."""
         from iris.coords import Cell, DimCoord
 
         # Cater for scalar cubes by setting the dimensionality to 1
@@ -378,9 +372,10 @@ class _CoordConstraint:
 
 
 class _ColumnIndexManager:
-    """
-    A class to represent column aligned slices which can be operated on
-    using ``&``, ``|`` or ``^``.
+    """Represent column aligned slices which can be operated on.
+
+    Represent column aligned slices which can be operated on using
+    ``&``, ``|`` or ``^``.
 
     ::
 
@@ -393,11 +388,7 @@ class _ColumnIndexManager:
     """
 
     def __init__(self, ndims):
-        """
-        A _ColumnIndexManager is always created to span the given
-        number of dimensions.
-
-        """
+        """_ColumnIndexManager always created to span the given number of dimensions."""
         self._column_arrays = [True] * ndims
         self.ndims = ndims
 
@@ -444,8 +435,9 @@ class _ColumnIndexManager:
             )
 
     def as_slice(self):
-        """
-        Turns a _ColumnIndexManager into a tuple which can be used in an
+        """Turn a _ColumnIndexManager into a tuple.
+
+        Turn a _ColumnIndexManager into a tuple which can be used in an
         indexing operation.
 
         If no index is possible, None will be returned.
@@ -473,9 +465,7 @@ class _ColumnIndexManager:
                     delta = np.diff(where_true, axis=0)
                     # if the diff is consistent we can create a slice object
                     if all(delta[0] == delta):
-                        result[dim] = slice(
-                            where_true[0], where_true[-1] + 1, delta[0]
-                        )
+                        result[dim] = slice(where_true[0], where_true[-1] + 1, delta[0])
                     else:
                         # otherwise, key is a tuple
                         result[dim] = tuple(where_true)
@@ -494,11 +484,7 @@ class _ColumnIndexManager:
 
 
 def list_of_constraints(constraints):
-    """
-    Turns the given constraints into a list of valid constraints
-    using :func:`as_constraint`.
-
-    """
+    """Turn constraints into list of valid constraints using :func:`as_constraint`."""
     if isinstance(constraints, str) or not isinstance(constraints, Iterable):
         constraints = [constraints]
 
@@ -506,7 +492,8 @@ def list_of_constraints(constraints):
 
 
 def as_constraint(thing):
-    """
+    """Casts an object into a cube constraint where possible.
+
     Casts an object into a cube constraint where possible, otherwise
     a TypeError will be raised.
 
@@ -528,7 +515,8 @@ class AttributeConstraint(Constraint):
     """Provides a simple Cube-attribute based :class:`Constraint`."""
 
     def __init__(self, **attributes):
-        """
+        """Provide a simple Cube-attribute based :class:`Constraint`.
+
         Example usage::
 
             iris.AttributeConstraint(STASH='m01s16i004')
@@ -544,7 +532,7 @@ class AttributeConstraint(Constraint):
 
     def __eq__(self, other):
         eq = (
-            type(other) == AttributeConstraint
+            isinstance(other, AttributeConstraint)
             and self._attributes == other._attributes
         )
         return eq
@@ -578,7 +566,7 @@ class AttributeConstraint(Constraint):
 
 
 class NameConstraint(Constraint):
-    """Provides a simple Cube name based :class:`Constraint`."""
+    """Provide a simple Cube name based :class:`Constraint`."""
 
     def __init__(
         self,
@@ -587,8 +575,9 @@ class NameConstraint(Constraint):
         var_name="none",
         STASH="none",
     ):
-        """
-        Provides a simple Cube name based :class:`Constraint`, which matches
+        """Provide a simple Cube name based :class:`Constraint`.
+
+        Provide a simple Cube name based :class:`Constraint`, which matches
         against each of the names provided, which may be either standard name,
         long name, NetCDF variable name and/or the STASH from the attributes
         dictionary.
@@ -596,30 +585,33 @@ class NameConstraint(Constraint):
         The name constraint will only succeed if *all* of the provided names
         match.
 
-        Kwargs:
-
-        * standard_name:
+        Parameters
+        ----------
+        standard_name : optional
             A string or callable representing the standard name to match
             against.
-        * long_name:
+        long_name : optional
             A string or callable representing the long name to match against.
-        * var_name:
+        var_name : optional
             A string or callable representing the NetCDF variable name to match
             against.
-        * STASH:
+        STASH : optional
             A string or callable representing the UM STASH code to match
             against.
 
-        .. note::
-            The default value of each of the keyword arguments is the string
-            "none", rather than the singleton None, as None may be a legitimate
-            value to be matched against e.g., to constrain against all cubes
-            where the standard_name is not set, then use standard_name=None.
+        Notes
+        -----
+        The default value of each of the keyword arguments is the string
+        "none", rather than the singleton None, as None may be a legitimate
+        value to be matched against e.g., to constrain against all cubes
+        where the standard_name is not set, then use standard_name=None.
 
-        Returns:
+        Returns
+        -------
+        bool
 
-        * Boolean
-
+        Examples
+        --------
         Example usage::
 
             iris.NameConstraint(long_name='air temp', var_name=None)
@@ -629,7 +621,6 @@ class NameConstraint(Constraint):
             iris.NameConstraint(standard_name='air_temperature',
                                 STASH=lambda stash: stash.item == 203)
         """
-
         self.standard_name = standard_name
         self.long_name = long_name
         self.var_name = var_name
@@ -638,9 +629,8 @@ class NameConstraint(Constraint):
         super().__init__(cube_func=self._cube_func)
 
     def __eq__(self, other):
-        eq = type(other) == NameConstraint and all(
-            getattr(self, attname) == getattr(other, attname)
-            for attname in self._names
+        eq = isinstance(other, NameConstraint) and all(
+            getattr(self, attname) == getattr(other, attname) for attname in self._names
         )
         return eq
 

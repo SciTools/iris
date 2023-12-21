@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.analysis.cartography.project`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -16,6 +15,7 @@ from iris.analysis.cartography import project
 import iris.coord_systems
 import iris.coords
 import iris.cube
+from iris.exceptions import IrisDefaultingWarning
 import iris.tests
 import iris.tests.stock
 
@@ -56,19 +56,11 @@ class TestAll(tests.IrisTest):
 
     def test_is_iris_coord_system(self):
         res, _ = project(self.cube, self.tcs)
-        self.assertEqual(
-            res.coord("projection_y_coordinate").coord_system, self.tcs
-        )
-        self.assertEqual(
-            res.coord("projection_x_coordinate").coord_system, self.tcs
-        )
+        self.assertEqual(res.coord("projection_y_coordinate").coord_system, self.tcs)
+        self.assertEqual(res.coord("projection_x_coordinate").coord_system, self.tcs)
 
-        self.assertIsNot(
-            res.coord("projection_y_coordinate").coord_system, self.tcs
-        )
-        self.assertIsNot(
-            res.coord("projection_x_coordinate").coord_system, self.tcs
-        )
+        self.assertIsNot(res.coord("projection_y_coordinate").coord_system, self.tcs)
+        self.assertIsNot(res.coord("projection_x_coordinate").coord_system, self.tcs)
 
     @tests.skip_data
     def test_bad_resolution_negative(self):
@@ -161,7 +153,8 @@ class TestAll(tests.IrisTest):
         warn.assert_called_once_with(
             "Coordinate system of latitude and "
             "longitude coordinates is not specified. "
-            "Assuming WGS84 Geodetic."
+            "Assuming WGS84 Geodetic.",
+            category=IrisDefaultingWarning,
         )
 
 

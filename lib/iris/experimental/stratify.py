@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Routines for putting data on new strata (aka. isosurfaces), often in the
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Routines for putting data on new strata (aka. isosurfaces), often in the
 Z direction.
 
 """
@@ -19,8 +17,7 @@ from iris.cube import Cube
 
 
 def _copy_coords_without_z_dim(src, tgt, z_dim):
-    """
-    Helper function to copy across non z-dimenson coordinates between cubes.
+    """Helper function to copy across non z-dimenson coordinates between cubes.
 
     Parameters
     ----------
@@ -55,8 +52,7 @@ def _copy_coords_without_z_dim(src, tgt, z_dim):
 
 
 def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
-    """
-    Interpolate the cube onto the specified target levels, given the
+    """Interpolate the cube onto the specified target levels, given the
     source levels of the cube.
 
     For example, suppose we have two datasets `P(i,j,k)` and `H(i,j,k)`
@@ -128,10 +124,7 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     try:
         cube_data, src_data = np.broadcast_arrays(cube.data, src_data)
     except ValueError:
-        emsg = (
-            "Cannot broadcast the cube and src_levels with "
-            "shapes {} and {}."
-        )
+        emsg = "Cannot broadcast the cube and src_levels with shapes {} and {}."
         raise ValueError(emsg.format(cube.shape, src_data.shape))
 
     tgt_levels = np.asarray(tgt_levels)

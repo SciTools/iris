@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.fileformats` package."""
 
 import iris.tests as tests  # isort:skip
@@ -44,8 +43,7 @@ class TestField(tests.IrisTest):
     def assertCoordsAndDimsListsMatch(
         self, coords_and_dims_got, coords_and_dims_expected
     ):
-        """
-        Check that coords_and_dims lists are equivalent.
+        """Check that coords_and_dims lists are equivalent.
 
         The arguments are lists of pairs of (coordinate, dimensions).
         The elements are compared one-to-one, by coordinate name (so the order
@@ -58,9 +56,7 @@ class TestField(tests.IrisTest):
             return sorted(list, key=lambda item: item[0].name())
 
         coords_and_dims_got = sorted_by_coordname(coords_and_dims_got)
-        coords_and_dims_expected = sorted_by_coordname(
-            coords_and_dims_expected
-        )
+        coords_and_dims_expected = sorted_by_coordname(coords_and_dims_expected)
         self.assertEqual(coords_and_dims_got, coords_and_dims_expected)
         # Also check coordinate type equivalences (as Coord.__eq__ does not).
         self.assertEqual(

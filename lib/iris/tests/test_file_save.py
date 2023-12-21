@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the file saving mechanism.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the file saving mechanism.
 
 """
 
@@ -33,7 +31,7 @@ CHKSUM_ERR = "Mismatch between checksum of iris.save and {}.save."
 
 
 def save_by_filename(filename1, filename2, cube, saver_fn, iosaver=None):
-    """Saves a cube to two different filenames using iris.save and the save method of the object representing the file type directly"""
+    """Saves a cube to two different filenames using iris.save and the save method of the object representing the file type directly."""
     # Save from object direct
     saver_fn(cube, filename1)
 
@@ -43,10 +41,8 @@ def save_by_filename(filename1, filename2, cube, saver_fn, iosaver=None):
     )  # Optional iris.io.find_saver passed in from test
 
 
-def save_by_filehandle(
-    filehandle1, filehandle2, cube, fn_saver, binary_mode=True
-):
-    """Saves a cube to two different filehandles using iris.save and the save method of the object representing the file type directly"""
+def save_by_filehandle(filehandle1, filehandle2, cube, fn_saver, binary_mode=True):
+    """Saves a cube to two different filehandles using iris.save and the save method of the object representing the file type directly."""
     mode = "wb" if binary_mode else "w"
 
     # Save from object direct
@@ -60,7 +56,7 @@ def save_by_filehandle(
 
 @tests.skip_data
 class TestSaveMethods(tests.IrisTest):
-    """Base class for file saving tests. Loads data and creates/deletes tempfiles"""
+    """Base class for file saving tests. Loads data and creates/deletes tempfiles."""
 
     def setUp(self):
         self.cube1 = iris.load_cube(
@@ -81,15 +77,13 @@ class TestSaveMethods(tests.IrisTest):
 
 
 class TestSavePP(TestSaveMethods):
-    """Test saving cubes to PP format"""
+    """Test saving cubes to PP format."""
 
     ext = ".pp"
 
     def test_filename(self):
         # Save using iris.save and pp.save
-        save_by_filename(
-            self.temp_filename1, self.temp_filename2, self.cube1, pp.save
-        )
+        save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, pp.save)
 
         # Compare files
         self.assertEqual(
@@ -144,15 +138,13 @@ class TestSavePP(TestSaveMethods):
 
 
 class TestSaveDot(TestSaveMethods):
-    """Test saving cubes to DOT format"""
+    """Test saving cubes to DOT format."""
 
     ext = ".dot"
 
     def test_filename(self):
         # Save using iris.save and dot.save
-        save_by_filename(
-            self.temp_filename1, self.temp_filename2, self.cube1, dot.save
-        )
+        save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save)
 
         # Compare files
         self.assertEqual(
@@ -204,14 +196,13 @@ class TestSaveDot(TestSaveMethods):
         self.assertEqual(
             data,
             sio.getvalue(),
-            "Mismatch in data when comparing iris bytesio save "
-            "and dot.save.",
+            "Mismatch in data when comparing iris bytesio save and dot.save.",
         )
 
 
 @skip_dotpng
 class TestSavePng(TestSaveMethods):
-    """Test saving cubes to png"""
+    """Test saving cubes to png."""
 
     ext = ".dotpng"
 
@@ -257,7 +248,7 @@ class TestSavePng(TestSaveMethods):
 
 
 class TestSaver(TestSaveMethods):
-    """Test saving to Iris when we define the saver type to use"""
+    """Test saving to Iris when we define the saver type to use."""
 
     ext = ".spam"
 
@@ -318,7 +309,7 @@ class TestSaver(TestSaveMethods):
 
 
 class TestSaveInvalid(TestSaveMethods):
-    """Test iris cannot automatically save to file extensions it does not know about"""
+    """Test iris cannot automatically save to file extensions it does not know about."""
 
     ext = ".invalid"
 

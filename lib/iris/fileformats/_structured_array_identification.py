@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-r"""
-The purpose of this module is to provide utilities for the identification
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+r"""The purpose of this module is to provide utilities for the identification
 of multi-dimensional structure in a flat sequence of homogeneous objects.
 One application of this is to efficiently identify a higher dimensional
 structure from a sorted sequence of PPField instances; for an example, given
@@ -49,18 +47,14 @@ import numpy as np
 
 
 class _UnstructuredArrayException(Exception):
-    """
-    Raised when an array has been incorrectly assumed to be
+    """Raised when an array has been incorrectly assumed to be
     structured in a specific way.
 
     """
 
 
-class ArrayStructure(
-    namedtuple("ArrayStructure", ["stride", "unique_ordered_values"])
-):
-    """
-    Represents the identified structure of an array, where stride is the
+class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_values"])):
+    """Represents the identified structure of an array, where stride is the
     step between each unique value being seen in order in the flattened
     version of the array.
 
@@ -98,8 +92,7 @@ class ArrayStructure(
 
     @property
     def size(self):
-        """
-        The ``size`` attribute is the number of the unique values in the
+        """The ``size`` attribute is the number of the unique values in the
         original array. It is **not** the length of the original array.
 
         """
@@ -114,17 +107,14 @@ class ArrayStructure(
 
         result = NotImplemented
         if stride is not None or arr is not None:
-            result = stride == self.stride and np.all(
-                self.unique_ordered_values == arr
-            )
+            result = stride == self.stride and np.all(self.unique_ordered_values == arr)
         return result
 
     def __ne__(self, other):
         return not (self == other)
 
     def construct_array(self, size):
-        """
-        The inverse operation of :func:`ArrayStructure.from_array`, returning
+        """The inverse operation of :func:`ArrayStructure.from_array`, returning
         a 1D array of the given length with the appropriate repetition
         pattern.
 
@@ -135,8 +125,7 @@ class ArrayStructure(
         )
 
     def nd_array_and_dims(self, original_array, target_shape, order="c"):
-        """
-        Given a 1D array, and a target shape, construct an ndarray
+        """Given a 1D array, and a target shape, construct an ndarray
         and associated dimensions.
 
         Raises an _UnstructuredArrayException if no optimised shape array can
@@ -160,9 +149,7 @@ class ArrayStructure(
 
         """
         if original_array.shape[0] != np.prod(target_shape):
-            raise ValueError(
-                "Original array and target shape do not " "match up."
-            )
+            raise ValueError("Original array and target shape do not match up.")
         stride_product = 1
 
         result = None
@@ -183,15 +170,12 @@ class ArrayStructure(
             # given shape? If so, reshape it back to the target shape,
             # then index out any dimensions which are constant.
             if self.stride == stride_product and length == self.size:
-                vector = original_array.reshape(
-                    target_shape + (-1,), order=order
-                )
+                vector = original_array.reshape(target_shape + (-1,), order=order)
                 # Reduce the dimensionality to a 1d array by indexing
                 # everything but this dimension.
                 vector = vector[
                     tuple(
-                        0 if dim != i else slice(None)
-                        for i in range(len(target_shape))
+                        0 if dim != i else slice(None) for i in range(len(target_shape))
                     )
                 ]
                 # Remove any trailing dimension if it is trivial.
@@ -215,8 +199,7 @@ class ArrayStructure(
 
     @classmethod
     def from_array(cls, arr):
-        """
-        Return the computed ArrayStructure for the given flat array
+        """Return the computed ArrayStructure for the given flat array
         (if a structure exists, otherwise return None).
 
         """
@@ -301,17 +284,14 @@ class ArrayStructure(
 
 
 class GroupStructure:
-    """
-    The GroupStructure class represents a collection of array structures along
+    """The GroupStructure class represents a collection of array structures along
     with additional information such as the length of the arrays and the array
     order in which they are found (row-major or column-major).
 
     """
 
     def __init__(self, length, component_structure, array_order="c"):
-        """
-        group_component_to_array - a dictionary. See also TODO
-        """
+        """group_component_to_array - a dictionary. See also TODO."""
         #: The size common to all of the original arrays and used to determine
         #: possible shape configurations.
         self.length = length
@@ -327,8 +307,7 @@ class GroupStructure:
 
     @classmethod
     def from_component_arrays(cls, component_arrays, array_order="c"):
-        """
-        Given a dictionary of component name to flattened numpy array,
+        """Given a dictionary of component name to flattened numpy array,
         return an :class:`GroupStructure` instance which is representative
         of the underlying array structures.
 
@@ -350,8 +329,7 @@ class GroupStructure:
         return cls(sizes[0], cmpt_structure, array_order=array_order)
 
     def _potentially_flattened_components(self):
-        """
-        Return a generator of the components which could form non-trivial
+        """Return a generator of the components which could form non-trivial
         (i.e. ``length > 1``) array dimensions.
 
         """
@@ -364,8 +342,7 @@ class GroupStructure:
         return self._array_order == "c"
 
     def possible_structures(self):
-        """
-        Return a tuple containing the possible structures that this group
+        """Return a tuple containing the possible structures that this group
         could have.
 
         A structure in this case is an iterable of
@@ -417,9 +394,7 @@ class GroupStructure:
                 # If we are to build another dimension on top of this possible
                 # structure, we need to compute the stride that would be
                 # needed for that dimension.
-                next_stride = np.product(
-                    [struct.size for (_, struct) in potential]
-                )
+                next_stride = np.prod([struct.size for (_, struct) in potential])
 
                 # If we've found a structure whose product is the length of
                 # the fields of this Group, we've got a valid potential.
@@ -461,16 +436,14 @@ class GroupStructure:
 
         for structure in self.possible_structures():
             sizes = (
-                "{}: {}".format(name, arr_struct.size)
-                for name, arr_struct in structure
+                "{}: {}".format(name, arr_struct.size) for name, arr_struct in structure
             )
             result.append("    ({})".format("; ".join(sizes)))
 
         return "\n".join(result)
 
     def build_arrays(self, shape, elements_arrays):
-        """
-        Given the target shape, and a dictionary mapping name to 1D array of
+        """Given the target shape, and a dictionary mapping name to 1D array of
         :attr:`.length`, return a dictionary mapping element name to
         ``(ndarray, dims)``.
 

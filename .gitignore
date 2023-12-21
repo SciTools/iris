@@ -32,6 +32,7 @@ pip-cache
 # asv data, environments, results
 .asv
 benchmarks/.data
+.github/workflows/benchmark_reports
 
 #Translations
 *.mo
@@ -64,6 +65,7 @@ lib/iris/tests/results/imagerepo.lock
 # Auto generated documentation files
 docs/src/_build/*
 docs/src/generated
+docs/src/sg_execution_times.rst
 
 # Example test results
 docs/iris_image_test_output/

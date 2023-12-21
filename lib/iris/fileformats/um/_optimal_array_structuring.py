@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """A module to provide an optimal array structure calculation."""
 
 
@@ -10,8 +9,7 @@ from iris.fileformats._structured_array_identification import GroupStructure
 
 
 def _optimal_dimensioning_structure(structure, element_priorities):
-    """
-    Uses the structure options provided by the
+    """Uses the structure options provided by the
     :class:`~iris.fileformats._structured_array_identification.GroupStructure`
     to determine the optimal array structure for the :class:`FieldCollation`.
 
@@ -30,8 +28,9 @@ def _optimal_dimensioning_structure(structure, element_priorities):
         A dictionary mapping structure element names to their priority as
         defined by their input order to :func:`~optimal_array_structure`.
 
-    Returns:
-
+    Returns
+    -------
+    array structure or an empty list
         The determined optimal array structure or an empty list if no structure
         options were determined.
 
@@ -51,8 +50,7 @@ def _optimal_dimensioning_structure(structure, element_priorities):
 
 
 def optimal_array_structure(ordering_elements, actual_values_elements=None):
-    """
-    Calculate an optimal array replication structure for a set of vectors.
+    """Calculate an optimal array replication structure for a set of vectors.
 
     Args:
 
@@ -72,7 +70,6 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     priority when associating dimensions with specific elements.
 
     Returns:
-
         dims_shape, primary_elements, element_arrays_and_dims, where:
 
         * 'dims_shape' is the shape of the vector dimensions chosen.
@@ -124,9 +121,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     }
 
     # Calculate the basic fields-group array structure.
-    base_structure = GroupStructure.from_component_arrays(
-        element_ordering_arrays
-    )
+    base_structure = GroupStructure.from_component_arrays(element_ordering_arrays)
 
     # Work out the target cube structure.
     target_structure = _optimal_dimensioning_structure(
@@ -140,9 +135,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         elements_length = len(ordering_elements[0][1])
         vector_dims_shape = (elements_length,)
     else:
-        vector_dims_shape = tuple(
-            struct.size for (_, struct) in target_structure
-        )
+        vector_dims_shape = tuple(struct.size for (_, struct) in target_structure)
 
     # Build arrays of element values mapped onto the vectorised dimensions.
     elements_and_dimensions = base_structure.build_arrays(

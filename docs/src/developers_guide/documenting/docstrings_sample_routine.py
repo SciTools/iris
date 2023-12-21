@@ -1,6 +1,5 @@
 def sample_routine(arg1, arg2, kwarg1="foo", kwarg2=None):
-    """
-    Purpose section text goes here.
+    """Purpose section text goes here.
 
     Description section longer text goes here.
 

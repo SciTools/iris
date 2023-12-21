@@ -280,7 +280,7 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
 .. _rc_iris: https://anaconda.org/conda-forge/iris/labels
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project
-.. _latest CF standard names: http://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml
+.. _latest CF standard names: https://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
 .. _Semantic Versioning: https://semver.org/
 .. _PEP 440: https://peps.python.org/pep-0440/

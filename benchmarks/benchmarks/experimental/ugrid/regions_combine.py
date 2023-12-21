@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Benchmarks stages of operation of the function
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Benchmarks stages of operation of the function
 :func:`iris.experimental.ugrid.utils.recombine_submeshes`.
 
 Where possible benchmarks should be parameterised for two sizes of input data:
@@ -23,14 +21,14 @@ from iris import load, load_cube, save
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.utils import recombine_submeshes
 
-from ... import TrackAddedMemoryAllocation
+from ... import TrackAddedMemoryAllocation, on_demand_benchmark
 from ...generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
 class MixinCombineRegions:
     # Characterise time taken + memory-allocated, for various stages of combine
     # operations on cubesphere-like test data.
-    params = [4, 500]
+    params = [50, 500]
     param_names = ["cubesphere-N"]
 
     def _parametrised_cache_filename(self, n_cubesphere, content_name):
@@ -58,8 +56,7 @@ class MixinCombineRegions:
         n_facesperregion = n_faces // n_regions
         i_face_regions = (i_faces // n_facesperregion) % n_regions
         region_inds = [
-            np.where(i_face_regions == i_region)[0]
-            for i_region in range(n_regions)
+            np.where(i_face_regions == i_region)[0] for i_region in range(n_regions)
         ]
         # NOTE: this produces 7 regions, with near-adjacent value ranges but
         # with some points "moved" to an adjacent region.
@@ -91,11 +88,8 @@ class MixinCombineRegions:
                 self._parametrised_cache_filename(n_cubesphere, "regioncubes"),
             )
 
-    def setup(
-        self, n_cubesphere, imaginary_data=True, create_result_cube=True
-    ):
-        """
-        The combine-tests "standard" setup operation.
+    def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
+        """The combine-tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.
@@ -133,9 +127,7 @@ class MixinCombineRegions:
                 # This has the same lazy-array attributes, but is allocated by
                 # creating chunks on demand instead of loading from file.
                 data = cube.lazy_data()
-                data = da.zeros(
-                    data.shape, dtype=data.dtype, chunks=data.chunksize
-                )
+                data = da.zeros(data.shape, dtype=data.dtype, chunks=data.chunksize)
                 cube.data = data
 
         if create_result_cube:
@@ -145,8 +137,7 @@ class MixinCombineRegions:
         self.fix_dask_settings()
 
     def fix_dask_settings(self):
-        """
-        Fix "standard" dask behaviour for time+space testing.
+        """Fix "standard" dask behaviour for time+space testing.
 
         Currently this is single-threaded mode, with known chunksize,
         which is optimised for space saving so we can test largest data.
@@ -172,8 +163,7 @@ class MixinCombineRegions:
 
 
 class CombineRegionsCreateCube(MixinCombineRegions):
-    """
-    Time+memory costs of creating a combined-regions cube.
+    """Time+memory costs of creating a combined-regions cube.
 
     The result is lazy, and we don't do the actual calculation.
 
@@ -193,21 +183,20 @@ class CombineRegionsCreateCube(MixinCombineRegions):
 
 
 class CombineRegionsComputeRealData(MixinCombineRegions):
-    """
-    Time+memory costs of computing combined-regions data.
-    """
+    """Time+memory costs of computing combined-regions data."""
 
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
+    # Vulnerable to noise, so disabled by default.
+    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
 
 class CombineRegionsSaveData(MixinCombineRegions):
-    """
-    Test saving *only*, having replaced the input cube data with 'imaginary'
+    """Test saving *only*, having replaced the input cube data with 'imaginary'
     array data, so that input data is not loaded from disk during the save
     operation.
 
@@ -217,6 +206,8 @@ class CombineRegionsSaveData(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
+    # Vulnerable to noise, so disabled by default.
+    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_save(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
@@ -230,8 +221,7 @@ CombineRegionsSaveData.track_filesize_saved.unit = "Mb"
 
 
 class CombineRegionsFileStreamedCalc(MixinCombineRegions):
-    """
-    Test the whole cost of file-to-file streaming.
+    """Test the whole cost of file-to-file streaming.
     Uses the combined cube which is based on lazy data loading from the region
     cubes on disk.
     """
@@ -245,6 +235,8 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
+    # Vulnerable to noise, so disabled by default.
+    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_stream_file2file(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")

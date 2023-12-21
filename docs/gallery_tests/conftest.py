@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """Pytest fixtures for the gallery tests."""
 
@@ -19,8 +18,7 @@ GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
 
 @pytest.fixture
 def image_setup_teardown():
-    """
-    Setup and teardown fixture.
+    """Setup and teardown fixture.
 
     Ensures all figures are closed before and after test to prevent one test
     polluting another if it fails with a figure unclosed.
@@ -33,8 +31,7 @@ def image_setup_teardown():
 
 @pytest.fixture
 def import_patches(monkeypatch):
-    """
-    Replace plt.show() with a function that does nothing, also add all the
+    """Replace plt.show() with a function that does nothing, also add all the
     gallery examples to sys.path.
 
     """
@@ -53,8 +50,7 @@ def import_patches(monkeypatch):
 
 @pytest.fixture
 def iris_future_defaults():
-    """
-    Create a fixture which resets all the iris.FUTURE settings to the defaults,
+    """Create a fixture which resets all the iris.FUTURE settings to the defaults,
     as otherwise changes made in one test can affect subsequent ones.
 
     """

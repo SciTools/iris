@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.analysis.PercentileAggregator` class instance.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.analysis.PercentileAggregator` class instance.
 
 """
 
@@ -60,9 +58,7 @@ class Test_post_process(tests.IrisTest):
         kwargs = dict(percent=percent)
         data = np.empty(self.cube_simple.shape)
         coords = [self.coord_simple]
-        actual = aggregator.post_process(
-            self.cube_simple, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_simple, data, coords, **kwargs)
         self.assertEqual(actual.shape, self.cube_simple.shape)
         self.assertIs(actual.data, data)
         name = "percentile_over_time"
@@ -77,9 +73,7 @@ class Test_post_process(tests.IrisTest):
         shape = self.cube_simple.shape + percent.shape
         data = np.empty(shape)
         coords = [self.coord_simple]
-        actual = aggregator.post_process(
-            self.cube_simple, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_simple, data, coords, **kwargs)
         self.assertEqual(actual.shape, percent.shape + self.cube_simple.shape)
         expected = data.T
         self.assertArrayEqual(actual.data, expected)
@@ -94,9 +88,7 @@ class Test_post_process(tests.IrisTest):
         kwargs = dict(percent=percent)
         data = np.empty(self.cube_multi.shape)
         coords = [self.coord_multi_0]
-        actual = aggregator.post_process(
-            self.cube_multi, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
         self.assertEqual(actual.shape, self.cube_multi.shape)
         self.assertIs(actual.data, data)
         name = "percentile_over_time"
@@ -111,9 +103,7 @@ class Test_post_process(tests.IrisTest):
         shape = self.cube_multi.shape + percent.shape
         data = np.empty(shape)
         coords = [self.coord_multi_0]
-        actual = aggregator.post_process(
-            self.cube_multi, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
         self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
         expected = np.moveaxis(data, -1, 0)
         self.assertArrayEqual(actual.data, expected)
@@ -130,9 +120,7 @@ class Test_post_process(tests.IrisTest):
         shape = self.cube_multi.shape + percent.shape
         data = da.arange(np.prod(shape)).reshape(shape)
         coords = [self.coord_multi_0]
-        actual = aggregator.post_process(
-            self.cube_multi, data, coords, **kwargs
-        )
+        actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
         self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
         self.assertTrue(actual.has_lazy_data())
         expected = np.moveaxis(as_concrete_data(data), -1, 0)

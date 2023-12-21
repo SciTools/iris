@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -18,9 +17,7 @@ import iris.tests.pp as pp
 import iris.util
 
 
-def callback_000003000000_16_202_000128_1860_09_01_00_00_b_pp(
-    cube, field, filename
-):
+def callback_000003000000_16_202_000128_1860_09_01_00_00_b_pp(cube, field, filename):
     cube.attributes["STASH"] = STASH(1, 16, 202)
     cube.standard_name = "geopotential_height"
     cube.units = "m"
@@ -56,9 +53,7 @@ def callback_integer_b_pp(cube, field, filename):
     del cube.attributes["STASH"]
 
 
-def callback_001000000000_00_000_000000_1860_01_01_00_00_f_b_pp(
-    cube, field, filename
-):
+def callback_001000000000_00_000_000000_1860_01_01_00_00_f_b_pp(cube, field, filename):
     cube.standard_name = "sea_surface_height_above_geoid"
     cube.units = "m"
 
@@ -96,9 +91,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
             # https://github.com/Unidata/netcdf4-python/issues/725
             fill_value = _thread_safe_nc.default_fillvals[cube.dtype.str[1:]]
 
-            file_nc = tempfile.NamedTemporaryFile(
-                suffix=".nc", delete=False
-            ).name
+            file_nc = tempfile.NamedTemporaryFile(suffix=".nc", delete=False).name
             iris.save(
                 cube,
                 file_nc,
@@ -109,8 +102,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
             # Check the netCDF file against CDL expected output.
             self.assertCDL(
                 file_nc,
-                self._ref_dir
-                + ("to_netcdf", "%s_%d.cdl" % (fname_name, index)),
+                self._ref_dir + ("to_netcdf", "%s_%d.cdl" % (fname_name, index)),
             )
             nc_filenames.append(file_nc)
 
@@ -120,8 +112,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
             cube = iris.load_cube(nc_filename)
             self.assertCML(
                 cube,
-                self._ref_dir
-                + ("from_netcdf", "%s_%d.cml" % (fname_name, index)),
+                self._ref_dir + ("from_netcdf", "%s_%d.cml" % (fname_name, index)),
             )
             os.remove(nc_filename)
 

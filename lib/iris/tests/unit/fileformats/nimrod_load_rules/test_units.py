@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the `iris.fileformats.nimrod_load_rules.units` function.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the `iris.fileformats.nimrod_load_rules.units` function.
 
 """
 
@@ -45,9 +43,7 @@ class Test(tests.IrisTest):
             self._call_units(units_str="m")
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "m")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
 
     def test_times32(self):
         with mock.patch("warnings.warn") as warn:
@@ -56,9 +52,7 @@ class Test(tests.IrisTest):
             )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "mm/hr")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
 
     def test_visibility_units(self):
@@ -69,9 +63,7 @@ class Test(tests.IrisTest):
             )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "m")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
 
     def test_power_in_units(self):
@@ -81,34 +73,28 @@ class Test(tests.IrisTest):
             )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "mm")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
 
     def test_ug_per_m3_units(self):
         with mock.patch("warnings.warn") as warn:
             self._call_units(
-                data=((np.ones_like(self.cube.data) * 10)),
+                data=(np.ones_like(self.cube.data) * 10),
                 units_str="ug/m3E1",
             )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "ug/m3")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
 
     def test_g_per_kg(self):
         with mock.patch("warnings.warn") as warn:
             self._call_units(
-                data=((np.ones_like(self.cube.data) * 1000)), units_str="g/Kg"
+                data=(np.ones_like(self.cube.data) * 1000), units_str="g/Kg"
             )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "kg/kg")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
 
     def test_unit_expection_dictionary(self):
@@ -116,9 +102,7 @@ class Test(tests.IrisTest):
             self._call_units(units_str="mb")
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "hPa")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
 
     def test_per_second(self):
@@ -126,9 +110,7 @@ class Test(tests.IrisTest):
             self._call_units(units_str="/s")
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "s^-1")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
 
     def test_unhandled_unit(self):
@@ -136,9 +118,7 @@ class Test(tests.IrisTest):
             self._call_units(units_str="kittens")
         self.assertEqual(warn.call_count, 1)
         self.assertEqual(self.cube.units, "")
-        self.assertArrayAlmostEqual(
-            self.cube.data, np.ones_like(self.cube.data)
-        )
+        self.assertArrayAlmostEqual(self.cube.data, np.ones_like(self.cube.data))
         self.assertEqual(self.cube.data.dtype, np.float32)
         self.assertEqual(self.cube.attributes["invalid_units"], "kittens")
 

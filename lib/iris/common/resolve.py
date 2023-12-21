@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides the infrastructure to support the analysis, identification and
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides the infrastructure to support the analysis, identification and
 combination of metadata common between two :class:`~iris.cube.Cube`
 operands into a single resultant :class:`~iris.cube.Cube`, which will be
 auto-transposed, and with the appropriate broadcast shape.
@@ -20,8 +18,8 @@ from typing import Any
 from dask.array.core import broadcast_shapes
 import numpy as np
 
-from . import LENIENT
 from ..config import get_logger
+from . import LENIENT
 
 __all__ = ["Resolve"]
 
@@ -99,8 +97,7 @@ _PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
 
 
 class Resolve:
-    """
-    At present, :class:`~iris.common.resolve.Resolve` is used by Iris solely
+    """At present, :class:`~iris.common.resolve.Resolve` is used by Iris solely
     during cube maths to combine a left-hand :class:`~iris.cube.Cube`
     operand and a right-hand :class:`~iris.cube.Cube` operand into a resultant
     :class:`~iris.cube.Cube` with common metadata, suitably auto-transposed
@@ -208,11 +205,10 @@ class Resolve:
         >>> resolver = Resolve(cube1, cube2)
         >>> results = [resolver.cube(data) for data in payload]
 
-    """
+    """  # noqa: D214, D410, D411
 
     def __init__(self, lhs=None, rhs=None):
-        """
-        Resolve the provided ``lhs`` :class:`~iris.cube.Cube` operand and
+        """Resolve the provided ``lhs`` :class:`~iris.cube.Cube` operand and
         ``rhs`` :class:`~iris.cube.Cube` operand to determine the metadata
         that is common between them, and the auto-transposed, broadcast shape
         of the resultant :class:`~iris.cube.Cube`.
@@ -327,8 +323,7 @@ class Resolve:
             self(lhs, rhs)
 
     def __call__(self, lhs, rhs):
-        """
-        Resolve the ``lhs`` :class:`~iris.cube.Cube` operand and ``rhs``
+        """Resolve the ``lhs`` :class:`~iris.cube.Cube` operand and ``rhs``
         :class:`~iris.cube.Cube` operand metadata.
 
         Involves determining all the common coordinate metadata shared between
@@ -348,20 +343,14 @@ class Resolve:
         """
         from iris.cube import Cube
 
-        emsg = (
-            "{cls} requires {arg!r} argument to be a 'Cube', got {actual!r}."
-        )
+        emsg = "{cls} requires {arg!r} argument to be a 'Cube', got {actual!r}."
         clsname = self.__class__.__name__
 
         if not isinstance(lhs, Cube):
-            raise TypeError(
-                emsg.format(cls=clsname, arg="LHS", actual=type(lhs))
-            )
+            raise TypeError(emsg.format(cls=clsname, arg="LHS", actual=type(lhs)))
 
         if not isinstance(rhs, Cube):
-            raise TypeError(
-                emsg.format(cls=clsname, arg="RHS", actual=type(rhs))
-            )
+            raise TypeError(emsg.format(cls=clsname, arg="RHS", actual=type(rhs)))
 
         # Initialise the operand state.
         self.lhs_cube = lhs
@@ -390,8 +379,7 @@ class Resolve:
         return self
 
     def _as_compatible_cubes(self):
-        """
-        Determine whether the ``src`` and ``tgt`` :class:`~iris.cube.Cube` can
+        """Determine whether the ``src`` and ``tgt`` :class:`~iris.cube.Cube` can
         be transposed and/or broadcast successfully together.
 
         If compatible, the ``_broadcast_shape`` of the resultant resolved cube is
@@ -429,9 +417,7 @@ class Resolve:
         try:
             # Determine whether the tgt cube shape and proposed new src
             # cube shape will successfully broadcast together.
-            self._broadcast_shape = broadcast_shapes(
-                tgt_cube.shape, new_src_shape
-            )
+            self._broadcast_shape = broadcast_shapes(tgt_cube.shape, new_src_shape)
         except ValueError:
             emsg = (
                 "Cannot resolve cubes, as a suitable transpose of the "
@@ -502,8 +488,7 @@ class Resolve:
         common_aux_metadata,
         common_scalar_metadata,
     ):
-        """
-        Determine the dimensions covered by each of the local and common
+        """Determine the dimensions covered by each of the local and common
         auxiliary coordinates of the provided :class:`~iris.cube.Cube`.
 
         The cube dimensions not covered by any of the auxiliary coordinates is
@@ -573,8 +558,7 @@ class Resolve:
 
     @staticmethod
     def _aux_mapping(src_coverage, tgt_coverage):
-        """
-        Establish the mapping of dimensions from the ``src`` to ``tgt``
+        """Establish the mapping of dimensions from the ``src`` to ``tgt``
         :class:`~iris.cube.Cube` using the auxiliary coordinate metadata
         common between each of the operands.
 
@@ -640,8 +624,7 @@ class Resolve:
 
     @staticmethod
     def _categorise_items(cube):
-        """
-        Inspect the provided :class:`~iris.cube.Cube` and group its
+        """Inspect the provided :class:`~iris.cube.Cube` and group its
         coordinates and associated metadata into dimension, auxiliary and
         scalar categories.
 
@@ -688,8 +671,7 @@ class Resolve:
         bounds=None,
         container=None,
     ):
-        """
-        Convenience method that creates a :class:`~iris.common.resolve._PreparedItem`
+        """Convenience method that creates a :class:`~iris.common.resolve._PreparedItem`
         containing the data and metadata required to construct and attach a coordinate
         to the resultant resolved cube.
 
@@ -814,8 +796,7 @@ class Resolve:
 
     @staticmethod
     def _dim_coverage(cube, cube_items_dim, common_dim_metadata):
-        """
-        Determine the dimensions covered by each of the local and common
+        """Determine the dimensions covered by each of the local and common
         dimension coordinates of the provided :class:`~iris.cube.Cube`.
 
         The cube dimensions not covered by any of the dimension coordinates is
@@ -866,8 +847,7 @@ class Resolve:
 
     @staticmethod
     def _dim_mapping(src_coverage, tgt_coverage):
-        """
-        Establish the mapping of dimensions from the ``src`` to ``tgt``
+        """Establish the mapping of dimensions from the ``src`` to ``tgt``
         :class:`~iris.cube.Cube` using the dimension coordinate metadata
         common between each of the operands.
 
@@ -924,8 +904,7 @@ class Resolve:
         src_aux_coverage,
         tgt_aux_coverage,
     ):
-        """
-        Attempt to update the :attr:`~iris.common.resolve.Resolve.mapping` with
+        """Attempt to update the :attr:`~iris.common.resolve.Resolve.mapping` with
         ``src`` to ``tgt`` :class:`~iris.cube.Cube` mappings from unmapped ``src``
         dimensions that are free from coordinate metadata coverage to ``tgt``
         dimensions that have local metadata coverage (i.e., is not common between
@@ -985,12 +964,8 @@ class Resolve:
 
         # Determine the src/tgt dimensions that are not mapped,
         # and not covered by any metadata.
-        src_free = set(src_dim_coverage.dims_free) & set(
-            src_aux_coverage.dims_free
-        )
-        tgt_free = set(tgt_dim_coverage.dims_free) & set(
-            tgt_aux_coverage.dims_free
-        )
+        src_free = set(src_dim_coverage.dims_free) & set(src_aux_coverage.dims_free)
+        tgt_free = set(tgt_dim_coverage.dims_free) & set(tgt_aux_coverage.dims_free)
 
         if src_free or tgt_free:
             # Determine the src/tgt dimensions that are not mapped.
@@ -1023,9 +998,7 @@ class Resolve:
                 else:
 
                     def _filter(items):
-                        return list(
-                            filter(lambda item: item[1] == extent, items)
-                        )
+                        return list(filter(lambda item: item[1] == extent, items))
 
                     def _pop(item, items):
                         dim, _ = item
@@ -1089,9 +1062,7 @@ class Resolve:
                             break
 
         # Determine whether there are still unmapped src dimensions.
-        src_unmapped = (
-            set(range(src_cube.ndim)) - set(self.mapping) - set(free_mapping)
-        )
+        src_unmapped = set(range(src_cube.ndim)) - set(self.mapping) - set(free_mapping)
 
         if src_unmapped:
             plural = "s" if len(src_unmapped) > 1 else ""
@@ -1108,8 +1079,7 @@ class Resolve:
         logger.debug(f"mapping free dimensions gives, mapping={self.mapping}")
 
     def _metadata_coverage(self):
-        """
-        Using the pre-categorised metadata of the cubes, determine the dimensions
+        """Using the pre-categorised metadata of the cubes, determine the dimensions
         covered by their associated dimension and auxiliary coordinates, and which
         dimensions are free of metadata coverage.
 
@@ -1120,9 +1090,7 @@ class Resolve:
 
         """
         # Determine the common dim coordinate metadata coverage.
-        common_dim_metadata = [
-            item.metadata for item in self.category_common.items_dim
-        ]
+        common_dim_metadata = [item.metadata for item in self.category_common.items_dim]
 
         self.lhs_cube_dim_coverage = self._dim_coverage(
             self.lhs_cube,
@@ -1136,9 +1104,7 @@ class Resolve:
         )
 
         # Determine the common aux and scalar coordinate metadata coverage.
-        common_aux_metadata = [
-            item.metadata for item in self.category_common.items_aux
-        ]
+        common_aux_metadata = [item.metadata for item in self.category_common.items_aux]
         common_scalar_metadata = [
             item.metadata for item in self.category_common.items_scalar
         ]
@@ -1159,8 +1125,7 @@ class Resolve:
         )
 
     def _metadata_mapping(self):
-        """
-        Ensure that each ``src`` :class:`~iris.cube.Cube` dimension is mapped to an associated
+        """Ensure that each ``src`` :class:`~iris.cube.Cube` dimension is mapped to an associated
         ``tgt`` :class:`~iris.cube.Cube` dimension using the common dim and aux coordinate metadata.
 
         If the common metadata does not result in a full mapping of ``src`` to ``tgt`` dimensions
@@ -1211,22 +1176,14 @@ class Resolve:
 
         # Use the dim coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
-        self.mapping.update(
-            self._dim_mapping(src_dim_coverage, tgt_dim_coverage)
-        )
-        logger.debug(
-            f"mapping common dim coordinates gives, mapping={self.mapping}"
-        )
+        self.mapping.update(self._dim_mapping(src_dim_coverage, tgt_dim_coverage))
+        logger.debug(f"mapping common dim coordinates gives, mapping={self.mapping}")
 
         # If necessary, use the aux coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
         if not self.mapped:
-            self.mapping.update(
-                self._aux_mapping(src_aux_coverage, tgt_aux_coverage)
-            )
-            logger.debug(
-                f"mapping common aux coordinates, mapping={self.mapping}"
-            )
+            self.mapping.update(self._aux_mapping(src_aux_coverage, tgt_aux_coverage))
+            logger.debug(f"mapping common aux coordinates, mapping={self.mapping}")
 
         if not self.mapped:
             # Attempt to complete the mapping using src/tgt free dimensions.
@@ -1254,15 +1211,9 @@ class Resolve:
         # Given the number of free dimensions, determine whether the
         # mapping requires to be reversed.
         # Only applies to equal src/tgt dimensionality.
-        src_free = set(src_dim_coverage.dims_free) & set(
-            src_aux_coverage.dims_free
-        )
-        tgt_free = set(tgt_dim_coverage.dims_free) & set(
-            tgt_aux_coverage.dims_free
-        )
-        free_flip = src_cube.ndim == tgt_cube.ndim and len(tgt_free) > len(
-            src_free
-        )
+        src_free = set(src_dim_coverage.dims_free) & set(src_aux_coverage.dims_free)
+        tgt_free = set(tgt_dim_coverage.dims_free) & set(tgt_aux_coverage.dims_free)
+        free_flip = src_cube.ndim == tgt_cube.ndim and len(tgt_free) > len(src_free)
 
         # Reverse the mapping direction.
         if broadcast_flip or free_flip:
@@ -1282,8 +1233,7 @@ class Resolve:
             self._as_compatible_cubes()
 
     def _metadata_prepare(self):
-        """
-        Populate the :attr:`~iris.common.resolve.Resolve.prepared_category` and
+        """Populate the :attr:`~iris.common.resolve.Resolve.prepared_category` and
         :attr:`~iris.common.resolve.Resolve.prepared_factories` with the necessary metadata to be constructed
         and attached to the resulting resolved :class:`~iris.cube.Cube`.
 
@@ -1339,14 +1289,11 @@ class Resolve:
             tgt_aux_coverage,
         )
 
-        self._prepare_factory_payload(
-            tgt_cube, tgt_category_local, from_src=False
-        )
+        self._prepare_factory_payload(tgt_cube, tgt_category_local, from_src=False)
         self._prepare_factory_payload(src_cube, src_category_local)
 
     def _metadata_resolve(self):
-        """
-        Categorise the coordinate metadata of the cubes into three distinct
+        """Categorise the coordinate metadata of the cubes into three distinct
         groups; metadata from coordinates only available (local) on the LHS
         cube, metadata from coordinates only available (local) on the RHS
         cube, and metadata from coordinates common to both the LHS and RHS
@@ -1455,8 +1402,7 @@ class Resolve:
         prepared_items,
         ignore_mismatch=None,
     ):
-        """
-        Populate the ``prepared_items`` with a :class:`~iris.common.resolve._PreparedItem` containing
+        """Populate the ``prepared_items`` with a :class:`~iris.common.resolve._PreparedItem` containing
         the necessary metadata for each auxiliary coordinate to be constructed and attached to the
         resulting resolved :class:`~iris.cube.Cube`.
 
@@ -1567,9 +1513,7 @@ class Resolve:
                         src_type = type(src_coord)
                         tgt_type = type(tgt_coord)
                         # Downcast to aux if there are mixed container types.
-                        container = (
-                            src_type if src_type is tgt_type else AuxCoord
-                        )
+                        container = src_type if src_type is tgt_type else AuxCoord
                         prepared_item = self._create_prepared_item(
                             src_coord,
                             tgt_item.dims,
@@ -1586,8 +1530,7 @@ class Resolve:
     def _prepare_common_dim_payload(
         self, src_coverage, tgt_coverage, ignore_mismatch=None
     ):
-        """
-        Populate the ``items_dim`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+        """Populate the ``items_dim`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
         with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for
         each :class:`~iris.coords.DimCoord` to be constructed and attached to the resulting resolved
         :class:`~iris.cube.Cube`.
@@ -1648,8 +1591,7 @@ class Resolve:
     def _get_prepared_item(
         self, metadata, category_local, from_src=True, from_local=False
     ):
-        """
-        Find the :attr:`~iris.common.resolve._PreparedItem` from the
+        """Find the :attr:`~iris.common.resolve._PreparedItem` from the
         :attr:`~iris.common.resolve.Resolve.prepared_category` that matches the provided ``metadata``.
 
         Alternatively, the ``category_local`` is searched to find a :class:`~iris.common.resolve._Item`
@@ -1711,9 +1653,7 @@ class Resolve:
                         src = tgt = None
                         if from_src:
                             src = item.metadata
-                            dims = tuple(
-                                [self.mapping[dim] for dim in item.dims]
-                            )
+                            dims = tuple([self.mapping[dim] for dim in item.dims])
                         else:
                             tgt = item.metadata
                             dims = item.dims
@@ -1730,8 +1670,7 @@ class Resolve:
         return result
 
     def _prepare_factory_payload(self, cube, category_local, from_src=True):
-        """
-        Populate the :attr:`~iris.common.resolve.Resolve.prepared_factories` with a :class:`~iris.common.resolve._PreparedFactory`
+        """Populate the :attr:`~iris.common.resolve.Resolve.prepared_factories` with a :class:`~iris.common.resolve._PreparedFactory`
         containing the necessary metadata for each ``src`` and/or ``tgt`` auxiliary factory to be constructed and
         attached to the resulting resolved :class:`~iris.cube.Cube`.
 
@@ -1809,8 +1748,7 @@ class Resolve:
                 logger.debug(dmsg)
 
     def _prepare_local_payload_aux(self, src_aux_coverage, tgt_aux_coverage):
-        """
-        Populate the ``items_aux`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+        """Populate the ``items_aux`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
         with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for each
         ``src`` or ``tgt`` local auxiliary coordinate to be constructed and attached to the resulting
         resolved :class:`~iris.cube.Cube`.
@@ -1882,8 +1820,7 @@ class Resolve:
                 logger.debug(dmsg)
 
     def _prepare_local_payload_dim(self, src_dim_coverage, tgt_dim_coverage):
-        """
-        Populate the ``items_dim`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+        """Populate the ``items_dim`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
         with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for each
         ``src`` or ``tgt`` local :class:`~iris.coords.DimCoord` to be constructed and attached to the
         resulting resolved :class:`~iris.cube.Cube`.
@@ -1909,9 +1846,7 @@ class Resolve:
         # Determine whether there are tgt dimensions not mapped to by an
         # associated src dimension, and thus may be covered by any local
         # tgt dim coordinates.
-        extra_tgt_dims = set(range(tgt_dim_coverage.cube.ndim)) - set(
-            mapped_tgt_dims
-        )
+        extra_tgt_dims = set(range(tgt_dim_coverage.cube.ndim)) - set(mapped_tgt_dims)
 
         if LENIENT["maths"]:
             tgt_dims_conflict = set()
@@ -1943,9 +1878,7 @@ class Resolve:
 
             # Determine whether there are any tgt dims free to be mapped
             # by an available local tgt dim coordinate.
-            tgt_dims_unmapped = (
-                set(tgt_dim_coverage.dims_local) - tgt_dims_conflict
-            )
+            tgt_dims_unmapped = set(tgt_dim_coverage.dims_local) - tgt_dims_conflict
         else:
             # For strict maths, only local tgt dim coordinates covering
             # the extra dimensions of the tgt cube may be added.
@@ -1962,11 +1895,8 @@ class Resolve:
                     )
                     self.prepared_category.items_dim.append(prepared_item)
 
-    def _prepare_local_payload_scalar(
-        self, src_aux_coverage, tgt_aux_coverage
-    ):
-        """
-        Populate the ``items_scalar`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+    def _prepare_local_payload_scalar(self, src_aux_coverage, tgt_aux_coverage):
+        """Populate the ``items_scalar`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
         with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for each
         ``src`` or ``tgt`` local scalar coordinate to be constructed and attached to the resulting
         resolved :class:`~iris.cube.Cube`.
@@ -2019,8 +1949,7 @@ class Resolve:
         tgt_dim_coverage,
         tgt_aux_coverage,
     ):
-        """
-        Populate the :attr:`~iris.common.resolve.Resolve.prepared_category_items` with a
+        """Populate the :attr:`~iris.common.resolve.Resolve.prepared_category_items` with a
         :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata from the ``src``
         and/or ``tgt`` :class:`~iris.cube.Cube` for each coordinate to be constructed and attached
         to the resulting resolved :class:`~iris.cube.Cube`.
@@ -2052,8 +1981,7 @@ class Resolve:
     def _prepare_points_and_bounds(
         self, src_coord, tgt_coord, src_dims, tgt_dims, ignore_mismatch=None
     ):
-        """
-        Compare the points and bounds of the ``src`` and ``tgt`` coordinates to ensure
+        """Compare the points and bounds of the ``src`` and ``tgt`` coordinates to ensure
         that they are equivalent, taking into account broadcasting when appropriate.
 
         .. note::
@@ -2120,11 +2048,7 @@ class Resolve:
                 bounds = src_coord.bounds
 
         # Deal with coordinates spanning broadcast dimensions.
-        if (
-            points is None
-            and bounds is None
-            and src_coord.shape != tgt_coord.shape
-        ):
+        if points is None and bounds is None and src_coord.shape != tgt_coord.shape:
             # Check whether the src coordinate is broadcasting.
             dims = tuple([self.mapping[dim] for dim in src_dims])
             src_shape_broadcast = tuple([self.shape[dim] for dim in dims])
@@ -2159,9 +2083,7 @@ class Resolve:
 
         if points is None and bounds is None:
             # Note that, this also ensures shape equality.
-            eq_points = array_equal(
-                src_coord.points, tgt_coord.points, withnans=True
-            )
+            eq_points = array_equal(src_coord.points, tgt_coord.points, withnans=True)
             if eq_points:
                 points = src_coord.points
                 src_has_bounds = src_coord.has_bounds()
@@ -2169,9 +2091,7 @@ class Resolve:
 
                 if src_has_bounds and tgt_has_bounds:
                     src_bounds = src_coord.bounds
-                    eq_bounds = array_equal(
-                        src_bounds, tgt_coord.bounds, withnans=True
-                    )
+                    eq_bounds = array_equal(src_bounds, tgt_coord.bounds, withnans=True)
 
                     if eq_bounds:
                         bounds = src_bounds
@@ -2338,8 +2258,7 @@ class Resolve:
             cube.remove_ancillary_variable(av)
 
     def cube(self, data, in_place=False):
-        """
-        Create the resultant :class:`~iris.cube.Cube` from the resolved ``lhs``
+        """Create the resultant :class:`~iris.cube.Cube` from the resolved ``lhs``
         and ``rhs`` :class:`~iris.cube.Cube` operands, using the provided
         ``data``.
 
@@ -2459,9 +2378,7 @@ class Resolve:
             result = Cube(data)
 
         # Add the combined cube metadata from both the candidate cubes.
-        result.metadata = self.lhs_cube.metadata.combine(
-            self.rhs_cube.metadata
-        )
+        result.metadata = self.lhs_cube.metadata.combine(self.rhs_cube.metadata)
 
         # Add the prepared dim coordinates.
         for item in self.prepared_category.items_dim:
@@ -2470,8 +2387,7 @@ class Resolve:
 
         # Add the prepared aux and scalar coordinates.
         prepared_aux_coords = (
-            self.prepared_category.items_aux
-            + self.prepared_category.items_scalar
+            self.prepared_category.items_aux + self.prepared_category.items_scalar
         )
         for item in prepared_aux_coords:
             # These items are "special"
@@ -2507,8 +2423,7 @@ class Resolve:
 
     @property
     def mapped(self):
-        """
-        Boolean state representing whether **all** ``src`` :class:`~iris.cube.Cube`
+        """Boolean state representing whether **all** ``src`` :class:`~iris.cube.Cube`
         dimensions have been associated with relevant ``tgt``
         :class:`~iris.cube.Cube` dimensions.
 
@@ -2578,7 +2493,7 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             False
 
-        """
+        """  # noqa: D214, D410, D411
         result = None
         if self.mapping is not None:
             result = self._src_cube.ndim == len(self.mapping)
@@ -2586,8 +2501,7 @@ class Resolve:
 
     @property
     def shape(self):
-        """
-        Proposed shape of the final resolved cube given the ``lhs``
+        """Proposed shape of the final resolved cube given the ``lhs``
         :class:`~iris.cube.Cube` operand and the ``rhs`` :class:`~iris.cube.Cube`
         operand.
 
@@ -2640,5 +2554,5 @@ class Resolve:
             >>> Resolve(cube2, cube1).shape
             (240, 37, 49)
 
-        """
+        """  # noqa: D214, D410, D411
         return self._broadcast_shape

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -43,9 +42,7 @@ class TestCubeDelta(tests.IrisTest):
             coord_system=iris.coord_systems.OSGB(),
         )
         cube.add_dim_coord(coord, 0)
-        delta = iris.analysis.calculus.cube_delta(
-            cube, "projection_x_coordinate"
-        )
+        delta = iris.analysis.calculus.cube_delta(cube, "projection_x_coordinate")
         delta_coord = delta.coord("projection_x_coordinate")
         self.assertEqual(delta_coord, delta.coord(coord))
         self.assertEqual(coord, cube.coord(delta_coord))
@@ -246,16 +243,12 @@ class TestCoordTrig(tests.IrisTest):
         )
 
         # Now that we have tested the points & bounds, remove them and just test the xml
-        cos_of_coord = cos_of_coord.copy(
-            points=np.array([1], dtype=np.float32)
-        )
+        cos_of_coord = cos_of_coord.copy(points=np.array([1], dtype=np.float32))
         cos_of_coord_radians = cos_of_coord_radians.copy(
             points=np.array([1], dtype=np.float32)
         )
 
-        self.assertXMLElement(
-            cos_of_coord, ("analysis", "calculus", "cos_simple.xml")
-        )
+        self.assertXMLElement(cos_of_coord, ("analysis", "calculus", "cos_simple.xml"))
         self.assertXMLElement(
             cos_of_coord_radians,
             ("analysis", "calculus", "cos_simple_radians.xml"),
@@ -292,15 +285,11 @@ class TestCalculusSimple3(tests.IrisTest):
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
 
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "handmade2_wrt_lon.cml")
-        )
+        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade2_wrt_lon.cml"))
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "handmade2_wrt_lat.cml")
-        )
+        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade2_wrt_lat.cml"))
 
 
 class TestCalculusSimple2(tests.IrisTest):
@@ -347,9 +336,7 @@ class TestCalculusSimple2(tests.IrisTest):
             0,
         )
         cube.add_aux_coord(
-            DimCoord(
-                np.arange(5, dtype=np.float32), long_name="y", units="count"
-            ),
+            DimCoord(np.arange(5, dtype=np.float32), long_name="y", units="count"),
             1,
         )
 
@@ -357,27 +344,19 @@ class TestCalculusSimple2(tests.IrisTest):
 
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, "x")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "handmade_wrt_x.cml")
-        )
+        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_x.cml"))
 
     def test_diff_wrt_y(self):
         t = iris.analysis.calculus.differentiate(self.cube, "y")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "handmade_wrt_y.cml")
-        )
+        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_y.cml"))
 
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "handmade_wrt_lon.cml")
-        )
+        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_lon.cml"))
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "handmade_wrt_lat.cml")
-        )
+        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_lat.cml"))
 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "x")
@@ -419,15 +398,11 @@ class TestCalculusSimple1(tests.IrisTest):
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
 
         cube.add_dim_coord(
-            DimCoord(
-                np.arange(5, dtype=np.float32), long_name="x", units="count"
-            ),
+            DimCoord(np.arange(5, dtype=np.float32), long_name="x", units="count"),
             0,
         )
         cube.add_dim_coord(
-            DimCoord(
-                np.arange(5, dtype=np.float32), long_name="y", units="count"
-            ),
+            DimCoord(np.arange(5, dtype=np.float32), long_name="y", units="count"),
             1,
         )
 
@@ -447,10 +422,7 @@ class TestCalculusSimple1(tests.IrisTest):
 
 
 def build_cube(data, spherical=False):
-    """
-    Create a cube suitable for testing.
-
-    """
+    """Create a cube suitable for testing."""
     cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
 
     nx = data.shape[-1]
@@ -531,7 +503,7 @@ def build_cube(data, spherical=False):
 
 class TestCalculusWKnownSolutions(tests.IrisTest):
     def get_coord_pts(self, cube):
-        """return (x_pts, x_ones, y_pts, y_ones, z_pts, z_ones) for the given cube."""
+        """Return (x_pts, x_ones, y_pts, y_ones, z_pts, z_ones) for the given cube."""
         x = cube.coord(axis="X")
         y = cube.coord(axis="Y")
         z = cube.coord(axis="Z")
@@ -596,9 +568,7 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         data = -sin_x_pts * y_ones
         result = df_dlon.copy(data=data)
 
-        np.testing.assert_array_almost_equal(
-            result.data, df_dlon.data, decimal=3
-        )
+        np.testing.assert_array_almost_equal(result.data, df_dlon.data, decimal=3)
 
     def test_contrived_differential2(self):
         # testing :

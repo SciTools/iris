@@ -1,5 +1,4 @@
-"""
-Perform test automation with nox.
+"""Perform test automation with nox.
 
 For further details, see https://nox.thea.codes/en/stable/#
 
@@ -36,9 +35,7 @@ ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
     """Return the path of the session lockfile."""
-    return Path(
-        f"requirements/locks/py{session.python.replace('.', '')}-linux-64.lock"
-    )
+    return Path(f"requirements/locks/py{session.python.replace('.', '')}-linux-64.lock")
 
 
 def session_cachefile(session: nox.sessions.Session) -> Path:
@@ -50,14 +47,18 @@ def session_cachefile(session: nox.sessions.Session) -> Path:
 
 
 def venv_populated(session: nox.sessions.Session) -> bool:
-    """Returns True if the conda venv has been created
-    and the list of packages in the lockfile installed."""
+    """List of packages in the lockfile installed.
+
+    Returns True if the conda venv has been created.
+    """
     return session_cachefile(session).is_file()
 
 
 def venv_changed(session: nox.sessions.Session) -> bool:
-    """Returns True if the installed session is different to that specified
-    in the lockfile."""
+    """Returns True if the installed session is different.
+
+    Compares to that specified in the lockfile.
+    """
     changed = False
     cache = session_cachefile(session)
     lockfile = session_lockfile(session)
@@ -71,8 +72,7 @@ def venv_changed(session: nox.sessions.Session) -> bool:
 
 
 def cache_venv(session: nox.sessions.Session) -> None:
-    """
-    Cache the nox session environment.
+    """Cache the nox session environment.
 
     This consists of saving a hexdigest (sha256) of the associated
     conda lock file.
@@ -92,8 +92,7 @@ def cache_venv(session: nox.sessions.Session) -> None:
 
 
 def cache_cartopy(session: nox.sessions.Session) -> None:
-    """
-    Determine whether to cache the cartopy natural earth shapefiles.
+    """Determine whether to cache the cartopy natural earth shapefiles.
 
     Parameters
     ----------
@@ -110,8 +109,7 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
 
 def prepare_venv(session: nox.sessions.Session) -> None:
-    """
-    Create and cache the nox session conda environment, and additionally
+    """Create and cache the nox session conda environment, and additionally
     provide conda environment package details and info.
 
     Note that, iris is installed into the environment using pip.
@@ -169,8 +167,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
 @nox.session(python=PY_VER, venv_backend="conda")
 def tests(session: nox.sessions.Session):
-    """
-    Perform iris system, integration and unit tests.
+    """Perform iris system, integration and unit tests.
 
     Coverage testing is enabled if the "--coverage" or "-c" flag is used.
 
@@ -196,8 +193,7 @@ def tests(session: nox.sessions.Session):
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def doctest(session: nox.sessions.Session):
-    """
-    Perform iris doctests and gallery.
+    """Perform iris doctests and gallery.
 
     Parameters
     ----------
@@ -224,8 +220,7 @@ def doctest(session: nox.sessions.Session):
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def gallery(session: nox.sessions.Session):
-    """
-    Perform iris gallery doc-tests.
+    """Perform iris gallery doc-tests.
 
     Parameters
     ----------
@@ -246,8 +241,7 @@ def gallery(session: nox.sessions.Session):
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def linkcheck(session: nox.sessions.Session):
-    """
-    Perform iris doc link check.
+    """Perform iris doc link check.
 
     Parameters
     ----------
@@ -273,8 +267,7 @@ def linkcheck(session: nox.sessions.Session):
 
 @nox.session(python=PY_VER, venv_backend="conda")
 def wheel(session: nox.sessions.Session):
-    """
-    Perform iris local wheel install and import test.
+    """Perform iris local wheel install and import test.
 
     Parameters
     ----------
@@ -288,9 +281,7 @@ def wheel(session: nox.sessions.Session):
     if len(fname) == 0:
         raise ValueError("Cannot find wheel to install.")
     if len(fname) > 1:
-        emsg = (
-            f"Expected to find 1 wheel to install, found {len(fname)} instead."
-        )
+        emsg = f"Expected to find 1 wheel to install, found {len(fname)} instead."
         raise ValueError(emsg)
     session.install(fname[0].name)
     session.run(

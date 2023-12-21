@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -170,9 +169,7 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             keys[dim] = np.newaxis
             expected_data = self.data_op(cube.data, other.data[tuple(keys)])
             msg = "Problem broadcasting cubes when sliced on dimension {}."
-            self.assertArrayEqual(
-                res.data, expected_data, err_msg=msg.format(dim)
-            )
+            self.assertArrayEqual(res.data, expected_data, err_msg=msg.format(dim))
 
 
 class MathsAddOperationMixin:

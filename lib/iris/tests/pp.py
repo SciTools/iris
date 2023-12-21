@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import contextlib
 import os.path
@@ -11,10 +10,7 @@ import iris
 
 
 class PPTest:
-    """
-    A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest.
-
-    """
+    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest."""
 
     @contextlib.contextmanager
     def cube_save_test(
@@ -24,8 +20,7 @@ class PPTest:
         reference_pp_path=None,
         **kwargs,
     ):
-        """
-        A context manager for testing the saving of Cubes to PP files.
+        """A context manager for testing the saving of Cubes to PP files.
 
         Args:
 
@@ -54,15 +49,11 @@ class PPTest:
                 temp_pp_path = iris.util.create_temp_filename(".pp")
                 try:
                     iris.save(reference_cubes, temp_pp_path, **kwargs)
-                    self._create_reference_txt(
-                        reference_txt_path, temp_pp_path
-                    )
+                    self._create_reference_txt(reference_txt_path, temp_pp_path)
                 finally:
                     os.remove(temp_pp_path)
             elif reference_pp_path:
-                self._create_reference_txt(
-                    reference_txt_path, reference_pp_path
-                )
+                self._create_reference_txt(reference_txt_path, reference_pp_path)
             else:
                 raise ValueError(
                     "Missing all of reference txt file, cubes, and PP path."

@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Coord benchmark tests.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Coord benchmark tests.
 
 """
 
@@ -27,9 +25,7 @@ class CoordCommon:
     #       * make class an ABC
     #       * remove NotImplementedError
     #       * combine setup_common into setup
-    """
-
-    A base class running a generalised suite of benchmarks for any coord.
+    """A base class running a generalised suite of benchmarks for any coord.
     Coord to be specified in a subclass.
 
     ASV will run the benchmarks within this class for any subclasses.
@@ -39,7 +35,7 @@ class CoordCommon:
     """
 
     def setup(self):
-        """Prevent ASV instantiating (must therefore override setup() in any subclasses.)"""
+        """Prevent ASV instantiating (must therefore override setup() in any subclasses.)."""
         raise NotImplementedError
 
     def setup_common(self):
@@ -47,8 +43,10 @@ class CoordCommon:
         self.component = self.create()
 
     def time_create(self):
-        """Create an instance of the benchmarked coord. create method is
-        specified in the subclass."""
+        """Create an instance of the benchmarked factory.
+
+        Create method is specified in the subclass.
+        """
         self.create()
 
 

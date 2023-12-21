@@ -1,14 +1,12 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Provides NAME file format loading capabilities."""
 
 
 def _get_NAME_loader(filename):
-    """
-    Return the appropriate load function for a NAME file based
+    """Return the appropriate load function for a NAME file based
     on the contents of its header.
 
     """
@@ -39,16 +37,13 @@ def _get_NAME_loader(filename):
             load = name_loaders.load_NAMEII_field
 
     if load is None:
-        raise ValueError(
-            "Unable to determine NAME file type " "of {!r}.".format(filename)
-        )
+        raise ValueError("Unable to determine NAME file type of {!r}.".format(filename))
 
     return load
 
 
 def load_cubes(filenames, callback):
-    """
-    Return a generator of cubes given one or more filenames and an
+    """Return a generator of cubes given one or more filenames and an
     optional callback.
 
     Args:

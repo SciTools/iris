@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test iris.fileformats.rules.py - metadata translation rules.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test iris.fileformats.rules.py - metadata translation rules.
 
 """
 
@@ -117,14 +115,11 @@ class TestLoadCubes(tests.IrisTest):
         factory = mock.Mock()
         factory.args = [{"name": "foo"}]
         factory.factory_class = (
-            lambda *args: setattr(aux_factory, "fake_args", args)
-            or aux_factory
+            lambda *args: setattr(aux_factory, "fake_args", args) or aux_factory
         )
 
         def converter(field):
-            return ConversionMetadata(
-                [factory], [], "", "", "", {}, [], [], []
-            )
+            return ConversionMetadata([factory], [], "", "", "", {}, [], [], [])
 
         # Finish by making a fake Loader
         fake_loader = Loader(field_generator, {}, converter)
@@ -197,9 +192,7 @@ class TestLoadCubes(tests.IrisTest):
         def converter(field):
             if field is press_field:
                 src = param_cube
-                factories = [
-                    Factory(HybridHeightFactory, [Reference("orography")])
-                ]
+                factories = [Factory(HybridHeightFactory, [Reference("orography")])]
                 references = []
             else:
                 src = orog_cube
@@ -238,7 +231,7 @@ class TestLoadCubes(tests.IrisTest):
 
 
 class Test_scalar_cell_method(tests.IrisTest):
-    """Tests for iris.fileformats.rules.scalar_cell_method() function"""
+    """Tests for iris.fileformats.rules.scalar_cell_method() function."""
 
     def setUp(self):
         self.cube = stock.simple_2d()

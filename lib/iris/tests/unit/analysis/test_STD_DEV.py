@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.STD_DEV` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -51,9 +50,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         array = as_lazy_data(array)
         var = STD_DEV.lazy_aggregate(array, axis=1, mdtol=0.3)
         masked_result = as_concrete_data(var)
-        masked_expected = np.ma.masked_array(
-            [0.57735, 1.0, 0.707107], mask=[0, 0, 1]
-        )
+        masked_expected = np.ma.masked_array([0.57735, 1.0, 0.707107], mask=[0, 0, 1])
         self.assertMaskedArrayAlmostEqual(masked_result, masked_expected)
 
     def test_ddof_one(self):

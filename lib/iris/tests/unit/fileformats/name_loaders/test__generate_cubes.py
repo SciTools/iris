@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for :func:`iris.analysis.name_loaders._generate_cubes`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :func:`iris.analysis.name_loaders._generate_cubes`.
 
 """
 
@@ -36,9 +34,7 @@ class TestCellMethods(tests.IrisTest):
         self.patch("iris.fileformats.name_loaders._cf_height_from_name")
         self.patch("iris.cube.Cube")
         cubes = list(
-            _generate_cubes(
-                header, column_headings, coords, data_arrays, cell_methods
-            )
+            _generate_cubes(header, column_headings, coords, data_arrays, cell_methods)
         )
 
         cubes[0].assert_has_calls([mock.call.add_cell_method("cell_method_1")])
@@ -62,9 +58,7 @@ class TestCircularLongitudes(tests.IrisTest):
 
         self.patch("iris.fileformats.name_loaders._cf_height_from_name")
         self.patch("iris.cube.Cube")
-        cubes = list(
-            _generate_cubes(header, column_headings, coords, data_arrays)
-        )
+        cubes = list(_generate_cubes(header, column_headings, coords, data_arrays))
         return cubes
 
     def test_non_circular(self):
@@ -121,9 +115,7 @@ class TestTimeCoord(tests.IrisTest):
 
         self.patch("iris.fileformats.name_loaders._cf_height_from_name")
         self.patch("iris.cube.Cube")
-        cubes = list(
-            _generate_cubes(header, column_headings, coords, data_arrays)
-        )
+        cubes = list(_generate_cubes(header, column_headings, coords, data_arrays))
         return cubes
 
     def test_time_dim(self):

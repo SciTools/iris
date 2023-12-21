@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Support for UM "fieldsfile-like" files.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Support for UM "fieldsfile-like" files.
 
 At present, the only UM file types supported are true FieldsFiles and LBCs.
 Other types of UM file may fail to load correctly (or at all).
@@ -16,8 +14,7 @@ from iris.fileformats.pp import _load_cubes_variable_loader
 
 
 def um_to_pp(filename, read_data=False, word_depth=None):
-    """
-    Extract individual PPFields from within a UM Fieldsfile-like file.
+    """Extract individual PPFields from within a UM Fieldsfile-like file.
 
     Returns an iterator over the fields contained within the FieldsFile,
     returned as :class:`iris.fileformats.pp.PPField` instances.
@@ -53,8 +50,7 @@ def um_to_pp(filename, read_data=False, word_depth=None):
 
 
 def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
-    """
-    Loads cubes from filenames of UM fieldsfile-like files.
+    """Loads cubes from filenames of UM fieldsfile-like files.
 
     Args:
 
@@ -82,8 +78,7 @@ def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
-    """
-    Loads cubes from filenames of 32bit ieee converted UM fieldsfile-like
+    """Loads cubes from filenames of 32bit ieee converted UM fieldsfile-like
     files.
 
     .. seealso::

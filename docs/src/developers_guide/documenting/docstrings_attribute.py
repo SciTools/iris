@@ -1,12 +1,8 @@
 class ExampleClass:
-    """
-    Class Summary
-
-    """
+    """Class Summary."""
 
     def __init__(self, arg1, arg2):
-        """
-        Purpose section description.
+        """Purpose section description.
 
         Description section text.
 
@@ -28,8 +24,7 @@ class ExampleClass:
 
     @property
     def square(self):
-        """
-        *(read-only)* Purpose section description.
+        """*(read-only)* Purpose section description.
 
         Returns:
             int.

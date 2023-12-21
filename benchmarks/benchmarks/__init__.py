@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Common code for benchmarks."""
 from os import environ
 import resource
@@ -11,8 +10,7 @@ ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
 
 
 def disable_repeat_between_setup(benchmark_object):
-    """
-    Decorator for benchmarks where object persistence would be inappropriate.
+    """Decorator for benchmarks where object persistence would be inappropriate.
 
     E.g:
         * Benchmarking data realisation
@@ -38,8 +36,7 @@ def disable_repeat_between_setup(benchmark_object):
 
 
 class TrackAddedMemoryAllocation:
-    """
-    Context manager which measures by how much process resident memory grew,
+    """Context manager which measures by how much process resident memory grew,
     during execution of its enclosed code block.
 
     Obviously limited as to what it actually measures : Relies on the current
@@ -87,8 +84,7 @@ class TrackAddedMemoryAllocation:
 
     @staticmethod
     def decorator(decorated_func):
-        """
-        Decorates this benchmark to track growth in resident memory during execution.
+        """Decorates this benchmark to track growth in resident memory during execution.
 
         Intended for use on ASV ``track_`` benchmarks. Applies the
         :class:`TrackAddedMemoryAllocation` context manager to the benchmark
@@ -109,8 +105,7 @@ class TrackAddedMemoryAllocation:
 
 
 def on_demand_benchmark(benchmark_object):
-    """
-    Decorator. Disables these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.
+    """Decorator. Disables these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.
 
     For benchmarks that, for whatever reason, should not be run by default.
     E.g:

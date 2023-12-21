@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :func:`iris.common.lenient._qualname`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :func:`iris.common.lenient._qualname`.
 
 """
 
@@ -32,9 +30,7 @@ class Test(tests.IrisTest):
         def myfunc():
             pass
 
-        qualname_func = self.locals.format(
-            "test_callable_function_local", "myfunc"
-        )
+        qualname_func = self.locals.format("test_callable_function_local", "myfunc")
         result = _qualname(myfunc)
         self.assertEqual(result, qualname_func)
 

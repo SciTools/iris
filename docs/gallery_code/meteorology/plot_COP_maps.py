@@ -1,5 +1,4 @@
-"""
-Global Average Annual Temperature Maps
+"""Global Average Annual Temperature Maps
 ======================================
 
 Produces maps of global temperature forecasts from the A1B and E1 scenarios.
@@ -10,7 +9,6 @@ Model (Johns et al. 2011; Lowe et al. 2009).
 
 References
 ----------
-
     Johns T.C., et al. (2011) Climate change under aggressive mitigation: the
     ENSEMBLES multi-model experiment. Climate Dynamics, Vol 37, No. 9-10,
     doi:10.1007/s00382-011-1005-5.
@@ -20,7 +18,7 @@ References
     Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21,
     doi:10.1029/2009EO210001.
 
-"""
+"""  # noqa: D400
 
 import os.path
 
@@ -33,8 +31,7 @@ import iris.plot as iplt
 
 
 def cop_metadata_callback(cube, field, filename):
-    """
-    A function which adds an "Experiment" coordinate which comes from the
+    """A function which adds an "Experiment" coordinate which comes from the
     filename.
     """
 
@@ -152,12 +149,8 @@ def main():
     fig, ax_array = plt.subplots(1, 2, figsize=(12, 5))
 
     # Loop over our scenarios to make a plot for each.
-    for ax, experiment, label in zip(
-        ax_array, ["E1", "A1B"], ["E1", "A1B-Image"]
-    ):
-        exp_cube = scenarios.extract_cube(
-            iris.Constraint(Experiment=experiment)
-        )
+    for ax, experiment, label in zip(ax_array, ["E1", "A1B"], ["E1", "A1B-Image"]):
+        exp_cube = scenarios.extract_cube(iris.Constraint(Experiment=experiment))
         time_coord = exp_cube.coord("time")
 
         # Calculate the difference from the preindustial control run.
@@ -171,23 +164,13 @@ def main():
         )
         plt.gca().coastlines()
 
-    # Now add a colourbar who's leftmost point is the same as the leftmost
-    # point of the left hand plot and rightmost point is the rightmost
-    # point of the right hand plot.
-
-    # Get the positions of the 2nd plot and the left position of the 1st plot.
-    left, bottom, width, height = ax_array[1].get_position().bounds
-    first_plot_left = ax_array[0].get_position().bounds[0]
-
-    # The width of the colorbar should now be simple.
-    width = left - first_plot_left + width
-
-    # Add axes to the figure, to place the colour bar.
-    colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
-
-    # Add the colour bar.
+    # Now add a colour bar which spans the two plots.  Here we pass Figure.axes
+    # which is a list of all (two) axes currently on the figure.  Note that
+    # these are different to the contents of ax_array, because those were
+    # standard Matplotlib Axes that Iris automatically replaced with Cartopy
+    # GeoAxes.
     cbar = plt.colorbar(
-        contour_result, colorbar_axes, orientation="horizontal"
+        contour_result, ax=fig.axes, aspect=60, orientation="horizontal"
     )
 
     # Label the colour bar and add ticks.

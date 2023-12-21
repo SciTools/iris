@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Helper functions making objects for unstructured mesh testing."""
 
 
@@ -23,8 +22,7 @@ _TEST_N_BOUNDS = 4
 
 
 def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
-    """
-    Make a test mesh.
+    """Make a test mesh.
 
     Mesh has nodes, plus faces and/or edges, with face-coords and edge-coords,
     numbers of which can be controlled.
@@ -81,9 +79,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         edge_nodes = Connectivity(conns, cf_role="edge_node_connectivity")
         connectivities.append(edge_nodes)
 
-        edge_x = AuxCoord(
-            2100 + arr.arange(n_edges), standard_name="longitude"
-        )
+        edge_x = AuxCoord(2100 + arr.arange(n_edges), standard_name="longitude")
         edge_y = AuxCoord(2200 + arr.arange(n_edges), standard_name="latitude")
         edge_coords_and_axes = [(edge_x, "x"), (edge_y, "y")]
 
@@ -98,9 +94,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         connectivities.append(face_nodes)
 
         # Some numbers for the edge coordinates.
-        face_x = AuxCoord(
-            3100 + arr.arange(n_faces), standard_name="longitude"
-        )
+        face_x = AuxCoord(3100 + arr.arange(n_faces), standard_name="longitude")
         face_y = AuxCoord(3200 + arr.arange(n_faces), standard_name="latitude")
         face_coords_and_axes = [(face_x, "x"), (face_y, "y")]
 
@@ -115,8 +109,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
 
 def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
-    """
-    Create a test MeshCoord.
+    """Create a test MeshCoord.
 
     The creation args are defaulted, including the mesh.
     If not provided as an arg, a new mesh is created with sample_mesh().
@@ -128,11 +121,8 @@ def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
     return result
 
 
-def sample_mesh_cube(
-    nomesh_faces=None, n_z=2, with_parts=False, **meshcoord_kwargs
-):
-    """
-    Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a Mesh).
+def sample_mesh_cube(nomesh_faces=None, n_z=2, with_parts=False, **meshcoord_kwargs):
+    """Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a Mesh).
 
     Result contains : dimcoords for both dims; an auxcoord on the unstructured dim; 2 mesh-coords.
     By default, the mesh is provided by :func:`sample_mesh`, so coordinates and connectivity  are not realistic.
@@ -169,9 +159,7 @@ def sample_mesh_cube(
         )
         n_faces = meshx.shape[0]
 
-    mesh_dimco = DimCoord(
-        np.arange(n_faces), long_name="i_mesh_face", units="1"
-    )
+    mesh_dimco = DimCoord(np.arange(n_faces), long_name="i_mesh_face", units="1")
 
     auxco_x = AuxCoord(np.zeros(n_faces), long_name="mesh_face_aux", units="1")
 

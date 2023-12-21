@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 build_mercator_coordinate_system`.
 
 """
@@ -17,9 +15,7 @@ from unittest import mock
 
 import iris
 from iris.coord_systems import Mercator
-from iris.fileformats._nc_load_rules.helpers import (
-    build_mercator_coordinate_system,
-)
+from iris.fileformats._nc_load_rules.helpers import build_mercator_coordinate_system
 
 
 class TestBuildMercatorCoordinateSystem(tests.IrisTest):
@@ -35,9 +31,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
@@ -57,9 +51,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis,
                 inverse_flattening=cf_grid_var.inverse_flattening,
@@ -98,9 +90,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
@@ -119,9 +109,7 @@ class TestBuildMercatorCoordinateSystem(tests.IrisTest):
         cs = build_mercator_coordinate_system(None, cf_grid_var)
 
         expected = Mercator(
-            longitude_of_projection_origin=(
-                cf_grid_var.longitude_of_projection_origin
-            ),
+            longitude_of_projection_origin=(cf_grid_var.longitude_of_projection_origin),
             ellipsoid=iris.coord_systems.GeogCS(
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),

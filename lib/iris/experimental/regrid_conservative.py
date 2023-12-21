@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Support for conservative regridding via ESMPy.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Support for conservative regridding via ESMPy.
 
 .. note::
 
@@ -42,8 +40,7 @@ _CRS_TRUELATLON = ccrs.Geodetic()
 
 
 def _convert_latlons(crs, x_array, y_array):
-    """
-    Convert x+y coords in a given crs to (x,y) values in true-lat-lons.
+    """Convert x+y coords in a given crs to (x,y) values in true-lat-lons.
 
     .. note::
 
@@ -55,11 +52,8 @@ def _convert_latlons(crs, x_array, y_array):
     return ll_values[..., 0], ll_values[..., 1]
 
 
-def _make_esmpy_field(
-    x_coord, y_coord, ref_name="field", data=None, mask=None
-):
-    """
-    Create an ESMPy ESMF.Field on given coordinates.
+def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
+    """Create an ESMPy ESMF.Field on given coordinates.
 
     Create a ESMF.Grid from the coordinates, defining corners and centre
     positions as lats+lons.
@@ -106,7 +100,7 @@ def _make_esmpy_field(
     # NOTE: we don't care about Iris' idea of where the points 'really' are
     # *but* ESMF requires the data in the CENTER for conservative regrid,
     # according to the documentation :
-    #  - http://www.earthsystemmodeling.org/
+    #  - https://www.earthsystemmodeling.org/
     #        esmf_releases/public/last/ESMF_refdoc.pdf
     #  - section  22.2.3 : ESMF_REGRIDMETHOD
     #
@@ -149,8 +143,7 @@ def _make_esmpy_field(
 
 
 def regrid_conservative_via_esmpy(source_cube, grid_cube):
-    """
-    Perform a conservative regridding with ESMPy.
+    """Perform a conservative regridding with ESMPy.
 
     .. note ::
 

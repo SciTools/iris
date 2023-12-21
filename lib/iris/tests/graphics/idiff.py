@@ -1,11 +1,9 @@
+#!/usr/bin/env python
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-# !/usr/bin/env python
-"""
-Provides "diff-like" comparison of images.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides "diff-like" comparison of images.
 
 Currently relies on matplotlib for image processing so limited to PNG format.
 
@@ -28,6 +26,7 @@ import matplotlib.testing.compare as mcompare  # noqa
 from matplotlib.testing.exceptions import ImageComparisonFailure  # noqa
 import matplotlib.widgets as mwidget  # noqa
 
+from iris.exceptions import IrisIgnoringWarning  # noqa
 import iris.tests  # noqa
 import iris.tests.graphics as graphics  # noqa
 
@@ -36,9 +35,7 @@ _RESULT_NAME_PATTERN = re.compile(graphics.RESULT_PREFIX + r"(.*).png")
 
 
 def extract_test_key(result_image_name):
-    """
-    Extracts the name of the test which a result image refers to
-    """
+    """Extracts the name of the test which a result image refers to."""
     name_match = _RESULT_NAME_PATTERN.match(str(result_image_name))
     if name_match:
         test_key = name_match.group(1)
@@ -73,17 +70,12 @@ def diff_viewer(
     repo = graphics.read_repo_json()
 
     def accept(event):
-        if test_id not in repo:
-            repo[test_id] = phash
-            graphics.write_repo_json(repo)
-            out_file = result_dir / (test_id + ".png")
-            result_path.rename(out_file)
-            msg = f"ACCEPTED:  {result_path.name} -> {out_file.name}"
-            print(msg)
-        else:
-            msg = f"DUPLICATE: {result_path.name} -> {expected_path.name} (ignored)"
-            print(msg)
-            result_path.unlink()
+        repo[test_id] = phash
+        graphics.write_repo_json(repo)
+        out_file = result_dir / (test_id + ".png")
+        result_path.rename(out_file)
+        msg = f"ACCEPTED:  {result_path.name} -> {out_file.name}"
+        print(msg)
         diff_fname.unlink()
         plt.close()
 
@@ -156,7 +148,7 @@ def step_over_diffs(result_dir, display=True):
             distance = graphics.get_phash(reference_image_path) - phash
         except FileNotFoundError:
             wmsg = "Ignoring unregistered test result {!r}."
-            warnings.warn(wmsg.format(test_key))
+            warnings.warn(wmsg.format(test_key), category=IrisIgnoringWarning)
             continue
 
         processed = True
@@ -165,9 +157,7 @@ def step_over_diffs(result_dir, display=True):
             # Creates the diff file when the images aren't identical
             mcompare.compare_images(reference_image_path, result_path, tol=0)
         except Exception as e:
-            if isinstance(e, ValueError) or isinstance(
-                e, ImageComparisonFailure
-            ):
+            if isinstance(e, ValueError) or isinstance(e, ImageComparisonFailure):
                 print(f"Could not compare {result_path}: {e}")
                 continue
             else:
@@ -176,7 +166,9 @@ def step_over_diffs(result_dir, display=True):
         diff_path = result_dir / Path(f"{result_path.stem}{_POSTFIX_DIFF}")
         args = phash, reference_image_path, result_path, diff_path
         if display:
-            status = f"Image {count_index + 1} of {count}: hamming distance = {distance}"
+            status = (
+                f"Image {count_index + 1} of {count}: hamming distance = {distance}"
+            )
             prefix = test_key, status
             yield prefix + args
         else:
@@ -186,9 +178,7 @@ def step_over_diffs(result_dir, display=True):
 
 
 if __name__ == "__main__":
-    default = Path(iris.tests.__file__).parent / Path(
-        "result_image_comparison"
-    )
+    default = Path(iris.tests.__file__).parent / Path("result_image_comparison")
     description = "Iris graphic test difference tool."
     formatter_class = argparse.RawTextHelpFormatter
     parser = argparse.ArgumentParser(

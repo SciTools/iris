@@ -233,7 +233,7 @@ both Iris cubes and coordinates, and for computing deferred operations on lazy a
 
 Dask provides processing options to control how deferred operations on lazy arrays
 are computed. This is provided via the ``dask.set_options`` interface. See the
-`dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
+`dask documentation <https://dask.pydata.org/en/latest/scheduler-overview.html>`_
 for more information on setting dask processing options.
 
 
@@ -247,20 +247,21 @@ output file, to be performed by  `Dask <https://docs.dask.org/en/stable/>`_  lat
 thus enabling parallel save operations.
 
 This works in the following way :
-    1. an :func:`iris.save` call is made, with a NetCDF file output and the additional
-       keyword ``compute=False``.
-       This is currently *only* available when saving to NetCDF, so it is documented in
-       the Iris NetCDF file format API.  See: :func:`iris.fileformats.netcdf.save`.
 
-    2. the call creates the output file, but does not fill in variables' data, where
-       the data is a lazy array in the Iris object.  Instead, these variables are
-       initially created "empty".
+1. an :func:`iris.save` call is made, with a NetCDF file output and the additional
+   keyword ``compute=False``.
+   This is currently *only* available when saving to NetCDF, so it is documented in
+   the Iris NetCDF file format API.  See: :func:`iris.fileformats.netcdf.save`.
 
-    3. the :meth:`~iris.save` call returns a ``result`` which is a
-       :class:`~dask.delayed.Delayed` object.
+2. the call creates the output file, but does not fill in variables' data, where
+   the data is a lazy array in the Iris object.  Instead, these variables are
+   initially created "empty".
 
-    4. the save can be completed later by calling ``result.compute()``, or by passing it
-       to the :func:`dask.compute` call.
+3. the :meth:`~iris.save` call returns a ``result`` which is a
+   :class:`~dask.delayed.Delayed` object.
+
+4. the save can be completed later by calling ``result.compute()``, or by passing it
+   to the :func:`dask.compute` call.
 
 The benefit of this, is that costly data transfer operations can be performed in
 parallel with writes to other data files.  Also, where array contents are calculated

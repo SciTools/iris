@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.experimental.ugrid.mesh.Connectivity` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -14,7 +13,7 @@ from xml.dom import minidom
 
 import numpy as np
 from numpy import ma
-from pkg_resources import parse_version
+from packaging import version
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.experimental.ugrid.mesh import Connectivity
@@ -47,23 +46,17 @@ class TestStandard(tests.IrisTest):
         self.assertEqual(expected, self.connectivity.connected)
 
     def test_start_index(self):
-        self.assertEqual(
-            self.kwargs["start_index"], self.connectivity.start_index
-        )
+        self.assertEqual(self.kwargs["start_index"], self.connectivity.start_index)
 
     def test_location_axis(self):
-        self.assertEqual(
-            self.kwargs["location_axis"], self.connectivity.location_axis
-        )
+        self.assertEqual(self.kwargs["location_axis"], self.connectivity.location_axis)
 
     def test_indices(self):
-        self.assertArrayEqual(
-            self.kwargs["indices"], self.connectivity.indices
-        )
+        self.assertArrayEqual(self.kwargs["indices"], self.connectivity.indices)
 
     def test_read_only(self):
         attributes = ("indices", "cf_role", "start_index", "location_axis")
-        if parse_version(python_version()) >= parse_version("3.11"):
+        if version.parse(python_version()) >= version.parse("3.11"):
             msg = "object has no setter"
         else:
             msg = "can't set attribute"
@@ -88,17 +81,13 @@ class TestStandard(tests.IrisTest):
         self.assertTrue(is_lazy_data(self.connectivity.lazy_indices()))
 
     def test_core_indices(self):
-        self.assertArrayEqual(
-            self.kwargs["indices"], self.connectivity.core_indices()
-        )
+        self.assertArrayEqual(self.kwargs["indices"], self.connectivity.core_indices())
 
     def test_has_lazy_indices(self):
         self.assertFalse(self.connectivity.has_lazy_indices())
 
     def test_lazy_location_lengths(self):
-        self.assertTrue(
-            is_lazy_data(self.connectivity.lazy_location_lengths())
-        )
+        self.assertTrue(is_lazy_data(self.connectivity.lazy_location_lengths()))
 
     def test_location_lengths(self):
         expected = [4, 4, 4]
@@ -127,7 +116,9 @@ class TestStandard(tests.IrisTest):
         self.assertEqual(expected, self.connectivity.__str__())
 
     def test___repr__(self):
-        expected = "<Connectivity: my_face_nodes / (unknown)  [[1, 2, 3], ...]  shape(4, 3)>"
+        expected = (
+            "<Connectivity: my_face_nodes / (unknown)  [[1, 2, 3], ...]  shape(4, 3)>"
+        )
         self.assertEqual(expected, self.connectivity.__repr__())
 
     def test_xml_element(self):
@@ -142,9 +133,7 @@ class TestStandard(tests.IrisTest):
         equivalent_kwargs["indices"] = self.kwargs["indices"].transpose()
         equivalent_kwargs["location_axis"] = 1 - self.kwargs["location_axis"]
         equivalent = Connectivity(**equivalent_kwargs)
-        self.assertFalse(
-            np.array_equal(equivalent.indices, self.connectivity.indices)
-        )
+        self.assertFalse(np.array_equal(equivalent.indices, self.connectivity.indices))
         self.assertEqual(equivalent, self.connectivity)
 
     def test_different(self):
@@ -173,9 +162,7 @@ class TestStandard(tests.IrisTest):
 
     def test_indices_by_location(self):
         expected = self.kwargs["indices"].transpose()
-        self.assertArrayEqual(
-            expected, self.connectivity.indices_by_location()
-        )
+        self.assertArrayEqual(expected, self.connectivity.indices_by_location())
 
     def test_indices_by_location_input(self):
         expected = as_lazy_data(self.kwargs["indices"].transpose())
@@ -193,9 +180,7 @@ class TestAltIndices(tests.IrisTest):
         self.lazy_indices = as_lazy_data(data)
 
     def common(self, indices):
-        connectivity = Connectivity(
-            indices=indices, cf_role="face_node_connectivity"
-        )
+        connectivity = Connectivity(indices=indices, cf_role="face_node_connectivity")
         self.assertArrayEqual(indices, connectivity.indices)
 
     def test_int32(self):
@@ -248,9 +233,7 @@ class TestValidations(tests.IrisTest):
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "error",
         }
-        self.assertRaisesRegex(
-            ValueError, "Invalid cf_role .", Connectivity, **kwargs
-        )
+        self.assertRaisesRegex(ValueError, "Invalid cf_role .", Connectivity, **kwargs)
 
     def test_indices_int(self):
         kwargs = {
@@ -269,9 +252,7 @@ class TestValidations(tests.IrisTest):
             "indices": np.linspace(-9, -1, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "face_node_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError, " < start_index", Connectivity, **kwargs
-        )
+        self.assertRaisesRegex(ValueError, " < start_index", Connectivity, **kwargs)
 
     def test_indices_dims_low(self):
         kwargs = {

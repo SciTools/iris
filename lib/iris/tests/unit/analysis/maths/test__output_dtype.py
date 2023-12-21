@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the function :func:`iris.analysis.maths._output_dtype`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the function :func:`iris.analysis.maths._output_dtype`.
 
 """
 
@@ -104,9 +102,7 @@ class Test(tests.IrisTest):
                 self.assertEqual(
                     dtype,
                     result_dtype,
-                    self._binary_error_message(
-                        op, dtype, dtype, dtype, result_dtype
-                    ),
+                    self._binary_error_message(op, dtype, dtype, dtype, result_dtype),
                 )
             for op in self.unary_same_result_ops:
                 result_dtype = _output_dtype(op, dtype)
@@ -156,9 +152,7 @@ class Test(tests.IrisTest):
                 self.assertEqual(
                     expected_dtype,
                     result_dtype,
-                    self._unary_error_message(
-                        op, dtype, expected_dtype, result_dtype
-                    ),
+                    self._unary_error_message(op, dtype, expected_dtype, result_dtype),
                 )
 
     def test_binary_float_argument(self):

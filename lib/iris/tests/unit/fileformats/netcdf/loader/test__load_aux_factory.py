@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.netcdf._load_aux_factory` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -16,6 +15,7 @@ import numpy as np
 
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.exceptions import IrisFactoryCoordNotFoundWarning
 from iris.fileformats.netcdf.loader import _load_aux_factory
 
 
@@ -27,9 +27,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.ps = mock.MagicMock(units="units")
         coordinates = [(mock.sentinel.b, "b"), (self.ps, "ps")]
         self.cube_parts = dict(coordinates=coordinates)
-        self.engine = mock.Mock(
-            requires=self.requires, cube_parts=self.cube_parts
-        )
+        self.engine = mock.Mock(requires=self.requires, cube_parts=self.cube_parts)
         self.cube = mock.create_autospec(Cube, spec_set=True, instance=True)
         # Patch out the check_dependencies functionality.
         func = "iris.aux_factory.HybridPressureFactory._check_dependencies"
@@ -61,9 +59,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
             long_name="vertical pressure",
             var_name="ap",
         )
-        self.cube_parts["coordinates"].extend(
-            [(coord_a, "a"), (coord_p0, "p0")]
-        )
+        self.cube_parts["coordinates"].extend([(coord_a, "a"), (coord_p0, "p0")])
         self.requires["formula_terms"] = dict(a="a", b="b", ps="ps", p0="p0")
         _load_aux_factory(self.engine, self.cube)
         # Check cube.coord_dims method.
@@ -97,9 +93,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
             long_name="vertical pressure",
             var_name="ap",
         )
-        self.cube_parts["coordinates"].extend(
-            [(coord_a, "a"), (coord_p0, "p0")]
-        )
+        self.cube_parts["coordinates"].extend([(coord_a, "a"), (coord_p0, "p0")])
         self.requires["formula_terms"] = dict(a="a", b="b", ps="ps", p0="p0")
         _load_aux_factory(self.engine, self.cube)
         # Check cube.coord_dims method.
@@ -133,9 +127,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
     def test_formula_terms_p0_bounded(self):
         coord_a = DimCoord(np.arange(5))
         coord_p0 = DimCoord(1, bounds=[0, 2], var_name="p0")
-        self.cube_parts["coordinates"].extend(
-            [(coord_a, "a"), (coord_p0, "p0")]
-        )
+        self.cube_parts["coordinates"].extend([(coord_a, "a"), (coord_p0, "p0")])
         self.requires["formula_terms"] = dict(a="a", b="b", ps="ps", p0="p0")
         with warnings.catch_warnings(record=True) as warn:
             warnings.simplefilter("always")
@@ -165,7 +157,8 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         with mock.patch("warnings.warn") as warn:
             _load_aux_factory(self.engine, self.cube)
         warn.assert_called_once_with(
-            "Unable to find coordinate for variable " "'ap'"
+            "Unable to find coordinate for variable 'ap'",
+            category=IrisFactoryCoordNotFoundWarning,
         )
         self._check_no_delta()
 

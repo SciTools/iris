@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Load, configure and register color map palettes and initialise
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Load, configure and register color map palettes and initialise
 color map meta-data mappings.
 
 """
@@ -37,8 +35,7 @@ _MISSING_KWARG_NORM = "missing kwarg norm"
 
 
 def is_brewer(cmap):
-    """
-    Determine whether the color map is a Cynthia Brewer color map.
+    """Determine whether the color map is a Cynthia Brewer color map.
 
     Args:
 
@@ -56,8 +53,7 @@ def is_brewer(cmap):
 
 
 def _default_cmap_norm(args, kwargs):
-    """
-    This function injects default cmap and norm behaviour into the keyword
+    """This function injects default cmap and norm behaviour into the keyword
     arguments, based on the cube referenced within the positional arguments.
     """
     cube = None
@@ -107,8 +103,7 @@ def _default_cmap_norm(args, kwargs):
 
 
 def cmap_norm(cube):
-    """
-    Determine the default :class:`matplotlib.colors.LinearSegmentedColormap`
+    """Determine the default :class:`matplotlib.colors.LinearSegmentedColormap`
     and :class:`iris.palette.SymmetricNormalize` instances associated with
     the cube.
 
@@ -122,7 +117,7 @@ def cmap_norm(cube):
         :class:`iris.palette.SymmetricNormalize`
 
     Notes
-    ------
+    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -132,8 +127,7 @@ def cmap_norm(cube):
 
 
 def auto_palette(func):
-    """
-    Decorator wrapper function to control the default behaviour of the
+    """Decorator wrapper function to control the default behaviour of the
     matplotlib cmap and norm keyword arguments.
 
     Args:
@@ -148,8 +142,7 @@ def auto_palette(func):
 
     @wraps(func)
     def wrapper_func(*args, **kwargs):
-        """
-        Closure wrapper function to provide default keyword argument
+        """Closure wrapper function to provide default keyword argument
         behaviour.
 
         """
@@ -163,9 +156,7 @@ def auto_palette(func):
 
 
 class SymmetricNormalize(mpl_colors.Normalize):
-    """
-    Provides a symmetric normalization class around a given pivot point.
-    """
+    """Provides a symmetric normalization class around a given pivot point."""
 
     def __init__(self, pivot, *args, **kwargs):
         self.pivot = pivot
@@ -220,8 +211,7 @@ class SymmetricNormalize(mpl_colors.Normalize):
 
 
 def _load_palette():
-    """
-    Load, configure and register color map palettes and initialise
+    """Load, configure and register color map palettes and initialise
     color map metadata mappings.
 
     """
@@ -301,12 +291,12 @@ def _load_palette():
 
         # Integrity check for meta-data 'type' field.
         assert cmap_type is not None, (
-            'Missing meta-data "type" keyword for color map file, "%s"'
-            % filename
+            'Missing meta-data "type" keyword for color map file, "%s"' % filename
         )
-        assert (
-            cmap_type == "rgb"
-        ), 'Invalid type [%s] for color map file "%s"' % (cmap_type, filename)
+        assert cmap_type == "rgb", 'Invalid type [%s] for color map file "%s"' % (
+            cmap_type,
+            filename,
+        )
 
         # Update the color map look-up dictionaries.
         CMAP_BREWER.add(cmap_name)
@@ -331,9 +321,7 @@ def _load_palette():
         if interpolate_flag:
             # Perform default color map interpolation for quantization
             # levels per primary color.
-            cmap = mpl_colors.LinearSegmentedColormap.from_list(
-                cmap_name, cmap_data
-            )
+            cmap = mpl_colors.LinearSegmentedColormap.from_list(cmap_name, cmap_data)
         else:
             # Restrict quantization levels per primary color (turn-off
             # interpolation).

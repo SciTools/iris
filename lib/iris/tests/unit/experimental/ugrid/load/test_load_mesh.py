@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :func:`iris.experimental.ugrid.load.load_mesh` function.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :func:`iris.experimental.ugrid.load.load_mesh` function.
 
 """
 # Import iris.tests first so that some things can be initialised before
@@ -18,9 +16,7 @@ class Tests(tests.IrisTest):
     # All 'real' tests have been done for load_meshes(). Here we just check
     #  that load_mesh() works with load_meshes() correctly, using mocking.
     def setUp(self):
-        self.load_meshes_mock = self.patch(
-            "iris.experimental.ugrid.load.load_meshes"
-        )
+        self.load_meshes_mock = self.patch("iris.experimental.ugrid.load.load_meshes")
         # The expected return from load_meshes - a dict of files, each with
         #  a list of meshes.
         self.load_meshes_mock.return_value = {"file": ["mesh"]}

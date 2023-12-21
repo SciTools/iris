@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the `iris.fileformats.nimrod_load_rules.vertical_coord`
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the `iris.fileformats.nimrod_load_rules.vertical_coord`
 function.
 
 """
@@ -52,18 +50,14 @@ class Test(tests.IrisTest):
         if reference_vertical_coord:
             self.field.reference_vertical_coord = reference_vertical_coord
         if reference_vertical_coord_type:
-            self.field.reference_vertical_coord_type = (
-                reference_vertical_coord_type
-            )
+            self.field.reference_vertical_coord_type = reference_vertical_coord_type
         vertical_coord(self.cube, self.field)
 
     def test_unhandled(self):
         with mock.patch("warnings.warn") as warn:
-            self._call_vertical_coord(
-                vertical_coord_val=1.0, vertical_coord_type=-1
-            )
+            self._call_vertical_coord(vertical_coord_val=1.0, vertical_coord_type=-1)
         warn.assert_called_once_with(
-            "Vertical coord -1 not yet handled", TranslationWarning
+            "Vertical coord -1 not yet handled", category=TranslationWarning
         )
 
     def test_null(self):
@@ -74,9 +68,7 @@ class Test(tests.IrisTest):
 
     def test_ground_level(self):
         with mock.patch("warnings.warn") as warn:
-            self._call_vertical_coord(
-                vertical_coord_val=9999.0, vertical_coord_type=0
-            )
+            self._call_vertical_coord(vertical_coord_val=9999.0, vertical_coord_type=0)
         self.assertEqual(warn.call_count, 0)
 
 

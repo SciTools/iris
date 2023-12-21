@@ -38,7 +38,7 @@ The Detail
      (e.g. Inkscape). They were originally made in MS PowerPoint.
 
     Uses the IBM Colour Blind Palette (see
-     http://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
+     https://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
      )
 
 Structured Grids (the old world)
@@ -46,7 +46,7 @@ Structured Grids (the old world)
 Assigning data to locations using a structured grid is essentially an act of
 matching coordinate arrays to each dimension of the data array. The data can
 also be represented as an area (instead of a point) by including a bounds array
-for each coordinate array. :numref:`data_structured_grid` visualises an
+for each coordinate array. :ref:`data_structured_grid` visualises an
 example.
 
 ..  _data_structured_grid:
@@ -125,7 +125,7 @@ datum per element, matched to its element by matching the datum index with the
 coordinate or connectivity index along the **unstructured dimension**. So for
 an example data array called ``foo``:
 ``foo[3]`` would be at position ``(x[3], y[3])`` if it were node-located, or at
-``faces[3]`` if it were face-located. :numref:`data_ugrid_mesh` visualises an
+``faces[3]`` if it were face-located. :ref:`data_ugrid_mesh` visualises an
 example of what is described above.
 
 ..  _data_ugrid_mesh:
@@ -152,7 +152,7 @@ example of what is described above.
 The mesh model also supports edges/faces/volumes having associated 'centre'
 coordinates - to allow point data to be assigned to these elements. 'Centre' is
 just a convenience term - the points can exist anywhere within their respective
-elements. See :numref:`ugrid_element_centres` for a visualised example.
+elements. See :ref:`ugrid_element_centres` for a visualised example.
 
 ..  _ugrid_element_centres:
 ..  figure:: images/ugrid_element_centres.svg
@@ -175,7 +175,7 @@ Above we have seen how one could replicate data on a structured grid using
 a mesh instead. But the utility of a mesh is the extra flexibility it offers.
 Here are the main examples:
 
-Every node is completely independent - every one can have unique X andY (and Z) coordinate values. See :numref:`ugrid_node_independence`.
+Every node is completely independent - every one can have unique X andY (and Z) coordinate values. See :ref:`ugrid_node_independence`.
 
 ..  _ugrid_node_independence:
 ..  figure:: images/ugrid_node_independence.svg
@@ -194,7 +194,7 @@ Every node is completely independent - every one can have unique X andY (and Z) 
 
 Faces and volumes can have variable node counts, i.e. different numbers of
 sides. This is achieved by masking the unused 'slots' in the connectivity
-array. See :numref:`ugrid_variable_faces`.
+array. See :ref:`ugrid_variable_faces`.
 
 ..  _ugrid_variable_faces:
 ..  figure:: images/ugrid_variable_faces.svg
@@ -211,7 +211,7 @@ array. See :numref:`ugrid_variable_faces`.
     (black circles) for faces with fewer nodes than the maximum.
 
 Data can be assigned to lines (edges) just as easily as points (nodes) or
-areas (faces). See :numref:`ugrid_edge_data`.
+areas (faces). See :ref:`ugrid_edge_data`.
 
 ..  _ugrid_edge_data:
 ..  figure:: images/ugrid_edge_data.svg
@@ -484,20 +484,20 @@ How UGRID information is stored
   | Described in detail in `MeshCoords`_.
   | Stores the following information:
 
-    * | :attr:`~iris.experimental.ugrid.MeshCoord.mesh`
-      | The :class:`~iris.experimental.ugrid.Mesh` associated with this
-        :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
-        :attr:`~iris.cube.Cube.mesh` attribute of any :class:`~iris.cube.Cube`
-        this :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
-        `The Basics`_)
+  * | :attr:`~iris.experimental.ugrid.MeshCoord.mesh`
+    | The :class:`~iris.experimental.ugrid.Mesh` associated with this
+      :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
+      :attr:`~iris.cube.Cube.mesh` attribute of any :class:`~iris.cube.Cube`
+      this :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+      `The Basics`_)
 
-    * | :attr:`~iris.experimental.ugrid.MeshCoord.location`
-      | ``node``/``edge``/``face`` - the element detailed by this
-        :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
-        :attr:`~iris.cube.Cube.location` attribute of any
-        :class:`~iris.cube.Cube` this
-        :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
-        `The Basics`_).
+  * | :attr:`~iris.experimental.ugrid.MeshCoord.location`
+    | ``node``/``edge``/``face`` - the element detailed by this
+      :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
+      :attr:`~iris.cube.Cube.location` attribute of any
+      :class:`~iris.cube.Cube` this
+      :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+      `The Basics`_).
 
 .. _ugrid MeshCoords:
 

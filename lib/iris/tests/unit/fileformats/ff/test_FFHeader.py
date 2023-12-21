@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformat.ff.FFHeader`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -14,16 +13,14 @@ from unittest import mock
 
 import numpy as np
 
-from iris.fileformats._ff import FFHeader
+from iris.fileformats._ff import FFHeader, _WarnComboLoadingDefaulting
 
 MyGrid = collections.namedtuple("MyGrid", "column row real horiz_grid_type")
 
 
 class Test_grid(tests.IrisTest):
     def _header(self, grid_staggering):
-        with mock.patch.object(
-            FFHeader, "__init__", mock.Mock(return_value=None)
-        ):
+        with mock.patch.object(FFHeader, "__init__", mock.Mock(return_value=None)):
             header = FFHeader()
         header.grid_staggering = grid_staggering
         header.column_dependent_constants = mock.sentinel.column
@@ -34,9 +31,7 @@ class Test_grid(tests.IrisTest):
 
     def _test_grid_staggering(self, grid_staggering):
         header = self._header(grid_staggering)
-        with mock.patch.dict(
-            FFHeader.GRID_STAGGERING_CLASS, {grid_staggering: MyGrid}
-        ):
+        with mock.patch.dict(FFHeader.GRID_STAGGERING_CLASS, {grid_staggering: MyGrid}):
             grid = header.grid()
         self.assertIsInstance(grid, MyGrid)
         self.assertIs(grid.column, mock.sentinel.column)
@@ -60,7 +55,8 @@ class Test_grid(tests.IrisTest):
                 grid = header.grid()
         warn.assert_called_with(
             "Staggered grid type: 0 not currently"
-            " interpreted, assuming standard C-grid"
+            " interpreted, assuming standard C-grid",
+            category=_WarnComboLoadingDefaulting,
         )
         self.assertIs(grid, mock.sentinel.grid)
 

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving netcdf files."""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -25,7 +24,7 @@ import iris.coord_systems
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
 import iris.exceptions
-from iris.fileformats.netcdf import Saver, UnknownCellMethodWarning
+from iris.fileformats.netcdf import Saver
 
 # Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
@@ -43,9 +42,7 @@ class TestLazySave(tests.IrisTest):
             ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
         )
         # While loading, "turn off" loading small variables as real data.
-        with mock.patch(
-            "iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0
-        ):
+        with mock.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0):
             acube = iris.load_cube(fpath, "air_temperature")
         self.assertTrue(acube.has_lazy_data())
         # Also check a coord with lazy points + bounds.
@@ -141,7 +138,7 @@ class TestCellMethod_unknown(tests.IrisTest):
             warning_messages = [
                 warn
                 for warn in warning_messages
-                if isinstance(warn, UnknownCellMethodWarning)
+                if isinstance(warn, iris.exceptions.IrisUnknownCellMethodWarning)
             ]
             self.assertEqual(len(warning_messages), 1)
             message = warning_messages[0].args[0]
@@ -206,9 +203,7 @@ class TestPackedData(tests.IrisTest):
             decimal = int(-np.log10(scale_factor))
             packedcube = iris.load_cube(file_out)
             # Check that packed cube is accurate to expected precision
-            self.assertArrayAlmostEqual(
-                cube.data, packedcube.data, decimal=decimal
-            )
+            self.assertArrayAlmostEqual(cube.data, packedcube.data, decimal=decimal)
             # Check the netCDF file against CDL expected output.
             self.assertCDL(
                 file_out,
@@ -230,8 +225,10 @@ class TestPackedData(tests.IrisTest):
         self._single_test("u1", "single_packed_unsigned.cdl")
 
     def test_single_packed_manual_scale(self):
-        """Test saving a single CF-netCDF file with packing with scale
-        factor and add_offset set manually."""
+        """Test saving a single CF-netCDF file.
+
+        File with packing with scale factor and add_offset set manually.
+        """
         self._single_test("i2", "single_packed_manual.cdl", manual=True)
 
     def _multi_test(self, CDLfilename, multi_dtype=False):
@@ -360,9 +357,7 @@ data:
     def test_lat_not_loaded(self):
         # iris#5068 includes discussion of possible retention of the skipped
         #  coords in the future.
-        with pytest.warns(
-            match="Missing data dimensions for multi-valued DimCoord"
-        ):
+        with pytest.warns(match="Missing data dimensions for multi-valued DimCoord"):
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
@@ -433,9 +428,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         nc_dataset = nc.Dataset(filepath_indirect, "w")
         # NOTE: we **must** use delayed saving here, as we cannot do direct saving to
         # a user-owned dataset.
-        result = iris.save(
-            self.testdata, nc_dataset, saver="nc", compute=False
-        )
+        result = iris.save(self.testdata, nc_dataset, saver="nc", compute=False)
 
         # Do some very basic sanity checks on the resulting Dataset.
         # It should still be open (!)

@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Mesh data loading benchmark tests.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Mesh data loading benchmark tests.
 
 Where possible benchmarks should be parameterised for two sizes of input data:
   * minimal: enables detection of regressions in parts of the run-time that do
@@ -77,7 +75,7 @@ class DataRealisation:
     warmup_time = 0.0
     timeout = 300.0
 
-    params = [1, int(2e5)]
+    params = [int(1e4), int(2e5)]
     param_names = ["number of faces"]
 
     def setup_common(self, **kwargs):
@@ -98,9 +96,7 @@ class DataRealisationTime(DataRealisation):
     param_names = ["number of time steps"]
 
     def setup(self, *args):
-        self.setup_common(
-            dataset_name="Realisation", n_faces=1, n_times=args[0]
-        )
+        self.setup_common(dataset_name="Realisation", n_faces=1, n_times=args[0])
 
 
 class Callback:

@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the class
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the class
 :class:`iris.fileformats.um._fast_load_structured_fields.BasicFieldCollation`.
 
 """
@@ -18,9 +16,7 @@ import numpy as np
 
 from iris._lazy_data import as_lazy_data
 import iris.fileformats.pp
-from iris.fileformats.um._fast_load_structured_fields import (
-    BasicFieldCollation,
-)
+from iris.fileformats.um._fast_load_structured_fields import BasicFieldCollation
 
 
 class Test___init__(tests.IrisTest):
@@ -36,9 +32,7 @@ class Test_fields(tests.IrisTest):
         self.assertEqual(collation.fields, fields)
 
 
-def _make_field(
-    lbyr=None, lbyrd=None, lbft=None, blev=None, bhlev=None, data=None
-):
+def _make_field(lbyr=None, lbyrd=None, lbft=None, blev=None, bhlev=None, data=None):
     header = [0] * 64
     if lbyr is not None:
         header[0] = lbyr
@@ -112,9 +106,7 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         result = collation.element_arrays_and_dims
         self.assertEqual(list(result.keys()), ["t1"])
         values, dims = result["t1"]
-        self.assertArrayEqual(
-            values, [datetime(2013, 1, 1), datetime(2014, 1, 1)]
-        )
+        self.assertArrayEqual(values, [datetime(2013, 1, 1), datetime(2014, 1, 1)])
         self.assertEqual(dims, (0,))
 
     def test_t1_and_t2(self):
@@ -168,13 +160,9 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         self.assertEqual(dims, (1,))
 
     def test_blev(self):
-        collation = BasicFieldCollation(
-            [_make_field(blev=1), _make_field(blev=2)]
-        )
+        collation = BasicFieldCollation([_make_field(blev=1), _make_field(blev=2)])
         result = collation.element_arrays_and_dims
-        keys = set(
-            ["blev", "brsvd1", "brsvd2", "brlev", "bhrlev", "lblev", "bhlev"]
-        )
+        keys = set(["blev", "brsvd1", "brsvd2", "brlev", "bhrlev", "lblev", "bhlev"])
         self.assertEqual(set(result.keys()), keys)
         values, dims = result["blev"]
         self.assertArrayEqual(values, [1, 2])
@@ -185,9 +173,7 @@ class Test_element_arrays_and_dims(tests.IrisTest):
             [_make_field(blev=0, bhlev=1), _make_field(blev=1, bhlev=2)]
         )
         result = collation.element_arrays_and_dims
-        keys = set(
-            ["blev", "brsvd1", "brsvd2", "brlev", "bhrlev", "lblev", "bhlev"]
-        )
+        keys = set(["blev", "brsvd1", "brsvd2", "brlev", "bhrlev", "lblev", "bhlev"])
         self.assertEqual(set(result.keys()), keys)
         values, dims = result["bhlev"]
         self.assertArrayEqual(values, [1, 2])

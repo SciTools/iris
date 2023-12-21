@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.analysis.stats.pearsonr` function."""
 
 # Import iris tests first so that some things can be initialised before
@@ -44,9 +43,7 @@ class Test(tests.IrisTest):
 
     def test_incompatible_cubes(self):
         with self.assertRaises(ValueError):
-            stats.pearsonr(
-                self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude"
-            )
+            stats.pearsonr(self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude")
 
     def test_compatible_cubes(self):
         r = stats.pearsonr(self.cube_a, self.cube_b, ["latitude", "longitude"])

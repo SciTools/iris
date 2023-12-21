@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-A package for converting cubes to and from specific file formats.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""A package for converting cubes to and from specific file formats.
 
 """
 
@@ -66,8 +64,7 @@ def _load_grib(*args, **kwargs):
         from iris_grib import load_cubes
     except ImportError:
         raise RuntimeError(
-            "Unable to load GRIB file - "
-            '"iris_grib" package is not installed.'
+            "Unable to load GRIB file - " '"iris_grib" package is not installed.'
         )
 
     return load_cubes(*args, **kwargs)
@@ -143,8 +140,7 @@ FORMAT_AGENT.add_spec(
         "NetCDF dataset",
         DataSourceObjectProtocol(),
         lambda object: all(
-            hasattr(object, x)
-            for x in ("variables", "dimensions", "groups", "ncattrs")
+            hasattr(object, x) for x in ("variables", "dimensions", "groups", "ncattrs")
         ),
         # Note: this uses the same call as the above "NetCDF_v4" (and "NetCDF OPeNDAP")
         # The handler itself needs to detect what is passed + handle it appropriately.
@@ -196,7 +192,7 @@ FORMAT_AGENT.add_spec(
 
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "UM Fieldsfile (FF) converted " "with ieee to 32 bit",
+        "UM Fieldsfile (FF) converted with ieee to 32 bit",
         MagicNumber(4),
         0x00000014,
         um.load_cubes_32bit_ieee,
@@ -208,7 +204,7 @@ FORMAT_AGENT.add_spec(
 
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "UM Fieldsfile (FF) ancillary " "converted with ieee to 32 bit",
+        "UM Fieldsfile (FF) ancillary converted with ieee to 32 bit",
         MagicNumber(4),
         0xFFFF8000,
         um.load_cubes_32bit_ieee,
@@ -252,14 +248,10 @@ def load_cubes_abf_abl(*args, **kwargs):
 
 
 FORMAT_AGENT.add_spec(
-    FormatSpecification(
-        "ABF", FileExtension(), ".abf", load_cubes_abf_abl, priority=3
-    )
+    FormatSpecification("ABF", FileExtension(), ".abf", load_cubes_abf_abl, priority=3)
 )
 
 
 FORMAT_AGENT.add_spec(
-    FormatSpecification(
-        "ABL", FileExtension(), ".abl", load_cubes_abf_abl, priority=3
-    )
+    FormatSpecification("ABL", FileExtension(), ".abl", load_cubes_abf_abl, priority=3)
 )
