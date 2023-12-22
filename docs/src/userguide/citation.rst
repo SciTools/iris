@@ -7,7 +7,7 @@ Citing Iris
 If Iris played an important part in your research then please add us to your
 reference list by using the recommendations below.
 
-IRIS can be cited directly from the GitHub repository.
+IRIS can be cited directly from the `GitHub repository. <https://github.com/SciTools/iris>`_
 
 The IRIS citation does not contain the version of the software used. We
 recommend that you use the version number of the release you used, and the
