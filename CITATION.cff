@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If Iris played an important part in your research then please add us to your reference list by using the references below."
+title: "Iris"
+keywords:
+  - "cf-metadata"
+  - "data-analysis"
+  - "earth-science"
+  - "grib"
+  - "netcdf"
+  - "meteorology"
+  - "oceanography"
+  - "space-weather"
+  - "ugrid"
+  - "visualisation"
+authors:
+    - name: "Iris contributors"
+abstract: "A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data"
+license: "BSD-3-Clause"
+license-url: "https://spdx.org/licenses/BSD-3-Clause.html"
+doi: "10.5281/zenodo.595182"
+url: "http://scitools.org.uk/"
+repository-code: "https://github.com/SciTools/iris"
+type: "software"
