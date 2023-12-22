@@ -139,10 +139,6 @@ class TestLazy(Mixin, tests.IrisTest):
                 weights=self.weights,
             )
 
-    def test_non_existent_coord(self):
-        with self.assertRaises(CoordinateNotFoundError):
-            stats.pearsonr(self.cube_a, self.cube_b, "bad_coord")
-
     def test_mdtol(self):
         cube_small = self.cube_a[:, 0, 0]
         cube_small_masked = iris.util.mask_cube(cube_small, [0, 0, 0, 1, 1, 1])
@@ -163,10 +159,13 @@ class TestLazy(Mixin, tests.IrisTest):
         # 2d mask varies on unshared coord:
         mask_2d[0, 1] = 1
 
+        # Make a (6, 2) cube.
         cube_small_2d = self.cube_a[:, 0:2, 0]
-        cube_small_2d.data = iris.util._mask_array(
-            cube_small.core_data().reshape(6, 1), mask_2d
+        # Duplicate data along unshared coord's dimension.
+        new_data = iris.util.broadcast_to_shape(
+            cube_small.core_data(), (6, 2), dim_map=[0]
         )
+        cube_small_2d.data = iris.util._mask_array(new_data, mask_2d)
 
         r = stats.pearsonr(
             cube_small,
@@ -201,6 +200,10 @@ class TestCoordHandling(Mixin, tests.IrisTest):
     def test_single_coord(self):
         # Smoke test that single coord can be passed as single string.
         stats.pearsonr(self.cube_a, self.cube_b, "latitude")
+
+    def test_non_existent_coord(self):
+        with self.assertRaises(CoordinateNotFoundError):
+            stats.pearsonr(self.cube_a, self.cube_b, "bad_coord")
 
 
 if __name__ == "__main__":
