@@ -5,53 +5,15 @@ Citing Iris
 ===========
 
 If Iris played an important part in your research then please add us to your
-reference list by using one of the recommendations below.
+reference list by using the recommendations below.
 
-************
-BibTeX Entry
-************
+IRIS can be cited directly from the GitHub repository.
 
-For example::
+The IRIS citation does not contain the version of the software used. We
+recommend that you use the version number of the release you used, and the
+commit hash of the version you used. This will allow others to reproduce the
+environment that you worked in.
 
- @manual{Iris,
- author = {{Met Office}},
- title = {Iris: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data},
- edition = {v3.7},
- year = {2010 - 2023},
- address = {Exeter, Devon},
- url = {https://github.com/SciTools/iris},
- doi = {10.5281/zenodo.8305232}
- }
-
-
-*******************
-Downloaded Software
-*******************
-
-Suggested format::
-
- ProductName. Version. ReleaseDate. Publisher. Location. DOIorURL. DownloadDate.
-
-For example::
-
- Iris. v3.7. 31-Aug-2023. Met Office. UK. https://doi.org/10.5281/zenodo.8305232 22-12-2022
-
-
-********************
-Checked Out Software
-********************
-
-Suggested format::
-
- ProductName. Publisher. URL. CheckoutDate. RepositorySpecificCheckoutInformation.
-
-For example::
-
- Iris. Met Office. https://github.com/SciTools/iris.git 31-08-2023
-
-.. _How to cite and describe software: https://software.ac.uk/how-cite-software
-
-
-Reference: [Jackson]_.
-
-.. [Jackson] Jackson, M. 2012. `How to cite and describe software`_. Accessed 06-03-2013.
+You can find what a citation should look like for a particular version of IRIS,
+and where to find the citation on GitHub by looking at the `documentation GitHub
+has for citing repositories. <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files>`_
