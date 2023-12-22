@@ -185,7 +185,7 @@ class TestReal(TestLazy):
     def setUp(self):
         super().setUp()
         for cube in [self.cube_a, self.cube_b]:
-            cube.data
+            _ = cube.data
 
 
 class TestCoordHandling(Mixin, tests.IrisTest):
