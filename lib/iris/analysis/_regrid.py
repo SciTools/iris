@@ -28,15 +28,16 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
 
     NOTE: copied private function from iris.analysis.cartography.
 
-    Args:
-
-    * crs_from, crs_to (:class:`cartopy.crs.Projection`):
+    Parameters
+    ----------
+    crs_from, crs_to : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
-    * x, y (arrays):
+    x, y : arrays
         point locations defined in 'crs_from'.
 
-    Returns:
-        x, y :  Arrays of locations defined in 'crs_to'.
+    Returns
+    -------
+    x, y :  Arrays of locations defined in 'crs_to'.
 
     """
     pts = crs_to.transform_points(crs_from, x, y)
@@ -377,16 +378,13 @@ class CurvilinearRegridder:
         """Create a regridder for conversions between the source
         and target grids.
 
-        Args:
-
-        * src_grid_cube:
+        Parameters
+        ----------
+        src_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the source grid.
-        * tgt_grid_cube:
+        tgt_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-
-        Optional Args:
-
-        * weights:
+        weights : optional, default=None
             A :class:`numpy.ndarray` instance that defines the weights
             for the grid cells of the source grid. Must have the same shape
             as the data of the source grid.
@@ -412,16 +410,16 @@ class CurvilinearRegridder:
         """Gets the horizontal coordinate on the supplied cube along the
         specified axis.
 
-        Args:
-
-        * cube:
+        Parameters
+        ----------
+        cube : :class:`iris.cube.Cube`
             An instance of :class:`iris.cube.Cube`.
-        * axis:
+        axis :
             Locate coordinates on `cube` along this axis.
 
-        Returns:
-            The horizontal coordinate on the specified axis of the supplied
-            cube.
+        Returns
+        -------
+        The horizontal coordinate on the specified axis of the supplied cube.
 
         """
         coords = cube.coords(axis=axis, dim_coords=False)
@@ -443,12 +441,14 @@ class CurvilinearRegridder:
         If the source cube has lazy data, it will be realized before
         regridding and the returned cube will also have realized data.
 
-        Args:
-
-        * src:
+        Parameters
+        ----------
+        src : :class:`~iris.cube.Cube`
             A :class:`~iris.cube.Cube` to be regridded.
 
-        Returns:
+        Returns
+        -------
+        :class:`~iris.cube.Cube`
             A cube defined with the horizontal dimensions of the target
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid using
@@ -494,28 +494,28 @@ class RectilinearRegridder:
         """Create a regridder for conversions between the source
         and target grids.
 
-        Args:
-
-        * src_grid_cube:
+        Parameters
+        ----------
+        src_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the source grid.
-        * tgt_grid_cube:
+        tgt_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-        * method:
+        method :
             Either 'linear' or 'nearest'.
-        * extrapolation_mode:
+        extrapolation_mode : str
             Must be one of the following strings:
 
-              * 'extrapolate' - The extrapolation points will be
-                calculated by extending the gradient of the closest two
-                points.
-              * 'nan' - The extrapolation points will be be set to NaN.
-              * 'error' - An exception will be raised, notifying an
-                attempt to extrapolate.
-              * 'mask' - The extrapolation points will always be masked, even
-                if the source data is not a MaskedArray.
-              * 'nanmask' - If the source data is a MaskedArray the
-                extrapolation points will be masked. Otherwise they will be
-                set to NaN.
+            * 'extrapolate' - The extrapolation points will be
+              calculated by extending the gradient of the closest two
+              points.
+            * 'nan' - The extrapolation points will be be set to NaN.
+            * 'error' - An exception will be raised, notifying an
+              attempt to extrapolate.
+            * 'mask' - The extrapolation points will always be masked, even
+              if the source data is not a MaskedArray.
+            * 'nanmask' - If the source data is a MaskedArray the
+              extrapolation points will be masked. Otherwise they will be
+              set to NaN.
 
         """
         from iris.cube import Cube
@@ -559,17 +559,19 @@ class RectilinearRegridder:
         The `grid_x_coord` and `grid_y_coord` must share a common coordinate
         system.
 
-        Args:
-
-        * src_coord_system:
+        Parameters
+        ----------
+        src_coord_system : :class:`iris.coord_system.CoordSystem`
             The :class:`iris.coord_system.CoordSystem` for the grid of the
             source Cube.
-        * grid_x_coord:
+        grid_x_coord : :class:`iris.coords.DimCoord`
             The :class:`iris.coords.DimCoord` for the X coordinate.
-        * grid_y_coord:
+        grid_y_coord : :class:`iris.coords.DimCoord`
             The :class:`iris.coords.DimCoord` for the Y coordinate.
 
-        Returns:
+        Returns
+        -------
+        tuple
             A tuple of the X and Y coordinate values as 2-dimensional
             arrays.
 
@@ -602,54 +604,55 @@ class RectilinearRegridder:
         """Regrid the given data from the src grid to the sample grid.
 
         The result will be a MaskedArray if either/both of:
-         - the source array is a MaskedArray,
-         - the extrapolation_mode is 'mask' and the result requires
-           extrapolation.
+
+        * the source array is a MaskedArray,
+        * the extrapolation_mode is 'mask' and the result requires
+          extrapolation.
 
         If the result is a MaskedArray the mask for each element will be set
         if either/both of:
-         - there is a non-zero contribution from masked items in the input data
-         - the element requires extrapolation and the extrapolation_mode
-           dictates a masked value.
+        
+        * there is a non-zero contribution from masked items in the input data
+        * the element requires extrapolation and the extrapolation_mode
+          dictates a masked value.
 
-        Args:
-
-        * src_data:
+        Parameters
+        ----------
+        src_data :
             An N-dimensional NumPy array or MaskedArray.
-        * x_dim:
+        x_dim :
             The X dimension within `src_data`.
-        * y_dim:
+        y_dim :
             The Y dimension within `src_data`.
-        * src_x_coord:
+        src_x_coord : :class:`iris.coords.DimCoord`
             The X :class:`iris.coords.DimCoord`.
-        * src_y_coord:
+        src_y_coord : :class:`iris.coords.DimCoord`
             The Y :class:`iris.coords.DimCoord`.
-        * sample_grid_x:
+        sample_grid_x :
             A 2-dimensional array of sample X values.
-        * sample_grid_y:
+        sample_grid_y :
             A 2-dimensional array of sample Y values.
-
-        Kwargs:
-
-        * method:
+        method: str, optional
             Either 'linear' or 'nearest'. The default method is 'linear'.
-        * extrapolation_mode:
+        extrapolation_mode : str, optional
             Must be one of the following strings:
 
-              * 'linear' - The extrapolation points will be calculated by
-                extending the gradient of the closest two points.
-              * 'nan' - The extrapolation points will be be set to NaN.
-              * 'error' - A ValueError exception will be raised, notifying an
-                attempt to extrapolate.
-              * 'mask' - The extrapolation points will always be masked, even
-                if the source data is not a MaskedArray.
-              * 'nanmask' - If the source data is a MaskedArray the
-                extrapolation points will be masked. Otherwise they will be
-                set to NaN.
+            * 'linear' - The extrapolation points will be calculated by
+              extending the gradient of the closest two points.
+            * 'nan' - The extrapolation points will be be set to NaN.
+            * 'error' - A ValueError exception will be raised, notifying an
+              attempt to extrapolate.
+            * 'mask' - The extrapolation points will always be masked, even
+              if the source data is not a MaskedArray.
+            * 'nanmask' - If the source data is a MaskedArray the
+              extrapolation points will be masked. Otherwise they will be
+              set to NaN.
 
             The default mode of extrapolation is 'nanmask'.
 
-        Returns:
+        Returns
+        -------
+        NumPu array
             The regridded data as an N-dimensional NumPy array. The lengths
             of the X and Y dimensions will now match those of the sample
             grid.
@@ -854,17 +857,21 @@ class RectilinearRegridder:
         If the source cube has lazy data, the returned cube will also
         have lazy data.
 
-        Args:
-
-        * src:
+        Parameters
+        ----------
+        src : :class:`~iris.cube.Cube`
             A :class:`~iris.cube.Cube` to be regridded.
 
-        Returns:
+        Returns
+        -------
+        :class:`~iris.cube.Cube`
             A cube defined with the horizontal dimensions of the target
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid using
             either nearest-neighbour or linear interpolation.
 
+        Notes
+        -----
         .. note::
 
             If the source cube has lazy data,
@@ -962,13 +969,15 @@ class RectilinearRegridder:
 
 def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback):
     r"""Return a new cube for the result of regridding.
+    
     Returned cube represents the result of regridding the source cube
     onto the horizontal coordinates (e.g. latitude) of the target cube.
     All the metadata and coordinates of the result cube are copied from
     the source cube, with two exceptions:
-        - Horizontal coordinates are copied from the target cube.
-        - Auxiliary coordinates which span the grid dimensions are
-          ignored.
+
+    * Horizontal coordinates are copied from the target cube.
+    * Auxiliary coordinates which span the grid dimensions are
+      ignored.
 
     Parameters
     ----------

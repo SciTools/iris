@@ -5,7 +5,8 @@
 """Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
-References:
+References
+----------
     [CF]  NetCDF Climate and Forecast (CF) Metadata conventions.
     [NUG] NetCDF User's Guide, https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/
 
@@ -112,22 +113,20 @@ class CFVariable(metaclass=ABCMeta):
     def identify(self, variables, ignore=None, target=None, warn=True):
         """Identify all variables that match the criterion for this CF-netCDF variable class.
 
-        Args:
-
-        * variables:
+        Parameters
+        ----------
+        variables :
             Dictionary of netCDF4.Variable instance by variable name.
-
-        Kwargs:
-
-        * ignore:
+        ignore : optional, default=None
             List of variable names to ignore.
-        * target:
+        target : optional, default=None
             Name of a single variable to check.
-        * warn:
+        warn : optional, default=None
             Issue a warning if a missing variable is referenced.
 
-        Returns:
-            Dictionary of CFVariable instance by variable name.
+        Returns
+        -------
+        Dictionary of CFVariable instance by variable name.
 
         """
         pass
@@ -139,13 +138,14 @@ class CFVariable(metaclass=ABCMeta):
         Note that, by default scalar variables always span the
         dimensionality of the target variable.
 
-        Args:
-
-        * cf_variable:
+        Parameters
+        ----------
+        cf_variable :
             Compare dimensionality with the :class:`CFVariable`.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         result = set(self.dimensions).issubset(cf_variable.dimensions)
@@ -215,15 +215,18 @@ class CFVariable(metaclass=ABCMeta):
     def add_formula_term(self, root, term):
         """Register the participation of this CF-netCDF variable in a CF-netCDF formula term.
 
-        Args:
+        Parameters
+        ----------
+        root : str
+            The name of CF-netCDF variable that defines the CF-netCDF
+            formula_terms attribute.
+        term : str
+            The associated term name of this variable in the formula_terms
+            definition.
 
-        * root (string):
-            The name of CF-netCDF variable that defines the CF-netCDF formula_terms attribute.
-        * term (string):
-            The associated term name of this variable in the formula_terms definition.
-
-        Returns:
-            None.
+        Returns
+        -------
+        None
 
         """
         self.cf_terms_by_root[root] = term
@@ -231,8 +234,9 @@ class CFVariable(metaclass=ABCMeta):
     def has_formula_terms(self):
         """Determine whether this CF-netCDF variable participates in a CF-netcdf formula term.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         return bool(self.cf_terms_by_root)
@@ -375,13 +379,14 @@ class CFBoundaryVariable(CFVariable):
         Note that, by default scalar variables always span the
         dimensionality of the target variable.
 
-        Args:
-
-        * cf_variable:
+        Parameters
+        ----------
+        cf_variable :
             Compare dimensionality with the :class:`CFVariable`.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Scalar variables always span the target variable.
@@ -446,13 +451,14 @@ class CFClimatologyVariable(CFVariable):
         Note that, by default scalar variables always span the
         dimensionality of the target variable.
 
-        Args:
-
-        * cf_variable:
+        Parameters
+        ----------
+        cf_variable : :class:`CFVariable`
             Compare dimensionality with the :class:`CFVariable`.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Scalar variables always span the target variable.
@@ -678,13 +684,15 @@ class CFLabelVariable(CFVariable):
     def cf_label_data(self, cf_data_var):
         """Return the associated CF-netCDF label variable strings.
 
-        Args:
+        Parameters
+        ----------
+        cf_data_var : :class:`iris.fileformats.cf.CFDataVariable`
+            The CF-netCDF data variable which the CF-netCDF label variable
+            describes.
 
-        * cf_data_var (:class:`iris.fileformats.cf.CFDataVariable`):
-            The CF-netCDF data variable which the CF-netCDF label variable describes.
-
-        Returns:
-            String labels.
+        Returns
+        -------
+        str labels
 
         """
 
@@ -744,13 +752,15 @@ class CFLabelVariable(CFVariable):
     def cf_label_dimensions(self, cf_data_var):
         """Return the name of the associated CF-netCDF label variable data dimensions.
 
-        Args:
+        Parameters
+        ----------
+        cf_data_var : :class:`iris.fileformats.cf.CFDataVariable`
+            The CF-netCDF data variable which the CF-netCDF label variable
+            describes.
 
-        * cf_data_var (:class:`iris.fileformats.cf.CFDataVariable`):
-            The CF-netCDF data variable which the CF-netCDF label variable describes.
-
-        Returns:
-            Tuple of label data dimension names.
+        Returns
+        -------
+        Tuple of label data dimension names.
 
         """
 
@@ -775,13 +785,14 @@ class CFLabelVariable(CFVariable):
         Note that, by default scalar variables always span the
         dimensionality of the target variable.
 
-        Args:
-
-        * cf_variable:
+        Parameters
+        ----------
+        cf_variable :
             Compare dimensionality with the :class:`CFVariable`.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Scalar variables always span the target variable.

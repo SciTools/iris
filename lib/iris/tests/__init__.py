@@ -155,14 +155,11 @@ def assert_masked_array_equal(a, b, strict=False):
     """Check that masked arrays are equal. This requires the
     unmasked values and masks to be identical.
 
-    Args:
-
-    * a, b (array-like):
+    Parameters
+    ----------
+    a, b : array-like
         Two arrays to compare.
-
-    Kwargs:
-
-    * strict (bool):
+    strict : bool, optional
         If True, perform a complete mask and data array equality check.
         If False (default), the data array equality considers only unmasked
         elements.
@@ -176,19 +173,15 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
     masks to be identical, and the unmasked values to be almost
     equal.
 
-    Args:
-
-    * a, b (array-like):
+    Parameters
+    ----------
+    a, b : array-like
         Two arrays to compare.
-
-    Kwargs:
-
-    * strict (bool):
+    strict : bool, optional
         If True, perform a complete mask and data array equality check.
         If False (default), the data array equality considers only unmasked
         elements.
-
-    * decimal (int):
+    decimal : int, optional, default=6
         Equality tolerance level for
         :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
         'abs(desired-actual) < 0.5 * 10**(-decimal)'
@@ -278,11 +271,12 @@ class IrisTest(unittest.TestCase):
         """Return the full path to a test result, generated from the \
         calling file, class and, optionally, method.
 
-        Optional kwargs :
-
-            * basename    - File basename. If omitted, this is \
-                            generated from the calling method.
-            * ext         - Appended file extension.
+        Parameters
+        ----------
+        basename : optional, default=None
+            File basename. If omitted, this is generated from the calling method.
+        ext : str, optional, default=""
+            Appended file extension.
 
         """
         if ext and not ext.startswith("."):
@@ -333,20 +327,16 @@ class IrisTest(unittest.TestCase):
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * netcdf_filename:
+        Parameters
+        ----------
+        netcdf_filename :
             The path to the netCDF file.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * flags:
+        flags : str, optional
             Command-line flags for `ncdump`, as either a whitespace
             separated string or an iterable. Defaults to '-h'.
 
@@ -401,20 +391,16 @@ class IrisTest(unittest.TestCase):
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * cubes:
+        Parameters
+        ----------
+        cubes :
             Either a Cube or a sequence of Cubes.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * checksum:
+        checksum : bool, optional
             When True, causes the CML to include a checksum for each
             Cube's data. Defaults to True.
 
@@ -514,14 +500,11 @@ class IrisTest(unittest.TestCase):
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * string:
+        Parameters
+        ----------
+        string : str
             The string to check.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
@@ -630,16 +613,15 @@ class IrisTest(unittest.TestCase):
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
         """Check arrays are equal, within given relative + absolute tolerances.
 
-        Args:
-
-        * a, b (array-like):
+        Parameters
+        ----------
+        a, b : array-like
             Two arrays to compare.
-
-        Kwargs:
-
-        * rtol, atol (float):
+        rtol, atol : float, optional
             Relative and absolute tolerances to apply.
 
+        Other Parameters
+        ----------------    
         Any additional kwargs are passed to numpy.testing.assert_allclose.
 
         Performs pointwise toleranced comparison, and raises an assertion if
@@ -776,10 +758,13 @@ class IrisTest(unittest.TestCase):
 
         The patch is created with mock.patch(*args, **kwargs).
 
-        Returns:
-            The substitute object returned by patch.start().
+        Returns
+        -------
+        The substitute object returned by patch.start().
 
-        For example::
+        Examples
+        --------
+        ::
 
             mock_call = self.patch('module.Class.call', return_value=1)
             module_Class_instance.call(3, 4)

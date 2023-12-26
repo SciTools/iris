@@ -141,18 +141,15 @@ class Grid:
     ):
         """Create a Grid from the relevant sections of the FFHeader.
 
-        Args:
-
-        * column_dependent_constants (numpy.ndarray):
+        Parameters
+        ----------
+        column_dependent_constants : numpy.ndarray
             The `column_dependent_constants` from a FFHeader.
-
-        * row_dependent_constants (numpy.ndarray):
+        row_dependent_constants : numpy.ndarray
             The `row_dependent_constants` from a FFHeader.
-
-        * real_constants (numpy.ndarray):
+        real_constants : numpy.ndarray
             The `real_constants` from a FFHeader.
-
-        * horiz_grid_type (integer):
+        horiz_grid_type : int
             `horiz_grid_type` from a FFHeader.
 
         """
@@ -186,12 +183,13 @@ class Grid:
         """Return the X and Y coordinate vectors for the given sub-grid of
         this grid.
 
-        Args:
-
-        * subgrid (integer):
+        Parameters
+        ----------
+        subgrid : int
             A "grid type code" as described in UM documentation paper C4.
 
-        Returns:
+        Returns
+        -------
             A 2-tuple of X-vector, Y-vector.
 
         """
@@ -225,12 +223,13 @@ class ArakawaC(Grid):
         """Return the "zeroth" value and step for the X coordinate on the
         given sub-grid of this grid.
 
-        Args:
-
-        * subgrid (integer):
+        Parameters
+        ----------
+        subgrid : int
             A "grid type code" as described in UM documentation paper C4.
 
-        Returns:
+        Returns
+        -------
             A 2-tuple of BZX, BDX.
 
         """
@@ -244,12 +243,13 @@ class ArakawaC(Grid):
         """Return the "zeroth" value and step for the Y coordinate on the
         given sub-grid of this grid.
 
-        Args:
-
-        * subgrid (integer):
+        Parameters
+        ----------
+        subgrid : int
             A "grid type code" as described in UM documentation paper C4.
 
-        Returns:
+        Returns
+        -------
             A 2-tuple of BZY, BDY.
 
         """
@@ -306,13 +306,14 @@ class FFHeader:
         FIXED_LENGTH_HEADER section of the FieldsFile, making the names
         defined in FF_HEADER available as attributes of a FFHeader instance.
 
-        Args:
-
-        * filename (string):
+        Parameters
+        ----------
+        filename : str
             Specify the name of the FieldsFile.
 
-        Returns:
-            FFHeader object.
+        Returns
+        -------
+        FFHeader object.
 
         """
 
@@ -400,13 +401,14 @@ class FFHeader:
         """Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER
         pointer attribute.
 
-        Args:
-
-        * name (string):
+        Parameters
+        ----------
+        name : str
             Specify the name of the FIXED_LENGTH_HEADER attribute.
 
-        Returns:
-            Dimension tuple.
+        Returns
+        -------
+        Dimension tuple.
 
         """
 
@@ -443,21 +445,21 @@ class FF2PP:
         """Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
 
-        Args:
-
-        * filename (string):
+        Parameters
+        ----------
+        filename : str
             Specify the name of the FieldsFile.
-
-        Kwargs:
-
-        * read_data (boolean):
+        read_data : boolean, optional
             Specify whether to read the associated PPField data within
             the FieldsFile.  Default value is False.
 
-        Returns:
-            PPField generator.
+        Returns
+        -------
+        PPField generator.
 
-        For example::
+        Examples
+        --------
+        ::
 
             >>> for field in ff.FF2PP(filename):
             ...     print(field)
@@ -809,15 +811,14 @@ class FF2PP:
 def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
     """Replacement :func:`numpy.fromfile` due to python3 performance issues.
 
-    Args:
-
-    * file_like - Standard python file_like object.
-
-    Kwargs:
-
-    * dtype  - Data type to be parsed out, used to work out bytes read in.
-
-    * count - The number of values required to be generated from the parsing.
+    Parameters
+    ----------
+    file_like :
+        Standard python file_like object.
+    dtype : no.float64, optional
+        Data type to be parsed out, used to work out bytes read in.
+    count : optional, default=-1
+        The number of values required to be generated from the parsing.
         The default is -1, which will read the entire contexts of the file_like
         object and generate as many values as possible.
 
@@ -842,15 +843,15 @@ def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
 def load_cubes(filenames, callback, constraints=None):
     """Loads cubes from a list of fields files filenames.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        List of fields files filenames to load
+    callback :
+        A function which can be passed on to :func:`iris.io.run_callback`
 
-    * filenames - list of fields files filenames to load
-
-    Kwargs:
-
-    * callback - a function which can be passed on to
-        :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the order that they are in the
@@ -866,9 +867,10 @@ def load_cubes(filenames, callback, constraints=None):
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
     """Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
 
-    .. seealso::
-
-        :func:`load_cubes` for keyword details
+    See Also
+    --------
+    :func:`load_cubes` 
+        For keyword details
 
     """
     return pp._load_cubes_variable_loader(

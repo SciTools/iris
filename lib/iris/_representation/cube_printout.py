@@ -52,12 +52,13 @@ class Table:
     def add_row(self, cols, aligns, i_col_unlimited=None):
         """Create a new row at the bottom.
 
-        Args:
-        * cols (list of string):
+        Parameters
+        ----------
+        cols : list of str
             Per-column content.  Length must match the other rows (if any).
-        * aligns (list of {'left', 'right'}):
+        aligns : list of {'left', 'right'}
             Per-column alignments.  Length must match 'cols'.
-        * i_col_unlimited (int or None):
+        i_col_unlimited : int or None, optional
             Column beyond which content does not affect the column widths.
             ( meaning contents will print without limit ).
 
@@ -133,12 +134,13 @@ class CubePrinter:
     def __init__(self, cube_or_summary):
         """An object that provides a printout of a cube.
 
-        Args:
-
-        * cube_or_summary (Cube or CubeSummary):
+        Parameters
+        ----------
+        cube_or_summary : Cube or CubeSummary
             If a cube, first create a CubeSummary from it.
 
-
+        Notes
+        -----
         .. note::
             The CubePrinter is based on a digest of a CubeSummary, but does
             not reference or store it.
@@ -320,15 +322,17 @@ class CubePrinter:
     def to_string(self, oneline=False, name_padding=35):
         """Produce a printable summary.
 
-        Args:
-        * oneline (bool):
+        Parameters
+        ----------
+        oneline : bool, optional, default=False
             If set, produce a one-line summary.
             Default is False = produce full (multiline) summary.
-        * name_padding (int):
+        name_padding int, optional, default=35
             The minimum width for the "name" (#0) column.
 
-        Returns:
-            result (string)
+        Returns
+        -------
+        str
 
         """
         if oneline:

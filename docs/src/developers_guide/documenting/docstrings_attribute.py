@@ -4,17 +4,20 @@ class ExampleClass:
     def __init__(self, arg1, arg2):
         """Purpose section description.
 
+        TREMTEST where is this used?
+        
         Description section text.
 
-        Args:
-
-        * arg1 (int):
+        Parameters
+        ----------
+        arg1 : int
             First argument description.
-        * arg2 (float):
+        arg2 : float
             Second argument description.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         self.a = arg1
@@ -26,8 +29,9 @@ class ExampleClass:
     def square(self):
         """*(read-only)* Purpose section description.
 
-        Returns:
-            int.
+        Returns
+        -------
+        int
 
         """
         return self.a * self.a

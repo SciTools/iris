@@ -40,7 +40,7 @@ lint.ignore = [
     "D401",  # First line of docstring should be in imperative mood: ...
     "D404",  # First word of the docstring should not be "This"
     "D406",  # Section name should end with a newline
-    "D407",  # Missing dashed underline after section
+    #"D407",  # Missing dashed underline after section
 
     # pyupgrade (UP)
     # https://docs.astral.sh/ruff/rules/#pyupgrade-up
