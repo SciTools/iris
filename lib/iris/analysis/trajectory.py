@@ -74,8 +74,7 @@ class Trajectory:
         self.length = sum([seg.length for seg in segments])
 
         # generate our sampled points
-        # TREMTEST: the below comment looks weird when rendered
-        #: The trajectory points, as dictionaries of {coord_name: value}.
+        # The trajectory points, as dictionaries of {coord_name: value}.
         self.sampled_points = []
         sample_step = self.length / (self.sample_count - 1)
 

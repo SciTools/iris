@@ -4,8 +4,6 @@ class ExampleClass:
     def __init__(self, arg1, arg2):
         """Purpose section description.
 
-        TREMTEST where is this used?
-
         Description section text.
 
         Parameters

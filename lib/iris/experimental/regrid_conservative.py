@@ -67,7 +67,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
         Their contiguous bounds define an ESMF.Grid of shape (nx, ny).
     data : :class:`numpy.ndarray`, shape (nx,ny), optional
         Set the Field data content.
-    mask : :class:`numpy.ndarray`, boolean, shape (nx,ny), optional
+    mask : :class:`numpy.ndarray`, bool, shape (nx,ny), optional
         Add a mask item to the grid, assigning it 0/1 where mask=False/True.
 
     """

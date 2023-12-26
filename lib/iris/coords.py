@@ -75,9 +75,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         ----------
         values :
             The values of the dimensional metadata.
-
-        Kwargs:
-
         standard_name : optional, default=None
             CF standard name of the dimensional metadata.
         long_name : optional, default=None

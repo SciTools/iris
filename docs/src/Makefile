@@ -73,3 +73,4 @@ show:
 
 livehtml:
 	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) --ignore generated $(O)
+

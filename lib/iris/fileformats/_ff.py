@@ -449,7 +449,7 @@ class FF2PP:
         ----------
         filename : str
             Specify the name of the FieldsFile.
-        read_data : boolean, optional
+        read_data : bool, optional
             Specify whether to read the associated PPField data within
             the FieldsFile.  Default value is False.
 
