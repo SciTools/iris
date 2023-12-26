@@ -59,6 +59,7 @@ def build_mesh(
         Dictionary of key settings to apply to the Mesh, after creating it.
 
     """
+
     def applyargs(coord, kwargs):
         if kwargs:
             for key, val in kwargs.items():

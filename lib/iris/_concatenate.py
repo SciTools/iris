@@ -668,8 +668,8 @@ class _CoordSignature:
 
         Returns
         -------
-        result : 
-            None if no single candidate axis exists, otherwise the candidate 
+        result :
+            None if no single candidate axis exists, otherwise the candidate
             axis of concatenation.
 
         """

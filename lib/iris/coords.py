@@ -70,7 +70,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         attributes=None,
     ):
         """Constructs a single dimensional metadata object.
-    
+
         Parameters
         ----------
         values :
@@ -287,7 +287,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         linewidth : int or None, default = None
             Character-width controlling line splitting of array outputs.
             If unset, defaults to ``numpy.get_printoptions['linewidth']``\ .
-        edgeitems : int, default=2 
+        edgeitems : int, default=2
             Controls truncated array output.
             Overrides ``numpy.getprintoptions['edgeitems']``\ .
         precision : int or None, default = None
@@ -1468,7 +1468,7 @@ class Coord(_DimensionalMetadata):
         climatological=False,
     ):
         """Coordinate abstract base class.
-        
+
         As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
 
         Parameters
@@ -1536,11 +1536,11 @@ class Coord(_DimensionalMetadata):
     def copy(self, points=None, bounds=None):
         """Returns a copy of this coordinate.
 
-        points : 
+        points :
             A points array for the new coordinate.
             This may be a different shape to the points of the coordinate
             being copied.
-        bounds : 
+        bounds :
             A bounds array for the new coordinate.
             Given n bounds for each cell, the shape of the bounds array
             should be points.shape + (n,). For example, a 1d coordinate
@@ -1548,7 +1548,7 @@ class Coord(_DimensionalMetadata):
             array of shape (100, 2).
 
         Notes
-        -----       
+        -----
         .. note:: If the points argument is specified and bounds are not, the
                   resulting coordinate will have no bounds.
 
@@ -2489,7 +2489,7 @@ _regular_points = lru_cache(iris.util.regular_points)
 
 class DimCoord(Coord):
     """A coordinate that is 1D, and numeric.
-    
+
     With values that have a strict monotonic ordering. Missing values are not
     permitted in a :class:`DimCoord`.
 
@@ -2706,7 +2706,7 @@ class DimCoord(Coord):
 
         Confirm that a new set of coord points adheres to the requirements for
         :class:`~iris.coords.DimCoord` points, being:
-        
+
         * points are scalar or 1D,
         * points are numeric,
         * points are not masked, and
@@ -3034,7 +3034,7 @@ class CellMethod(iris.util._OrderedHashable):
 
         Returns
         -------
-        :class:`xml.dom.minidom.Element`        
+        :class:`xml.dom.minidom.Element`
             The :class:`xml.dom.minidom.Element` that describes this
             :class:`CellMethod`.
 

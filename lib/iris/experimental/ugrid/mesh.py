@@ -297,7 +297,7 @@ class Connectivity(_DimensionalMetadata):
         the first axis - transposed if necessary. Can optionally pass in an
         identically shaped array on which to perform this operation (e.g. the
         output from :meth:`core_indices` or :meth:`lazy_indices`).
-        
+
         Parameters
         ----------
         indices : array
@@ -306,7 +306,7 @@ class Connectivity(_DimensionalMetadata):
 
         Returns
         -------
-        result : 
+        result :
             A view of the indices array Transposed - if necessary - to put
             :attr:`location_axis` first.
 

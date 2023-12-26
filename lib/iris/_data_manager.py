@@ -22,7 +22,7 @@ class DataManager:
 
         Parameters
         ----------
-        data : 
+        data :
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
             managed.

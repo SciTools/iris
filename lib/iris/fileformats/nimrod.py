@@ -297,7 +297,7 @@ def load_cubes(filenames, callback=None):
     ----------
     filenames :
         List of NIMROD filenames to load
-    callback : 
+    callback :
         A function which can be passed on to :func:`iris.io.run_callback`
 
     Notes

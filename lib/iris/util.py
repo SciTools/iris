@@ -174,7 +174,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
     output_file :
         A :class:`file` or file-like object to receive output. Defaults to
         sys.stdout.
-  
+
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
@@ -191,7 +191,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
     See Also
     --------
     :meth:`iris.cube.Cube.is_compatible()`
-        
+
     """
 
     if output_file is None:
@@ -365,7 +365,7 @@ def array_equal(array1, array2, withnans=False):
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
         When set, return True if inputs contain the same value in all elements,
-        _including_ any NaN values.      
+        _including_ any NaN values.
 
     Notes
     -----
@@ -792,7 +792,7 @@ def _slice_data_with_keys(data, keys):
     This enforces an orthogonal interpretation of indexing, which means that
     both 'real' (numpy) arrays and other array-likes index in the same way,
     instead of numpy arrays doing 'fancy indexing'.
-  
+
     .. Note::
 
         Avoids copying the data, where possible.
@@ -1010,7 +1010,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
     ----------
     the_str : str
         The string to be clipped
-    clip_length : 
+    clip_length :
         The length in characters that the input string should be clipped
         to. Defaults to a preconfigured value if not specified.
     rider : str, optional, default="..."
@@ -1631,7 +1631,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
     Parameters
     ----------
-    cube : 
+    cube :
         An instance of :class:`iris.cube.Cube`
     name_or_coord :
         Either: TREMTEST: indent looks weird

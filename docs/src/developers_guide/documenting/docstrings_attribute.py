@@ -5,7 +5,7 @@ class ExampleClass:
         """Purpose section description.
 
         TREMTEST where is this used?
-        
+
         Description section text.
 
         Parameters

@@ -295,11 +295,11 @@ def group_structured_fields(
     The function sorts and collates on phenomenon-relevant metadata only,
     defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
     'lbuser[6]' (model).
-    
+
     Each distinct combination of these defines a specific phenomenon (or
     statistical aggregation of one), and those fields appear as a single
     iteration result.
-            
+
     .. note::
 
          At present, fields with different values of 'lbuser[4]' (pseudo-level)

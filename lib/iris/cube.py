@@ -1204,7 +1204,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        data : 
+        data :
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
@@ -1478,7 +1478,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        coord : 
+        coord :
             The :class:`iris.coords.DimCoord` or :class:`iris.coords.AuxCoord`
             instance to add to the cube.
         data_dims : optional, default=None
@@ -1587,7 +1587,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        aux_factory : 
+        aux_factory :
             The :class:`iris.aux_factory.AuxCoordFactory` instance to add.
 
         """
@@ -1619,7 +1619,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        cell_measure : 
+        cell_measure :
             The :class:`iris.coords.CellMeasure`
             instance to add to the cube.
         data_dims : optional, default=None
@@ -1652,7 +1652,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        ancillary_variable : 
+        ancillary_variable :
             The :class:`iris.coords.AncillaryVariable` instance to be added to
             the cube
         data_dims : optional, default=None
@@ -1684,7 +1684,7 @@ class Cube(CFVariableMixin):
         ----------
         dim_coord : :class:`iris.coords.DimCoord`
             The :class:`iris.coords.DimCoord` instance to add to the cube.
-        data_dim : 
+        data_dim :
             Integer giving the data dimension spanned by the coordinate.
 
         Raises
@@ -1920,7 +1920,7 @@ class Cube(CFVariableMixin):
         CellMeasure.
 
         Parameters
-        ----------        
+        ----------
         cell_measure : str or CellMeasure
             The (name of the) cell measure to look for.
 
@@ -1943,7 +1943,7 @@ class Cube(CFVariableMixin):
         AncillaryVariable.
 
         Parameters
-        ----------        
+        ----------
         ancillary_variable : str or AncillaryVariable
             The (name of the) AncillaryVariable to look for.
 
@@ -2100,12 +2100,12 @@ class Cube(CFVariableMixin):
         Returns
         -------
         A list containing zero or more coordinates matching the provided criteria.
-        
+
         See Also
         --------
         :meth:`Cube.coord` for matching exactly one coordinate.
 
-        
+
         """
         coords_and_factories = []
 
@@ -2263,7 +2263,7 @@ class Cube(CFVariableMixin):
          .. note::
 
             If the arguments given do not result in **precisely one** coordinate,
-            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.        
+            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
 
         See Also
         --------
@@ -2984,9 +2984,7 @@ class Cube(CFVariableMixin):
         return result
 
     def extract(self, constraint):
-        """Filter cube by the given constraint using :meth:`iris.Constraint.extract`.
-
-        """
+        """Filter cube by the given constraint using :meth:`iris.Constraint.extract`."""
         # Cast the constraint into a proper constraint if it is not so already
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)

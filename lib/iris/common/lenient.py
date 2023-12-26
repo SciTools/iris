@@ -297,6 +297,7 @@ class Lenient(threading.local):
                 pass
 
         """
+
         def configure_state(state):
             for feature, value in state.items():
                 self[feature] = value

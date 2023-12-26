@@ -592,7 +592,7 @@ def exp(cube, in_place=False):
     Notes
     -----
     Taking an exponential will return a cube with dimensionless units.
-    
+
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 

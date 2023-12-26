@@ -1525,10 +1525,10 @@ class Resolve:
         Parameters
         ----------
         src_coverage :
-            The :class:`~iris.common.resolve._DimCoverage` metadata for the 
+            The :class:`~iris.common.resolve._DimCoverage` metadata for the
             ``src`` :class:`~iris.cube.Cube`.
         tgt_coverage :
-            The :class:`~iris.common.resolve._DimCoverage` metadata for the 
+            The :class:`~iris.common.resolve._DimCoverage` metadata for the
             ``tgt`` :class:`~iris.cube.Cube`.
         ignore_mismatch : optional
             When ``False``, an exception will be raised if a difference is detected between corresponding

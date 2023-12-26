@@ -57,9 +57,9 @@ def wrap_lons(lons, base, period):
 
     Parameters
     ----------
-    lons : 
-    base : 
-    period : 
+    lons :
+    base :
+    period :
 
     Examples
     --------
@@ -118,7 +118,7 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     ::
 
         lons, lats = unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat)
-    
+
     """
     src_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon, pole_latitude=pole_lat)
     target_proj = ccrs.Geodetic()
@@ -199,7 +199,7 @@ def _xy_range(cube, mode=None):
 
     Parameters
     ----------
-    cube : 
+    cube :
         The cube for which to calculate xy extents.
     mode : optional, default=None
         If the coordinate has bounds, set this to specify the
@@ -262,7 +262,7 @@ def get_xy_grids(cube):
 
     Parameters
     ----------
-    cube : 
+    cube :
         The cube for which to generate 2D X and Y points.
 
     Examples
@@ -341,11 +341,11 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
 
     Parameters
     ----------
-    radian_lat_bounds : 
+    radian_lat_bounds :
         [n,2] array of latitude bounds (radians)
-    radian_lon_bounds : 
+    radian_lon_bounds :
         [n,2] array of longitude bounds (radians)
-    radius_of_earth : 
+    radius_of_earth :
         radius of the earth (currently assumed spherical)
 
     """
@@ -387,7 +387,7 @@ def area_weights(cube, normalize=False):
 
     Currently, only supports a spherical datum.
     Uses earth radius from the cube, if present and spherical.
-    Defaults to iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS.  
+    Defaults to iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS.
 
     Parameters
     ----------
@@ -399,7 +399,7 @@ def area_weights(cube, normalize=False):
 
     Returns
     -------
-    broad_weights : 
+    broad_weights :
 
     """
     # Get the radius of the earth
@@ -511,7 +511,7 @@ def cosine_latitude_weights(cube):
     Parameters
     ----------
     cube : :class:`iris.cube.Cube`
-           
+
     Examples
     --------
     Compute weights suitable for averaging type operations::

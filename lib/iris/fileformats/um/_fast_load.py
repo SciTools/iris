@@ -169,7 +169,7 @@ def _convert_collation(collation):
     Notes
     -----
     .. note:
-    
+
         This is the 'loader.converter', in the control structure passed to the
         generic rules code, :meth:`iris.fileformats.rules.load_cubes`.
 

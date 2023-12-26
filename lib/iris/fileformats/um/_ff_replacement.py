@@ -55,12 +55,12 @@ def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
 
     Parameters
     ----------
-    filenames : 
+    filenames :
         list of filenames to load
     callback :
         A function which can be passed on to :func:`iris.io.run_callback`
     constraints : optional, default=None
-    _loader_kwargs : optional, default=None    
+    _loader_kwargs : optional, default=None
 
     Notes
     -----

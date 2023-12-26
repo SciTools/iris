@@ -611,7 +611,7 @@ class RectilinearRegridder:
 
         If the result is a MaskedArray the mask for each element will be set
         if either/both of:
-        
+
         * there is a non-zero contribution from masked items in the input data
         * the element requires extrapolation and the extrapolation_mode
           dictates a masked value.
@@ -969,7 +969,7 @@ class RectilinearRegridder:
 
 def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback):
     r"""Return a new cube for the result of regridding.
-    
+
     Returned cube represents the result of regridding the source cube
     onto the horizontal coordinates (e.g. latitude) of the target cube.
     All the metadata and coordinates of the result cube are copied from

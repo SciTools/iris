@@ -255,7 +255,7 @@ class Loader(collections.namedtuple("Loader", _loader_attrs)):
 
         Parameters
         ----------
-        field_generator : 
+        field_generator :
             A callable that accepts a filename as its first argument and
             returns an iterable of field objects.
         field_generator_kwargs :

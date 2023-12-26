@@ -621,7 +621,7 @@ class IrisTest(unittest.TestCase):
             Relative and absolute tolerances to apply.
 
         Other Parameters
-        ----------------    
+        ----------------
         Any additional kwargs are passed to numpy.testing.assert_allclose.
 
         Performs pointwise toleranced comparison, and raises an assertion if

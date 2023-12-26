@@ -59,7 +59,7 @@ class Trajectory:
 
         .. note:: All the waypoint dictionaries must contain the same
             coordinate names.
-           
+
         """
         self.waypoints = waypoints
         self.sample_count = sample_count
@@ -486,10 +486,10 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
 
     Parameters
     ----------
-    sample_points : 
+    sample_points :
         [coord][datum] list of sample_positions for each datum, formatted for
         fast use of :func:`_ll_to_cart()`.
-    sample_point_coord_names : 
+    sample_point_coord_names :
         [coord] list of n coord names
 
     Returns
@@ -731,7 +731,7 @@ class UnstructuredNearestNeigbourRegridder:
         -------
         regridder (object)
             A callable object with the interface::
-            
+
                 result_cube = regridder(data)
 
             where `data` is a cube with the same grid as the original

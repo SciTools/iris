@@ -779,7 +779,7 @@ def load_NAMEIII_timeseries(filename):
     """Load a NAME III time series file.
 
     Load a NAME III time series file returning a generator of
-    :class:`iris.cube.Cube` instances.    
+    :class:`iris.cube.Cube` instances.
 
     Parameters
     ----------
@@ -868,7 +868,7 @@ def load_NAMEIII_timeseries(filename):
 
 def load_NAMEII_timeseries(filename):
     """Load a NAME III time series file.
-    
+
     Load a NAME II Time Series file returning a generator of
     :class:`iris.cube.Cube` instances.
 
@@ -1163,7 +1163,7 @@ def load_NAMEIII_version2(filename):
 
 def load_NAMEIII_trajectory(filename):
     """Load a NAME III trajectory file.
-    
+
     Load a NAME III trajectory file returning a generator of
     :class:`iris.cube.Cube` instances.
 
