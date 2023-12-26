@@ -590,8 +590,8 @@ class _Lenient(threading.local):
     def unregister_client(self, func):
         """Remove the provided function/method as a lenient client using lenient services.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         func : callable or str
             A function/method of fully qualified string name of the function/method.
 

@@ -431,7 +431,7 @@ def add_season_membership(cube, coord, season, name="season_membership"):
         Coordinate in 'cube', or its name, representing time.
     season : str
         Season defined by month abbreviations.
-    name : str, optinal
+    name : str, optional
         Name of the created coordinate. Defaults to "season_membership".
 
     """

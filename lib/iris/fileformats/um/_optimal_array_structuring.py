@@ -69,7 +69,6 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         from 'ordering_elements'.  Must contain all the same names (but not
         necessarily in the same order).
 
-    
     Returns
     -------
     dims_shape

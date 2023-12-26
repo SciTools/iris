@@ -220,7 +220,7 @@ class SymmetricNormalize(mpl_colors.Normalize):
 
 
 def _load_palette():
-    """Load pallette.
+    """Load palette.
 
     Load, configure and register color map palettes and initialise
     color map metadata mappings.

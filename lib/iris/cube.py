@@ -3008,14 +3008,14 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        coord : 
+        coord :
             Either a :class:`iris.coords.Coord`, or coordinate name
             (as defined in :meth:`iris.cube.Cube.coords()`)
         minimum :
             The minimum value of the range to select.
         maximum :
             The maximum value of the range to select.
-        min_inclusive: 
+        min_inclusive :
             If True, coordinate values equal to `minimum` will be included
             in the selection. Default is True.
         max_inclusive:
@@ -3026,7 +3026,7 @@ class Cube(CFVariableMixin):
         threshold : optional
             Minimum proportion of a bounded cell that must overlap with the
             specified range. Default 0.
-            
+
         Notes
         -----
         .. note::
