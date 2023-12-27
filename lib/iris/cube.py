@@ -2993,8 +2993,6 @@ class Cube(CFVariableMixin):
         """Return the intersection of the cube with specified coordinate
         ranges.
 
-        TREMTEST: check this still reads ok compared to the original.
-
         Coordinate ranges can be specified as:
 
         * (a) positional arguments: instances of :class:`iris.coords.CoordExtent`,

@@ -1510,10 +1510,8 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
     cube :
         An instance of :class:`iris.cube.Cube`
     name_or_coord :
-        Either: TREMTEST: indent looks weird
-
-        * (a) An instance of :class:`iris.coords.AuxCoord`
-        * (b) the :attr:`standard_name`, :attr:`long_name`, or
+        * \(a) An instance of :class:`iris.coords.AuxCoord`
+        * \(b) the :attr:`standard_name`, :attr:`long_name`, or
           :attr:`var_name` of an instance of an instance of
           :class:`iris.coords.AuxCoord`.
 
@@ -1634,10 +1632,8 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     cube :
         An instance of :class:`iris.cube.Cube`
     name_or_coord :
-        Either: TREMTEST: indent looks weird
-
-        * (a) An instance of :class:`iris.coords.DimCoord`
-        * (b) the :attr:`standard_name`, :attr:`long_name`, or
+        * \(a) An instance of :class:`iris.coords.DimCoord`
+        * \(b) the :attr:`standard_name`, :attr:`long_name`, or
           :attr:`var_name` of an instance of an instance of
           :class:`iris.coords.DimCoord`.
 
