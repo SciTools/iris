@@ -1500,7 +1500,7 @@ def _is_circular(points, modulus, bounds=None):
 
 
 def promote_aux_coord_to_dim_coord(cube, name_or_coord):
-    """Promotes an AuxCoord on the cube to a DimCoord. This AuxCoord must be
+    r"""Promotes an AuxCoord on the cube to a DimCoord. This AuxCoord must be
     associated with a single cube dimension. If the AuxCoord is associated
     with a dimension that already has a DimCoord, that DimCoord gets
     demoted to an AuxCoord.
@@ -1620,7 +1620,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
 
 def demote_dim_coord_to_aux_coord(cube, name_or_coord):
-    """Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
+    r"""Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
 
     The DimCoord is demoted to an auxiliary coordinate on the cube.
     The dimension of the cube that was associated with the DimCoord becomes
