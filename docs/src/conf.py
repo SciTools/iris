@@ -195,7 +195,23 @@ todo_include_todos = True
 
 # api generation configuration
 autodoc_member_order = "alphabetical"
-autodoc_default_flags = ["show-inheritance"]
+
+# The supported options are 
+#    'members', 'member-order', 'undoc-members', 
+#    'private-members', 'special-members', 'inherited-members', 
+#    'show-inheritance', 'ignore-module-all', 'imported-members',
+#    'exclude-members', 'class-doc-from' and 'no-value'.
+#autodoc_default_flags = ["show-inheritance"]
+autodoc_default_options = {
+    'members': True,
+    'member-order': "alphabetical",
+    'undoc-members': True,
+    'special-members': True,
+    'inherited-members': True,
+    'imported-members': True,
+    'show-inheritance': True,
+}
+
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
 autodoc_typehints = "none"
@@ -291,6 +307,7 @@ html_theme_options = {
     "footer_end": ["custom_footer"],
     "collapse_navigation": True,
     "navigation_depth": 3,
+    "show_toc_level": 3,
     "show_prev_next": True,
     "navbar_align": "content",
     # removes the search box from the top bar
@@ -318,7 +335,6 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "show_toc_level": 1,
     # Omit `theme-switcher` from navbar_end below to disable it
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
     # "navbar_end": ["navbar-icon-links"],
