@@ -193,31 +193,22 @@ copybutton_line_continuation_character = "\\"
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = True
 
-# api generation configuration
-autodoc_member_order = "alphabetical"
-
-# The supported options are 
-#    'members', 'member-order', 'undoc-members', 
-#    'private-members', 'special-members', 'inherited-members', 
-#    'show-inheritance', 'ignore-module-all', 'imported-members',
-#    'exclude-members', 'class-doc-from' and 'no-value'.
-#autodoc_default_flags = ["show-inheritance"]
+# sphinx.ext.autodocconfiguration ---------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
 autodoc_default_options = {
-    'members': True,
-    'member-order': "alphabetical",
-    'undoc-members': True,
-    'special-members': True,
-    'inherited-members': True,
-    'imported-members': True,
-    'show-inheritance': True,
+    "members": True,
+    "member-order": "alphabetical",
+    "undoc-members": True,
+    "private-members" : False,
+    "special-members": False,
+    "inherited-members": True,
+    "show-inheritance": True,
 }
-
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
 autodoc_typehints = "none"
 autosummary_generate = True
 autosummary_imported_members = True
-autopackage_name = ["iris"]
 autoclass_content = "both"
 modindex_common_prefix = ["iris"]
 
