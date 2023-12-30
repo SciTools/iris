@@ -178,10 +178,6 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flynt-fly
     "FLY",
 
-    # Airflow (AIR)
-    # https://docs.astral.sh/ruff/rules/#airflow-air
-    "AIR",
-
     # Perflint (PERF)
     # https://docs.astral.sh/ruff/rules/#perflint-perf
     "PERF",
