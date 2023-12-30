@@ -11,7 +11,6 @@ lint.ignore = [
     # pycodestyle (E, W)
     # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
     "E",
-    "W",
 
     # mccabe (C90)
     # https://docs.astral.sh/ruff/rules/#mccabe-c90
