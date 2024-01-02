@@ -290,7 +290,7 @@ def concatenate(
 
     Parameters
     ----------
-    cubes : iter or :class:`iris.cube.Cube`
+    cubes : iterable of :class:`iris.cube.Cube`
         An iterable containing one or more :class:`iris.cube.Cube` instances
         to be concatenated together.
     error_on_mismatch: bool, default=False
