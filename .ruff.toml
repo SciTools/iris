@@ -11,7 +11,6 @@ lint.ignore = [
     # pycodestyle (E, W)
     # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
     "E",
-    "W",
 
     # mccabe (C90)
     # https://docs.astral.sh/ruff/rules/#mccabe-c90
@@ -71,10 +70,6 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
     "A",
 
-    # flake8-copyright (CPY)
-    # https://docs.astral.sh/ruff/rules/#flake8-copyright-cpy
-    "CPY",
-
     # flake8-comprehensions (C4)
     # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
     "C4",
@@ -90,10 +85,6 @@ lint.ignore = [
     # flake8-future-annotations (FA)
     # https://docs.astral.sh/ruff/rules/#flake8-future-annotations-fa
     "FA",
-
-    # flake8-implicit-str-concat (ISC)
-    # https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
-    "ISC",
 
     # flake8-logging-format (G)
     # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g
@@ -186,10 +177,6 @@ lint.ignore = [
     # flynt (FLY)
     # https://docs.astral.sh/ruff/rules/#flynt-fly
     "FLY",
-
-    # Airflow (AIR)
-    # https://docs.astral.sh/ruff/rules/#airflow-air
-    "AIR",
 
     # Perflint (PERF)
     # https://docs.astral.sh/ruff/rules/#perflint-perf

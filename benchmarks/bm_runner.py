@@ -257,8 +257,8 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
                 * commit {commit_sha} ({pr_tag}).
 
                 <p>
-                Please review the report below and 
-                take corrective/congratulatory action as appropriate 
+                Please review the report below and
+                take corrective/congratulatory action as appropriate
                 :slightly_smiling_face:
                 </p>
                 """
