@@ -319,7 +319,8 @@ def concatenate(
 
     Returns
     -------
-    A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube` instances.
+     :class:`iris.cube.CubeList`
+        A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube` instances.
 
     """
     proto_cubes_by_name = defaultdict(list)
