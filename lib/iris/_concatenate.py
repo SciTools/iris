@@ -293,22 +293,22 @@ def concatenate(
     cubes : iter or :class:`iris.cube.Cube`
         An iterable containing one or more :class:`iris.cube.Cube` instances
         to be concatenated together.
-    error_on_mismatch: bool, optional
+    error_on_mismatch: bool, default=False
         If True, raise an informative
         :class:`~iris.exceptions.ContatenateError` if registration fails.
-    check_aux_coords : bool, optional
+    check_aux_coords : bool, default=True
         Checks if the points and bounds of auxiliary coordinates of the cubes
         match. This check is not applied to auxiliary coordinates that span the
         dimension the concatenation is occurring along.  Defaults to True.
-    check_cell_measures : bool, optional
+    check_cell_measures : bool, default=True
         Checks if the data of cell measures of the cubes match. This check is
         not applied to cell measures that span the dimension the concatenation
         is occurring along. Defaults to True.
-    check_ancils : bool, optional
+    check_ancils : bool, default=True
         Checks if the data of ancillary variables of the cubes match. This
         check is not applied to ancillary variables that span the dimension the
         concatenation is occurring along. Defaults to True.
-    check_derived_coords : bool, optional
+    check_derived_coords : bool, default=True
         Checks if the points and bounds of derived coordinates of the cubes
         match. This check is not applied to derived coordinates that span the
         dimension the concatenation is occurring along. Note that differences
