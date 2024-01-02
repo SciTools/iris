@@ -38,7 +38,7 @@ def pearsonr(
         Weights array of same shape as (the smaller of) cube_a and cube_b. Note
         that latitude/longitude area weights can be calculated using
         :func:`iris.analysis.cartography.area_weights`.
-    mdtol : float, optional, default=1.0
+    mdtol : float, default=1.0
         Tolerance of missing data. The missing data fraction is calculated
         based on the number of grid cells masked in both cube_a and cube_b. If
         this fraction exceed mdtol, the returned value in the corresponding
