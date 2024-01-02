@@ -268,8 +268,10 @@ class FakePPEnvironment:
     def geog_cs(self):
         """Return a GeogCS for this PPField.
 
-        Returns:
-            A GeogCS with the appropriate earth shape, meridian and pole position.
+        Returns
+        -------
+        A GeogCS with the appropriate earth shape, meridian and pole position.
+
         """
         return iris.coord_systems.GeogCS(6371229.0)
 

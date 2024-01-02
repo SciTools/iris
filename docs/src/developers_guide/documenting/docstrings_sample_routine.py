@@ -3,22 +3,21 @@ def sample_routine(arg1, arg2, kwarg1="foo", kwarg2=None):
 
     Description section longer text goes here.
 
-    Args:
-
-    * arg1 (numpy.ndarray):
+    Parameters
+    ----------
+    arg1 : numpy.ndarray
         First argument description.
-    * arg2 (numpy.ndarray):
+    arg2 : numpy.ndarray
         Second argument description.
-
-    Kwargs:
-
-    * kwarg1 (string):
+    kwarg1: str, optional
         The first keyword argument. This argument description
         can be multi-lined.
-    * kwarg2 (Boolean or None):
+    kwarg2 : bool, optional
         The second keyword argument.
 
-    Returns:
+    Returns
+    -------
+    numpy.ndarray
         numpy.ndarray of arg1 * arg2
 
     """

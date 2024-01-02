@@ -47,9 +47,9 @@ class BasicFieldCollation:
     def __init__(self, fields):
         """BasicFieldCollation initialise.
 
-        Args:
-
-        * fields (iterable of :class:`iris.fileformats.pp.PPField`):
+        Parameters
+        ----------
+        fields : iterable of :class:`iris.fileformats.pp.PPField`
             The fields in the collation.
 
         """
@@ -267,36 +267,38 @@ def group_structured_fields(
     """Collect structured fields into identified groups whose fields can be
     combined to form a single cube.
 
-    Args:
-
-    * field_iterator (iterator of :class:`iris.fileformats.pp.PPField`):
+    Parameters
+    ----------
+    field_iterator : iterator of :class:`iris.fileformats.pp.PPField`
         A source of PP or FF fields.  N.B. order is significant.
-
-    Kwargs:
-
-    * collation_class (class):
+    collation_class : class, optional, default=BasicFieldCollation
         Type of collation wrapper to create from each group of fields.
-    * collation_kwargs (dict):
+    **collation_kwargs : dict
         Additional constructor keywords for collation creation.
-
-    The function sorts and collates on phenomenon-relevant metadata only,
-    defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
-    'lbuser[6]' (model).
-    Each distinct combination of these defines a specific phenomenon (or
-    statistical aggregation of one), and those fields appear as a single
-    iteration result.
 
     Implicitly, within each result group, *all* other metadata components
     should be either:
 
-    *  the same for all fields,
-    *  completely irrelevant, or
-    *  used by a vectorised rule function (such as
-       :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
+    * the same for all fields,
+    * completely irrelevant, or
+    * used by a vectorised rule function (such as
+      :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
 
-    Returns:
+    Returns
+    -------
+    Generator of 'collation_class' objects
         A generator of 'collation_class' objects, each of which contains a
         single collated group from the input fields.
+
+    Notes
+    -----
+    The function sorts and collates on phenomenon-relevant metadata only,
+    defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
+    'lbuser[6]' (model).
+
+    Each distinct combination of these defines a specific phenomenon (or
+    statistical aggregation of one), and those fields appear as a single
+    iteration result.
 
     .. note::
 

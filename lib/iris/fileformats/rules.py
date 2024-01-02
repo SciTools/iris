@@ -253,16 +253,14 @@ class Loader(collections.namedtuple("Loader", _loader_attrs)):
     def __new__(cls, field_generator, field_generator_kwargs, converter):
         """Create a definition of a field-based Cube loader.
 
-        Args:
-
-        * field_generator
+        Parameters
+        ----------
+        field_generator :
             A callable that accepts a filename as its first argument and
             returns an iterable of field objects.
-
-        * field_generator_kwargs
+        field_generator_kwargs :
             Additional arguments to be passed to the field_generator.
-
-        * converter
+        converter :
             A callable that converts a field object into a Cube.
 
         """
@@ -388,17 +386,17 @@ def load_pairs_from_fields(fields, converter):
     """Convert an iterable of fields into an iterable of Cubes using the
     provided converter.
 
-    Args:
-
-    * fields:
+    Parameters
+    ----------
+    fields :
         An iterable of fields.
-
-    * converter:
+    converter :
         An Iris converter function, suitable for use with the supplied fields.
         See the description in :class:`iris.fileformats.rules.Loader`.
 
-    Returns:
-        An iterable of (:class:`iris.cube.Cube`, field) pairs.
+    Returns
+    -------
+    An iterable of (:class:`iris.cube.Cube`, field) pairs.
 
     """
     return _load_pairs_from_fields_and_filenames(

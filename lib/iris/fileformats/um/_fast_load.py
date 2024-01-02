@@ -49,12 +49,11 @@ class FieldCollation(BasicFieldCollation):
     def __init__(self, fields, filepath):
         """FieldCollation initialise.
 
-        Args:
-
-        * fields (iterable of :class:`iris.fileformats.pp.PPField`):
+        Parameters
+        ----------
+        fields : iterable of :class:`iris.fileformats.pp.PPField`
             The fields in the collation.
-
-        * filepath (string):
+        filepath : str
             The path of the file the collation is loaded from.
 
         """
@@ -72,8 +71,9 @@ class FieldCollation(BasicFieldCollation):
         This records the original file location of the individual data fields
         contained, within the input datafile.
 
-        Returns:
-            An integer array of shape `self.vector_dims_shape`.
+        Returns
+        -------
+        An integer array of shape `self.vector_dims_shape`.
 
         """
         # Get shape :  N.B. this calculates (and caches) the structure.
@@ -157,15 +157,19 @@ def _convert_collation(collation):
     """Converts a FieldCollation into the corresponding items of Cube
     metadata.
 
-    Args:
-
-    * collation:
+    Parameters
+    ----------
+    collation :
         A FieldCollation object.
 
-    Returns:
-        A :class:`iris.fileformats.rules.ConversionMetadata` object.
+    Returns
+    -------
+    A :class:`iris.fileformats.rules.ConversionMetadata` object.
 
+    Notes
+    -----
     .. note:
+
         This is the 'loader.converter', in the control structure passed to the
         generic rules code, :meth:`iris.fileformats.rules.load_cubes`.
 

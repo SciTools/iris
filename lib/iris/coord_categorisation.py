@@ -5,12 +5,13 @@
 """Cube functions for coordinate categorisation.
 
 All the functions provided here add a new coordinate to a cube.
-    * The function :func:`add_categorised_coord` performs a generic
-      coordinate categorisation.
-    * The other functions all implement specific common cases
-      (e.g. :func:`add_day_of_month`).
-      Currently, these are all calendar functions, so they only apply to
-      "Time coordinates".
+
+* The function :func:`add_categorised_coord` performs a generic
+  coordinate categorisation.
+* The other functions all implement specific common cases
+  (e.g. :func:`add_day_of_month`).
+  Currently, these are all calendar functions, so they only apply to
+  "Time coordinates".
 
 """
 
@@ -28,21 +29,18 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
     Make a new :class:`iris.coords.AuxCoord` from mapped values, and add
     it to the cube.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
-        the cube containing 'from_coord'.  The new coord will be added into it.
-    * name (string):
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+        The cube containing 'from_coord'.  The new coord will be added into it.
+    name : str
         name of the created coordinate
-    * from_coord (:class:`iris.coords.Coord` or string):
+    from_coord : :class:`iris.coords.Coord` or str
         coordinate in 'cube', or the name of one
-    * category_function (callable):
+    category_function : callable
         function(coordinate, value), returning a category value for a
         coordinate point-value
-
-    Kwargs:
-
-    * units:
+    units : str, optional, default="1"
         units of the category value, typically 'no_unit' or '1'.
     """
     # Interpret coord, if given as a name
@@ -90,15 +88,16 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
 def _pt_date(coord, time):
     """Return the datetime of a time-coordinate point.
 
-    Args:
-
-    * coord (Coord):
+    Parameters
+    ----------
+    coord : Coord
         coordinate (must be Time-type)
-    * time (float):
+    time : float
         value of a coordinate point
 
-    Returns:
-        cftime.datetime
+    Returns
+    -------
+    cftime.datetime
 
     """
     # NOTE: All of the currently defined categorisation functions are
@@ -304,19 +303,16 @@ def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son"))
     """Add a categorical season-of-year coordinate, with user specified
     seasons.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         The cube containing 'coord'. The new coord will be added into
         it.
-    * coord (:class:`iris.coords.Coord` or string):
+    coord : :class:`iris.coords.Coord` or str
         Coordinate in 'cube', or its name, representing time.
-
-    Kwargs:
-
-    * name (string):
+    name : str, optional
         Name of the created coordinate. Defaults to "season".
-    * seasons (:class:`list` of strings):
+    seasons : :class:`list` of str, optional
         List of seasons defined by month abbreviations. Each month must
         appear once and only once. Defaults to standard meteorological
         seasons ('djf', 'mam', 'jja', 'son').
@@ -343,19 +339,16 @@ def add_season_number(
     """Add a categorical season-of-year coordinate, values 0..N-1 where
     N is the number of user specified seasons.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         The cube containing 'coord'. The new coord will be added into
         it.
-    * coord (:class:`iris.coords.Coord` or string):
+    coord : :class:`iris.coords.Coord` or str
         Coordinate in 'cube', or its name, representing time.
-
-    Kwargs:
-
-    * name (string):
+    name : str, optional
         Name of the created coordinate. Defaults to "season_number".
-    * seasons (:class:`list` of strings):
+    seasons : :class:`list` of str, optional
         List of seasons defined by month abbreviations. Each month must
         appear once and only once. Defaults to standard meteorological
         seasons ('djf', 'mam', 'jja', 'son').
@@ -429,19 +422,16 @@ def add_season_membership(cube, coord, season, name="season_membership"):
     The coordinate has the value True for every time that is within the
     given season, and the value False otherwise.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         The cube containing 'coord'. The new coord will be added into
         it.
-    * coord (:class:`iris.coords.Coord` or string):
+    coord : :class:`iris.coords.Coord` or str
         Coordinate in 'cube', or its name, representing time.
-    * season (string):
+    season : str
         Season defined by month abbreviations.
-
-    Kwargs:
-
-    * name (string):
+    name : str, optional
         Name of the created coordinate. Defaults to "season_membership".
 
     """

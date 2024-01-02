@@ -2,9 +2,10 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Load, configure and register color map palettes and initialise
-color map meta-data mappings.
+"""Color map pallettes management.
 
+Load, configure and register color map palettes and initialise
+color map meta-data mappings.
 """
 
 from functools import wraps
@@ -37,13 +38,14 @@ _MISSING_KWARG_NORM = "missing kwarg norm"
 def is_brewer(cmap):
     """Determine whether the color map is a Cynthia Brewer color map.
 
-    Args:
-
-    * cmap:
+    Parameters
+    ----------
+    cmap :
         The color map instance.
 
-    Returns:
-        Boolean.
+    Returns
+    -------
+    bool
 
     """
     result = False
@@ -53,8 +55,11 @@ def is_brewer(cmap):
 
 
 def _default_cmap_norm(args, kwargs):
-    """This function injects default cmap and norm behaviour into the keyword
+    """Injects default cmap and norm behaviour into the keyword arguments.
+
+    This function injects default cmap and norm behaviour into the keyword
     arguments, based on the cube referenced within the positional arguments.
+
     """
     cube = None
 
@@ -103,16 +108,20 @@ def _default_cmap_norm(args, kwargs):
 
 
 def cmap_norm(cube):
-    """Determine the default :class:`matplotlib.colors.LinearSegmentedColormap`
+    """Determine the default.
+
+    Determine the default :class:`matplotlib.colors.LinearSegmentedColormap`
     and :class:`iris.palette.SymmetricNormalize` instances associated with
     the cube.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         Source cube to generate default palette from.
 
-    Returns:
+    Returns
+    -------
+    tuple
         Tuple of :class:`matplotlib.colors.LinearSegmentedColormap` and
         :class:`iris.palette.SymmetricNormalize`
 
@@ -127,25 +136,25 @@ def cmap_norm(cube):
 
 
 def auto_palette(func):
-    """Decorator wrapper function to control the default behaviour of the
+    """Decorator wrapper function to control the default behaviour.
+
+    Decorator wrapper function to control the default behaviour of the
     matplotlib cmap and norm keyword arguments.
 
-    Args:
-
-    * func (callable):
+    Parameters
+    ----------
+    func : callable
         Callable function to be wrapped by the decorator.
 
-    Returns:
-        Closure wrapper function.
+    Returns
+    -------
+    Closure wrapper function.
 
     """
 
     @wraps(func)
     def wrapper_func(*args, **kwargs):
-        """Closure wrapper function to provide default keyword argument
-        behaviour.
-
-        """
+        """Closure wrapper function to provide default keyword argument behaviour."""
         # Update the keyword arguments with defaults.
         args, kwargs = _default_cmap_norm(args, kwargs)
         # Call the wrapped function and return its result.
@@ -211,7 +220,9 @@ class SymmetricNormalize(mpl_colors.Normalize):
 
 
 def _load_palette():
-    """Load, configure and register color map palettes and initialise
+    """Load palette.
+
+    Load, configure and register color map palettes and initialise
     color map metadata mappings.
 
     """

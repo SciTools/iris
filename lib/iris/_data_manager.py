@@ -20,9 +20,9 @@ class DataManager:
     def __init__(self, data):
         """Create a data manager for the specified data.
 
-        Args:
-
-        * data:
+        Parameters
+        ----------
+        data :
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
             managed.
@@ -54,10 +54,10 @@ class DataManager:
         """Allow :class:`~iris._data_manager.DataManager` instance
         deepcopy support.
 
-        Args:
-
-        * memo:
-            :class:`copy` memo dictionary.
+        Parameters
+        ----------
+        memo : :func:`copy`
+            :func:`copy` memo dictionary.
 
         """
         return self._deepcopy(memo)
@@ -71,14 +71,15 @@ class DataManager:
         the realised_dtype, the dtype of the payload, the fill-value and the
         payload content.
 
-        Args:
-
-        * other:
+        Parameters
+        ----------
+        other : :class:`~iris._data_manager.DataManager`
             The :class:`~iris._data_manager.DataManager` instance to
             compare with.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         from iris.util import array_equal
@@ -99,14 +100,15 @@ class DataManager:
         Note that, this is explicitly not a lazy operation and will load any
         lazy payload to determine the inequality result.
 
-        Args:
-
-        * other:
+        Parameters
+        ----------
+        other : :class:`~iris._data_manager.DataManager`
             The :class:`~iris._data_manager.DataManager` instance to
             compare with.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         result = self.__eq__(other)
@@ -136,19 +138,17 @@ class DataManager:
         """Perform a deepcopy of the :class:`~iris._data_manager.DataManager`
         instance.
 
-        Args:
-
-        * memo:
-            :class:`copy` memo dictionary.
-
-        Kwargs:
-
-        * data:
+        Parameters
+        ----------
+        memo : :func:`copy`
+            :func:`copy` memo dictionary.
+        data : optional
             Replacement data to substitute the currently managed
             data with.
 
-        Returns:
-            :class:`~iris._data_manager.DataManager` instance.
+        Returns
+        -------
+        :class:`~iris._data_manager.DataManager` instance.
 
         """
         try:
@@ -176,8 +176,9 @@ class DataManager:
     def data(self):
         """Returns the real data. Any lazy data being managed will be realised.
 
-        Returns:
-            :class:`~numpy.ndarray` or :class:`numpy.ma.core.MaskedArray`.
+        Returns
+        -------
+        :class:`~numpy.ndarray` or :class:`numpy.ma.core.MaskedArray`.
 
         """
         if self.has_lazy_data():
@@ -211,9 +212,9 @@ class DataManager:
         Note that, the only shape promotion permitted is for 0-dimensional
         scalar data to be replaced with a single item 1-dimensional data.
 
-        Args:
-
-        * data:
+        Parameters
+        ----------
+        data :
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
             managed.
@@ -272,13 +273,14 @@ class DataManager:
         """Returns a deep copy of this :class:`~iris._data_manager.DataManager`
         instance.
 
-        Kwargs:
-
-        * data:
+        Parameters
+        ----------
+        data :
             Replace the data of the copy with this data.
 
-        Returns:
-            A copy :class:`~iris._data_manager.DataManager` instance.
+        Returns
+        -------
+        A copy :class:`~iris._data_manager.DataManager` instance.
 
         """
         memo = {}
@@ -289,8 +291,9 @@ class DataManager:
         or :class:`numpy.ma.core.MaskedArray`. Otherwise, return the lazy
         :class:`~dask.array.core.Array`.
 
-        Returns:
-            The real or lazy data.
+        Returns
+        -------
+        The real or lazy data.
 
         """
         if self.has_lazy_data():
@@ -303,8 +306,9 @@ class DataManager:
     def has_lazy_data(self):
         """Determine whether lazy data is being managed.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         return self._lazy_array is not None
@@ -315,8 +319,9 @@ class DataManager:
         If only real data is being managed, then return a lazy
         representation of that real data.
 
-        Returns:
-            :class:`~dask.array.core.Array`
+        Returns
+        -------
+        :class:`~dask.array.core.Array`
 
         .. note::
             This method will never realise any lazy data.

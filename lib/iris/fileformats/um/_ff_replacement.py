@@ -19,21 +19,22 @@ def um_to_pp(filename, read_data=False, word_depth=None):
     Returns an iterator over the fields contained within the FieldsFile,
     returned as :class:`iris.fileformats.pp.PPField` instances.
 
-    Args:
-
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Specify the name of the FieldsFile.
-
-    Kwargs:
-
-    * read_data (boolean):
+    read_data : bool, optional, default=read_data
         Specify whether to read the associated PPField data within
         the FieldsFile.  Default value is False.
+    word_depth : optional, default=None
 
-    Returns:
-        Iteration of :class:`iris.fileformats.pp.PPField`.
+    Returns
+    -------
+    Iteration of :class:`iris.fileformats.pp.PPField`.
 
-    For example::
+    Examples
+    --------
+    ::
 
         >>> for field in um.um_to_pp(filename):
         ...     print(field)
@@ -52,15 +53,17 @@ def um_to_pp(filename, read_data=False, word_depth=None):
 def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
     """Loads cubes from filenames of UM fieldsfile-like files.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        list of filenames to load
+    callback :
+        A function which can be passed on to :func:`iris.io.run_callback`
+    constraints : optional, default=None
+    _loader_kwargs : optional, default=None
 
-    * filenames - list of filenames to load
-
-    Kwargs:
-
-    * callback - a function which can be passed on to
-        :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the order that they are in the
@@ -81,9 +84,10 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
     """Loads cubes from filenames of 32bit ieee converted UM fieldsfile-like
     files.
 
-    .. seealso::
-
-        :func:`load_cubes` for keyword details
+    See Also
+    --------
+    :func:`load_cubes`
+        For keyword details
 
     """
     return load_cubes(

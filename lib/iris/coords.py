@@ -71,23 +71,20 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     ):
         """Constructs a single dimensional metadata object.
 
-        Args:
-
-        * values:
+        Parameters
+        ----------
+        values :
             The values of the dimensional metadata.
-
-        Kwargs:
-
-        * standard_name:
+        standard_name : optional, default=None
             CF standard name of the dimensional metadata.
-        * long_name:
+        long_name : optional, default=None
             Descriptive name of the dimensional metadata.
-        * var_name:
+        var_name : optional, default=None
             The netCDF variable name for the dimensional metadata.
-        * units
+        units : optional, default=None
             The :class:`~cf_units.Unit` of the dimensional metadata's values.
             Can be a string, which will be converted to a Unit object.
-        * attributes
+        attributes : optional, default=None
             A dictionary containing other cf and user-defined attributes.
 
         """
@@ -164,9 +161,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def copy(self, values=None):
         """Returns a copy of this dimensional metadata object.
 
-        Kwargs:
-
-        * values
+        Parameters
+        ----------
+        values : optional
             An array of values for the new dimensional metadata object.
             This may be a different shape to the original values array being
             copied.
@@ -287,7 +284,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         linewidth : int or None, default = None
             Character-width controlling line splitting of array outputs.
             If unset, defaults to ``numpy.get_printoptions['linewidth']``\ .
-        edgeitems : int = 2
+        edgeitems : int, default=2
             Controls truncated array output.
             Overrides ``numpy.getprintoptions['edgeitems']``\ .
         precision : int or None, default = None
@@ -303,7 +300,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         result : str
             Output text, with embedded newlines when :attr:`shorten`\ =False.
 
-
+        Notes
+        -----
         .. note::
             Arrays are formatted using :meth:`numpy.array2string`. Some aspects
             of the array formatting are controllable in the usual way, via
@@ -809,13 +807,15 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`_DimensionalMetadata`.
 
-        Args:
-
-        * doc:
+        Parameters
+        ----------
+        doc :
             The parent :class:`xml.dom.minidom.Document`.
 
-        Returns:
-            The :class:`xml.dom.minidom.Element` that will describe this
+        Returns
+        -------
+        :class:`xml.dom.minidom.Element`
+            :class:`xml.dom.minidom.Element` that will describe this
             :class:`_DimensionalMetadata`.
 
         """
@@ -929,23 +929,20 @@ class AncillaryVariable(_DimensionalMetadata):
     ):
         """Constructs a single ancillary variable.
 
-        Args:
-
-        * data:
+        Parameters
+        ----------
+        data :
             The values of the ancillary variable.
-
-        Kwargs:
-
-        * standard_name:
+        standard_name : optional, default=None
             CF standard name of the ancillary variable.
-        * long_name:
+        long_name : optional, default=None
             Descriptive name of the ancillary variable.
-        * var_name:
+        var_name : optional, default=None
             The netCDF variable name for the ancillary variable.
-        * units
+        units : optional, default=None
             The :class:`~cf_units.Unit` of the ancillary variable's values.
             Can be a string, which will be converted to a Unit object.
-        * attributes
+        attributes : optional, default=None
             A dictionary containing other cf and user-defined attributes.
 
         """
@@ -980,8 +977,9 @@ class AncillaryVariable(_DimensionalMetadata):
         If the data have already been loaded for the ancillary variable, the
         returned Array will be a new lazy array wrapper.
 
-        Returns:
-            A lazy array, representing the ancillary variable data array.
+        Returns
+        -------
+        A lazy array, representing the ancillary variable data array.
 
         """
         return super()._lazy_values()
@@ -1028,27 +1026,24 @@ class CellMeasure(AncillaryVariable):
     ):
         """Constructs a single cell measure.
 
-        Args:
-
-        * data:
+        Parameters
+        ----------
+        data :
             The values of the measure for each cell.
             Either a 'real' array (:class:`numpy.ndarray`) or a 'lazy' array
             (:class:`dask.array.Array`).
-
-        Kwargs:
-
-        * standard_name:
+        standard_name : optional, default=None
             CF standard name of the coordinate.
-        * long_name:
+        long_name : optional, default=None
             Descriptive name of the coordinate.
-        * var_name:
+        var_name : optional, default=None
             The netCDF variable name for the coordinate.
-        * units
+        units : optional, default=None
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        * attributes
+        attributes : optional, default=None
             A dictionary containing other CF and user-defined attributes.
-        * measure
+        measure : optional
             A string describing the type of measure. Supported values are
             'area' and 'volume'. The default is 'area'.
 
@@ -1094,12 +1089,14 @@ class CellMeasure(AncillaryVariable):
         """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`CellMeasure`.
 
-        Args:
-
-        * doc:
+        Parameters
+        ----------
+        doc :
             The parent :class:`xml.dom.minidom.Document`.
 
-        Returns:
+        Returns
+        -------
+        :class:`xml.dom.minidom.Element`
             The :class:`xml.dom.minidom.Element` that describes this
             :class:`CellMeasure`.
 
@@ -1139,25 +1136,19 @@ class CoordExtent(
         """Create a CoordExtent for the specified coordinate and range of
         values.
 
-        Args:
-
-        * name_or_coord
+        Parameters
+        ----------
+        name_or_coord :
             Either a coordinate name or a coordinate, as defined in
             :meth:`iris.cube.Cube.coords()`.
-
-        * minimum
+        minimum :
             The minimum value of the range to select.
-
-        * maximum
+        maximum :
             The maximum value of the range to select.
-
-        Kwargs:
-
-        * min_inclusive
+        min_inclusive : optional
             If True, coordinate values equal to `minimum` will be included
             in the selection. Default is True.
-
-        * max_inclusive
+        max_inclusive : optional
             If True, coordinate values equal to `maximum` will be included
             in the selection. Default is True.
 
@@ -1193,12 +1184,14 @@ def _get_2d_coord_bound_grid(bounds):
     # 0-0-0-0-1
     # 3-3-3-3-2
 
-    Args:
-    * bounds: (array)
+    Parameters
+    ----------
+    bounds : array
         Coordinate bounds array of shape (Y, X, 4)
 
-    Returns:
-    * grid: (array)
+    Returns
+    -------
+    array
         Grid of shape (Y+1, X+1)
 
     """
@@ -1471,26 +1464,25 @@ class Coord(_DimensionalMetadata):
         coord_system=None,
         climatological=False,
     ):
-        """Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
+        """Coordinate abstract base class.
 
-        Args:
+        As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
 
-        * points:
+        Parameters
+        ----------
+        points :
             The values (or value in the case of a scalar coordinate) for each
             cell of the coordinate.
-
-        Kwargs:
-
-        * standard_name:
+        standard_name : optional, default=None
             CF standard name of the coordinate.
-        * long_name:
+        long_name : optional, default=None
             Descriptive name of the coordinate.
-        * var_name:
+        var_name : optional, default=None
             The netCDF variable name for the coordinate.
-        * units
+        units : optional, default=None
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        * bounds
+        bounds : optional, default=None
             An array of values describing the bounds of each cell. Given n
             bounds for each cell, the shape of the bounds array should be
             points.shape + (n,). For example, a 1D coordinate with 100 points
@@ -1498,13 +1490,13 @@ class Coord(_DimensionalMetadata):
             (100, 2)
             Note if the data is a climatology, `climatological`
             should be set.
-        * attributes
+        attributes : optional, default=None
             A dictionary containing other CF and user-defined attributes.
-        * coord_system
+        coord_system : optional, default=None
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
-        * climatological (bool):
+        climatological : bool, optional, default=False
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a
             'climatology' attribute and will create a boundary variable called
@@ -1541,18 +1533,19 @@ class Coord(_DimensionalMetadata):
     def copy(self, points=None, bounds=None):
         """Returns a copy of this coordinate.
 
-        Kwargs:
+        points :
+            A points array for the new coordinate.
+            This may be a different shape to the points of the coordinate
+            being copied.
+        bounds :
+            A bounds array for the new coordinate.
+            Given n bounds for each cell, the shape of the bounds array
+            should be points.shape + (n,). For example, a 1d coordinate
+            with 100 points and two bounds per cell would have a bounds
+            array of shape (100, 2).
 
-        * points: A points array for the new coordinate.
-                  This may be a different shape to the points of the coordinate
-                  being copied.
-
-        * bounds: A bounds array for the new coordinate.
-                  Given n bounds for each cell, the shape of the bounds array
-                  should be points.shape + (n,). For example, a 1d coordinate
-                  with 100 points and two bounds per cell would have a bounds
-                  array of shape (100, 2).
-
+        Notes
+        -----
         .. note:: If the points argument is specified and bounds are not, the
                   resulting coordinate will have no bounds.
 
@@ -1709,8 +1702,9 @@ class Coord(_DimensionalMetadata):
         If the data have already been loaded for the coord, the returned
         Array will be a new lazy array wrapper.
 
-        Returns:
-            A lazy array, representing the coord points array.
+        Returns
+        -------
+        A lazy array, representing the coord points array.
 
         """
         return super()._lazy_values()
@@ -1725,7 +1719,9 @@ class Coord(_DimensionalMetadata):
         If the data have already been loaded for the coord, the returned
         Array will be a new lazy array wrapper.
 
-        Returns:
+        Returns
+        -------
+        lazy array
             A lazy array representing the coord bounds array or `None` if the
             coord does not have bounds.
 
@@ -1860,18 +1856,18 @@ class Coord(_DimensionalMetadata):
     def _discontiguity_in_bounds(self, rtol=1e-5, atol=1e-8):
         """Checks that the bounds of the coordinate are contiguous.
 
-        Kwargs:
-        * rtol: (float)
+        rtol : float, optional
             Relative tolerance that is used when checking contiguity. Defaults
             to 1e-5.
-        * atol: (float)
+        atol : float, optional
             Absolute tolerance that is used when checking contiguity. Defaults
             to 1e-8.
 
-        Returns:
-        * contiguous: (boolean)
+        Returns
+        -------
+        contiguous : bool
             True if there are no discontiguities.
-        * diffs: (array or tuple of arrays)
+        diffs : array or tuple of arrays
             A boolean array or tuple of boolean arrays which are true where
             there are discontiguities between neighbouring bounds. If self is
             a 2D coord of shape (Y, X), a pair of arrays is returned, where
@@ -1959,15 +1955,16 @@ class Coord(_DimensionalMetadata):
         it, and the upper left corner of each cell aligns with the lower left
         corner of the cell above it.
 
-        Args:
-
-        * rtol:
+        Parameters
+        ----------
+        rtol : optional
             The relative tolerance parameter (default is 1e-05).
-        * atol:
+        atol : optional
             The absolute tolerance parameter (default is 1e-08).
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         if self.has_bounds():
@@ -2048,19 +2045,20 @@ class Coord(_DimensionalMetadata):
         :attr:`iris.coords.Coord.coord_system` and
         :attr:`iris.coords.Coord.attributes` that are present in both objects.
 
-        Args:
-
-        * other:
+        Parameters
+        ----------
+        other :
             An instance of :class:`iris.coords.Coord`,
             :class:`iris.common.CoordMetadata` or
             :class:`iris.common.DimCoordMetadata`.
-        * ignore:
+        ignore : optional
            A single attribute key or iterable of attribute keys to ignore when
            comparing the coordinates. Default is None. To ignore all
            attributes, set this to other.attributes.
 
-        Returns:
-           Boolean.
+        Returns
+        -------
+        bool
 
         """
         compatible = False
@@ -2216,15 +2214,18 @@ class Coord(_DimensionalMetadata):
     def _guess_bounds(self, bound_position=0.5):
         """Return bounds for this coordinate based on its points.
 
-        Kwargs:
-
-        * bound_position:
+        Parameters
+        ----------
+        bound_position : optional, default=0.5
             The desired position of the bounds relative to the position
             of the points.
 
-        Returns:
-            A numpy array of shape (len(self.points), 2).
+        Returns
+        -------
+        A numpy array of shape (len(self.points), 2).
 
+        Notes
+        -----
         .. note::
 
             This method only works for coordinates with ``coord.ndim == 1``.
@@ -2285,12 +2286,14 @@ class Coord(_DimensionalMetadata):
         With irregular points, the first and last cells are given the same
         widths as the ones next to them.
 
-        Kwargs:
-
-        * bound_position:
+        Parameters
+        ----------
+        bound_position : optional, default=0.5
             The desired position of the bounds relative to the position
             of the points.
 
+        Notes
+        -----
         .. note::
 
             An error is raised if the coordinate already has bounds, is not
@@ -2311,9 +2314,9 @@ class Coord(_DimensionalMetadata):
         Both coordinates must be compatible as defined by
         :meth:`~iris.coords.Coord.is_compatible`.
 
-        Kwargs:
-
-        * return_indices:
+        Parameters
+        ----------
+        return_indices : optional, default=False
             If True, changes the return behaviour to return the intersection
             indices for the "self" coordinate.
 
@@ -2449,12 +2452,14 @@ class Coord(_DimensionalMetadata):
         """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`Coord`.
 
-        Args:
-
-        * doc:
+        Parameters
+        ----------
+        doc :
             The parent :class:`xml.dom.minidom.Document`.
 
-        Returns:
+        Returns
+        -------
+        :class:`xml.dom.minidom.Element`
             The :class:`xml.dom.minidom.Element` that will describe this
             :class:`DimCoord`.
 
@@ -2480,7 +2485,9 @@ _regular_points = lru_cache(iris.util.regular_points)
 
 
 class DimCoord(Coord):
-    """A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
+    """A coordinate that is 1D, and numeric.
+
+    With values that have a strict monotonic ordering. Missing values are not
     permitted in a :class:`DimCoord`.
 
     """
@@ -2507,18 +2514,15 @@ class DimCoord(Coord):
         The majority of the arguments are defined as for
         :class:`Coord`, but those which differ are defined below.
 
-        Args:
-
-        * zeroth:
+        Parameters
+        ----------
+        zeroth :
             The value *prior* to the first point value.
-        * step:
+        step :
             The numeric difference between successive point values.
-        * count:
+        count :
             The number of point values.
-
-        Kwargs:
-
-        * with_bounds:
+        with_bounds : optional
             If True, the resulting DimCoord will possess bound values
             which are equally spaced around the points. Otherwise no
             bounds values will be defined. Defaults to False.
@@ -2566,25 +2570,22 @@ class DimCoord(Coord):
 
         Missing values are not permitted.
 
-        Args:
-
-        * points:
+        Parameters
+        ----------
+        points :
             1D numpy array-like of values (or single value in the case of a
             scalar coordinate) for each cell of the coordinate.  The values
             must be strictly monotonic and masked values are not allowed.
-
-        Kwargs:
-
-        * standard_name:
+        standard_name : optional, default=None
             CF standard name of the coordinate.
-        * long_name:
+        long_name : optional, default=None
             Descriptive name of the coordinate.
-        * var_name:
+        var_name : optional, default=None
             The netCDF variable name for the coordinate.
-        * units:
+        units : :class:`~cf_units.Unit`, optional, default=None
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        * bounds:
+        bounds : optional, default=None
             An array of values describing the bounds of each cell. Given n
             bounds and m cells, the shape of the bounds array should be
             (m, n). For each bound, the values must be strictly monotonic along
@@ -2595,16 +2596,16 @@ class DimCoord(Coord):
             in the same direction.  Masked values are not allowed.
             Note if the data is a climatology, `climatological`
             should be set.
-        * attributes:
+        attributes : optional, default=None
             A dictionary containing other CF and user-defined attributes.
-        * coord_system:
+        coord_system : :class:`~iris.coord_systems.CoordSystem`, optional, default=None
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
-        * circular (bool):
+        circular : bool, optional, default=False
             Whether the coordinate wraps by the :attr:`~iris.coords.DimCoord.units.modulus`
             i.e., the longitude coordinate wraps around the full great circle.
-        * climatological (bool):
+        climatological : bool, optional, default=False
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a
             'climatology' attribute and will create a boundary variable called
@@ -2698,12 +2699,15 @@ class DimCoord(Coord):
         return coord
 
     def _new_points_requirements(self, points):
-        """Confirm that a new set of coord points adheres to the requirements for
+        """Confirm that a new set of coord points adheres to the requirements.
+
+        Confirm that a new set of coord points adheres to the requirements for
         :class:`~iris.coords.DimCoord` points, being:
-            * points are scalar or 1D,
-            * points are numeric,
-            * points are not masked, and
-            * points are monotonic.
+
+        * points are scalar or 1D,
+        * points are numeric,
+        * points are not masked, and
+        * points are monotonic.
 
         """
         if points.ndim not in (0, 1):
@@ -2744,12 +2748,15 @@ class DimCoord(Coord):
             points.flags.writeable = False
 
     def _new_bounds_requirements(self, bounds):
-        """Confirm that a new set of coord bounds adheres to the requirements for
+        """Confirm that a new set of coord bounds adheres to the requirements.
+
+        Confirm that a new set of coord bounds adheres to the requirements for
         :class:`~iris.coords.DimCoord` bounds, being:
-            * bounds are compatible in shape with the points
-            * bounds are numeric,
-            * bounds are not masked, and
-            * bounds are monotonic in the first dimension.
+
+        * bounds are compatible in shape with the points
+        * bounds are numeric,
+        * bounds are not masked, and
+        * bounds are monotonic in the first dimension.
 
         Also reverse the order of the second dimension if necessary to match the
         first dimension's direction.  I.e. both should increase or both should
@@ -2840,12 +2847,14 @@ class DimCoord(Coord):
         """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`DimCoord`.
 
-        Args:
-
-        * doc:
+        Parameters
+        ----------
+        doc :
             The parent :class:`xml.dom.minidom.Document`.
 
-        Returns:
+        Returns
+        -------
+        :class:`xml.dom.minidom.Element`
             The :class:`xml.dom.minidom.Element` that describes this
             :class:`DimCoord`.
 
@@ -2862,24 +2871,21 @@ class AuxCoord(Coord):
     def __init__(self, *args, **kwargs):
         """Create a coordinate with **mutable** points and bounds.
 
-        Args:
-
-        * points:
+        Parameters
+        ----------
+        points :
             The values (or value in the case of a scalar coordinate) for each
             cell of the coordinate.
-
-        Kwargs:
-
-        * standard_name:
+        standard_name : optional
             CF standard name of the coordinate.
-        * long_name:
+        long_name : optional
             Descriptive name of the coordinate.
-        * var_name:
+        var_name : optional
             The netCDF variable name for the coordinate.
-        * units
+        unit : :class:`~cf_units.Unit`, optional
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        * bounds
+        bounds : optional
             An array of values describing the bounds of each cell. Given n
             bounds for each cell, the shape of the bounds array should be
             points.shape + (n,). For example, a 1D coordinate with 100 points
@@ -2887,13 +2893,13 @@ class AuxCoord(Coord):
             (100, 2)
             Note if the data is a climatology, `climatological`
             should be set.
-        * attributes
+        attributes : optional
             A dictionary containing other CF and user-defined attributes.
-        * coord_system
+        coord_system : :class:`~iris.coord_systems.CoordSystem`, optional
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
-        * climatological (bool):
+        climatological bool, optional
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a
             'climatology' attribute and will create a boundary variable called
@@ -2936,22 +2942,17 @@ class CellMethod(iris.util._OrderedHashable):
     def __init__(self, method, coords=None, intervals=None, comments=None):
         """Call Method initialise.
 
-        Args:
-
-        * method:
+        Parameters
+        ----------
+        method :
             The name of the operation.
-
-        Kwargs:
-
-        * coords:
+        coords : :class:`.Coord` instances, optional
             A single instance or sequence of :class:`.Coord` instances or
             coordinate names.
-
-        * intervals:
+        intervals : optional
             A single string, or a sequence strings, describing the intervals
             within the cell method.
-
-        * comments:
+        comments : optional
             A single string, or a sequence strings, containing any additional
             comments.
 
@@ -3023,12 +3024,14 @@ class CellMethod(iris.util._OrderedHashable):
         """Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`CellMethod`.
 
-        Args:
-
-        * doc:
+        Parameters
+        ----------
+        doc :
             The parent :class:`xml.dom.minidom.Document`.
 
-        Returns:
+        Returns
+        -------
+        :class:`xml.dom.minidom.Element`
             The :class:`xml.dom.minidom.Element` that describes this
             :class:`CellMethod`.
 

@@ -42,7 +42,16 @@ class Trajectory:
     def __init__(self, waypoints, sample_count=10):
         """Defines a trajectory using a sequence of waypoints.
 
-        For example::
+        Parameters
+        ----------
+        waypoints :
+            A sequence of dictionaries, mapping coordinate names to values.
+        sample_count : int, optional, default=10
+            The number of sample positions to use along the trajectory.
+
+        Examples
+        --------
+        ::
 
             waypoints = [{'latitude': 45, 'longitude': -60},
                          {'latitude': 45, 'longitude': 0}]
@@ -50,16 +59,6 @@ class Trajectory:
 
         .. note:: All the waypoint dictionaries must contain the same
             coordinate names.
-
-        Args:
-
-        * waypoints
-            A sequence of dictionaries, mapping coordinate names to values.
-
-        Kwargs:
-
-        * sample_count
-            The number of sample positions to use along the trajectory.
 
         """
         self.waypoints = waypoints
@@ -75,7 +74,7 @@ class Trajectory:
         self.length = sum([seg.length for seg in segments])
 
         # generate our sampled points
-        #: The trajectory points, as dictionaries of {coord_name: value}.
+        # The trajectory points, as dictionaries of {coord_name: value}.
         self.sampled_points = []
         sample_step = self.length / (self.sample_count - 1)
 
@@ -119,7 +118,9 @@ class Trajectory:
         """Translate `self.sampled_points` to the format expected by the
         interpolator.
 
-        Returns:
+        Returns
+        -------
+        `self.sampled points`
             `self.sampled points` in the format required by
             `:func:`~iris.analysis.trajectory.interpolate`.
 
@@ -134,8 +135,9 @@ class Trajectory:
         """A helper method to locate the index of anonymous dimensions on the
         interpolation target, ``cube``.
 
-        Returns:
-            The index of any anonymous dimensions in ``cube``.
+        Returns
+        -------
+        The index of any anonymous dimensions in ``cube``.
 
         """
         named_dims = [cube.coord_dims(c)[0] for c in cube.dim_coords]
@@ -150,14 +152,11 @@ class Trajectory:
         supplied in the same coord_system as in `cube`, where appropriate (i.e.
         for horizontal coordinate points).
 
-        Args:
-
-        * cube
+        Parameters
+        ----------
+        cube :
              The source Cube to interpolate.
-
-        Kwargs:
-
-        * method:
+        method :
             The interpolation method to use; "linear" (default) or "nearest".
             Only nearest is available when specifying multi-dimensional
             coordinates.
@@ -186,23 +185,20 @@ class Trajectory:
 def interpolate(cube, sample_points, method=None):
     """Extract a sub-cube at the given n-dimensional points.
 
-    Args:
-
-    * cube
+    Parameters
+    ----------
+    cube :
         The source Cube.
-
-    * sample_points
+    sample_points :
         A sequence of coordinate (name) - values pairs.
-
-    Kwargs:
-
-    * method
+    method : optional, default=None
         Request "linear" interpolation (default) or "nearest" neighbour.
         Only nearest neighbour is available when specifying multi-dimensional
         coordinates.
 
-
-    For example::
+    Examples
+    --------
+    ::
 
         sample_points = [('latitude', [45, 45, 45]),
         ('longitude', [-60, -50, -40])]
@@ -487,17 +483,17 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
     Generates coords suitable for nearest point calculations with
     `scipy.spatial.cKDTree`.
 
-    Args:
+    Parameters
+    ----------
+    sample_points :
+        [coord][datum] list of sample_positions for each datum, formatted for
+        fast use of :func:`_ll_to_cart()`.
+    sample_point_coord_names :
+        [coord] list of n coord names
 
-    * sample_points[coord][datum]:
-        list of sample_positions for each datum, formatted for fast use of
-        :func:`_ll_to_cart()`.
-
-    * sample_point_coord_names[coord]:
-        list of n coord names
-
-    Returns:
-        list of [x,y,z,t,etc] positions, formatted for kdtree.
+    Returns
+    -------
+    list of [x,y,z,t,etc] positions, formatted for kdtree.
 
     """
     # Find lat and lon coord indices
@@ -717,29 +713,31 @@ class UnstructuredNearestNeigbourRegridder:
         This can then be applied to any source data with the same structure as
         the original 'src_cube'.
 
-        Args:
-
-        * src_cube:
+        Parameters
+        ----------
+        src_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` defining the source grid.
             The X and Y coordinates can have any shape, but must be mapped over
             the same cube dimensions.
-
-        * target_grid_cube:
+        target_grid_cube : :class:`~iris.cube.Cube`
             A :class:`~iris.cube.Cube`, whose X and Y coordinates specify a
             desired target grid.
             The X and Y coordinates must be one-dimensional dimension
             coordinates, mapped to different dimensions.
             All other cube components are ignored.
 
-        Returns:
-            regridder : (object)
+        Returns
+        -------
+        regridder (object)
+            A callable object with the interface::
 
-            A callable object with the interface:
-                `result_cube = regridder(data)`
+                result_cube = regridder(data)
 
             where `data` is a cube with the same grid as the original
             `src_cube`, that is to be regridded to the `target_grid_cube`.
 
+        Notes
+        -----
         .. Note::
 
             For latitude-longitude coordinates, the nearest-neighbour distances

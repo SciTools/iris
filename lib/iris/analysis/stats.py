@@ -24,34 +24,36 @@ def pearsonr(
     """Calculate the Pearson's r correlation coefficient over specified
     dimensions.
 
-    Args:
-
-    * cube_a, cube_b (cubes):
+    Parameters
+    ----------
+    cube_a, cube_b : cubes
         Cubes between which the correlation will be calculated.  The cubes
         should either be the same shape and have the same dimension coordinates
         or one cube should be broadcastable to the other.
-    * corr_coords (str or list of str):
+    corr_coords : str or list of str
         The cube coordinate name(s) over which to calculate correlations. If no
         names are provided then correlation will be calculated over all common
         cube dimensions.
-    * weights (numpy.ndarray, optional):
+    weights : :class:`numpy.ndarray`, optional
         Weights array of same shape as (the smaller of) cube_a and cube_b. Note
         that latitude/longitude area weights can be calculated using
         :func:`iris.analysis.cartography.area_weights`.
-    * mdtol (float, optional):
+    mdtol : float, default=1.0
         Tolerance of missing data. The missing data fraction is calculated
         based on the number of grid cells masked in both cube_a and cube_b. If
         this fraction exceed mdtol, the returned value in the corresponding
         cell is masked. mdtol=0 means no missing data is tolerated while
         mdtol=1 means the resulting element will be masked if and only if all
         contributing elements are masked in cube_a or cube_b. Defaults to 1.
-    * common_mask (bool):
+    common_mask : bool, default=False
         If True, applies a common mask to cube_a and cube_b so only cells which
         are unmasked in both cubes contribute to the calculation. If False, the
         variance for each cube is calculated from all available cells. Defaults
         to False.
 
-    Returns:
+    Returns
+    -------
+    :class:`~iris.cube.Cube`
         A cube of the correlation between the two input cubes along the
         specified dimensions, at each point in the remaining dimensions of the
         cubes.
@@ -61,6 +63,8 @@ def pearsonr(
         time/altitude cube describing the latitude/longitude (i.e. pattern)
         correlation at each time/altitude point.
 
+    Notes
+    -----
     Reference:
         https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 

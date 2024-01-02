@@ -25,30 +25,28 @@ def izip(*cubes, **kwargs):
     resulting iterator will step through combinations of the associated
     coordinates.
 
-    Args:
-
-    * cubes (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    cubes : :class:`iris.cube.Cube`
         One or more :class:`iris.cube.Cube` instances over which to iterate in
         step. Each cube should be provided as a separate argument e.g.
         ``iris.iterate.izip(cube_a, cube_b, cube_c, ...)``.
-
-    Kwargs:
-
-    * coords (string, coord or a list of strings/coords):
+    coords : str, coord or a list of strings/coords
         Coordinate names/coordinates of the desired subcubes (i.e. those
         that are not iterated over). They must all be orthogonal (i.e. point
         to different dimensions).
-    * ordered (Boolean):
+    ordered : bool, optional
         If True (default), the order of the coordinates in the resulting
         subcubes will match the order of the coordinates in the coords
         keyword argument. If False, the order of the coordinates will
         be preserved and will match that of the input cubes.
 
-    Returns:
-        An iterator over a collection of tuples that contain the resulting
-        subcubes.
+    Returns
+    -------
+    An iterator over a collection of tuples that contain the resulting subcubes.
 
-    For example:
+    Examples
+    --------
         >>> e_content, e_density = iris.load_cubes(
         ...     iris.sample_data_path('space_weather.nc'),
         ...     ['total electron content', 'electron density'])
@@ -61,6 +59,7 @@ def izip(*cubes, **kwargs):
     -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     if not cubes:
         raise TypeError("Expected one or more cubes.")
