@@ -45,7 +45,7 @@ def pearsonr(
         cell is masked. mdtol=0 means no missing data is tolerated while
         mdtol=1 means the resulting element will be masked if and only if all
         contributing elements are masked in cube_a or cube_b. Defaults to 1.
-    common_mask : bool, optional, default=False
+    common_mask : bool, default=False
         If True, applies a common mask to cube_a and cube_b so only cells which
         are unmasked in both cubes contribute to the calculation. If False, the
         variance for each cube is calculated from all available cells. Defaults
