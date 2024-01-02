@@ -12,7 +12,7 @@ def sample_routine(arg1, arg2, kwarg1="foo", kwarg2=None):
     kwarg1: str, optional
         The first keyword argument. This argument description
         can be multi-lined.
-    kwarg2 : bool or None, optional
+    kwarg2 : bool, optional
         The second keyword argument.
 
     Returns

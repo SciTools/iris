@@ -43,7 +43,7 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
         The dtype of the first or only argument to the operator.
     second_dtype : optional, default=None
         The dtype of the second argument to the operator.
-    in_place : optional, default=None
+    in_place : bool, optional, default=False
         Whether the operation is to be performed in place.
 
     Returns
@@ -94,7 +94,7 @@ def abs(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, default=False
+    in_place : bool, optional, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -227,7 +227,7 @@ def add(cube, other, dim=None, in_place=False):
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
 
-    in_place : bool, default=False
+    in_place : bool, optional, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -280,7 +280,7 @@ def subtract(cube, other, dim=None, in_place=False):
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
 
-    in_place : bool, default=False
+    in_place : bool, optional, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -339,7 +339,7 @@ def _add_subtract_common(
     dim : optional, default=None
         Dimension along which to apply `other` if it's a coordinate that is not
         found in `cube`
-    in_place : bool, default=False
+    in_place : bool, optional, default=False
         Whether or not to apply the operation in place to `cube` and `cube.data`
 
     """
@@ -389,7 +389,7 @@ def multiply(cube, other, dim=None, in_place=False):
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
 
-    in_place : bool, default=False
+    in_place : bool, optional, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -473,7 +473,7 @@ def divide(cube, other, dim=None, in_place=False):
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
 
-    in_place : bool, default=False
+    in_place : bool, optional, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -537,7 +537,7 @@ def exponentiate(cube, exponent, in_place=False):
             powers of the basic units.
 
             e.g. Unit('meter^-2 kilogram second^-1')
-    in_place : bool, optional=False
+    in_place : bool, optional, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -582,7 +582,7 @@ def exp(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, default=False
+    in_place : bool, optional, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -672,7 +672,7 @@ def log10(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, optional, default=None
+    in_place : bool, optional, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
