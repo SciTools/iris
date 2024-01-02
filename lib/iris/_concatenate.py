@@ -768,7 +768,8 @@ class _ProtoCube:
 
         Returns
         -------
-        The concatenated :class:`iris.cube.Cube`.
+        :class:`iris.cube.Cube`
+            The concatenated :class:`iris.cube.Cube`.
 
         """
         if len(self._skeletons) > 1:
