@@ -53,7 +53,7 @@ def pearsonr(
 
     Returns
     -------
-    cube
+    :class:`~iris.cube.Cube`
         A cube of the correlation between the two input cubes along the
         specified dimensions, at each point in the remaining dimensions of the
         cubes.
