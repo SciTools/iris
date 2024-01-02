@@ -910,7 +910,7 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
     Parameters
     ----------
-    crs1, crs2 : `cartopy.crs.Projection`
+    crs1, crs2 : :class:`cartopy.crs.Projection`
         The coordinate systems, "from" and "to".
     x, y : array
         Point locations defined in 'crs1'.
