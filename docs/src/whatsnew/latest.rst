@@ -113,6 +113,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ enforced the minimum pin of ``numpy>1.21`` in accordance with the `NEP29 Drop Schedule`_.
    (:pull:`5525`)
 
+#. `@bjlittle`_ enforced the minimum pin of ``numpy>1.22`` in accordance with the `NEP29 Drop Schedule`_.
+   (:pull:`5668`)
+
 
 📚 Documentation
 ================
