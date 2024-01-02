@@ -34,7 +34,7 @@ def pearsonr(
         The cube coordinate name(s) over which to calculate correlations. If no
         names are provided then correlation will be calculated over all common
         cube dimensions.
-    weights : numpy.ndarray, optional
+    weights : :class:`numpy.ndarray`, optional
         Weights array of same shape as (the smaller of) cube_a and cube_b. Note
         that latitude/longitude area weights can be calculated using
         :func:`iris.analysis.cartography.area_weights`.
