@@ -56,8 +56,8 @@ class DataManager:
 
         Parameters
         ----------
-        memo : :class:`copy`
-            :class:`copy` memo dictionary.
+        memo : :func:`copy`
+            :func:`copy` memo dictionary.
 
         """
         return self._deepcopy(memo)
@@ -140,8 +140,8 @@ class DataManager:
 
         Parameters
         ----------
-        memo : :class:`copy`
-            :class:`copy` memo dictionary.
+        memo : :func:`copy`
+            :func:`copy` memo dictionary.
         data : optional
             Replacement data to substitute the currently managed
             data with.
