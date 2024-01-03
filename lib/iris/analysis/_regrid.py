@@ -369,7 +369,9 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(src_cube, regrid_info):
 
 
 class CurvilinearRegridder:
-    """This class provides support for performing point-in-cell regridding
+    """Provides support for performing point-in-cell regridding.
+
+    This class provides support for performing point-in-cell regridding
     between a curvilinear source grid and a rectilinear target grid.
 
     """
@@ -485,7 +487,9 @@ class CurvilinearRegridder:
 
 
 class RectilinearRegridder:
-    """This class provides support for performing nearest-neighbour or
+    """Provides support for performing nearest-neighbour or linear regridding.
+
+    This class provides support for performing nearest-neighbour or
     linear regridding between source and target grids.
 
     """

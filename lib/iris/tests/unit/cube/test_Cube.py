@@ -956,7 +956,9 @@ class Test_rolling_window(tests.IrisTest):
 
 
 class Test_slices_dim_order(tests.IrisTest):
-    """This class tests the capability of iris.cube.Cube.slices(), including its
+    """Test the capability of iris.cube.Cube.slices().
+
+    Test the capability of iris.cube.Cube.slices(), including its
     ability to correctly re-order the dimensions.
     """
 

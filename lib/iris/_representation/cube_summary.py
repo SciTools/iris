@@ -259,7 +259,7 @@ class CellMethodSection(Section):
 
 
 class CubeSummary:
-    """This class provides a structure for output representations of an Iris cube."""
+    """Provide a structure for output representations of an Iris cube."""
 
     def __init__(self, cube, name_padding=35):
         self.header = FullHeader(cube, name_padding)

@@ -164,7 +164,9 @@ def snapshot_grid(cube):
 
 
 class RectilinearInterpolator:
-    """This class provides support for performing nearest-neighbour or
+    """Provide support for performing nearest-neighbour or linear interpolation.
+
+    This class provides support for performing nearest-neighbour or
     linear interpolation over one or more orthogonal dimensions.
 
     """

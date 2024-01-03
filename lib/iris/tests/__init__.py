@@ -803,7 +803,9 @@ class IrisTest(unittest.TestCase):
         self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
 
     def assertDictEqual(self, lhs, rhs, msg=None):
-        """This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
+        """Dictionary Comparison.
+
+        This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
         in order to cope with dictionary comparison where the value of a key may
         be a numpy array.
 

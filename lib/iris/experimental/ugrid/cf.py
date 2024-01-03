@@ -267,7 +267,9 @@ class CFUGridGroup(cf.CFGroup):
 
 
 class CFUGridReader(cf.CFReader):
-    """This class allows the contents of a netCDF file to be interpreted according
+    """Allows the contents of a netCDF file to be.
+
+    This class allows the contents of a netCDF file to be interpreted according
     to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
     Specialisation of :class:`~iris.fileformats.cf.CFReader` that can also

@@ -200,7 +200,9 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
 
 
 class PointInCell:
-    """This class describes the point-in-cell regridding scheme for use
+    """Describe the point-in-cell regridding scheme.
+
+    This class describes the point-in-cell regridding scheme for use
     typically with :meth:`iris.cube.Cube.regrid()`.
 
     .. warning::
@@ -234,7 +236,7 @@ class PointInCell:
 
 
 class _ProjectedUnstructuredRegridder:
-    """This class provides regridding that uses scipy.interpolate.griddata."""
+    """Regridding that uses scipy.interpolate.griddata."""
 
     def __init__(self, src_cube, tgt_grid_cube, method, projection=None):
         """Create a regridder for conversions between the source
@@ -601,7 +603,9 @@ class _ProjectedUnstructuredRegridder:
 
 
 class ProjectedUnstructuredLinear:
-    """This class describes the linear regridding scheme which uses the
+    """Describe the linear regridding scheme.
+
+    This class describes the linear regridding scheme which uses the
     scipy.interpolate.griddata to regrid unstructured data on to a grid.
 
     The source cube and the target cube will be projected into a common
@@ -677,7 +681,9 @@ class ProjectedUnstructuredLinear:
 
 
 class ProjectedUnstructuredNearest:
-    """This class describes the nearest regridding scheme which uses the
+    """Describe the nearest regridding scheme which uses scipy.interpolate.griddata.
+
+    This class describes the nearest regridding scheme which uses the
     scipy.interpolate.griddata to regrid unstructured data on to a grid.
 
     The source cube and the target cube will be projected into a common
