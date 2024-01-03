@@ -1025,7 +1025,6 @@ class Stereographic(CoordSystem):
         It is only valid to provide one of true_scale_lat and scale_factor_at_projection_origin
 
         """
-
         #: True latitude of planar origin in degrees.
         self.central_lat = float(central_lat)
 
@@ -1140,7 +1139,6 @@ class PolarStereographic(Stereographic):
 
 
         """
-
         super().__init__(
             central_lat=central_lat,
             central_lon=central_lon,
@@ -1200,7 +1198,6 @@ class LambertConformal(CoordSystem):
             secant_latitudes=(33, 45)
 
         """
-
         #: True latitude of planar origin in degrees.
         self.central_lat = _arg_default(central_lat, 39.0)
 

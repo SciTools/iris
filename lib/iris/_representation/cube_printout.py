@@ -268,7 +268,6 @@ class CubePrinter:
         Note: 'name_padding' sets a minimum width for the name column (#0).
 
         """
-
         # Copy the input table + extract the header + its columns.
         table = table.copy()
         header = table.rows[0]

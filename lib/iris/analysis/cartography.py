@@ -1012,7 +1012,6 @@ def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
         along the x and y directions of the target crs at each location.
 
     """
-
     # Scale input distance vectors --> source-coordinate differentials.
     u1, v1 = u_dist / ds.dx1, v_dist / ds.dy1
     # Transform vectors into the target system.

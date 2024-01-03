@@ -71,7 +71,6 @@ def pearsonr(
     This operation is non-lazy.
 
     """
-
     # Assign larger cube to cube_1
     if cube_b.ndim > cube_a.ndim:
         cube_1 = cube_b

@@ -51,7 +51,6 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(src_cube, weights, grid
     The 'regrid info' returned can be re-used over many cubes.
 
     """
-
     # Get the source cube x and y 2D auxiliary coordinates.
     sx, sy = src_cube.coord(axis="x"), src_cube.coord(axis="y")
     # Get the target grid cube x and y dimension coordinates.

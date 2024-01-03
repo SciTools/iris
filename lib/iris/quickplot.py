@@ -50,7 +50,6 @@ def _title(cube_or_coord, with_units):
 
 def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
     """Puts labels on the current plot using the given cube."""
-
     if axes is None:
         axes = plt.gca()
 
