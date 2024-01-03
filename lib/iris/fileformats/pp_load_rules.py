@@ -929,7 +929,9 @@ def convert(f):
 
 
 def _all_other_rules(f):
-    """This deals with all the other rules that have not been factored into any of
+    """Deals with all the other rules.
+
+    Deals with all the other rules that have not been factored into any of
     the other convert_scalar_coordinate functions above.
 
     """

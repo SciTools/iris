@@ -68,7 +68,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
     _ref_dir = ("usecases", "pp_to_cf_conversion")
 
     def _test_file(self, name):
-        """This is the main test routine that is called for each of the files listed below."""
+        """Main test routine that is called for each of the files listed below."""
         pp_path = self._src_pp_path(name)
 
         # 1) Load the PP and check the Cube

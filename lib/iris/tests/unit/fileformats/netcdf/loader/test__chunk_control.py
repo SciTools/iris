@@ -178,7 +178,9 @@ def test_no_chunks_from_file(tmp_filepath, save_cubelist_with_sigma):
 
 
 def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
-    """This does not test return values, as we can't be sure
+    """Test as dask.
+
+    No return values, as we can't be sure
     dask chunking behaviour won't change, or that it will differ
     from our own chunking behaviour.
     """

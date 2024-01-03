@@ -18,7 +18,7 @@ from iris.util import _meshgrid
 
 
 class AreaWeightedRegridder:
-    """This class provides support for performing area-weighted regridding."""
+    """Provide support for performing area-weighted regridding."""
 
     def __init__(self, src_grid_cube, target_grid_cube, mdtol=1):
         """Create an area-weighted regridder for conversions between the source

@@ -810,7 +810,9 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
 
 def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
-    """This function is equivalend to _draw_two_1d_from_points but expects two
+    """Draw two 1d frompoints (expects two y-axis variables rather than one).
+
+    This function is equivalend to _draw_two_1d_from_points but expects two
     y-axis variables rather than one (such as is required for .fill_between). It
     can't be used where the y-axis variables are string coordinates. The y-axis
     variable provided first has precedence where the two differ on whether the
