@@ -193,7 +193,6 @@ def describe_diff(cube_a, cube_b, output_file=None):
     :meth:`iris.cube.Cube.is_compatible()`
 
     """
-
     if output_file is None:
         output_file = sys.stdout
 
@@ -253,7 +252,6 @@ def guess_coord_axis(coord):
     property ``ignore_axis`` to ``False``.
 
     """
-
     axis = None
 
     if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
@@ -1030,7 +1028,6 @@ def clip_string(the_str, clip_length=70, rider="..."):
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-
     if clip_length >= len(the_str) or clip_length <= 0:
         return the_str
     else:
@@ -1064,7 +1061,6 @@ def format_array(arr):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-
     max_line_len = 50
 
     result = np.array2string(
@@ -1232,7 +1228,6 @@ def squeeze(cube):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-
     slices = [0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)]
 
     squeezed = cube[tuple(slices)]

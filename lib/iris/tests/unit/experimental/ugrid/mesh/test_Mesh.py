@@ -1181,7 +1181,6 @@ class TestOperations2D(TestOperations1D):
 
     def test_remove_connectivities(self):
         """Do what 1D test could not - test removal of optional connectivity."""
-
         # Add an optional connectivity.
         self.mesh.add_connectivities(self.FACE_FACE)
         # Attempt to remove a non-existent connectivity.

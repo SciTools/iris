@@ -1295,7 +1295,6 @@ class Resolve:
         'aux_coords' or 'dim_coords' of the participating cubes.
 
         """
-
         # Determine the cube dim, aux and scalar coordinate items
         # for each individual cube.
         self.lhs_cube_category = self._categorise_items(self.lhs_cube)

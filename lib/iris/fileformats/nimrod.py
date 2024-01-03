@@ -204,7 +204,6 @@ class NimrodField:
 
     def _read_header(self, infile):
         """Load the 512 byte header (surrounded by 4-byte length)."""
-
         leading_length = struct.unpack(">L", infile.read(4))[0]
         if leading_length != 512:
             raise TranslationError("Expected header leading_length of 512")

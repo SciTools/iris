@@ -58,7 +58,9 @@ def _optimum_chunksize_internals(
     dims_fixed=None,
     dask_array_chunksize=dask.config.get("array.chunk-size"),
 ):
-    """Reduce or increase an initial chunk shape to get close to a chosen ideal
+    """Reduce or increase an initial chunk shap.
+
+    Reduce or increase an initial chunk shape to get close to a chosen ideal
     size, while prioritising the splitting of the earlier (outer) dimensions
     and keeping intact the later (inner) ones.
 
@@ -100,7 +102,6 @@ def _optimum_chunksize_internals(
     "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
 
     """
-
     # Set the chunksize limit.
     if limit is None:
         # Fetch the default 'optimal' chunksize from the dask config.

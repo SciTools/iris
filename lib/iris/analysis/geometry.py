@@ -26,7 +26,6 @@ def _extract_relevant_cube_slice(cube, geometry):
     If cube and geometry don't overlap, returns None.
 
     """
-
     # Validate the input parameters
     if not cube.coords(axis="x") or not cube.coords(axis="y"):
         raise ValueError("The cube must contain x and y axes.")
@@ -177,7 +176,6 @@ def geometry_area_weights(cube, geometry, normalize=False):
         Default is False.
 
     """
-
     # extract smallest subcube containing geometry
     shape = cube.shape
     extraction_results = _extract_relevant_cube_slice(cube, geometry)

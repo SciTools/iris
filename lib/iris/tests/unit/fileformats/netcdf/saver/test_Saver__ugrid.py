@@ -654,7 +654,6 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
     def test_mixed_aux_coords(self):
         """``coordinates`` attribute should include mesh location coords and 'normal' coords."""
-
         cube = make_cube()
         mesh_dim = cube.mesh_dim()
         mesh_len = cube.shape[mesh_dim]

@@ -1440,7 +1440,6 @@ class Mesh(CFVariableMixin):
             :class:`Mesh` that matched the given criteria.
 
         """
-
         result = self._connectivity_manager.filter(
             item=item,
             standard_name=standard_name,

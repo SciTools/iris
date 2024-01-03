@@ -68,7 +68,6 @@ class MixinCombineRegions:
 
     def setup_cache(self):
         """Cache all the necessary source data on disk."""
-
         # Control dask, to minimise memory usage + allow largest data.
         self.fix_dask_settings()
 
@@ -106,7 +105,6 @@ class MixinCombineRegions:
         NOTE: various test classes override + extend this.
 
         """
-
         # Load source cubes (full-mesh and regions)
         with PARSE_UGRID_ON_LOAD.context():
             self.full_mesh_cube = load_cube(
@@ -143,7 +141,6 @@ class MixinCombineRegions:
         which is optimised for space saving so we can test largest data.
 
         """
-
         import dask.config as dcfg
 
         # Use single-threaded, to avoid process-switching costs and minimise memory usage.

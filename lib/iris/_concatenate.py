@@ -759,7 +759,6 @@ class _ProtoCube:
     @property
     def axis(self):
         """Return the nominated dimension of concatenation."""
-
         return self._axis
 
     def concatenate(self):

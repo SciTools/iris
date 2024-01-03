@@ -167,7 +167,6 @@ class _CoordPayload(namedtuple("CoordPayload", ["scalar", "vector", "factory_def
 
     def as_signature(self):
         """Construct and return a :class:`_CoordSignature` from the payload."""
-
         return _CoordSignature(
             self.scalar.defns,
             self.vector.dim_coords_and_dims,
@@ -1072,11 +1071,12 @@ class ProtoCube:
     """
 
     def __init__(self, cube):
-        """Create a new ProtoCube from the given cube and record the cube
-        as a source-cube.
+        """Create a new ProtoCube from the given cube.
+
+        Create a new ProtoCube from the given cube and record the cube as a
+        source-cube.
 
         """
-
         # Default hint ordering for candidate dimension coordinates.
         self._hints = [
             "time",
@@ -1533,7 +1533,6 @@ class ProtoCube:
         within the merged cube.
 
         """
-
         index = []
 
         # Determine the index of the source-cube cell for each dimension.
@@ -1634,7 +1633,6 @@ class ProtoCube:
         The cube signature.
 
         """
-
         return _CubeSignature(
             cube.metadata,
             cube.shape,
