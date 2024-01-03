@@ -314,7 +314,6 @@ class FFHeader:
         FFHeader object.
 
         """
-
         #: File name of the FieldsFile.
         self.ff_filename = filename
         self._word_depth = word_depth
@@ -409,7 +408,6 @@ class FFHeader:
         Dimension tuple.
 
         """
-
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[1:]
         else:
@@ -463,7 +461,6 @@ class FF2PP:
             ...     print(field)
 
         """
-
         self._ff_header = FFHeader(filename, word_depth=word_depth)
         self._word_depth = word_depth
         self._filename = filename
@@ -821,7 +818,6 @@ def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
         object and generate as many values as possible.
 
     """
-
     # There are a wide range of types supported, we just need to know the byte
     # size of the object, so we just make sure we've go an instance of a
     # np.dtype

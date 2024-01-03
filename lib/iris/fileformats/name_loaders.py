@@ -130,7 +130,6 @@ def _build_lat_lon_for_NAME_field(
     """Return regular latitude and longitude coordinates extracted from
     the provided header dictionary.
     """
-
     if x_or_y == "X":
         start = header["X grid origin"]
         step = header["X grid resolution"]
@@ -234,7 +233,6 @@ def _parse_units(units):
     An instance of :class:`cf_units.Unit`.
 
     """
-
     unit_mapper = {
         "Risks/m3": "1",  # Used for Bluetongue
         "TCID50s/m3": "1",  # Used for Foot and Mouth
@@ -284,7 +282,6 @@ def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
         interpretation of the supplied field heading.
 
     """
-
     # NAMEII - integer/float support.
     # Match against height agl, asl and Pa.
     pattern = re.compile(
@@ -955,7 +952,6 @@ def load_NAMEIII_version2(filename):
     A generator :class:`iris.cube.Cube` instances.
 
     """
-
     # loading a file gives a generator of lines which can be progressed
     # using the next() method. This will come in handy as we wish to
     # progress through the file line by line.

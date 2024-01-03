@@ -739,7 +739,6 @@ def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=
         See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-
     if not isinstance(ufunc, np.ufunc):
         ufunc_name = getattr(ufunc, "__name__", "function passed to apply_ufunc")
         emsg = f"{ufunc_name} is not recognised, it is not an instance of numpy.ufunc"
@@ -1088,7 +1087,6 @@ class IFunc:
             cs_cube = cs_ifunc(cube, axis=1)
 
         """
-
         self._data_func_name = getattr(
             data_func, "__name__", "data_func argument passed to IFunc"
         )

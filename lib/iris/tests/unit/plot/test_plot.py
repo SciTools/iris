@@ -103,7 +103,6 @@ class TestTrajectoryWrap(tests.IrisTest):
         plotted on the given geoaxes.
 
         """
-
         self.assertEqual(
             1, len(lines), "Expected a single line, got {}".format(len(lines))
         )

@@ -695,7 +695,6 @@ class CFLabelVariable(CFVariable):
         str labels
 
         """
-
         if not isinstance(cf_data_var, CFDataVariable):
             raise TypeError(
                 "cf_data_var argument should be of type CFDataVariable. Got %r."
@@ -763,7 +762,6 @@ class CFLabelVariable(CFVariable):
         Tuple of label data dimension names.
 
         """
-
         if not isinstance(cf_data_var, CFDataVariable):
             raise TypeError(
                 "cf_data_var argument should be of type CFDataVariable. Got %r."
@@ -1086,7 +1084,6 @@ class CFReader:
 
     def _translate(self):
         """Classify the netCDF variables into CF-netCDF variables."""
-
         netcdf_variable_names = list(self._dataset.variables.keys())
 
         # Identify all CF coordinate variables first. This must be done

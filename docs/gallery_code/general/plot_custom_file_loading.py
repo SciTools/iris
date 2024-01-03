@@ -89,11 +89,12 @@ COLUMN_NAMES = [
 
 
 def load_NAME_III(filename):
-    """Loads the Met Office's NAME III grid output files returning headers, column
+    """Loads the Met Office's NAME III grid output files.
+
+    Loads the Met Office's NAME III grid output files returning headers, column
     definitions and data arrays as 3 separate lists.
 
     """
-
     # Loading a file gives a generator of lines which can be progressed using
     # the next() function. This will come in handy as we wish to progress
     # through the file line by line.
@@ -179,7 +180,6 @@ def load_NAME_III(filename):
 
 def NAME_to_cube(filenames, callback):
     """Returns a generator of cubes given a list of filenames and a callback."""
-
     for filename in filenames:
         header, column_headings, data_arrays = load_NAME_III(filename)
 

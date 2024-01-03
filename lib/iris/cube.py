@@ -240,7 +240,6 @@ class CubeList(list):
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
-
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
         cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
@@ -1150,7 +1149,6 @@ class Cube(CFVariableMixin):
 
         def _walk_nodes(node):
             """Note: _walk_nodes is called recursively on child elements."""
-
             # we don't want to copy the children here, so take a shallow copy
             new_node = node.cloneNode(deep=False)
 
@@ -1663,7 +1661,6 @@ class Cube(CFVariableMixin):
             Raises a ValueError if an ancillary variable with identical metadata
             already exists on the cube.
         """
-
         if self.ancillary_variables(ancillary_variable):
             raise iris.exceptions.CannotAddError(
                 "Duplicate ancillary variables not permitted"
@@ -4546,7 +4543,6 @@ x            -               -
             possible windows of size 3 from the original cube.
 
         """  # noqa: D214, D406, D407, D410, D411
-
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None

@@ -1333,7 +1333,6 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
-
         if (isinstance(other, list) and len(other) == 1) or (
             isinstance(other, np.ndarray) and other.shape == (1,)
         ):
@@ -2017,7 +2016,6 @@ class Coord(_DimensionalMetadata):
 
     def is_monotonic(self):
         """Return True if, and only if, this Coord is monotonic."""
-
         if self.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(self)
 
@@ -2118,7 +2116,6 @@ class Coord(_DimensionalMetadata):
 
         Replaces the points & bounds with a simple bounded region.
         """
-
         # Ensure dims_to_collapse is a tuple to be able to pass
         # through to numpy
         if isinstance(dims_to_collapse, (int, np.integer)):

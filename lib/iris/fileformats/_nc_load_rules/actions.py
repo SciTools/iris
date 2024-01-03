@@ -544,7 +544,6 @@ def run_actions(engine):
     The specific cube being translated is "engine.cube".
 
     """
-
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 

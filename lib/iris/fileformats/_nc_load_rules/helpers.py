@@ -275,7 +275,6 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     Validation of anything other than being laid out in the expected format is
     left to the calling function.
     """
-
     # Find name candidates
     name_start_inds = []
     for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
@@ -346,7 +345,6 @@ def parse_cell_methods(nc_cell_methods):
     results are not affected.
 
     """
-
     cell_methods = []
     if nc_cell_methods is not None:
         for m in _split_cell_methods(nc_cell_methods):
@@ -952,7 +950,6 @@ def get_attr_units(cf_var, attributes):
 ################################################################################
 def get_names(cf_coord_var, coord_name, attributes):
     """Determine the standard_name, long_name and var_name attributes."""
-
     standard_name = getattr(cf_coord_var, CF_ATTR_STD_NAME, None)
     long_name = getattr(cf_coord_var, CF_ATTR_LONG_NAME, None)
     cf_name = str(cf_coord_var.cf_name)
@@ -1058,7 +1055,6 @@ def build_dimension_coordinate(
     engine, cf_coord_var, coord_name=None, coord_system=None
 ):
     """Create a dimension coordinate (DimCoord) and add it to the cube."""
-
     cf_var = engine.cf_var
     cube = engine.cube
     attributes = {}
@@ -1190,7 +1186,6 @@ def build_auxiliary_coordinate(
     engine, cf_coord_var, coord_name=None, coord_system=None
 ):
     """Create an auxiliary coordinate (AuxCoord) and add it to the cube."""
-
     cf_var = engine.cf_var
     cube = engine.cube
     attributes = {}
@@ -1499,7 +1494,6 @@ def is_time_period(engine, cf_name):
 ################################################################################
 def is_grid_mapping(engine, cf_name, grid_mapping):
     """Determine whether the CF grid mapping variable is of the appropriate type."""
-
     is_valid = False
     cf_var = engine.cf_var.cf_group[cf_name]
     attr_mapping_name = getattr(cf_var, CF_ATTR_GRID_MAPPING_NAME, None)
@@ -1513,7 +1507,6 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
 ################################################################################
 def _is_rotated(engine, cf_name, cf_attr_value):
     """Determine whether the CF coordinate variable is rotated."""
-
     is_valid = False
     cf_var = engine.cf_var.cf_group[cf_name]
     attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
@@ -1547,7 +1540,6 @@ def has_supported_mercator_parameters(engine, cf_name):
     Determine whether the CF grid mapping variable has the supported
     values for the parameters of the Mercator projection.
     """
-
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
@@ -1572,7 +1564,6 @@ def has_supported_polar_stereographic_parameters(engine, cf_name):
     """Determine whether the CF grid mapping variable has the supported
     values for the parameters of the Polar Stereographic projection.
     """
-
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 

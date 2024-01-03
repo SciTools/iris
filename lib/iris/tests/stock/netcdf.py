@@ -89,7 +89,6 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
     dimension size, 'dimension coordinates' and a possible unlimited dimension.
 
     """
-
     ds = _thread_safe_nc.DatasetWrapper(nc_path, "r+")
 
     unlimited_dim_names = [

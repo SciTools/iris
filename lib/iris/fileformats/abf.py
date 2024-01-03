@@ -116,7 +116,6 @@ class ABFField:
 
     def to_cube(self):
         """Return a new :class:`~iris.cube.Cube` from this ABFField."""
-
         cube = iris.cube.Cube(self.data)
 
         # Name.
