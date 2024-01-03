@@ -662,7 +662,11 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
 
 class ChunkControl(threading.local):
+    """Provide user control of Chunk Control."""
+
     class Modes(Enum):
+        """Modes Enums."""
+
         DEFAULT = auto()
         FROM_FILE = auto()
         AS_DASK = auto()
