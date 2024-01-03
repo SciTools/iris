@@ -309,7 +309,7 @@ def vars_meshdim(vars, location, mesh_name=None):
         If given, identifies the mesh var.
         Otherwise, find a unique mesh var (i.e. there must be exactly 1).
 
-    Returns:
+    Returns
     -------
     dim_name : str
         The dim-name of the mesh dim for the given location.
