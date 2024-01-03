@@ -180,7 +180,7 @@ def _make_cube_3d(x, y, z, data, aux=None, offset=0):
         Offset value to be added to non-1D auxiliary coordinate
         points.
 
-    Returns:
+    Returns
     -------
     The newly created 3D :class:`iris.cube.Cube`.
 

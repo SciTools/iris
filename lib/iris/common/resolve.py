@@ -205,7 +205,7 @@ class Resolve:
         >>> resolver = Resolve(cube1, cube2)
         >>> results = [resolver.cube(data) for data in payload]
 
-    """  # noqa: D214, D407, D410, D411
+    """  # noqa: D214, D406, D407, D410, D411
 
     def __init__(self, lhs=None, rhs=None):
         """Resolve the provided ``lhs`` :class:`~iris.cube.Cube` operand and
@@ -2474,7 +2474,7 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             False
 
-        """  # noqa: D214, D407, D410, D411
+        """  # noqa: D214, D406, D407, D410, D411
         result = None
         if self.mapping is not None:
             result = self._src_cube.ndim == len(self.mapping)
@@ -2535,5 +2535,5 @@ class Resolve:
             >>> Resolve(cube2, cube1).shape
             (240, 37, 49)
 
-        """  # noqa: D214, D407, D410, D411
+        """  # noqa: D214, D406, D407, D410, D411
         return self._broadcast_shape
