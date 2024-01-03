@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Cube functions for iteration in step.
-
-"""
+"""Cube functions for iteration in step."""
 
 from collections.abc import Iterator
 import itertools

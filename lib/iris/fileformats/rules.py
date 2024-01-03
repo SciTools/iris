@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Generalised mechanisms for metadata translation and cube construction.
-
-"""
+"""Generalised mechanisms for metadata translation and cube construction."""
 
 import collections
 import warnings

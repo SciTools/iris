@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Miscellaneous utility functions.
-
-"""
+"""Miscellaneous utility functions."""
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable

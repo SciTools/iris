@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Various utilities and numeric transformations relevant to cartography.
-
-"""
+"""Various utilities and numeric transformations relevant to cartography."""
 
 from collections import namedtuple
 import copy

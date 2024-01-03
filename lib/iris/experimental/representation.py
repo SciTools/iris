@@ -3,9 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Definitions of how Iris objects should be represented.
-
-"""
+"""Definitions of how Iris objects should be represented."""
 
 from html import escape
 import re

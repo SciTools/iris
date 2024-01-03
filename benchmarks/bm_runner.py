@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Argparse conveniences for executing common types of benchmark runs.
-"""
+"""Argparse conveniences for executing common types of benchmark runs."""
 
 from abc import ABC, abstractmethod
 import argparse
