@@ -1,3 +1,5 @@
+"""Regrid using iris.analysis.AreaWeighted."""
+
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
