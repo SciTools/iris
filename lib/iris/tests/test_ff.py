@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test the Fieldsfile file loading plugin and FFHeader.
-
-"""
+"""Test the Fieldsfile file loading plugin and FFHeader."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Scripts for generating supporting data for UGRID-related benchmarking.
-"""
+"""Scripts for generating supporting data for UGRID-related benchmarking."""
 from iris import load_cube as iris_loadcube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
