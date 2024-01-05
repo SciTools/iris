@@ -25,10 +25,8 @@ lint.ignore = [
     # (D-1) Permanent
     "D105",  # Missing docstring in magic method
     # (D-2) Temporary, to be removed when we are more compliant. Rare cases mmove  to (1).
-    "D417",  # Missing argument descriptions in the docstring
     "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
-    "D104",  # Missing docstring in public package
     # (D-3) Temporary, before an initial review, either fix ocurrences or move to (2).
     "D100",  # Missing docstring in public module
     "D103",  # Missing docstring in public function
