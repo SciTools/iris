@@ -58,8 +58,7 @@ def _convert_vertical_coords(
     brlev,
     dim=None,
 ):
-    """Encode scalar or vector vertical level values from PP headers as CM data
-    components.
+    """Encode scalar or vector vertical level values from PP headers as CM data components.
 
     Parameters
     ----------
@@ -339,7 +338,9 @@ def _reshape_vector_args(values_and_dims):
 
 
 def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
-    """Collapse points (and optionally bounds) in any dimensions over which all
+    """Collapse points (and optionally bounds) in any dimensions.
+
+    Collapse points (and optionally bounds) in any dimensions over which all
     values are the same.
 
     All dimensions are tested, and if degenerate are reduced to length 1.
@@ -384,8 +385,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
 
 
 def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
-    """Reduce the dimensionality of arrays of coordinate points (and optionally
-    bounds).
+    """Reduce the dimensionality of arrays of coordinate points (and optionally bounds).
 
     Dimensions over which all values are the same are reduced to size 1, using
     :func:`_collapse_degenerate_points_and_bounds`.
@@ -440,7 +440,9 @@ def _reduce_points_and_bounds(points, lower_and_upper_bounds=None):
 def _new_coord_and_dims(
     is_vector_operation, name, units, points, lower_and_upper_bounds=None
 ):
-    """Make a new (coordinate, cube_dims) pair with the given points, name, units
+    """Make a new (coordinate, cube_dims) pair.
+
+    Make a new (coordinate, cube_dims) pair with the given points, name, units
     and optional bounds.
 
     In 'vector' style operation, the data arrays must have same number of
