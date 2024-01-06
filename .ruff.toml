@@ -30,7 +30,7 @@ lint.ignore = [
     # (D-3) Temporary, before an initial review, either fix ocurrences or move to (2).
     "D100",  # Missing docstring in public module
     "D103",  # Missing docstring in public function
-    "D205",  # 1 blank line required between summary line and description
+    #"D205",  # 1 blank line required between summary line and description
     "D401",  # First line of docstring should be in imperative mood: ...
 
     # pyupgrade (UP)
