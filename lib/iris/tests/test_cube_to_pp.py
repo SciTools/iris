@@ -17,7 +17,6 @@ import iris.coord_systems
 import iris.coords
 import iris.fileformats.pp
 from iris.fileformats.pp import PPField3
-import iris.tests.pp as pp
 import iris.tests.stock as stock
 import iris.util
 
@@ -36,7 +35,7 @@ def itab_callback(cube, field, filename):
 
 
 @tests.skip_data
-class TestPPSave(tests.IrisTest, pp.PPTest):
+class TestPPSave(tests.IrisTest, tests.PPTest):
     def test_no_forecast_time(self):
         cube = stock.lat_lon_cube()
         coord = iris.coords.DimCoord(
@@ -276,7 +275,7 @@ class FakePPEnvironment:
         return iris.coord_systems.GeogCS(6371229.0)
 
 
-class TestPPSaveRules(tests.IrisTest, pp.PPTest):
+class TestPPSaveRules(tests.IrisTest, tests.PPTest):
     def test_default_coord_system(self):
         GeogCS = iris.coord_systems.GeogCS
         cube = iris.tests.stock.lat_lon_cube()
