@@ -703,7 +703,7 @@ def log10(cube, in_place=False):
 
 
 def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False):
-    """Apply a `numpy universal function.
+    """Apply a `numpy universal function <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube.
 
     Apply a `numpy universal function
     <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube

@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Iris' data model representation of CF UGrid's Mesh and its constituent parts.
+"""Iris data model representation of CF UGrid's Mesh and its constituent parts.
 
 Eventual destination: dedicated module in :mod:`iris` root.
 

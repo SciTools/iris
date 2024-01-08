@@ -8,7 +8,7 @@ from . import SingleDiagnosticMixin
 
 
 class EqualityMixin(SingleDiagnosticMixin):
-    r"""Use :class:`SingleDiagnosticMixin` as the realistic case..
+    r"""Use :class:`SingleDiagnosticMixin` as the realistic case.
 
     Uses :class:`SingleDiagnosticMixin` as the realistic case will be comparing
     :class:`~iris.cube.Cube`\\ s that have been loaded from file.

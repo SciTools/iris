@@ -110,12 +110,12 @@ known-first-party = ["iris"]
     "D100",  # Missing docstring in public module
     "D205",  # 1 blank line required between summary line and description
 ]
-"lib/iris/tests/*.py" = [        # TREMTEST!!!!!!!!!!!!!!
+"lib/iris/tests/*.py" = [
     # https://docs.astral.sh/ruff/rules/undocumented-public-module/
     "D100",  # Missing docstring in public module
     "D205",  # 1 blank line required between summary line and description
 ]
-"docs/gallery_code/*.py" = [     # TREMTEST!!!!!!!!!!!!!!
+"docs/gallery_code/*.py" = [
     # https://docs.astral.sh/ruff/rules/undocumented-public-module/
     "D205",  # 1 blank line required between summary line and description
     "D400",  # First line should end with a period
