@@ -1129,6 +1129,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
+
     def _reshape_data_array(data_manager):
         # Indexing numpy arrays requires loading deferred data here returning a
         # copy of the data with a new leading dimension.

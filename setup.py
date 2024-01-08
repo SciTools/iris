@@ -31,6 +31,7 @@ def custom_command(cmd, help=""):
     standard names module.
 
     """
+
     class CustomCommand(cmd):
         description = help or cmd.description
 
