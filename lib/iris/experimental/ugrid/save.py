@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Extensions to Iris' NetCDF saving to allow
-:class:`~iris.experimental.ugrid.mesh.Mesh` saving in UGRID format.
+"""Extension to Iris' NetCDF saving to allow :class:`~iris.experimental.ugrid.mesh.Mesh` saving in UGRID format.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 

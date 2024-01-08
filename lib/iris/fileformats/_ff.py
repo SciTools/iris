@@ -125,10 +125,7 @@ class _WarnComboLoadingDefaulting(IrisDefaultingWarning, IrisLoadWarning):
 
 
 class Grid:
-    """An abstract class representing the default/file-level grid
-    definition for a FieldsFile.
-
-    """
+    """An abstract class representing the default/file-level grid definition for a FieldsFile."""
 
     def __init__(
         self,
@@ -178,8 +175,7 @@ class Grid:
         raise NotImplementedError()
 
     def vectors(self, subgrid):
-        """Return the X and Y coordinate vectors for the given sub-grid of
-        this grid.
+        """Return the X and Y coordinate vectors for the given sub-grid of this grid.
 
         Parameters
         ----------
@@ -218,8 +214,7 @@ class ArakawaC(Grid):
         return x_p, x_u
 
     def regular_x(self, subgrid):
-        """Return the "zeroth" value and step for the X coordinate on the
-        given sub-grid of this grid.
+        """Return the "zeroth" value & step for the X coord on the given sub-grid of this grid.
 
         Parameters
         ----------
@@ -238,7 +233,9 @@ class ArakawaC(Grid):
         return bzx, bdx
 
     def regular_y(self, subgrid):
-        """Return the "zeroth" value and step for the Y coordinate on the
+        """Return the "zeroth" value & step for the Y coord on the given sub-grid of this grid.
+
+        Return the "zeroth" value and step for the Y coordinate on the
         given sub-grid of this grid.
 
         Parameters
@@ -300,7 +297,9 @@ class FFHeader:
     GRID_STAGGERING_CLASS = {3: NewDynamics, 6: ENDGame}
 
     def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
-        """Create a FieldsFile header instance by reading the
+        """Create a FieldsFile header instance.
+
+        Create a FieldsFile header instance by reading the
         FIXED_LENGTH_HEADER section of the FieldsFile, making the names
         defined in FF_HEADER available as attributes of a FFHeader instance.
 
@@ -395,8 +394,7 @@ class FFHeader:
         return is_referenceable
 
     def shape(self, name):
-        """Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER
-        pointer attribute.
+        """Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER pointer attribute.
 
         Parameters
         ----------
@@ -438,7 +436,9 @@ class FF2PP:
     """A class to extract the individual PPFields from within a FieldsFile."""
 
     def __init__(self, filename, read_data=False, word_depth=DEFAULT_FF_WORD_DEPTH):
-        """Create a FieldsFile to Post Process instance that returns a generator
+        """Create a generator of PPFields contained within the FieldsFile.
+
+        Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
 
         Parameters
