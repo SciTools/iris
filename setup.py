@@ -1,3 +1,5 @@
+"""Iris setup."""
+
 import os
 import sys
 

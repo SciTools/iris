@@ -1,3 +1,5 @@
+"""Plot a chart of all Brewer colour schemes."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 

@@ -1,3 +1,5 @@
+"""Addind a citation for a plot using iris.plot.citation()."""
+
 import matplotlib.pyplot as plt
 
 import iris
