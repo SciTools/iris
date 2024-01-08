@@ -1194,7 +1194,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def face_face_connectivity(self):
-        """The *optional* UGRID ``face_face_connectivity`` :class:`~iris.experimental.ugrid.mesh.Connectivity.
+        """The *optional* UGRID ``face_face_connectivity`` :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         The *optional* UGRID ``face_face_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
