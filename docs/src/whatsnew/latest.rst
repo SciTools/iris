@@ -142,6 +142,10 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ updated all hyperlinks to https. (:pull:`5621`)
 
+#. `@trexfeathers`_ improved the documentation of acceptable
+   :class:`~iris.cube.Cube` standard names in
+   :func:`iris.analysis.calculus.curl`. (:pull:`5680`)
+
 
 💼 Internal
 ===========
