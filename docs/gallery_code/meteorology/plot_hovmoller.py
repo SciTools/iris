@@ -1,4 +1,5 @@
-"""Hovmoller Diagram of Monthly Surface Temperature
+"""
+Hovmoller Diagram of Monthly Surface Temperature
 ================================================
 
 This example demonstrates the creation of a Hovmoller diagram with fine control
@@ -6,7 +7,7 @@ over plot ticks and labels. The data comes from the Met Office OSTIA project
 and has been pre-processed to calculate the monthly mean sea surface
 temperature.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt

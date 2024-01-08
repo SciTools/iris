@@ -1,4 +1,5 @@
-"""Global Average Annual Temperature Maps
+"""
+Global Average Annual Temperature Maps
 ======================================
 
 Produces maps of global temperature forecasts from the A1B and E1 scenarios.
@@ -18,7 +19,7 @@ References
     Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21,
     doi:10.1029/2009EO210001.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import os.path
 
