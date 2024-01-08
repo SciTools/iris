@@ -19,8 +19,7 @@ def pearsonr(
     mdtol=1.0,
     common_mask=False,
 ):
-    """Calculate the Pearson's r correlation coefficient over specified
-    dimensions.
+    """Calculate the Pearson's r correlation coefficient over specified dimensions.
 
     Parameters
     ----------
