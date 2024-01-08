@@ -1,3 +1,6 @@
+"""docstring routine example."""
+
+
 def sample_routine(arg1, arg2, kwarg1="foo", kwarg2=None):
     """Purpose section text goes here.
 

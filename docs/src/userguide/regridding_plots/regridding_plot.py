@@ -1,3 +1,5 @@
+"""Plot regridded data."""
+
 import matplotlib.pyplot as plt
 
 import iris

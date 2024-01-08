@@ -17,6 +17,8 @@
 # serve to show the default.
 # ----------------------------------------------------------------------------
 
+"""sphinx config."""
+
 import datetime
 from importlib.metadata import version as get_version
 import ntpath

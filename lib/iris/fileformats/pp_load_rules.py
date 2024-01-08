@@ -3,9 +3,10 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
+
+"""PP Load Rules."""
 
 import calendar
 from functools import wraps

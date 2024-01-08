@@ -1,3 +1,6 @@
+"""docstring attribute example."""
+
+
 class ExampleClass:
     """Class Summary."""
 
