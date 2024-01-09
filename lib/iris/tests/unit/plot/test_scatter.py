@@ -53,9 +53,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        iplt.scatter(
-            self.lat_lon_cube, self.lat_lon_cube.coord("longitude"), axes=ax
-        )
+        iplt.scatter(self.lat_lon_cube, self.lat_lon_cube.coord("longitude"), axes=ax)
         plt.close(fig)
 
 

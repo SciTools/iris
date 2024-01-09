@@ -2,18 +2,15 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Plot benchmark tests.
-
-"""
-import matplotlib
+"""Plot benchmark tests."""
+import matplotlib as mpl
 import numpy as np
 
 from iris import coords, cube, plot
 
 from . import ARTIFICIAL_DIM_SIZE
 
-matplotlib.use("agg")
+mpl.use("agg")
 
 
 class AuxSort:

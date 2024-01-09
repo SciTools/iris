@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
-"""
+"""Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
 import os.path
 
 from dask import array as da
@@ -53,8 +51,7 @@ class Mixin:
         n_facesperregion = n_faces // n_regions
         i_face_regions = (i_faces // n_facesperregion) % n_regions
         region_inds = [
-            np.where(i_face_regions == i_region)[0]
-            for i_region in range(n_regions)
+            np.where(i_face_regions == i_region)[0] for i_region in range(n_regions)
         ]
         # NOTE: this produces 7 regions, with near-adjacent value ranges but
         # with some points "moved" to an adjacent region.
@@ -66,7 +63,6 @@ class Mixin:
 
     def setup_cache(self):
         """Cache all the necessary source data on disk."""
-
         # Control dask, to minimise memory usage + allow largest data.
         self.fix_dask_settings()
 
@@ -86,11 +82,8 @@ class Mixin:
                 self._parametrised_cache_filename(n_cubesphere, "regioncubes"),
             )
 
-    def setup(
-        self, n_cubesphere, imaginary_data=True, create_result_cube=True
-    ):
-        """
-        The combine-tests "standard" setup operation.
+    def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
+        """The combine-tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.
@@ -107,7 +100,6 @@ class Mixin:
         NOTE: various test classes override + extend this.
 
         """
-
         # Load source cubes (full-mesh and regions)
         with PARSE_UGRID_ON_LOAD.context():
             self.full_mesh_cube = load_cube(
@@ -128,9 +120,7 @@ class Mixin:
                 # This has the same lazy-array attributes, but is allocated by
                 # creating chunks on demand instead of loading from file.
                 data = cube.lazy_data()
-                data = da.zeros(
-                    data.shape, dtype=data.dtype, chunks=data.chunksize
-                )
+                data = da.zeros(data.shape, dtype=data.dtype, chunks=data.chunksize)
                 cube.data = data
 
         if create_result_cube:
@@ -143,14 +133,12 @@ class Mixin:
         self.temp_save_path.unlink(missing_ok=True)
 
     def fix_dask_settings(self):
-        """
-        Fix "standard" dask behaviour for time+space testing.
+        """Fix "standard" dask behaviour for time+space testing.
 
         Currently this is single-threaded mode, with known chunksize,
         which is optimised for space saving so we can test largest data.
 
         """
-
         import dask.config as dcfg
 
         # Use single-threaded, to avoid process-switching costs and minimise memory usage.
@@ -174,16 +162,13 @@ class Mixin:
 
 @on_demand_benchmark
 class CreateCube(Mixin):
-    """
-    Time+memory costs of creating a combined-regions cube.
+    """Time+memory costs of creating a combined-regions cube.
 
     The result is lazy, and we don't do the actual calculation.
 
     """
 
-    def setup(
-        self, n_cubesphere, imaginary_data=True, create_result_cube=False
-    ):
+    def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=False):
         # In this case only, do *not* create the result cube.
         # That is the operation we want to test.
         super().setup(n_cubesphere, imaginary_data, create_result_cube)
@@ -198,9 +183,7 @@ class CreateCube(Mixin):
 
 @on_demand_benchmark
 class ComputeRealData(Mixin):
-    """
-    Time+memory costs of computing combined-regions data.
-    """
+    """Time+memory costs of computing combined-regions data."""
 
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
@@ -212,8 +195,7 @@ class ComputeRealData(Mixin):
 
 @on_demand_benchmark
 class SaveData(Mixin):
-    """
-    Test saving *only*, having replaced the input cube data with 'imaginary'
+    """Test saving *only*, having replaced the input cube data with 'imaginary'
     array data, so that input data is not loaded from disk during the save
     operation.
 
@@ -234,15 +216,12 @@ class SaveData(Mixin):
 
 @on_demand_benchmark
 class FileStreamedCalc(Mixin):
-    """
-    Test the whole cost of file-to-file streaming.
+    """Test the whole cost of file-to-file streaming.
     Uses the combined cube which is based on lazy data loading from the region
     cubes on disk.
     """
 
-    def setup(
-        self, n_cubesphere, imaginary_data=False, create_result_cube=True
-    ):
+    def setup(self, n_cubesphere, imaginary_data=False, create_result_cube=True):
         # In this case only, do *not* replace the loaded regions data with
         # 'imaginary' data, as we want to test file-to-file calculation+save.
         super().setup(n_cubesphere, imaginary_data, create_result_cube)

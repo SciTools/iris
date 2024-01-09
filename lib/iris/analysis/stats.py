@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Statistical operations between cubes.
-
-"""
+"""Statistical operations between cubes."""
 
 import numpy as np
 import numpy.ma as ma
@@ -22,38 +19,39 @@ def pearsonr(
     mdtol=1.0,
     common_mask=False,
 ):
-    """
-    Calculate the Pearson's r correlation coefficient over specified
+    """Calculate the Pearson's r correlation coefficient over specified
     dimensions.
 
-    Args:
-
-    * cube_a, cube_b (cubes):
+    Parameters
+    ----------
+    cube_a, cube_b : cubes
         Cubes between which the correlation will be calculated.  The cubes
         should either be the same shape and have the same dimension coordinates
         or one cube should be broadcastable to the other.
-    * corr_coords (str or list of str):
+    corr_coords : str or list of str
         The cube coordinate name(s) over which to calculate correlations. If no
         names are provided then correlation will be calculated over all common
         cube dimensions.
-    * weights (numpy.ndarray, optional):
+    weights : :class:`numpy.ndarray`, optional
         Weights array of same shape as (the smaller of) cube_a and cube_b. Note
         that latitude/longitude area weights can be calculated using
         :func:`iris.analysis.cartography.area_weights`.
-    * mdtol (float, optional):
+    mdtol : float, default=1.0
         Tolerance of missing data. The missing data fraction is calculated
         based on the number of grid cells masked in both cube_a and cube_b. If
         this fraction exceed mdtol, the returned value in the corresponding
         cell is masked. mdtol=0 means no missing data is tolerated while
         mdtol=1 means the resulting element will be masked if and only if all
         contributing elements are masked in cube_a or cube_b. Defaults to 1.
-    * common_mask (bool):
+    common_mask : bool, default=False
         If True, applies a common mask to cube_a and cube_b so only cells which
         are unmasked in both cubes contribute to the calculation. If False, the
         variance for each cube is calculated from all available cells. Defaults
         to False.
 
-    Returns:
+    Returns
+    -------
+    :class:`~iris.cube.Cube`
         A cube of the correlation between the two input cubes along the
         specified dimensions, at each point in the remaining dimensions of the
         cubes.
@@ -63,13 +61,14 @@ def pearsonr(
         time/altitude cube describing the latitude/longitude (i.e. pattern)
         correlation at each time/altitude point.
 
+    Notes
+    -----
     Reference:
         https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
     This operation is non-lazy.
 
     """
-
     # Assign larger cube to cube_1
     if cube_b.ndim > cube_a.ndim:
         cube_1 = cube_b
@@ -139,40 +138,26 @@ def pearsonr(
             )
 
         dims_1_common = [
-            i
-            for i in range(cube_1.ndim)
-            if dim_coords_1[i] in common_dim_coords
+            i for i in range(cube_1.ndim) if dim_coords_1[i] in common_dim_coords
         ]
         weights_1 = broadcast_to_shape(weights, cube_1.shape, dims_1_common)
         if cube_2.shape != smaller_shape:
             dims_2_common = [
-                i
-                for i in range(cube_2.ndim)
-                if dim_coords_2[i] in common_dim_coords
+                i for i in range(cube_2.ndim) if dim_coords_2[i] in common_dim_coords
             ]
-            weights_2 = broadcast_to_shape(
-                weights, cube_2.shape, dims_2_common
-            )
+            weights_2 = broadcast_to_shape(weights, cube_2.shape, dims_2_common)
         else:
             weights_2 = weights
 
     # Calculate correlations.
-    s1 = cube_1 - cube_1.collapsed(
-        corr_coords, iris.analysis.MEAN, weights=weights_1
-    )
-    s2 = cube_2 - cube_2.collapsed(
-        corr_coords, iris.analysis.MEAN, weights=weights_2
-    )
+    s1 = cube_1 - cube_1.collapsed(corr_coords, iris.analysis.MEAN, weights=weights_1)
+    s2 = cube_2 - cube_2.collapsed(corr_coords, iris.analysis.MEAN, weights=weights_2)
 
     covar = (s1 * s2).collapsed(
         corr_coords, iris.analysis.SUM, weights=weights_1, mdtol=mdtol
     )
-    var_1 = (s1**2).collapsed(
-        corr_coords, iris.analysis.SUM, weights=weights_1
-    )
-    var_2 = (s2**2).collapsed(
-        corr_coords, iris.analysis.SUM, weights=weights_2
-    )
+    var_1 = (s1**2).collapsed(corr_coords, iris.analysis.SUM, weights=weights_1)
+    var_2 = (s2**2).collapsed(corr_coords, iris.analysis.SUM, weights=weights_2)
 
     denom = iris.analysis.maths.apply_ufunc(
         np.sqrt, var_1 * var_2, new_unit=covar.units

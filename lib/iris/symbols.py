@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Contains symbol definitions for use with :func:`iris.plot.symbols`.
-
-"""
+"""Contains symbol definitions for use with :func:`iris.plot.symbols`."""
 
 import itertools
 import math
@@ -48,9 +45,7 @@ def _make_merged_patch(paths):
 
     all_vertices.shape = (total_len, 2)
 
-    return PathPatch(
-        Path(all_vertices, all_codes), facecolor="black", edgecolor="none"
-    )
+    return PathPatch(Path(all_vertices, all_codes), facecolor="black", edgecolor="none")
 
 
 def _ring_path():
@@ -90,9 +85,7 @@ def _slot_path():
     # removed.
     circle = Path.unit_circle()
     vertical_bar = _vertical_bar_path()
-    vertices = np.concatenate(
-        [circle.vertices[:-1], vertical_bar.vertices[-2::-1]]
-    )
+    vertices = np.concatenate([circle.vertices[:-1], vertical_bar.vertices[-2::-1]])
     codes = np.concatenate([circle.codes[:-1], vertical_bar.codes[:-1]])
     return Path(vertices, codes)
 
@@ -200,8 +193,7 @@ def _backslash_path():
 
 
 def _wedge_fix(wedge_path):
-    """
-    Fixes the problem with Path.wedge where it doesn't initialise the first,
+    """Fixes the problem with Path.wedge where it doesn't initialise the first,
     and last two vertices.
     This fix should not have any side-effects once Path.wedge has been fixed,
     but will then be redundant and should be removed.
@@ -231,7 +223,7 @@ CLOUD_COVER = {
 """
 A dictionary mapping WMO cloud cover codes to their corresponding symbol.
 
-See http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
+See https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
     Part II, Appendix II.4, Graphical Representation of Data, Analyses
     and Forecasts
 

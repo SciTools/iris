@@ -24,9 +24,7 @@ class Test(tests.IrisTest):
         # Also patch the private path variable to the existing value (i.e. no
         # change), and restore it after each test:  As these tests modify it,
         # that can potentially break subsequent 'normal' behaviour.
-        self.patch(
-            "iris.fileformats.dot._DOT_EXECUTABLE_PATH", _DOT_EXECUTABLE_PATH
-        )
+        self.patch("iris.fileformats.dot._DOT_EXECUTABLE_PATH", _DOT_EXECUTABLE_PATH)
 
     def test_valid_absolute_path(self):
         # Override the configuration value for System.dot_path

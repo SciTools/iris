@@ -3,6 +3,8 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
+"""Test all the gallery examples."""
+
 import importlib
 
 import matplotlib.pyplot as plt
@@ -16,7 +18,6 @@ from .conftest import GALLERY_DIR
 
 def gallery_examples():
     """Generator to yield all current gallery examples."""
-
     for example_file in GALLERY_DIR.glob("*/plot*.py"):
         yield example_file.stem
 
@@ -30,7 +31,6 @@ def test_plot_example(
     iris_future_defaults,
 ):
     """Test that all figures from example code match KGO."""
-
     module = importlib.import_module(example)
 
     # Run example.

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 has_supported_polar_stereographic_parameters`.
 
 """
@@ -41,9 +40,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
         )
         engine = _engine(cf_grid_var, cf_name)
 
-        is_valid = has_supported_polar_stereographic_parameters(
-            engine, cf_name
-        )
+        is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertTrue(is_valid)
 
@@ -61,9 +58,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
         )
         engine = _engine(cf_grid_var, cf_name)
 
-        is_valid = has_supported_polar_stereographic_parameters(
-            engine, cf_name
-        )
+        is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertTrue(is_valid)
 
@@ -81,9 +76,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
         )
         engine = _engine(cf_grid_var, cf_name)
 
-        is_valid = has_supported_polar_stereographic_parameters(
-            engine, cf_name
-        )
+        is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertTrue(is_valid)
 
@@ -101,9 +94,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
         )
         engine = _engine(cf_grid_var, cf_name)
 
-        is_valid = has_supported_polar_stereographic_parameters(
-            engine, cf_name
-        )
+        is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertTrue(is_valid)
 
@@ -121,9 +112,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
         )
         engine = _engine(cf_grid_var, cf_name)
 
-        is_valid = has_supported_polar_stereographic_parameters(
-            engine, cf_name
-        )
+        is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertTrue(is_valid)
 
@@ -141,9 +130,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
         )
         engine = _engine(cf_grid_var, cf_name)
 
-        is_valid = has_supported_polar_stereographic_parameters(
-            engine, cf_name
-        )
+        is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertTrue(is_valid)
 
@@ -166,16 +153,13 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
-            is_valid = has_supported_polar_stereographic_parameters(
-                engine, cf_name
-            )
+            is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
         self.assertRegex(
             str(warns[0]),
-            "both "
-            '"scale_factor_at_projection_origin" and "standard_parallel"',
+            "both " '"scale_factor_at_projection_origin" and "standard_parallel"',
         )
 
     def test_absent_scale_factor_and_standard_parallel(self):
@@ -195,9 +179,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
-            is_valid = has_supported_polar_stereographic_parameters(
-                engine, cf_name
-            )
+            is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
@@ -225,9 +207,7 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
-            is_valid = has_supported_polar_stereographic_parameters(
-                engine, cf_name
-            )
+            is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)

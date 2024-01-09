@@ -22,12 +22,10 @@ def bool_func(x):
 
 class UnmaskedTest(tests.IrisTest):
     def setUp(self):
-        """
-        Set up 1d and 2d unmasked data arrays for max run testing.
+        """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
         """
-
         self.data_1ds = [
             (np.array([3, 1, 1, 3, 3, 3]), 2),  # One run
             (np.array([3, 1, 1, 3, 1, 3]), 2),  # Two runs
@@ -57,12 +55,10 @@ class UnmaskedTest(tests.IrisTest):
 
 class MaskedTest(tests.IrisTest):
     def setUp(self):
-        """
-        Set up 1d and 2d unmasked data arrays for max run testing.
+        """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
         """
-
         self.data_1ds = [
             (
                 ma.masked_array(

@@ -1,3 +1,5 @@
+"""Cube block plot using using iris.plot.pcolormesh()."""
+
 import matplotlib.pyplot as plt
 
 import iris

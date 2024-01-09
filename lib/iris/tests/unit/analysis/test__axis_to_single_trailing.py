@@ -24,8 +24,7 @@ class TestInputReshape(tests.IrisTest):
         self.stat_func = mock.Mock()
 
     def check_input(self, data, axis, expected):
-        """
-        Given data and axis passed to the wrapped function, check that expected
+        """Given data and axis passed to the wrapped function, check that expected
         array is passed to the inner function.
 
         """

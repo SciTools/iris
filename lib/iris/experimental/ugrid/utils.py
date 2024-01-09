@@ -3,10 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""
-Utility operations specific to unstructured data.
-
-"""
+"""Utility operations specific to unstructured data."""
 from typing import AnyStr, Iterable, Union
 
 import dask.array as da
@@ -20,8 +17,7 @@ def recombine_submeshes(
     submesh_cubes: Union[Iterable[Cube], Cube],
     index_coord_name: AnyStr = "i_mesh_index",
 ) -> Cube:
-    """
-    Put data from sub-meshes back onto the original full mesh.
+    """Put data from sub-meshes back onto the original full mesh.
 
     The result is a cube like ``mesh_cube``, but with its data replaced by a
     combination of the data in the ``submesh_cubes``.
@@ -97,10 +93,7 @@ def recombine_submeshes(
     result_dtype = None
     indexcoord_metadata = None
     for i_sub, cube in enumerate(submesh_cubes):
-        sub_str = (
-            f"Submesh cube #{i_sub + 1}/{len(submesh_cubes)}, "
-            f'"{cube.name()}"'
-        )
+        sub_str = f"Submesh cube #{i_sub + 1}/{len(submesh_cubes)}, " f'"{cube.name()}"'
 
         # Check dimensionality.
         if cube.ndim != mesh_cube.ndim:
@@ -146,9 +139,7 @@ def recombine_submeshes(
                 )
             else:
                 # non-mesh dims : look for dim-coords (only)
-                full_coord = mesh_cube.coords(
-                    dim_coords=True, dimensions=(i_dim,)
-                )
+                full_coord = mesh_cube.coords(dim_coords=True, dimensions=(i_dim,))
                 sub_coord = cube.coords(dim_coords=True, dimensions=(i_dim,))
 
             if full_coord:
@@ -235,8 +226,7 @@ def recombine_submeshes(
 
         mesh_cube = transposed_copy(mesh_cube, tranpose_dims)
         submesh_cubes = [
-            transposed_copy(region_cube, tranpose_dims)
-            for region_cube in submesh_cubes
+            transposed_copy(region_cube, tranpose_dims) for region_cube in submesh_cubes
         ]
 
         # Also prepare for transforming the output back to the original order

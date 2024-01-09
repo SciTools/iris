@@ -1,5 +1,4 @@
-"""
-Loading a Cube From a Custom File Format
+"""Loading a Cube From a Custom File Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This example shows how a custom text file can be loaded using the standard Iris
@@ -53,7 +52,7 @@ In the ``main()`` function the filenames are loaded via the ``iris.load_cube``
 function which automatically invokes the ``FormatSpecification`` we defined.
 The cube returned from the load function is then used to produce a plot.
 
-"""
+"""  # noqa: D400
 
 import datetime
 
@@ -90,12 +89,12 @@ COLUMN_NAMES = [
 
 
 def load_NAME_III(filename):
-    """
+    """Loads the Met Office's NAME III grid output files.
+
     Loads the Met Office's NAME III grid output files returning headers, column
     definitions and data arrays as 3 separate lists.
 
     """
-
     # Loading a file gives a generator of lines which can be progressed using
     # the next() function. This will come in handy as we wish to progress
     # through the file line by line.
@@ -125,9 +124,7 @@ def load_NAME_III(filename):
                 header_value = int(header_value)
             elif header_name in DATE_HEADERS:
                 # convert the time to python datetimes
-                header_value = datetime.datetime.strptime(
-                    header_value, UTC_format
-                )
+                header_value = datetime.datetime.strptime(header_value, UTC_format)
 
             headers[header_name] = header_value
 
@@ -182,10 +179,7 @@ def load_NAME_III(filename):
 
 
 def NAME_to_cube(filenames, callback):
-    """
-    Returns a generator of cubes given a list of filenames and a callback.
-    """
-
+    """Returns a generator of cubes given a list of filenames and a callback."""
     for filename in filenames:
         header, column_headings, data_arrays = load_NAME_III(filename)
 
@@ -194,9 +188,7 @@ def NAME_to_cube(filenames, callback):
             # information for each field into a dictionary of headers for just
             # this field. Ignore the first 4 columns of grid position (data was
             # located with the data array).
-            field_headings = dict(
-                (k, v[i + 4]) for k, v in column_headings.items()
-            )
+            field_headings = dict((k, v[i + 4]) for k, v in column_headings.items())
 
             # make an cube
             cube = iris.cube.Cube(data_array)
@@ -333,9 +325,7 @@ def main():
         r"$%s < x \leq %s$" % (levels[1], levels[2]),
         r"$x > %s$" % levels[2],
     ]
-    ax.legend(
-        artists, labels, title="Ash concentration / g m-3", loc="upper left"
-    )
+    ax.legend(artists, labels, title="Ash concentration / g m-3", loc="upper left")
 
     time = cube.coord("time")
     time_date = time.units.num2date(time.points[0]).strftime(UTC_format)

@@ -186,7 +186,7 @@ def update_standard_names(first_in_series: bool) -> None:
             "(This is used during build to automatically generate the sourcefile "
             "``lib/iris/std_names.py``).\n"
             "Latest standard names:\n"
-            'wget "http://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml";'
+            'wget "https://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml";'
         )
         _wait_for_done(message)
 
@@ -530,7 +530,63 @@ def update_conda_forge(
     _wait_for_done(message)
 
     if is_release_candidate:
-        upstream_branch = "release-candidate"
+        message = (
+            "Visit the conda-forge feedstock branches page:\n"
+            "https://github.com/conda-forge/iris-feedstock/branches"
+        )
+        _wait_for_done(message)
+
+        message = (
+            "Find the release candidate branch - "
+            "`rc`/`release-candidate`/similar.\n"
+        )
+        rc_branch = _get_input(
+            message,
+            "Input the name of the release candidate branch"
+        )
+
+        message = (
+            f"Is the latest commit on {rc_branch} over 1 month ago?"
+        )
+        archive_rc = None
+        while archive_rc is None:
+            age_check = _get_input(message, "y / n")
+            if age_check.casefold() == "y".casefold():
+                archive_rc = True
+            elif age_check.casefold() == "n".casefold():
+                archive_rc = False
+            else:
+                _report_problem("Invalid entry. Please try again ...")
+
+        if archive_rc:
+            # We chose this odd handling of release candidate branches because
+            #  a persistent branch will gradually diverge as `main` receives
+            #  automatic and manual maintenance (where recreating these on
+            #  another branch is often beyond Iris dev expertise). Advised
+            #  practice from conda-forge is also liable to evolve over time.
+            #  Since there is no benefit to a continuous Git history on the
+            #  release candidate branch, the simplest way to keep it aligned
+            #  with best practice is to regularly create a fresh branch from
+            #  `main`.
+
+            date_string = datetime.today().strftime("%Y%m%d")
+            message = (
+                f"Archive the {rc_branch} branch by appending _{date_string} "
+                "to its name.\n"
+                f"e.g. rc_{date_string}\n\n"
+                f"({__file__} includes an explanation of this in the comments)."
+            )
+            _wait_for_done(message)
+
+            message = (
+                "Follow the latest conda-forge guidance for creating a new "
+                "release candidate branch from the `main` branch:\n"
+                "https://conda-forge.org/docs/maintainer/knowledge_base.html#pre-release-builds\n\n"
+                "Config file(s) should point to the `rc_iris` label.\n"
+            )
+            rc_branch = _get_input(message, "Input the name of your new branch")
+
+        upstream_branch = rc_branch
     else:
         upstream_branch = "main"
 

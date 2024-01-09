@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :class:`iris.common.metadata.CubeMetadata`.
-
-"""
+"""Unit tests for the :class:`iris.common.metadata.CubeMetadata`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -107,8 +104,7 @@ def op_leniency(request):
 
 @pytest.fixture(params=["primaryAA", "primaryAX", "primaryAB"])
 def primary_values(request):
-    """
-    Parametrize over the possible non-trivial pairs of operation values.
+    """Parametrize over the possible non-trivial pairs of operation values.
 
     The parameters all provide two attribute values which are the left- and right-hand
     arguments to the tested operation.  The attribute values are single characters from
@@ -166,8 +162,7 @@ _TEST_ATTRNAME = "_test_attr_"
 
 
 def extract_attribute_value(split_dict, extract_global):
-    """
-    Extract a test-attribute value from a split-attribute dictionary.
+    """Extract a test-attribute value from a split-attribute dictionary.
 
     Parameters
     ----------
@@ -188,8 +183,7 @@ def extract_attribute_value(split_dict, extract_global):
 
 
 def extract_result_value(input, extract_global):
-    """
-    Extract the values(s) of the main test attribute from an operation result.
+    """Extract the values(s) of the main test attribute from an operation result.
 
     Parameters
     ----------
@@ -216,10 +210,7 @@ def extract_result_value(input, extract_global):
             # For "difference", input.attributes is a *pair* of dictionaries.
             assert isinstance(result, tuple)
             result = tuple(
-                [
-                    extract_attribute_value(dic, extract_global)
-                    for dic in result
-                ]
+                [extract_attribute_value(dic, extract_global) for dic in result]
             )
             if result == (None, None):
                 # This value occurs when the desired attribute is *missing* from a
@@ -232,8 +223,7 @@ def extract_result_value(input, extract_global):
 
 
 def make_attrsdict(value):
-    """
-    Return a dictionary containing a test attribute with the given value.
+    """Return a dictionary containing a test attribute with the given value.
 
     If the value is "X", the attribute is absent (result is empty dict).
     """
@@ -253,8 +243,7 @@ def check_splitattrs_testcase(
     check_global_not_local: bool = True,
     check_reversed: bool = False,
 ):
-    """
-    Test a metadata operation with split-attributes against known expected results.
+    """Test a metadata operation with split-attributes against known expected results.
 
     Parameters
     ----------
@@ -292,9 +281,7 @@ def check_splitattrs_testcase(
     test-factors, i.e. global/local attribute type, and right-left order.
     """
     # Just for comfort, check that inputs are all one of a few single characters.
-    assert all(
-        (item in list("ABCDX")) for item in (primary_inputs + secondary_inputs)
-    )
+    assert all((item in list("ABCDX")) for item in (primary_inputs + secondary_inputs))
     # Interpret "primary" and "secondary" inputs as "global" and "local" attributes.
     if check_global_not_local:
         global_values, local_values = primary_inputs, secondary_inputs
@@ -326,9 +313,7 @@ def check_splitattrs_testcase(
         input_l, input_r = input_r, input_l
 
     # Run the actual operation
-    result = getattr(input_l, operation_name)(
-        input_r, lenient=check_is_lenient
-    )
+    result = getattr(input_l, operation_name)(input_r, lenient=check_is_lenient)
 
     if operation_name == "difference" and check_reversed:
         # Adjust the result of a "reversed" operation to the 'normal' way round.
@@ -346,9 +331,7 @@ def check_splitattrs_testcase(
     if operation_name == "equal" and expected:
         # Account for the equality cases made `False` by mismatched secondary values.
         left, right = secondary_inputs
-        secondaries_same = left == right or (
-            check_is_lenient and "X" in (left, right)
-        )
+        secondaries_same = left == right or (check_is_lenient and "X" in (left, right))
         if not secondaries_same:
             expected = False
 
@@ -357,8 +340,7 @@ def check_splitattrs_testcase(
 
 
 class MixinSplitattrsMatrixTests:
-    """
-    Define split-attributes tests to perform on all the metadata operations.
+    """Define split-attributes tests to perform on all the metadata operations.
 
     This is inherited by the testclass for each operation :
     i.e. Test___eq__, Test_combine and Test_difference
@@ -374,8 +356,7 @@ class MixinSplitattrsMatrixTests:
         primary_is_global_not_local,
         order_reversed,
     ):
-        """
-        Check the basic operation against the expected result from _ALL_RESULTS.
+        """Check the basic operation against the expected result from _ALL_RESULTS.
 
         Parametrisation checks this for all combinations of various factors :
 
@@ -403,7 +384,7 @@ class MixinSplitattrsMatrixTests:
             "secondaryXC",
             "secondaryCC",
             "secondaryCD",
-        ]
+        ],
         # NOTE: test CX as well as XC, since primary choices has "AX" but not "XA".
     )
     def test_splitattrs_global_local_independence(
@@ -412,8 +393,7 @@ class MixinSplitattrsMatrixTests:
         primary_values,
         secondary_values,
     ):
-        """
-        Check that results are (mostly) independent of the "other" type attributes.
+        """Check that results are (mostly) independent of the "other" type attributes.
 
         The operation on attributes of the 'primary' type (global/local) should be
         basically unaffected by those of the 'secondary' type (--> local/global).
@@ -488,9 +468,7 @@ class Test___eq__(MixinSplitattrsMatrixTests):
         lmetadata = self.cls(**self.lvalues)
         rmetadata = self.cls(**self.rvalues)
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # Check equality both l==r and r==l.
             assert lmetadata.__eq__(rmetadata)
             assert rmetadata.__eq__(lmetadata)
@@ -513,13 +491,9 @@ class Test___eq__(MixinSplitattrsMatrixTests):
                 expect_success = is_lenient
             else:
                 # Ensure we are handling all the different field cases
-                raise ValueError(
-                    f"{self.__name__} unhandled fieldname : {fieldname}"
-                )
+                raise ValueError(f"{self.__name__} unhandled fieldname : {fieldname}")
 
-            with mock.patch(
-                "iris.common.metadata._LENIENT", return_value=is_lenient
-            ):
+            with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
                 # Check equality both l==r and r==l.
                 assert lmetadata.__eq__(rmetadata) == expect_success
                 assert rmetadata.__eq__(lmetadata) == expect_success
@@ -547,13 +521,9 @@ class Test___eq__(MixinSplitattrsMatrixTests):
                 expect_success = is_lenient
             else:
                 # Ensure we are handling all the different field cases
-                raise ValueError(
-                    f"{self.__name__} unhandled fieldname : {fieldname}"
-                )
+                raise ValueError(f"{self.__name__} unhandled fieldname : {fieldname}")
 
-            with mock.patch(
-                "iris.common.metadata._LENIENT", return_value=is_lenient
-            ):
+            with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
                 # Check equality both l==r and r==l.
                 assert lmetadata.__eq__(rmetadata) == expect_success
                 assert rmetadata.__eq__(lmetadata) == expect_success
@@ -566,9 +536,7 @@ class Test___eq__(MixinSplitattrsMatrixTests):
         rmetadata = self.cls(**self.rvalues)
         # This counts as equal *only* in the lenient case.
         expect_success = is_lenient
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # Check equality both l==r and r==l.
             assert lmetadata.__eq__(rmetadata) == expect_success
             assert rmetadata.__eq__(lmetadata) == expect_success
@@ -580,9 +548,7 @@ class Test___eq__(MixinSplitattrsMatrixTests):
         self.rvalues["attributes"]["_extra_"] = mock.sentinel.value2
         lmetadata = self.cls(**self.lvalues)
         rmetadata = self.cls(**self.rvalues)
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # This should ALWAYS fail.
             assert not lmetadata.__eq__(rmetadata)
             assert not rmetadata.__eq__(lmetadata)
@@ -677,9 +643,7 @@ class Test_combine(MixinSplitattrsMatrixTests):
         rmetadata = self.cls(**self.rvalues)
         expected = self.lvalues
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # Check both l+r and r+l
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
@@ -705,9 +669,7 @@ class Test_combine(MixinSplitattrsMatrixTests):
             strict_result = not is_lenient
         else:
             # Ensure we are handling all the different field cases
-            raise ValueError(
-                f"{self.__name__} unhandled fieldname : {fieldname}"
-            )
+            raise ValueError(f"{self.__name__} unhandled fieldname : {fieldname}")
 
         if strict_result:
             # include only those which both have
@@ -716,9 +678,7 @@ class Test_combine(MixinSplitattrsMatrixTests):
             # also include those which only 1 has
             expected = self.lvalues
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # Check both l+r and r+l
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
@@ -740,9 +700,7 @@ class Test_combine(MixinSplitattrsMatrixTests):
         expected = self.lvalues.copy()
         expected[fieldname] = None
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # Check both l+r and r+l
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
@@ -764,9 +722,7 @@ class Test_combine(MixinSplitattrsMatrixTests):
             # .. it should not
             expected = self.lvalues
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # Check both l+r and r+l
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
@@ -791,9 +747,7 @@ class Test_combine(MixinSplitattrsMatrixTests):
         expected = self.lvalues.copy()
         expected["attributes"] = None
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # Check both l+r and r+l
             assert lmetadata.combine(rmetadata)._asdict() == expected
             assert rmetadata.combine(lmetadata)._asdict() == expected
@@ -855,9 +809,7 @@ class Test_difference(MixinSplitattrsMatrixTests):
         lmetadata = self.cls(**self.lvalues)
         rmetadata = self.cls(**self.rvalues)
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             assert lmetadata.difference(rmetadata) is None
             assert rmetadata.difference(lmetadata) is None
 
@@ -880,14 +832,10 @@ class Test_difference(MixinSplitattrsMatrixTests):
             strict_result = not is_lenient
         else:
             # Ensure we are handling all the different field cases
-            raise ValueError(
-                f"{self.__name__} unhandled fieldname : {fieldname}"
-            )
+            raise ValueError(f"{self.__name__} unhandled fieldname : {fieldname}")
 
         if strict_result:
-            diffentry = tuple(
-                [getattr(mm, fieldname) for mm in (lmetadata, rmetadata)]
-            )
+            diffentry = tuple([getattr(mm, fieldname) for mm in (lmetadata, rmetadata)])
             # NOTE: in these cases, the difference metadata will fail an == operation,
             # because of the 'None' entries.
             # But we can use metadata._asdict() and test that.
@@ -896,9 +844,7 @@ class Test_difference(MixinSplitattrsMatrixTests):
             rexpected = lexpected.copy()
             rexpected[fieldname] = diffentry[::-1]
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             if strict_result:
                 assert lmetadata.difference(rmetadata)._asdict() == lexpected
                 assert rmetadata.difference(lmetadata)._asdict() == rexpected
@@ -946,9 +892,7 @@ class Test_difference(MixinSplitattrsMatrixTests):
             rexpected = lexpected.copy()
             rexpected["attributes"] = diffentry[::-1]
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             if is_lenient:
                 # It recognises no difference
                 assert lmetadata.difference(rmetadata) is None
@@ -984,9 +928,7 @@ class Test_difference(MixinSplitattrsMatrixTests):
         rexpected = lexpected.copy()
         rexpected["attributes"] = diffentry[::-1]
 
-        with mock.patch(
-            "iris.common.metadata._LENIENT", return_value=is_lenient
-        ):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=is_lenient):
             # As calculated above -- same for both strict + lenient
             assert lmetadata.difference(rmetadata)._asdict() == lexpected
             assert rmetadata.difference(lmetadata)._asdict() == rexpected

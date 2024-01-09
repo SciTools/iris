@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""
-Extensions to Iris' NetCDF saving to allow
+"""Extensions to Iris' NetCDF saving to allow
 :class:`~iris.experimental.ugrid.mesh.Mesh` saving in UGRID format.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
@@ -16,8 +15,7 @@ from ...fileformats import netcdf
 
 
 def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
-    """
-    Save mesh(es) to a netCDF file.
+    """Save mesh(es) to a netCDF file.
 
     Args:
 
@@ -49,15 +47,11 @@ def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
             mesh_dimensions, _ = sman._get_dim_names(mesh)
 
             # Create dimensions.
-            sman._create_cf_dimensions(
-                cube=None, dimension_names=mesh_dimensions
-            )
+            sman._create_cf_dimensions(cube=None, dimension_names=mesh_dimensions)
 
             # Create the mesh components.
             sman._add_mesh(mesh)
 
         # Add a conventions attribute.
         # TODO: add 'UGRID' to conventions, when this is agreed with CF ?
-        sman.update_global_attributes(
-            Conventions=netcdf.CF_CONVENTIONS_VERSION
-        )
+        sman.update_global_attributes(Conventions=netcdf.CF_CONVENTIONS_VERSION)

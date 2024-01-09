@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 build_dimension_coordinate`.
 
 """
@@ -114,9 +113,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(
-                expected_coord, [0]
-            )
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
 
     def test_dim_coord_construction(self):
         self.check_case_dim_coord_construction(climatology=False)
@@ -148,9 +145,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
                 build_dimension_coordinate(self.engine, self.cf_coord_var)
 
                 # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(
-                    expected_coord, [0]
-                )
+                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
 
             # Assert warning is raised
             assert len(w) == 1
@@ -179,9 +174,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
                 build_dimension_coordinate(self.engine, self.cf_coord_var)
 
                 # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(
-                    expected_coord, [0]
-                )
+                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
 
             # Assert no warning is raised
             assert len(w) == 0
@@ -205,9 +198,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
                 build_dimension_coordinate(self.engine, self.cf_coord_var)
 
                 # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(
-                    expected_coord, [0]
-                )
+                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
 
             # Assert no warning is raised
             assert len(w) == 0
@@ -228,15 +219,11 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         warning_patch = mock.patch("warnings.warn")
 
         # Asserts must lie within context manager because of deferred loading.
-        with (
-            warning_patch
-        ), self.deferred_load_patch, self.get_cf_bounds_var_patch:
+        with warning_patch, self.deferred_load_patch, self.get_cf_bounds_var_patch:
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_aux_coord.assert_called_with(
-                expected_coord, [0]
-            )
+            self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
             self.assertIn(
                 "creating 'wibble' auxiliary coordinate instead",
                 warnings.warn.call_args[0][0],
@@ -321,15 +308,11 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(
-                expected_coord, [0]
-            )
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
 
             # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(
-                self.engine.cube_parts["coordinates"], expected_list
-            )
+            self.assertEqual(self.engine.cube_parts["coordinates"], expected_list)
 
     def test_fastest_varying_vertex_dim(self):
         bounds = np.arange(12).reshape(6, 2)
@@ -353,15 +336,11 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(
-                expected_coord, [0]
-            )
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
 
             # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(
-                self.engine.cube_parts["coordinates"], expected_list
-            )
+            self.assertEqual(self.engine.cube_parts["coordinates"], expected_list)
 
     def test_fastest_with_different_dim_names(self):
         # Despite the dimension names 'x' differing from the coord's
@@ -388,15 +367,11 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             build_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(
-                expected_coord, [0]
-            )
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
 
             # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(
-                self.engine.cube_parts["coordinates"], expected_list
-            )
+            self.assertEqual(self.engine.cube_parts["coordinates"], expected_list)
 
 
 class TestCircular(tests.IrisTest, RulesTestMixin):

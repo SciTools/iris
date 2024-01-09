@@ -26,6 +26,10 @@ This document explains the changes made to Iris for this release
 
 #. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
 
+#. `@HGWright`_, `@bjlittle`_ and `@trexfeathers`_ (reviewers) added a
+   CITATION.cff file to Iris and updated the :ref:`citation documentation <Citing_Iris>`
+   , to help users cite Iris in their work. (:pull:`5483`)
+
 
 ✨ Features
 ===========
@@ -39,7 +43,7 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
    lazy data. (:pull:`5307`)
-   
+
 #. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
    :class:`UserWarning`\s for richer filtering. The full index of
    sub-categories can be seen here: :mod:`iris.exceptions` . (:pull:`5498`)
@@ -54,7 +58,7 @@ This document explains the changes made to Iris for this release
    Winter - December to February) will be assigned to the preceding year (e.g.
    the year of December) instead of the following year (the default behaviour).
    (:pull:`5573`)
-   
+
 #. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
    intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
    coordinate. (:pull:`5551`)
@@ -76,6 +80,9 @@ This document explains the changes made to Iris for this release
 #. `@acchamber`_ and `@rcomer`_ modified 2D plots so that time axes and their
    ticks have more sensible default labels.  (:issue:`5426`, :pull:`5561`)
 
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) added handling for realization
+   coordinates when saving pp files (:issue:`4747`, :pull:`5568`)
+
 
 💣 Incompatible Changes
 =======================
@@ -89,6 +96,10 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ improved the speed of :class:`~iris.analysis.AreaWeighted`
    regridding. (:pull:`5543`)
 
+#. `@bouweandela`_ made :func:`iris.util.array_equal` faster when comparing
+   lazy data from file. This will also speed up coordinate comparison.
+   (:pull:`5610`)
+
 
 🔥 Deprecations
 ===============
@@ -101,6 +112,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ enforced the minimum pin of ``numpy>1.21`` in accordance with the `NEP29 Drop Schedule`_.
    (:pull:`5525`)
+
+#. `@bjlittle`_ enforced the minimum pin of ``numpy>1.22`` in accordance with the `NEP29 Drop Schedule`_.
+   (:pull:`5668`)
 
 
 📚 Documentation
@@ -125,6 +139,8 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ and `@trexfeathers`_ created a technical paper for NetCDF
    saving and loading, :ref:`netcdf_io` with a section on chunking, and placeholders
    for further topics. (:pull:`5588`)
+
+#. `@bouweandela`_ updated all hyperlinks to https. (:pull:`5621`)
 
 
 💼 Internal
@@ -154,6 +170,23 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ corrected various comment spelling mistakes detected by
    `codespell`_. (:pull:`5546`)
+
+#. `@rcomer`_ reduced the size of the conda environment used for testing.
+   (:pull:`5606`)
+
+#. `@trexfeathers`_ and `@pp-mo`_ improved how the conda-forge feedstock
+   release candidate branch is managed, via:
+   :doc:`../developers_guide/release_do_nothing`.
+   (:pull:`5515`)
+
+#. `@bjlittle`_ adopted and configured the `ruff`_ linter. (:pull:`5623`)
+
+#. `@bjlittle`_ configured the ``line-length = 88`` for `black`_, `isort`_
+   and `ruff`_. (:pull:`5632`)
+
+#. `@bjlittle`_ replaced `isort`_ with `ruff`_. (:pull:`5633`)
+
+#. `@bjlittle`_ replaced `black`_ with `ruff`_. (:pull:`5634`)
 
 
 .. comment

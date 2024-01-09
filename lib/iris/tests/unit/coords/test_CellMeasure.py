@@ -110,10 +110,7 @@ class Tests(tests.IrisTest):
         self.assertEqual(self.measure.__str__(), expected)
 
     def test___repr__(self):
-        expected = (
-            "<CellMeasure: cell_area / (m^2)  "
-            "[10., 12., 16., 9.]  shape(4,)>"
-        )
+        expected = "<CellMeasure: cell_area / (m^2)  [10., 12., 16., 9.]  shape(4,)>"
         self.assertEqual(expected, self.measure.__repr__())
 
     def test__eq__(self):

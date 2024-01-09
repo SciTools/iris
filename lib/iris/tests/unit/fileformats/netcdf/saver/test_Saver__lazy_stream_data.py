@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for :meth:`iris.fileformats.netcdf.saver.Saver._lazy_stream_data`.
+"""Unit tests for :meth:`iris.fileformats.netcdf.saver.Saver._lazy_stream_data`.
 
 The behaviour of this method is complex, and this only tests certain aspects.
 The testing of the dask delayed operations and file writing are instead covered by
@@ -31,9 +30,7 @@ class Test__lazy_stream_data:
         mock_dataset = mock.MagicMock()
         mock_dataset_class = mock.Mock(return_value=mock_dataset)
         # Mock the wrapper within the netcdf saver
-        target1 = (
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper"
-        )
+        target1 = "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper"
         # Mock the real netCDF4.Dataset within the threadsafe-nc module, as this is
         # used by NetCDFDataProxy and NetCDFWriteProxy.
         target2 = "iris.fileformats.netcdf._thread_safe_nc.netCDF4.Dataset"
@@ -58,18 +55,14 @@ class Test__lazy_stream_data:
     @staticmethod
     def saver(compute) -> Saver:
         # Create a test Saver object
-        return Saver(
-            filename="<dummy>", netcdf_format="NETCDF4", compute=compute
-        )
+        return Saver(filename="<dummy>", netcdf_format="NETCDF4", compute=compute)
 
     @staticmethod
     def mock_var(shape, with_data_array):
         # Create a test cf_var object.
         # N.B. using 'spec=' so we can control whether it has a '_data_array' property.
         if with_data_array:
-            extra_properties = {
-                "_data_array": mock.sentinel.initial_data_array
-            }
+            extra_properties = {"_data_array": mock.sentinel.initial_data_array}
         else:
             extra_properties = {}
         mock_cfvar = mock.MagicMock(
@@ -125,8 +118,7 @@ class Test__lazy_stream_data:
             cf_var._data_array == mock.sentinel.exact_data_array
 
     def test_warnings(self, compute, data_form):
-        """
-        For real data, fill-value warnings are issued immediately.
+        """For real data, fill-value warnings are issued immediately.
         For lazy data, warnings are returned from computing a delayed completion.
         For 'emulated' data (direct array transfer), no checks + no warnings ever.
 

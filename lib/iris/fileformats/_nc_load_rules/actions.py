@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Replacement code for the Pyke rules.
+"""Replacement code for the Pyke rules.
 
 For now, we are still emulating various aspects of how our original Pyke-based
 code used the Pyke 'engine' to hold translation data, both Pyke-specific and
@@ -286,9 +285,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
-    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[
-        coord_type
-    ]
+    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[coord_type]
     if coord_grid_class is None:
         # Coordinates not identified with a specific grid-type class (latlon,
         # rotated or projected) are always built, but can have no coord-system.
@@ -539,8 +536,7 @@ def action_formula_term(engine, formula_term_fact):
 
 
 def run_actions(engine):
-    """
-    Run all actions for a cube.
+    """Run all actions for a cube.
 
     This is the top-level "activation" function which runs all the appropriate
     rules actions to translate facts and build all the cube elements.
@@ -548,7 +544,6 @@ def run_actions(engine):
     The specific cube being translated is "engine.cube".
 
     """
-
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 

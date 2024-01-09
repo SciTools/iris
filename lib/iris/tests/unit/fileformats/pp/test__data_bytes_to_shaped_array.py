@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the `iris.fileformats.pp._data_bytes_to_shaped_array` function.
-
-"""
+"""Unit tests for the `iris.fileformats.pp._data_bytes_to_shaped_array` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -25,9 +22,7 @@ import iris.fileformats.pp as pp
 @pytest.mark.parametrize(
     "expected_shape", [(2, 3), (3, 2), (1, 3), (2, 2), (3, 3), (2, 4)]
 )
-@pytest.mark.parametrize(
-    "data_type", [np.float32, np.int32, np.int16, np.int8]
-)
+@pytest.mark.parametrize("data_type", [np.float32, np.int32, np.int16, np.int8])
 def test_data_padding__no_compression(data_shape, expected_shape, data_type):
     data = np.empty(data_shape, dtype=data_type)
 
@@ -59,9 +54,7 @@ def test_data_padding__no_compression(data_shape, expected_shape, data_type):
             _ = pp._data_bytes_to_shaped_array(*args)
 
 
-class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
-    tests.IrisTest
-):
+class Test__data_bytes_to_shaped_array__lateral_boundary_compression(tests.IrisTest):
     def setUp(self):
         self.data_shape = 30, 40
         y_halo, x_halo, rim = 2, 3, 4
@@ -75,18 +68,12 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
             y_halo + rim : -(y_halo + rim), x_halo + rim : -(x_halo + rim)
         ] = True
 
-        self.decompressed = ma.masked_array(
-            decompressed, mask=decompressed_mask
-        )
+        self.decompressed = ma.masked_array(decompressed, mask=decompressed_mask)
 
         self.north = decompressed[-(y_halo + rim) :, :]
-        self.east = decompressed[
-            y_halo + rim : -(y_halo + rim), -(x_halo + rim) :
-        ]
+        self.east = decompressed[y_halo + rim : -(y_halo + rim), -(x_halo + rim) :]
         self.south = decompressed[: y_halo + rim, :]
-        self.west = decompressed[
-            y_halo + rim : -(y_halo + rim), : x_halo + rim
-        ]
+        self.west = decompressed[y_halo + rim : -(y_halo + rim), : x_halo + rim]
 
         # Get the bytes of the north, east, south, west arrays combined.
         buf = io.BytesIO()

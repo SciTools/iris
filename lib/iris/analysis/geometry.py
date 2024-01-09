@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Various utilities related to geometric operations.
+"""Various utilities related to geometric operations.
 
 .. note::
     This module requires :mod:`shapely`.
@@ -19,16 +18,14 @@ import iris.exceptions
 
 
 def _extract_relevant_cube_slice(cube, geometry):
-    """
-    Given a shapely geometry object, this helper method returns
+    """Given a shapely geometry object, this helper method returns
     the tuple
     (subcube, x_coord_of_subcube, y_coord_of_subcube,
-     (min_x_index, min_y_index, max_x_index, max_y_index))
+     (min_x_index, min_y_index, max_x_index, max_y_index)).
 
     If cube and geometry don't overlap, returns None.
 
     """
-
     # Validate the input parameters
     if not cube.coords(axis="x") or not cube.coords(axis="y"):
         raise ValueError("The cube must contain x and y axes.")
@@ -72,7 +69,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_min_ix = x_min_ix[np.argmax(x_bounds_lower[x_min_ix])]
     except ValueError:
         warnings.warn(
-            "The geometry exceeds the cube's x dimension at the " "lower end.",
+            "The geometry exceeds the cube's x dimension at the lower end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )
         x_min_ix = 0 if x_ascending else x_coord.points.size - 1
@@ -82,7 +79,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_max_ix = x_max_ix[np.argmin(x_bounds_upper[x_max_ix])]
     except ValueError:
         warnings.warn(
-            "The geometry exceeds the cube's x dimension at the " "upper end.",
+            "The geometry exceeds the cube's x dimension at the upper end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )
         x_max_ix = x_coord.points.size - 1 if x_ascending else 0
@@ -92,7 +89,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         y_min_ix = y_min_ix[np.argmax(y_bounds_lower[y_min_ix])]
     except ValueError:
         warnings.warn(
-            "The geometry exceeds the cube's y dimension at the " "lower end.",
+            "The geometry exceeds the cube's y dimension at the lower end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )
         y_min_ix = 0 if y_ascending else y_coord.points.size - 1
@@ -102,7 +99,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         y_max_ix = y_max_ix[np.argmin(y_bounds_upper[y_max_ix])]
     except ValueError:
         warnings.warn(
-            "The geometry exceeds the cube's y dimension at the " "upper end.",
+            "The geometry exceeds the cube's y dimension at the upper end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )
         y_max_ix = y_coord.points.size - 1 if y_ascending else 0
@@ -137,8 +134,7 @@ def _extract_relevant_cube_slice(cube, geometry):
 
 
 def geometry_area_weights(cube, geometry, normalize=False):
-    """
-    Returns the array of weights corresponding to the area of overlap between
+    """Returns the array of weights corresponding to the area of overlap between
     the cells of cube's horizontal grid, and the given shapely geometry.
 
     The returned array is suitable for use with :const:`iris.analysis.MEAN`.
@@ -180,7 +176,6 @@ def geometry_area_weights(cube, geometry, normalize=False):
         Default is False.
 
     """
-
     # extract smallest subcube containing geometry
     shape = cube.shape
     extraction_results = _extract_relevant_cube_slice(cube, geometry)

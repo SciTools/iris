@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :mod:`iris.coords` module.
+"""Unit tests for the :mod:`iris.coords` module.
 
 Provides test methods and classes common to
 :class:`~iris.tests.unit.coords.test_AuxCoord` and
@@ -36,26 +35,18 @@ def setup_test_arrays(self, shape, masked=False):
     if masked:
         mpoints = ma.array(points)
         self.no_masked_pts_real = mpoints
-        self.no_masked_pts_lazy = da.from_array(
-            mpoints, mpoints.shape, asarray=False
-        )
+        self.no_masked_pts_lazy = da.from_array(mpoints, mpoints.shape, asarray=False)
         mpoints = ma.array(mpoints, copy=True)
         mpoints[0] = ma.masked
         self.masked_pts_real = mpoints
-        self.masked_pts_lazy = da.from_array(
-            mpoints, mpoints.shape, asarray=False
-        )
+        self.masked_pts_lazy = da.from_array(mpoints, mpoints.shape, asarray=False)
         mbounds = ma.array(bounds)
         self.no_masked_bds_real = mbounds
-        self.no_masked_bds_lazy = da.from_array(
-            mbounds, mbounds.shape, asarray=False
-        )
+        self.no_masked_bds_lazy = da.from_array(mbounds, mbounds.shape, asarray=False)
         mbounds = ma.array(mbounds, copy=True)
         mbounds[0] = ma.masked
         self.masked_bds_real = mbounds
-        self.masked_bds_lazy = da.from_array(
-            mbounds, mbounds.shape, asarray=False
-        )
+        self.masked_bds_lazy = da.from_array(mbounds, mbounds.shape, asarray=False)
 
 
 def is_real_data(array):

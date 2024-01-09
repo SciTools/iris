@@ -3,10 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""
-Classes for representing multi-dimensional data with metadata.
-
-"""
+"""Classes for representing multi-dimensional data with metadata."""
 
 from collections import OrderedDict
 import copy
@@ -57,10 +54,7 @@ XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
 
 
 class _CubeFilter:
-    """
-    A constraint, paired with a list of cubes matching that constraint.
-
-    """
+    """A constraint, paired with a list of cubes matching that constraint."""
 
     def __init__(self, constraint, cubes=None):
         self.constraint = constraint
@@ -72,8 +66,7 @@ class _CubeFilter:
         return len(self.cubes)
 
     def add(self, cube):
-        """
-        Adds the appropriate (sub)cube to the list of cubes where it
+        """Adds the appropriate (sub)cube to the list of cubes where it
         matches the constraint.
 
         """
@@ -82,13 +75,12 @@ class _CubeFilter:
             self.cubes.append(sub_cube)
 
     def merged(self, unique=False):
-        """
-        Returns a new :class:`_CubeFilter` by merging the list of
+        """Returns a new :class:`_CubeFilter` by merging the list of
         cubes.
 
-        Kwargs:
-
-        * unique:
+        Parameters
+        ----------
+        unique : bool, optional, default=False
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
@@ -97,15 +89,11 @@ class _CubeFilter:
 
 
 class _CubeFilterCollection:
-    """
-    A list of _CubeFilter instances.
-
-    """
+    """A list of _CubeFilter instances."""
 
     @staticmethod
     def from_cubes(cubes, constraints=None):
-        """
-        Creates a new collection from an iterable of cubes, and some
+        """Creates a new collection from an iterable of cubes, and some
         optional constraints.
 
         """
@@ -120,8 +108,7 @@ class _CubeFilterCollection:
         self.pairs = pairs
 
     def add_cube(self, cube):
-        """
-        Adds the given :class:`~iris.cube.Cube` to all of the relevant
+        """Adds the given :class:`~iris.cube.Cube` to all of the relevant
         constraint pairs.
 
         """
@@ -129,8 +116,7 @@ class _CubeFilterCollection:
             pair.add(cube)
 
     def cubes(self):
-        """
-        Returns all the cubes in this collection concatenated into a
+        """Returns all the cubes in this collection concatenated into a
         single :class:`CubeList`.
 
         """
@@ -140,25 +126,21 @@ class _CubeFilterCollection:
         return result
 
     def merged(self, unique=False):
-        """
-        Returns a new :class:`_CubeFilterCollection` by merging all the cube
+        """Returns a new :class:`_CubeFilterCollection` by merging all the cube
         lists of this collection.
 
-        Kwargs:
-
-        * unique:
+        Parameters
+        ----------
+        unique : bool, optional, default=False
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
         """
-        return _CubeFilterCollection(
-            [pair.merged(unique) for pair in self.pairs]
-        )
+        return _CubeFilterCollection([pair.merged(unique) for pair in self.pairs])
 
 
 class CubeList(list):
-    """
-    All the functionality of a standard :class:`list` with added "Cube"
+    """All the functionality of a standard :class:`list` with added "Cube"
     context.
 
     """
@@ -174,8 +156,7 @@ class CubeList(list):
     def __str__(self):
         """Runs short :meth:`Cube.summary` on every cube."""
         result = [
-            "%s: %s" % (i, cube.summary(shorten=True))
-            for i, cube in enumerate(self)
+            "%s: %s" % (i, cube.summary(shorten=True)) for i, cube in enumerate(self)
         ]
         if result:
             result = "\n".join(result)
@@ -190,10 +171,7 @@ class CubeList(list):
     @staticmethod
     def _assert_is_cube(obj):
         if not hasattr(obj, "add_aux_coord"):
-            msg = (
-                r"Object {obj} cannot be put in a cubelist, "
-                "as it is not a Cube."
-            )
+            msg = r"Object {obj} cannot be put in a cubelist, as it is not a Cube."
             raise ValueError(msg)
 
     def _repr_html_(self):
@@ -208,15 +186,14 @@ class CubeList(list):
         return CubeList(list.__add__(self, other))
 
     def __getitem__(self, keys):
-        """x.__getitem__(y) <==> x[y]"""
+        """x.__getitem__(y) <==> x[y]."""
         result = super().__getitem__(keys)
         if isinstance(result, list):
             result = CubeList(result)
         return result
 
     def __getslice__(self, start, stop):
-        """
-        x.__getslice__(i, j) <==> x[i:j]
+        """x.__getslice__(i, j) <==> x[i:j].
 
         Use of negative indices is not supported.
 
@@ -226,13 +203,11 @@ class CubeList(list):
         return result
 
     def __iadd__(self, other_cubes):
-        """
-        Add a sequence of cubes to the cubelist in place.
-        """
+        """Add a sequence of cubes to the cubelist in place."""
         return super(CubeList, self).__iadd__(CubeList(other_cubes))
 
     def __setitem__(self, key, cube_or_sequence):
-        """Set self[key] to cube or sequence of cubes"""
+        """Set self[key] to cube or sequence of cubes."""
         if isinstance(key, int):
             # should have single cube.
             self._assert_is_cube(cube_or_sequence)
@@ -243,33 +218,28 @@ class CubeList(list):
         super(CubeList, self).__setitem__(key, cube_or_sequence)
 
     def append(self, cube):
-        """
-        Append a cube.
-        """
+        """Append a cube."""
         self._assert_is_cube(cube)
         super(CubeList, self).append(cube)
 
     def extend(self, other_cubes):
-        """
-        Extend cubelist by appending the cubes contained in other_cubes.
+        """Extend cubelist by appending the cubes contained in other_cubes.
 
-        Args:
-
-        * other_cubes:
+        Parameters
+        ----------
+        other_cubes :
            A cubelist or other sequence of cubes.
+
         """
         super(CubeList, self).extend(CubeList(other_cubes))
 
     def insert(self, index, cube):
-        """
-        Insert a cube before index.
-        """
+        """Insert a cube before index."""
         self._assert_is_cube(cube)
         super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
-
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
         cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
@@ -288,8 +258,7 @@ class CubeList(list):
         return doc.toprettyxml(indent="  ")
 
     def extract(self, constraints):
-        """
-        Filter each of the cubes which can be filtered by the given
+        """Filter each of the cubes which can be filtered by the given
         constraints.
 
         This method iterates over each constraint given, and subsets each of
@@ -297,26 +266,26 @@ class CubeList(list):
         **n** when filtered with **m** constraints can generate a maximum of
         **m * n** cubes.
 
-        Args:
-
-        * constraints (:class:`~iris.Constraint` or iterable of constraints):
+        Parameters
+        ----------
+         constraints : :class:`~iris.Constraint` or iterable of constraints
             A single constraint or an iterable.
 
         """
         return self._extract_and_merge(self, constraints, strict=False)
 
     def extract_cube(self, constraint):
-        """
-        Extract a single cube from a CubeList, and return it.
+        """Extract a single cube from a CubeList, and return it.
         Raise an error if the extract produces no cubes, or more than one.
 
-        Args:
-
-        * constraint (:class:`~iris.Constraint`):
+        Parameters
+        ----------
+        constraint : :class:`~iris.Constraint`
             The constraint to extract with.
 
-        .. see also::
-            :meth:`~iris.cube.CubeList.extract`
+        See Also
+        --------
+        :meth:`~iris.cube.CubeList.extract`
 
         """
         # Just validate this, so we can accept strings etc, but not multiples.
@@ -326,18 +295,18 @@ class CubeList(list):
         )
 
     def extract_cubes(self, constraints):
-        """
-        Extract specific cubes from a CubeList, one for each given constraint.
+        """Extract specific cubes from a CubeList, one for each given constraint.
         Each constraint must produce exactly one cube, otherwise an error is
         raised.
 
-        Args:
-
-        * constraints (iterable of, or single, :class:`~iris.Constraint`):
+        Parameters
+        ----------
+        constraints : iter of, or single, :class:`~iris.Constraint`
             The constraints to extract with.
 
-        .. see also::
-            :meth:`~iris.cube.CubeList.extract`
+        See Also
+        --------
+        :meth:`~iris.cube.CubeList.extract`
 
         """
         return self._extract_and_merge(
@@ -345,9 +314,7 @@ class CubeList(list):
         )
 
     @staticmethod
-    def _extract_and_merge(
-        cubes, constraints, strict=False, return_single_cube=False
-    ):
+    def _extract_and_merge(cubes, constraints, strict=False, return_single_cube=False):
         constraints = iris._constraints.list_of_constraints(constraints)
 
         # group the resultant cubes by constraints in a dictionary
@@ -364,7 +331,7 @@ class CubeList(list):
         for constraint in constraints:
             constraint_cubes = constraint_groups[constraint]
             if strict and len(constraint_cubes) != 1:
-                msg = "Got %s cubes for constraint %r, " "expecting 1." % (
+                msg = "Got %s cubes for constraint %r, expecting 1." % (
                     len(constraint_cubes),
                     constraint,
                 )
@@ -384,14 +351,13 @@ class CubeList(list):
         return result
 
     def extract_overlapping(self, coord_names):
-        """
-        Returns a :class:`CubeList` of cubes extracted over regions
+        """Returns a :class:`CubeList` of cubes extracted over regions
         where the coordinates overlap, for the coordinates
         in coord_names.
 
-        Args:
-
-        * coord_names:
+        Parameters
+        ----------
+        coord_names : str or list of str
            A string or list of strings of the names of the coordinates
            over which to perform the extraction.
 
@@ -401,22 +367,18 @@ class CubeList(list):
 
         def make_overlap_fn(coord_name):
             def overlap_fn(cell):
-                return all(
-                    cell in cube.coord(coord_name).cells() for cube in self
-                )
+                return all(cell in cube.coord(coord_name).cells() for cube in self)
 
             return overlap_fn
 
         coord_values = {
-            coord_name: make_overlap_fn(coord_name)
-            for coord_name in coord_names
+            coord_name: make_overlap_fn(coord_name) for coord_name in coord_names
         }
 
         return self.extract(iris.Constraint(coord_values=coord_values))
 
     def merge_cube(self):
-        """
-        Return the merged contents of the :class:`CubeList` as a single
+        """Return the merged contents of the :class:`CubeList` as a single
         :class:`Cube`.
 
         If it is not possible to merge the `CubeList` into a single
@@ -452,16 +414,17 @@ class CubeList(list):
         return merged_cube
 
     def merge(self, unique=True):
-        """
-        Returns the :class:`CubeList` resulting from merging this
+        """Returns the :class:`CubeList` resulting from merging this
         :class:`CubeList`.
 
-        Kwargs:
-
-        * unique:
+        Parameters
+        ----------
+        unique : bool, optional, default=True
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
+        Examples
+        --------
         This combines cubes with different values of an auxiliary scalar
         coordinate, by constructing a new dimension.
 
@@ -475,7 +438,7 @@ class CubeList(list):
             c2 = c1.copy()
             c2.coord('y_vals').points = [200]
 
-        For example::
+        ::
 
             >>> print(c1)
             some_parameter / (unknown)          (x_vals: 3)
@@ -554,33 +517,29 @@ class CubeList(list):
         check_ancils=True,
         check_derived_coords=True,
     ):
-        """
-        Return the concatenated contents of the :class:`CubeList` as a single
+        """Return the concatenated contents of the :class:`CubeList` as a single
         :class:`Cube`.
 
         If it is not possible to concatenate the `CubeList` into a single
         `Cube`, a :class:`~iris.exceptions.ConcatenateError` will be raised
         describing the reason for the failure.
 
-        Kwargs:
-
-        * check_aux_coords
+        Parameters
+        ----------
+        check_aux_coords : bool, optional, default=True
             Checks if the points and bounds of auxiliary coordinates of the
             cubes match. This check is not applied to auxiliary coordinates
             that span the dimension the concatenation is occurring along.
             Defaults to True.
-
-        * check_cell_measures
+        check_cell_measures : bool, optional, default=True
             Checks if the data of cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension the
             concatenation is occurring along. Defaults to True.
-
-        * check_ancils
+        check_ancils : bool, optional, default=True
             Checks if the data of ancillary variables of the cubes match. This
             check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
-
-        * check_derived_coords
+        check_derived_coords : bool, optional, default=True
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
             the dimension the concatenation is occurring along. Note that
@@ -589,6 +548,8 @@ class CubeList(list):
             coordinates used to derive the coordinates can be ignored with
             `check_aux_coords`. Defaults to True.
 
+        Notes
+        -----
         .. note::
 
             Concatenation cannot occur along an anonymous dimension.
@@ -617,16 +578,13 @@ class CubeList(list):
                 msgs = []
                 msgs.append("An unexpected problem prevented concatenation.")
                 msgs.append(
-                    "Expected only a single cube, "
-                    "found {}.".format(n_res_cubes)
+                    "Expected only a single cube, found {}.".format(n_res_cubes)
                 )
                 raise iris.exceptions.ConcatenateError(msgs)
         else:
             msgs = []
             msgs.append(
-                "Cube names differ: {} != {}".format(
-                    unique_names[0], unique_names[1]
-                )
+                "Cube names differ: {} != {}".format(unique_names[0], unique_names[1])
             )
             raise iris.exceptions.ConcatenateError(msgs)
 
@@ -637,28 +595,24 @@ class CubeList(list):
         check_ancils=True,
         check_derived_coords=True,
     ):
-        """
-        Concatenate the cubes over their common dimensions.
+        """Concatenate the cubes over their common dimensions.
 
-        Kwargs:
-
-        * check_aux_coords
+        Parameters
+        ----------
+        check_aux_coords : bool, optional, default=True
             Checks if the points and bounds of auxiliary coordinates of the
             cubes match. This check is not applied to auxiliary coordinates
             that span the dimension the concatenation is occurring along.
             Defaults to True.
-
-        * check_cell_measures
+        check_cell_measures : bool, optional, default=True
             Checks if the data of cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension the
             concatenation is occurring along. Defaults to True.
-
-        * check_ancils
+        check_ancils : bool, optional, default=True
             Checks if the data of ancillary variables of the cubes match. This
             check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
-
-        * check_derived_coords
+        check_derived_coords : bool, optional, default=True
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
             the dimension the concatenation is occurring along. Note that
@@ -667,10 +621,14 @@ class CubeList(list):
             coordinates used to derive the coordinates can be ignored with
             `check_aux_coords`. Defaults to True.
 
-        Returns:
+        Returns
+        -------
+        :class:`iris.cube.CubeList`
             A new :class:`iris.cube.CubeList` of concatenated
             :class:`iris.cube.Cube` instances.
 
+        Notes
+        -----
         This combines cubes with a common dimension coordinate, but occupying
         different regions of the coordinate value.  The cubes are joined across
         that dimension.
@@ -755,8 +713,7 @@ class CubeList(list):
         )
 
     def realise_data(self):
-        """
-        Fetch 'real' data for all cubes, in a shared calculation.
+        """Fetch 'real' data for all cubes, in a shared calculation.
 
         This computes any lazy data, equivalent to accessing each `cube.data`.
         However, lazy calculations and data fetches can be shared between the
@@ -782,16 +739,13 @@ class CubeList(list):
         _lazy.co_realise_cubes(*self)
 
     def copy(self):
-        """
-        Return a CubeList when CubeList.copy() is called.
-        """
+        """Return a CubeList when CubeList.copy() is called."""
         if isinstance(self, CubeList):
             return deepcopy(self)
 
 
 def _is_single_item(testee):
-    """
-    Return whether this is a single item, rather than an iterable.
+    """Return whether this is a single item, rather than an iterable.
 
     We count string types as 'single', also.
 
@@ -800,8 +754,7 @@ def _is_single_item(testee):
 
 
 class CubeAttrsDict(MutableMapping):
-    """
-    A :class:`dict`\\-like object for :attr:`iris.cube.Cube.attributes`,
+    r"""A :class:`dict`\\-like object for :attr:`iris.cube.Cube.attributes`,
     providing unified user access to combined cube "local" and "global" attributes
     dictionaries, with the access behaviour of an ordinary (single) dictionary.
 
@@ -821,7 +774,6 @@ class CubeAttrsDict(MutableMapping):
 
     Examples
     --------
-
         >>> from iris.cube import Cube
         >>> cube = Cube([0])
         >>> # CF defines 'history' as global by default.
@@ -852,8 +804,7 @@ class CubeAttrsDict(MutableMapping):
         locals: Optional[Mapping] = None,
         globals: Optional[Mapping] = None,
     ):
-        """
-        Create a cube attributes dictionary.
+        """Create a cube attributes dictionary.
 
         We support initialisation from a single generic mapping input, using the default
         global/local assignment rules explained at :meth:`__setattr__`, or from
@@ -879,7 +830,6 @@ class CubeAttrsDict(MutableMapping):
 
         Examples
         --------
-
             >>> from iris.cube import CubeAttrsDict
             >>> # CF defines 'history' as global by default.
             >>> CubeAttrsDict({'history': 'data-story', 'comment': 'this-cube'})
@@ -978,8 +928,7 @@ class CubeAttrsDict(MutableMapping):
     #   'copy', 'update', '__ior__', '__or__', '__ror__' and 'fromkeys'.
     #
     def copy(self):
-        """
-        Return a copy.
+        """Return a copy.
 
         Implemented with deep copying, consistent with general Iris usage.
 
@@ -987,8 +936,7 @@ class CubeAttrsDict(MutableMapping):
         return CubeAttrsDict(self)
 
     def update(self, *args, **kwargs):
-        """
-        Update by adding items from a mapping arg, or keyword-values.
+        """Update by adding items from a mapping arg, or keyword-values.
 
         If the argument is a split dictionary, preserve the local/global nature of its
         keys.
@@ -1015,8 +963,7 @@ class CubeAttrsDict(MutableMapping):
         return self
 
     def __ror__(self, arg):
-        """
-        Implement 'ror' via 'update'.
+        """Implement 'ror' via 'update'.
 
         This needs to promote, such that the result is a CubeAttrsDict.
         """
@@ -1028,8 +975,7 @@ class CubeAttrsDict(MutableMapping):
 
     @classmethod
     def fromkeys(cls, iterable, value=None):
-        """
-        Create a new object with keys taken from an argument, all set to one value.
+        """Create a new object with keys taken from an argument, all set to one value.
 
         If the argument is a split dictionary, preserve the local/global nature of its
         keys.
@@ -1053,8 +999,7 @@ class CubeAttrsDict(MutableMapping):
     #
 
     def __iter__(self):
-        """
-        Define the combined iteration order.
+        """Define the combined iteration order.
 
         Result is: all global keys, then all local ones, but omitting duplicates.
 
@@ -1073,8 +1018,7 @@ class CubeAttrsDict(MutableMapping):
         return len(list(iter(self)))
 
     def __getitem__(self, key):
-        """
-        Fetch an item from the "combined attributes".
+        """Fetch an item from the "combined attributes".
 
         If the name is present in *both* ``self.locals`` and ``self.globals``, then
         the local value is returned.
@@ -1087,8 +1031,7 @@ class CubeAttrsDict(MutableMapping):
         return store[key]
 
     def __setitem__(self, key, value):
-        """
-        Assign an attribute value.
+        """Assign an attribute value.
 
         This may be assigned in either ``self.locals`` or ``self.globals``, chosen as
         follows:
@@ -1103,7 +1046,7 @@ class CubeAttrsDict(MutableMapping):
           **However** a handful of "known normally global" cases, as defined by CF,
           go into ``.globals`` instead.
           At present these are : ('conventions', 'featureType', 'history', 'title').
-          See `CF Conventions, Appendix A: <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_ .
+          See `CF Conventions, Appendix A: <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_ .
 
         """
         # If an attribute of this name is already present, update that
@@ -1124,8 +1067,7 @@ class CubeAttrsDict(MutableMapping):
         store[key] = value
 
     def __delitem__(self, key):
-        """
-        Remove an attribute.
+        """Remove an attribute.
 
         Delete from both local + global.
 
@@ -1146,8 +1088,7 @@ class CubeAttrsDict(MutableMapping):
 
 
 class Cube(CFVariableMixin):
-    """
-    A single Iris cube of data and metadata.
+    """A single Iris cube of data and metadata.
 
     Typically obtained from :func:`iris.load`, :func:`iris.load_cube`,
     :func:`iris.load_cubes`, or from the manipulation of existing cubes.
@@ -1187,19 +1128,19 @@ class Cube(CFVariableMixin):
 
     @classmethod
     def _sort_xml_attrs(cls, doc):
-        """
-        Takes an xml document and returns a copy with all element
+        """Takes an xml document and returns a copy with all element
         attributes sorted in alphabetical order.
 
         This is a private utility method required by iris to maintain
         legacy xml behaviour beyond python 3.7.
 
-        Args:
+        Parameters
+        ----------
+        doc : :class:`xml.dom.minidom.Document`.
 
-        * doc:
-            The :class:`xml.dom.minidom.Document`.
-
-        Returns:
+        Returns
+        -------
+        :class:`xml.dom.minidom.Document`
             The :class:`xml.dom.minidom.Document` with sorted element
             attributes.
 
@@ -1208,7 +1149,6 @@ class Cube(CFVariableMixin):
 
         def _walk_nodes(node):
             """Note: _walk_nodes is called recursively on child elements."""
-
             # we don't want to copy the children here, so take a shallow copy
             new_node = node.cloneNode(deep=False)
 
@@ -1253,15 +1193,14 @@ class Cube(CFVariableMixin):
         cell_measures_and_dims=None,
         ancillary_variables_and_dims=None,
     ):
-        """
-        Creates a cube with data and optional metadata.
+        """Creates a cube with data and optional metadata.
 
         Not typically used - normally cubes are obtained by loading data
         (e.g. :func:`iris.load`) or from manipulating existing cubes.
 
-        Args:
-
-        * data
+        Parameters
+        ----------
+        data :
             This object defines the shape of the cube and the phenomenon
             value in each cell.
 
@@ -1271,39 +1210,39 @@ class Cube(CFVariableMixin):
             array_like (as described in :func:`numpy.asarray`).
 
             See :attr:`Cube.data<iris.cube.Cube.data>`.
-
-        Kwargs:
-
-        * standard_name
+        standard_name : optional, default=None
             The standard name for the Cube's data.
-        * long_name
+        long_name : optional, default=None
             An unconstrained description of the cube.
-        * var_name
+        var_name : optional, default=None
             The NetCDF variable name for the cube.
-        * units
+        units : optional, default=None
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
-        * attributes
+        attributes : optional, default=None
             A dictionary of cube attributes
-        * cell_methods
+        cell_methods : optional, default=None
             A tuple of CellMethod objects, generally set by Iris, e.g.
             ``(CellMethod("mean", coords='latitude'), )``.
-        * dim_coords_and_dims
+        dim_coords_and_dims : optional, default=None
             A list of coordinates with scalar dimension mappings, e.g
             ``[(lat_coord, 0), (lon_coord, 1)]``.
-        * aux_coords_and_dims
+        aux_coords_and_dims : optional, default=None
             A list of coordinates with dimension mappings,
             e.g ``[(lat_coord, 0), (lon_coord, (0, 1))]``.
             See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
             and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
-        * aux_factories
+        aux_factories : optional, default=None
             A list of auxiliary coordinate factories. See
             :mod:`iris.aux_factory`.
-        * cell_measures_and_dims
+        cell_measures_and_dims : optional, default=None
             A list of CellMeasures with dimension mappings.
-        * ancillary_variables_and_dims
+        ancillary_variables_and_dims : optional, default=None
             A list of AncillaryVariables with dimension mappings.
 
-        For example::
+        Examples
+        --------
+        ::
+
             >>> from iris.coords import DimCoord
             >>> from iris.cube import Cube
             >>> latitude = DimCoord(np.linspace(-90, 90, 4),
@@ -1391,8 +1330,7 @@ class Cube(CFVariableMixin):
 
     @property
     def _names(self):
-        """
-        A tuple containing the value of each name participating in the identity
+        """A tuple containing the value of each name participating in the identity
         of a :class:`iris.cube.Cube`. This includes the standard name,
         long name, NetCDF variable name, and the STASH from the attributes
         dictionary.
@@ -1409,16 +1347,14 @@ class Cube(CFVariableMixin):
 
     @attributes.setter
     def attributes(self, attributes: Optional[Mapping]):
-        """
-        An override to CfVariableMixin.attributes.setter, which ensures that Cube
+        """An override to CfVariableMixin.attributes.setter, which ensures that Cube
         attributes are stored in a way which distinguishes global + local ones.
 
         """
         self._metadata_manager.attributes = CubeAttrsDict(attributes or {})
 
     def _dimensional_metadata(self, name_or_dimensional_metadata):
-        """
-        Return a single _DimensionalMetadata instance that matches the given
+        """Return a single _DimensionalMetadata instance that matches the given
         name_or_dimensional_metadata. If one is not found, raise an error.
 
         """
@@ -1435,32 +1371,32 @@ class Cube(CFVariableMixin):
             except KeyError:
                 pass
         if not found_item:
-            raise KeyError(
-                f"{name_or_dimensional_metadata} was not found in {self}."
-            )
+            raise KeyError(f"{name_or_dimensional_metadata} was not found in {self}.")
         return found_item
 
     def is_compatible(self, other, ignore=None):
-        """
-        Return whether the cube is compatible with another.
+        """Return whether the cube is compatible with another.
 
         Compatibility is determined by comparing :meth:`iris.cube.Cube.name()`,
         :attr:`iris.cube.Cube.units`, :attr:`iris.cube.Cube.cell_methods` and
         :attr:`iris.cube.Cube.attributes` that are present in both objects.
 
-        Args:
-
-        * other:
+        Parameters
+        ----------
+        other :
             An instance of :class:`iris.cube.Cube` or
             :class:`iris.cube.CubeMetadata`.
-        * ignore:
+        ignore : optional, default=None
            A single attribute key or iterable of attribute keys to ignore when
            comparing the cubes. Default is None. To ignore all attributes set
            this to other.attributes.
 
-        Returns:
-           Boolean.
+        Returns
+        -------
+        bool
 
+        Notes
+        -----
         .. seealso::
 
             :meth:`iris.util.describe_diff()`
@@ -1493,8 +1429,7 @@ class Cube(CFVariableMixin):
         return compatible
 
     def convert_units(self, unit):
-        """
-        Change the cube's units, converting the values in the data array.
+        """Change the cube's units, converting the values in the data array.
 
         For example, if a cube's :attr:`~iris.cube.Cube.units` are
         kelvin then::
@@ -1524,9 +1459,7 @@ class Cube(CFVariableMixin):
 
             pointwise_convert = partial(old_unit.convert, other=new_unit)
 
-            new_data = _lazy.lazy_elementwise(
-                self.lazy_data(), pointwise_convert
-            )
+            new_data = _lazy.lazy_elementwise(self.lazy_data(), pointwise_convert)
         else:
             new_data = self.units.convert(self.data, unit)
         self.data = new_data
@@ -1537,25 +1470,26 @@ class Cube(CFVariableMixin):
         self.cell_methods += (cell_method,)
 
     def add_aux_coord(self, coord, data_dims=None):
-        """
-        Adds a CF auxiliary coordinate to the cube.
+        """Adds a CF auxiliary coordinate to the cube.
 
-        Args:
-
-        * coord
+        Parameters
+        ----------
+        coord :
             The :class:`iris.coords.DimCoord` or :class:`iris.coords.AuxCoord`
             instance to add to the cube.
-
-        Kwargs:
-
-        * data_dims
+        data_dims : optional, default=None
             Integer or iterable of integers giving the data dimensions spanned
             by the coordinate.
 
-        Raises a ValueError if a coordinate with identical metadata already
-        exists on the cube.
+        Raises
+        ------
+        ValueError
+            Raises a ValueError if a coordinate with identical metadata already
+            exists on the cube.
 
-        See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
+        See Also
+        --------
+        :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
         if self.coords(coord):  # TODO: just fail on duplicate object
@@ -1577,9 +1511,7 @@ class Cube(CFVariableMixin):
             if len(data_dims) != metadata.ndim:
                 msg = (
                     "Invalid data dimensions: {} given, {} expected for "
-                    "{!r}.".format(
-                        len(data_dims), metadata.ndim, metadata.name()
-                    )
+                    "{!r}.".format(len(data_dims), metadata.ndim, metadata.name())
                 )
                 raise iris.exceptions.CannotAddError(msg)
             # Check compatibility with the shape of the data
@@ -1647,19 +1579,17 @@ class Cube(CFVariableMixin):
         self._aux_coords_and_dims.append((coord, data_dims))
 
     def add_aux_factory(self, aux_factory):
-        """
-        Adds an auxiliary coordinate factory to the cube.
+        """Adds an auxiliary coordinate factory to the cube.
 
-        Args:
-
-        * aux_factory
+        Parameters
+        ----------
+        aux_factory :
             The :class:`iris.aux_factory.AuxCoordFactory` instance to add.
 
         """
         if not isinstance(aux_factory, iris.aux_factory.AuxCoordFactory):
             raise TypeError(
-                "Factory must be a subclass of "
-                "iris.aux_factory.AuxCoordFactory."
+                "Factory must be a subclass of iris.aux_factory.AuxCoordFactory."
             )
 
         # Get all 'real' coords (i.e. not derived ones) : use private data
@@ -1681,25 +1611,25 @@ class Cube(CFVariableMixin):
         self._aux_factories.append(aux_factory)
 
     def add_cell_measure(self, cell_measure, data_dims=None):
-        """
-        Adds a CF cell measure to the cube.
+        """Adds a CF cell measure to the cube.
 
-        Args:
-
-        * cell_measure
+        Parameters
+        ----------
+        cell_measure :
             The :class:`iris.coords.CellMeasure`
             instance to add to the cube.
-
-        Kwargs:
-
-        * data_dims
+        data_dims : optional, default=None
             Integer or iterable of integers giving the data dimensions spanned
             by the coordinate.
 
-        Raises a ValueError if a cell_measure with identical metadata already
-        exists on the cube.
+        Raises
+        ------
+        ValueError
+            Raises a ValueError if a cell_measure with identical metadata already
+            exists on the cube.
 
-        See also
+        See Also
+        --------
         :meth:`Cube.remove_cell_measure()<iris.cube.Cube.remove_cell_measure>`.
 
         """
@@ -1714,55 +1644,53 @@ class Cube(CFVariableMixin):
         )
 
     def add_ancillary_variable(self, ancillary_variable, data_dims=None):
-        """
-        Adds a CF ancillary variable to the cube.
+        """Adds a CF ancillary variable to the cube.
 
-        Args:
-
-        * ancillary_variable
+        Parameters
+        ----------
+        ancillary_variable :
             The :class:`iris.coords.AncillaryVariable` instance to be added to
             the cube
-
-        Kwargs:
-
-        * data_dims
+        data_dims : optional, default=None
             Integer or iterable of integers giving the data dimensions spanned
             by the ancillary variable.
 
-        Raises a ValueError if an ancillary variable with identical metadata
-        already exists on the cube.
+        Raises
+        ------
+        ValueError
+            Raises a ValueError if an ancillary variable with identical metadata
+            already exists on the cube.
         """
-
         if self.ancillary_variables(ancillary_variable):
             raise iris.exceptions.CannotAddError(
                 "Duplicate ancillary variables not permitted"
             )
 
-        data_dims = self._check_multi_dim_metadata(
-            ancillary_variable, data_dims
-        )
-        self._ancillary_variables_and_dims.append(
-            (ancillary_variable, data_dims)
-        )
+        data_dims = self._check_multi_dim_metadata(ancillary_variable, data_dims)
+        self._ancillary_variables_and_dims.append((ancillary_variable, data_dims))
         self._ancillary_variables_and_dims.sort(
             key=lambda av_dims: (av_dims[0].metadata, av_dims[1])
         )
 
     def add_dim_coord(self, dim_coord, data_dim):
-        """
-        Add a CF coordinate to the cube.
+        """Add a CF coordinate to the cube.
 
-        Args:
-
-        * dim_coord
+        Parameters
+        ----------
+        dim_coord : :class:`iris.coords.DimCoord`
             The :class:`iris.coords.DimCoord` instance to add to the cube.
-        * data_dim
+        data_dim :
             Integer giving the data dimension spanned by the coordinate.
 
-        Raises a ValueError if a coordinate with identical metadata already
-        exists on the cube or if a coord already exists for the
-        given dimension.
+        Raises
+        ------
+        ValueError
+            Raises a ValueError if a coordinate with identical metadata already
+            exists on the cube or if a coord already exists for the
+            given dimension.
 
+        See Also
+        --------
         See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
@@ -1774,8 +1702,7 @@ class Cube(CFVariableMixin):
         # Check dimension is available
         if self.coords(dimensions=data_dim, dim_coords=True):
             raise iris.exceptions.CannotAddError(
-                "A dim_coord is already associated with "
-                "dimension %d." % data_dim
+                "A dim_coord is already associated with dimension %d." % data_dim
             )
         self._add_unique_dim_coord(dim_coord, data_dim)
 
@@ -1789,7 +1716,7 @@ class Cube(CFVariableMixin):
         if isinstance(data_dim, Container):
             if len(data_dim) != 1:
                 raise iris.exceptions.CannotAddError(
-                    "The supplied data dimension must be a" " single number."
+                    "The supplied data dimension must be a single number."
                 )
             data_dim = int(list(data_dim)[0])
         else:
@@ -1798,8 +1725,7 @@ class Cube(CFVariableMixin):
         # Check data_dim value is valid
         if data_dim < 0 or data_dim >= self.ndim:
             raise iris.exceptions.CannotAddError(
-                "The cube does not have the specified dimension "
-                "(%d)" % data_dim
+                "The cube does not have the specified dimension (%d)" % data_dim
             )
 
         # Check compatibility with the shape of the data
@@ -1836,16 +1762,17 @@ class Cube(CFVariableMixin):
                 self.remove_aux_factory(aux_factory)
 
     def remove_coord(self, coord):
-        """
-        Removes a coordinate from the cube.
+        """Removes a coordinate from the cube.
 
-        Args:
-
-        * coord (string or coord)
+        Parameters
+        ----------
+        coord : str or coord
             The (name of the) coordinate to remove from the cube.
 
-        See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
-        and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
+        See Also
+        --------
+        :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
+        :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`
 
         """
         coord = self.coord(coord)
@@ -1855,31 +1782,32 @@ class Cube(CFVariableMixin):
             factory.update(coord)
 
     def remove_cell_measure(self, cell_measure):
-        """
-        Removes a cell measure from the cube.
+        """Removes a cell measure from the cube.
 
-        Args:
-
-        * cell_measure (string or cell_measure)
+        Parameters
+        ----------
+        cell_measure : str or cell_measure
             The (name of the) cell measure to remove from the cube. As either
 
-            (a) a :attr:`standard_name`, :attr:`long_name`, or
-            :attr:`var_name`. Defaults to value of `default`
-            (which itself defaults to `unknown`) as defined in
-            :class:`iris.common.CFVariableMixin`.
+            * (a) a :attr:`standard_name`, :attr:`long_name`, or
+              :attr:`var_name`. Defaults to value of `default`
+              (which itself defaults to `unknown`) as defined in
+              :class:`iris.common.CFVariableMixin`.
 
-            (b) a cell_measure instance with metadata equal to that of
-            the desired cell_measures.
+            * (b) a cell_measure instance with metadata equal to that of
+              the desired cell_measures.
 
+        Notes
+        -----
         .. note::
 
             If the argument given does not represent a valid cell_measure on
             the cube, an :class:`iris.exceptions.CellMeasureNotFoundError`
             is raised.
 
-        .. seealso::
-
-            :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
+        See Also
+        --------
+        :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
 
         """
         cell_measure = self.cell_measure(cell_measure)
@@ -1891,12 +1819,11 @@ class Cube(CFVariableMixin):
         ]
 
     def remove_ancillary_variable(self, ancillary_variable):
-        """
-        Removes an ancillary variable from the cube.
+        """Removes an ancillary variable from the cube.
 
-        Args:
-
-        * ancillary_variable (string or AncillaryVariable)
+        Parameters
+        ----------
+        ancillary_variable : str or AncillaryVariable
             The (name of the) AncillaryVariable to remove from the cube.
 
         """
@@ -1909,10 +1836,7 @@ class Cube(CFVariableMixin):
         ]
 
     def replace_coord(self, new_coord):
-        """
-        Replace the coordinate whose metadata matches the given coordinate.
-
-        """
+        """Replace the coordinate whose metadata matches the given coordinate."""
         old_coord = self.coord(new_coord)
         dims = self.coord_dims(old_coord)
         was_dimensioned = old_coord in self.dim_coords
@@ -1926,8 +1850,7 @@ class Cube(CFVariableMixin):
             factory.update(old_coord, new_coord)
 
     def coord_dims(self, coord):
-        """
-        Returns a tuple of the data dimensions relevant to the given
+        """Returns a tuple of the data dimensions relevant to the given
         coordinate.
 
         When searching for the given coordinate in the cube the comparison is
@@ -1935,9 +1858,9 @@ class Cube(CFVariableMixin):
         instance need not exist on the cube, and may contain different
         coordinate values.
 
-        Args:
-
-        * coord (string or coord)
+        Parameters
+        ----------
+        coord : str or coord
             The (name of the) coord to look for.
 
         """
@@ -1978,9 +1901,7 @@ class Cube(CFVariableMixin):
                 return factory.metadata == target_metadata
 
             factories = filter(matcher, self._aux_factories)
-            matches = [
-                factory.derived_dims(self.coord_dims) for factory in factories
-            ]
+            matches = [factory.derived_dims(self.coord_dims) for factory in factories]
             if matches:
                 match = matches[0]
 
@@ -1990,11 +1911,12 @@ class Cube(CFVariableMixin):
         return match
 
     def cell_measure_dims(self, cell_measure):
-        """
-        Returns a tuple of the data dimensions relevant to the given
+        """Returns a tuple of the data dimensions relevant to the given
         CellMeasure.
 
-        * cell_measure (string or CellMeasure)
+        Parameters
+        ----------
+        cell_measure : str or CellMeasure
             The (name of the) cell measure to look for.
 
         """
@@ -2003,9 +1925,7 @@ class Cube(CFVariableMixin):
         # Search for existing cell measure (object) on the cube, faster lookup
         # than equality - makes no functional difference.
         matches = [
-            dims
-            for cm_, dims in self._cell_measures_and_dims
-            if cm_ is cell_measure
+            dims for cm_, dims in self._cell_measures_and_dims if cm_ is cell_measure
         ]
 
         if not matches:
@@ -2014,11 +1934,12 @@ class Cube(CFVariableMixin):
         return matches[0]
 
     def ancillary_variable_dims(self, ancillary_variable):
-        """
-        Returns a tuple of the data dimensions relevant to the given
+        """Returns a tuple of the data dimensions relevant to the given
         AncillaryVariable.
 
-        * ancillary_variable (string or AncillaryVariable)
+        Parameters
+        ----------
+        ancillary_variable : str or AncillaryVariable
             The (name of the) AncillaryVariable to look for.
 
         """
@@ -2039,27 +1960,26 @@ class Cube(CFVariableMixin):
 
         return matches[0]
 
-    def aux_factory(
-        self, name=None, standard_name=None, long_name=None, var_name=None
-    ):
-        """
-        Returns the single coordinate factory that matches the criteria,
+    def aux_factory(self, name=None, standard_name=None, long_name=None, var_name=None):
+        """Returns the single coordinate factory that matches the criteria,
         or raises an error if not found.
 
-        Kwargs:
-
-        * name
+        Parameters
+        ----------
+        name : optional, default=None
             If not None, matches against factory.name().
-        * standard_name
+        standard_name : optional, default=None
             The CF standard name of the desired coordinate factory.
             If None, does not check for standard name.
-        * long_name
+        long_name : optional, default=None
             An unconstrained description of the coordinate factory.
             If None, does not check for long_name.
-        * var_name
+        var_name : optional, default=None
             The NetCDF variable name of the desired coordinate factory.
             If None, does not check for var_name.
 
+        Notes
+        -----
         .. note::
 
             If the arguments given do not result in precisely 1 coordinate
@@ -2070,9 +1990,7 @@ class Cube(CFVariableMixin):
         factories = self.aux_factories
 
         if name is not None:
-            factories = [
-                factory for factory in factories if factory.name() == name
-            ]
+            factories = [factory for factory in factories if factory.name() == name]
 
         if standard_name is not None:
             factories = [
@@ -2083,16 +2001,12 @@ class Cube(CFVariableMixin):
 
         if long_name is not None:
             factories = [
-                factory
-                for factory in factories
-                if factory.long_name == long_name
+                factory for factory in factories if factory.long_name == long_name
             ]
 
         if var_name is not None:
             factories = [
-                factory
-                for factory in factories
-                if factory.var_name == var_name
+                factory for factory in factories if factory.var_name == var_name
             ]
 
         if len(factories) > 1:
@@ -2105,10 +2019,7 @@ class Cube(CFVariableMixin):
             )
             raise iris.exceptions.CoordinateNotFoundError(msg)
         elif len(factories) == 0:
-            msg = (
-                "Expected to find exactly one coordinate factory, but "
-                "found none."
-            )
+            msg = "Expected to find exactly one coordinate factory, but found none."
             raise iris.exceptions.CoordinateNotFoundError(msg)
 
         return factories[0]
@@ -2127,17 +2038,12 @@ class Cube(CFVariableMixin):
         dim_coords=None,
         mesh_coords=None,
     ):
-        """
-        Return a list of coordinates from the :class:`Cube` that match the
+        r"""Return a list of coordinates from the :class:`Cube` that match the
         provided criteria.
 
-        .. seealso::
-
-            :meth:`Cube.coord` for matching exactly one coordinate.
-
-        Kwargs:
-
-        * name_or_coord:
+        Parameters
+        ----------
+        name_or_coord : optional, default=None
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2148,57 +2054,52 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-
-        * standard_name:
+        standard_name : optional, default=None
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-
-        * long_name:
+        long_name : optional, default=None
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-
-        * var_name:
+        var_name : optional, default=None
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-
-        * attributes:
+        attributes : optional, default=None
             A dictionary of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
-
-        * axis:
+        axis : optional, default=None
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-
-        * contains_dimension:
+        contains_dimension : optional, default=None
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-
-        * dimensions:
+        dimensions : optional, default=None
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-
-        * coord_system:
+        coord_system : optional, default=None
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-
-        * dim_coords:
+        dim_coords : optional, default=None
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-
-        * mesh_coords:
+        mesh_coords : optional, default=None
             Set to ``True`` to return only coordinates which are
-            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            :class:`~iris.experimental.ugrid.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
             If ``None``, returns all coordinates.
 
-        Returns:
-            A list containing zero or more coordinates matching the provided
-            criteria.
+        Returns
+        -------
+        A list containing zero or more coordinates matching the provided criteria.
+
+        See Also
+        --------
+        :meth:`Cube.coord` for matching exactly one coordinate.
+
 
         """
         coords_and_factories = []
@@ -2218,16 +2119,12 @@ class Cube(CFVariableMixin):
             if mesh_coords:
                 # *only* MeshCoords
                 coords_and_factories = [
-                    item
-                    for item in coords_and_factories
-                    if hasattr(item, "mesh")
+                    item for item in coords_and_factories if hasattr(item, "mesh")
                 ]
             else:
                 # *not* MeshCoords
                 coords_and_factories = [
-                    item
-                    for item in coords_and_factories
-                    if not hasattr(item, "mesh")
+                    item for item in coords_and_factories if not hasattr(item, "mesh")
                 ]
 
         coords_and_factories = metadata_filter(
@@ -2272,15 +2169,14 @@ class Cube(CFVariableMixin):
             elif isinstance(coord_or_factory, iris.coords.Coord):
                 coord = coord_or_factory
             else:
-                msg = "Expected Coord or AuxCoordFactory, got " "{!r}.".format(
+                msg = "Expected Coord or AuxCoordFactory, got {!r}.".format(
                     type(coord_or_factory)
                 )
                 raise ValueError(msg)
             return coord
 
         coords = [
-            extract_coord(coord_or_factory)
-            for coord_or_factory in coords_and_factories
+            extract_coord(coord_or_factory) for coord_or_factory in coords_and_factories
         ]
 
         return coords
@@ -2299,22 +2195,12 @@ class Cube(CFVariableMixin):
         dim_coords=None,
         mesh_coords=None,
     ):
-        """
-        Return a single coordinate from the :class:`Cube` that matches the
+        r"""Return a single coordinate from the :class:`Cube` that matches the
         provided criteria.
 
-        .. note::
-
-            If the arguments given do not result in **precisely one** coordinate,
-            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
-
-        .. seealso::
-
-            :meth:`Cube.coords` for matching zero or more coordinates.
-
-        Kwargs:
-
-        * name_or_coord:
+        Parameters
+        ----------
+        name_or_coord : optional, default=None
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2325,57 +2211,58 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-
-        * standard_name:
+        standard_name : optional, default=None
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-
-        * long_name:
+        long_name : optional, default=None
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-
-        * var_name:
+        var_name : optional, default=None
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-
-        * attributes:
+        attributes : optional, default=None
             A dictionary of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
-
-        * axis:
+        axis : optional, default=None
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-
-        * contains_dimension:
+        contains_dimension : optional, default=None
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-
-        * dimensions:
+        dimensions : optional, default=None
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-
-        * coord_system:
+        coord_system : optional, default=None
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-
-        * dim_coords:
+        dim_coords : optional, default=None
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-
-        * mesh_coords:
+        mesh_coords : optional, default=None
             Set to ``True`` to return only coordinates which are
-            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            :class:`~iris.experimental.ugrid.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
             If ``None``, returns all coordinates.
 
-        Returns:
-            The coordinate that matches the provided criteria.
+        Returns
+        -------
+        The coordinate that matches the provided criteria.
 
+        Notes
+        -----
+         .. note::
+
+            If the arguments given do not result in **precisely one** coordinate,
+            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
+
+        See Also
+        --------
+        :meth:`Cube.coords` for matching zero or more coordinates.
         """
         coords = self.coords(
             name_or_coord=name_or_coord,
@@ -2417,15 +2304,14 @@ class Cube(CFVariableMixin):
         return coords[0]
 
     def coord_system(self, spec=None):
-        """
-        Find the coordinate system of the given type.
+        """Find the coordinate system of the given type.
 
         If no target coordinate system is provided then find
         any available coordinate system.
 
-        Kwargs:
-
-        * spec:
+        Parameters
+        ----------
+        spec : optional, default=None
             The the name or type of a coordinate system subclass.
             E.g. ::
 
@@ -2438,8 +2324,9 @@ class Cube(CFVariableMixin):
             If spec is None, then find any available coordinate
             systems within the :class:`iris.cube.Cube`.
 
-        Returns:
-            The :class:`iris.coord_systems.CoordSystem` or None.
+        Returns
+        -------
+        :class:`iris.coord_systems.CoordSystem` or None.
 
         """
         if isinstance(spec, str) or spec is None:
@@ -2457,9 +2344,7 @@ class Cube(CFVariableMixin):
 
         result = None
         if spec_name is None:
-            for key in sorted(
-                coord_systems.keys(), key=lambda class_: class_.__name__
-            ):
+            for key in sorted(coord_systems.keys(), key=lambda class_: class_.__name__):
                 result = coord_systems[key]
                 break
         else:
@@ -2478,17 +2363,16 @@ class Cube(CFVariableMixin):
 
     @property
     def mesh(self):
-        """
-        Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        r"""Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
         associated with the cube, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
-        Returns:
-
-        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh` or None):
+        Returns
+        -------
+        mesh : :class:`iris.experimental.ugrid.mesh.Mesh` or None
             The mesh of the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`\\s,
+            :class:`~iris.experimental.ugrid.MeshCoord`'s,
             or ``None``.
 
         """
@@ -2499,18 +2383,16 @@ class Cube(CFVariableMixin):
 
     @property
     def location(self):
-        """
-        Return the mesh "location" of the cube data, if the cube has any
+        r"""Return the mesh "location" of the cube data, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
-        Returns:
-
-        * location (str or None):
+        Returns
+        -------
+        location : str or None
             The mesh location of the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`\\s
-            (i.e. one of 'face' / 'edge' / 'node'),
-            or ``None``.
+            :class:`~iris.experimental.ugrid.MeshCoord`'s
+            (i.e. one of 'face' / 'edge' / 'node'), or ``None``.
 
         """
         result = self._any_meshcoord()
@@ -2519,15 +2401,14 @@ class Cube(CFVariableMixin):
         return result
 
     def mesh_dim(self):
-        """
-        Return the cube dimension of the mesh, if the cube has any
+        r"""Return the cube dimension of the mesh, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
         or ``None`` if it has none.
 
-        Returns:
-
-        * mesh_dim (int, or None):
-            the cube dimension which the cube
+        Returns
+        -------
+        mesh_dim : int or None
+            The cube dimension which the cube
             :class:`~iris.experimental.ugrid.MeshCoord`\\s map to,
             or ``None``.
 
@@ -2538,23 +2419,24 @@ class Cube(CFVariableMixin):
         return result
 
     def cell_measures(self, name_or_cell_measure=None):
-        """
-        Return a list of cell measures in this cube fitting the given criteria.
+        """Return a list of cell measures in this cube fitting the given criteria.
 
-        Kwargs:
-
-        * name_or_cell_measure
+        Parameters
+        ----------
+        name_or_cell_measure : optional, default=None
             Either
 
-            (a) a :attr:`standard_name`, :attr:`long_name`, or
-            :attr:`var_name`. Defaults to value of `default`
-            (which itself defaults to `unknown`) as defined in
-            :class:`iris.common.CFVariableMixin`.
+            * (a) a :attr:`standard_name`, :attr:`long_name`, or
+              :attr:`var_name`. Defaults to value of `default`
+              (which itself defaults to `unknown`) as defined in
+              :class:`iris.common.CFVariableMixin`.
 
-            (b) a cell_measure instance with metadata equal to that of
-            the desired cell_measures.
+            * (b) a cell_measure instance with metadata equal to that of
+              the desired cell_measures.
 
-        See also :meth:`Cube.cell_measure()<iris.cube.Cube.cell_measure>`.
+        See Also
+        --------
+        :meth:`Cube.cell_measure()<iris.cube.Cube.cell_measure>`.
 
         """
         name = None
@@ -2576,20 +2458,21 @@ class Cube(CFVariableMixin):
         return cell_measures
 
     def cell_measure(self, name_or_cell_measure=None):
-        """
-        Return a single cell_measure given the same arguments as
+        """Return a single cell_measure given the same arguments as
         :meth:`Cube.cell_measures`.
 
+        Notes
+        -----
         .. note::
 
             If the arguments given do not result in precisely 1 cell_measure
             being matched, an :class:`iris.exceptions.CellMeasureNotFoundError`
             is raised.
 
-        .. seealso::
-
-            :meth:`Cube.cell_measures()<iris.cube.Cube.cell_measures>`
-            for full keyword documentation.
+        See Also
+        --------
+        :meth:`Cube.cell_measures()<iris.cube.Cube.cell_measures>`
+            For full keyword documentation.
 
         """
         cell_measures = self.cell_measures(name_or_cell_measure)
@@ -2608,9 +2491,7 @@ class Cube(CFVariableMixin):
             if isinstance(name_or_cell_measure, str):
                 bad_name = name_or_cell_measure
             else:
-                bad_name = (
-                    name_or_cell_measure and name_or_cell_measure.name()
-                ) or ""
+                bad_name = (name_or_cell_measure and name_or_cell_measure.name()) or ""
                 if name_or_cell_measure is not None:
                     emsg = (
                         "Expected to find exactly 1 cell measure matching the given "
@@ -2626,24 +2507,24 @@ class Cube(CFVariableMixin):
         return cell_measures[0]
 
     def ancillary_variables(self, name_or_ancillary_variable=None):
-        """
-        Return a list of ancillary variable in this cube fitting the given
+        """Return a list of ancillary variable in this cube fitting the given
         criteria.
 
-        Kwargs:
-
-        * name_or_ancillary_variable
+        Parameters
+        ----------
+        name_or_ancillary_variable : optional, default=None
             Either
 
-            (a) a :attr:`standard_name`, :attr:`long_name`, or
-            :attr:`var_name`. Defaults to value of `default`
-            (which itself defaults to `unknown`) as defined in
-            :class:`iris.common.CFVariableMixin`.
+            * (a) a :attr:`standard_name`, :attr:`long_name`, or
+              :attr:`var_name`. Defaults to value of `default`
+              (which itself defaults to `unknown`) as defined in
+              :class:`iris.common.CFVariableMixin`.
 
-            (b) a ancillary_variable instance with metadata equal to that of
-            the desired ancillary_variables.
+            * (b) a ancillary_variable instance with metadata equal to that of
+              the desired ancillary_variables.
 
-        See also
+        See Also
+        --------
         :meth:`Cube.ancillary_variable()<iris.cube.Cube.ancillary_variable>`.
 
         """
@@ -2666,25 +2547,24 @@ class Cube(CFVariableMixin):
         return ancillary_variables
 
     def ancillary_variable(self, name_or_ancillary_variable=None):
-        """
-        Return a single ancillary_variable given the same arguments as
+        """Return a single ancillary_variable given the same arguments as
         :meth:`Cube.ancillary_variables`.
 
+        Notes
+        -----
         .. note::
 
             If the arguments given do not result in precisely 1
             ancillary_variable being matched, an
             :class:`iris.exceptions.AncillaryVariableNotFoundError` is raised.
 
-        .. seealso::
-
-            :meth:`Cube.ancillary_variables()<iris.cube.Cube.ancillary_variables>`
-            for full keyword documentation.
+        See Also
+        --------
+        :meth:`Cube.ancillary_variables()<iris.cube.Cube.ancillary_variables>`
+            For full keyword documentation.
 
         """
-        ancillary_variables = self.ancillary_variables(
-            name_or_ancillary_variable
-        )
+        ancillary_variables = self.ancillary_variables(name_or_ancillary_variable)
 
         if len(ancillary_variables) > 1:
             msg = (
@@ -2701,8 +2581,7 @@ class Cube(CFVariableMixin):
                 bad_name = name_or_ancillary_variable
             else:
                 bad_name = (
-                    name_or_ancillary_variable
-                    and name_or_ancillary_variable.name()
+                    name_or_ancillary_variable and name_or_ancillary_variable.name()
                 ) or ""
                 if name_or_ancillary_variable is not None:
                     emsg = (
@@ -2721,8 +2600,7 @@ class Cube(CFVariableMixin):
 
     @property
     def cell_methods(self):
-        """
-        Tuple of :class:`iris.coords.CellMethod` representing the processing
+        """Tuple of :class:`iris.coords.CellMethod` representing the processing
         done on the phenomenon.
 
         """
@@ -2748,8 +2626,7 @@ class Cube(CFVariableMixin):
         self._metadata_manager.cell_methods = cell_methods
 
     def core_data(self):
-        """
-        Retrieve the data array of this :class:`~iris.cube.Cube` in its
+        """Retrieve the data array of this :class:`~iris.cube.Cube` in its
         current state, which will either be real or lazy.
 
         If this :class:`~iris.cube.Cube` has lazy data, accessing its data
@@ -2767,8 +2644,7 @@ class Cube(CFVariableMixin):
 
     @property
     def dtype(self):
-        """
-        The data type of the values in the data array of this
+        """The data type of the values in the data array of this
         :class:`~iris.cube.Cube`.
 
         """
@@ -2780,8 +2656,7 @@ class Cube(CFVariableMixin):
         return self._data_manager.ndim
 
     def lazy_data(self):
-        """
-        Return a "lazy array" representing the Cube data. A lazy array
+        """Return a "lazy array" representing the Cube data. A lazy array
         describes an array whose data values have not been loaded into memory
         from disk.
 
@@ -2795,18 +2670,20 @@ class Cube(CFVariableMixin):
         does _not_ make the Cube data lazy again; the Cube data remains loaded
         in memory.
 
-        Returns:
-            A lazy array, representing the Cube data.
+        Returns
+        -------
+        A lazy array, representing the Cube data.
 
         """
         return self._data_manager.lazy_data()
 
     @property
     def data(self):
-        """
-        The :class:`numpy.ndarray` representing the multi-dimensional data of
+        """The :class:`numpy.ndarray` representing the multi-dimensional data of
         the cube.
 
+        Notes
+        -----
         .. note::
 
             Cubes obtained from NetCDF, PP, and FieldsFile files will only
@@ -2841,19 +2718,18 @@ class Cube(CFVariableMixin):
         self._data_manager.data = data
 
     def has_lazy_data(self):
-        """
-        Details whether this :class:`~iris.cube.Cube` has lazy data.
+        """Details whether this :class:`~iris.cube.Cube` has lazy data.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         return self._data_manager.has_lazy_data()
 
     @property
     def dim_coords(self):
-        """
-        Return a tuple of all the dimension coordinates, ordered by dimension.
+        """Return a tuple of all the dimension coordinates, ordered by dimension.
 
         .. note::
 
@@ -2877,8 +2753,7 @@ class Cube(CFVariableMixin):
 
     @property
     def aux_coords(self):
-        """
-        Return a tuple of all the auxiliary coordinates, ordered by
+        """Return a tuple of all the auxiliary coordinates, ordered by
         dimension(s).
 
         """
@@ -2894,8 +2769,7 @@ class Cube(CFVariableMixin):
 
     @property
     def derived_coords(self):
-        """
-        Return a tuple of all the coordinates generated by the coordinate
+        """Return a tuple of all the coordinates generated by the coordinate
         factories.
 
         """
@@ -2912,17 +2786,16 @@ class Cube(CFVariableMixin):
         return tuple(self._aux_factories)
 
     def summary(self, shorten=False, name_padding=35):
-        """
-        String summary of the Cube with name+units, a list of dim coord names
+        """String summary of the Cube with name+units, a list of dim coord names
         versus length and, optionally, a summary of all other components.
 
-        Kwargs:
-
-        * shorten (bool):
+        Parameters
+        ----------
+        shorten : bool
             If set, produce a one-line summary of minimal width, showing only
             the cube name, units and dimensions.
             When not set (default), produces a full multi-line summary string.
-        * name_padding (int):
+        name_padding : int
             Control the *minimum* width of the cube name + units,
             i.e. the indent of the dimension map section.
 
@@ -2937,9 +2810,7 @@ class Cube(CFVariableMixin):
         return self.summary()
 
     def __repr__(self):
-        return "<iris 'Cube' of %s>" % self.summary(
-            shorten=True, name_padding=1
-        )
+        return "<iris 'Cube' of %s>" % self.summary(shorten=True, name_padding=1)
 
     def _repr_html_(self):
         from iris.experimental.representation import CubeRepresentation
@@ -2952,8 +2823,7 @@ class Cube(CFVariableMixin):
     __iter__ = None
 
     def __getitem__(self, keys):
-        """
-        Cube indexing (through use of square bracket notation) has been
+        """Cube indexing (through use of square bracket notation) has been
         implemented at the data level. That is, the indices provided to this
         method should be aligned to the data of the cube, and thus the indices
         requested must be applicable directly to the cube.data attribute. All
@@ -2988,9 +2858,7 @@ class Cube(CFVariableMixin):
         cube_data = self._data_manager.core_data()
 
         # Index with the keys, using orthogonal slicing.
-        dimension_mapping, data = iris.util._slice_data_with_keys(
-            cube_data, keys
-        )
+        dimension_mapping, data = iris.util._slice_data_with_keys(cube_data, keys)
 
         # We don't want a view of the data, so take a copy of it.
         data = deepcopy(data)
@@ -2999,10 +2867,7 @@ class Cube(CFVariableMixin):
         #      results in numpy (v1.11.1) *always* returning a MaskedConstant
         #      with a dtype of float64, regardless of the original masked
         #      array dtype!
-        if (
-            isinstance(data, ma.core.MaskedConstant)
-            and data.dtype != cube_data.dtype
-        ):
+        if isinstance(data, ma.core.MaskedConstant) and data.dtype != cube_data.dtype:
             data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
 
         # Make the new cube slice
@@ -3015,9 +2880,7 @@ class Cube(CFVariableMixin):
 
         # Slice the coords
         for coord in self.aux_coords:
-            coord_keys = tuple(
-                [full_slice[dim] for dim in self.coord_dims(coord)]
-            )
+            coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
             try:
                 new_coord = coord[coord_keys]
             except ValueError:
@@ -3028,9 +2891,7 @@ class Cube(CFVariableMixin):
             coord_mapping[id(coord)] = new_coord
 
         for coord in self.dim_coords:
-            coord_keys = tuple(
-                [full_slice[dim] for dim in self.coord_dims(coord)]
-            )
+            coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
             new_dims = new_coord_dims(coord)
             # Try/Catch to handle slicing that makes the points/bounds
             # non-monotonic
@@ -3064,15 +2925,12 @@ class Cube(CFVariableMixin):
             dims = self.ancillary_variable_dims(ancvar)
             av_keys = tuple([full_slice[dim] for dim in dims])
             new_av = ancvar[av_keys]
-            cube.add_ancillary_variable(
-                new_av, new_ancillary_variable_dims(ancvar)
-            )
+            cube.add_ancillary_variable(new_av, new_ancillary_variable_dims(ancvar))
 
         return cube
 
     def subset(self, coord):
-        """
-        Get a subset of the cube by providing the desired resultant
+        """Get a subset of the cube by providing the desired resultant
         coordinate. If the coordinate provided applies to the whole cube; the
         whole cube is returned. As such, the operation is not strict.
 
@@ -3084,10 +2942,7 @@ class Cube(CFVariableMixin):
         coord_to_extract = self.coord(coord)
 
         # If scalar, return the whole cube. Not possible to subset 1 point.
-        if (
-            coord_to_extract in self.aux_coords
-            and len(coord_to_extract.points) == 1
-        ):
+        if coord_to_extract in self.aux_coords and len(coord_to_extract.points) == 1:
             # Default to returning None
             result = None
 
@@ -3108,9 +2963,7 @@ class Cube(CFVariableMixin):
 
             # Identify the indices which intersect the requested coord and
             # coord_to_extract
-            coord_indices = coord_to_extract.intersect(
-                coord, return_indices=True
-            )
+            coord_indices = coord_to_extract.intersect(coord, return_indices=True)
 
             if coord_indices.size == 0:
                 # No matches found.
@@ -3126,58 +2979,49 @@ class Cube(CFVariableMixin):
         return result
 
     def extract(self, constraint):
-        """
-        Filter the cube by the given constraint using
-        :meth:`iris.Constraint.extract` method.
-
-        """
+        """Filter cube by the given constraint using :meth:`iris.Constraint.extract`."""
         # Cast the constraint into a proper constraint if it is not so already
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
 
     def intersection(self, *args, **kwargs):
-        """
-        Return the intersection of the cube with specified coordinate
+        """Return the intersection of the cube with specified coordinate
         ranges.
 
         Coordinate ranges can be specified as:
 
-        (a) positional arguments: instances of :class:`iris.coords.CoordExtent`,
-            or equivalent tuples of 3-5 items:
+        * (a) positional arguments: instances of :class:`iris.coords.CoordExtent`,
+          or equivalent tuples of 3-5 items:
 
-            * coord
-                Either a :class:`iris.coords.Coord`, or coordinate name
-                (as defined in :meth:`iris.cube.Cube.coords()`)
+        * (b) keyword arguments, where the keyword name specifies the name
+          of the coordinate, and the value defines the corresponding range of
+          coordinate values as a tuple. The tuple must contain two, three, or
+          four items, corresponding to `(minimum, maximum, min_inclusive,
+          max_inclusive)` as defined above.
 
-            * minimum
-                The minimum value of the range to select.
-
-            * maximum
-                The maximum value of the range to select.
-
-            * min_inclusive
-                If True, coordinate values equal to `minimum` will be included
-                in the selection. Default is True.
-
-            * max_inclusive
-                If True, coordinate values equal to `maximum` will be included
-                in the selection. Default is True.
-
-        (b) keyword arguments, where the keyword name specifies the name
-            of the coordinate, and the value defines the corresponding range of
-            coordinate values as a tuple. The tuple must contain two, three, or
-            four items, corresponding to `(minimum, maximum, min_inclusive,
-            max_inclusive)` as defined above.
-
-        Kwargs:
-
-        * ignore_bounds:
+        Parameters
+        ----------
+        coord :
+            Either a :class:`iris.coords.Coord`, or coordinate name
+            (as defined in :meth:`iris.cube.Cube.coords()`)
+        minimum :
+            The minimum value of the range to select.
+        maximum :
+            The maximum value of the range to select.
+        min_inclusive :
+            If True, coordinate values equal to `minimum` will be included
+            in the selection. Default is True.
+        max_inclusive:
+            If True, coordinate values equal to `maximum` will be included
+            in the selection. Default is True.
+        ignore_bounds : optional
             Intersect based on points only. Default False.
-
-        * threshold:
+        threshold : optional
             Minimum proportion of a bounded cell that must overlap with the
             specified range. Default 0.
 
+        Notes
+        -----
         .. note::
 
             For ranges defined over "circular" coordinates (i.e. those
@@ -3186,10 +3030,10 @@ class Cube(CFVariableMixin):
             range that covers the entire modulus, a split cell will
             preferentially be placed at the ``minimum`` end.
 
-        .. warning::
-
-            Currently this routine only works with "circular"
-            coordinates (as defined in the previous note.)
+        Warnings
+        --------
+        Currently this routine only works with "circular"
+        coordinates (as defined in the previous note.)
 
         For example::
 
@@ -3198,7 +3042,7 @@ class Cube(CFVariableMixin):
             >>> print(cube.coord('longitude').points[::10])
             [   0.           37.49999237   74.99998474  112.49996948  \
 149.99996948
-              187.49995422  224.99993896  262.49993896  299.99993896  \
+            187.49995422  224.99993896  262.49993896  299.99993896  \
 337.49990845]
             >>> subset = cube.intersection(longitude=(30, 50))
             >>> print(subset.coord('longitude').points)
@@ -3207,7 +3051,9 @@ class Cube(CFVariableMixin):
             >>> print(subset.coord('longitude').points)
             [-7.50012207 -3.75012207  0.          3.75        7.5       ]
 
-        Returns:
+        Returns
+        -------
+        :class:`~iris.cube.Cube`
             A new :class:`~iris.cube.Cube` giving the subset of the cube
             which intersects with the requested coordinate intervals.
 
@@ -3244,9 +3090,7 @@ class Cube(CFVariableMixin):
             raise ValueError("minimum greater than maximum")
         modulus = coord.units.modulus
         if modulus is None:
-            raise ValueError(
-                "coordinate units with no modulus are not yet supported"
-            )
+            raise ValueError("coordinate units with no modulus are not yet supported")
         subsets, points, bounds = self._intersect_modulus(
             coord,
             minimum,
@@ -3308,25 +3152,17 @@ class Cube(CFVariableMixin):
                     if dim in dims:
                         dim_within_coord = dims.index(dim)
                         points = np.concatenate(
-                            [
-                                chunk.coord(src_coord).points
-                                for chunk in chunks
-                            ],
+                            [chunk.coord(src_coord).points for chunk in chunks],
                             dim_within_coord,
                         )
                         if src_coord.has_bounds():
                             bounds = np.concatenate(
-                                [
-                                    chunk.coord(src_coord).bounds
-                                    for chunk in chunks
-                                ],
+                                [chunk.coord(src_coord).bounds for chunk in chunks],
                                 dim_within_coord,
                             )
                         else:
                             bounds = None
-                        result_coord = src_coord.copy(
-                            points=points, bounds=bounds
-                        )
+                        result_coord = src_coord.copy(points=points, bounds=bounds)
 
                         circular = getattr(result_coord, "circular", False)
                         if circular and not preserve_circular:
@@ -3351,8 +3187,7 @@ class Cube(CFVariableMixin):
         non_zero_step_indices = np.nonzero(step)[0]
 
         def dim_coord_subset():
-            """
-            Derive the subset for dimension coordinates.
+            """Derive the subset for dimension coordinates.
 
             Ensure that we do not wrap if blocks are at the very edge.  That
             is, if the very edge is wrapped and corresponds to base + period,
@@ -3398,9 +3233,7 @@ class Cube(CFVariableMixin):
                     )
                 if edge_equal_base_period:
                     points[index_end] = coord.points[index_end]
-                    subsets = [
-                        slice(inside_indices[0], inside_indices[-1] + 1)
-                    ]
+                    subsets = [slice(inside_indices[0], inside_indices[-1] + 1)]
 
             # Either no edge wrap or edge wrap != base + period
             # i.e. derive subset without alteration
@@ -3439,9 +3272,7 @@ class Cube(CFVariableMixin):
     ):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
-            raise ValueError(
-                "requested range greater than coordinate's unit's modulus"
-            )
+            raise ValueError("requested range greater than coordinate's unit's modulus")
         if coord.has_bounds():
             values = coord.bounds
         else:
@@ -3468,9 +3299,7 @@ class Cube(CFVariableMixin):
 
             # Check points only
             (inside_indices,) = np.where(
-                np.logical_and(
-                    min_comp(minimum, points), max_comp(points, maximum)
-                )
+                np.logical_and(min_comp(minimum, points), max_comp(points, maximum))
             )
 
         else:
@@ -3514,24 +3343,18 @@ class Cube(CFVariableMixin):
             upper = bounds[iupper]
             lower = bounds[ilower]
             overlap = np.where(
-                np.logical_and(
-                    min_comp(minimum, upper), max_comp(lower, maximum)
-                ),
+                np.logical_and(min_comp(minimum, upper), max_comp(lower, maximum)),
                 np.minimum(maximum, upper) - np.maximum(minimum, lower),
                 np.nan,
             )
             (inside_indices,) = np.where(overlap >= thresholds)
 
         # Determine the subsets
-        subsets = self._intersect_derive_subset(
-            coord, points, bounds, inside_indices
-        )
+        subsets = self._intersect_derive_subset(coord, points, bounds, inside_indices)
         return subsets, points, bounds
 
     def _as_list_of_coords(self, names_or_coords):
-        """
-        Convert a name, coord, or list of names/coords to a list of coords.
-        """
+        """Convert a name, coord, or list of names/coords to a list of coords."""
         # If not iterable, convert to list of a single item
         if _is_single_item(names_or_coords):
             names_or_coords = [names_or_coords]
@@ -3553,32 +3376,40 @@ class Cube(CFVariableMixin):
         return coords
 
     def slices_over(self, ref_to_slice):
-        """
+        """Return an iterator of all subcubes.
+
         Return an iterator of all subcubes along a given coordinate or
         dimension index, or multiple of these.
 
-        Args:
-
-        * ref_to_slice (string, coord, dimension index or a list of these):
+        Parameters
+        ----------
+        ref_to_slice: str, coord, dimension index or a list of these
             Determines which dimensions will be iterated along (i.e. the
             dimensions that are not returned in the subcubes).
             A mix of input types can also be provided.
 
-        Returns:
-            An iterator of subcubes.
+        Returns
+        -------
+        An iterator of subcubes.
 
+        Examples
+        --------
         For example, to get all subcubes along the time dimension::
 
             for sub_cube in cube.slices_over('time'):
                 print(sub_cube)
 
-        .. seealso:: :meth:`iris.cube.Cube.slices`.
-
+        Notes
+        -----
         .. note::
 
             The order of dimension references to slice along does not affect
             the order of returned items in the iterator; instead the ordering
             is based on the fastest-changing dimension.
+
+        See Also
+        --------
+        :meth:`iris.cube.Cube.slices`.
 
         """
         # Required to handle a mix between types.
@@ -3609,35 +3440,37 @@ class Cube(CFVariableMixin):
         return self.slices(opposite_dims, ordered=False)
 
     def slices(self, ref_to_slice, ordered=True):
-        """
-        Return an iterator of all subcubes given the coordinates or dimension
+        """Return an iterator of all subcubes given the coordinates or dimension
         indices desired to be present in each subcube.
 
-        Args:
-
-        * ref_to_slice (string, coord, dimension index or a list of these):
+        Parameters
+        ----------
+        ref_to_slice : str, coord, dimension index or a list of these
             Determines which dimensions will be returned in the subcubes (i.e.
             the dimensions that are not iterated over).
             A mix of input types can also be provided. They must all be
             orthogonal (i.e. point to different dimensions).
-
-        Kwargs:
-
-        * ordered: if True, the order which the coords to slice or data_dims
+        ordered : bool, optional
+            if True, the order which the coords to slice or data_dims
             are given will be the order in which they represent the data in
             the resulting cube slices.  If False, the order will follow that of
             the source cube.  Default is True.
 
-        Returns:
-            An iterator of subcubes.
+        Returns
+        -------
+        An iterator of subcubes.
 
+        Examples
+        --------
         For example, to get all 2d longitude/latitude subcubes from a
         multi-dimensional cube::
 
             for sub_cube in cube.slices(['longitude', 'latitude']):
                 print(sub_cube)
 
-        .. seealso:: :meth:`iris.cube.Cube.slices_over`.
+        See Also
+        --------
+        :meth:`iris.cube.Cube.slices_over`.
 
         """
         if not isinstance(ordered, bool):
@@ -3668,8 +3501,7 @@ class Cube(CFVariableMixin):
                     dim = int(ref)
                 except ValueError:
                     raise ValueError(
-                        "{} Incompatible type {} for "
-                        "slicing".format(ref, type(ref))
+                        "{} Incompatible type {} for slicing".format(ref, type(ref))
                     )
                 if dim < 0 or dim > self.ndim:
                     msg = (
@@ -3693,16 +3525,21 @@ class Cube(CFVariableMixin):
         return _SliceIterator(self, dims_index, dim_to_slice, ordered)
 
     def transpose(self, new_order=None):
-        """
-        Re-order the data dimensions of the cube in-place.
+        """Re-order the data dimensions of the cube in-place.
 
-        new_order - list of ints, optional
-                    By default, reverse the dimensions, otherwise permute the
-                    axes according to the values given.
+        Parameters
+        ----------
+        new_order : list of ints, optional
+            By default, reverse the dimensions, otherwise permute the
+            axes according to the values given.
 
+        Notes
+        -----
         .. note:: If defined, new_order must span all of the data dimensions.
 
-        Example usage::
+        Examples
+        --------
+        ::
 
             # put the second dimension first, followed by the third dimension,
             # and finally put the first dimension third::
@@ -3752,10 +3589,7 @@ class Cube(CFVariableMixin):
         )
 
     def xml(self, checksum=False, order=True, byteorder=True):
-        """
-        Returns a fully valid CubeML string representation of the Cube.
-
-        """
+        """Returns a fully valid CubeML string representation of the Cube."""
         doc = Document()
 
         cube_xml_element = self._xml_element(
@@ -3837,9 +3671,7 @@ class Cube(CFVariableMixin):
             cms_xml_element = doc.createElement("cellMeasures")
             for cm in cell_measures:
                 cms_xml_element.appendChild(
-                    dimmeta_xml_element(
-                        cm, "cell-measure", self.cell_measure_dims
-                    )
+                    dimmeta_xml_element(cm, "cell-measure", self.cell_measure_dims)
                 )
             cube_xml_element.appendChild(cms_xml_element)
 
@@ -3879,14 +3711,10 @@ class Cube(CFVariableMixin):
                 # sensitive to unused numbers. Use a fixed value so
                 # a change in fill_value doesn't affect the
                 # checksum.
-                crc = "0x%08x" % (
-                    zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,
-                )
+                crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
                 data_xml_element.setAttribute("checksum", crc)
                 if ma.is_masked(data):
-                    crc = "0x%08x" % (
-                        zlib.crc32(normalise(data.mask)) & 0xFFFFFFFF,
-                    )
+                    crc = "0x%08x" % (zlib.crc32(normalise(data.mask)) & 0xFFFFFFFF,)
                 else:
                     crc = "no-masked-elements"
                 data_xml_element.setAttribute("mask_checksum", crc)
@@ -3934,16 +3762,16 @@ class Cube(CFVariableMixin):
         return cube_xml_element
 
     def copy(self, data=None):
-        """
-        Returns a deep copy of this cube.
+        """Returns a deep copy of this cube.
 
-        Kwargs:
-
-        * data:
+        Parameters
+        ----------
+        data : optional, default=None
             Replace the data of the cube copy with provided data payload.
 
-        Returns:
-            A copy instance of the :class:`Cube`.
+        Returns
+        -------
+        A copy instance of the :class:`Cube`.
 
         """
         memo = {}
@@ -3952,9 +3780,7 @@ class Cube(CFVariableMixin):
 
     def __copy__(self):
         """Shallow copying is disallowed for Cubes."""
-        raise copy.Error(
-            "Cube shallow-copy not allowed. Use deepcopy() or " "Cube.copy()"
-        )
+        raise copy.Error("Cube shallow-copy not allowed. Use deepcopy() or Cube.copy()")
 
     def __deepcopy__(self, memo):
         return self._deepcopy(memo)
@@ -3964,9 +3790,7 @@ class Cube(CFVariableMixin):
 
         new_dim_coords_and_dims = deepcopy(self._dim_coords_and_dims, memo)
         new_aux_coords_and_dims = deepcopy(self._aux_coords_and_dims, memo)
-        new_cell_measures_and_dims = deepcopy(
-            self._cell_measures_and_dims, memo
-        )
+        new_cell_measures_and_dims = deepcopy(self._cell_measures_and_dims, memo)
         new_ancillary_variables_and_dims = deepcopy(
             self._ancillary_variables_and_dims, memo
         )
@@ -4009,8 +3833,8 @@ class Cube(CFVariableMixin):
 
             # having checked the metadata, now check the coordinates
             if result:
-                coord_compares = (
-                    iris.analysis._dimensional_metadata_comparison(self, other)
+                coord_compares = iris.analysis._dimensional_metadata_comparison(
+                    self, other
                 )
                 # if there are any coordinates which are not equal
                 result = not (
@@ -4024,8 +3848,7 @@ class Cube(CFVariableMixin):
                 )
                 # if there are any cell measures which are not equal
                 result = not (
-                    cm_compares["not_equal"]
-                    or cm_compares["non_equal_data_dimension"]
+                    cm_compares["not_equal"] or cm_compares["non_equal_data_dimension"]
                 )
 
             if result:
@@ -4034,17 +3857,14 @@ class Cube(CFVariableMixin):
                 )
                 # if there are any ancillary variables which are not equal
                 result = not (
-                    av_compares["not_equal"]
-                    or av_compares["non_equal_data_dimension"]
+                    av_compares["not_equal"] or av_compares["non_equal_data_dimension"]
                 )
 
             # Having checked everything else, check approximate data equality.
             if result:
                 # TODO: why do we use allclose() here, but strict equality in
                 #  _DimensionalMetadata (via util.array_equal())?
-                result = da.allclose(
-                    self.core_data(), other.core_data()
-                ).compute()
+                result = da.allclose(self.core_data(), other.core_data()).compute()
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
@@ -4110,8 +3930,7 @@ class Cube(CFVariableMixin):
     # END OPERATOR OVERLOADS
 
     def collapsed(self, coords, aggregator, **kwargs):
-        """
-        Collapse one or more dimensions over the cube given the coordinate/s
+        """Collapse one or more dimensions over the cube given the coordinate/s
         and an aggregation.
 
         Examples of aggregations that may be used include
@@ -4139,25 +3958,22 @@ class Cube(CFVariableMixin):
         it will be used wherever possible when this cube's data is itself
         a deferred array.
 
-        Args:
-
-        * coords (string, coord or a list of strings/coords):
+        Parameters
+        ----------
+        coords : str, coord or a list of strings/coords
             Coordinate names/coordinates over which the cube should be
             collapsed.
-
-        * aggregator (:class:`iris.analysis.Aggregator`):
+        aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied for collapse operation.
-
-        Kwargs:
-
-        * kwargs:
+        **kwargs :
             Aggregation function keyword arguments.
 
-        Returns:
-            Collapsed cube.
+        Returns
+        -------
+        Collapsed cube.
 
-        For example:
-
+        Examples
+        --------
             >>> import iris
             >>> import iris.analysis
             >>> path = iris.sample_data_path('ostia_monthly.nc')
@@ -4181,7 +3997,8 @@ class Cube(CFVariableMixin):
                     Conventions                 'CF-1.5'
                     STASH                       m01s00i024
 
-
+        Notes
+        -----
         .. note::
 
             Some aggregations are not commutative and hence the order of
@@ -4223,9 +4040,7 @@ class Cube(CFVariableMixin):
             aggregator, iris.analysis.WeightedAggregator
         ) and not aggregator.uses_weighting(**kwargs):
             msg = "Collapsing spatial coordinate {!r} without weighting"
-            lat_match = [
-                coord for coord in coords if "latitude" in coord.name()
-            ]
+            lat_match = [coord for coord in coords if "latitude" in coord.name()]
             if lat_match:
                 for coord in lat_match:
                     warnings.warn(
@@ -4235,14 +4050,10 @@ class Cube(CFVariableMixin):
 
         # Determine the dimensions we need to collapse (and those we don't)
         if aggregator.cell_method == "peak":
-            dims_to_collapse = [
-                list(self.coord_dims(coord)) for coord in coords
-            ]
+            dims_to_collapse = [list(self.coord_dims(coord)) for coord in coords]
 
             # Remove duplicate dimensions.
-            new_dims = OrderedDict.fromkeys(
-                d for dim in dims_to_collapse for d in dim
-            )
+            new_dims = OrderedDict.fromkeys(d for dim in dims_to_collapse for d in dim)
             # Reverse the dimensions so the order can be maintained when
             # reshaping the data.
             dims_to_collapse = list(new_dims)[::-1]
@@ -4256,17 +4067,12 @@ class Cube(CFVariableMixin):
             raise ValueError(msg)
 
         if not dims_to_collapse:
-            msg = (
-                "Cannot collapse a dimension which does not describe any "
-                "data."
-            )
+            msg = "Cannot collapse a dimension which does not describe any data."
             raise iris.exceptions.CoordinateCollapseError(msg)
 
         untouched_dims = set(range(self.ndim)) - set(dims_to_collapse)
 
-        collapsed_cube = iris.util._strip_metadata_from_dims(
-            self, dims_to_collapse
-        )
+        collapsed_cube = iris.util._strip_metadata_from_dims(self, dims_to_collapse)
 
         # Remove the collapsed dimension(s) from the metadata
         indices = [slice(None, None)] * self.ndim
@@ -4301,14 +4107,10 @@ class Cube(CFVariableMixin):
             new_shape = untouched_shape + collapsed_shape
 
             array_dims = untouched_dims + dims_to_collapse
-            unrolled_data = np.transpose(self.data, array_dims).reshape(
-                new_shape
-            )
+            unrolled_data = np.transpose(self.data, array_dims).reshape(new_shape)
 
             for dim in dims_to_collapse:
-                unrolled_data = aggregator.aggregate(
-                    unrolled_data, axis=-1, **kwargs
-                )
+                unrolled_data = aggregator.aggregate(unrolled_data, axis=-1, **kwargs)
             data_result = unrolled_data
 
         # Perform the aggregation in lazy form if possible.
@@ -4353,13 +4155,9 @@ class Cube(CFVariableMixin):
             if weights is not None and weights.ndim > 1:
                 # Note: *don't* adjust 1d weights arrays, these have a special meaning for statistics functions.
                 weights = weights.view()
-                kwargs["weights"] = np.transpose(weights, dims).reshape(
-                    new_shape
-                )
+                kwargs["weights"] = np.transpose(weights, dims).reshape(new_shape)
 
-            data_result = aggregator.aggregate(
-                unrolled_data, axis=-1, **kwargs
-            )
+            data_result = aggregator.aggregate(unrolled_data, axis=-1, **kwargs)
 
         aggregator.update_metadata(
             collapsed_cube,
@@ -4368,16 +4166,11 @@ class Cube(CFVariableMixin):
             _weights_units=getattr(weights_info, "units", None),
             **kwargs,
         )
-        result = aggregator.post_process(
-            collapsed_cube, data_result, coords, **kwargs
-        )
+        result = aggregator.post_process(collapsed_cube, data_result, coords, **kwargs)
         return result
 
-    def aggregated_by(
-        self, coords, aggregator, climatological=False, **kwargs
-    ):
-        """
-        Perform aggregation over the cube given one or more "group coordinates".
+    def aggregated_by(self, coords, aggregator, climatological=False, **kwargs):
+        """Perform aggregation over the cube given one or more "group coordinates".
 
         A "group coordinate" is a coordinate where repeating values represent a
         single group, such as a month coordinate on a daily time slice. Repeated
@@ -4412,19 +4205,15 @@ class Cube(CFVariableMixin):
             any aggregated time coord(s), this causes the climatological flag to
             be set and the point for each cell to equal its first bound, thereby
             preserving the time of year.
+        **kwargs : optional
+            Aggregator and aggregation function keyword arguments.
 
         Returns
         -------
-            :class:`iris.cube.Cube`
-
-        Other Parameters
-        ----------------
-        kwargs:
-            Aggregator and aggregation function keyword arguments.
+        :class:`iris.cube.Cube`
 
         Examples
         --------
-
             >>> import iris
             >>> import iris.analysis
             >>> import iris.coord_categorisation as cat
@@ -4574,9 +4363,7 @@ x            -              -
 
         # Create data and weights slices.
         front_slice = (slice(None),) * dimension_to_groupby
-        back_slice = (slice(None),) * (
-            len(data_shape) - dimension_to_groupby - 1
-        )
+        back_slice = (slice(None),) * (len(data_shape) - dimension_to_groupby - 1)
 
         groupby_subarrs = map(
             lambda groupby_slice: iris.util._slice_data_with_keys(
@@ -4608,17 +4395,13 @@ x            -              -
         # before combining the different slices.
         if return_weights:
             result, weights_result = list(zip(*result))
-            aggregateby_weights = stack(
-                weights_result, axis=dimension_to_groupby
-            )
+            aggregateby_weights = stack(weights_result, axis=dimension_to_groupby)
         else:
             aggregateby_weights = None
 
         aggregateby_data = stack(result, axis=dimension_to_groupby)
         # Ensure plain ndarray is output if plain ndarray was input.
-        if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(
-            input_data
-        ):
+        if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
             aggregateby_data = ma.getdata(aggregateby_data)
 
         # Add the aggregation meta data to the aggregate-by cube.
@@ -4653,9 +4436,7 @@ x            -              -
             ):
                 aggregateby_cube.add_dim_coord(new_coord, dimension_to_groupby)
             else:
-                aggregateby_cube.add_aux_coord(
-                    new_coord, self.coord_dims(lookup_coord)
-                )
+                aggregateby_cube.add_aux_coord(new_coord, self.coord_dims(lookup_coord))
             coord_mapping[id(self.coord(lookup_coord))] = new_coord
 
         aggregateby_cube._aux_factories = []
@@ -4674,23 +4455,19 @@ x            -              -
         return aggregateby_cube
 
     def rolling_window(self, coord, aggregator, window, **kwargs):
-        """
-        Perform rolling window aggregation on a cube given a coordinate, an
+        """Perform rolling window aggregation on a cube given a coordinate, an
         aggregation method and a window size.
 
-        Args:
-
-        * coord (string/:class:`iris.coords.Coord`):
+        Parameters
+        ----------
+        coord : str or :class:`iris.coords.Coord`
             The coordinate over which to perform the rolling window
             aggregation.
-        * aggregator (:class:`iris.analysis.Aggregator`):
+        aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied to the data.
-        * window (int):
+        window : int
             Size of window to use.
-
-        Kwargs:
-
-        * kwargs:
+        **kwargs : optional
             Aggregator and aggregation function keyword arguments. The weights
             argument to the aggregator, if any, should be a 1d array, cube, or
             (names of) :meth:`~iris.cube.Cube.coords`,
@@ -4698,15 +4475,18 @@ x            -              -
             :meth:`~iris.cube.Cube.ancillary_variables` with the same length as
             the chosen window.
 
-        Returns:
-            :class:`iris.cube.Cube`.
+        Returns
+        -------
+        :class:`iris.cube.Cube`.
 
+        Notes
+        -----
         .. note::
 
             This operation does not yet have support for lazy evaluation.
 
-        For example:
-
+        Examples
+        --------
             >>> import iris, iris.analysis
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
             >>> air_press = iris.load_cube(fname, 'surface_temperature')
@@ -4733,7 +4513,6 @@ x            -               -
                     source                      \
 'Data from Met Office Unified Model'
                     um_version                  '7.6'
-
 
             >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
             surface_temperature / (K)           \
@@ -4763,7 +4542,7 @@ x            -               -
             Notice that the forecast_period dimension now represents the 4
             possible windows of size 3 from the original cube.
 
-        """
+        """  # noqa: D214, D406, D407, D410, D411
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4780,8 +4559,7 @@ x            -               -
 
         if window < 2:
             raise ValueError(
-                "Cannot perform rolling window "
-                "with a window size less than 2."
+                "Cannot perform rolling window with a window size less than 2."
             )
 
         if coord.ndim > 1:
@@ -4836,9 +4614,7 @@ x            -               -
                 # are the serialized form of the points contributing to each
                 # window and the bounds are the first and last points in the
                 # window as with numeric coordinates.
-                new_points = np.apply_along_axis(
-                    lambda x: "|".join(x), -1, new_bounds
-                )
+                new_points = np.apply_along_axis(lambda x: "|".join(x), -1, new_bounds)
                 new_bounds = new_bounds[:, (0, -1)]
             else:
                 # Take the first and last element of the rolled window (i.e.
@@ -4880,47 +4656,43 @@ x            -               -
         data_result = aggregator.aggregate(
             rolling_window_data, axis=dimension + 1, **kwargs
         )
-        result = aggregator.post_process(
-            new_cube, data_result, [coord], **kwargs
-        )
+        result = aggregator.post_process(new_cube, data_result, [coord], **kwargs)
         return result
 
     def interpolate(self, sample_points, scheme, collapse_scalar=True):
-        """
-        Interpolate from this :class:`~iris.cube.Cube` to the given
+        """Interpolate from this :class:`~iris.cube.Cube` to the given
         sample points using the given interpolation scheme.
 
-        Args:
-
-        * sample_points:
+        Parameters
+        ----------
+        sample_points :
             A sequence of (coordinate, points) pairs over which to
             interpolate. The values for coordinates that correspond to
             dates or times may optionally be supplied as datetime.datetime or
             cftime.datetime instances.
             The N pairs supplied will be used to create an N-d grid of points
             that will then be sampled (rather than just N points).
-        * scheme:
+        scheme :
             An instance of the type of interpolation to use to interpolate from this
             :class:`~iris.cube.Cube` to the given sample points. The
             interpolation schemes currently available in Iris are:
 
-                * :class:`iris.analysis.Linear`, and
-                * :class:`iris.analysis.Nearest`.
-
-        Kwargs:
-
-        * collapse_scalar:
+            * :class:`iris.analysis.Linear`, and
+            * :class:`iris.analysis.Nearest`.
+        collapse_scalar : bool, optional
             Whether to collapse the dimension of scalar sample points
             in the resulting cube. Default is True.
 
-        Returns:
+        Returns
+        -------
+        cube
             A cube interpolated at the given sample points.
             If `collapse_scalar` is True then the dimensionality of the cube
             will be the number of original cube dimensions minus
             the number of scalar coordinates.
 
-        For example:
-
+        Examples
+        --------
             >>> import datetime
             >>> import iris
             >>> path = iris.sample_data_path('uk_hires.pp')
@@ -4973,27 +4745,28 @@ x            -               -
         return interp(points, collapse_scalar=collapse_scalar)
 
     def regrid(self, grid, scheme):
-        r"""
-        Regrid this :class:`~iris.cube.Cube` on to the given target `grid`
+        r"""Regrid this :class:`~iris.cube.Cube` on to the given target `grid`
         using the given regridding `scheme`.
 
-        Args:
-
-        * grid:
+        Parameters
+        ----------
+        grid :
             A :class:`~iris.cube.Cube` that defines the target grid.
-        * scheme:
+        scheme :
             An instance of the type of regridding to use to regrid this cube onto the
             target grid. The regridding schemes in Iris currently include:
 
-                * :class:`iris.analysis.Linear`\*,
-                * :class:`iris.analysis.Nearest`\*,
-                * :class:`iris.analysis.AreaWeighted`\*,
-                * :class:`iris.analysis.UnstructuredNearest`,
-                * :class:`iris.analysis.PointInCell`,
+            * :class:`iris.analysis.Linear`\*,
+            * :class:`iris.analysis.Nearest`\*,
+            * :class:`iris.analysis.AreaWeighted`\*,
+            * :class:`iris.analysis.UnstructuredNearest`,
+            * :class:`iris.analysis.PointInCell`,
 
             \* Supports lazy regridding.
 
-        Returns:
+        Returns
+        -------
+        :class:`~iris.cube`
             A cube defined with the horizontal dimensions of the target grid
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid
@@ -5002,6 +4775,8 @@ x            -               -
             The returned cube will have lazy data if the original cube has
             lazy data and the regridding scheme supports lazy regridding.
 
+        Notes
+        -----
         .. note::
 
             Both the source and target cubes must have a CoordSystem, otherwise
@@ -5013,8 +4788,7 @@ x            -               -
 
 
 class ClassDict(MutableMapping):
-    """
-    A mapping that stores objects keyed on their superclasses and their names.
+    """A mapping that stores objects keyed on their superclasses and their names.
 
     The mapping has a root class, all stored objects must be a subclass of the
     root class. The superclasses used for an object include the class of the
@@ -5025,9 +4799,7 @@ class ClassDict(MutableMapping):
 
     def __init__(self, superclass):
         if not isinstance(superclass, type):
-            raise TypeError(
-                "The superclass must be a Python type or new " "style class."
-            )
+            raise TypeError("The superclass must be a Python type or new style class.")
         self._superclass = superclass
         self._basic_map = {}
         self._retrieval_map = {}
@@ -5091,8 +4863,7 @@ class ClassDict(MutableMapping):
 
 
 def sorted_axes(axes):
-    """
-    Returns the axis names sorted alphabetically, with the exception that
+    """Returns the axis names sorted alphabetically, with the exception that
     't', 'z', 'y', and, 'x' are sorted to the end.
 
     """

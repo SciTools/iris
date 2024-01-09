@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the
+"""Unit tests for the
 `iris.aux_factory.AtmosphereSigmaFactory` class.
 
 """
@@ -169,9 +168,7 @@ class Test_make_coord(tests.IrisTest):
 
     @staticmethod
     def derive(pressure_at_top, sigma, surface_air_pressure, coord=True):
-        result = pressure_at_top + sigma * (
-            surface_air_pressure - pressure_at_top
-        )
+        result = pressure_at_top + sigma * (surface_air_pressure - pressure_at_top)
         if coord:
             name = "air_pressure"
             result = AuxCoord(
@@ -208,15 +205,11 @@ class Test_make_coord(tests.IrisTest):
         # Broadcast expected points given the known dimensional mapping
         pressure_at_top = self.pressure_at_top.points[0]
         sigma = self.sigma.points[..., np.newaxis, np.newaxis]
-        surface_air_pressure = self.surface_air_pressure.points[
-            np.newaxis, ...
-        ]
+        surface_air_pressure = self.surface_air_pressure.points[np.newaxis, ...]
 
         # Calculate the expected result
 
-        expected_coord = self.derive(
-            pressure_at_top, sigma, surface_air_pressure
-        )
+        expected_coord = self.derive(pressure_at_top, sigma, surface_air_pressure)
 
         # Calculate the actual result
         factory = AtmosphereSigmaFactory(**self.kwargs)
@@ -253,9 +246,7 @@ class Test_update(tests.IrisTest):
         self.assertIs(self.factory.pressure_at_top, new_pressure_at_top)
 
     def test_pressure_at_top_wrong_shape(self):
-        new_pressure_at_top = mock.Mock(
-            units=Unit("Pa"), nbounds=0, shape=(2,)
-        )
+        new_pressure_at_top = mock.Mock(units=Unit("Pa"), nbounds=0, shape=(2,))
         with self.assertRaises(ValueError):
             self.factory.update(self.pressure_at_top, new_pressure_at_top)
 
@@ -276,19 +267,13 @@ class Test_update(tests.IrisTest):
 
     def test_surface_air_pressure(self):
         new_surface_air_pressure = mock.Mock(units=Unit("Pa"), nbounds=0)
-        self.factory.update(
-            self.surface_air_pressure, new_surface_air_pressure
-        )
-        self.assertIs(
-            self.factory.surface_air_pressure, new_surface_air_pressure
-        )
+        self.factory.update(self.surface_air_pressure, new_surface_air_pressure)
+        self.assertIs(self.factory.surface_air_pressure, new_surface_air_pressure)
 
     def test_surface_air_pressure_incompatible_units(self):
         new_surface_air_pressure = mock.Mock(units=Unit("mbar"), nbounds=0)
         with self.assertRaises(ValueError):
-            self.factory.update(
-                self.surface_air_pressure, new_surface_air_pressure
-            )
+            self.factory.update(self.surface_air_pressure, new_surface_air_pressure)
 
 
 if __name__ == "__main__":

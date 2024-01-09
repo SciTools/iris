@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Definitions of coordinate systems.
-
-"""
+"""Definitions of coordinate systems."""
 
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
@@ -49,16 +46,12 @@ def _float_or_None(arg):
 
 
 class CoordSystem(metaclass=ABCMeta):
-    """
-    Abstract base class for coordinate systems.
-
-    """
+    """Abstract base class for coordinate systems."""
 
     grid_mapping_name = None
 
     def __eq__(self, other):
-        """
-        Override equality
+        """Override equality.
 
         The `_globe` and `_crs` attributes are not compared because they are
         cached properties and completely derived from other attributes. The
@@ -92,9 +85,7 @@ class CoordSystem(metaclass=ABCMeta):
         xml_element_name = type(self).__name__
         # lower case the first char
         first_char = xml_element_name[0]
-        xml_element_name = xml_element_name.replace(
-            first_char, first_char.lower(), 1
-        )
+        xml_element_name = xml_element_name.replace(first_char, first_char.lower(), 1)
 
         coord_system_xml_element = doc.createElement(xml_element_name)
 
@@ -124,8 +115,7 @@ class CoordSystem(metaclass=ABCMeta):
 
     @abstractmethod
     def as_cartopy_crs(self):
-        """
-        Return a cartopy CRS representing our native coordinate
+        """Return a cartopy CRS representing our native coordinate
         system.
 
         """
@@ -133,8 +123,7 @@ class CoordSystem(metaclass=ABCMeta):
 
     @abstractmethod
     def as_cartopy_projection(self):
-        """
-        Return a cartopy projection representing our native map.
+        """Return a cartopy projection representing our native map.
 
         This will be the same as the :func:`~CoordSystem.as_cartopy_crs` for
         map projections but for spherical coord systems (which are not map
@@ -152,8 +141,7 @@ _short_datum_names = {
 
 
 class GeogCS(CoordSystem):
-    """
-    A geographic (ellipsoidal) coordinate system, defined by the shape of
+    """A geographic (ellipsoidal) coordinate system, defined by the shape of
     the Earth and a prime meridian.
     """
 
@@ -166,8 +154,7 @@ class GeogCS(CoordSystem):
         inverse_flattening=None,
         longitude_of_prime_meridian=None,
     ):
-        """
-        Create a new GeogCS.
+        """Create a new GeogCS.
 
         Parameters
         ----------
@@ -273,9 +260,7 @@ class GeogCS(CoordSystem):
         self._datum = None
 
         #: Describes 'zero' on the ellipsoid in degrees.
-        self.longitude_of_prime_meridian = _arg_default(
-            longitude_of_prime_meridian, 0
-        )
+        self.longitude_of_prime_meridian = _arg_default(longitude_of_prime_meridian, 0)
 
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
@@ -304,9 +289,7 @@ class GeogCS(CoordSystem):
         if len(attrs) == 1 and attrs[0][0] == "semi_major_axis":
             return "GeogCS(%r)" % self.semi_major_axis
         else:
-            return "GeogCS(%s)" % ", ".join(
-                ["%s=%r" % (k, v) for k, v in attrs]
-            )
+            return "GeogCS(%s)" % ", ".join(["%s=%r" % (k, v) for k, v in attrs])
 
     def __str__(self):
         attrs = self._pretty_attrs()
@@ -346,8 +329,7 @@ class GeogCS(CoordSystem):
 
     @cached_property
     def _globe(self):
-        """
-        A representation of this CRS as a Cartopy Globe.
+        """A representation of this CRS as a Cartopy Globe.
 
         Note
         ----
@@ -369,8 +351,7 @@ class GeogCS(CoordSystem):
 
     @cached_property
     def _crs(self):
-        """
-        A representation of this CRS as a Cartopy CRS.
+        """A representation of this CRS as a Cartopy CRS.
 
         Note
         ----
@@ -381,8 +362,7 @@ class GeogCS(CoordSystem):
         return ccrs.Geodetic(self._globe)
 
     def _wipe_cached_properties(self):
-        """
-        Wipes the cached properties on the object as part of any update to a
+        """Wipes the cached properties on the object as part of any update to a
         value that invalidates the cache.
         """
         try:
@@ -403,8 +383,7 @@ class GeogCS(CoordSystem):
 
     @semi_major_axis.setter
     def semi_major_axis(self, value):
-        """
-        Setting this property to a different value invalidates the current datum
+        """Setting this property to a different value invalidates the current datum
         (if any) because a datum encodes a specific semi-major axis. This also
         invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
         """
@@ -423,8 +402,7 @@ class GeogCS(CoordSystem):
 
     @semi_minor_axis.setter
     def semi_minor_axis(self, value):
-        """
-        Setting this property to a different value invalidates the current datum
+        """Setting this property to a different value invalidates the current datum
         (if any) because a datum encodes a specific semi-minor axis. This also
         invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
         """
@@ -443,8 +421,7 @@ class GeogCS(CoordSystem):
 
     @inverse_flattening.setter
     def inverse_flattening(self, value):
-        """
-        Setting this property to a different value does not affect the behaviour
+        """Setting this property to a different value does not affect the behaviour
         of this object any further than the value of this property.
         """
         wmsg = (
@@ -466,8 +443,7 @@ class GeogCS(CoordSystem):
 
     @datum.setter
     def datum(self, value):
-        """
-        Setting this property to a different value invalidates the current
+        """Setting this property to a different value invalidates the current
         values of the ellipsoid measurements because a datum encodes its own
         ellipse. This also invalidates the cached `cartopy.Globe` and
         `cartopy.CRS`.
@@ -488,9 +464,7 @@ class GeogCS(CoordSystem):
         crs._inverse_flattening = None
 
         #: Describes 'zero' on the ellipsoid in degrees.
-        crs.longitude_of_prime_meridian = _arg_default(
-            longitude_of_prime_meridian, 0
-        )
+        crs.longitude_of_prime_meridian = _arg_default(longitude_of_prime_meridian, 0)
 
         crs._datum = datum
 
@@ -498,10 +472,7 @@ class GeogCS(CoordSystem):
 
 
 class RotatedGeogCS(CoordSystem):
-    """
-    A coordinate system with rotated pole, on an optional :class:`GeogCS`.
-
-    """
+    """A coordinate system with rotated pole, on an optional :class:`GeogCS`."""
 
     grid_mapping_name = "rotated_latitude_longitude"
 
@@ -512,8 +483,7 @@ class RotatedGeogCS(CoordSystem):
         north_pole_grid_longitude=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a coordinate system with rotated pole, on an
+        """Constructs a coordinate system with rotated pole, on an
         optional :class:`GeogCS`.
 
         Args:
@@ -547,9 +517,7 @@ class RotatedGeogCS(CoordSystem):
         self.grid_north_pole_longitude = float(grid_north_pole_longitude)
 
         #: Longitude of true north pole in rotated grid in degrees.
-        self.north_pole_grid_longitude = _arg_default(
-            north_pole_grid_longitude, 0
-        )
+        self.north_pole_grid_longitude = _arg_default(north_pole_grid_longitude, 0)
 
         #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
@@ -560,18 +528,14 @@ class RotatedGeogCS(CoordSystem):
             ("grid_north_pole_longitude", self.grid_north_pole_longitude),
         ]
         if self.north_pole_grid_longitude != 0.0:
-            attrs.append(
-                ("north_pole_grid_longitude", self.north_pole_grid_longitude)
-            )
+            attrs.append(("north_pole_grid_longitude", self.north_pole_grid_longitude))
         if self.ellipsoid is not None:
             attrs.append(("ellipsoid", self.ellipsoid))
         return attrs
 
     def __repr__(self):
         attrs = self._pretty_attrs()
-        result = "RotatedGeogCS(%s)" % ", ".join(
-            ["%s=%r" % (k, v) for k, v in attrs]
-        )
+        result = "RotatedGeogCS(%s)" % ", ".join(["%s=%r" % (k, v) for k, v in attrs])
         # Extra prettiness
         result = result.replace("grid_north_pole_latitude=", "")
         result = result.replace("grid_north_pole_longitude=", "")
@@ -615,10 +579,7 @@ class RotatedGeogCS(CoordSystem):
 
 
 class TransverseMercator(CoordSystem):
-    """
-    A cylindrical map projection, with XY coordinates measured in metres.
-
-    """
+    """A cylindrical map projection, with XY coordinates measured in metres."""
 
     grid_mapping_name = "transverse_mercator"
 
@@ -631,8 +592,7 @@ class TransverseMercator(CoordSystem):
         scale_factor_at_central_meridian=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a TransverseMercator object.
+        """Constructs a TransverseMercator object.
 
         Args:
 
@@ -669,14 +629,10 @@ class TransverseMercator(CoordSystem):
 
         """
         #: True latitude of planar origin in degrees.
-        self.latitude_of_projection_origin = float(
-            latitude_of_projection_origin
-        )
+        self.latitude_of_projection_origin = float(latitude_of_projection_origin)
 
         #: True longitude of planar origin in degrees.
-        self.longitude_of_central_meridian = float(
-            longitude_of_central_meridian
-        )
+        self.longitude_of_central_meridian = float(longitude_of_central_meridian)
 
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
@@ -745,10 +701,7 @@ class OSGB(TransverseMercator):
 
 
 class Orthographic(CoordSystem):
-    """
-    An orthographic map projection.
-
-    """
+    """An orthographic map projection."""
 
     grid_mapping_name = "orthographic"
 
@@ -760,8 +713,7 @@ class Orthographic(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """
-        Constructs an Orthographic coord system.
+        """Constructs an Orthographic coord system.
 
         Args:
 
@@ -784,14 +736,10 @@ class Orthographic(CoordSystem):
 
         """
         #: True latitude of planar origin in degrees.
-        self.latitude_of_projection_origin = float(
-            latitude_of_projection_origin
-        )
+        self.latitude_of_projection_origin = float(latitude_of_projection_origin)
 
         #: True longitude of planar origin in degrees.
-        self.longitude_of_projection_origin = float(
-            longitude_of_projection_origin
-        )
+        self.longitude_of_projection_origin = float(longitude_of_projection_origin)
 
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
@@ -836,10 +784,7 @@ class Orthographic(CoordSystem):
 
 
 class VerticalPerspective(CoordSystem):
-    """
-    A vertical/near-side perspective satellite image map projection.
-
-    """
+    """A vertical/near-side perspective satellite image map projection."""
 
     grid_mapping_name = "vertical_perspective"
 
@@ -852,8 +797,7 @@ class VerticalPerspective(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a Vertical Perspective coord system.
+        """Constructs a Vertical Perspective coord system.
 
         Args:
 
@@ -880,14 +824,10 @@ class VerticalPerspective(CoordSystem):
 
         """
         #: True latitude of planar origin in degrees.
-        self.latitude_of_projection_origin = float(
-            latitude_of_projection_origin
-        )
+        self.latitude_of_projection_origin = float(latitude_of_projection_origin)
 
         #: True longitude of planar origin in degrees.
-        self.longitude_of_projection_origin = float(
-            longitude_of_projection_origin
-        )
+        self.longitude_of_projection_origin = float(longitude_of_projection_origin)
 
         #: Altitude of satellite in metres.
         self.perspective_point_height = float(perspective_point_height)
@@ -935,10 +875,7 @@ class VerticalPerspective(CoordSystem):
 
 
 class Geostationary(CoordSystem):
-    """
-    A geostationary satellite image map projection.
-
-    """
+    """A geostationary satellite image map projection."""
 
     grid_mapping_name = "geostationary"
 
@@ -952,8 +889,7 @@ class Geostationary(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a Geostationary coord system.
+        """Constructs a Geostationary coord system.
 
         Args:
 
@@ -982,19 +918,14 @@ class Geostationary(CoordSystem):
 
         """
         #: True latitude of planar origin in degrees.
-        self.latitude_of_projection_origin = float(
-            latitude_of_projection_origin
-        )
+        self.latitude_of_projection_origin = float(latitude_of_projection_origin)
         if self.latitude_of_projection_origin != 0.0:
             raise ValueError(
-                "Non-zero latitude of projection currently not"
-                " supported by Cartopy."
+                "Non-zero latitude of projection currently not supported by Cartopy."
             )
 
         #: True longitude of planar origin in degrees.
-        self.longitude_of_projection_origin = float(
-            longitude_of_projection_origin
-        )
+        self.longitude_of_projection_origin = float(longitude_of_projection_origin)
 
         #: Altitude of satellite in metres.
         self.perspective_point_height = float(perspective_point_height)
@@ -1048,10 +979,7 @@ class Geostationary(CoordSystem):
 
 
 class Stereographic(CoordSystem):
-    """
-    A stereographic map projection.
-
-    """
+    """A stereographic map projection."""
 
     grid_mapping_name = "stereographic"
 
@@ -1065,12 +993,10 @@ class Stereographic(CoordSystem):
         ellipsoid=None,
         scale_factor_at_projection_origin=None,
     ):
-        """
-        Constructs a Stereographic coord system.
+        """Constructs a Stereographic coord system.
 
         Parameters
         ----------
-
         central_lat : float
             The latitude of the pole.
 
@@ -1097,7 +1023,6 @@ class Stereographic(CoordSystem):
         It is only valid to provide one of true_scale_lat and scale_factor_at_projection_origin
 
         """
-
         #: True latitude of planar origin in degrees.
         self.central_lat = float(central_lat)
 
@@ -1111,9 +1036,7 @@ class Stereographic(CoordSystem):
         self.false_northing = _arg_default(false_northing, 0)
 
         #: Latitude of true scale.
-        self.true_scale_lat = _arg_default(
-            true_scale_lat, None, cast_as=_float_or_None
-        )
+        self.true_scale_lat = _arg_default(true_scale_lat, None, cast_as=_float_or_None)
         #: Scale factor at projection origin.
         self.scale_factor_at_projection_origin = _arg_default(
             scale_factor_at_projection_origin, None, cast_as=_float_or_None
@@ -1168,10 +1091,7 @@ class Stereographic(CoordSystem):
 
 
 class PolarStereographic(Stereographic):
-    """
-    A subclass of the stereographic map projection centred on a pole.
-
-    """
+    """A subclass of the stereographic map projection centred on a pole."""
 
     grid_mapping_name = "polar_stereographic"
 
@@ -1185,12 +1105,10 @@ class PolarStereographic(Stereographic):
         scale_factor_at_projection_origin=None,
         ellipsoid=None,
     ):
-        """
-        Construct a Polar Stereographic coord system.
+        """Construct a Polar Stereographic coord system.
 
         Parameters
         ----------
-
         central_lat : {90, -90}
             The latitude of the pole.
 
@@ -1219,7 +1137,6 @@ class PolarStereographic(Stereographic):
 
 
         """
-
         super().__init__(
             central_lat=central_lat,
             central_lon=central_lon,
@@ -1235,10 +1152,7 @@ class PolarStereographic(Stereographic):
 
 
 class LambertConformal(CoordSystem):
-    """
-    A coordinate system in the Lambert Conformal conic projection.
-
-    """
+    """A coordinate system in the Lambert Conformal conic projection."""
 
     grid_mapping_name = "lambert_conformal_conic"
 
@@ -1251,8 +1165,7 @@ class LambertConformal(CoordSystem):
         secant_latitudes=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a LambertConformal coord system.
+        """Constructs a LambertConformal coord system.
 
         Kwargs:
 
@@ -1283,7 +1196,6 @@ class LambertConformal(CoordSystem):
             secant_latitudes=(33, 45)
 
         """
-
         #: True latitude of planar origin in degrees.
         self.central_lat = _arg_default(central_lat, 39.0)
 
@@ -1346,10 +1258,7 @@ class LambertConformal(CoordSystem):
 
 
 class Mercator(CoordSystem):
-    """
-    A coordinate system in the Mercator projection.
-
-    """
+    """A coordinate system in the Mercator projection."""
 
     grid_mapping_name = "mercator"
 
@@ -1362,8 +1271,7 @@ class Mercator(CoordSystem):
         false_easting=None,
         false_northing=None,
     ):
-        """
-        Constructs a Mercator coord system.
+        """Constructs a Mercator coord system.
 
         Kwargs:
 
@@ -1456,10 +1364,7 @@ class Mercator(CoordSystem):
 
 
 class LambertAzimuthalEqualArea(CoordSystem):
-    """
-    A coordinate system in the Lambert Azimuthal Equal Area projection.
-
-    """
+    """A coordinate system in the Lambert Azimuthal Equal Area projection."""
 
     grid_mapping_name = "lambert_azimuthal_equal_area"
 
@@ -1471,8 +1376,7 @@ class LambertAzimuthalEqualArea(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a Lambert Azimuthal Equal Area coord system.
+        """Constructs a Lambert Azimuthal Equal Area coord system.
 
         Kwargs:
 
@@ -1540,10 +1444,7 @@ class LambertAzimuthalEqualArea(CoordSystem):
 
 
 class AlbersEqualArea(CoordSystem):
-    """
-    A coordinate system in the Albers Conical Equal Area projection.
-
-    """
+    """A coordinate system in the Albers Conical Equal Area projection."""
 
     grid_mapping_name = "albers_conical_equal_area"
 
@@ -1556,8 +1457,7 @@ class AlbersEqualArea(CoordSystem):
         standard_parallels=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a Albers Conical Equal Area coord system.
+        """Constructs a Albers Conical Equal Area coord system.
 
         Kwargs:
 
@@ -1638,8 +1538,7 @@ class AlbersEqualArea(CoordSystem):
 
 
 class ObliqueMercator(CoordSystem):
-    """
-    A cylindrical map projection, with XY coordinates measured in metres.
+    """A cylindrical map projection, with XY coordinates measured in metres.
 
     Designed for regions not well suited to :class:`Mercator` or
     :class:`TransverseMercator`, as the positioning of the cylinder is more
@@ -1663,8 +1562,7 @@ class ObliqueMercator(CoordSystem):
         scale_factor_at_projection_origin=None,
         ellipsoid=None,
     ):
-        """
-        Constructs an ObliqueMercator object.
+        """Constructs an ObliqueMercator object.
 
         Parameters
         ----------
@@ -1699,14 +1597,10 @@ class ObliqueMercator(CoordSystem):
         self.azimuth_of_central_line = float(azimuth_of_central_line)
 
         #: True latitude of planar origin in degrees.
-        self.latitude_of_projection_origin = float(
-            latitude_of_projection_origin
-        )
+        self.latitude_of_projection_origin = float(latitude_of_projection_origin)
 
         #: True longitude of planar origin in degrees.
-        self.longitude_of_projection_origin = float(
-            longitude_of_projection_origin
-        )
+        self.longitude_of_projection_origin = float(longitude_of_projection_origin)
 
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
@@ -1758,8 +1652,7 @@ class ObliqueMercator(CoordSystem):
 
 
 class RotatedMercator(ObliqueMercator):
-    """
-    :class:`ObliqueMercator` with ``azimuth_of_central_line=90``.
+    """:class:`ObliqueMercator` with ``azimuth_of_central_line=90``.
 
     As noted in CF versions 1.10 and earlier:
 
@@ -1784,8 +1677,7 @@ class RotatedMercator(ObliqueMercator):
         scale_factor_at_projection_origin=None,
         ellipsoid=None,
     ):
-        """
-        Constructs a RotatedMercator object.
+        """Constructs a RotatedMercator object.
 
         Parameters
         ----------

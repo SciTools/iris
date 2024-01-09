@@ -43,9 +43,7 @@ class Test(tests.IrisTest):
 
     def test_incompatible_cubes(self):
         with self.assertRaises(ValueError):
-            stats.pearsonr(
-                self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude"
-            )
+            stats.pearsonr(self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude")
 
     def test_compatible_cubes(self):
         r = stats.pearsonr(self.cube_a, self.cube_b, ["latitude", "longitude"])

@@ -63,12 +63,8 @@ class TestCoordSlicing(tests.IrisTest):
         bound_shape = a.shape + (2,)
         a.bounds = np.arange(np.prod(bound_shape)).reshape(bound_shape)
         b = a[(0, 2), (0, -1)]
-        np.testing.assert_array_equal(
-            b.points, a.points[(0, 2), :][:, (0, -1)]
-        )
-        np.testing.assert_array_equal(
-            b.bounds, a.bounds[(0, 2), :, :][:, (0, -1), :]
-        )
+        np.testing.assert_array_equal(b.points, a.points[(0, 2), :][:, (0, -1)])
+        np.testing.assert_array_equal(b.bounds, a.bounds[(0, 2), :, :][:, (0, -1), :])
 
 
 class TestCoordIntersection(tests.IrisTest):
@@ -98,9 +94,7 @@ class TestCoordIntersection(tests.IrisTest):
             ],
             dtype=np.float32,
         )
-        self.b = iris.coords.AuxCoord(
-            pts, long_name="foo", units="meter", bounds=bnds
-        )
+        self.b = iris.coords.AuxCoord(pts, long_name="foo", units="meter", bounds=bnds)
 
     def test_basic_intersection(self):
         inds = self.a.intersect(self.b, return_indices=True)
@@ -151,12 +145,8 @@ class TestCoordIntersection(tests.IrisTest):
         cube = iris.tests.stock.realistic_4d()
         coord = cube.coord("grid_longitude")
         offset_coord = coord.copy()
-        offset_coord = offset_coord - (
-            offset_coord.points[20] - offset_coord.points[0]
-        )
-        self.assertEqual(
-            coord.intersect(offset_coord), offset_coord.intersect(coord)
-        )
+        offset_coord = offset_coord - (offset_coord.points[20] - offset_coord.points[0])
+        self.assertEqual(coord.intersect(offset_coord), offset_coord.intersect(coord))
 
 
 class TestXML(tests.IrisTest):
@@ -186,14 +176,10 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
         self.height = cube.coord("level_height")[:10]
 
     def test_DimCoord_repr(self):
-        self.assertRepr(
-            self.lat, ("coord_api", "str_repr", "dim_nontime_repr.txt")
-        )
+        self.assertRepr(self.lat, ("coord_api", "str_repr", "dim_nontime_repr.txt"))
 
     def test_AuxCoord_repr(self):
-        self.assertRepr(
-            self.height, ("coord_api", "str_repr", "aux_nontime_repr.txt")
-        )
+        self.assertRepr(self.height, ("coord_api", "str_repr", "aux_nontime_repr.txt"))
 
     def test_DimCoord_str(self):
         self.assertString(
@@ -214,31 +200,21 @@ class TestCoord_ReprStr_time(tests.IrisTest):
         self.fp = cube.coord("forecast_period")
 
     def test_DimCoord_repr(self):
-        self.assertRepr(
-            self.time, ("coord_api", "str_repr", "dim_time_repr.txt")
-        )
+        self.assertRepr(self.time, ("coord_api", "str_repr", "dim_time_repr.txt"))
 
     def test_AuxCoord_repr(self):
-        self.assertRepr(
-            self.fp, ("coord_api", "str_repr", "aux_time_repr.txt")
-        )
+        self.assertRepr(self.fp, ("coord_api", "str_repr", "aux_time_repr.txt"))
 
     def test_DimCoord_str(self):
-        self.assertString(
-            str(self.time), ("coord_api", "str_repr", "dim_time_str.txt")
-        )
+        self.assertString(str(self.time), ("coord_api", "str_repr", "dim_time_str.txt"))
 
     def test_AuxCoord_str(self):
-        self.assertString(
-            str(self.fp), ("coord_api", "str_repr", "aux_time_str.txt")
-        )
+        self.assertString(str(self.fp), ("coord_api", "str_repr", "aux_time_str.txt"))
 
 
 class TestAuxCoordCreation(tests.IrisTest):
     def test_basic(self):
-        a = iris.coords.AuxCoord(
-            np.arange(10), "air_temperature", units="kelvin"
-        )
+        a = iris.coords.AuxCoord(np.arange(10), "air_temperature", units="kelvin")
         result = "\n".join(
             [
                 "AuxCoord :  air_temperature / (kelvin)",
@@ -250,9 +226,7 @@ class TestAuxCoordCreation(tests.IrisTest):
         )
         self.assertEqual(result, str(a))
 
-        b = iris.coords.AuxCoord(
-            list(range(10)), attributes={"monty": "python"}
-        )
+        b = iris.coords.AuxCoord(list(range(10)), attributes={"monty": "python"})
         result = "\n".join(
             [
                 "AuxCoord :  unknown / (unknown)",
@@ -274,9 +248,7 @@ class TestAuxCoordCreation(tests.IrisTest):
                 attributes={"standard_name": "whoopsy"},
             )
 
-        a = iris.coords.AuxCoord(
-            np.arange(10), "air_temperature", units="kelvin"
-        )
+        a = iris.coords.AuxCoord(np.arange(10), "air_temperature", units="kelvin")
         with self.assertRaises(ValueError):
             a.attributes["standard_name"] = "whoopsy"
         with self.assertRaises(ValueError):
@@ -341,9 +313,7 @@ class TestAuxCoordCreation(tests.IrisTest):
 
 class TestDimCoordCreation(tests.IrisTest):
     def test_basic(self):
-        a = iris.coords.DimCoord(
-            np.arange(10), "air_temperature", units="kelvin"
-        )
+        a = iris.coords.DimCoord(np.arange(10), "air_temperature", units="kelvin")
         result = "\n".join(
             [
                 "DimCoord :  air_temperature / (kelvin)",
@@ -355,9 +325,7 @@ class TestDimCoordCreation(tests.IrisTest):
         )
         self.assertEqual(result, str(a))
 
-        b = iris.coords.DimCoord(
-            list(range(10)), attributes={"monty": "python"}
-        )
+        b = iris.coords.DimCoord(list(range(10)), attributes={"monty": "python"})
         result = "\n".join(
             [
                 "DimCoord :  unknown / (unknown)",
@@ -379,9 +347,7 @@ class TestDimCoordCreation(tests.IrisTest):
                 attributes={"standard_name": "whoopsy"},
             )
 
-        a = iris.coords.DimCoord(
-            np.arange(10), "air_temperature", units="kelvin"
-        )
+        a = iris.coords.DimCoord(np.arange(10), "air_temperature", units="kelvin")
         with self.assertRaises(ValueError):
             a.attributes["standard_name"] = "whoopsy"
         with self.assertRaises(ValueError):
@@ -447,9 +413,7 @@ class TestDimCoordCreation(tests.IrisTest):
         # masked bounds
         emsg = "bounds array must not be masked"
         with self.assertRaisesRegex(TypeError, emsg):
-            iris.coords.DimCoord(
-                [1], bounds=ma.masked_array([[0, 2]], mask=True)
-            )
+            iris.coords.DimCoord([1], bounds=ma.masked_array([[0, 2]], mask=True))
         # shapes of points and bounds
         msg = "The shape of the 'unknown' DimCoord bounds array should be"
         with self.assertRaisesRegex(ValueError, msg):
@@ -506,12 +470,8 @@ class TestDimCoordCreation(tests.IrisTest):
             circular=False,
         )
 
-        coord = iris.coords.DimCoord.from_regular(
-            zeroth, step, count, **kwargs
-        )
-        expected_points = np.arange(
-            zeroth + step, zeroth + (count + 1) * step, step
-        )
+        coord = iris.coords.DimCoord.from_regular(zeroth, step, count, **kwargs)
+        expected_points = np.arange(zeroth + step, zeroth + (count + 1) * step, step)
         expected = iris.coords.DimCoord(expected_points, **kwargs)
         self.assertIsInstance(coord, iris.coords.DimCoord)
         self.assertEqual(coord, expected)
@@ -533,9 +493,7 @@ class TestDimCoordCreation(tests.IrisTest):
         coord = iris.coords.DimCoord.from_regular(
             zeroth, step, count, with_bounds=True, **kwargs
         )
-        expected_points = np.arange(
-            zeroth + step, zeroth + (count + 1) * step, step
-        )
+        expected_points = np.arange(zeroth + step, zeroth + (count + 1) * step, step)
         expected_bounds = np.transpose(
             [expected_points - 0.5 * step, expected_points + 0.5 * step]
         )
@@ -596,9 +554,7 @@ class TestCoordAdditionSubtract(TestCoordMaths):
         self._build_coord(start=8)
         r_expl = -self.lon
         np.testing.assert_array_equal(r_expl.points, -(self.lon.points))
-        self.assertXMLElement(
-            r_expl, ("coord_api", "coord_maths", "negate_expl.xml")
-        )
+        self.assertXMLElement(r_expl, ("coord_api", "coord_maths", "negate_expl.xml"))
 
     def test_right_subtract(self):
         r_expl = 10 - self.lon
@@ -809,9 +765,7 @@ class TestIsContiguous(tests.IrisTest):
         self.assertTrue(coord.is_contiguous())
 
     def test_equal_int(self):
-        coord = iris.coords.DimCoord(
-            [0, 10, 20], bounds=[[0, 10], [10, 20], [20, 30]]
-        )
+        coord = iris.coords.DimCoord([0, 10, 20], bounds=[[0, 10], [10, 20], [20, 30]])
         self.assertTrue(coord.is_contiguous())
 
     def test_equal_float(self):
@@ -824,9 +778,7 @@ class TestIsContiguous(tests.IrisTest):
         delta = np.float64(0.00001)
         lower = -1.0 + delta
         upper = 3.0 - delta
-        points, step = np.linspace(
-            lower, upper, 2, endpoint=False, retstep=True
-        )
+        points, step = np.linspace(lower, upper, 2, endpoint=False, retstep=True)
         points += step * 0.5
         coord = iris.coords.DimCoord(points)
         coord.guess_bounds()
@@ -1021,9 +973,7 @@ class TestDimCoordEquality(tests.IrisTest):
         self.assertIs(dim.__ne__(aux), NotImplemented)
 
     def test_climatological(self):
-        co1 = iris.coords.DimCoord(
-            [0], bounds=[[0, 1]], units="days since 1970-01-01"
-        )
+        co1 = iris.coords.DimCoord([0], bounds=[[0, 1]], units="days since 1970-01-01")
         co2 = co1.copy()
         co2.climatological = True
         self.assertNotEqual(co1, co2)

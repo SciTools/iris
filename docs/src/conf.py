@@ -15,8 +15,9 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 # ----------------------------------------------------------------------------
+
+"""sphinx config."""
 
 import datetime
 from importlib.metadata import version as get_version
@@ -195,7 +196,7 @@ copybutton_line_continuation_character = "\\"
 todo_include_todos = True
 
 # api generation configuration
-autodoc_member_order = "groupwise"
+autodoc_member_order = "alphabetical"
 autodoc_default_flags = ["show-inheritance"]
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
@@ -332,9 +333,7 @@ html_theme_options = {
 
 # if we are building via Read The Docs and it is the latest (not stable)
 if on_rtd and rtd_version == "latest":
-    html_theme_options[
-        "announcement"
-    ] = f"""
+    html_theme_options["announcement"] = f"""
         You are viewing the <b>latest</b> unreleased documentation
         <strong>{version}</strong>. You can switch to a
         <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
@@ -381,22 +380,23 @@ html_js_files = [
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
-    "http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
-    "http://cfconventions.org",
-    "http://code.google.com/p/msysgit/downloads/list",
-    "http://effbot.org",
+    "https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
+    "https://cfconventions.org",
+    "https://code.google.com/p/msysgit/downloads/list",
+    "https://effbot.org",
     "https://help.github.com",
     "https://docs.github.com",
     "https://github.com",
-    "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "http://scitools.github.com/cartopy",
-    "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
+    "https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
+    "https://scitools.github.com/cartopy",
+    "https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",
-    "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
-    "http://www.nationalarchives.gov.uk/doc/open-government-licence",
+    "https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
+    "https://www.nationalarchives.gov.uk/doc/open-government-licence",
     "https://www.metoffice.gov.uk/",
     "https://biggus.readthedocs.io/",
     "https://stickler-ci.com/",
+    "https://twitter.com/scitools_iris",
 ]
 
 # list of sources to exclude from the build.

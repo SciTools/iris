@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the function
+"""Unit tests for the function
 :func:`iris.fileformats.um._optimal_array_structuring.optimal_array_structure`.
 
 """
@@ -14,9 +13,7 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.fileformats.um._optimal_array_structuring import (
-    optimal_array_structure,
-)
+from iris.fileformats.um._optimal_array_structuring import optimal_array_structure
 
 
 class Test__optimal_dimensioning_structure:
@@ -32,16 +29,14 @@ class Test_optimal_array_structure(tests.IrisTest):
             self.assertEqual(
                 result_dims,
                 spec_dims,
-                'element dims differ for "{}": '
-                "result={!r}, expected {!r}".format(
+                'element dims differ for "{}": ' "result={!r}, expected {!r}".format(
                     keyname, result_dims, spec_dims
                 ),
             )
             self.assertArrayEqual(
                 result_array,
                 spec_array,
-                'element arrays differ for "{}": '
-                "result={!r}, expected {!r}".format(
+                'element arrays differ for "{}": ' "result={!r}, expected {!r}".format(
                     keyname, result_array, spec_array
                 ),
             )
@@ -63,9 +58,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(shape, (3,))
         self.assertEqual(primaries, set("a"))
-        self._check_arrays_and_dims(
-            elems_and_dims, {"a": (np.array([1, 2, 4]), (0,))}
-        )
+        self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([1, 2, 4]), (0,))})
 
     def test_1d_actuals(self):
         # Test use of alternate element values for array construction.
@@ -76,9 +69,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         )
         self.assertEqual(shape, (3,))
         self.assertEqual(primaries, set("a"))
-        self._check_arrays_and_dims(
-            elems_and_dims, {"a": (np.array([7, 3, 9]), (0,))}
-        )
+        self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([7, 3, 9]), (0,))})
 
     def test_actuals_mismatch_fail(self):
         elements = [("a", np.array([1, 2, 4]))]
@@ -144,9 +135,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
         self.assertEqual(shape, (3,))
         self.assertEqual(primaries, set(["a"]))
-        self._check_arrays_and_dims(
-            elems_and_dims, {"a": (np.array([1, 2, 3]), (0,))}
-        )
+        self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([1, 2, 3]), (0,))})
 
     def test_1d_duplicates(self):
         # When two have the same structure, the first is 'the dimension'.

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the function :func:\
+"""Unit tests for the function :func:\
 `iris.fileformats.um._fast_load_structured_fields.group_structured_fields`.
 
 """
@@ -14,14 +13,11 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.fileformats.um._fast_load_structured_fields import (
-    group_structured_fields,
-)
+from iris.fileformats.um._fast_load_structured_fields import group_structured_fields
 
 
 def _convert_to_vector(value, length, default):
-    """
-    Return argument (or default) in a list of length 'length'.
+    """Return argument (or default) in a list of length 'length'.
 
     The 'value' arg must either be scalar, or a list of length 'length'.
     A value of None is replaced by the default.
@@ -108,25 +104,17 @@ class Test__grouping(tests.IrisTest):
             stashes=[11, 11, 15, 11], lbprocs=[31, 42, 31, 42]
         )
         result = self._group_result(fields_iter)
-        self.assertEqual(
-            result, self._test_fields([(1001,), (1002, 1004), (1003,)])
-        )
+        self.assertEqual(result, self._test_fields([(1001,), (1002, 1004), (1003,)]))
 
     def test_sortorder(self):
         fields_iter = self._dummy_fields_iter(stashes=[11, 7, 12])
         result = self._group_result(fields_iter)
-        self.assertEqual(
-            result, self._test_fields([(1002,), (1001,), (1003,)])
-        )
+        self.assertEqual(result, self._test_fields([(1002,), (1001,), (1003,)]))
 
     def test_sortorder_2d(self):
-        fields_iter = self._dummy_fields_iter(
-            stashes=[11, 11, 12], lbprocs=[31, 9, 1]
-        )
+        fields_iter = self._dummy_fields_iter(stashes=[11, 11, 12], lbprocs=[31, 9, 1])
         result = self._group_result(fields_iter)
-        self.assertEqual(
-            result, self._test_fields([(1002,), (1001,), (1003,)])
-        )
+        self.assertEqual(result, self._test_fields([(1002,), (1001,), (1003,)]))
 
 
 if __name__ == "__main__":

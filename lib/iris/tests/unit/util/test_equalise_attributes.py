@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :func:`iris.util.equalise_attributes` function.
-
-"""
+"""Unit tests for the :func:`iris.util.equalise_attributes` function."""
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -123,9 +120,7 @@ class TestEqualiseAttributes(tests.IrisTest):
 
     def test_array_different(self):
         cubes = [self.cube_a1b5v1, self.cube_a1b6v2]
-        self._test(
-            cubes, {"a": 1}, [{"b": 5, "v": self.v1}, {"b": 6, "v": self.v2}]
-        )
+        self._test(cubes, {"a": 1}, [{"b": 5, "v": self.v1}, {"b": 6, "v": self.v2}])
 
     def test_array_same(self):
         cubes = [self.cube_a1b5v1, self.cube_a1b6v1]
@@ -148,9 +143,7 @@ class TestEqualiseAttributes(tests.IrisTest):
         self._test(
             cubes,
             {
-                "STASH": iris.fileformats.pp.STASH(
-                    model=1, section=16, item=203
-                ),
+                "STASH": iris.fileformats.pp.STASH(model=1, section=16, item=203),
                 "source": "Data from Met Office Unified Model",
             },
             [{}, {}],
@@ -158,8 +151,7 @@ class TestEqualiseAttributes(tests.IrisTest):
 
 
 class TestSplitattributes:
-    """
-    Extra testing for cases where attributes differ specifically by type
+    """Extra testing for cases where attributes differ specifically by type.
 
     That is, where there is a new possibility of 'mismatch' due to the newer "typing"
     of attributes as global or local.
@@ -254,13 +246,10 @@ class TestNonCube:
     def test(self):
         attrs = [1, 1, 2]
         coords = [
-            AuxCoord([0], attributes={"a": attr, "b": "all_the_same"})
-            for attr in attrs
+            AuxCoord([0], attributes={"a": attr, "b": "all_the_same"}) for attr in attrs
         ]
         equalise_attributes(coords)
-        assert all(
-            coord.attributes == {"b": "all_the_same"} for coord in coords
-        )
+        assert all(coord.attributes == {"b": "all_the_same"} for coord in coords)
 
 
 if __name__ == "__main__":

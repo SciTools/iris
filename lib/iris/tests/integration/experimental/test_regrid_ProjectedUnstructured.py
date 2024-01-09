@@ -51,9 +51,7 @@ class TestProjectedUnstructured(tests.IrisTest):
 
     def test_nearest_sinusoidal(self):
         crs = ccrs.Sinusoidal()
-        res = self.src.regrid(
-            self.global_grid, ProjectedUnstructuredNearest(crs)
-        )
+        res = self.src.regrid(self.global_grid, ProjectedUnstructuredNearest(crs))
         self.assertArrayShapeStats(
             res, (1, 6, 73, 96), 315.891358296, 11.000639227, rtol=1e-8
         )
@@ -61,14 +59,10 @@ class TestProjectedUnstructured(tests.IrisTest):
             res[:, 0], (1, 73, 96), 299.99993826, 3.9223839688e-5
         )
 
-    @unittest.skip(
-        "Deprecated API and provenance of reference numbers unknown."
-    )
+    @unittest.skip("Deprecated API and provenance of reference numbers unknown.")
     def test_nearest_gnomonic_uk_domain(self):
         crs = ccrs.Gnomonic(central_latitude=60.0)
-        uk_grid = self.global_grid.intersection(
-            longitude=(-20, 20), latitude=(40, 80)
-        )
+        uk_grid = self.global_grid.intersection(longitude=(-20, 20), latitude=(40, 80))
         res = self.src.regrid(uk_grid, ProjectedUnstructuredNearest(crs))
 
         self.assertArrayShapeStats(
@@ -91,9 +85,7 @@ class TestProjectedUnstructured(tests.IrisTest):
                 [318.92881733, 318.92881733, 318.92881733],
             ]
         )
-        self.assertArrayAlmostEqual(
-            expected_subset, res.data[0, 3, 5:8, 4:7].data
-        )
+        self.assertArrayAlmostEqual(expected_subset, res.data[0, 3, 5:8, 4:7].data)
 
     def test_nearest_aux_factories(self):
         src = self.src
@@ -143,9 +135,7 @@ class TestProjectedUnstructured(tests.IrisTest):
         self.assertArrayShapeStats(
             res, (1, 6, 73, 96), 315.8914839, 11.0006338412, rtol=1e-8
         )
-        self.assertArrayShapeStats(
-            res[:, 0], (1, 73, 96), 299.99993826, 3.775024069e-5
-        )
+        self.assertArrayShapeStats(res[:, 0], (1, 73, 96), 299.99993826, 3.775024069e-5)
         expected_subset = np.array(
             [
                 [299.999987, 299.999996, 299.999999],
@@ -153,9 +143,7 @@ class TestProjectedUnstructured(tests.IrisTest):
                 [299.999973, 299.999977, 299.999982],
             ]
         )
-        self.assertArrayAlmostEqual(
-            expected_subset, res.data[0, 0, 20:23, 40:43].data
-        )
+        self.assertArrayAlmostEqual(expected_subset, res.data[0, 0, 20:23, 40:43].data)
 
 
 if __name__ == "__main__":

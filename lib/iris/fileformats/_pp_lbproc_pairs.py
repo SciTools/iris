@@ -30,8 +30,5 @@ LBPROC_PAIRS = (
 # lbproc_map is dict mapping lbproc->English and English->lbproc
 # essentially a one to one mapping
 LBPROC_MAP = {
-    x: y
-    for x, y in itertools.chain(
-        LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS)
-    )
+    x: y for x, y in itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))
 }

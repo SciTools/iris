@@ -170,9 +170,7 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
 
     def test_coord_coord(self):
         # plot two coordinates that are not mappable
-        self.draw_method(
-            self.cube1d.coord("sigma"), self.cube1d.coord("altitude")
-        )
+        self.draw_method(self.cube1d.coord("sigma"), self.cube1d.coord("altitude"))
         self.check_graphic()
 
     def test_coord_coord_map(self):
@@ -347,9 +345,7 @@ class Test1dFillBetween(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
         self.cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "testing", "small_theta_colpex.nc")
-            ),
+            tests.get_data_path(("NetCDF", "testing", "small_theta_colpex.nc")),
             "air_potential_temperature",
         )[0, 0]
         self.draw_method = iplt.fill_between
@@ -437,9 +433,7 @@ class Test1dQuickplotFillBetween(Test1dFillBetween):
     def setUp(self):
         tests.GraphicsTest.setUp(self)
         self.cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "testing", "small_theta_colpex.nc")
-            ),
+            tests.get_data_path(("NetCDF", "testing", "small_theta_colpex.nc")),
             "air_potential_temperature",
         )[0, 0]
         self.draw_method = qplt.fill_between
@@ -461,9 +455,7 @@ class TestAttributePositive(tests.GraphicsTest):
         self.check_graphic()
 
     def test_2d_positive_up(self):
-        path = tests.get_data_path(
-            ("NetCDF", "testing", "small_theta_colpex.nc")
-        )
+        path = tests.get_data_path(("NetCDF", "testing", "small_theta_colpex.nc"))
         cube = iris.load_cube(path, "air_potential_temperature")[0, :, 42, :]
         qplt.pcolormesh(cube)
         self.check_graphic()
@@ -551,7 +543,8 @@ class SliceMixin:
     """Mixin class providing tests for each 2-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
-    and self.results to be a dictionary containing the desired test results."""
+    and self.results to be a dictionary containing the desired test results.
+    """
 
     def test_yx(self):
         cube = self.wind[0, 0, :, :]
@@ -625,8 +618,7 @@ class TestPcolormesh(tests.GraphicsTest, SliceMixin):
 
 
 def check_warnings(method):
-    """
-    Decorator that adds a catch_warnings and filter to assert
+    """Decorator that adds a catch_warnings and filter to assert
     the method being decorated issues a UserWarning.
 
     """
@@ -648,8 +640,7 @@ def check_warnings(method):
 
 
 def ignore_warnings(method):
-    """
-    Decorator that adds a catch_warnings and filter to suppress
+    """Decorator that adds a catch_warnings and filter to suppress
     any warnings issues by the method being decorated.
 
     """
@@ -664,8 +655,7 @@ def ignore_warnings(method):
 
 
 class CheckForWarningsMetaclass(type):
-    """
-    Metaclass that adds a further test for each base class test
+    """Metaclass that adds a further test for each base class test
     that checks that each test raises a UserWarning. Each base
     class test is then overridden to ignore warnings in order to
     check the underlying functionality.
@@ -675,9 +665,7 @@ class CheckForWarningsMetaclass(type):
     def __new__(cls, name, bases, local):
         def add_decorated_methods(attr_dict, target_dict, decorator):
             for key, value in attr_dict.items():
-                if isinstance(value, types.FunctionType) and key.startswith(
-                    "test"
-                ):
+                if isinstance(value, types.FunctionType) and key.startswith("test"):
                     new_key = "_".join((key, decorator.__name__))
                     if new_key not in target_dict:
                         wrapped = decorator(value)
@@ -685,15 +673,12 @@ class CheckForWarningsMetaclass(type):
                         target_dict[new_key] = wrapped
                     else:
                         raise RuntimeError(
-                            "A attribute called {!r} "
-                            "already exists.".format(new_key)
+                            "A attribute called {!r} already exists.".format(new_key)
                         )
 
         def override_with_decorated_methods(attr_dict, target_dict, decorator):
             for key, value in attr_dict.items():
-                if isinstance(value, types.FunctionType) and key.startswith(
-                    "test"
-                ):
+                if isinstance(value, types.FunctionType) and key.startswith("test"):
                     target_dict[key] = decorator(value)
 
         # Add decorated versions of base methods
@@ -703,9 +688,7 @@ class CheckForWarningsMetaclass(type):
 
         # Override base methods to ignore warnings.
         for base in bases:
-            override_with_decorated_methods(
-                base.__dict__, local, ignore_warnings
-            )
+            override_with_decorated_methods(base.__dict__, local, ignore_warnings)
 
         return type.__new__(cls, name, bases, local)
 
@@ -714,8 +697,7 @@ class CheckForWarningsMetaclass(type):
 class TestPcolorNoBounds(
     tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
-    """
-    Test the iris.plot.pcolor routine on a cube with coordinates
+    """Test the iris.plot.pcolor routine on a cube with coordinates
     that have no bounds.
 
     """
@@ -730,8 +712,7 @@ class TestPcolorNoBounds(
 class TestPcolormeshNoBounds(
     tests.GraphicsTest, SliceMixin, metaclass=CheckForWarningsMetaclass
 ):
-    """
-    Test the iris.plot.pcolormesh routine on a cube with coordinates
+    """Test the iris.plot.pcolormesh routine on a cube with coordinates
     that have no bounds.
 
     """
@@ -747,7 +728,8 @@ class Slice1dMixin:
     """Mixin class providing tests for each 1-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
-    and self.results to be a dictionary containing the desired test results."""
+    and self.results to be a dictionary containing the desired test results.
+    """
 
     def test_x(self):
         cube = self.wind[0, 0, 0, :]
@@ -802,9 +784,9 @@ _load_cube_once_cache = {}
 
 
 def load_cube_once(filename, constraint):
-    """Same syntax as load_cube, but will only load a file once,
+    """Same syntax as load_cube, but will only load a file once.
 
-    then cache the answer in a dictionary.
+    Then cache the answer in a dictionary.
 
     """
     global _load_cube_once_cache
@@ -837,23 +819,17 @@ class LambdaStr:
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
-        filename = tests.get_data_path(
-            ("PP", "COLPEX", "theta_and_orog_subset.pp")
-        )
+        filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
         self.cube = load_cube_once(filename, "air_potential_temperature")
 
         self.draw_module = iris.plot
         self.contourf = LambdaStr(
             "iris.plot.contourf",
-            lambda cube, *args, **kwargs: iris.plot.contourf(
-                cube, *args, **kwargs
-            ),
+            lambda cube, *args, **kwargs: iris.plot.contourf(cube, *args, **kwargs),
         )
         self.contour = LambdaStr(
             "iris.plot.contour",
-            lambda cube, *args, **kwargs: iris.plot.contour(
-                cube, *args, **kwargs
-            ),
+            lambda cube, *args, **kwargs: iris.plot.contour(cube, *args, **kwargs),
         )
         self.points = LambdaStr(
             "iris.plot.points",
@@ -863,9 +839,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
         )
         self.plot = LambdaStr(
             "iris.plot.plot",
-            lambda cube, *args, **kwargs: iris.plot.plot(
-                cube, *args, **kwargs
-            ),
+            lambda cube, *args, **kwargs: iris.plot.plot(cube, *args, **kwargs),
         )
 
         self.results = {

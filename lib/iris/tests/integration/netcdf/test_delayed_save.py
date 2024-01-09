@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Integration tests for delayed saving.
-"""
+"""Integration tests for delayed saving."""
 import re
 import warnings
 
@@ -61,8 +59,7 @@ class Test__lazy_stream_data:
         cube = realistic_4d()
 
         def fix_array(array):
-            """
-            Make a new, custom array to replace the provided cube/coord data.
+            """Make a new, custom array to replace the provided cube/coord data.
             Optionally provide default-fill-value collisions, and/or replace with lazy
             content.
             """
@@ -71,7 +68,7 @@ class Test__lazy_stream_data:
                     dmin, dmax = 0, 255
                 else:
                     dmin, dmax = array.min(), array.max()
-                array = np.random.uniform(dmin, dmax, size=array.shape)
+                array = np.random.default_rng().uniform(dmin, dmax, size=array.shape)
 
                 if data_is_maskedbytes:
                     array = array.astype("u1")
@@ -112,9 +109,7 @@ class Test__lazy_stream_data:
                 fix_array(np.zeros(ancil_shape)), long_name="sample_ancil"
             )
             cube.add_ancillary_variable(ancil, ancil_dims)
-            cm = CellMeasure(
-                fix_array(np.zeros(cm_shape)), long_name="sample_cm"
-            )
+            cm = CellMeasure(fix_array(np.zeros(cm_shape)), long_name="sample_cm")
             cube.add_cell_measure(cm, cm_dims)
         return cube
 
@@ -133,9 +128,7 @@ class Test__lazy_stream_data:
             cube.attributes["Conventions"] = "CF-1.7"
 
         original_cubes = sorted(original_cubes, key=lambda cube: cube.name())
-        result = iris.save(
-            original_cubes, output_path, compute=not save_is_delayed
-        )
+        result = iris.save(original_cubes, output_path, compute=not save_is_delayed)
         if save_is_delayed:
             # In this case, must also "complete" the save.
             result.compute()
@@ -172,9 +165,7 @@ class Test__lazy_stream_data:
         if config_name == "distributed":
             _distributed_client.close()
 
-    def test_scheduler_types(
-        self, output_path, scheduler_type, save_is_delayed
-    ):
+    def test_scheduler_types(self, output_path, scheduler_type, save_is_delayed):
         # Check operation works and behaves the same with different schedulers,
         # especially including distributed.
 
@@ -205,9 +196,7 @@ class Test__lazy_stream_data:
             with warnings.catch_warnings(record=True) as logged_warnings:
                 # The compute *returns* warnings from the delayed operations.
                 issued_warnings = result.compute()
-            issued_warnings = [
-                log.message for log in logged_warnings
-            ] + issued_warnings
+            issued_warnings = [log.message for log in logged_warnings] + issued_warnings
 
         warning_messages = [warning.args[0] for warning in issued_warnings]
         if scheduler_type == "DistributedScheduler":
@@ -229,9 +218,7 @@ class Test__lazy_stream_data:
         expected_msg = "contains unmasked data points equal to the fill-value"
         assert all(expected_msg in message for message in warning_messages)
 
-    def test_time_of_writing(
-        self, save_is_delayed, output_path, scheduler_type
-    ):
+    def test_time_of_writing(self, save_is_delayed, output_path, scheduler_type):
         # Check when lazy data is *actually* written :
         #  - in 'immediate' mode, on initial file write
         #  - in 'delayed' mode, only when the delayed-write is computed.
@@ -249,9 +236,7 @@ class Test__lazy_stream_data:
         assert save_is_delayed == (result is not None)
 
         # Read back : NOTE avoid loading the separate surface-altitude cube.
-        readback_cube = iris.load_cube(
-            output_path, "air_potential_temperature"
-        )
+        readback_cube = iris.load_cube(output_path, "air_potential_temperature")
         # Check the components to be tested *are* lazy. See: self.all_vars_lazy().
         assert readback_cube.has_lazy_data()
         assert readback_cube.coord("surface_altitude").has_lazy_points()
@@ -260,9 +245,7 @@ class Test__lazy_stream_data:
 
         # If 'delayed', the lazy content should all be masked, otherwise none of it.
         def getmask(cube_or_coord):
-            cube_or_coord = (
-                cube_or_coord.copy()
-            )  # avoid realising the original
+            cube_or_coord = cube_or_coord.copy()  # avoid realising the original
             if hasattr(cube_or_coord, "points"):
                 data = cube_or_coord.points
             else:
@@ -315,9 +298,7 @@ class Test__lazy_stream_data:
         if warning_type == "WarnFillvalueCollision":
             make_fv_collide = True
             make_maskedbytes = False
-            expected_msg = (
-                "contains unmasked data points equal to the fill-value"
-            )
+            expected_msg = "contains unmasked data points equal to the fill-value"
         else:
             assert warning_type == "WarnMaskedBytes"
             make_fv_collide = False
@@ -344,16 +325,12 @@ class Test__lazy_stream_data:
             # Complete the operation now
             with warnings.catch_warnings():
                 # NOTE: warnings should *not* be issued here, instead they are returned.
-                warnings.simplefilter(
-                    "error", category=IrisSaverFillValueWarning
-                )
+                warnings.simplefilter("error", category=IrisSaverFillValueWarning)
                 result_warnings = result.compute()
 
         # Either way, we should now have 2 similar warnings.
         assert len(result_warnings) == 2
-        assert all(
-            expected_msg in warning.args[0] for warning in result_warnings
-        )
+        assert all(expected_msg in warning.args[0] for warning in result_warnings)
 
     def test_no_delayed_writes(self, output_path):
         # Just check that a delayed save returns a usable 'delayed' object, even when

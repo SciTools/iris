@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for :func:`iris.experimental.ugrid.utils.recombine_submeshes`.
-
-"""
+"""Unit tests for :func:`iris.experimental.ugrid.utils.recombine_submeshes`."""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -47,8 +44,7 @@ def common_test_setup(self, shape_3d=(0, 2), data_chunks=None):
     region_len = n_mesh // n_regions
     i_points = np.arange(n_mesh)
     region_inds = [
-        np.where((i_points // region_len) == i_region)
-        for i_region in range(n_regions)
+        np.where((i_points // region_len) == i_region) for i_region in range(n_regions)
     ]
     # Disturb slightly to ensure some gaps + some overlaps
     region_inds = [list(indarr[0]) for indarr in region_inds]
@@ -135,9 +131,7 @@ class TestRecombine__data(tests.IrisTest):
         result_all = recombine_submeshes(self.mesh_cube, self.region_cubes)
         self.assertTrue(np.all(~result_all[..., inds].data.mask))
         # Without region1, all points in reg1 are masked
-        regions_not2 = [
-            cube for cube in self.region_cubes if cube is not region2
-        ]
+        regions_not2 = [cube for cube in self.region_cubes if cube is not region2]
         result_not2 = recombine_submeshes(self.mesh_cube, regions_not2)
         self.assertTrue(np.all(result_not2[..., inds].data.mask))
 
@@ -150,16 +144,12 @@ class TestRecombine__data(tests.IrisTest):
         result = recombine_submeshes(self.mesh_cube, self.region_cubes)
         self.assertTrue(result.has_lazy_data())
         self.assertEqual(result.mesh_dim(), 0)
-        self.assertMaskedArrayEqual(
-            result.data.transpose(), self.expected_result
-        )
+        self.assertMaskedArrayEqual(result.data.transpose(), self.expected_result)
 
     def test_dtype(self):
         # Check that result dtype comes from submeshes, not mesh_cube.
         self.assertEqual(self.mesh_cube.dtype, np.float64)
-        self.assertTrue(
-            all(cube.dtype == np.float64 for cube in self.region_cubes)
-        )
+        self.assertTrue(all(cube.dtype == np.float64 for cube in self.region_cubes))
         result = recombine_submeshes(self.mesh_cube, self.region_cubes)
         self.assertEqual(result.dtype, np.float64)
         region_cubes2 = [
@@ -278,9 +268,7 @@ class TestRecombine__api(tests.IrisTest):
         self.assertEqual(result1, result2)
 
     def test_fail_no_regions(self):
-        with self.assertRaisesRegex(
-            ValueError, "'submesh_cubes' must be non-empty"
-        ):
+        with self.assertRaisesRegex(ValueError, "'submesh_cubes' must be non-empty"):
             recombine_submeshes(self.mesh_cube, [])
 
     def test_fail_dims_mismatch_mesh_regions(self):
@@ -347,10 +335,7 @@ class TestRecombine__api(tests.IrisTest):
 
     def test_fail_dimcoord_sub_no_mesh(self):
         self.mesh_cube.remove_coord("level")
-        msg = (
-            'has a dim-coord "level" for dimension 0, '
-            "but 'mesh_cube' has none."
-        )
+        msg = 'has a dim-coord "level" for dimension 0, ' "but 'mesh_cube' has none."
         with self.assertRaisesRegex(ValueError, msg):
             recombine_submeshes(self.mesh_cube, self.region_cubes)
 

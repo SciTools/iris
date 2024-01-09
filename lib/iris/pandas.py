@@ -2,10 +2,9 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provide conversion to and from Pandas data structures.
+"""Provide conversion to and from Pandas data structures.
 
-See also: http://pandas.pydata.org/
+See also: https://pandas.pydata.org/
 
 """
 import datetime
@@ -17,7 +16,7 @@ from cf_units import Unit
 import cftime
 import numpy as np
 import numpy.ma as ma
-import pandas
+import pandas as pd
 
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
@@ -32,8 +31,7 @@ from iris.exceptions import IrisIgnoringWarning
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
-    """
-    Create a Coord or other dimensional metadata from a Pandas index or columns array.
+    """Create a Coord or other dimensional metadata from a Pandas index or columns array.
 
     If no calendar is specified for a time series, Standard is assumed.
 
@@ -46,7 +44,7 @@ def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
 
     # Convert out of NumPy's own datetime format.
     if np.issubdtype(values.dtype, np.datetime64):
-        values = pandas.to_datetime(values)
+        values = pd.to_datetime(values)
 
     # Convert pandas datetime objects to python datetime objects.
     if isinstance(values, DatetimeIndex):
@@ -78,9 +76,7 @@ def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
 
 
 def _add_iris_coord(cube, name, points, dim, calendar=None):
-    """
-    Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array.
-    """
+    """Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array."""
     # Most functionality has been abstracted to _get_dimensional_metadata,
     #  allowing reuse in as_cube() and as_cubes().
     coord = _get_dimensional_metadata(name, points, calendar)
@@ -91,9 +87,8 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         cube.add_aux_coord(coord, dim)
 
 
-def _series_index_unique(pandas_series: pandas.Series):
-    """
-    Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
+def _series_index_unique(pandas_series: pd.Series):
+    """Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
 
     Iterates through grouping single index levels, then combinations of 2
     levels, then 3 etcetera, until single :class:`~pandas.Series` values per
@@ -112,10 +107,7 @@ def _series_index_unique(pandas_series: pandas.Series):
     else:
         result = None
         levels_combinations = chain(
-            *[
-                combinations(levels_range, levels + 1)
-                for levels in levels_range
-            ]
+            *[combinations(levels_range, levels + 1) for levels in levels_range]
         )
         for lc in levels_combinations:
             if pandas_series.groupby(level=lc).nunique().max() == 1:
@@ -130,8 +122,7 @@ def as_cube(
     copy=True,
     calendars=None,
 ):
-    """
-    Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
+    """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
     .. deprecated:: 3.3.0
 
@@ -171,8 +162,7 @@ def as_cube(
     calendars = calendars or {}
     if pandas_array.ndim not in [1, 2]:
         raise ValueError(
-            "Only 1D or 2D Pandas arrays "
-            "can currently be converted to Iris cubes."
+            "Only 1D or 2D Pandas arrays can currently be converted to Iris cubes."
         )
 
     # Make the copy work consistently across NumPy 1.6 and 1.7.
@@ -182,9 +172,7 @@ def as_cube(
     order = "C" if copy else "A"
     data = np.array(pandas_array, copy=copy, order=order)
     cube = Cube(np.ma.masked_invalid(data, copy=False))
-    _add_iris_coord(
-        cube, "index", pandas_array.index, 0, calendars.get(0, None)
-    )
+    _add_iris_coord(cube, "index", pandas_array.index, 0, calendars.get(0, None))
     if pandas_array.ndim == 2:
         _add_iris_coord(
             cube,
@@ -204,8 +192,7 @@ def as_cubes(
     cell_measure_cols=None,
     ancillary_variable_cols=None,
 ):
-    """
-    Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
+    r"""Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
     The index of `pandas_structure` will be used for generating the
     :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`\\ s.
@@ -230,7 +217,7 @@ def as_cubes(
         :class:`~iris.coords.AncillaryVariable` objects.
 
     Returns
-    --------
+    -------
     :class:`~iris.cube.CubeList`
         One :class:`~iris.cube.Cube` for each column not referenced in
         `aux_coord_cols`/`cell_measure_cols`/`ancillary_variable_cols`.
@@ -370,7 +357,7 @@ def as_cubes(
     cell_measure_cols = cell_measure_cols or []
     ancillary_variable_cols = ancillary_variable_cols or []
 
-    is_series = isinstance(pandas_structure, pandas.Series)
+    is_series = isinstance(pandas_structure, pd.Series)
 
     if copy:
         pandas_structure = pandas_structure.copy()
@@ -384,8 +371,7 @@ def as_cubes(
         raise ValueError(message)
 
     if not (
-        pandas_index.is_monotonic_increasing
-        or pandas_index.is_monotonic_decreasing
+        pandas_index.is_monotonic_increasing or pandas_index.is_monotonic_decreasing
     ):
         # Need monotonic index for use in DimCoord(s).
         # This function doesn't sort_index itself since that breaks the
@@ -412,9 +398,7 @@ def as_cubes(
         # Common convenience to get the right DM in the right format for
         #  Cube creation.
         calendar = calendars.get(name_)
-        instance = _get_dimensional_metadata(
-            name_, values_, calendar, dm_class_
-        )
+        instance = _get_dimensional_metadata(name_, values_, calendar, dm_class_)
         return (instance, dimensions_)
 
     # DimCoords.
@@ -519,9 +503,7 @@ def _assert_shared(np_obj, pandas_obj):
     base = _get_base(values)
     np_base = _get_base(np_obj)
     if base is not np_base:
-        msg = "Pandas {} does not share memory".format(
-            type(pandas_obj).__name__
-        )
+        msg = "Pandas {} does not share memory".format(type(pandas_obj).__name__)
         raise AssertionError(msg)
 
 
@@ -531,9 +513,7 @@ def _make_dim_coord_list(cube):
     for dimn in range(cube.ndim):
         dimn_coord = cube.coords(dimensions=dimn, dim_coords=True)
         if dimn_coord:
-            outlist += [
-                [dimn_coord[0].name(), _as_pandas_coord(dimn_coord[0])]
-            ]
+            outlist += [[dimn_coord[0].name(), _as_pandas_coord(dimn_coord[0])]]
         else:
             outlist += [[f"dim{dimn}", range(cube.shape[dimn])]]
     return list(zip(*outlist))
@@ -582,8 +562,7 @@ def _make_cell_measures_list(cube):
 
 
 def as_series(cube, copy=True):
-    """
-    Convert a 1D cube to a Pandas Series.
+    """Convert a 1D cube to a Pandas Series.
 
     .. deprecated:: 3.4.0
         This function is scheduled for removal in a future release, being
@@ -605,7 +584,7 @@ def as_series(cube, copy=True):
     make sure it is not masked and use copy=False.
 
     Notes
-    ------
+    -----
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
@@ -625,7 +604,7 @@ def as_series(cube, copy=True):
     index = None
     if cube.dim_coords:
         index = _as_pandas_coord(cube.dim_coords[0])
-    series = pandas.Series(data, index)
+    series = pd.Series(data, index)
     if not copy:
         _assert_shared(data, series)
     return series
@@ -638,8 +617,7 @@ def as_data_frame(
     add_cell_measures=False,
     add_ancillary_variables=False,
 ):
-    """
-    Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
+    r"""Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
     flattened into a long-style :class:`~pandas.DataFrame`.  Other
@@ -819,13 +797,13 @@ def as_data_frame(
     Name: surface_temperature, Length: 419904, dtype: float32
 
     Notes
-    ------
+    -----
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
 
     def merge_metadata(meta_var_list):
-        """Add auxiliary cube metadata to the DataFrame"""
+        """Add auxiliary cube metadata to the DataFrame."""
         nonlocal data_frame
         for meta_var_name, meta_var_index, meta_var in meta_var_list:
             if not meta_var_index:
@@ -833,16 +811,16 @@ def as_data_frame(
                 # dimension over the whole DataFrame
                 data_frame[meta_var_name] = meta_var.squeeze()
             else:
-                meta_df = pandas.DataFrame(
+                meta_df = pd.DataFrame(
                     meta_var.ravel(),
                     columns=[meta_var_name],
-                    index=pandas.MultiIndex.from_product(
+                    index=pd.MultiIndex.from_product(
                         [coords[i] for i in meta_var_index],
                         names=[coord_names[i] for i in meta_var_index],
                     ),
                 )
                 # Merge to main data frame
-                data_frame = pandas.merge(
+                data_frame = pd.merge(
                     data_frame,
                     meta_df,
                     left_index=True,
@@ -869,10 +847,8 @@ def as_data_frame(
         # Extract dim coord information: separate lists for dim names and dim values
         coord_names, coords = _make_dim_coord_list(cube)
         # Make base DataFrame
-        index = pandas.MultiIndex.from_product(coords, names=coord_names)
-        data_frame = pandas.DataFrame(
-            data.ravel(), columns=[cube.name()], index=index
-        )
+        index = pd.MultiIndex.from_product(coords, names=coord_names)
+        data_frame = pd.DataFrame(data.ravel(), columns=[cube.name()], index=index)
 
         if add_aux_coords:
             data_frame = merge_metadata(_make_aux_coord_list(cube))
@@ -913,7 +889,7 @@ def as_data_frame(
         if cube.coords(dimensions=[1]):
             columns = _as_pandas_coord(cube.coord(dimensions=[1]))
 
-        data_frame = pandas.DataFrame(data, index, columns)
+        data_frame = pd.DataFrame(data, index, columns)
         if not copy:
             _assert_shared(data, data_frame)
 

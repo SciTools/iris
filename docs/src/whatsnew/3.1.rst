@@ -281,7 +281,7 @@ This document explains the changes made to Iris for this release
    (:pull:`4198`)
 
 #. `@lbdreyer`_ updated the CF standard name table to the latest version: 
-   `v77 <http://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
+   `v77 <https://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
    (:pull:`4282`)
 
 #. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
@@ -322,4 +322,4 @@ This document explains the changes made to Iris for this release
 .. _Python 3.6: https://www.python.org/downloads/release/python-360/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
 .. _README.md: https://github.com/SciTools/iris#-----
-.. _xxhash: http://cyan4973.github.io/xxHash/
+.. _xxhash: https://cyan4973.github.io/xxHash/

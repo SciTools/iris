@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 has_supported_mercator_parameters`.
 
 """
@@ -11,9 +10,7 @@ has_supported_mercator_parameters`.
 from unittest import mock
 import warnings
 
-from iris.fileformats._nc_load_rules.helpers import (
-    has_supported_mercator_parameters,
-)
+from iris.fileformats._nc_load_rules.helpers import has_supported_mercator_parameters
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -119,8 +116,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
         self.assertEqual(len(warns), 1)
         self.assertRegex(
             str(warns[0]),
-            "both "
-            '"scale_factor_at_projection_origin" and "standard_parallel"',
+            "both " '"scale_factor_at_projection_origin" and "standard_parallel"',
         )
 
 

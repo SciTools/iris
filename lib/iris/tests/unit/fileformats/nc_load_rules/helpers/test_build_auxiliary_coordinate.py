@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 build_auxilliary_coordinate`.
 
 """
@@ -128,9 +127,7 @@ class TestBoundsVertexDim(tests.IrisTest):
         build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         # Test that expected coord is built and added to cube.
-        self.engine.cube.add_aux_coord.assert_called_with(
-            self.expected_coord, [0, 1]
-        )
+        self.engine.cube.add_aux_coord.assert_called_with(self.expected_coord, [0, 1])
 
         # Test that engine.cube_parts container is correctly populated.
         expected_list = [(self.expected_coord, self.cf_coord_var.cf_name)]
@@ -192,9 +189,7 @@ class TestDtype(tests.IrisTest):
             new=patched__getitem__,
         ):
             # While loading, "turn off" loading small variables as real data.
-            with mock.patch(
-                "iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0
-            ):
+            with mock.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0):
                 yield
 
     def test_scale_factor_add_offset_int(self):
@@ -243,9 +238,7 @@ class TestCoordConstruction(tests.IrisTest):
             scale_factor=1,
             add_offset=0,
             cf_name="wibble",
-            cf_data=mock.MagicMock(
-                chunking=mock.Mock(return_value=None), spec=[]
-            ),
+            cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None), spec=[]),
             standard_name=None,
             long_name="wibble",
             units="days since 1970-01-01",

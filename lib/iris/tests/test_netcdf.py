@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test CF-NetCDF file loading and saving.
-
-"""
+"""Test CF-NetCDF file loading and saving."""
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
@@ -47,9 +44,7 @@ class TestNetCDFLoad(tests.IrisTest):
 
     def test_monotonic(self):
         cubes = iris.load(
-            tests.get_data_path(
-                ("NetCDF", "testing", "test_monotonic_coordinate.nc")
-            )
+            tests.get_data_path(("NetCDF", "testing", "test_monotonic_coordinate.nc"))
         )
         cubes = sorted(cubes, key=lambda cube: cube.var_name)
         self.assertCML(cubes, ("netcdf", "netcdf_monotonic.cml"))
@@ -89,9 +84,7 @@ class TestNetCDFLoad(tests.IrisTest):
     def test_load_global_xyzt_gems(self):
         # Test loading single xyzt CF-netCDF file (multi-cube).
         cubes = iris.load(
-            tests.get_data_path(
-                ("NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc")
-            )
+            tests.get_data_path(("NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"))
         )
         cubes = sorted(cubes, key=lambda cube: cube.name())
         self.assertCML(cubes, ("netcdf", "netcdf_global_xyzt_gems.cml"))
@@ -114,9 +107,7 @@ class TestNetCDFLoad(tests.IrisTest):
                 key=lambda cube: cube.name(),
             )
         ):
-            self.assertCML(
-                cube, ("netcdf", "netcdf_global_xyzt_gems_iter_%d.cml" % i)
-            )
+            self.assertCML(cube, ("netcdf", "netcdf_global_xyzt_gems_iter_%d.cml" % i))
 
     # -------------------------------------------------------------------------
     # It is not considered necessary to have integration tests for
@@ -141,17 +132,13 @@ class TestNetCDFLoad(tests.IrisTest):
                 ("NetCDF", "rotated", "xyt", "small_rotPole_precipitation.nc")
             )
         )
-        self.assertCML(
-            cube, ("netcdf", "netcdf_rotated_xyt_precipitation.cml")
-        )
+        self.assertCML(cube, ("netcdf", "netcdf_rotated_xyt_precipitation.cml"))
 
     def test_load_tmerc_grid_and_clim_bounds(self):
         # Test loading a single CF-netCDF file with a transverse Mercator
         # grid_mapping and a time variable with climatology.
         cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "transverse_mercator", "tmean_1910_1910.nc")
-            )
+            tests.get_data_path(("NetCDF", "transverse_mercator", "tmean_1910_1910.nc"))
         )
         self.assertCML(cube, ("netcdf", "netcdf_tmerc_and_climatology.cml"))
 
@@ -180,12 +167,8 @@ class TestNetCDFLoad(tests.IrisTest):
                 semi_major_axis=6377563.396, semi_minor_axis=6356256.91
             ),
         )
-        self.assertEqual(
-            cube.coord("projection_x_coordinate").coord_system, expected
-        )
-        self.assertEqual(
-            cube.coord("projection_y_coordinate").coord_system, expected
-        )
+        self.assertEqual(cube.coord("projection_x_coordinate").coord_system, expected)
+        self.assertEqual(cube.coord("projection_y_coordinate").coord_system, expected)
 
     def test_load_lcc_grid(self):
         # Test loading a single CF-netCDF file with Lambert conformal conic
@@ -212,9 +195,7 @@ class TestNetCDFLoad(tests.IrisTest):
     def test_load_merc_grid(self):
         # Test loading a single CF-netCDF file with a Mercator grid_mapping
         cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "mercator", "toa_brightness_temperature.nc")
-            )
+            tests.get_data_path(("NetCDF", "mercator", "toa_brightness_temperature.nc"))
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc.cml"))
 
@@ -222,9 +203,7 @@ class TestNetCDFLoad(tests.IrisTest):
         # Test loading a single CF-netCDF file with a Mercator grid_mapping that
         # includes false easting and northing and a standard parallel
         cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "mercator", "false_east_north_merc.nc")
-            )
+            tests.get_data_path(("NetCDF", "mercator", "false_east_north_merc.nc"))
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc_false.cml"))
 
@@ -232,9 +211,7 @@ class TestNetCDFLoad(tests.IrisTest):
         # Test loading a single CF-netCDF file with a Mercator grid_mapping that
         # includes a non-unit scale factor at projection origin
         cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "mercator", "non_unit_scale_factor_merc.nc")
-            )
+            tests.get_data_path(("NetCDF", "mercator", "non_unit_scale_factor_merc.nc"))
         )
         self.assertCML(cube, ("netcdf", "netcdf_merc_scale_factor.cml"))
 
@@ -252,17 +229,13 @@ class TestNetCDFLoad(tests.IrisTest):
         # Test loading a single CF-netCDF file with a polar stereographic
         # grid_mapping.
         cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "polar", "toa_brightness_temperature.nc")
-            )
+            tests.get_data_path(("NetCDF", "polar", "toa_brightness_temperature.nc"))
         )
         self.assertCML(cube, ("netcdf", "netcdf_polar.cml"))
 
     def test_cell_methods(self):
         # Test exercising CF-netCDF cell method parsing.
-        cubes = iris.load(
-            tests.get_data_path(("NetCDF", "testing", "cell_methods.nc"))
-        )
+        cubes = iris.load(tests.get_data_path(("NetCDF", "testing", "cell_methods.nc")))
 
         # TEST_COMPAT mod - new cube merge doesn't sort in the same way - test
         # can pass by manual sorting...
@@ -291,18 +264,12 @@ class TestNetCDFLoad(tests.IrisTest):
         # Consecutive index on same dimension.
         self.assertCML(cube[0], ("netcdf", "netcdf_deferred_index_0.cml"))
         self.assertCML(cube[0][0], ("netcdf", "netcdf_deferred_index_1.cml"))
-        self.assertCML(
-            cube[0][0][0], ("netcdf", "netcdf_deferred_index_2.cml")
-        )
+        self.assertCML(cube[0][0][0], ("netcdf", "netcdf_deferred_index_2.cml"))
 
         # Consecutive slice on same dimension.
         self.assertCML(cube[0:20], ("netcdf", "netcdf_deferred_slice_0.cml"))
-        self.assertCML(
-            cube[0:20][0:10], ("netcdf", "netcdf_deferred_slice_1.cml")
-        )
-        self.assertCML(
-            cube[0:20][0:10][0:5], ("netcdf", "netcdf_deferred_slice_2.cml")
-        )
+        self.assertCML(cube[0:20][0:10], ("netcdf", "netcdf_deferred_slice_1.cml"))
+        self.assertCML(cube[0:20][0:10][0:5], ("netcdf", "netcdf_deferred_slice_2.cml"))
 
         # Consecutive tuple index on same dimension.
         self.assertCML(
@@ -325,12 +292,10 @@ class TestNetCDFLoad(tests.IrisTest):
             cube[((2, 7, 3, 4, 5, 0, 9, 10),)][2:6][3],
             ("netcdf", "netcdf_deferred_mix_0.cml"),
         )
-        self.assertCML(
-            cube[0][(0, 2), (1, 3)], ("netcdf", "netcdf_deferred_mix_1.cml")
-        )
+        self.assertCML(cube[0][(0, 2), (1, 3)], ("netcdf", "netcdf_deferred_mix_1.cml"))
 
     def test_um_stash_source(self):
-        """Test that um_stash_source is converted into a STASH code"""
+        """Test that um_stash_source is converted into a STASH code."""
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {
@@ -371,8 +336,7 @@ class TestNetCDFLoad(tests.IrisTest):
         )
 
     def test_ukmo__um_stash_source_priority(self):
-        """
-        Test that ukmo__um_stash_source is converted into a STASH code with a
+        """Test that ukmo__um_stash_source is converted into a STASH code with a
         higher priority than um_stash_source.
         """
         # Note: using a CDL string as a test data reference, rather than a binary file.
@@ -416,7 +380,7 @@ class TestNetCDFLoad(tests.IrisTest):
         )
 
     def test_bad_um_stash_source(self):
-        """Test that um_stash_source not in strict MSI form is kept"""
+        """Test that um_stash_source not in strict MSI form is kept."""
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {
@@ -453,9 +417,7 @@ class TestNetCDFLoad(tests.IrisTest):
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
         self.assertFalse(hasattr(cubes[0].attributes, "STASH"))
-        self.assertEqual(
-            cubes[0].attributes["um_stash_source"], "10*m01s02i003"
-        )
+        self.assertEqual(cubes[0].attributes["um_stash_source"], "10*m01s02i003")
 
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
@@ -533,9 +495,7 @@ class TestSave(tests.IrisTest):
             iris.save(cube, file_out, netcdf_format="NETCDF3_CLASSIC")
 
             # Check the netCDF file against CDL expected output.
-            self.assertCDL(
-                file_out, ("netcdf", "netcdf_save_realistic_4d.cdl")
-            )
+            self.assertCDL(file_out, ("netcdf", "netcdf_save_realistic_4d.cdl"))
 
     def test_no_hybrid(self):
         cube = stock.realistic_4d()
@@ -555,9 +515,7 @@ class TestSave(tests.IrisTest):
 
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(cube, filename, netcdf_format="NETCDF3_CLASSIC")
-            self.assertCDL(
-                filename, ("netcdf", "netcdf_save_realistic_0d.cdl")
-            )
+            self.assertCDL(filename, ("netcdf", "netcdf_save_realistic_0d.cdl"))
 
     def test_no_name_cube(self):
         # Cube with no names.
@@ -575,9 +533,7 @@ class TestSave(tests.IrisTest):
 
 class TestNetCDFSave(tests.IrisTest):
     def setUp(self):
-        self.cubell = iris.cube.Cube(
-            np.arange(4).reshape(2, 2), "air_temperature"
-        )
+        self.cubell = iris.cube.Cube(np.arange(4).reshape(2, 2), "air_temperature")
         self.cube = iris.cube.Cube(
             np.zeros([2, 2]),
             standard_name="surface_temperature",
@@ -709,9 +665,7 @@ class TestNetCDFSave(tests.IrisTest):
                 iris.save(cube, file_out)
 
                 # Check the netCDF file against CDL expected output.
-                self.assertCDL(
-                    file_out, ("netcdf", "netcdf_save_multi_%d.cdl" % index)
-                )
+                self.assertCDL(file_out, ("netcdf", "netcdf_save_multi_%d.cdl" % index))
 
     @tests.skip_data
     def test_netcdf_save_multi2single(self):
@@ -797,18 +751,14 @@ class TestNetCDFSave(tests.IrisTest):
             iris.save(cubes, file_out)
 
             # Check the netCDF file against CDL expected output.
-            self.assertCDL(
-                file_out, ("netcdf", "netcdf_save_samedimcoord.cdl")
-            )
+            self.assertCDL(file_out, ("netcdf", "netcdf_save_samedimcoord.cdl"))
 
     def test_netcdf_multi_conflict_name_dup_coord(self):
         # Duplicate coordinates with modified variable names lookup.
         latitude1 = iris.coords.DimCoord(
             np.arange(10), standard_name="latitude", units="1"
         )
-        time2 = iris.coords.DimCoord(
-            np.arange(2), standard_name="time", units="1"
-        )
+        time2 = iris.coords.DimCoord(np.arange(2), standard_name="time", units="1")
         latitude2 = iris.coords.DimCoord(
             np.arange(2), standard_name="latitude", units="1"
         )
@@ -832,9 +782,7 @@ class TestNetCDFSave(tests.IrisTest):
         # (i.e. dimensionless vertical) coordinate.
         # Read PP input file.
         names = ["air_potential_temperature", "surface_altitude"]
-        file_in = tests.get_data_path(
-            ("PP", "COLPEX", "small_colpex_theta_p_alt.pp")
-        )
+        file_in = tests.get_data_path(("PP", "COLPEX", "small_colpex_theta_p_alt.pp"))
         cube = iris.load_cube(file_in, names[0])
 
         # Write Cube to netCDF file.
@@ -842,9 +790,7 @@ class TestNetCDFSave(tests.IrisTest):
             iris.save(cube, file_out)
 
             # Check the netCDF file against CDL expected output.
-            self.assertCDL(
-                file_out, ("netcdf", "netcdf_save_hybrid_height.cdl")
-            )
+            self.assertCDL(file_out, ("netcdf", "netcdf_save_hybrid_height.cdl"))
 
             # Read netCDF file.
             cubes = iris.load(file_out)
@@ -871,17 +817,13 @@ class TestNetCDFSave(tests.IrisTest):
             iris.save(cube, file_out)
 
             # Check the netCDF file against CDL expected output.
-            self.assertCDL(
-                file_out, ("netcdf", "netcdf_save_ndim_auxiliary.cdl")
-            )
+            self.assertCDL(file_out, ("netcdf", "netcdf_save_ndim_auxiliary.cdl"))
 
             # Read the netCDF file.
             cube = iris.load_cube(file_out)
 
             # Check the netCDF read, write, read mechanism.
-            self.assertCML(
-                cube, ("netcdf", "netcdf_save_load_ndim_auxiliary.cml")
-            )
+            self.assertCML(cube, ("netcdf", "netcdf_save_load_ndim_auxiliary.cml"))
 
     def test_netcdf_save_conflicting_aux(self):
         # Test saving CF-netCDF with multi-dimensional auxiliary coordinates,
@@ -979,9 +921,7 @@ class TestNetCDFSave(tests.IrisTest):
             iris.save(cubes, file_out)
 
             # Check the netCDF file against CDL expected output.
-            self.assertCDL(
-                file_out, ("netcdf", "netcdf_save_gridmapmulti.cdl")
-            )
+            self.assertCDL(file_out, ("netcdf", "netcdf_save_gridmapmulti.cdl"))
 
     def test_netcdf_save_conflicting_names(self):
         # Test saving CF-netCDF with a dimension name corresponding to
@@ -989,9 +929,7 @@ class TestNetCDFSave(tests.IrisTest):
         self.cube4.add_dim_coord(
             iris.coords.DimCoord(np.arange(10), "time", units="1"), 0
         )
-        self.cube6.add_aux_coord(
-            iris.coords.AuxCoord(1, "time", units="1"), None
-        )
+        self.cube6.add_aux_coord(iris.coords.AuxCoord(1, "time", units="1"), None)
 
         cubes = iris.cube.CubeList([self.cube4, self.cube6])
         with self.temp_filename(suffix=".nc") as file_out:
@@ -1015,9 +953,7 @@ class TestNetCDFSave(tests.IrisTest):
         with self.temp_filename(suffix=".nc") as temp_filename:
             iris.save(traj, temp_filename)
             reloaded = iris.load_cube(temp_filename)
-            self.assertCML(
-                reloaded, ("netcdf", "save_load_traj.cml"), checksum=False
-            )
+            self.assertCML(reloaded, ("netcdf", "save_load_traj.cml"), checksum=False)
             self.assertArrayEqual(traj.data, reloaded.data)
 
     def test_attributes(self):
@@ -1053,9 +989,7 @@ class TestNetCDFSave(tests.IrisTest):
             for gkey in aglobals:
                 if getattr(ds, gkey) != aglobals.get(gkey):
                     exceptions.append(
-                        "{} != {}".format(
-                            getattr(ds, gkey), aglobals.get(gkey)
-                        )
+                        "{} != {}".format(getattr(ds, gkey), aglobals.get(gkey))
                     )
             # Should be overridden.
             for okey in aover:
@@ -1072,9 +1006,7 @@ class TestNetCDFSave(tests.IrisTest):
                         "{} != {}".format(getattr(dv, vkey), avars.get(vkey))
                     )
             if getattr(dv, "um_stash_source") != avars.get("STASH"):
-                exc = "{} != {}".format(
-                    getattr(dv, "um_stash_source"), avars.get(vkey)
-                )
+                exc = "{} != {}".format(getattr(dv, "um_stash_source"), avars.get(vkey))
                 exceptions.append(exc)
         self.assertEqual(exceptions, [])
 
@@ -1099,9 +1031,7 @@ class TestNetCDFSave(tests.IrisTest):
         with self.temp_filename(suffix=".nc") as filename:
             with mock.patch("warnings.warn") as warn:
                 iris.save([self.cube, self.cube2], filename)
-                warn.assert_called_with(
-                    expected_msg, category=IrisCfSaveWarning
-                )
+                warn.assert_called_with(expected_msg, category=IrisCfSaveWarning)
                 self.assertCDL(
                     filename, ("netcdf", "netcdf_save_confl_global_attr.cdl")
                 )
@@ -1139,9 +1069,7 @@ class TestNetCDFSave(tests.IrisTest):
         ]
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(cubes, filename)
-            self.assertCDL(
-                filename, ("netcdf", "netcdf_save_no_global_attr.cdl")
-            )
+            self.assertCDL(filename, ("netcdf", "netcdf_save_no_global_attr.cdl"))
 
 
 class TestNetCDFSave__ancillaries(tests.IrisTest):
@@ -1272,9 +1200,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
         )
 
     def test_int64_dimension_coord_netcdf3(self):
-        coord = iris.coords.DimCoord(
-            np.array([1, 2], dtype=np.int64), long_name="x"
-        )
+        coord = iris.coords.DimCoord(np.array([1, 2], dtype=np.int64), long_name="x")
         self.cube.add_dim_coord(coord, 0)
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(self.cube, filename, netcdf_format="NETCDF3_CLASSIC")
@@ -1286,9 +1212,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
             )
 
     def test_int64_auxiliary_coord_netcdf3(self):
-        coord = iris.coords.AuxCoord(
-            np.array([1, 2], dtype=np.int64), long_name="x"
-        )
+        coord = iris.coords.AuxCoord(np.array([1, 2], dtype=np.int64), long_name="x")
         self.cube.add_aux_coord(coord, 0)
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(self.cube, filename, netcdf_format="NETCDF3_CLASSIC")
@@ -1307,9 +1231,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
             self.assertCML(reloaded, ("netcdf", "int64_data_netcdf3.cml"))
 
     def test_uint32_dimension_coord_netcdf3(self):
-        coord = iris.coords.DimCoord(
-            np.array([1, 2], dtype=np.uint32), long_name="x"
-        )
+        coord = iris.coords.DimCoord(np.array([1, 2], dtype=np.uint32), long_name="x")
         self.cube.add_dim_coord(coord, 0)
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(self.cube, filename, netcdf_format="NETCDF3_CLASSIC")
@@ -1321,9 +1243,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
             )
 
     def test_uint32_auxiliary_coord_netcdf3(self):
-        coord = iris.coords.AuxCoord(
-            np.array([1, 2], dtype=np.uint32), long_name="x"
-        )
+        coord = iris.coords.AuxCoord(np.array([1, 2], dtype=np.uint32), long_name="x")
         self.cube.add_aux_coord(coord, 0)
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(self.cube, filename, netcdf_format="NETCDF3_CLASSIC")
@@ -1431,7 +1351,7 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
                 process_flags = cube.attributes["ukmo__process_flags"]
                 self.assertTrue(
                     len(process_flags) == len(bits),
-                    "Mismatch in " "number of process flags.",
+                    "Mismatch in number of process flags.",
                 )
                 self.assertEqual(set(process_flags), set(descriptions))
 

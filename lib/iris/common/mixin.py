@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides common metadata mixin behaviour.
-
-"""
+"""Provides common metadata mixin behaviour."""
 
 from collections.abc import Mapping
 from functools import wraps
@@ -44,16 +41,13 @@ def _get_valid_standard_name(name):
                 name_is_valid &= std_name_modifier in valid_std_name_modifiers
 
             if not name_is_valid:
-                raise ValueError(
-                    "{!r} is not a valid standard_name".format(name)
-                )
+                raise ValueError("{!r} is not a valid standard_name".format(name))
 
     return name
 
 
 class LimitedAttributeDict(dict):
-    """
-    A specialised 'dict' subclass, which forbids (errors) certain attribute names.
+    """A specialised 'dict' subclass, which forbids (errors) certain attribute names.
 
     Used for the attribute dictionaries of all Iris data objects (that is,
     :class:`CFVariableMixin` and its subclasses).
@@ -68,7 +62,7 @@ class LimitedAttributeDict(dict):
     :data:`iris.common.mixin.LimitedAttributeDict.CF_ATTRS_FORBIDDEN` .
 
     All the forbidden attributes are amongst those listed in
-    `Appendix A of the CF Conventions: <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_
+    `Appendix A of the CF Conventions: <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_
     -- however, not *all* of them, since not all are interpreted by Iris.
 
     """
@@ -149,8 +143,7 @@ class CFVariableMixin:
         return self._metadata_manager.name(default=default, token=token)
 
     def rename(self, name):
-        """
-        Changes the human-readable name.
+        """Changes the human-readable name.
 
         If 'name' is a valid standard name it will assign it to
         :attr:`standard_name`, otherwise it will assign it to
@@ -214,9 +207,7 @@ class CFVariableMixin:
 
     @attributes.setter
     def attributes(self, attributes):
-        self._metadata_manager.attributes = LimitedAttributeDict(
-            attributes or {}
-        )
+        self._metadata_manager.attributes = LimitedAttributeDict(attributes or {})
 
     @property
     def metadata(self):
@@ -244,15 +235,11 @@ class CFVariableMixin:
                 else:
                     # Generic iterable/container with no associated keys.
                     missing = [
-                        field
-                        for field in fields
-                        if not hasattr(metadata, field)
+                        field for field in fields if not hasattr(metadata, field)
                     ]
 
                     if missing:
-                        missing = ", ".join(
-                            map(lambda i: "{!r}".format(i), missing)
-                        )
+                        missing = ", ".join(map(lambda i: "{!r}".format(i), missing))
                         emsg = "Invalid {!r} metadata, require {} to be specified."
                         raise TypeError(emsg.format(type(arg), missing))
 

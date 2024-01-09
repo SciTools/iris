@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Scripts for generating supporting data for UGRID-related benchmarking.
-"""
+"""Scripts for generating supporting data for UGRID-related benchmarking."""
 from iris import load_cube as iris_loadcube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
@@ -15,11 +13,8 @@ from .stock import (
 )
 
 
-def generate_cube_like_2d_cubesphere(
-    n_cube: int, with_mesh: bool, output_path: str
-):
-    """
-    Construct and save to file an LFRIc cubesphere-like cube for a given
+def generate_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool, output_path: str):
+    """Construct and save to file an LFRIc cubesphere-like cube for a given
     cubesphere size, *or* a simpler structured (UM-like) cube of equivalent
     size.
 
@@ -59,8 +54,7 @@ def generate_cube_like_2d_cubesphere(
 
 
 def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
-    """
-    Generate an LFRIc cubesphere-like cube for a given cubesphere size,
+    """Generate an LFRIc cubesphere-like cube for a given cubesphere size,
     *or* a simpler structured (UM-like) cube of equivalent size.
 
     All the cube data, coords and mesh content are LAZY, and produced without
@@ -71,9 +65,7 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
     files in our common testdata directory.
 
     """
-    identifying_filename = (
-        f"cube_like_2d_cubesphere_C{n_cube}_Mesh={with_mesh}.nc"
-    )
+    identifying_filename = f"cube_like_2d_cubesphere_C{n_cube}_Mesh={with_mesh}.nc"
     filepath = BENCHMARK_DATA / identifying_filename
     if not filepath.exists():
         # Create the required testfile, by running the generation code remotely
@@ -104,8 +96,7 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
 
 
 def make_cube_like_umfield(xy_dims):
-    """
-    Create a "UM-like" cube with lazy content, for save performance testing.
+    """Create a "UM-like" cube with lazy content, for save performance testing.
 
     Roughly equivalent to a single current UM cube, to be compared with
     a "make_cube_like_2d_cubesphere(n_cube=_N_CUBESPHERE_UM_EQUIVALENT)"
@@ -151,9 +142,9 @@ def make_cube_like_umfield(xy_dims):
 
         save(cube, save_path_)
 
-    save_path = (
-        BENCHMARK_DATA / f"make_cube_like_umfield_{xy_dims}"
-    ).with_suffix(".nc")
+    save_path = (BENCHMARK_DATA / f"make_cube_like_umfield_{xy_dims}").with_suffix(
+        ".nc"
+    )
     if not REUSE_DATA or not save_path.is_file():
         _ = run_function_elsewhere(_external, xy_dims, str(save_path))
     with PARSE_UGRID_ON_LOAD.context():
@@ -164,8 +155,7 @@ def make_cube_like_umfield(xy_dims):
 
 
 def make_cubesphere_testfile(c_size, n_levels=0, n_times=1):
-    """
-    Build a C<c_size> cubesphere testfile in a given directory, with a standard naming.
+    """Build a C<c_size> cubesphere testfile in a given directory, with a standard naming.
     If n_levels > 0 specified: 3d file with the specified number of levels.
     Return the file path.
 

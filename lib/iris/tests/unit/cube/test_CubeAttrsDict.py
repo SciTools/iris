@@ -16,14 +16,11 @@ from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
 
 @pytest.fixture
 def sample_attrs() -> CubeAttrsDict:
-    return CubeAttrsDict(
-        locals={"a": 1, "z": "this"}, globals={"b": 2, "z": "that"}
-    )
+    return CubeAttrsDict(locals={"a": 1, "z": "this"}, globals={"b": 2, "z": "that"})
 
 
 def check_content(attrs, locals=None, globals=None, matches=None):
-    """
-    Check a CubeAttrsDict for expected properties.
+    """Check a CubeAttrsDict for expected properties.
 
     Its ".globals" and ".locals" must match 'locals' and 'globals' args
     -- except that, if 'matches' is provided, it is a CubeAttrsDict, whose
@@ -179,9 +176,7 @@ class Test_OddMethods:
         else:
             assert inputtype == "split_arg"
             # Check when input is a CubeAttrsDict
-            keys = CubeAttrsDict(
-                globals={"a": 1}, locals={"b": 2, "history": 3}
-            )
+            keys = CubeAttrsDict(globals={"a": 1}, locals={"b": 2, "history": 3})
             # The result preserves the input keys' local/global identity
             # N.B. "history" would be global by default (cf. "regular_arg" case)
             expected = CubeAttrsDict(

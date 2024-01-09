@@ -92,9 +92,7 @@ class Test_weights_and_returned(tests.IrisTest):
         self.assertArrayEqual(weights, [4, 2, 2, 2, 2])
 
     def test_masked_weights_and_returned(self):
-        array = ma.array(
-            self.cube_2d.data, mask=[[0, 0, 1, 0, 0], [0, 0, 0, 1, 0]]
-        )
+        array = ma.array(self.cube_2d.data, mask=[[0, 0, 1, 0, 0], [0, 0, 0, 1, 0]])
         data, weights = SUM.aggregate(
             array, axis=0, weights=self.weights, returned=True
         )

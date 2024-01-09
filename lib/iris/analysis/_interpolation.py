@@ -33,8 +33,7 @@ EXTRAPOLATION_MODES = {
 
 
 def _canonical_sample_points(coords, sample_points):
-    """
-    Return the canonical form of the points values.
+    """Return the canonical form of the points values.
 
     Ensures that any points supplied as datetime objects, or similar,
     are converted to their numeric form.
@@ -58,8 +57,7 @@ def _canonical_sample_points(coords, sample_points):
 
 
 def extend_circular_coord(coord, points):
-    """
-    Return coordinates points with a shape extended by one
+    """Return coordinates points with a shape extended by one
     This is common when dealing with circular coordinates.
 
     """
@@ -69,8 +67,7 @@ def extend_circular_coord(coord, points):
 
 
 def extend_circular_coord_and_data(coord, data, coord_dim):
-    """
-    Return coordinate points and a data array with a shape extended by one
+    """Return coordinate points and a data array with a shape extended by one
     in the coord_dim axis. This is common when dealing with circular
     coordinates.
 
@@ -85,27 +82,26 @@ def extend_circular_data(data, coord_dim):
     coord_slice_in_cube[coord_dim] = slice(0, 1)
 
     mod = ma if ma.isMaskedArray(data) else np
-    data = mod.concatenate(
-        (data, data[tuple(coord_slice_in_cube)]), axis=coord_dim
-    )
+    data = mod.concatenate((data, data[tuple(coord_slice_in_cube)]), axis=coord_dim)
     return data
 
 
 def get_xy_dim_coords(cube):
-    """
-    Return the x and y dimension coordinates from a cube.
+    """Return the x and y dimension coordinates from a cube.
 
     This function raises a ValueError if the cube does not contain one and
     only one set of x and y dimension coordinates. It also raises a ValueError
     if the identified x and y coordinates do not have coordinate systems that
     are equal.
 
-    Args:
-
-    * cube:
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         An instance of :class:`iris.cube.Cube`.
 
-    Returns:
+    Returns
+    -------
+    tuple
         A tuple containing the cube's x and y dimension coordinates.
 
     """
@@ -113,42 +109,38 @@ def get_xy_dim_coords(cube):
 
 
 def get_xy_coords(cube, dim_coords=False):
-    """
-    Return the x and y coordinates from a cube.
+    """Return the x and y coordinates from a cube.
 
     This function raises a ValueError if the cube does not contain one and
     only one set of x and y coordinates. It also raises a ValueError
     if the identified x and y coordinates do not have coordinate systems that
     are equal.
 
-    Args:
-
-    * cube:
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         An instance of :class:`iris.cube.Cube`.
-
-    Kwargs:
-
-    * dim_coords:
+    dim_coords : bool, optional, default=False
         Set this to True to only return dimension coordinates. Defaults to
         False.
 
-    Returns:
+    Returns
+    -------
+    tuple
         A tuple containing the cube's x and y dimension coordinates.
 
     """
     x_coords = cube.coords(axis="x", dim_coords=dim_coords)
     if len(x_coords) != 1 or x_coords[0].ndim != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D x "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D x coordinate.".format(cube.name())
         )
     x_coord = x_coords[0]
 
     y_coords = cube.coords(axis="y", dim_coords=dim_coords)
     if len(y_coords) != 1 or y_coords[0].ndim != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D y "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D y coordinate.".format(cube.name())
         )
     y_coord = y_coords[0]
 
@@ -163,8 +155,7 @@ def get_xy_coords(cube, dim_coords=False):
 
 
 def snapshot_grid(cube):
-    """
-    Helper function that returns deep copies of lateral (dimension) coordinates
+    """Helper function that returns deep copies of lateral (dimension) coordinates
     from a cube.
 
     """
@@ -173,40 +164,40 @@ def snapshot_grid(cube):
 
 
 class RectilinearInterpolator:
-    """
+    """Provide support for performing nearest-neighbour or linear interpolation.
+
     This class provides support for performing nearest-neighbour or
     linear interpolation over one or more orthogonal dimensions.
 
     """
 
     def __init__(self, src_cube, coords, method, extrapolation_mode):
-        """
-        Perform interpolation over one or more orthogonal coordinates.
+        """Perform interpolation over one or more orthogonal coordinates.
 
-        Args:
-
-        * src_cube:
+        Parameters
+        ----------
+        src_cube : :class:`iris.cube.Cube`
             The :class:`iris.cube.Cube` which is to be interpolated.
-        * coords:
+        coords :
             The names or coordinate instances which are to be
             interpolated over
-        * method:
+        method :
             Either 'linear' or 'nearest'.
-        * extrapolation_mode:
+        extrapolation_mode : str
             Must be one of the following strings:
 
-              * 'extrapolate' - The extrapolation points will be calculated
-                according to the method. The 'linear' method extends the
-                gradient of the closest two points. The 'nearest' method
-                uses the value of the closest point.
-              * 'nan' - The extrapolation points will be be set to NaN.
-              * 'error' - A ValueError exception will be raised, notifying an
-                attempt to extrapolate.
-              * 'mask' - The extrapolation points will always be masked, even
-                if the source data is not a MaskedArray.
-              * 'nanmask' - If the source data is a MaskedArray the
-                extrapolation points will be masked. Otherwise they will be
-                set to NaN.
+            * 'extrapolate' - The extrapolation points will be calculated
+              according to the method. The 'linear' method extends the
+              gradient of the closest two points. The 'nearest' method
+              uses the value of the closest point.
+            * 'nan' - The extrapolation points will be be set to NaN.
+            * 'error' - A ValueError exception will be raised, notifying an
+              attempt to extrapolate.
+            * 'mask' - The extrapolation points will always be masked, even
+              if the source data is not a MaskedArray.
+            * 'nanmask' - If the source data is a MaskedArray the
+              extrapolation points will be masked. Otherwise they will be
+              set to NaN.
 
         """
         # Trigger any deferred loading of the source cube's data and snapshot
@@ -260,8 +251,7 @@ class RectilinearInterpolator:
         return self._mode
 
     def _account_for_circular(self, points, data):
-        """
-        Extend the given data array, and re-centralise coordinate points
+        """Extend the given data array, and re-centralise coordinate points
         for circular (1D) coordinates.
 
         """
@@ -284,26 +274,24 @@ class RectilinearInterpolator:
     def _account_for_inverted(self, data):
         if np.any(self._coord_decreasing):
             dim_slices = [slice(None)] * data.ndim
-            for interp_dim, flip in zip(
-                self._interp_dims, self._coord_decreasing
-            ):
+            for interp_dim, flip in zip(self._interp_dims, self._coord_decreasing):
                 if flip:
                     dim_slices[interp_dim] = slice(-1, None, -1)
             data = data[tuple(dim_slices)]
         return data
 
     def _interpolate(self, data, interp_points):
-        """
-        Interpolate a data array over N dimensions.
+        """Interpolate a data array over N dimensions.
 
         Create and cache the underlying interpolator instance before invoking
         it to perform interpolation over the data at the given coordinate point
         values.
 
-        * data (ndarray):
+        Parameters
+        ----------
+        data : ndarray
             A data array, to be interpolated in its first 'N' dimensions.
-
-        * interp_points (ndarray):
+        interp_points : ndarray
             An array of interpolation coordinate values.
             Its shape is (..., N) where N is the number of interpolation
             dimensions.
@@ -312,9 +300,10 @@ class RectilinearInterpolator:
             The other (leading) dimensions index over the different required
             sample points.
 
-        Returns:
-
-            A :class:`np.ndarray`.  Its shape is "points_shape + extra_shape",
+        Returns
+        -------
+        :class:`np.ndarray`.
+            Its shape is "points_shape + extra_shape",
             where "extra_shape" is the remaining non-interpolated dimensions of
             the data array (i.e. 'data.shape[N:]'), and "points_shape" is the
             leading dimensions of interp_points,
@@ -370,10 +359,7 @@ class RectilinearInterpolator:
         return result
 
     def _resample_coord(self, sample_points, coord, coord_dims):
-        """
-        Interpolate the given coordinate at the provided sample points.
-
-        """
+        """Interpolate the given coordinate at the provided sample points."""
         # NB. This section is ripe for improvement:
         # - Internally self._points() expands coord.points to the same
         #   N-dimensional shape as the cube's data, but it doesn't
@@ -397,8 +383,7 @@ class RectilinearInterpolator:
         return new_coord
 
     def _setup(self):
-        """
-        Perform initial start-up configuration and validation based on the
+        """Perform initial start-up configuration and validation based on the
         cube and the specified coordinates to be interpolated over.
 
         """
@@ -435,9 +420,7 @@ class RectilinearInterpolator:
                 # Only DimCoords can be circular.
                 if circular:
                     coord_points = extend_circular_coord(coord, coord_points)
-                offset = 0.5 * (
-                    coord_points.max() + coord_points.min() - modulus
-                )
+                offset = 0.5 * (coord_points.max() + coord_points.min() - modulus)
                 self._circulars.append(
                     (circular, modulus, index, coord_dims[0], offset)
                 )
@@ -451,8 +434,7 @@ class RectilinearInterpolator:
         self._validate()
 
     def _validate(self):
-        """
-        Perform all sanity checks to ensure that the interpolation request
+        """Perform all sanity checks to ensure that the interpolation request
         over the cube with the specified coordinates is valid and can be
         performed.
 
@@ -466,22 +448,17 @@ class RectilinearInterpolator:
         for coord in self._src_coords:
             if coord.ndim != 1:
                 raise ValueError(
-                    "Interpolation coords must be 1-d for "
-                    "rectilinear interpolation."
+                    "Interpolation coords must be 1-d for rectilinear interpolation."
                 )
 
             if not isinstance(coord, DimCoord):
                 # Check monotonic.
                 if not iris.util.monotonic(coord.points, strict=True):
-                    msg = (
-                        "Cannot interpolate over the non-"
-                        "monotonic coordinate {}."
-                    )
+                    msg = "Cannot interpolate over the non-monotonic coordinate {}."
                     raise ValueError(msg.format(coord.name()))
 
     def _interpolated_dtype(self, dtype):
-        """
-        Determine the minimum base dtype required by the
+        """Determine the minimum base dtype required by the
         underlying interpolator.
 
         """
@@ -492,30 +469,28 @@ class RectilinearInterpolator:
         return result
 
     def _points(self, sample_points, data, data_dims=None):
-        """
-        Interpolate the given data values at the specified list of orthogonal
+        """Interpolate the given data values at the specified list of orthogonal
         (coord, points) pairs.
 
-        Args:
-
-        * sample_points:
+        Parameters
+        ----------
+        sample_points :
             A list of N iterables, where N is the number of coordinates
             passed to the constructor.
             [sample_values_for_coord_0, sample_values_for_coord_1, ...]
-        * data:
+        data :
             The data to interpolate - not necessarily the data from the cube
             that was used to construct this interpolator. If the data has
             fewer dimensions, then data_dims must be defined.
-
-        Kwargs:
-
-        * data_dims:
+        data_dims : optional, default=None
             The dimensions of the given data array in terms of the original
             cube passed through to this interpolator's constructor. If None,
             the data dimensions must map one-to-one onto the increasing
             dimension order of the cube.
 
-        Returns:
+        Returns
+        -------
+        :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
             An :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
             instance of the interpolated data.
 
@@ -541,9 +516,7 @@ class RectilinearInterpolator:
             for dim in range(self._src_cube.ndim):
                 if dim not in data_dims:
                     strides.insert(dim, 0)
-            data = as_strided(
-                data, strides=strides, shape=self._src_cube.shape
-            )
+            data = as_strided(data, strides=strides, shape=self._src_cube.shape)
 
         data = self._account_for_inverted(data)
         # Calculate the transpose order to shuffle the interpolated dimensions
@@ -553,9 +526,7 @@ class RectilinearInterpolator:
         di = self._interp_dims
         ds = sorted(dims, key=lambda d: d not in di)
         dmap = {d: di.index(d) if d in di else ds.index(d) for d in dims}
-        interp_order, _ = zip(
-            *sorted(dmap.items(), key=operator.itemgetter(1))
-        )
+        interp_order, _ = zip(*sorted(dmap.items(), key=operator.itemgetter(1)))
         _, src_order = zip(*sorted(dmap.items(), key=operator.itemgetter(0)))
 
         # Prepare the sample points for interpolation and calculate the
@@ -595,23 +566,21 @@ class RectilinearInterpolator:
         return result
 
     def __call__(self, sample_points, collapse_scalar=True):
-        """
-        Construct a cube from the specified orthogonal interpolation points.
+        """Construct a cube from the specified orthogonal interpolation points.
 
-        Args:
-
-        * sample_points:
+        Parameters
+        ----------
+        sample_points :
             A list of N iterables, where N is the number of coordinates
             passed to the constructor.
             [sample_values_for_coord_0, sample_values_for_coord_1, ...]
-
-        Kwargs:
-
-        * collapse_scalar:
+        collapse_scalar : bool, optional
             Whether to collapse the dimension of the scalar sample points
             in the resulting cube. Default is True.
 
-        Returns:
+        Returns
+        -------
+        :class:`iris.cube.Cube`
             A cube interpolated at the given sample points. The dimensionality
             of the cube will be the number of original cube dimensions minus
             the number of scalar coordinates, if collapse_scalar is True.
@@ -619,13 +588,9 @@ class RectilinearInterpolator:
         """
         if len(sample_points) != len(self._src_coords):
             msg = "Expected sample points for {} coordinates, got {}."
-            raise ValueError(
-                msg.format(len(self._src_coords), len(sample_points))
-            )
+            raise ValueError(msg.format(len(self._src_coords), len(sample_points)))
 
-        sample_points = _canonical_sample_points(
-            self._src_coords, sample_points
-        )
+        sample_points = _canonical_sample_points(self._src_coords, sample_points)
 
         data = self._src_cube.data
         # Interpolate the cube payload.
@@ -670,9 +635,7 @@ class RectilinearInterpolator:
             else:
                 if set(dims).intersection(set(self._interp_dims)):
                     # Interpolate the coordinate payload.
-                    new_coord = self._resample_coord(
-                        sample_points, coord, dims
-                    )
+                    new_coord = self._resample_coord(sample_points, coord, dims)
                 else:
                     new_coord = coord.copy()
             return new_coord, dims

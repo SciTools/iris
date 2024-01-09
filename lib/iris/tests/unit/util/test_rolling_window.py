@@ -18,9 +18,7 @@ class Test_rolling_window(tests.IrisTest):
     def test_1d(self):
         # 1-d array input
         a = np.array([0, 1, 2, 3, 4], dtype=np.int32)
-        expected_result = np.array(
-            [[0, 1], [1, 2], [2, 3], [3, 4]], dtype=np.int32
-        )
+        expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]], dtype=np.int32)
         result = rolling_window(a, window=2)
         self.assertArrayEqual(result, expected_result)
 

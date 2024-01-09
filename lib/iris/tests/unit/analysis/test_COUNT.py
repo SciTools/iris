@@ -41,9 +41,7 @@ class Test_basics(tests.IrisTest):
 
     def test_lazy_not_callable(self):
         with self.assertRaisesRegex(TypeError, "function must be a callable"):
-            COUNT.lazy_aggregate(
-                self.lazy_cube.lazy_data(), axis=0, function="wibble"
-            )
+            COUNT.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0, function="wibble")
 
     def test_collapse(self):
         data = COUNT.aggregate(self.cube.data, axis=0, function=self.func)
@@ -84,9 +82,7 @@ class Test_lazy_masked(tests.IrisTest):
     def setUp(self):
         lazy_data = as_lazy_data(ma.masked_equal([1, 2, 3, 4, 5], 3))
         self.lazy_cube = Cube(lazy_data)
-        self.lazy_cube.add_dim_coord(
-            DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0
-        )
+        self.lazy_cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
         self.func = lambda x: x >= 3
 
     def test_ma(self):

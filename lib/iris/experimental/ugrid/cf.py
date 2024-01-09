@@ -3,8 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""
-Extensions to Iris' CF variable representation to represent CF UGrid variables.
+"""Extensions to Iris' CF variable representation to represent CF UGrid variables.
 
 Eventual destination: :mod:`iris.fileformats.cf`.
 
@@ -17,8 +16,7 @@ from .mesh import Connectivity
 
 
 class CFUGridConnectivityVariable(cf.CFVariable):
-    """
-    A CF_UGRID connectivity variable points to an index variable identifying
+    """A CF_UGRID connectivity variable points to an index variable identifying
     for every element (edge/face/volume) the indices of its corner nodes. The
     connectivity array will thus be a matrix of size n-elements x n-corners.
     For the indexing one may use either 0- or 1-based indexing; the convention
@@ -65,9 +63,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                 f"{nc_var_name}"
                             )
                             if warn:
-                                warnings.warn(
-                                    message, category=IrisCfMissingVarWarning
-                                )
+                                warnings.warn(message, category=IrisCfMissingVarWarning)
                         else:
                             # Restrict to non-string type i.e. not a
                             # CFLabelVariable.
@@ -90,8 +86,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
 
 
 class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
-    """
-    A CF-UGRID auxiliary coordinate variable is a CF-netCDF auxiliary
+    """A CF-UGRID auxiliary coordinate variable is a CF-netCDF auxiliary
     coordinate variable representing the element (node/edge/face/volume)
     locations (latitude, longitude or other spatial coordinates, and optional
     elevation or other coordinates). These auxiliary coordinate variables will
@@ -148,9 +143,7 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                 # Restrict to non-string type i.e. not a
                                 # CFLabelVariable.
                                 if not cf._is_str_dtype(variables[name]):
-                                    result[
-                                        name
-                                    ] = CFUGridAuxiliaryCoordinateVariable(
+                                    result[name] = CFUGridAuxiliaryCoordinateVariable(
                                         name, variables[name]
                                     )
                                 else:
@@ -170,8 +163,7 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
 
 
 class CFUGridMeshVariable(cf.CFVariable):
-    """
-    A CF-UGRID mesh variable is a dummy variable for storing topology
+    """A CF-UGRID mesh variable is a dummy variable for storing topology
     information as attributes. The mesh variable has the ``cf_role``
     'mesh_topology'.
 
@@ -204,9 +196,7 @@ class CFUGridMeshVariable(cf.CFVariable):
                 # We are looking for all mesh variables. Check if THIS variable
                 #  is a mesh using its own attributes.
                 if getattr(nc_var, "cf_role", "") == "mesh_topology":
-                    result[nc_var_name] = CFUGridMeshVariable(
-                        nc_var_name, nc_var
-                    )
+                    result[nc_var_name] = CFUGridMeshVariable(nc_var_name, nc_var)
 
             # Check for mesh variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
@@ -221,16 +211,12 @@ class CFUGridMeshVariable(cf.CFVariable):
                             f"referenced by netCDF variable {nc_var_name}"
                         )
                         if warn:
-                            warnings.warn(
-                                message, category=IrisCfMissingVarWarning
-                            )
+                            warnings.warn(message, category=IrisCfMissingVarWarning)
                     else:
                         # Restrict to non-string type i.e. not a
                         # CFLabelVariable.
                         if not cf._is_str_dtype(variables[name]):
-                            result[name] = CFUGridMeshVariable(
-                                name, variables[name]
-                            )
+                            result[name] = CFUGridMeshVariable(name, variables[name])
                         else:
                             message = (
                                 f"Ignoring variable {name}, identified as a "
@@ -238,16 +224,13 @@ class CFUGridMeshVariable(cf.CFVariable):
                                 f"variable."
                             )
                             if warn:
-                                warnings.warn(
-                                    message, category=IrisCfLabelVarWarning
-                                )
+                                warnings.warn(message, category=IrisCfLabelVarWarning)
 
         return result
 
 
 class CFUGridGroup(cf.CFGroup):
-    """
-    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
+    """Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
     Conventions' variables and netCDF global attributes.
 
     Specialisation of :class:`~iris.fileformats.cf.CFGroup` that includes extra
@@ -272,8 +255,7 @@ class CFUGridGroup(cf.CFGroup):
 
     @property
     def non_data_variable_names(self):
-        """
-        :class:`set` of the names of the CF-netCDF/CF-UGRID variables that are
+        """:class:`set` of the names of the CF-netCDF/CF-UGRID variables that are
         not the data pay-load.
 
         """
@@ -285,7 +267,8 @@ class CFUGridGroup(cf.CFGroup):
 
 
 class CFUGridReader(cf.CFReader):
-    """
+    """Allows the contents of a netCDF file to be.
+
     This class allows the contents of a netCDF file to be interpreted according
     to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 

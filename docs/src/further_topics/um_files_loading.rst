@@ -1,5 +1,3 @@
-.. _um_files_loading:
-
 .. testsetup::
 
     import numpy as np
@@ -12,6 +10,8 @@
 
     np.set_printoptions(precision=8)
 
+
+.. _um_files_loading:
 
 ===================================
 Iris Handling of PP and Fieldsfiles
@@ -31,14 +31,14 @@ Notes:
 #.  Iris treats Fieldsfile data almost exactly as if it were PP  -- i.e. it
     treats each field's lookup table entry like a PP header.
 #.  The Iris data model is based on
-    `NetCDF CF conventions <http://cfconventions.org/>`_, so most of this can
+    `NetCDF CF conventions <https://cfconventions.org/>`_, so most of this can
     also be seen as a metadata translation between PP and CF terms, but it is
     easier to discuss in terms of Iris elements.
 
 For details of Iris terms (cubes, coordinates, attributes), refer to
 :ref:`Iris data structures <iris_data_structures>`.
 
-For details of CF conventions, see http://cfconventions.org/.
+For details of CF conventions, see https://cfconventions.org/.
 
 Overview of Loading Process
 ---------------------------
@@ -335,7 +335,7 @@ Time Information
 
 In Iris (as in CF) times and time intervals are both expressed as simple
 numbers, following the approach of the
-`UDUNITS project <http://www.unidata.ucar.edu/software/udunits/>`_.
+`UDUNITS project <https://www.unidata.ucar.edu/software/udunits/>`_.
 These values are stored as cube coordinates, where the scaling and calendar
 information is contained in the :attr:`~iris.coords.Coord.units` property.
 

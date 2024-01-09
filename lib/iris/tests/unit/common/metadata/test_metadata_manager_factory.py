@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :func:`iris.common.metadata.metadata_manager_factory`.
-
-"""
+"""Unit tests for the :func:`iris.common.metadata.metadata_manager_factory`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -99,9 +96,7 @@ class Test_instance___eq__(tests.IrisTest):
 
     def test__not_values(self):
         standard_name = mock.sentinel.standard_name
-        other = metadata_manager_factory(
-            BaseMetadata, standard_name=standard_name
-        )
+        other = metadata_manager_factory(BaseMetadata, standard_name=standard_name)
         self.assertEqual(other.standard_name, standard_name)
         self.assertIsNone(other.long_name)
         self.assertIsNone(other.var_name)
@@ -114,9 +109,7 @@ class Test_instance___eq__(tests.IrisTest):
         self.assertEqual(self.metadata, other)
 
     def test__same(self):
-        kwargs = dict(
-            standard_name=1, long_name=2, var_name=3, units=4, attributes=5
-        )
+        kwargs = dict(standard_name=1, long_name=2, var_name=3, units=4, attributes=5)
         metadata = metadata_manager_factory(BaseMetadata, **kwargs)
         other = metadata_manager_factory(BaseMetadata, **kwargs)
         self.assertEqual(metadata.values._asdict(), kwargs)

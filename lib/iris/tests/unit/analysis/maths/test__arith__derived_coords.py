@@ -20,8 +20,7 @@ class TestBroadcastingDerived(
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
 ):
-    """
-    Repeat the broadcasting tests while retaining derived coordinates.
+    """Repeat the broadcasting tests while retaining derived coordinates.
 
     NOTE: apart from showing that these operations do succeed, this mostly
     produces a new set of CML result files,

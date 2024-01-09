@@ -127,9 +127,7 @@ class TestTable(tests.IrisTest):
         table = Table()
         aligns = ["left", "right", "left"]
         table.add_row(["a", "beee", "c"], aligns)
-        table.add_row(
-            ["abcd", "any-longer-stuff", "this"], aligns, i_col_unlimited=1
-        )
+        table.add_row(["abcd", "any-longer-stuff", "this"], aligns, i_col_unlimited=1)
         table.add_row(["12", "x", "yy"], aligns)
         result = table.formatted_as_strings()
         self.assertEqual(

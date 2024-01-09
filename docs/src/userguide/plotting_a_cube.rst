@@ -209,7 +209,7 @@ the temperature at some latitude cross-sections.
     that any useful functions or variables defined within the script can be 
     imported into other scripts without running all of the code and thus 
     creating an unwanted plot. This is discussed in more detail at 
-    `<http://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm>`_.
+    `<https://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm>`_.
 
     In order to run this example, you will need to copy the code into a file 
     and run it using ``python my_file.py``.
@@ -285,7 +285,7 @@ These colour schemes are freely available under the following licence::
       Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
       You may obtain a copy of the License at
   
-      http://www.apache.org/licenses/LICENSE-2.0
+      https://www.apache.org/licenses/LICENSE-2.0
   
       Unless required by applicable law or agreed to in writing, software distributed
       under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
@@ -293,7 +293,7 @@ These colour schemes are freely available under the following licence::
       specific language governing permissions and limitations under the License.
 
 To include a reference in a journal article or report please refer to 
-`section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
+`section 5 <https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
 in the citation guidance provided by Cynthia Brewer.
    
 For adding citations to Iris plots, see :ref:`brewer-cite` (below). 

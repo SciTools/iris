@@ -86,9 +86,7 @@ class Test(tests.IrisTest):
 
     def test_set_optional_args(self):
         # Check that setting the optional (non-ellipse) args works.
-        crs = Geostationary(
-            0, 0, 1000, "y", false_easting=100, false_northing=-200
-        )
+        crs = Geostationary(0, 0, 1000, "y", false_easting=100, false_northing=-200)
         self.assertEqualAndKind(crs.false_easting, 100.0)
         self.assertEqualAndKind(crs.false_northing, -200.0)
 
@@ -105,9 +103,7 @@ class Test(tests.IrisTest):
 
     def test_optional_args_None(self):
         # Check expected defaults with optional args=None.
-        crs = Geostationary(
-            0, 0, 1000, "y", false_easting=None, false_northing=None
-        )
+        crs = Geostationary(0, 0, 1000, "y", false_easting=None, false_northing=None)
         self._check_crs_defaults(crs)
 
 

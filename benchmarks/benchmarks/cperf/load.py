@@ -2,20 +2,17 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-File loading benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
-"""
-from . import SingleDiagnosticMixin
+"""File loading benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project."""
 from .. import on_demand_benchmark
+from . import SingleDiagnosticMixin
 
 
 @on_demand_benchmark
 class SingleDiagnosticLoad(SingleDiagnosticMixin):
     def time_load(self, _, __, ___):
-        """
-        The 'real world comparison'
-          * UM coords are always realised (DimCoords).
-          * LFRic coords are not realised by default (MeshCoords).
+        """The 'real world comparison'
+        * UM coords are always realised (DimCoords).
+        * LFRic coords are not realised by default (MeshCoords).
 
         """
         cube = self.load()

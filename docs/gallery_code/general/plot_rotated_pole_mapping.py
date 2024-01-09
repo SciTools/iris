@@ -1,5 +1,4 @@
-"""
-Rotated Pole Mapping
+"""Rotated Pole Mapping
 =====================
 
 This example uses several visualisation methods to achieve an array of
@@ -10,7 +9,7 @@ differing images, including:
  * Block plot of contiguous bounded data
  * Non native projection and a Natural Earth shaded relief image underlay
 
-"""
+"""  # noqa: D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

@@ -18,26 +18,19 @@ from iris.util import _meshgrid
 
 
 class AreaWeightedRegridder:
-    """
-    This class provides support for performing area-weighted regridding.
-
-    """
+    """Provide support for performing area-weighted regridding."""
 
     def __init__(self, src_grid_cube, target_grid_cube, mdtol=1):
-        """
-        Create an area-weighted regridder for conversions between the source
+        """Create an area-weighted regridder for conversions between the source
         and target grids.
 
-        Args:
-
-        * src_grid_cube:
+        Parameters
+        ----------
+        src_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the source grid.
-        * target_grid_cube:
+        target_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-
-        Kwargs:
-
-        * mdtol (float):
+        mdtol : float, optional
             Tolerance of missing data. The value returned in each element of
             the returned array will be masked if the fraction of masked data
             exceeds mdtol. mdtol=0 means no missing data is tolerated while
@@ -45,6 +38,8 @@ class AreaWeightedRegridder:
             if all the contributing elements of data are masked.
             Defaults to 1.
 
+        Notes
+        -----
         .. Note::
 
             Both source and target cubes must have an XY grid defined by
@@ -80,8 +75,7 @@ class AreaWeightedRegridder:
         ) = _regrid_info
 
     def __call__(self, cube):
-        """
-        Regrid this :class:`~iris.cube.Cube` onto the target grid of
+        """Regrid this :class:`~iris.cube.Cube` onto the target grid of
         this :class:`AreaWeightedRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -90,17 +84,21 @@ class AreaWeightedRegridder:
         If the source cube has lazy data, the returned cube will also
         have lazy data.
 
-        Args:
-
-        * cube:
+        Parameters
+        ----------
+        cube : :class:`~iris.cube.Cube`
             A :class:`~iris.cube.Cube` to be regridded.
 
-        Returns:
+        Returns
+        -------
+        :class:`~iris.cube.Cube`
             A cube defined with the horizontal dimensions of the target
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid using
             area-weighted regridding.
 
+        Notes
+        -----
         .. note::
 
             If the source cube has lazy data,
@@ -138,8 +136,7 @@ class AreaWeightedRegridder:
 
 
 def _get_xy_coords(cube):
-    """
-    Return the x and y coordinates from a cube.
+    """Return the x and y coordinates from a cube.
 
     This function will preferentially return a pair of dimension
     coordinates (if there are more than one potential x or y dimension
@@ -152,12 +149,14 @@ def _get_xy_coords(cube):
     have equal coordinate systems and that they do not occupy the same
     dimension on the cube.
 
-    Args:
-
-    * cube:
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         An instance of :class:`iris.cube.Cube`.
 
-    Returns:
+    Returns
+    -------
+    tuple
         A tuple containing the cube's x and y coordinates.
 
     """
@@ -173,8 +172,7 @@ def _get_xy_coords(cube):
         ]
     if len(x_coords) != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D x "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D x coordinate.".format(cube.name())
         )
     x_coord = x_coords[0]
 
@@ -190,8 +188,7 @@ def _get_xy_coords(cube):
         ]
     if len(y_coords) != 1:
         raise ValueError(
-            "Cube {!r} must contain a single 1D y "
-            "coordinate.".format(cube.name())
+            "Cube {!r} must contain a single 1D y coordinate.".format(cube.name())
         )
     y_coord = y_coords[0]
 
@@ -216,31 +213,26 @@ def _get_xy_coords(cube):
 
     if x_dim is not None and y_dim == x_dim:
         raise ValueError(
-            "The cube's x and y coords must not describe the "
-            "same data dimension."
+            "The cube's x and y coords must not describe the same data dimension."
         )
 
     return x_coord, y_coord
 
 
 def _get_bounds_in_units(coord, units, dtype):
-    """
-    Return a copy of coord's bounds in the specified units and dtype.
+    """Return a copy of coord's bounds in the specified units and dtype.
 
     Return as contiguous bounds.
     """
     # The bounds are cast to dtype before conversion to prevent issues when
     # mixing float32 and float64 types.
-    return coord.units.convert(
-        coord.contiguous_bounds().astype(dtype), units
-    ).astype(dtype)
+    return coord.units.convert(coord.contiguous_bounds().astype(dtype), units).astype(
+        dtype
+    )
 
 
-def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
-    src_cube, grid_cube
-):
-    """
-    First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+def _regrid_area_weighted_rectilinear_src_and_grid__prepare(src_cube, grid_cube):
+    """First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
 
     Check inputs and calculate related info. The 'regrid info' returned
     can be re-used over many 2d slices.
@@ -355,9 +347,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             src_x_bounds, grid_x_bounds, circular=spherical, mod=modulus
         )
         y_info = _get_coord_to_coord_matrix_info(src_y_bounds, grid_y_bounds)
-        weights_matrix = _combine_xy_weights(
-            x_info, y_info, src_shape, tgt_shape
-        )
+        weights_matrix = _combine_xy_weights(x_info, y_info, src_shape, tgt_shape)
         return weights_matrix
 
     weights = _calculate_regrid_area_weighted_weights(
@@ -384,8 +374,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
 def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     src_cube, regrid_info, mdtol
 ):
-    """
-    Second (regrid) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+    """Second (regrid) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
 
     Perform the prepared regrid calculation on a single 2d cube.
 
@@ -460,11 +449,8 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     return new_cube
 
 
-def _get_coord_to_coord_matrix_info(
-    src_bounds, tgt_bounds, circular=False, mod=None
-):
-    """
-    First part of weight calculation.
+def _get_coord_to_coord_matrix_info(src_bounds, tgt_bounds, circular=False, mod=None):
+    """First part of weight calculation.
 
     Calculate the weights contribution from a single pair of
     coordinate bounds. Search for pairs of overlapping source and
@@ -563,8 +549,7 @@ def _get_coord_to_coord_matrix_info(
 
 
 def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
-    """
-    Second part of weight calculation.
+    """Second part of weight calculation.
 
     Combine the weights contributions from both pairs of coordinate
     bounds (i.e. the source/target pairs for the x and y coords).
@@ -600,8 +585,7 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
 
 
 def _standard_regrid_no_masks(data, weights, tgt_shape):
-    """
-    Regrid unmasked data to an unmasked result.
+    """Regrid unmasked data to an unmasked result.
 
     Assumes that the first two dimensions are the x-y grid.
     """
@@ -620,8 +604,7 @@ def _standard_regrid_no_masks(data, weights, tgt_shape):
 
 
 def _standard_regrid(data, weights, tgt_shape, mdtol):
-    """
-    Regrid data and handle masks.
+    """Regrid data and handle masks.
 
     Assumes that the first two dimensions are the x-y grid.
     """
@@ -671,9 +654,7 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
     if ma.isMaskedArray(data):
         # If the source is masked, the result should have a similar mask.
         fill_value = data.fill_value
-        normalisations = ma.array(
-            normalisations, mask=~tgt_mask, fill_value=fill_value
-        )
+        normalisations = ma.array(normalisations, mask=~tgt_mask, fill_value=fill_value)
     elif np.any(~tgt_mask):
         normalisations = ma.array(normalisations, mask=~tgt_mask)
 
@@ -682,9 +663,7 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
     dtype = np.promote_types(data.dtype, np.float16)
 
     # Perform regridding on unmasked data.
-    result = _standard_regrid_no_masks(
-        ma.filled(data, 0.0), weights, tgt_shape
-    )
+    result = _standard_regrid_no_masks(ma.filled(data, 0.0), weights, tgt_shape)
     # Apply normalisations and masks to the regridded data.
     result = result * normalisations
     result = result.astype(dtype)

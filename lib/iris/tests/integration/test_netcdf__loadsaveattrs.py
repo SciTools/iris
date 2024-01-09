@@ -2,10 +2,10 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Integration tests for loading and saving netcdf file attributes.
+"""Integration tests for loading and saving netcdf file attributes.
 
-Notes:
+Notes
+-----
 (1) attributes in netCDF files can be either "global attributes", or variable
 ("local") type.
 
@@ -98,8 +98,7 @@ def check_captured_warnings(
     captured_warnings: List[warnings.WarningMessage],
     allow_possible_legacy_warning: bool = False,
 ):
-    """
-    Compare captured warning messages with a list of regexp-matches.
+    """Compare captured warning messages with a list of regexp-matches.
 
     We allow them to occur in any order, and replace each actual result in the list
     with its matching regexp, if any, as this makes failure results much easier to
@@ -142,9 +141,7 @@ def check_captured_warnings(
     if allow_possible_legacy_warning:
         # Remove any unused "legacy attribute saving" key.
         # N.B. this is the *only* key we will tolerate not being used.
-        expected_keys = [
-            key for key in expected_keys if key != legacy_message_key
-        ]
+        expected_keys = [key for key in expected_keys if key != legacy_message_key]
 
     assert set(found_results) == set(expected_keys)
 
@@ -152,8 +149,7 @@ def check_captured_warnings(
 class MixinAttrsTesting:
     @staticmethod
     def _calling_testname():
-        """
-        Search up the callstack for a function named "test_*", and return the name for
+        """Search up the callstack for a function named "test_*", and return the name for
         use as a test identifier.
 
         Idea borrowed from :meth:`iris.tests.IrisTest.result_path`.
@@ -177,13 +173,13 @@ class MixinAttrsTesting:
 
     @pytest.fixture(autouse=True)
     def make_tempdir(self, tmp_path_factory):
-        """
-        Automatically-run fixture to activate the 'tmp_path_factory' fixture on *every*
+        """Automatically-run fixture to activate the 'tmp_path_factory' fixture on *every*
         test: Make a directory for temporary files, and record it on the test instance.
 
         N.B. "tmp_path_factory" is a standard PyTest fixture, which provides a dirpath
         *shared* by all tests.  This is a bit quicker and more debuggable than having a
         directory per-testcase.
+
         """
         # Store the temporary directory path on the test instance
         self.tmpdir = str(tmp_path_factory.getbasetemp())
@@ -216,8 +212,7 @@ class MixinAttrsTesting:
         var_values_file2: Union[None, str, dict] = None,
         cubes: bool = False,
     ):
-        """
-        Create temporary input netcdf files, or cubes, with specific content.
+        """Create temporary input netcdf files, or cubes, with specific content.
 
         Creates a temporary netcdf test file (or two) with the given global and
         variable-local attributes.  Or build cubes, similarly.
@@ -227,6 +222,7 @@ class MixinAttrsTesting:
         Note: 'var_values_file<X>' args are dictionaries.  The named variables are
         created, with an attribute = the dictionary value, *except* that a dictionary
         value of None means that a local attribute is _not_ created on the variable.
+
         """
         # save attribute on the instance
         self.attrname = attr_name
@@ -236,9 +232,7 @@ class MixinAttrsTesting:
             filepath1 = self._testfile_path("testfile")
             filepath2 = self._testfile_path("testfile2")
 
-        def make_file(
-            filepath: str, global_value=None, var_values=None
-        ) -> str:
+        def make_file(filepath: str, global_value=None, var_values=None) -> str:
             ds = threadsafe_nc4.DatasetWrapper(filepath, "w")
             if global_value is not None:
                 ds.setncattr(attr_name, global_value)
@@ -281,13 +275,9 @@ class MixinAttrsTesting:
         if cubes:
             results = make_cubes("v1", global_value_file1, var_values_file1)
             if global_value_file2 is not None or var_values_file2 is not None:
-                results.extend(
-                    make_cubes("v2", global_value_file2, var_values_file2)
-                )
+                results.extend(make_cubes("v2", global_value_file2, var_values_file2))
         else:
-            results = [
-                make_file(filepath1, global_value_file1, var_values_file1)
-            ]
+            results = [make_file(filepath1, global_value_file1, var_values_file1)]
             if global_value_file2 is not None or var_values_file2 is not None:
                 # Make a second testfile and add it to files-to-be-loaded.
                 results.append(
@@ -307,8 +297,7 @@ class MixinAttrsTesting:
         values: Union[List, List[List]],
         create_cubes_or_files: str = "files",
     ) -> None:
-        """
-        Create testcase inputs (files or cubes) with specified attributes.
+        """Create testcase inputs (files or cubes) with specified attributes.
 
         Parameters
         ----------
@@ -321,6 +310,8 @@ class MixinAttrsTesting:
         create_cubes_or_files : str, default "files"
             create either cubes or testfiles.
 
+        Notes
+        -----
         If ``create_cubes_or_files`` == "files", create one temporary netCDF file per
         values-list, and record in ``self.input_filepaths``.
         Else if ``create_cubes_or_files`` == "cubes", create sets of cubes with common
@@ -373,8 +364,7 @@ class MixinAttrsTesting:
         cubes: Iterable[Cube] = None,
         oldstyle_combined: bool = False,
     ):
-        """
-        Return testcase results from an output file or cubes in a standardised form.
+        """Return testcase results from an output file or cubes in a standardised form.
 
         Unpick the global+local values of the attribute ``self.attrname``, resulting
         from a test operation.
@@ -395,9 +385,7 @@ class MixinAttrsTesting:
             try:
                 ds = threadsafe_nc4.DatasetWrapper(filepath)
                 global_result = (
-                    ds.getncattr(attr_name)
-                    if attr_name in ds.ncattrs()
-                    else None
+                    ds.getncattr(attr_name) if attr_name in ds.ncattrs() else None
                 )
                 # Fetch local attr value from all data variables :  In our testcases,
                 # that is all *except* dimcoords (ones named after dimensions).
@@ -440,16 +428,14 @@ class MixinAttrsTesting:
                 # Return a result-set for each occurring global value (possibly
                 # including a 'None').
                 global_values = set(
-                    cube.attributes.globals.get(attr_name, None)
-                    for cube in cubes
+                    cube.attributes.globals.get(attr_name, None) for cube in cubes
                 )
                 results = [
                     [globalval]
                     + [
                         cube.attributes.locals.get(attr_name, None)
                         for cube in cubes
-                        if cube.attributes.globals.get(attr_name, None)
-                        == globalval
+                        if cube.attributes.globals.get(attr_name, None) == globalval
                     ]
                     for globalval in sorted(global_values, key=str)
                 ]
@@ -524,9 +510,7 @@ _SPECIAL_ATTRS = [
     "STASH",
     "um_stash_source",
 ]
-_MATRIX_ATTRNAMES = [
-    attr for attr in _MATRIX_ATTRNAMES if attr not in _SPECIAL_ATTRS
-]
+_MATRIX_ATTRNAMES = [attr for attr in _MATRIX_ATTRNAMES if attr not in _SPECIAL_ATTRS]
 
 
 #
@@ -584,8 +568,7 @@ def encode_matrix_result(results: List[List[str]]) -> List[str]:
     if not isinstance(results[0], list):
         results = [results]
     assert all(
-        all(val is None or isinstance(val, str) for val in vals)
-        for vals in results
+        all(val is None or isinstance(val, str) for val in vals) for vals in results
     )
 
     # Translate "None" values to "-"
@@ -609,15 +592,11 @@ _MATRIX_TESTTYPES = ("load", "save", "roundtrip")
 @pytest.fixture(autouse=True, scope="session")
 def matrix_results():
     matrix_filepaths = {
-        testtype: (
-            Path(__file__).parent / f"attrs_matrix_results_{testtype}.json"
-        )
+        testtype: (Path(__file__).parent / f"attrs_matrix_results_{testtype}.json")
         for testtype in _MATRIX_TESTTYPES
     }
     # An environment variable can trigger saving of the results.
-    save_matrix_results = bool(
-        int(os.environ.get("SAVEALL_MATRIX_RESULTS", "0"))
-    )
+    save_matrix_results = bool(int(os.environ.get("SAVEALL_MATRIX_RESULTS", "0")))
 
     matrix_results = {}
     for testtype in _MATRIX_TESTTYPES:
@@ -676,8 +655,7 @@ def matrix_results():
 
 
 class TestRoundtrip(MixinAttrsTesting):
-    """
-    Test handling of attributes in roundtrip netcdf-iris-netcdf.
+    """Test handling of attributes in roundtrip netcdf-iris-netcdf.
 
     This behaviour should be (almost) unchanged by the adoption of
     split-attribute handling.
@@ -692,17 +670,14 @@ class TestRoundtrip(MixinAttrsTesting):
     """
 
     # Parametrise all tests over split/unsplit saving.
-    @pytest.fixture(
-        params=_SPLIT_PARAM_VALUES, ids=_SPLIT_PARAM_IDS, autouse=True
-    )
+    @pytest.fixture(params=_SPLIT_PARAM_VALUES, ids=_SPLIT_PARAM_IDS, autouse=True)
     def do_split(self, request):
         do_split = request.param
         self.save_split_attrs = do_split
         return do_split
 
     def run_roundtrip_testcase(self, attr_name, values):
-        """
-        Initialise the testcase from the passed-in controls, configure the input
+        """Initialise the testcase from the passed-in controls, configure the input
         files and run a save-load roundtrip to produce the output file.
 
         The name of the attribute, and the input and output temporary filepaths are
@@ -721,9 +696,7 @@ class TestRoundtrip(MixinAttrsTesting):
             cubes = sorted(cubes, key=lambda cube: cube.name())
             do_split = getattr(self, "save_split_attrs", False)
             kwargs = (
-                dict(save_split_attrs=do_split)
-                if _SPLIT_SAVE_SUPPORTED
-                else dict()
+                dict(save_split_attrs=do_split) if _SPLIT_SAVE_SUPPORTED else dict()
             )
             with iris.FUTURE.context(**kwargs):
                 iris.save(cubes, self.result_filepath)
@@ -731,8 +704,7 @@ class TestRoundtrip(MixinAttrsTesting):
         self.captured_warnings = captured_warnings
 
     def check_roundtrip_results(self, expected, expected_warnings=None):
-        """
-        Run checks on the generated output file.
+        """Run checks on the generated output file.
 
         The counterpart to :meth:`run_roundtrip_testcase`, with similar arguments.
         Check existence (or not) of a global attribute, and a number of local
@@ -760,9 +732,7 @@ class TestRoundtrip(MixinAttrsTesting):
     #
 
     def test_01_userstyle_single_global(self):
-        self.run_roundtrip_testcase(
-            attr_name="myname", values=["single-value", None]
-        )
+        self.run_roundtrip_testcase(attr_name="myname", values=["single-value", None])
         # Default behaviour for a general global user-attribute.
         # It simply remains global.
         self.check_roundtrip_results(["single-value", None])
@@ -1041,9 +1011,7 @@ class TestRoundtrip(MixinAttrsTesting):
                 attrval = "p r o c e s s"
             expect_var = attrval
 
-        if local_attr == "STASH" and (
-            origin_style == "input_local" or not do_split
-        ):
+        if local_attr == "STASH" and (origin_style == "input_local" or not do_split):
             # A special case, output translates this to a different attribute name.
             self.attrname = "um_stash_source"
 
@@ -1055,9 +1023,7 @@ class TestRoundtrip(MixinAttrsTesting):
 
     @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
     @pytest.mark.parametrize("attrname", _MATRIX_ATTRNAMES)
-    def test_roundtrip_matrix(
-        self, testcase, attrname, matrix_results, do_split
-    ):
+    def test_roundtrip_matrix(self, testcase, attrname, matrix_results, do_split):
         do_saves, matrix_results = matrix_results
         split_param = "split" if do_split else "unsplit"
         testcase_spec = matrix_results["roundtrip"][testcase]
@@ -1078,8 +1044,7 @@ class TestRoundtrip(MixinAttrsTesting):
 
 
 class TestLoad(MixinAttrsTesting):
-    """
-    Test loading of file attributes into Iris cube attribute dictionaries.
+    """Test loading of file attributes into Iris cube attribute dictionaries.
 
     Tests loading of various combinations to cube dictionaries, treated as a
     single combined result (i.e. not split).  This behaviour should be (almost)
@@ -1117,9 +1082,7 @@ class TestLoad(MixinAttrsTesting):
     #
 
     def test_01_userstyle_single_global(self):
-        self.run_load_testcase(
-            attr_name="myname", values=["single_value", None, None]
-        )
+        self.run_load_testcase(attr_name="myname", values=["single_value", None, None])
         # Legacy-equivalent result check (single attributes dict per cube)
         self.check_load_results(
             [None, "single_value", "single_value"],
@@ -1135,9 +1098,7 @@ class TestLoad(MixinAttrsTesting):
             attr_name="myname",  # A generic "user" attribute with no special handling
             values=[None, "single-value", None],
         )
-        self.check_load_results(
-            [None, "single-value", None], oldstyle_combined=True
-        )
+        self.check_load_results([None, "single-value", None], oldstyle_combined=True)
         self.check_load_results([None, "single-value", None])
 
     def test_03_userstyle_multiple_different(self):
@@ -1199,9 +1160,7 @@ class TestLoad(MixinAttrsTesting):
             values=["global-setting", "local-setting"],
         )
         # (#1): legacy result : the global version gets lost.
-        self.check_load_results(
-            [None, "local-setting"], oldstyle_combined=True
-        )
+        self.check_load_results([None, "local-setting"], oldstyle_combined=True)
         # (#2): newstyle results : retain both.
         self.check_load_results(["global-setting", "local-setting"])
 
@@ -1212,9 +1171,7 @@ class TestLoad(MixinAttrsTesting):
 
     def test_09_globalstyle__global(self, global_attr):
         attr_content = f"Global tracked {global_attr}"
-        self.run_load_testcase(
-            attr_name=global_attr, values=[attr_content, None]
-        )
+        self.run_load_testcase(attr_name=global_attr, values=[attr_content, None])
         # (#1) legacy
         self.check_load_results([None, attr_content], oldstyle_combined=True)
         # (#2) newstyle : global status preserved.
@@ -1335,9 +1292,7 @@ class TestLoad(MixinAttrsTesting):
     @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
     @pytest.mark.parametrize("attrname", _MATRIX_ATTRNAMES)
     @pytest.mark.parametrize("resultstyle", _MATRIX_LOAD_RESULTSTYLES)
-    def test_load_matrix(
-        self, testcase, attrname, matrix_results, resultstyle
-    ):
+    def test_load_matrix(self, testcase, attrname, matrix_results, resultstyle):
         do_saves, matrix_results = matrix_results
         testcase_spec = matrix_results["load"][testcase]
         input_spec = testcase_spec["input"]
@@ -1347,9 +1302,7 @@ class TestLoad(MixinAttrsTesting):
 
         result_cubes = iris.load(self.input_filepaths)
         do_combined = resultstyle == "legacy"
-        results = self.fetch_results(
-            cubes=result_cubes, oldstyle_combined=do_combined
-        )
+        results = self.fetch_results(cubes=result_cubes, oldstyle_combined=do_combined)
         result_spec = encode_matrix_result(results)
 
         attr_style = deduce_attr_style(attrname)
@@ -1362,15 +1315,10 @@ class TestLoad(MixinAttrsTesting):
 
 
 class TestSave(MixinAttrsTesting):
-    """
-    Test saving from cube attributes dictionary (various categories) into files.
-
-    """
+    """Test saving from cube attributes dictionary (various categories) into files."""
 
     # Parametrise all tests over split/unsplit saving.
-    @pytest.fixture(
-        params=_SPLIT_PARAM_VALUES, ids=_SPLIT_PARAM_IDS, autouse=True
-    )
+    @pytest.fixture(params=_SPLIT_PARAM_VALUES, ids=_SPLIT_PARAM_IDS, autouse=True)
     def do_split(self, request):
         do_split = request.param
         self.save_split_attrs = do_split
@@ -1389,9 +1337,7 @@ class TestSave(MixinAttrsTesting):
             self.result_filepath = self._testfile_path("result")
             do_split = getattr(self, "save_split_attrs", False)
             kwargs = (
-                dict(save_split_attrs=do_split)
-                if _SPLIT_SAVE_SUPPORTED
-                else dict()
+                dict(save_split_attrs=do_split) if _SPLIT_SAVE_SUPPORTED else dict()
             )
             with iris.FUTURE.context(**kwargs):
                 iris.save(self.input_cubes, self.result_filepath)
@@ -1399,8 +1345,7 @@ class TestSave(MixinAttrsTesting):
         self.captured_warnings = captured_warnings
 
     def run_save_testcase_legacytype(self, attr_name: str, values: list):
-        """
-        Legacy-type means : before cubes had split attributes.
+        """Legacy-type means : before cubes had split attributes.
 
         This just means we have only one "set" of cubes, with ***no*** distinct global
         attribute.
@@ -1411,9 +1356,7 @@ class TestSave(MixinAttrsTesting):
 
         self.run_save_testcase(attr_name, [None] + values)
 
-    def check_save_results(
-        self, expected: list, expected_warnings: List[str] = None
-    ):
+    def check_save_results(self, expected: list, expected_warnings: List[str] = None):
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
         check_captured_warnings(
@@ -1463,16 +1406,12 @@ class TestSave(MixinAttrsTesting):
         self.check_save_results(["CF-1.7", None])
 
     def test_Conventions__multiple_same(self):
-        self.run_save_testcase_legacytype(
-            "Conventions", ["same-value", "same-value"]
-        )
+        self.run_save_testcase_legacytype("Conventions", ["same-value", "same-value"])
         # Always discarded + replaced by a single global setting.
         self.check_save_results(["CF-1.7", None, None])
 
     def test_Conventions__multiple_different(self):
-        self.run_save_testcase_legacytype(
-            "Conventions", ["value-A", "value-B"]
-        )
+        self.run_save_testcase_legacytype("Conventions", ["value-A", "value-B"])
         # Always discarded + replaced by a single global setting.
         self.check_save_results(["CF-1.7", None, None])
 
@@ -1518,9 +1457,7 @@ class TestSave(MixinAttrsTesting):
 
     def test_globalstyle__multiple_onemissing(self, global_attr):
         # Multiple global-type, with one missing, behave like different values.
-        self.run_save_testcase_legacytype(
-            global_attr, ["value", "value", None]
-        )
+        self.run_save_testcase_legacytype(global_attr, ["value", "value", None])
         # Stored as locals when there are differing values.
         msg_regexp = (
             f"'{global_attr}' is being added as CF data variable attribute,"
@@ -1546,9 +1483,7 @@ class TestSave(MixinAttrsTesting):
         self.check_save_results(expected_results)
 
     def test_localstyle__multiple_same(self, local_attr):
-        self.run_save_testcase_legacytype(
-            local_attr, ["value-same", "value-same"]
-        )
+        self.run_save_testcase_legacytype(local_attr, ["value-same", "value-same"])
 
         # They remain separate + local
         expected_results = [None, "value-same", "value-same"]
@@ -1597,9 +1532,7 @@ class TestSave(MixinAttrsTesting):
 
     def test_globallocal_oneeach_same(self, do_split):
         # One cube with global attr, another with identical local one.
-        self.run_save_testcase(
-            "userattr", values=[[None, "value"], ["value", None]]
-        )
+        self.run_save_testcase("userattr", values=[[None, "value"], ["value", None]])
         if do_split:
             expected = [None, "value", "value"]
             expected_warning = (
@@ -1614,13 +1547,9 @@ class TestSave(MixinAttrsTesting):
 
     def test_globallocal_oneeach_different(self, do_split):
         # One cube with global attr, another with a *different* local one.
-        self.run_save_testcase(
-            "userattr", [[None, "valueA"], ["valueB", None]]
-        )
+        self.run_save_testcase("userattr", [[None, "valueA"], ["valueB", None]])
         if do_split:
-            warning = (
-                r"Saving the cube global attributes \['userattr'\] as local"
-            )
+            warning = r"Saving the cube global attributes \['userattr'\] as local"
         else:
             # N.B. legacy code does not warn of global-to-local "demotion".
             warning = None

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the
+"""Unit tests for the
 :mod:`iris.fileformats._structured_array_identification.ArrayStructure` class.
 
 """
@@ -51,9 +50,7 @@ class TestArrayStructure_from_array(tests.IrisTest):
 
     def test_1d_range(self):
         a = np.arange(6)
-        self.assertEqual(
-            self.struct_from_arr(a), ArrayStructure(1, list(range(6)))
-        )
+        self.assertEqual(self.struct_from_arr(a), ArrayStructure(1, list(range(6))))
 
     def test_3d_ones(self):
         a = np.ones([10, 2, 1])
@@ -61,9 +58,7 @@ class TestArrayStructure_from_array(tests.IrisTest):
 
     def test_1d_over_2d_first_dim_manual(self):
         sub = np.array([10, 10, 20, 20])
-        self.assertEqual(
-            self.struct_from_arr(sub), ArrayStructure(2, [10, 20])
-        )
+        self.assertEqual(self.struct_from_arr(sub), ArrayStructure(2, [10, 20]))
 
     def test_3d_first_dimension(self):
         flattened = np.array([1, 1, 1, 2, 2, 2])
@@ -134,8 +129,7 @@ class TestArrayStructure_from_array(tests.IrisTest):
 
 
 class nd_array_and_dims_cases:
-    """
-    Defines the test functionality for nd_array_and_dims. This class
+    """Defines the test functionality for nd_array_and_dims. This class
     isn't actually the test case - see the C order and F order subclasses
     for those.
 
@@ -161,9 +155,7 @@ class nd_array_and_dims_cases:
         orig = construct_nd(np.array([1, 2]), 0, (2, 1, 3))
         flattened = orig.flatten(order=self.order)
         struct = ArrayStructure.from_array(flattened)
-        array, dims = struct.nd_array_and_dims(
-            flattened, (2, 1, 3), order=self.order
-        )
+        array, dims = struct.nd_array_and_dims(flattened, (2, 1, 3), order=self.order)
         self.assertArrayEqual(array, [1, 2])
         self.assertEqual(dims, (0,))
 
@@ -172,9 +164,7 @@ class nd_array_and_dims_cases:
         flattened = orig.flatten(order=self.order)
 
         struct = ArrayStructure.from_array(flattened)
-        array, dims = struct.nd_array_and_dims(
-            flattened, (4, 1, 3), order=self.order
-        )
+        array, dims = struct.nd_array_and_dims(flattened, (4, 1, 3), order=self.order)
         self.assertArrayEqual(array, [1, 2, 3])
         self.assertEqual(dims, (2,))
 

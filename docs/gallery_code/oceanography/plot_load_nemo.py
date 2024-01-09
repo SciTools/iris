@@ -1,12 +1,11 @@
-"""
-Load a Time Series of Data From the NEMO Model
+"""Load a Time Series of Data From the NEMO Model
 ==============================================
 
 This example demonstrates how to load multiple files containing data output by
 the NEMO model and combine them into a time series in a single cube. The
 different time dimensions in these files can prevent Iris from concatenating
 them without the intervention shown here.
-"""
+"""  # noqa: D400
 
 import matplotlib.pyplot as plt
 
@@ -51,11 +50,7 @@ def main():
     lon_string = "{:.3f}\u00B0 {}".format(
         abs(lon_point), "E" if lon_point > 0.0 else "W"
     )
-    plt.title(
-        "{} at {} {}".format(
-            cube.long_name.capitalize(), lat_string, lon_string
-        )
-    )
+    plt.title("{} at {} {}".format(cube.long_name.capitalize(), lat_string, lon_string))
 
     iplt.show()
 

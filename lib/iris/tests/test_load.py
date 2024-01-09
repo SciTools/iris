@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test the main loading API.
-
-"""
+"""Test the main loading API."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -26,9 +23,7 @@ class TestLoad(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -82,9 +77,7 @@ class TestLoadCube(tests.IrisTest):
         _ = iris.load_cube(paths)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         _ = iris.load_cube(paths)
 
     def test_not_enough(self):
@@ -109,9 +102,7 @@ class TestLoadCubes(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load_cubes(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -142,16 +133,14 @@ class TestLoadRaw(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
 
     def test_path_object(self):
-        paths = (
-            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
-        )
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load_raw(paths)
         self.assertEqual(len(cubes), 1)
 
 
 class TestOPeNDAP(tests.IrisTest):
     def setUp(self):
-        self.url = "http://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
+        self.url = "https://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
 
     def test_load_http_called(self):
         # Check that calling iris.load_* with an http URI triggers a call to

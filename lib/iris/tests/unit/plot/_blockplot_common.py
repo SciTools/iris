@@ -54,9 +54,7 @@ class MixinStringCoordPlot:
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        self.assertRaises(
-            TypeError, self.blockplot_func(), self.lat_lon_cube, axes=ax
-        )
+        self.assertRaises(TypeError, self.blockplot_func(), self.lat_lon_cube, axes=ax)
         plt.close(fig)
 
 

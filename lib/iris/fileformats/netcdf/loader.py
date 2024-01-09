@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Module to support the loading of Iris cubes from NetCDF files, also using the CF
-conventions for metadata interpretation.
+"""Support loading Iris cubes from NetCDF files using the CF conventions for metadata interpretation.
 
 See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
 and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
@@ -150,7 +148,6 @@ def _actions_activation_stats(engine, cf_name):
 
 def _set_attributes(attributes, key, value):
     """Set attributes dictionary, converting unicode strings appropriately."""
-
     if isinstance(value, str):
         try:
             attributes[str(key)] = str(value)
@@ -161,7 +158,8 @@ def _set_attributes(attributes, key, value):
 
 
 def _add_unused_attributes(iris_object, cf_var):
-    """
+    """Populate the attributes of a cf element with the "unused" attributes.
+
     Populate the attributes of a cf element with the "unused" attributes
     from the associated CF-netCDF variable. That is, all those that aren't CF
     reserved terms.
@@ -200,8 +198,7 @@ _LAZYVAR_MIN_BYTES = 5000
 
 
 def _get_cf_var_data(cf_var, filename):
-    """
-    Get an array representing the data of a CF variable.
+    """Get an array representing the data of a CF variable.
 
     This is typically a lazy array based around a NetCDFDataProxy, but if the variable
     is "sufficiently small", we instead fetch the data as a real (numpy) array.
@@ -249,9 +246,7 @@ def _get_cf_var_data(cf_var, filename):
                 if chunks == "contiguous":
                     if (
                         CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE
-                        and isinstance(
-                            cf_var, iris.fileformats.cf.CFDataVariable
-                        )
+                        and isinstance(cf_var, iris.fileformats.cf.CFDataVariable)
                     ):
                         raise KeyError(
                             f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
@@ -292,8 +287,8 @@ def _get_cf_var_data(cf_var, filename):
 
 
 class _OrderedAddableList(list):
-    """
-    A custom container object for actions recording.
+    """A custom container object for actions recording.
+
     Used purely in actions debugging, to accumulate a record of which actions
     were activated.
 
@@ -398,10 +393,7 @@ def _load_cube_inner(engine, cf, cf_var, filename):
 
 
 def _load_aux_factory(engine, cube):
-    """
-    Convert any CF-netCDF dimensionless coordinate to an AuxCoordFactory.
-
-    """
+    """Convert any CF-netCDF dimensionless coordinate to an AuxCoordFactory."""
     formula_type = engine.requires.get("formula_type")
     if formula_type in [
         "atmosphere_sigma_coordinate",
@@ -422,8 +414,7 @@ def _load_aux_factory(engine, cube):
                     if cf_var_name == name:
                         return coord
                 warnings.warn(
-                    "Unable to find coordinate for variable "
-                    "{!r}".format(name),
+                    "Unable to find coordinate for variable {!r}".format(name),
                     category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
                 )
 
@@ -461,9 +452,7 @@ def _load_aux_factory(engine, cube):
                     if coord_p0.has_bounds():
                         msg = (
                             "Ignoring atmosphere hybrid sigma pressure "
-                            "scalar coordinate {!r} bounds.".format(
-                                coord_p0.name()
-                            )
+                            "scalar coordinate {!r} bounds.".format(coord_p0.name())
                         )
                         warnings.warn(
                             msg,
@@ -490,9 +479,7 @@ def _load_aux_factory(engine, cube):
             depth_c = coord_from_term("depth_c")
             nsigma = coord_from_term("nsigma")
             zlev = coord_from_term("zlev")
-            factory = OceanSigmaZFactory(
-                sigma, eta, depth, depth_c, nsigma, zlev
-            )
+            factory = OceanSigmaZFactory(sigma, eta, depth, depth_c, nsigma, zlev)
         elif formula_type == "ocean_sigma_coordinate":
             sigma = coord_from_term("sigma")
             eta = coord_from_term("eta")
@@ -524,12 +511,12 @@ def _load_aux_factory(engine, cube):
 
 
 def _translate_constraints_to_var_callback(constraints):
-    """
-    Translate load constraints into a simple data-var filter function, if possible.
+    """Translate load constraints into a simple data-var filter function, if possible.
 
-    Returns:
-         * function(cf_var:CFDataVariable): --> bool,
-            or None.
+    Returns
+    -------
+    function : (cf_var:CFDataVariable)
+        bool, or None.
 
     For now, ONLY handles a single NameConstraint with no 'STASH' component.
 
@@ -568,26 +555,26 @@ def _translate_constraints_to_var_callback(constraints):
 
 
 def load_cubes(file_sources, callback=None, constraints=None):
-    """
-    Loads cubes from a list of NetCDF filenames/OPeNDAP URLs.
+    """Load cubes from a list of NetCDF filenames/OPeNDAP URLs.
 
-    Args:
-
-    * file_sources (string/list):
+    Parameters
+    ----------
+    file_sources : str or list
         One or more NetCDF filenames/OPeNDAP URLs to load from.
         OR open datasets.
 
-    Kwargs:
-
-    * callback (callable function):
+    callback : function, optional
         Function which can be passed on to :func:`iris.io.run_callback`.
 
-    Returns:
-        Generator of loaded NetCDF :class:`iris.cube.Cube`.
+    constraints : optional
+
+    Returns
+    -------
+    Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
-    #  into standard behaviour.
+    # into standard behaviour.
     # Deferred import to avoid circular imports.
     from iris.experimental.ugrid.cf import CFUGridReader
     from iris.experimental.ugrid.load import (
@@ -675,14 +662,17 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
 
 class ChunkControl(threading.local):
+    """Provide user control of Chunk Control."""
+
     class Modes(Enum):
+        """Modes Enums."""
+
         DEFAULT = auto()
         FROM_FILE = auto()
         AS_DASK = auto()
 
     def __init__(self, var_dim_chunksizes=None):
-        """
-        Provide user control of Dask chunking.
+        """Provide user control of Dask chunking.
 
         The NetCDF loader is controlled by the single instance of this: the
         :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL` object.
@@ -712,8 +702,7 @@ class ChunkControl(threading.local):
         var_names: Union[str, Iterable[str]] = None,
         **dimension_chunksizes: Mapping[str, int],
     ) -> None:
-        """
-        Control the Dask chunk sizes applied to NetCDF variables during loading.
+        r"""Control the Dask chunk sizes applied to NetCDF variables during loading.
 
         Parameters
         ----------
@@ -770,10 +759,7 @@ class ChunkControl(threading.local):
                     raise ValueError(msg)
                 dim_chunks = self.var_dim_chunksizes.setdefault(var_name, {})
                 for dim_name, chunksize in dimension_chunksizes.items():
-                    if not (
-                        isinstance(dim_name, str)
-                        and isinstance(chunksize, int)
-                    ):
+                    if not (isinstance(dim_name, str) and isinstance(chunksize, int)):
                         msg = (
                             "'dimension_chunksizes' kwargs should be a dict "
                             f"of `str: int` pairs, not {dimension_chunksizes!r}."
@@ -787,8 +773,7 @@ class ChunkControl(threading.local):
 
     @contextmanager
     def from_file(self) -> None:
-        """
-        Ensures the chunk sizes are loaded in from NetCDF file variables.
+        r"""Ensure the chunk sizes are loaded in from NetCDF file variables.
 
         Raises
         ------
@@ -811,8 +796,7 @@ class ChunkControl(threading.local):
 
     @contextmanager
     def as_dask(self) -> None:
-        """
-        Relies on Dask :external+dask:doc:`array` to control chunk sizes.
+        """Relies on Dask :external+dask:doc:`array` to control chunk sizes.
 
         Notes
         -----
