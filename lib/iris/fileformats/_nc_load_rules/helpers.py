@@ -327,7 +327,7 @@ class UnknownCellMethodWarning(iris.exceptions.IrisUnknownCellMethodWarning):
     pass
 
 
-def parse_cell_methods(nc_cell_methods, cf_name):
+def parse_cell_methods(nc_cell_methods, cf_name=None):
     """Parse a CF cell_methods attribute string into a tuple of zero or
     more CellMethod instances.
 
@@ -356,9 +356,16 @@ def parse_cell_methods(nc_cell_methods, cf_name):
             # e.g. mean over years.
             method_words = method.split()
             if method_words[0].lower() not in _CM_KNOWN_METHODS:
-                name = "{}".format(cf_name)
-                msg = "NetCDF variable {!r} contains unknown cell method {!r}"
-                msg.format(name, method_words[0])
+                msg = "NetCDF variable contains unknown cell method {!r}"
+                msg.format(method_words[0])
+                if cf_name:
+                    name = "{}".format(cf_name)
+                    msg = msg.replace("variable", "variable {!r}".format(name))
+                else:
+                    warnings.warn(
+                        msg,
+                        category=UnknownCellMethodWarning,
+                    )
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
             name = name.replace(" ", "")
