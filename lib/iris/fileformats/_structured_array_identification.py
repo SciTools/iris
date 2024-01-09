@@ -130,7 +130,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
         a 1D array of the given length with the appropriate repetition
         pattern.
 
-        """
+        """  # noqa: D401
         return np.tile(
             np.repeat(self.unique_ordered_values, self.stride),
             size // (self.size * self.stride),

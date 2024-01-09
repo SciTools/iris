@@ -147,7 +147,7 @@ class CubePrinter:
             The CubePrinter is based on a digest of a CubeSummary, but does
             not reference or store it.
 
-        """
+        """  # noqa: D401
         # Create our internal table from the summary, to produce the printouts.
         if isinstance(cube_or_summary, CubeSummary):
             cube_summary = cube_or_summary

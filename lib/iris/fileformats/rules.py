@@ -142,7 +142,7 @@ class _ReferenceError(Exception):
 
 
 def _dereference_args(factory, reference_targets, regrid_cache, cube):
-    """Converts all the arguments for a factory into concrete coordinates."""
+    """Convert all the arguments for a factory into concrete coordinates."""
     args = []
     for arg in factory.args:
         if isinstance(arg, Reference):

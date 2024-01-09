@@ -67,7 +67,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         units=None,
         attributes=None,
     ):
-        """Constructs a single dimensional metadata object.
+        """Construct a single dimensional metadata object.
 
         Parameters
         ----------
@@ -119,7 +119,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         self._bounds_dm = None  # Only ever set on Coord-derived instances.
 
     def __getitem__(self, keys):
-        """Returns a new dimensional metadata whose values are obtained by conventional array indexing.
+        """Return a new dimensional metadata whose values are obtained by conventional array indexing.
 
         .. note::
 
@@ -156,7 +156,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return new_metadata
 
     def copy(self, values=None):
-        """Returns a copy of this dimensional metadata object.
+        """Return a copy of this dimensional metadata object.
 
         Parameters
         ----------
@@ -234,11 +234,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             self._values_dm.data = values
 
     def _lazy_values(self):
-        """Returns a lazy array representing the dimensional metadata values."""
+        """Return a lazy array representing the dimensional metadata values."""
         return self._values_dm.lazy_data()
 
     def _core_values(self):
-        """The values array of this dimensional metadata which may be a NumPy array or a dask array."""
+        """The values array of this dimensional metadata which may be a NumPy array or a dask array."""  # noqa: D401
         result = self._values_dm.core_data()
         if not _lazy.is_lazy_data(result):
             result = result.view()
@@ -246,7 +246,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _has_lazy_values(self):
-        """Indicates whether the metadata's values array is a lazy dask array or not."""
+        """Indicate whether the metadata's values array is a lazy dask array or not."""
         return self._values_dm.has_lazy_data()
 
     def summary(
@@ -632,7 +632,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             be taken to multiply the *unit* by 1000 and the resultant metadata
             object would represent "10 kilometers".
 
-        """
+        """  # noqa: D401
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
 
@@ -772,7 +772,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.ndim
 
     def has_bounds(self):
-        """Indicates whether the current dimensional metadata object has a bounds array."""
+        """Indicate whether the current dimensional metadata object has a bounds array."""
         # Allows for code to handle unbounded dimensional metadata agnostic of
         # whether the metadata is a coordinate or not.
         return False
@@ -880,7 +880,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _value_type_name(self):
-        """A simple, readable name for the data type of the dimensional metadata values."""
+        """A simple, readable name for the data type of the dimensional metadata values."""  # noqa: D401
         dtype = self._core_values().dtype
         kind = dtype.kind
         if kind in "SU":
@@ -905,7 +905,7 @@ class AncillaryVariable(_DimensionalMetadata):
         units=None,
         attributes=None,
     ):
-        """Constructs a single ancillary variable.
+        """Construct a single ancillary variable.
 
         Parameters
         ----------
@@ -968,11 +968,11 @@ class AncillaryVariable(_DimensionalMetadata):
         The data array at the core of this ancillary variable, which may be a
         NumPy array or a dask array.
 
-        """
+        """  # noqa: D401
         return super()._core_values()
 
     def has_lazy_data(self):
-        """Indicates whether the ancillary variable's data array is a lazy dask array or not."""
+        """Indicate whether the ancillary variable's data array is a lazy dask array or not."""
         return super()._has_lazy_values()
 
     def cube_dims(self, cube):
@@ -1003,7 +1003,7 @@ class CellMeasure(AncillaryVariable):
         attributes=None,
         measure=None,
     ):
-        """Constructs a single cell measure.
+        """Construct a single cell measure.
 
         Parameters
         ----------
@@ -1147,7 +1147,7 @@ BOUND_POSITION_END = 1
 
 
 def _get_2d_coord_bound_grid(bounds):
-    """Creates a grid using the bounds of a 2D coordinate with 4 sided cells.
+    """Create a grid using the bounds of a 2D coordinate with 4 sided cells.
 
     Assumes that the four vertices of the cells are in an anti-clockwise order
     (bottom-left, bottom-right, top-right, top-left).
@@ -1277,7 +1277,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return hash((self.point, bound))
 
     def __eq__(self, other):
-        """Compares Cell equality depending on the type of the object to be compared."""
+        """Compare Cell equality depending on the type of the object to be compared."""
         if isinstance(other, (int, float, np.number)) or hasattr(other, "timetuple"):
             if self.bound is not None:
                 return self.contains_point(other)
@@ -1312,7 +1312,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         Cell vs Cell comparison is used to define a strict order.
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
-        """
+        """  # noqa: D401
         if (isinstance(other, list) and len(other) == 1) or (
             isinstance(other, np.ndarray) and other.shape == (1,)
         ):
@@ -1507,7 +1507,7 @@ class Coord(_DimensionalMetadata):
         self._ignore_axis = DEFAULT_IGNORE_AXIS
 
     def copy(self, points=None, bounds=None):
-        """Returns a copy of this coordinate.
+        """Return a copy of this coordinate.
 
         points :
             A points array for the new coordinate.
@@ -1711,11 +1711,11 @@ class Coord(_DimensionalMetadata):
         return lazy_bounds
 
     def core_points(self):
-        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
+        """The points array at the core of this coord, which may be a NumPy array or a dask array."""  # noqa: D401
         return super()._core_values()
 
     def core_bounds(self):
-        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
+        """The points array at the core of this coord, which may be a NumPy array or a dask array."""  # noqa: D401
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()
@@ -1775,7 +1775,7 @@ class Coord(_DimensionalMetadata):
         super().convert_units(unit=unit)
 
     def cells(self):
-        """Returns an iterable of Cell instances for this Coord.
+        """Return an iterable of Cell instances for this Coord.
 
         For example::
 
@@ -1825,7 +1825,7 @@ class Coord(_DimensionalMetadata):
             )
 
     def _discontiguity_in_bounds(self, rtol=1e-5, atol=1e-8):
-        """Checks that the bounds of the coordinate are contiguous.
+        """Check that the bounds of the coordinate are contiguous.
 
         rtol : float, optional
             Relative tolerance that is used when checking contiguity. Defaults
@@ -2286,7 +2286,7 @@ class Coord(_DimensionalMetadata):
         self.bounds = self._guess_bounds(bound_position)
 
     def intersect(self, other, return_indices=False):
-        """Returns a new coordinate from the intersection of two coordinates.
+        """Return a new coordinate from the intersection of two coordinates.
 
         Both coordinates must be compatible as defined by
         :meth:`~iris.coords.Coord.is_compatible`.
@@ -2331,7 +2331,7 @@ class Coord(_DimensionalMetadata):
             return self[self_intersect_indices]
 
     def nearest_neighbour_index(self, point):
-        """Returns the index of the cell nearest to the given point.
+        """Return the index of the cell nearest to the given point.
 
         Only works for one-dimensional coordinates.
 

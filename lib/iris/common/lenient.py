@@ -68,7 +68,7 @@ def _lenient_client(*dargs, services=None):
     -------
     Closure wrapped function/method.
 
-    """
+    """  # noqa: D401
     ndargs = len(dargs)
 
     if ndargs:
@@ -129,7 +129,7 @@ def _lenient_client(*dargs, services=None):
 
 
 def _lenient_service(*dargs):
-    """Allows a function/method to declare that it supports lenient behaviour as a service.
+    """Allow a function/method to declare that it supports lenient behaviour as a service.
 
     Decorator that allows a function/method to declare that it supports lenient
     behaviour as a service.
@@ -223,7 +223,7 @@ def _qualname(func):
 
 class Lenient(threading.local):
     def __init__(self, **kwargs):
-        """A container for managing the run-time lenient features and options.
+        """Container for managing the run-time lenient features and options.
 
         Parameters
         ----------
@@ -330,7 +330,7 @@ class Lenient(threading.local):
 
 class _Lenient(threading.local):
     def __init__(self, *args, **kwargs):
-        """A container for managing the run-time lenient services and client options.
+        """Container for managing the run-time lenient services and client options.
 
         A container for managing the run-time lenient services and client
         options for pre-defined functions/methods.

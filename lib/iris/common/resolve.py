@@ -726,7 +726,7 @@ class Resolve:
             mesh/location/axis properties for the resulting MeshCoord.
             These don't have override args: they *always* come from 'coord'.
 
-        """
+        """  # noqa: D401
         if not isinstance(dims, Iterable):
             dims = (dims,)
 

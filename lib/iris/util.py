@@ -95,7 +95,7 @@ def broadcast_to_shape(array, shape, dim_map):
 
 
 def delta(ndarray, dimension, circular=False):
-    """Calculates the difference between values along a given dimension.
+    """Calculate the difference between values along a given dimension.
 
     Parameters
     ----------
@@ -1216,9 +1216,9 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
 
 
 def squeeze(cube):
-    """Removes any dimension of length one.
+    """Remove any dimension of length one.
 
-    Removes any dimension of length one. If it has an associated DimCoord or
+    Remove any dimension of length one. If it has an associated DimCoord or
     AuxCoord, this becomes a scalar coord.
 
     Parameters
@@ -1417,9 +1417,9 @@ def points_step(points):
 
 
 def unify_time_units(cubes):
-    """Performs an in-place conversion of the time units.
+    """Perform an in-place conversion of the time units.
 
-    Performs an in-place conversion of the time units of all time coords in the
+    Perform an in-place conversion of the time units of all time coords in the
     cubes in a given iterable. One common epoch is defined for each calendar
     found in the cubes to prevent units being defined with inconsistencies
     between epoch and calendar. During this process, all time coordinates have
@@ -1730,7 +1730,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
 @functools.wraps(np.meshgrid)
 def _meshgrid(*xi, **kwargs):
-    """Ensures consistent meshgrid behaviour across numpy versions.
+    """Ensure consistent meshgrid behaviour across numpy versions.
 
     @numpy v1.13, the dtype of each output n-D coordinate is the same as its
     associated input 1D coordinate. This is not the case prior to numpy v1.13,
@@ -1751,7 +1751,7 @@ def _meshgrid(*xi, **kwargs):
 
 
 def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
-    """Searches the 'x' and 'y' coord on the cube for discontiguities.
+    """Search the 'x' and 'y' coord on the cube for discontiguities.
 
     Searches the 'x' and 'y' coord on the cube for discontiguities in the
     bounds array, returned as a boolean array (True for all cells which are

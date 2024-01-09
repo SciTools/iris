@@ -385,7 +385,7 @@ class _CubeSignature:
     """
 
     def __init__(self, cube):
-        """Represents the cube metadata and associated coordinate metadata.
+        """Represent the cube metadata and associated coordinate metadata.
 
         Represents the cube metadata and associated coordinate metadata that
         allows suitable cubes for concatenation to be identified.

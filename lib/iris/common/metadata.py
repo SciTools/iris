@@ -261,7 +261,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         -------
         The result of the service operation to the parent service caller.
 
-        """
+        """  # noqa: D401
         # Ensure that we have similar class instances.
         if not hasattr(other, "__class__") or other.__class__ is not self.__class__:
             emsg = "Cannot {} {!r} with {!r}."
@@ -683,7 +683,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return result
 
     def name(self, default=None, token=False):
-        """Returns a string name representing the identity of the metadata.
+        """Return a string name representing the identity of the metadata.
 
         First it tries standard name, then it tries the long name, then
         the NetCDF variable name, before falling-back to a default value,
@@ -1582,7 +1582,7 @@ def metadata_manager_factory(cls, **kwargs):
     -------
     A manager instance for the provided metadata ``cls``.
 
-    """
+    """  # noqa: D401
     # Check whether kwargs have valid fields for the specified metadata.
     if kwargs:
         extra = [field for field in kwargs.keys() if field not in cls._fields]

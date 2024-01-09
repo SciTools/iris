@@ -119,7 +119,7 @@ class Connectivity(_DimensionalMetadata):
         start_index=0,
         location_axis=0,
     ):
-        """Constructs a single connectivity.
+        """Construct a single connectivity.
 
         Parameters
         ----------
@@ -503,7 +503,7 @@ class Connectivity(_DimensionalMetadata):
         -------
         :class:`numpy.ndarray` or :class:`numpy.ma.core.MaskedArray` or :class:`dask.array.Array`
 
-        """
+        """  # noqa: D401
         return super()._core_values()
 
     def has_lazy_indices(self):

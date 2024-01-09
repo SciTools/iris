@@ -277,14 +277,14 @@ class STASH(collections.namedtuple("STASH", "model section item")):
 
         Args
         ----
-        model
+        model :
             A positive integer less than 100, or None.
-        section
+        section :
             A non-negative integer less than 100, or None.
-        item
+        item :
             A positive integer less than 1000, or None.
 
-        """
+        """  # noqa: D401
         model = cls._validate_member("model", model, 1, 99)
         section = cls._validate_member("section", section, 0, 99)
         item = cls._validate_member("item", item, 1, 999)
@@ -880,7 +880,7 @@ class PPField(metaclass=ABCMeta):
             self.raw_lbpack = header[self.HEADER_DICT["lbpack"][0]]
 
     def __getattr__(self, key):
-        """Method supports deferred attribute creation.
+        """Support deferred attribute creation.
 
         Method supports deferred attribute creation, which offers a
         significant loading optimisation, particularly when not all attributes

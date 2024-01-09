@@ -288,7 +288,7 @@ class CubeRepresentation:
         return "\n".join(element for element in elements)
 
     def repr_html(self):
-        """The `repr` interface for Jupyter."""
+        """The `repr` interface for Jupyter."""  # noqa: D401
         # Deal with the header first.
         header = self._make_header()
 

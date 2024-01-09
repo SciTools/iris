@@ -119,7 +119,7 @@ class LimitedAttributeDict(dict):
         dict.__setitem__(self, key, value)
 
     def update(self, other, **kwargs):
-        """Standard ``dict.update()`` operation."""
+        """Standard ``dict.update()`` operation."""  # noqa: D401
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):
@@ -143,7 +143,7 @@ class CFVariableMixin:
         return self._metadata_manager.name(default=default, token=token)
 
     def rename(self, name):
-        """Changes the human-readable name.
+        """Change the human-readable name.
 
         If 'name' is a valid standard name it will assign it to
         :attr:`standard_name`, otherwise it will assign it to

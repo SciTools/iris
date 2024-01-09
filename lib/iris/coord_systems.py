@@ -79,7 +79,7 @@ class CoordSystem(metaclass=ABCMeta):
         return not (self == other)
 
     def xml_element(self, doc, attrs=None):
-        """Default behaviour for coord systems."""
+        """Default behaviour for coord systems."""  # noqa: D401
         # attrs - optional list of (k,v) items, used for alternate output
 
         xml_element_name = type(self).__name__
@@ -496,7 +496,7 @@ class RotatedGeogCS(CoordSystem):
         north_pole_grid_longitude=None,
         ellipsoid=None,
     ):
-        """Constructs a coordinate system with rotated pole, on an optional :class:`GeogCS`.
+        """Construct a coordinate system with rotated pole, on an optional :class:`GeogCS`.
 
         Args:
 
@@ -604,7 +604,7 @@ class TransverseMercator(CoordSystem):
         scale_factor_at_central_meridian=None,
         ellipsoid=None,
     ):
-        """Constructs a TransverseMercator object.
+        """Construct a TransverseMercator object.
 
         Args:
 
@@ -725,7 +725,7 @@ class Orthographic(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """Constructs an Orthographic coord system.
+        """Construct an Orthographic coord system.
 
         Args:
 
@@ -809,7 +809,7 @@ class VerticalPerspective(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """Constructs a Vertical Perspective coord system.
+        """Construct a Vertical Perspective coord system.
 
         Args:
 
@@ -901,7 +901,7 @@ class Geostationary(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """Constructs a Geostationary coord system.
+        """Construct a Geostationary coord system.
 
         Args:
 
@@ -1005,7 +1005,7 @@ class Stereographic(CoordSystem):
         ellipsoid=None,
         scale_factor_at_projection_origin=None,
     ):
-        """Constructs a Stereographic coord system.
+        """Construct a Stereographic coord system.
 
         Parameters
         ----------
@@ -1177,7 +1177,7 @@ class LambertConformal(CoordSystem):
         secant_latitudes=None,
         ellipsoid=None,
     ):
-        """Constructs a LambertConformal coord system.
+        """Construct a LambertConformal coord system.
 
         Kwargs:
 
@@ -1283,7 +1283,7 @@ class Mercator(CoordSystem):
         false_easting=None,
         false_northing=None,
     ):
-        """Constructs a Mercator coord system.
+        """Construct a Mercator coord system.
 
         Kwargs:
 
@@ -1388,7 +1388,7 @@ class LambertAzimuthalEqualArea(CoordSystem):
         false_northing=None,
         ellipsoid=None,
     ):
-        """Constructs a Lambert Azimuthal Equal Area coord system.
+        """Construct a Lambert Azimuthal Equal Area coord system.
 
         Kwargs:
 
@@ -1469,7 +1469,7 @@ class AlbersEqualArea(CoordSystem):
         standard_parallels=None,
         ellipsoid=None,
     ):
-        """Constructs a Albers Conical Equal Area coord system.
+        """Construct a Albers Conical Equal Area coord system.
 
         Kwargs:
 
@@ -1574,7 +1574,7 @@ class ObliqueMercator(CoordSystem):
         scale_factor_at_projection_origin=None,
         ellipsoid=None,
     ):
-        """Constructs an ObliqueMercator object.
+        """Construct an ObliqueMercator object.
 
         Parameters
         ----------
@@ -1689,7 +1689,7 @@ class RotatedMercator(ObliqueMercator):
         scale_factor_at_projection_origin=None,
         ellipsoid=None,
     ):
-        """Constructs a RotatedMercator object.
+        """Construct a RotatedMercator object.
 
         Parameters
         ----------
