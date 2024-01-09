@@ -357,7 +357,7 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
             method_words = method.split()
             if method_words[0].lower() not in _CM_KNOWN_METHODS:
                 msg = "NetCDF variable contains unknown cell method {!r}"
-                msg.format(method_words[0])
+                msg = msg.format(method_words[0])
                 if cf_name:
                     name = "{}".format(cf_name)
                     msg = msg.replace("variable", "variable {!r}".format(name))
