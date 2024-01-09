@@ -241,7 +241,7 @@ def _um_collation_key_function(field):
     The elements used here are the minimum sufficient to define the
     'phenomenon', as described for :meth:`group_structured_fields`.
 
-    """  # noqa: D401
+    """
     return (
         field.lbuser[3],  # stashcode first
         field.lbproc,  # then stats processing

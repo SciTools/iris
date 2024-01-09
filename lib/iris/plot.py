@@ -1444,7 +1444,7 @@ def points(cube, *args, **kwargs):
 
 
 def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
-    """Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
+    """Vector component callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
 
     Returns arguments (x, y, u, v), to be passed to the underlying matplotlib
     call.
@@ -1452,7 +1452,7 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     "u_data" will always be "u_cube.data".
     The matching "v_cube.data" component is stored in kwargs['_v_data'].
 
-    """  # noqa: D401
+    """
     v_data = kwargs.pop("_v_data")
 
     # Rescale u+v values for plot distortion.

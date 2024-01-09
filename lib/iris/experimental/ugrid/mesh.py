@@ -503,7 +503,7 @@ class Connectivity(_DimensionalMetadata):
         -------
         :class:`numpy.ndarray` or :class:`numpy.ma.core.MaskedArray` or :class:`dask.array.Array`
 
-        """  # noqa: D401
+        """
         return super()._core_values()
 
     def has_lazy_indices(self):

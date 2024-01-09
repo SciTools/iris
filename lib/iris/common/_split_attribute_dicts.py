@@ -92,7 +92,7 @@ def adjust_for_split_attribute_dictionaries(operation):
     the only usage of 'split' attribute dictionaries is in Cubes (i.e. they are not
     used for cube components).
 
-    """  # noqa: D401
+    """
 
     @wraps(operation)
     def _inner_function(*args, **kwargs):

@@ -23,7 +23,7 @@ def image_setup_teardown():
     Ensures all figures are closed before and after test to prevent one test
     polluting another if it fails with a figure unclosed.
 
-    """  # noqa: D401
+    """
     plt.close("all")
     yield
     plt.close("all")

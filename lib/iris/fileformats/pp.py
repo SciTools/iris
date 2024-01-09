@@ -284,7 +284,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
         item :
             A positive integer less than 1000, or None.
 
-        """  # noqa: D401
+        """
         model = cls._validate_member("model", model, 1, 99)
         section = cls._validate_member("section", section, 0, 99)
         item = cls._validate_member("item", item, 1, 999)

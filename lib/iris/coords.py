@@ -238,7 +238,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.lazy_data()
 
     def _core_values(self):
-        """The values array of this dimensional metadata which may be a NumPy array or a dask array."""  # noqa: D401
+        """The values array of this dimensional metadata which may be a NumPy array or a dask array."""
         result = self._values_dm.core_data()
         if not _lazy.is_lazy_data(result):
             result = result.view()
@@ -632,7 +632,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             be taken to multiply the *unit* by 1000 and the resultant metadata
             object would represent "10 kilometers".
 
-        """  # noqa: D401
+        """
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
 
@@ -880,7 +880,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _value_type_name(self):
-        """A simple, readable name for the data type of the dimensional metadata values."""  # noqa: D401
+        """A simple, readable name for the data type of the dimensional metadata values."""
         dtype = self._core_values().dtype
         kind = dtype.kind
         if kind in "SU":
@@ -968,7 +968,7 @@ class AncillaryVariable(_DimensionalMetadata):
         The data array at the core of this ancillary variable, which may be a
         NumPy array or a dask array.
 
-        """  # noqa: D401
+        """
         return super()._core_values()
 
     def has_lazy_data(self):
@@ -1312,7 +1312,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         Cell vs Cell comparison is used to define a strict order.
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
-        """  # noqa: D401
+        """
         if (isinstance(other, list) and len(other) == 1) or (
             isinstance(other, np.ndarray) and other.shape == (1,)
         ):
@@ -1711,11 +1711,11 @@ class Coord(_DimensionalMetadata):
         return lazy_bounds
 
     def core_points(self):
-        """The points array at the core of this coord, which may be a NumPy array or a dask array."""  # noqa: D401
+        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
         return super()._core_values()
 
     def core_bounds(self):
-        """The points array at the core of this coord, which may be a NumPy array or a dask array."""  # noqa: D401
+        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()

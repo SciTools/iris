@@ -137,7 +137,7 @@ class Trajectory:
         -------
         The index of any anonymous dimensions in ``cube``.
 
-        """  # noqa: D401
+        """
         named_dims = [cube.coord_dims(c)[0] for c in cube.dim_coords]
         return list(set(range(cube.ndim)) - set(named_dims))
 

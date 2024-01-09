@@ -158,7 +158,7 @@ def get_xy_coords(cube, dim_coords=False):
 
 
 def snapshot_grid(cube):
-    """Helper function that returns deep copies of lateral (dimension) coordinates from a cube."""  # noqa: D401
+    """Helper function that returns deep copies of lateral (dimension) coordinates from a cube."""
     x, y = get_xy_dim_coords(cube)
     return x.copy(), y.copy()
 

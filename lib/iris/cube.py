@@ -1343,7 +1343,7 @@ class Cube(CFVariableMixin):
         An override to CfVariableMixin.attributes.setter, which ensures that Cube
         attributes are stored in a way which distinguishes global + local ones.
 
-        """  # noqa: D401
+        """
         self._metadata_manager.attributes = CubeAttrsDict(attributes or {})
 
     def _dimensional_metadata(self, name_or_dimensional_metadata):
@@ -2792,7 +2792,7 @@ class Cube(CFVariableMixin):
             Control the *minimum* width of the cube name + units,
             i.e. the indent of the dimension map section.
 
-        """  # noqa: D401
+        """
         from iris._representation.cube_printout import CubePrinter
 
         printer = CubePrinter(self)

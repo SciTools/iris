@@ -261,7 +261,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         -------
         The result of the service operation to the parent service caller.
 
-        """  # noqa: D401
+        """
         # Ensure that we have similar class instances.
         if not hasattr(other, "__class__") or other.__class__ is not self.__class__:
             emsg = "Cannot {} {!r} with {!r}."
@@ -1582,7 +1582,7 @@ def metadata_manager_factory(cls, **kwargs):
     -------
     A manager instance for the provided metadata ``cls``.
 
-    """  # noqa: D401
+    """
     # Check whether kwargs have valid fields for the specified metadata.
     if kwargs:
         extra = [field for field in kwargs.keys() if field not in cls._fields]

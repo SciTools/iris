@@ -150,7 +150,7 @@ def auto_palette(func):
     -------
     Closure wrapper function.
 
-    """  # noqa: D401
+    """
 
     @wraps(func)
     def wrapper_func(*args, **kwargs):

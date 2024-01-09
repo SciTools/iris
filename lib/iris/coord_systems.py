@@ -79,7 +79,7 @@ class CoordSystem(metaclass=ABCMeta):
         return not (self == other)
 
     def xml_element(self, doc, attrs=None):
-        """Default behaviour for coord systems."""  # noqa: D401
+        """Default behaviour for coord systems."""
         # attrs - optional list of (k,v) items, used for alternate output
 
         xml_element_name = type(self).__name__

@@ -68,7 +68,7 @@ def _lenient_client(*dargs, services=None):
     -------
     Closure wrapped function/method.
 
-    """  # noqa: D401
+    """
     ndargs = len(dargs)
 
     if ndargs:

@@ -345,7 +345,7 @@ def _add_subtract_common(
     in_place : bool, optional, default=False
         Whether or not to apply the operation in place to `cube` and `cube.data`
 
-    """  # noqa: D401
+    """
     _assert_is_cube(cube)
 
     if cube.units != getattr(other, "units", cube.units):
@@ -846,7 +846,7 @@ def _binary_op_common(
     sanitise_metadata : bool, optional, default=True
         Whether or not to remove metadata using _sanitise_metadata function
 
-    """  # noqa: D401
+    """
     from iris.cube import Cube
 
     _assert_is_cube(cube)

@@ -64,7 +64,7 @@ class ParseUGridOnLoad(threading.local):
             The UGRID Conventions,
             https://ugrid-conventions.github.io/ugrid-conventions/
 
-        """  # noqa: D401
+        """
         self._state = False
 
     def __bool__(self):
@@ -105,7 +105,7 @@ def _meshes_from_cf(cf_reader):
 
     Simple now, but expected to increase in complexity as Mesh sharing develops.
 
-    """  # noqa: D401
+    """
     # Mesh instances are shared between file phenomena.
     # TODO: more sophisticated Mesh sharing between files.
     # TODO: access external Mesh cache?

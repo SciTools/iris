@@ -30,7 +30,7 @@ def _copy_coords_without_z_dim(src, tgt, z_dim):
         z-dimension cube has model level_height, whilst the outgoing
         z-dimension cube has pressure.
 
-    """  # noqa: D401
+    """
     # Copy across non z-dimension coordinates.
     for coord in src.dim_coords:
         [dim] = src.coord_dims(coord)

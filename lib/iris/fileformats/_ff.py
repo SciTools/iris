@@ -817,7 +817,7 @@ def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
         The default is -1, which will read the entire contexts of the file_like
         object and generate as many values as possible.
 
-    """  # noqa: D401
+    """
     # There are a wide range of types supported, we just need to know the byte
     # size of the object, so we just make sure we've go an instance of a
     # np.dtype
