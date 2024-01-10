@@ -124,7 +124,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
         return not (self == other)
 
     def construct_array(self, size):
-        """The inverse operation of :func:`ArrayStructure.from_array`.
+        """Inverse operation of :func:`ArrayStructure.from_array`.
 
         The inverse operation of :func:`ArrayStructure.from_array`, returning
         a 1D array of the given length with the appropriate repetition

@@ -273,7 +273,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
     __slots__ = ()
 
     def __new__(cls, model, section, item):
-        """__new__.
+        """STASH __init__.
 
         Args
         ----

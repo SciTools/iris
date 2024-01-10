@@ -323,7 +323,7 @@ def _add_subtract_common(
     dim=None,
     in_place=False,
 ):
-    """Function which shares common code between addition and subtraction of cubes.
+    """Share common code between addition and subtraction of cubes.
 
     Parameters
     ----------
@@ -821,7 +821,7 @@ def _binary_op_common(
     in_place=False,
     sanitise_metadata=True,
 ):
-    """Function which shares common code between binary operations.
+    """Share common code between binary operations.
 
     Parameters
     ----------

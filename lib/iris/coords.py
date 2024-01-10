@@ -238,7 +238,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.lazy_data()
 
     def _core_values(self):
-        """The values array of this dimensional metadata which may be a NumPy array or a dask array."""
+        """Value array of this dimensional metadata which may be a NumPy array or a dask array."""
         result = self._values_dm.core_data()
         if not _lazy.is_lazy_data(result):
             result = result.view()
@@ -963,7 +963,7 @@ class AncillaryVariable(_DimensionalMetadata):
         return super()._lazy_values()
 
     def core_data(self):
-        """The data array at the core of this ancillary variable.
+        """Core data array at the core of this ancillary variable.
 
         The data array at the core of this ancillary variable, which may be a
         NumPy array or a dask array.
@@ -1711,11 +1711,11 @@ class Coord(_DimensionalMetadata):
         return lazy_bounds
 
     def core_points(self):
-        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
+        """Core points array at the core of this coord, which may be a NumPy array or a dask array."""
         return super()._core_values()
 
     def core_bounds(self):
-        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
+        """Core bounds.  The points array at the core of this coord, which may be a NumPy array or a dask array."""
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()

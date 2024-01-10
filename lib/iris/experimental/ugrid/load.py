@@ -50,7 +50,7 @@ class _WarnComboCfDefaultingIgnoring(_WarnComboCfDefaulting, IrisIgnoringWarning
 
 class ParseUGridOnLoad(threading.local):
     def __init__(self):
-        """A flag for whether to use the experimental UGRID-aware version of Iris NetCDF loading.
+        """Flag for whether to use the experimental UGRID-aware version of Iris NetCDF loading.
 
         A flag for dictating whether to use the experimental UGRID-aware
         version of Iris NetCDF loading. Object is thread-safe.
@@ -101,7 +101,7 @@ PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
 def _meshes_from_cf(cf_reader):
-    """Common behaviour for extracting meshes from a CFReader.
+    """Mesh from cf, common behaviour for extracting meshes from a CFReader.
 
     Simple now, but expected to increase in complexity as Mesh sharing develops.
 

@@ -684,7 +684,7 @@ class Resolve:
         bounds=None,
         container=None,
     ):
-        """Convenience method that creates a :class:`~iris.common.resolve._PreparedItem`.
+        """Create a :class:`~iris.common.resolve._PreparedItem`.
 
         Convenience method that creates a :class:`~iris.common.resolve._PreparedItem`
         containing the data and metadata required to construct and attach a coordinate

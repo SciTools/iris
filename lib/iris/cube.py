@@ -1338,7 +1338,7 @@ class Cube(CFVariableMixin):
 
     @attributes.setter
     def attributes(self, attributes: Optional[Mapping]):
-        """An override to CfVariableMixin.attributes.setter.
+        """Override to CfVariableMixin.attributes.setter.
 
         An override to CfVariableMixin.attributes.setter, which ensures that Cube
         attributes are stored in a way which distinguishes global + local ones.
@@ -2777,7 +2777,7 @@ class Cube(CFVariableMixin):
         return tuple(self._aux_factories)
 
     def summary(self, shorten=False, name_padding=35):
-        """String summary of the Cube.
+        """Summary (string) of the Cube.
 
         String summary of the Cube with name+units, a list of dim coord names
         versus length and, optionally, a summary of all other components.

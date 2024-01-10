@@ -1561,7 +1561,7 @@ def _factory_cache(cls):
 
 
 def metadata_manager_factory(cls, **kwargs):
-    """A class instance factory function responsible for manufacturing metadata instances.
+    """Class instance factory function responsible for manufacturing metadata instances.
 
     A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.

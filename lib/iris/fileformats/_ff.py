@@ -804,7 +804,7 @@ class FF2PP:
 
 
 def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
-    """Replacement :func:`numpy.fromfile` due to python3 performance issues.
+    """Pare binary stream, replacement :func:`numpy.fromfile` due to python3 performance issues.
 
     Parameters
     ----------
