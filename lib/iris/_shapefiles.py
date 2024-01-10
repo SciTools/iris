@@ -84,7 +84,6 @@ def create_shapefile_mask(
 
     # prepare shape
     trans_geo = _transform_coord_system(geometry, cube)
-
     # prepare 2D cube
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     cube_2d = cube.slices([y_name, x_name]).next()
@@ -97,49 +96,42 @@ def create_shapefile_mask(
     y_bounds = _get_mod_rebased_coord_bounds(y_coord)
     # prepare array for dark
     bounds_array = np.asarray(list(product(x_bounds, y_bounds)))
-    # if bounds_array is large enough set chunksize to speed up masking
-    if bounds_array.shape[0] > 250000:  # roughly equal to 500x500 2d
-        chunksize = [int(np.ceil(bounds_array.shape[0] / 20)), -1, -1]
-    else:
-        chunksize = "auto"
-    da_bounds_array = dask.array.from_array(bounds_array, chunks=chunksize)
-    dask_template = dask.array.map_blocks(
-        map_blocks_func,
-        da_bounds_array,
-        trans_geo,
-        minimum_weight,
-        drop_axis=[1, 2],
-        dtype=bool,
-        meta=np.array(False),
+    box_template = _template_func(bounds_array)
+    # shapely can do lazy evaluation of intersections if it's given a list of grid box shapes
+    # delayed lets us do it in parallel
+    intersect_template = dask.delayed(
+        shapely.intersects(trans_geo, box_template)
     )
-    mask_template = np.reshape(dask_template.compute(), cube_2d.shape[::-1]).T
-
+    # we want areas not under shapefile to be True (to mask)
+    intersect_template = np.invert(intersect_template).compute()
+    # now calc area overlaps if doing weighted comparison
+    if minimum_weight > 0.0:
+        for count, bol in enumerate(intersect_template):
+            if not bol:
+                intersect_area = trans_geo.intersection(
+                    box_template[count]
+                ).area
+                if (
+                    intersect_area / box_template[count].area
+                ) <= minimum_weight:
+                    intersect_template[count] = True
+                else:
+                    intersect_template[count] = False
+    mask_template = np.reshape(intersect_template, cube_2d.shape[::-1]).T
     return mask_template
 
 
-def map_blocks_func(bounds_array, shapefile, minimum_weight):
-    dask_template = np.empty(bounds_array.shape[0], dtype=bool)
+def _template_func(bounds_array):
+    """Take array of 2x2 bounds of cells, and returns list of Shapely Polygons of cell bounds"""
+    template = list(range(bounds_array.shape[0]))
     for count, idx in enumerate(bounds_array):
         # get the bounds of the grid cell
         x0, x1 = idx[0]
         y0, y1 = idx[1]
-        # create a new polygon of the grid cell and check intersection
-        cell_box = sgeom.box(x0, y0, x1, y1)
-        intersect_bool = shapefile.intersects(cell_box)
-        # mask all points without a intersection
-        if intersect_bool is False:
-            dask_template[count] = True
-        # if weights method used, mask intersections below required weight
-        elif intersect_bool is True and minimum_weight > 0.0:
-            intersect_area = shapefile.intersection(cell_box).area
-            if (intersect_area / cell_box.area) <= minimum_weight:
-                dask_template[count] = True
-            else:
-                dask_template[count] = False
-        else:
-            dask_template[count] = False
+        # create a new polygon of the grid cell a
+        template[count] = sgeom.box(x0, y0, x1, y1)
 
-    return dask_template
+    return template
 
 
 def _transform_coord_system(geometry, cube, geometry_system=None):
