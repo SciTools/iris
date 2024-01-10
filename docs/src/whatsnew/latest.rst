@@ -142,6 +142,13 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ updated all hyperlinks to https. (:pull:`5621`)
 
+#. `@ESadek-MO`_ created an index page for :ref:`further_topics_index`, and
+   relocated all 'Technical Papers' into
+   :ref:`further_topics_index`. (:pull:`5602`)
+
+#. `@trexfeathers`_ made drop-down icons visible to show which pages link to
+   'sub-pages'. (:pull:`5684`)
+
 
 💼 Internal
 ===========
