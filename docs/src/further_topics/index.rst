@@ -1,8 +1,8 @@
 .. _further_topics_index:
 
 
-➕ Further Topics
-=================
+Further Topics
+===============
 
 Extra information on specific technical issues.
 
