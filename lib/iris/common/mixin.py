@@ -119,7 +119,7 @@ class LimitedAttributeDict(dict):
         dict.__setitem__(self, key, value)
 
     def update(self, other, **kwargs):
-        """Standard ``dict.update()`` operation."""
+        """Perform standard ``dict.update()`` operation."""
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):

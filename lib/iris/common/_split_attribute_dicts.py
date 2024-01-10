@@ -66,7 +66,9 @@ def _convert_pairedkeys_dict_to_splitattrs(dic):
 
 
 def adjust_for_split_attribute_dictionaries(operation):
-    """Decorator to make a function of attribute-dictionaries work with split attributes.
+    """Generate attribute-dictionaries to work with split attributes.
+
+    Decorator to make a function of attribute-dictionaries work with split attributes.
 
     The wrapped function of attribute-dictionaries is currently always one of "equals",
     "combine" or "difference", with signatures like :

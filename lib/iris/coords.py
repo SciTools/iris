@@ -619,7 +619,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return hash(id(self))
 
     def __binary_operator__(self, other, mode_constant):
-        """Common code which is called by add, sub, mul and div.
+        """Perform common code which is called by add, sub, mul and div.
 
         Mode constant is one of ADD, SUB, MUL, DIV, RDIV
 
@@ -880,7 +880,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _value_type_name(self):
-        """A simple, readable name for the data type of the dimensional metadata values."""
+        """Provide a simple name for the data type of the dimensional metadata values."""
         dtype = self._core_values().dtype
         kind = dtype.kind
         if kind in "SU":
@@ -1304,7 +1304,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return result
 
     def __common_cmp__(self, other, operator_method):
-        """Common method called by the rich comparison operators.
+        """Perform common methods for rich comparison operators.
 
         Common method called by the rich comparison operators. The method of
         checking equality depends on the type of the object to be compared.

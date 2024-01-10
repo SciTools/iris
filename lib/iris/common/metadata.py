@@ -241,7 +241,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return f"{type(self).__name__}({', '.join(field_strings)})"
 
     def _api_common(self, other, func_service, func_operation, action, lenient=None):
-        """Common entry-point for lenient metadata API methods.
+        """Perform common entry-point for lenient metadata API methods.
 
         Parameters
         ----------

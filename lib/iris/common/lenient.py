@@ -28,7 +28,7 @@ _LENIENT_PROTECTED = ("active", "enable")
 
 
 def _lenient_client(*dargs, services=None):
-    """Decorator that allows a client function/method to declare at runtime.
+    """Allow a client function/method to declare at runtime.
 
     Decorator that allows a client function/method to declare at runtime that
     it is executing and requires lenient behaviour from a prior registered
