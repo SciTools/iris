@@ -484,5 +484,43 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         self.assertCDL(tempfile_frompath)
 
 
+@tests.skip_data
+class TestWarningRepeats(tests.IrisTest):
+    def test_datum_once(self):
+        fnames = [
+            "false_east_north_merc.nc",
+            "non_unit_scale_factor_merc.nc",
+            "toa_brightness_temperature.nc",
+        ]
+        fpaths = [
+            tests.get_data_path(("NetCDF", "mercator", fname)) for fname in fnames
+        ]
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("default")
+            with warnings.catch_warnings(record=True) as record:
+                for fpath in fpaths:
+                    iris.load(fpath)
+        assert len(record) == 1
+
+    def test_datum_default(self):
+        fnames = [
+            "false_east_north_merc.nc",
+            "non_unit_scale_factor_merc.nc",
+            "toa_brightness_temperature.nc",
+        ]
+        fpaths = [
+            tests.get_data_path(("NetCDF", "mercator", fname)) for fname in fnames
+        ]
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("default")
+            with pytest.warns() as record:
+                iris.load_cube(fpaths[0])
+                iris.load_cube(fpaths[1])
+                iris.load_cube(fpaths[2])
+        assert len(record) == 3
+
+
 if __name__ == "__main__":
     tests.main()
