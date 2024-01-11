@@ -514,7 +514,7 @@ class TestWarningRepeats(tests.IrisTest):
             warnings.simplefilter("default")
             for fpath in fpaths:
                 iris.load(fpath)
-                warnings.warn("Dummy warning")
+                warnings.warn("Dummy warning", category=iris.exceptions.IrisUserWarning)
         assert len(record) == 2
 
 
