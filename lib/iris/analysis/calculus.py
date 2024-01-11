@@ -25,7 +25,7 @@ import iris.coords
 from iris.exceptions import IrisUserWarning
 from iris.util import delta
 
-__all__ = ["cube_delta", "curl", "differentiate"]
+__all__ = ["DIRECTIONAL_NAMES", "cube_delta", "curl", "differentiate"]
 
 
 def _construct_delta_coord(coord):
@@ -471,6 +471,9 @@ def curl(i_cube, j_cube, k_cube=None):
     Calculate the 2-dimensional or 3-dimensional spherical or cartesian
     curl of the given vector of cubes.
 
+    The cube standard names must match one of the combinations in
+    :data:`DIRECTIONAL_NAMES`.
+
     As well as the standard x and y coordinates, this function requires each
     cube to possess a vertical or z-like coordinate (representing some form
     of height or pressure).  This can be a scalar or dimension coordinate.
@@ -734,11 +737,26 @@ def curl(i_cube, j_cube, k_cube=None):
     return result
 
 
+#: Acceptable X-Y-Z standard name combinations that
+#:  :func:`curl` can use (via :func:`spatial_vectors_with_phenom_name`).
+DIRECTIONAL_NAMES: tuple[tuple[str, str, str], ...] = (
+    ("u", "v", "w"),
+    ("x", "y", "z"),
+    ("i", "j", "k"),
+    ("eastward", "northward", "upward"),
+    ("easterly", "northerly", "vertical"),
+    ("easterly", "northerly", "radial"),
+)
+
+
 def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     """Given spatially dependent cubes, return a list of the spatial coordinate names.
 
     Given 2 or 3 spatially dependent cubes, return a list of the spatial
     coordinate names with appropriate phenomenon name.
+
+    The cube standard names must match one of the combinations in
+    :data:`DIRECTIONAL_NAMES`.
 
     This routine is designed to identify the vector quantites which each
     of the cubes provided represent and return a list of their 3d
@@ -757,15 +775,6 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
 
 
     """
-    directional_names = (
-        ("u", "v", "w"),
-        ("x", "y", "z"),
-        ("i", "j", "k"),
-        ("eastward", "northward", "upward"),
-        ("easterly", "northerly", "vertical"),
-        ("easterly", "northerly", "radial"),
-    )
-
     # Create a list of the standard_names of our incoming cubes
     # (excluding the k_cube if it is None).
     cube_standard_names = [
@@ -795,7 +804,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     # Get the appropriate direction list from the cube_directions we
     # have got from the standard name.
     direction = None
-    for possible_direction in directional_names:
+    for possible_direction in DIRECTIONAL_NAMES:
         # If this possible direction (minus the k_cube if it is none)
         # matches direction from the given cubes use it.
         if possible_direction[0 : len(cube_directions)] == cube_directions:
@@ -804,7 +813,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     # If we didn't get a match, raise an Exception
     if direction is None:
         direction_string = "; ".join(
-            ", ".join(possible_direction) for possible_direction in directional_names
+            ", ".join(possible_direction) for possible_direction in DIRECTIONAL_NAMES
         )
         raise ValueError(
             "{} are not recognised vector cube_directions. "

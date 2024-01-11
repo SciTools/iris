@@ -149,6 +149,10 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ made drop-down icons visible to show which pages link to
    'sub-pages'. (:pull:`5684`)
 
+#. `@trexfeathers`_ improved the documentation of acceptable
+   :class:`~iris.cube.Cube` standard names in
+   :func:`iris.analysis.calculus.curl`. (:pull:`5680`)
+
 
 💼 Internal
 ===========
