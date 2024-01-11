@@ -495,7 +495,7 @@ class TestWarningRepeats(tests.IrisTest):
         be removed in the future, in which case `assert len(record) == 2 should`
         be change to `assert len(record) == 1`.
 
-        toa_brightness_temperature.nc has an AucCoord lazy data, and triggers a
+        toa_brightness_temperature.nc has an AuxCoord with lazy data, and triggers a
         specific part of dask which contains a `catch_warnings()` call which
         causes warnings to be repeated, and so has been removed from the
         `fnames` list until a solution is found for such a file.
