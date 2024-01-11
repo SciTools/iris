@@ -471,7 +471,7 @@ def curl(i_cube, j_cube, k_cube=None):
     Calculate the 2-dimensional or 3-dimensional spherical or cartesian
     curl of the given vector of cubes.
 
-    The cube standard names must match one the combinations in
+    The cube standard names must match one of the combinations in
     :data:`DIRECTIONAL_NAMES`.
 
     As well as the standard x and y coordinates, this function requires each
@@ -755,7 +755,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     Given 2 or 3 spatially dependent cubes, return a list of the spatial
     coordinate names with appropriate phenomenon name.
 
-    The cube standard names must match one the combinations in
+    The cube standard names must match one of the combinations in
     :data:`DIRECTIONAL_NAMES`.
 
     This routine is designed to identify the vector quantites which each
