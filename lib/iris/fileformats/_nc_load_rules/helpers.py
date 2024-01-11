@@ -366,6 +366,7 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
                         msg,
                         category=UnknownCellMethodWarning,
                     )
+                    msg = None
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
             name = name.replace(" ", "")
