@@ -24,7 +24,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
+#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull:`5577`)
 
 #. `@HGWright`_, `@bjlittle`_ and `@trexfeathers`_ (reviewers) added a
    CITATION.cff file to Iris and updated the :ref:`citation documentation <Citing_Iris>`
