@@ -103,6 +103,14 @@ ignore = [
 force-sort-within-sections = true
 known-first-party = ["iris"]
 
+[tool.ruff.lint.per-file-ignores]
+# All test scripts
+"test_*.py" = [    
+    # https://docs.astral.sh/ruff/rules/undocumented-public-module/
+    "D100",  # Missing docstring in public module
+]
+
+
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 

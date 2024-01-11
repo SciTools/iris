@@ -1,3 +1,5 @@
+"""Plot a cube with a Brewer colour palette using iris.quickplot.contourf()."""
+
 import matplotlib.cm as mpl_cm
 import matplotlib.pyplot as plt
 
