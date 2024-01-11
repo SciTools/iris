@@ -59,7 +59,5 @@ If you are new to using GitHub we recommend reading the
    :caption: Reference
    :hidden:
 
-   ../generated/api/iris
-   ../whatsnew/index
    ../copyright
    ../voted_issues

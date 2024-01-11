@@ -47,13 +47,14 @@ dependencies:
   - requests
 
 # Documentation dependencies.
-  - sphinx <=5.3
+  - pydata-sphinx-theme == 0.14.4  # See ??????
+  - sphinx <=5.3                   # See https://github.com/SciTools/iris/issues/5123
   - sphinxcontrib-apidoc
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
   - sphinx-design
-  - pydata-sphinx-theme >=0.13.0
 
-# Temporary minimum pins.
+
+# Temporary pins.
 # See https://github.com/SciTools/iris/pull/5051
   - graphviz >=6.0.0
