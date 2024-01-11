@@ -582,6 +582,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self.summary(shorten=True)
 
     def __eq__(self, other):
+        if other is self:
+            return True
+
         # Note: this method includes bounds handling code, but it only runs
         #  within Coord type instances, as only these allow bounds to be set.
 
