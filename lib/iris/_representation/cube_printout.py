@@ -118,7 +118,7 @@ class Table:
 
 
 class CubePrinter:
-    """An object created from a :class:`iris._representation.CubeSummary`.
+    """An object created from a cube summary.
 
     An object created from a
     :class:`iris._representation.CubeSummary`, which provides
