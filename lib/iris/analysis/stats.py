@@ -84,22 +84,22 @@ def pearsonr(
 
     # Get the broadcast, auto-transposed safe versions of the cube operands.
     resolver = Resolve(cube_1, cube_2)
-    cube_1 = resolver.lhs_cube_resolved
-    cube_2 = resolver.rhs_cube_resolved
+    lhs_cube_resolved = resolver.lhs_cube_resolved
+    rhs_cube_resolved = resolver.rhs_cube_resolved
 
-    if cube_1.has_lazy_data() or cube_2.has_lazy_data():
+    if lhs_cube_resolved.has_lazy_data() or rhs_cube_resolved.has_lazy_data():
         al = da
-        array_1 = cube_1.lazy_data()
-        array_2 = cube_2.lazy_data()
+        array_1 = lhs_cube_resolved.lazy_data()
+        array_2 = rhs_cube_resolved.lazy_data()
     else:
         al = np
-        array_1 = cube_1.data
-        array_2 = cube_2.data
+        array_1 = lhs_cube_resolved.data
+        array_2 = rhs_cube_resolved.data
 
     # If no coords passed then set to all common dimcoords of cubes.
     if corr_coords is None:
-        dim_coords_1 = {coord.name() for coord in cube_1.dim_coords}
-        dim_coords_2 = {coord.name() for coord in cube_2.dim_coords}
+        dim_coords_1 = {coord.name() for coord in lhs_cube_resolved.dim_coords}
+        dim_coords_2 = {coord.name() for coord in rhs_cube_resolved.dim_coords}
         corr_coords = list(dim_coords_1.intersection(dim_coords_2))
 
     # Interpret coords as array dimensions.
@@ -107,7 +107,7 @@ def pearsonr(
     if isinstance(corr_coords, str):
         corr_coords = [corr_coords]
     for coord in corr_coords:
-        corr_dims.update(cube_1.coord_dims(coord))
+        corr_dims.update(lhs_cube_resolved.coord_dims(coord))
 
     corr_dims = tuple(corr_dims)
 
@@ -136,14 +136,8 @@ def pearsonr(
             msg = f"weights array should have dimensions {smaller_shape}"
             raise ValueError(msg)
 
-        if resolver.reorder_src_dims is not None:
-            # Apply same transposition as was done to cube_2 within Resolve.
-            weights = weights.transpose(resolver.reorder_src_dims)
-
-        # Reshape to add in any length-1 dimensions that Resolve() has added
-        #  for broadcasting.
-        weights = weights.reshape(cube_2.shape)
-
+        wt_resolver = Resolve(cube_1, cube_2.copy(weights))
+        weights = wt_resolver.rhs_cube_resolved.data
         weights_2 = np.broadcast_to(weights, array_2.shape)
         weights_1 = np.broadcast_to(weights, array_1.shape)
 
