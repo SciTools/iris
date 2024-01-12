@@ -83,6 +83,10 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ and `@trexfeathers`_ (reviewer) added handling for realization
    coordinates when saving pp files (:issue:`4747`, :pull:`5568`)
 
+#. `@ESadek-MO`_ has updated
+   :mod:`iris.fileformats._nc_load_rules.helpers to lessen warning duplication.
+   (:issue:`5536`, :pull:`5685`)
+
 
 💣 Incompatible Changes
 =======================
