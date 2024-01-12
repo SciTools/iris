@@ -84,7 +84,7 @@ Mesh2DConnectivities = namedtuple(
 
 
 class Connectivity(_DimensionalMetadata):
-    """A CF-UGRID topology connectivity, describes the topological relationship.
+    """CF-UGRID topology.
 
     A CF-UGRID topology connectivity, describing the topological relationship
     between two types of mesh element. One or more connectivities make up a
