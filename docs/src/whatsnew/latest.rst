@@ -100,8 +100,9 @@ This document explains the changes made to Iris for this release
    lazy data from file. This will also speed up coordinate comparison.
    (:pull:`5610`)
 
-#. `@rcomer`_ modified :func:`~iris.analysis.stats.pearsonr` so it preserves
-   lazy data in all cases and also runs a little faster.  (:pull:`5638`)
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified 
+   :func:`~iris.analysis.stats.pearsonr` so it preserves lazy data in all cases
+   and also runs a little faster.  (:pull:`5638`)
 
 🔥 Deprecations
 ===============
