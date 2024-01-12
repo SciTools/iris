@@ -1915,7 +1915,7 @@ class Coord(_DimensionalMetadata):
         return contiguous, diffs
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
-        """Check if the Coord is bounded with contiguous bounds.
+        """Whether coordinate has contiguous bounds.
 
         Return True if, and only if, this Coord is bounded with contiguous
         bounds to within the specified relative and absolute tolerances.
