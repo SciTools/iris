@@ -140,7 +140,8 @@ def pearsonr(
             # Apply same transposition as was done to cube_2 within Resolve.
             weights = weights.transpose(resolver.reorder_src_dims)
 
-        # Reshape to add in any length-1 dimensions needed for broadcasting.
+        # Reshape to add in any length-1 dimensions that Resolve() has added
+        #  for broadcasting.
         weights = weights.reshape(cube_2.shape)
 
         weights_2 = np.broadcast_to(weights, array_2.shape)
