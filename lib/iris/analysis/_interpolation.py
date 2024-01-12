@@ -68,7 +68,7 @@ def extend_circular_coord(coord, points):
 
 
 def extend_circular_coord_and_data(coord, data, coord_dim):
-    """Return coordinate points and data array with a shape extended by one in the coord_dim axis.
+    """Return coordinate points and data with a shape extended by one in the provided axis.
 
     Return coordinate points and a data array with a shape extended by one
     in the coord_dim axis. This is common when dealing with circular
@@ -467,7 +467,7 @@ class RectilinearInterpolator:
         return result
 
     def _points(self, sample_points, data, data_dims=None):
-        """Interpolate values at the specified list of orthogonal (coord, points) pairs.
+        """Interpolate at the specified points.
 
         Interpolate the given data values at the specified list of orthogonal
         (coord, points) pairs.

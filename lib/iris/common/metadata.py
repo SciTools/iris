@@ -94,7 +94,7 @@ def hexdigest(item):
 
 
 class _NamedTupleMeta(ABCMeta):
-    """Meta-class to support the convenience of creating a namedtuple from names/members.
+    """Meta-class convenience for creating a namedtuple.
 
     Meta-class to support the convenience of creating a namedtuple from
     names/members of the metadata class hierarchy.
@@ -599,7 +599,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def difference(self, other, lenient=None):
-        """Return a new metadata instance created by performing a difference.
+        """Perform lenient metadata difference operation.
 
         Return a new metadata instance created by performing a difference
         comparison between each of the associated metadata members.
@@ -653,7 +653,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @classmethod
     def from_metadata(cls, other):
-        """Convert the provided metadata instance from a different type to this metadata type.
+        """Convert metadata instance to this metadata type.
 
         Convert the provided metadata instance from a different type
         to this metadata type, using only the relevant metadata members.
@@ -726,7 +726,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @classmethod
     def token(cls, name):
-        """Determine whether the provided name is a valid NetCDF name.
+        """Verify validity of provided NetCDF name.
 
         Determine whether the provided name is a valid NetCDF name and thus
         safe to represent a single parsable token.
@@ -1561,7 +1561,7 @@ def _factory_cache(cls):
 
 
 def metadata_manager_factory(cls, **kwargs):
-    """A class instance factory function responsible for manufacturing metadata instances.
+    """Factory function for manufacturing metadata instances.
 
     A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.

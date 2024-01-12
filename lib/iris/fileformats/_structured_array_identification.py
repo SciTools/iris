@@ -100,7 +100,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
 
     @property
     def size(self):
-        """The ``size`` attribute is the number of the unique values in the original array.
+        """Number of unique values in the original array.
 
         The ``size`` attribute is the number of the unique values in the
         original array. It is **not** the length of the original array.
@@ -124,7 +124,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
         return not (self == other)
 
     def construct_array(self, size):
-        """The inverse operation of :func:`ArrayStructure.from_array`.
+        """Build 1D array.
 
         The inverse operation of :func:`ArrayStructure.from_array`, returning
         a 1D array of the given length with the appropriate repetition

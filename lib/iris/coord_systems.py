@@ -384,7 +384,7 @@ class GeogCS(CoordSystem):
 
     @semi_major_axis.setter
     def semi_major_axis(self, value):
-        """semi_major_axis.
+        """Assign semi_major_axis.
 
         Setting this property to a different value invalidates the current datum
         (if any) because a datum encodes a specific semi-major axis. This also
@@ -406,7 +406,7 @@ class GeogCS(CoordSystem):
 
     @semi_minor_axis.setter
     def semi_minor_axis(self, value):
-        """semi_minor_axis.
+        """Assign semi_minor_axis.
 
         Setting this property to a different value invalidates the current datum
         (if any) because a datum encodes a specific semi-minor axis. This also
@@ -428,7 +428,7 @@ class GeogCS(CoordSystem):
 
     @inverse_flattening.setter
     def inverse_flattening(self, value):
-        """inverse_flattening.
+        """Assign inverse_flattening.
 
         Setting this property to a different value does not affect the behaviour
         of this object any further than the value of this property.
@@ -453,7 +453,7 @@ class GeogCS(CoordSystem):
 
     @datum.setter
     def datum(self, value):
-        """datum.
+        """Assign datum.
 
         Setting this property to a different value invalidates the current
         values of the ellipsoid measurements because a datum encodes its own

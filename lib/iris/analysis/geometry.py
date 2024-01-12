@@ -18,7 +18,7 @@ import iris.exceptions
 
 
 def _extract_relevant_cube_slice(cube, geometry):
-    """Given a shapely geometry object.
+    """Calculate geometry intersection with spatial region defined by cube.
 
     This helper method returns the tuple
     (subcube, x_coord_of_subcube, y_coord_of_subcube,

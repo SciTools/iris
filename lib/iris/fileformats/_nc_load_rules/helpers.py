@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Pure-Python 'helper' functions which were previously included in the Pyke rules database.
+"""Helper functions for NetCDF loading rules.
 
 All the pure-Python 'helper' functions which were previously included in the
 Pyke rules database 'fc_rules_cf.krb'.
@@ -260,7 +260,7 @@ class _WarnComboIgnoringCfLoad(
 
 
 def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
-    """Split a CF cell_methods attribute string into a list of zero or more cell methods.
+    """Split a CF cell_methods.
 
     Split a CF cell_methods attribute string into a list of zero or more cell
     methods, each of which is then parsed with a regex to return a list of match
@@ -486,7 +486,7 @@ def build_cube_metadata(engine):
 
 ################################################################################
 def _get_ellipsoid(cf_grid_var):
-    """Return a :class:`iris.coord_systems.GeogCS` using the relevant properties.
+    """Build a :class:`iris.coord_systems.GeogCS`.
 
     Return a :class:`iris.coord_systems.GeogCS` using the relevant properties of
     `cf_grid_var`. Returns None if no relevant properties are specified.
@@ -1533,7 +1533,7 @@ def has_supported_mercator_parameters(engine, cf_name):
 
 ################################################################################
 def has_supported_polar_stereographic_parameters(engine, cf_name):
-    """Determine whether the CF grid mapping variable has the supported values.
+    """Determine whether CF grid mapping variable supports Polar Stereographic.
 
     Determine whether the CF grid mapping variable has the supported
     values for the parameters of the Polar Stereographic projection.

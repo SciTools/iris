@@ -28,7 +28,7 @@ _LENIENT_PROTECTED = ("active", "enable")
 
 
 def _lenient_client(*dargs, services=None):
-    """Decorator that allows a client function/method to declare at runtime.
+    """Decorator implementing the lenient client protocol.
 
     Decorator that allows a client function/method to declare at runtime that
     it is executing and requires lenient behaviour from a prior registered
@@ -89,7 +89,7 @@ def _lenient_client(*dargs, services=None):
 
         @wraps(func)
         def lenient_client_inner_naked(*args, **kwargs):
-            """Closure wrapper function to register the wrapped function/method as active.
+            """Closure wrapper function.
 
             Closure wrapper function to register the wrapped function/method
             as active at runtime before executing it.
@@ -111,7 +111,7 @@ def _lenient_client(*dargs, services=None):
         def lenient_client_outer(func):
             @wraps(func)
             def lenient_client_inner(*args, **kwargs):
-                """Closure wrapper function to register the wrapped function/method.
+                """Closure wrapper function.
 
                 Closure wrapper function to register the wrapped function/method
                 as active at runtime before executing it.
@@ -129,7 +129,7 @@ def _lenient_client(*dargs, services=None):
 
 
 def _lenient_service(*dargs):
-    """Allows a function/method to declare that it supports lenient behaviour as a service.
+    """Decorator implementing the lenient service protocol.
 
     Decorator that allows a function/method to declare that it supports lenient
     behaviour as a service.
@@ -289,7 +289,7 @@ class Lenient(threading.local):
 
     @contextmanager
     def context(self, **kwargs):
-        """Return a context manager which allows temporary modification of the lenient option.
+        """Context manager supporting temporary modification of lenient state.
 
         Return a context manager which allows temporary modification of the
         lenient option state within the scope of the context manager.
@@ -447,7 +447,7 @@ class _Lenient(threading.local):
 
     @contextmanager
     def context(self, *args, **kwargs):
-        """Context manager which allows temporary modification of the lenient option state.
+        """Context manager supporting temporary modification of lenient state.
 
         Return a context manager which allows temporary modification of
         the lenient option state for the active thread.
@@ -542,7 +542,7 @@ class _Lenient(threading.local):
         self.__dict__["enable"] = state
 
     def register_client(self, func, services, append=False):
-        """Add the provided mapping of lenient client function/method.
+        """Add the lenient client to service mapping.
 
         Add the provided mapping of lenient client function/method to
         required lenient service function/methods.

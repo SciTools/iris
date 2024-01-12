@@ -166,7 +166,7 @@ def izip(*cubes, **kwargs):
 
 
 class _ZipSlicesIterator(Iterator):
-    """Extension to support iteration over a collection of cubes in step.
+    """Support iteration over a collection of cubes.
 
     Extension to _SlicesIterator (see cube.py) to support iteration over a
     collection of cubes in step.
