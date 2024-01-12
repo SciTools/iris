@@ -57,7 +57,7 @@ def _canonical_sample_points(coords, sample_points):
 
 
 def extend_circular_coord(coord, points):
-    """Return coordinates points with a shape extended by one.
+    """Return coordinate points with a shape extended by one.
 
     This is common when dealing with circular coordinates.
 
