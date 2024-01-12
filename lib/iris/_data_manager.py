@@ -285,7 +285,7 @@ class DataManager:
         return self._deepcopy(memo, data=data)
 
     def core_data(self):
-        """If real data is being managed, return the numpy.ndarray or numpy.ma.core.MaskedArray.
+        """Provide real data or lazy data.
 
         If real data is being managed, then return the :class:`~numpy.ndarray`
         or :class:`numpy.ma.core.MaskedArray`. Otherwise, return the lazy
