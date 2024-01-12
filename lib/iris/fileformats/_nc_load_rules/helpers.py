@@ -335,7 +335,7 @@ class UnknownCellMethodWarning(iris.exceptions.IrisUnknownCellMethodWarning):
     pass
 
 
-def parse_cell_methods(nc_cell_methods):
+def parse_cell_methods(nc_cell_methods, cf_name=None):
     """Parse a CF cell_methods attribute string into a tuple of zero or more CellMethod instances.
 
     Parameters
@@ -354,6 +354,7 @@ def parse_cell_methods(nc_cell_methods):
     results are not affected.
 
     """
+    msg = None
     cell_methods = []
     if nc_cell_methods is not None:
         for m in _split_cell_methods(nc_cell_methods):
@@ -365,10 +366,16 @@ def parse_cell_methods(nc_cell_methods):
             method_words = method.split()
             if method_words[0].lower() not in _CM_KNOWN_METHODS:
                 msg = "NetCDF variable contains unknown cell method {!r}"
-                warnings.warn(
-                    msg.format("{}".format(method_words[0])),
-                    category=UnknownCellMethodWarning,
-                )
+                msg = msg.format(method_words[0])
+                if cf_name:
+                    name = "{}".format(cf_name)
+                    msg = msg.replace("variable", "variable {!r}".format(name))
+                else:
+                    warnings.warn(
+                        msg,
+                        category=UnknownCellMethodWarning,
+                    )
+                    msg = None
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
             name = name.replace(" ", "")
@@ -426,6 +433,9 @@ def parse_cell_methods(nc_cell_methods):
                 comments=d[_CM_COMMENT],
             )
             cell_methods.append(cell_method)
+        # only prints one warning, rather than each loop
+        if msg:
+            warnings.warn(msg, category=UnknownCellMethodWarning)
     return tuple(cell_methods)
 
 
@@ -456,21 +466,7 @@ def build_cube_metadata(engine):
 
     # Incorporate cell methods
     nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-    with warnings.catch_warnings(record=True) as warning_records:
-        cube.cell_methods = parse_cell_methods(nc_att_cell_methods)
-    # Filter to get the warning we are interested in.
-    warning_records = [
-        record
-        for record in warning_records
-        if issubclass(record.category, UnknownCellMethodWarning)
-    ]
-    if len(warning_records) > 0:
-        # Output an enhanced warning message.
-        warn_record = warning_records[0]
-        name = "{}".format(cf_var.cf_name)
-        msg = warn_record.message.args[0]
-        msg = msg.replace("variable", "variable {!r}".format(name))
-        warnings.warn(message=msg, category=UnknownCellMethodWarning)
+    cube.cell_methods = parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
 
     # Set the cube global attributes.
     for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
