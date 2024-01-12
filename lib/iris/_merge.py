@@ -1518,7 +1518,7 @@ class ProtoCube:
         self._shape.extend(signature.data_shape)
 
     def _get_cube(self, data):
-        """Return fully constructed, containing all its coordinates and metadata.
+        """Generate fully constructed cube.
 
         Return a fully constructed cube for the given data, containing
         all its coordinates and metadata.
