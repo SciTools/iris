@@ -81,8 +81,7 @@ def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
-    """Loads cubes from filenames of 32bit ieee converted UM fieldsfile-like
-    files.
+    """Loads cubes from filenames of 32bit ieee converted UM fieldsfile-like files.
 
     See Also
     --------

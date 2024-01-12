@@ -36,7 +36,9 @@ def disable_repeat_between_setup(benchmark_object):
 
 
 class TrackAddedMemoryAllocation:
-    """Context manager which measures by how much process resident memory grew,
+    """Measures by how much process resident memory grew, during execution.
+
+    Context manager which measures by how much process resident memory grew,
     during execution of its enclosed code block.
 
     Obviously limited as to what it actually measures : Relies on the current

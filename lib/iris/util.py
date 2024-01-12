@@ -158,7 +158,9 @@ def delta(ndarray, dimension, circular=False):
 
 
 def describe_diff(cube_a, cube_b, output_file=None):
-    """Prints the differences that prevent compatibility between two cubes, as
+    """Print the differences that prevent compatibility between two cubes.
+
+    Print the differences that prevent compatibility between two cubes, as
     defined by :meth:`iris.cube.Cube.is_compatible()`.
 
     Parameters
@@ -227,7 +229,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
 
 
 def guess_coord_axis(coord):
-    """Returns a "best guess" axis name of the coordinate.
+    """Return a "best guess" axis name of the coordinate.
 
     Heuristic categorisation of the coordinate into either label
     'T', 'Z', 'Y', 'X' or None.
@@ -351,7 +353,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
 
 
 def array_equal(array1, array2, withnans=False):
-    """Returns whether two arrays have the same shape and elements.
+    """Return whether two arrays have the same shape and elements.
 
     Parameters
     ----------
@@ -390,7 +392,9 @@ def array_equal(array1, array2, withnans=False):
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
-    """Returns whether two numbers are almost equal, allowing for the finite
+    """Check if two numbers are almost equal.
+
+    Returns whether two numbers are almost equal, allowing for the finite
     precision of floating point numbers.
 
     .. deprecated:: 3.2.0
@@ -424,8 +428,9 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
 
 
 def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
-    """Provides a convenient way of defining a 3 element inequality such as
-    ``a < number < b``.
+    """Provide convenient way of defining a 3 element inequality.
+
+    Such as ``a < number < b``.
 
     Parameters
     ----------
@@ -630,7 +635,9 @@ def monotonic(array, strict=False, return_direction=False):
 
 
 def column_slices_generator(full_slice, ndims):
-    """Given a full slice full of tuples, return a dictionary mapping old
+    """Return a dictionary mapping old data dimensions to new.
+
+    Given a full slice full of tuples, return a dictionary mapping old
     data dimensions to new and a generator which gives the successive
     slices needed to index correctly (across columns).
 
@@ -703,7 +710,9 @@ def column_slices_generator(full_slice, ndims):
 
 
 def _build_full_slice_given_keys(keys, ndim):
-    """Given the keys passed to a __getitem__ call, build an equivalent
+    """Build an equivalent tuple of keys which span ndims.
+
+    Given the keys passed to a __getitem__ call, build an equivalent
     tuple of keys which span ndims.
 
     """
@@ -811,8 +820,7 @@ def _slice_data_with_keys(data, keys):
 
 
 def _wrap_function_for_method(function, docstring=None):
-    """Returns a wrapper function modified to be suitable for use as a
-    method.
+    """Return a wrapper function modified to be suitable for use as a method.
 
     The wrapper function renames the first argument as "self" and allows
     an alternative docstring, thus allowing the built-in help(...)
@@ -857,7 +865,9 @@ def _wrap_function_for_method(function, docstring=None):
 
 
 class _MetaOrderedHashable(ABCMeta):
-    """A metaclass that ensures that non-abstract subclasses of _OrderedHashable
+    """Ensures that non-abstract subclasses are given a default __init__ method.
+
+    A metaclass that ensures that non-abstract subclasses of _OrderedHashable
     without an explicit __init__ method are given a default __init__ method
     with the appropriate method signature.
 
@@ -922,7 +932,9 @@ class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
     @property
     @abstractmethod
     def _names(self):
-        """Override this attribute to declare the names of all the attributes
+        """Override this attribute to declare the names of all the attributes relevant.
+
+        Override this attribute to declare the names of all the attributes
         relevant to the hash/comparison semantics.
 
         """
@@ -990,7 +1002,9 @@ def create_temp_filename(suffix=""):
 
 
 def clip_string(the_str, clip_length=70, rider="..."):
-    """Returns a clipped version of the string based on the specified clip
+    """Return clipped version of the string based on the specified clip length.
+
+    Return a clipped version of the string based on the specified clip
     length and whether or not any graceful clip points can be found.
 
     If the string to be clipped is shorter than the specified clip
@@ -1025,6 +1039,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
     -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     if clip_length >= len(the_str) or clip_length <= 0:
         return the_str
@@ -1046,7 +1061,9 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
 
 def format_array(arr):
-    """Returns the given array as a string, using the python builtin str
+    """Create a new axis as the leading dimension of the cube.
+
+    Returns the given array as a string, using the python builtin str
     function on a piecewise basis.
 
     Useful for xml representation of arrays.
@@ -1072,7 +1089,9 @@ def format_array(arr):
 
 
 def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
-    """Create a new axis as the leading dimension of the cube, promoting a scalar
+    """Create a new axis as the leading dimension of the cube.
+
+    Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
 
     Parameters
@@ -1108,6 +1127,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
 
     def _reshape_data_array(data_manager):
@@ -1196,7 +1216,9 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
 
 
 def squeeze(cube):
-    """Removes any dimension of length one. If it has an associated DimCoord or
+    """Removes any dimension of length one.
+
+    Removes any dimension of length one. If it has an associated DimCoord or
     AuxCoord, this becomes a scalar coord.
 
     Parameters
@@ -1234,7 +1256,9 @@ def squeeze(cube):
 
 
 def file_is_newer_than(result_path, source_paths):
-    """Return whether the 'result' file has a later modification time than all of
+    """Determine if the 'result' file was modified last.
+
+    Return whether the 'result' file has a later modification time than all of
     the 'source' files.
 
     If a stored result depends entirely on known 'sources', it need only be
@@ -1393,7 +1417,9 @@ def points_step(points):
 
 
 def unify_time_units(cubes):
-    """Performs an in-place conversion of the time units of all time coords in the
+    """Performs an in-place conversion of the time units.
+
+    Performs an in-place conversion of the time units of all time coords in the
     cubes in a given iterable. One common epoch is defined for each calendar
     found in the cubes to prevent units being defined with inconsistencies
     between epoch and calendar. During this process, all time coordinates have
@@ -1429,7 +1455,9 @@ def unify_time_units(cubes):
 
 
 def _is_circular(points, modulus, bounds=None):
-    """Determine whether the provided points or bounds are circular in nature
+    """Determine whether the provided points or bounds are circular.
+
+    Determine whether the provided points or bounds are circular in nature
     relative to the modulus value.
 
     If the bounds are provided then these are checked for circularity rather
@@ -1493,10 +1521,11 @@ def _is_circular(points, modulus, bounds=None):
 
 
 def promote_aux_coord_to_dim_coord(cube, name_or_coord):
-    r"""Promotes an AuxCoord on the cube to a DimCoord. This AuxCoord must be
-    associated with a single cube dimension. If the AuxCoord is associated
-    with a dimension that already has a DimCoord, that DimCoord gets
-    demoted to an AuxCoord.
+    r"""Promotes an auxiliary to a dimension coordinate on the cube.
+
+    This AuxCoord must be associated with a single cube dimension. If the
+    AuxCoord is associated with a dimension that already has a DimCoord, that
+    DimCoord gets demoted to an AuxCoord.
 
     Parameters
     ----------
@@ -1671,7 +1700,6 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
-
     """
     from iris.coords import Coord
 
@@ -1702,12 +1730,11 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
 @functools.wraps(np.meshgrid)
 def _meshgrid(*xi, **kwargs):
-    """@numpy v1.13, the dtype of each output n-D coordinate is the same as its
+    """Ensures consistent meshgrid behaviour across numpy versions.
+
+    @numpy v1.13, the dtype of each output n-D coordinate is the same as its
     associated input 1D coordinate. This is not the case prior to numpy v1.13,
     where the output dtype is cast up to its highest resolution, regardlessly.
-
-    This convenience function ensures consistent meshgrid behaviour across
-    numpy versions.
 
     Reference: https://github.com/numpy/numpy/pull/5302
 
@@ -1720,7 +1747,9 @@ def _meshgrid(*xi, **kwargs):
 
 
 def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
-    """Searches the 'x' and 'y' coord on the cube for discontiguities in the
+    """Identify spatial discontiguities.
+
+    Searches the 'x' and 'y' coord on the cube for discontiguities in the
     bounds array, returned as a boolean array (True for all cells which are
     discontiguous with the cell immediately above them or to their right).
 
@@ -1764,7 +1793,6 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
-
 
     """
     lats_and_lons = [
@@ -1812,10 +1840,11 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
 
 
 def _mask_array(array, points_to_mask, in_place=False):
-    """Apply masking to array where points_to_mask is True/non-zero.  Designed to
-    work with iris.analysis.maths._binary_op_common so array and points_to_mask
-    will be broadcastable to each other.  array and points_to_mask may be numpy
-    or dask types (or one of each).
+    """Apply masking to array where points_to_mask is True/non-zero.
+
+    Designed to work with iris.analysis.maths._binary_op_common so array
+    and points_to_mask will be broadcastable to each other.
+    array and points_to_mask may be numpy or dask types (or one of each).
 
     If array is lazy then in_place is ignored: _math_op_common will use the
     returned value regardless of in_place, so we do not need to implement it
@@ -1865,7 +1894,9 @@ def _mask_array(array, points_to_mask, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def mask_cube(cube, points_to_mask, in_place=False, dim=None):
-    """Masks any cells in the cube's data array which correspond to cells marked
+    """Masks any cells in the cube's data array.
+
+    Masks any cells in the cube's data array which correspond to cells marked
     ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be
     specified as a :class:`numpy.ndarray`, :class:`dask.array.Array`,
     :class:`iris.coords.Coord` or :class:`iris.cube.Cube`, following the same
@@ -2035,10 +2066,13 @@ def is_masked(array):
 def _strip_metadata_from_dims(cube, dims):
     """Remove ancillary variables and cell measures that map to specific dimensions.
 
-    Returns a cube copy with (possibly) some cell-measures and ancillary variables removed.
+    Returns a cube copy with (possibly) some cell-measures and ancillary
+    variables removed.
 
     To be used by operations that modify or remove dimensions.
-    Note: does nothing to (aux)-coordinates.  Those would be handled explicitly by the calling operation.
+
+    Note: does nothing to (aux)-coordinates.  Those would be handled explicitly
+    by the calling operation.
     """
     reduced_cube = cube.copy()
 

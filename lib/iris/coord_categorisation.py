@@ -147,10 +147,7 @@ def add_day_of_month(cube, coord, name="day_of_month"):
 
 
 def add_day_of_year(cube, coord, name="day_of_year"):
-    """Add a categorical day-of-year coordinate, values 1..365
-    (1..366 in leap years).
-
-    """
+    """Add a categorical day-of-year coordinate, values 1..365 (1..366 in leap years)."""
     # Note: cftime.datetime objects return a normal tuple from timetuple(),
     # unlike datetime.datetime objects that return a namedtuple.
     # Index the time tuple (element 7 is day of year) instead of using named
@@ -207,10 +204,7 @@ def add_hour(cube, coord, name="hour"):
 
 
 def _months_in_season(season):
-    """Returns a list of month numbers corresponding to each month in the
-    given season.
-
-    """
+    """Returns a list of month numbers corresponding to each month in the given season."""
     cyclic_months = "jfmamjjasondjfmamjjasond"
     m0 = cyclic_months.find(season.lower())
     if m0 < 0:
@@ -300,8 +294,7 @@ def _month_season_numbers(seasons):
 
 
 def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son")):
-    """Add a categorical season-of-year coordinate, with user specified
-    seasons.
+    """Add a categorical season-of-year coordinate, with user specified seasons.
 
     Parameters
     ----------
@@ -336,7 +329,9 @@ def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son"))
 def add_season_number(
     cube, coord, name="season_number", seasons=("djf", "mam", "jja", "son")
 ):
-    """Add a categorical season-of-year coordinate, values 0..N-1 where
+    """Add a categorical season-of-year coordinate.
+
+    Add a categorical season-of-year coordinate, values 0..N-1 where
     N is the number of user specified seasons.
 
     Parameters
@@ -416,8 +411,7 @@ def add_season_year(
 
 
 def add_season_membership(cube, coord, season, name="season_membership"):
-    """Add a categorical season membership coordinate for a user specified
-    season.
+    """Add a categorical season membership coordinate for a user specified season.
 
     The coordinate has the value True for every time that is within the
     given season, and the value False otherwise.

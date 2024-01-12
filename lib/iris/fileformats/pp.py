@@ -273,7 +273,9 @@ class STASH(collections.namedtuple("STASH", "model section item")):
     __slots__ = ()
 
     def __new__(cls, model, section, item):
-        """Args
+        """Create namedtuple STASH instance.
+
+        Args
         ----
         model
             A positive integer less than 100, or None.
@@ -356,8 +358,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
 
 
 class SplittableInt:
-    """A class to hold integers which can easily get each decimal digit
-    individually.
+    """A class to hold integers which can easily get each decimal digit individually.
 
     >>> three_six_two = SplittableInt(362)
     >>> print(three_six_two)
@@ -657,9 +658,10 @@ class PPDataProxy:
 def _data_bytes_to_shaped_array(
     data_bytes, lbpack, boundary_packing, data_shape, data_type, mdi, mask=None
 ):
-    """Convert the already read binary data payload into a numpy array, unpacking
-    and decompressing as per the F3 specification.
+    """Convert binary payload into a numpy array.
 
+    Convert the already read binary data payload into a numpy array, unpacking
+    and decompressing as per the F3 specification.
     """
     if lbpack.n1 in (0, 2):
         data = np.frombuffer(data_bytes, dtype=data_type)
@@ -809,10 +811,7 @@ _SPECIAL_HEADERS = (
 
 
 def _header_defn(release_number):
-    """Return the zero-indexed header definition for a particular release of
-    a PPField.
-
-    """
+    """Return zero-indexed header definition for a particular release of a PPField."""
     um_header = UM_HEADERS[release_number]
     offset = UM_TO_PP_HEADER_OFFSET
     return [
@@ -822,7 +821,9 @@ def _header_defn(release_number):
 
 
 def _pp_attribute_names(header_defn):
-    """Return the allowed attributes of a PPField:
+    """Return the allowed attributes of a PPField.
+
+    Return the allowed attributes of a PPField:
     all of the normal headers (i.e. not the _SPECIAL_HEADERS),
     the _SPECIAL_HEADERS with '_' prefixed,
     the possible extra data headers.
@@ -844,7 +845,9 @@ def _pp_attribute_names(header_defn):
 
 
 class PPField(metaclass=ABCMeta):
-    """A generic class for PP fields - not specific to a particular
+    """Base class for PP fields.
+
+    A generic class for PP fields - not specific to a particular
     header release number.
 
     A PPField instance can easily access the PP header "words" as attributes
@@ -877,7 +880,9 @@ class PPField(metaclass=ABCMeta):
             self.raw_lbpack = header[self.HEADER_DICT["lbpack"][0]]
 
     def __getattr__(self, key):
-        """Method supports deferred attribute creation, which offers a
+        """Return the value of the key.
+
+        Method supports deferred attribute creation, which offers a
         significant loading optimisation, particularly when not all attributes
         are referenced and therefore created on the instance.
 
@@ -970,8 +975,9 @@ class PPField(metaclass=ABCMeta):
 
     @property
     def stash(self):
-        """Stash property giving access to the associated STASH object,
-        now supporting __eq__.
+        """Stash property giving access to the associated STASH object.
+
+        Now supporting __eq__.
 
         """
         if (
@@ -1049,10 +1055,7 @@ class PPField(metaclass=ABCMeta):
 
     @property
     def data(self):
-        """:class:`numpy.ndarray` representing the multidimensional data
-        of the pp file.
-
-        """
+        """:class:`numpy.ndarray` representing multidimensional data of the pp file."""
         if is_lazy_data(self._data):
             # Replace with real data on the first access.
             self._data = as_concrete_data(self._data)
@@ -1445,10 +1448,7 @@ class PPField(metaclass=ABCMeta):
 
 
 class PPField2(PPField):
-    """A class to hold a single field from a PP file, with a
-    header release number of 2.
-
-    """
+    """Hold a single field from a PP file, with a header release number of 2."""
 
     HEADER_DEFN = _header_defn(2)
     HEADER_DICT = dict(HEADER_DEFN)
@@ -1457,7 +1457,9 @@ class PPField2(PPField):
 
     @property
     def t1(self):
-        """cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
+        """cftime.datetime object.
+
+        cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
         and lbmin attributes.
 
         """
@@ -1488,7 +1490,9 @@ class PPField2(PPField):
 
     @property
     def t2(self):
-        """cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
+        """cftime.datetime object.
+
+        cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
         lbhrd, and lbmind attributes.
 
         """
@@ -1519,10 +1523,7 @@ class PPField2(PPField):
 
 
 class PPField3(PPField):
-    """A class to hold a single field from a PP file, with a
-    header release number of 3.
-
-    """
+    """Hold a single field from a PP file, with a header release number of 3."""
 
     HEADER_DEFN = _header_defn(3)
     HEADER_DICT = dict(HEADER_DEFN)
@@ -1531,7 +1532,9 @@ class PPField3(PPField):
 
     @property
     def t1(self):
-        """cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
+        """cftime.datetime object.
+
+        cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
         lbmin, and lbsec attributes.
 
         """
@@ -1563,7 +1566,9 @@ class PPField3(PPField):
 
     @property
     def t2(self):
-        """cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
+        """cftime.datetime object.
+
+        cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
         lbhrd, lbmind, and lbsecd attributes.
 
         """
@@ -1638,7 +1643,9 @@ def load(filename, read_data=False, little_ended=False):
 
 
 def _interpret_fields(fields):
-    """Turn the fields read with load and FF2PP._extract_field into usable
+    """Turn the fields read with load and FF2PP._extract_field into usable fields.
+
+    Turn the fields read with load and FF2PP._extract_field into usable
     fields. One of the primary purposes of this function is to either convert
     "deferred bytes" into "deferred arrays" or "loaded bytes" into actual
     numpy arrays (via the _create_field_data) function.
@@ -1706,9 +1713,12 @@ def _interpret_fields(fields):
 
 
 def _create_field_data(field, data_shape, land_mask_field=None):
-    """Modify a field's ``_data`` attribute either by:
-     * converting a 'deferred array bytes' tuple into a lazy array,
-     * converting LoadedArrayBytes into an actual numpy array.
+    """Modify a field's ``_data`` attribute.
+
+    Modify a field's ``_data`` attribute either by:
+
+    * converting a 'deferred array bytes' tuple into a lazy array,
+    * converting LoadedArrayBytes into an actual numpy array.
 
     If 'land_mask_field' is passed (not None), then it contains the associated
     landmask, which is also a field :  Its data array is used as a template for
@@ -1803,8 +1813,7 @@ def _create_field_data(field, data_shape, land_mask_field=None):
 
 
 def _field_gen(filename, read_data_bytes, little_ended=False):
-    """Return a generator of "half-formed" PPField instances derived from
-    the given filename.
+    """Return generator of "half-formed" PPField instances derived from given filename.
 
     A field returned by the generator is only "half-formed" because its
     `_data` attribute represents a simple one-dimensional stream of
@@ -1931,7 +1940,9 @@ _STASH_ALLOW = [STASH(1, 0, 33), STASH(1, 0, 1)]
 
 
 def _convert_constraints(constraints):
-    """Convert known constraints from Iris semantics to PP semantics
+    """Convert known constraints from Iris semantics to PP semantics.
+
+    Convert known constraints from Iris semantics to PP semantics
     ignoring all unknown constraints.
 
     """
@@ -1940,10 +1951,7 @@ def _convert_constraints(constraints):
     unhandled_constraints = False
 
     def _make_func(stashobj):
-        """Provide unique name-space for each lambda function's stashobj
-        variable.
-
-        """
+        """Provide unique name-space for each lambda function's stashobj variable."""
         return lambda stash: stash == stashobj
 
     for con in constraints:
@@ -1974,10 +1982,7 @@ def _convert_constraints(constraints):
             unhandled_constraints = True
 
     def pp_filter(field):
-        """Return True if field is to be kept,
-        False if field does not match filter.
-
-        """
+        """Return True if field is to be kept, False if field does not match filter."""
         res = True
         if field.stash not in _STASH_ALLOW:
             if pp_constraints.get("stash"):
@@ -1998,11 +2003,11 @@ def _convert_constraints(constraints):
 def load_cubes(filenames, callback=None, constraints=None):
     """Load cubes from a list of pp filenames.
 
-    Args
-    ----
-    filenames
+    Parameters
+    ----------
+    filenames :
         list of pp filenames to load
-    **kwargs
+    **kwargs :
         * constraints
             a list of Iris constraints
         * callback
@@ -2050,8 +2055,7 @@ def load_cubes_little_endian(filenames, callback=None, constraints=None):
 
 
 def load_pairs_from_fields(pp_fields):
-    r"""Convert an iterable of PP fields into an iterable of tuples of
-    (Cubes, PPField).
+    r"""Convert an iterable of PP fields into an iterable of tuples of (Cubes, PPField).
 
     Args
     ----
@@ -2182,7 +2186,9 @@ def save(cube, target, append=False, field_coords=None):
 
 
 def save_pairs_from_cube(cube, field_coords=None, target=None):
-    """Use the PP saving rules to convert a cube or
+    """Use the PP saving rules to convert a cube.
+
+    Use the PP saving rules to convert a cube or
     iterable of cubes to an iterable of (2D cube, PP field) pairs.
 
     Args
@@ -2298,14 +2304,16 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
 
 def as_fields(cube, field_coords=None, target=None):
-    """Use the PP saving rules (and any user rules) to convert a cube to
+    """Use the PP saving rules to convert a cube to an iterable of PP fields.
+
+    Use the PP saving rules (and any user rules) to convert a cube to
     an iterable of PP fields.
 
     Args
     ----
     cube
         A :class:`iris.cube.Cube`
-    **kwargs
+    **kwargs :
         * field_coords:
             List of 2 coords or coord names which are to be used for
             reducing the given cube into 2d slices, which will ultimately
@@ -2332,7 +2340,7 @@ def save_fields(fields, target, append=False):
         An iterable of PP fields.
     target:
         A filename or open file handle.
-    **kwargs
+    **kwargs :
         * append:
             Whether to start a new file afresh or add the cube(s) to the end
             of the file.

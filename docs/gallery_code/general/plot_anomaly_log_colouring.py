@@ -1,4 +1,5 @@
-"""Colouring Anomaly Data With Logarithmic Scaling
+"""
+Colouring Anomaly Data With Logarithmic Scaling
 ===============================================
 
 In this example, we need to plot anomaly data where the values have a
@@ -22,7 +23,7 @@ functions of the same names (i.e., :obj:`matplotlib.pyplot.pcolor`
 and :obj:`matplotlib.pyplot.pcolormesh`).
 See also: https://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import cartopy.crs as ccrs
 import matplotlib.colors as mcols

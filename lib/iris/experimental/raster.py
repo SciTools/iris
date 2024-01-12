@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Experimental module for importing/exporting raster data from Iris cubes using
-the GDAL library.
+"""Experimental module for importing/exporting raster data from Iris cubes using the GDAL library.
 
 See also: `GDAL - Geospatial Data Abstraction Library <https://www.gdal.org>`_.
 
@@ -42,20 +41,31 @@ _GDAL_DATATYPES = {
 
 def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, ftype):
     """Use GDAL WriteArray to export data as a 32-bit raster image.
+
     Requires the array data to be of the form: North-at-top
     and West-on-left.
 
-    Args:
-        * x_min: Minimum X coordinate bounds value.
-        * x_step: Change in X coordinate per cell.
-        * y_max: Maximum Y coordinate bounds value.
-        * y_step: Change in Y coordinate per cell.
-        * coord_system (iris.coord_systems.CoordSystem):
-            Coordinate system for X and Y.
-        * data (numpy.ndarray): 2d array of values to export
-        * fname (string): Output file name.
-        * ftype (string): Export file type.
+    Parameters
+    ----------
+    x_min :
+        Minimum X coordinate bounds value.
+    x_step :
+        Change in X coordinate per cell.
+    y_max :
+        Maximum Y coordinate bounds value.
+    y_step :
+        Change in Y coordinate per cell.
+    coord_system : iris.coord_systems.CoordSystem
+        Coordinate system for X and Y.
+    data : numpy.ndarray
+        2d array of values to export
+    fname : str
+        Output file name.
+    ftype : str
+        Export file type.
 
+    Notes
+    -----
     .. note::
 
         Projection information is currently not written to the output.
@@ -107,11 +117,16 @@ def export_geotiff(cube, fname):
         Developers to discuss how to retain it (which could include reversing
         the deprecation).
 
-    Args:
-        * cube (Cube): The 2D regularly gridded cube slice to be exported.
-                       The cube must have regular, contiguous bounds.
-        * fname (string): Output file name.
+    Parameters
+    ----------
+    cube : Cube
+        The 2D regularly gridded cube slice to be exported.
+        The cube must have regular, contiguous bounds.
+    fname : str
+        Output file name.
 
+    Notes
+    -----
     .. note::
 
         For more details on GeoTiff specification and PixelIsArea, see:

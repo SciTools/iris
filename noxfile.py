@@ -109,8 +109,9 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
 
 def prepare_venv(session: nox.sessions.Session) -> None:
-    """Create and cache the nox session conda environment, and additionally
-    provide conda environment package details and info.
+    """Create and cache the nox session conda environment.
+
+    Additionally provide conda environment package details and info.
 
     Note that, iris is installed into the environment using pip.
 

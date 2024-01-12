@@ -2,7 +2,9 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides the capability to load netCDF files and interpret them
+"""Provide capability to load netCDF files and interpret them.
+
+Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 References
@@ -132,7 +134,9 @@ class CFVariable(metaclass=ABCMeta):
         pass
 
     def spans(self, cf_variable):
-        """Determine whether the dimensionality of this variable
+        """Determine dimensionality coverage.
+
+        Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -243,7 +247,9 @@ class CFVariable(metaclass=ABCMeta):
 
 
 class CFAncillaryDataVariable(CFVariable):
-    """A CF-netCDF ancillary data variable is a variable that provides metadata
+    """CF-netCDF ancillary data variable.
+
+    A CF-netCDF ancillary data variable is a variable that provides metadata
     about the individual values of another data variable.
 
     Identified by the CF-netCDF variable attribute 'ancillary_variables'.
@@ -283,7 +289,9 @@ class CFAncillaryDataVariable(CFVariable):
 
 
 class CFAuxiliaryCoordinateVariable(CFVariable):
-    """A CF-netCDF auxiliary coordinate variable is any netCDF variable that contains
+    """CF-netCDF auxiliary coordinate variable.
+
+    A CF-netCDF auxiliary coordinate variable is any netCDF variable that contains
     coordinate data, but is not a CF-netCDF coordinate variable by definition.
 
     There is no relationship between the name of a CF-netCDF auxiliary coordinate
@@ -330,7 +338,9 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
 
 
 class CFBoundaryVariable(CFVariable):
-    """A CF-netCDF boundary variable is associated with a CF-netCDF variable that contains
+    """CF-netCDF boundary variable.
+
+    A CF-netCDF boundary variable is associated with a CF-netCDF variable that contains
     coordinate data. When a data value provides information about conditions in a cell
     occupying a region of space/time or some other dimension, the boundary variable
     provides a description of cell extent.
@@ -373,7 +383,9 @@ class CFBoundaryVariable(CFVariable):
         return result
 
     def spans(self, cf_variable):
-        """Determine whether the dimensionality of this variable
+        """Determine dimensionality coverage.
+
+        Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -402,7 +414,9 @@ class CFBoundaryVariable(CFVariable):
 
 
 class CFClimatologyVariable(CFVariable):
-    """A CF-netCDF climatology variable is associated with a CF-netCDF variable that contains
+    """CF-netCDF climatology variable.
+
+    A CF-netCDF climatology variable is associated with a CF-netCDF variable that contains
     coordinate data. When a data value provides information about conditions in a cell
     occupying a region of space/time or some other dimension, the climatology variable
     provides a climatological description of cell extent.
@@ -445,7 +459,9 @@ class CFClimatologyVariable(CFVariable):
         return result
 
     def spans(self, cf_variable):
-        """Determine whether the dimensionality of this variable
+        """Determine dimensionality coverage.
+
+        Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -474,7 +490,9 @@ class CFClimatologyVariable(CFVariable):
 
 
 class CFCoordinateVariable(CFVariable):
-    """A CF-netCDF coordinate variable is a one-dimensional variable with the same name
+    """A CF-netCDF coordinate variable.
+
+    A CF-netCDF coordinate variable is a one-dimensional variable with the same name
     as its dimension, and it is defined as a numeric data type with values that are
     ordered monotonically. Missing values are not allowed in CF-netCDF coordinate
     variables. Also see [NUG] Section 2.3.1.
@@ -528,7 +546,9 @@ class CFDataVariable(CFVariable):
 
 
 class _CFFormulaTermsVariable(CFVariable):
-    """A CF-netCDF formula terms variable corresponds to a term in a formula that
+    """CF-netCDF formula terms variable.
+
+    A CF-netCDF formula terms variable corresponds to a term in a formula that
     allows dimensional vertical coordinate values to be computed from dimensionless
     vertical coordinate values and associated variables at specific grid points.
 
@@ -596,7 +616,9 @@ class _CFFormulaTermsVariable(CFVariable):
 
 
 class CFGridMappingVariable(CFVariable):
-    """A CF-netCDF grid mapping variable contains a list of specific attributes that
+    """CF-netCDF grid mapping variable.
+
+    A CF-netCDF grid mapping variable contains a list of specific attributes that
     define a particular grid mapping. A CF-netCDF grid mapping variable must contain
     the attribute 'grid_mapping_name'.
 
@@ -641,7 +663,9 @@ class CFGridMappingVariable(CFVariable):
 
 
 class CFLabelVariable(CFVariable):
-    """A CF-netCDF CF label variable is any netCDF variable that contain string
+    """Cariable is any netCDF variable that contain string textual information, or labels.
+
+    A CF-netCDF CF label variable is any netCDF variable that contain string
     textual information, or labels.
 
     Identified by the CF-netCDF variable attribute 'coordinates'.
@@ -777,7 +801,9 @@ class CFLabelVariable(CFVariable):
         )
 
     def spans(self, cf_variable):
-        """Determine whether the dimensionality of this variable
+        """Determine dimensionality coverage.
+
+        Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
         Note that, by default scalar variables always span the
@@ -858,7 +884,9 @@ class CFMeasureVariable(CFVariable):
 
 ################################################################################
 class CFGroup(MutableMapping):
-    """Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
+    """Collection of 'NetCDF CF Metadata Conventions variables and netCDF global attributes.
+
+    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
     Conventions' variables and netCDF global attributes.
 
     """
@@ -935,10 +963,7 @@ class CFGroup(MutableMapping):
 
     @property
     def non_data_variable_names(self):
-        """:class:`set` of the names of the CF-netCDF variables that are not
-        the data pay-load.
-
-        """
+        """:class:`set` names of the CF-netCDF variables that are not the data pay-load."""
         non_data_variables = (
             self.ancillary_variables,
             self.auxiliary_coordinates,
@@ -1303,10 +1328,7 @@ class CFReader:
 
 
 def _getncattr(dataset, attr, default=None):
-    """Simple wrapper round `netCDF4.Dataset.getncattr` to make it behave
-    more like `getattr`.
-
-    """
+    """Wrap `netCDF4.Dataset.getncattr` to make it behave more like `getattr`."""
     try:
         value = dataset.getncattr(attr)
     except AttributeError:

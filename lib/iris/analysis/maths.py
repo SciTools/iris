@@ -30,7 +30,9 @@ logger = get_logger(__name__)
 
 @lru_cache(maxsize=128, typed=True)
 def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
-    """Get the numpy dtype corresponding to the result of applying a unary or
+    """Get the numpy dtype.
+
+    Get the numpy dtype corresponding to the result of applying a unary or
     binary operation to arguments of specified dtype.
 
     Parameters
@@ -204,7 +206,9 @@ def _assert_is_cube(cube):
 
 @_lenient_client(services=SERVICES)
 def add(cube, other, dim=None, in_place=False):
-    """Calculate the sum of two cubes, or the sum of a cube and a coordinate or
+    """Calculate the sum.
+
+    Calculate the sum of two cubes, or the sum of a cube and a coordinate or
     array or scalar value.
 
     When summing two cubes, they must both have the same coordinate systems and
@@ -257,7 +261,9 @@ def add(cube, other, dim=None, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def subtract(cube, other, dim=None, in_place=False):
-    """Calculate the difference between two cubes, or the difference between
+    """Calculate the difference.
+
+    Calculate the difference between two cubes, or the difference between
     a cube and a coordinate or array or scalar value.
 
     When differencing two cubes, they must both have the same coordinate systems
@@ -317,8 +323,7 @@ def _add_subtract_common(
     dim=None,
     in_place=False,
 ):
-    """Function which shares common code between addition and subtraction
-    of cubes.
+    """Function which shares common code between addition and subtraction of cubes.
 
     Parameters
     ----------
@@ -366,7 +371,9 @@ def _add_subtract_common(
 
 @_lenient_client(services=SERVICES)
 def multiply(cube, other, dim=None, in_place=False):
-    """Calculate the product of two cubes, or the product of a cube and a coordinate
+    """Calculate the product.
+
+    Calculate the product of two cubes, or the product of a cube and a coordinate
     or array or scalar value.
 
     When multiplying two cubes, they must both have the same coordinate systems
@@ -431,7 +438,9 @@ def multiply(cube, other, dim=None, in_place=False):
 
 
 def _inplace_common_checks(cube, other, math_op):
-    """Check whether an inplace math operation can take place between `cube` and
+    """Check if an inplace math operation can take place.
+
+    Check whether an inplace math operation can take place between `cube` and
     `other`. It cannot if `cube` has integer data and `other` has float data
     as the operation will always produce float data that cannot be 'safely'
     cast back to the integer data of `cube`.
@@ -450,7 +459,9 @@ def _inplace_common_checks(cube, other, math_op):
 
 @_lenient_client(services=SERVICES)
 def divide(cube, other, dim=None, in_place=False):
-    """Calculate the ratio of two cubes, or the ratio of a cube and a coordinate
+    """Calculate the ratio.
+
+    Calculate the ratio of two cubes, or the ratio of a cube and a coordinate
     or array or scalar value.
 
     When dividing a cube by another cube, they must both have the same coordinate
@@ -692,7 +703,9 @@ def log10(cube, in_place=False):
 
 
 def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False):
-    """Apply a `numpy universal function
+    """Apply a `numpy universal function <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube.
+
+    Apply a `numpy universal function
     <https://docs.scipy.org/doc/numpy/reference/ufuncs.html>`_ to a cube
     or pair of cubes.
 
@@ -958,7 +971,9 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 
 def _sanitise_metadata(cube, unit):
-    """As part of the maths metadata contract, clear the necessary or
+    """Clear appropriate metadata from the resultant cube.
+
+    As part of the maths metadata contract, clear the necessary or
     unsupported metadata from the resultant cube of the maths operation.
 
     """

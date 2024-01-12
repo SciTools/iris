@@ -1,4 +1,5 @@
-"""Oceanographic Profiles and T-S Diagrams
+"""
+Oceanographic Profiles and T-S Diagrams
 =======================================
 
 This example demonstrates how to plot vertical profiles of different
@@ -13,7 +14,7 @@ The y-axis of the first plot produced will be automatically inverted due to the
 presence of the attribute positive=down on the depth coordinate. This means
 depth values intuitively increase downward on the y-axis.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 

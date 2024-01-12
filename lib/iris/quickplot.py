@@ -282,8 +282,7 @@ def points(cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """Draws a labelled line plot based on the given cube(s) or
-    coordinate(s).
+    """Draws a labelled line plot based on the given cube(s) or coordinate(s).
 
     See :func:`iris.plot.plot` for details of valid arguments and
     keyword arguments.
@@ -301,8 +300,7 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """Draws a labelled scatter plot based on the given cubes or
-    coordinates.
+    """Draws a labelled scatter plot based on the given cubes or coordinates.
 
     See :func:`iris.plot.scatter` for details of valid arguments and
     keyword arguments.
@@ -329,6 +327,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     axes = kwargs.get("axes")
     result = iplt.fill_between(x, y1, y2, *args, **kwargs)
@@ -346,6 +345,7 @@ def hist(x, *args, **kwargs):
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     axes = kwargs.get("axes")
     result = iplt.hist(x, *args, **kwargs)

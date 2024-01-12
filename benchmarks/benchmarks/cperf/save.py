@@ -14,6 +14,7 @@ from . import _N_CUBESPHERE_UM_EQUIVALENT, _UM_DIMS_YX
 @on_demand_benchmark
 class NetcdfSave:
     """Benchmark time and memory costs of saving ~large-ish data cubes to netcdf.
+
     Parametrised by file type.
 
     """

@@ -34,7 +34,9 @@ _INCREASING = 1
 
 
 class _CoordAndDims(namedtuple("CoordAndDims", ["coord", "dims"])):
-    """Container for a coordinate and the associated data dimension(s)
+    """Container for a coordinate and the associated data dimension(s).
+
+    Container for a coordinate and the associated data dimension(s)
     spanned over a :class:`iris.cube.Cube`.
 
     Parameters
@@ -54,8 +56,7 @@ class _CoordMetaData(
         ["defn", "dims", "points_dtype", "bounds_dtype", "kwargs"],
     )
 ):
-    """Container for the metadata that defines a dimension or auxiliary
-    coordinate.
+    """Container for the metadata that defines a dimension or auxiliary coordinate.
 
     Parameters
     ----------
@@ -150,7 +151,9 @@ class _CoordMetaData(
 class _DerivedCoordAndDims(
     namedtuple("DerivedCoordAndDims", ["coord", "dims", "aux_factory"])
 ):
-    """Container for a derived coordinate, the associated AuxCoordFactory, and the
+    """Container for a derived coordinate and dimnesions(s).
+
+    Container for a derived coordinate, the associated AuxCoordFactory, and the
     associated data dimension(s) spanned over a :class:`iris.cube.Cube`.
 
     Parameters
@@ -175,8 +178,7 @@ class _DerivedCoordAndDims(
 
 
 class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
-    """Container for the metadata that defines a cell measure or ancillary
-    variable.
+    """Container for the metadata that defines a cell measure or ancillary variable.
 
     Parameters
     ----------
@@ -229,7 +231,9 @@ class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
 
 
 class _SkeletonCube(namedtuple("SkeletonCube", ["signature", "data"])):
-    """Basis of a source-cube, containing the associated coordinate metadata,
+    """Basis of a source-cube.
+
+    Basis of a source-cube, containing the associated coordinate metadata,
     coordinates and cube data payload.
 
     Parameters
@@ -260,8 +264,7 @@ class _Extent(namedtuple("Extent", ["min", "max"])):
 
 
 class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
-    """Container representing the points and bounds extent of a one dimensional
-    coordinate.
+    """Container representing the points and bounds extent of a one dimensional coordinate.
 
     Parameters
     ----------
@@ -374,13 +377,17 @@ def concatenate(
 
 
 class _CubeSignature:
-    """Template for identifying a specific type of :class:`iris.cube.Cube` based
+    """Template for identifying a specific type of :class:`iris.cube.Cube`.
+
+    Template for identifying a specific type of :class:`iris.cube.Cube` based
     on its metadata, coordinates and cell_measures.
 
     """
 
     def __init__(self, cube):
-        """Represents the cube metadata and associated coordinate metadata that
+        """Represents the cube metadata and associated coordinate metadata.
+
+        Represents the cube metadata and associated coordinate metadata that
         allows suitable cubes for concatenation to be identified.
 
         Parameters
@@ -472,7 +479,9 @@ class _CubeSignature:
             self.derived_coords_and_dims.append(coord_and_dims)
 
     def _coordinate_differences(self, other, attr, reason="metadata"):
-        """Determine the names of the coordinates that differ between `self` and
+        """Determine the names of the coordinates that differ.
+
+        Determine the names of the coordinates that differ between `self` and
         `other` for a coordinate attribute on a _CubeSignature.
 
         Parameters
@@ -599,13 +608,12 @@ class _CubeSignature:
 
 
 class _CoordSignature:
-    """Template for identifying a specific type of :class:`iris.cube.Cube` based
-    on its coordinates.
-
-    """
+    """Template for identifying a specific type of :class:`iris.cube.Cube` based on its coordinates."""
 
     def __init__(self, cube_signature):
-        """Represents the coordinate metadata required to identify suitable
+        """Represent the coordinate metadata.
+
+        Represent the coordinate metadata required to identify suitable
         non-overlapping :class:`iris.cube.Cube` source-cubes for
         concatenation over a common single dimension.
 
@@ -657,8 +665,7 @@ class _CoordSignature:
         return result, candidate_axis
 
     def candidate_axis(self, other):
-        """Determine the candidate axis of concatenation with the
-        given coordinate signature.
+        """Determine the candidate axis of concatenation with the given coordinate signature.
 
         If a candidate axis is found, then the coordinate
         signatures are compatible.
@@ -723,13 +730,12 @@ class _CoordSignature:
 
 
 class _ProtoCube:
-    """Framework for concatenating multiple source-cubes over one
-    common dimension.
-
-    """
+    """Framework for concatenating multiple source-cubes over one common dimension."""
 
     def __init__(self, cube):
-        """Create a new _ProtoCube from the given cube and record the cube
+        """Create a new _ProtoCube and record the cube as a source-cube.
+
+        Create a new _ProtoCube from the given cube and record the cube
         as a source-cube.
 
         Parameters
@@ -762,7 +768,9 @@ class _ProtoCube:
         return self._axis
 
     def concatenate(self):
-        """Concatenates all the source-cubes registered with the
+        """Concatenates all the source-cubes registered with the :class:`_ProtoCube`.
+
+        Concatenates all the source-cubes registered with the
         :class:`_ProtoCube` over the nominated common dimension.
 
         Returns
@@ -992,8 +1000,7 @@ class _ProtoCube:
         return match
 
     def _add_skeleton(self, coord_signature, data):
-        """Create and add the source-cube skeleton to the
-        :class:`_ProtoCube`.
+        """Create and add the source-cube skeleton to the :class:`_ProtoCube`.
 
         Parameters
         ----------
@@ -1010,7 +1017,9 @@ class _ProtoCube:
         self._skeletons.append(skeleton)
 
     def _build_aux_coordinates(self):
-        """Generate the auxiliary coordinates with associated dimension(s)
+        """Generate the auxiliary coordinates with associated dimension(s) mapping.
+
+        Generate the auxiliary coordinates with associated dimension(s)
         mapping for the new concatenated cube.
 
         Returns
@@ -1082,7 +1091,9 @@ class _ProtoCube:
         return scalar_coords
 
     def _build_cell_measures(self):
-        """Generate the cell measures with associated dimension(s)
+        """Generate the cell measures with associated dimension(s) mapping.
+
+        Generate the cell measures with associated dimension(s)
         mapping for the new concatenated cube.
 
         Returns
@@ -1120,7 +1131,9 @@ class _ProtoCube:
         return cell_measures_and_dims
 
     def _build_ancillary_variables(self):
-        """Generate the ancillary variables with associated dimension(s)
+        """Generate the ancillary variables with associated dimension(s) mapping.
+
+        Generate the ancillary variables with associated dimension(s)
         mapping for the new concatenated cube.
 
         Returns
@@ -1243,11 +1256,14 @@ class _ProtoCube:
         return data
 
     def _build_dim_coordinates(self):
-        """Generate the dimension coordinates with associated dimension
+        """Generate the dimension coordinates.
+
+        Generate the dimension coordinates with associated dimension
         mapping for the new concatenated cube.
 
-        Return:
-            A list of dimension coordinate and dimension tuple pairs.
+        Returns
+        -------
+        A list of dimension coordinate and dimension tuple pairs.
 
         """
         # Setup convenience hooks.
@@ -1291,7 +1307,9 @@ class _ProtoCube:
         return dim_coords_and_dims
 
     def _sequence(self, extent, axis):
-        """Determine whether the given extent can be sequenced along with
+        """Determine whether the extent can be sequenced.
+
+        Determine whether the given extent can be sequenced along with
         all the extents of the source-cubes already registered with
         this :class:`_ProtoCube` into non-overlapping segments for the
         given axis.

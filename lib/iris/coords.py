@@ -119,8 +119,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         self._bounds_dm = None  # Only ever set on Coord-derived instances.
 
     def __getitem__(self, keys):
-        """Returns a new dimensional metadata whose values are obtained by
-        conventional array indexing.
+        """Returns a new dimensional metadata whose values are obtained by conventional array indexing.
 
         .. note::
 
@@ -239,10 +238,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.lazy_data()
 
     def _core_values(self):
-        """The values array of this dimensional metadata which may be a NumPy
-        array or a dask array.
-
-        """
+        """The values array of this dimensional metadata which may be a NumPy array or a dask array."""
         result = self._values_dm.core_data()
         if not _lazy.is_lazy_data(result):
             result = result.view()
@@ -250,10 +246,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _has_lazy_values(self):
-        """Returns a boolean indicating whether the metadata's values array is a
-        lazy dask array or not.
-
-        """
+        """Indicates whether the metadata's values array is a lazy dask array or not."""
         return self._values_dm.has_lazy_data()
 
     def summary(
@@ -752,10 +745,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         self.units = unit
 
     def is_compatible(self, other, ignore=None):
-        """Return whether the current dimensional metadata object is compatible
-        with another.
-
-        """
+        """Return whether the current dimensional metadata object is compatible with another."""
         compatible = self.name() == other.name() and self.units == other.units
 
         if compatible:
@@ -773,25 +763,16 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def dtype(self):
-        """The NumPy dtype of the current dimensional metadata object, as
-        specified by its values.
-
-        """
+        """The NumPy dtype of the current dimensional metadata object, as specified by its values."""
         return self._values_dm.dtype
 
     @property
     def ndim(self):
-        """Return the number of dimensions of the current dimensional metadata
-        object.
-
-        """
+        """Return the number of dimensions of the current dimensional metadata object."""
         return self._values_dm.ndim
 
     def has_bounds(self):
-        """Return a boolean indicating whether the current dimensional metadata
-        object has a bounds array.
-
-        """
+        """Indicates whether the current dimensional metadata object has a bounds array."""
         # Allows for code to handle unbounded dimensional metadata agnostic of
         # whether the metadata is a coordinate or not.
         return False
@@ -802,7 +783,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.shape
 
     def xml_element(self, doc):
-        """Create the :class:`xml.dom.minidom.Element` that describes this
+        """Create XML element.
+
+        Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`_DimensionalMetadata`.
 
         Parameters
@@ -897,10 +880,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _value_type_name(self):
-        """A simple, readable name for the data type of the dimensional metadata
-        values.
-
-        """
+        """A simple, readable name for the data type of the dimensional metadata values."""
         dtype = self._core_values().dtype
         kind = dtype.kind
         if kind in "SU":
@@ -983,17 +963,16 @@ class AncillaryVariable(_DimensionalMetadata):
         return super()._lazy_values()
 
     def core_data(self):
-        """The data array at the core of this ancillary variable, which may be a
+        """The data array at the core of this ancillary variable.
+
+        The data array at the core of this ancillary variable, which may be a
         NumPy array or a dask array.
 
         """
         return super()._core_values()
 
     def has_lazy_data(self):
-        """Return a boolean indicating whether the ancillary variable's data array
-        is a lazy dask array or not.
-
-        """
+        """Indicates whether the ancillary variable's data array is a lazy dask array or not."""
         return super()._has_lazy_values()
 
     def cube_dims(self, cube):
@@ -1006,7 +985,9 @@ class AncillaryVariable(_DimensionalMetadata):
 
 
 class CellMeasure(AncillaryVariable):
-    """A CF Cell Measure, providing area or volume properties of a cell
+    """A CF Cell Measure, providing area or volume properties of a cell.
+
+    A CF Cell Measure, providing area or volume properties of a cell
     where these cannot be inferred from the Coordinates and
     Coordinate Reference System.
 
@@ -1084,8 +1065,7 @@ class CellMeasure(AncillaryVariable):
         return cube.cell_measure_dims(self)
 
     def xml_element(self, doc):
-        """Create the :class:`xml.dom.minidom.Element` that describes this
-        :class:`CellMeasure`.
+        """Create the :class:`xml.dom.minidom.Element` that describes this :class:`CellMeasure`.
 
         Parameters
         ----------
@@ -1131,8 +1111,7 @@ class CoordExtent(
         min_inclusive=True,
         max_inclusive=True,
     ):
-        """Create a CoordExtent for the specified coordinate and range of
-        values.
+        """Create a CoordExtent for the specified coordinate and range of values.
 
         Parameters
         ----------
@@ -1212,7 +1191,9 @@ def _get_2d_coord_bound_grid(bounds):
 
 
 class Cell(namedtuple("Cell", ["point", "bound"])):
-    """An immutable representation of a single cell of a coordinate, including the
+    """A coordinate cell containing a single point, or point and bounds.
+
+    An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
 
     Notes on cell comparison:
@@ -1296,10 +1277,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return hash((self.point, bound))
 
     def __eq__(self, other):
-        """Compares Cell equality depending on the type of the object to be
-        compared.
-
-        """
+        """Compares Cell equality depending on the type of the object to be compared."""
         if isinstance(other, (int, float, np.number)) or hasattr(other, "timetuple"):
             if self.bound is not None:
                 return self.contains_point(other)
@@ -1326,7 +1304,9 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return result
 
     def __common_cmp__(self, other, operator_method):
-        """Common method called by the rich comparison operators. The method of
+        """Common equality comparison.
+
+        Common method called by the rich comparison operators. The method of
         checking equality depends on the type of the object to be compared.
 
         Cell vs Cell comparison is used to define a strict order.
@@ -1431,8 +1411,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
             return str(self.point)
 
     def contains_point(self, point):
-        """For a bounded cell, returns whether the given point lies within the
-        bounds.
+        """For a bounded cell, returns whether the given point lies within the bounds.
 
         .. note:: The test carried out is equivalent to min(bound)
                   <= point <= max(bound).
@@ -1600,7 +1579,9 @@ class Coord(_DimensionalMetadata):
 
     @property
     def bounds(self):
-        """The coordinate bounds values, as a NumPy array,
+        """Coordinate bounds values.
+
+        The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
 
         .. note:: The shape of the bound array should be: ``points.shape +
@@ -1639,7 +1620,9 @@ class Coord(_DimensionalMetadata):
 
     @property
     def climatological(self):
-        """A boolean that controls whether the coordinate is a climatological
+        """Flag for representing a climatological time axis.
+
+        A boolean that controls whether the coordinate is a climatological
         time axis, in which case the bounds represent a climatological period
         rather than a normal period.
 
@@ -1674,8 +1657,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def ignore_axis(self):
-        """A boolean that controls whether guess_coord_axis acts on this
-        coordinate.
+        """A boolean that controls whether guess_coord_axis acts on this coordinate.
 
         Defaults to False, and when set to True it will be skipped by
         guess_coord_axis.
@@ -1729,17 +1711,11 @@ class Coord(_DimensionalMetadata):
         return lazy_bounds
 
     def core_points(self):
-        """The points array at the core of this coord, which may be a NumPy array
-        or a dask array.
-
-        """
+        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
         return super()._core_values()
 
     def core_bounds(self):
-        """The points array at the core of this coord, which may be a NumPy array
-        or a dask array.
-
-        """
+        """The points array at the core of this coord, which may be a NumPy array or a dask array."""
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()
@@ -1748,14 +1724,13 @@ class Coord(_DimensionalMetadata):
         return result
 
     def has_lazy_points(self):
-        """Return a boolean indicating whether the coord's points array is a
-        lazy dask array or not.
-
-        """
+        """Return a boolean whether the coord's points array is a lazy dask array or not."""
         return super()._has_lazy_values()
 
     def has_lazy_bounds(self):
-        """Return a boolean indicating whether the coord's bounds array is a
+        """Whether coordinate bounds are lazy.
+
+        Return a boolean indicating whether the coord's bounds array is a
         lazy dask array or not.
 
         """
@@ -1782,8 +1757,7 @@ class Coord(_DimensionalMetadata):
         return cube.coord_dims(self)
 
     def convert_units(self, unit):
-        r"""Change the coordinate's units, converting the values in its points
-        and bounds arrays.
+        r"""Change the coordinate's units, converting the values in its points and bounds arrays.
 
         For example, if a coordinate's :attr:`~iris.coords.Coord.units`
         attribute is set to radians then::
@@ -1941,7 +1915,9 @@ class Coord(_DimensionalMetadata):
         return contiguous, diffs
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
-        """Return True if, and only if, this Coord is bounded with contiguous
+        """Whether coordinate has contiguous bounds.
+
+        Return True if, and only if, this Coord is bounded with contiguous
         bounds to within the specified relative and absolute tolerances.
 
         1D coords are contiguous if the upper bound of a cell aligns,
@@ -1971,7 +1947,9 @@ class Coord(_DimensionalMetadata):
         return contiguous
 
     def contiguous_bounds(self):
-        """Returns the N+1 bound values for a contiguous bounded 1D coordinate
+        """Contiguous bounds of 1D coordinate.
+
+        Return the N+1 bound values for a contiguous bounded 1D coordinate
         of length N, or the (N+1, M+1) bound values for a contiguous bounded 2D
         coordinate of shape (N, M).
 
@@ -2065,7 +2043,9 @@ class Coord(_DimensionalMetadata):
 
     @property
     def bounds_dtype(self):
-        """The NumPy dtype of the coord's bounds. Will be `None` if the coord
+        """The NumPy dtype of the coordinates bounds.
+
+        The NumPy dtype of the coord's bounds. Will be `None` if the coord
         does not have bounds.
 
         """
@@ -2087,8 +2067,11 @@ class Coord(_DimensionalMetadata):
         return self._bounds_dm is not None
 
     def cell(self, index):
-        """Return the single :class:`Cell` instance which results from slicing the
+        """The point/bound cell at the given coordinate index.
+
+        Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
+
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
@@ -2111,8 +2094,7 @@ class Coord(_DimensionalMetadata):
         return Cell(point, bound)
 
     def collapsed(self, dims_to_collapse=None):
-        """Returns a copy of this coordinate, which has been collapsed along
-        the specified dimensions.
+        """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
         """
@@ -2444,8 +2426,7 @@ class Coord(_DimensionalMetadata):
         return result_index
 
     def xml_element(self, doc):
-        """Create the :class:`xml.dom.minidom.Element` that describes this
-        :class:`Coord`.
+        """Create the :class:`xml.dom.minidom.Element` that describes this :class:`Coord`.
 
         Parameters
         ----------
@@ -2503,8 +2484,7 @@ class DimCoord(Coord):
         climatological=False,
         with_bounds=False,
     ):
-        """Create a :class:`DimCoord` with regularly spaced points, and
-        optionally bounds.
+        """Create a :class:`DimCoord` with regularly spaced points, and optionally bounds.
 
         The majority of the arguments are defined as for
         :class:`Coord`, but those which differ are defined below.
@@ -2839,8 +2819,7 @@ class DimCoord(Coord):
         return True
 
     def xml_element(self, doc):
-        """Create the :class:`xml.dom.minidom.Element` that describes this
-        :class:`DimCoord`.
+        """Create the :class:`xml.dom.minidom.Element` that describes this :class:`DimCoord`.
 
         Parameters
         ----------
@@ -3016,8 +2995,7 @@ class CellMethod(iris.util._OrderedHashable):
         return NotImplemented
 
     def xml_element(self, doc):
-        """Create the :class:`xml.dom.minidom.Element` that describes this
-        :class:`CellMethod`.
+        """Create the :class:`xml.dom.minidom.Element` that describes this :class:`CellMethod`.
 
         Parameters
         ----------
