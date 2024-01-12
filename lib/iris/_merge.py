@@ -859,6 +859,10 @@ def _build_separable_group(
 ):
     """Update the space with the first separable consistent group.
 
+    Update the space with the first separable consistent group that
+    satisfies a valid functional relationship with all other candidate
+    dimensions in the group.
+
     For example, the group ABCD and separable consistent group CD,
     if A = f(C, D) and B = f(C, D) then update the space with
     "A: (C, D), B: (C, D), C: None, D: None". Where "A: (C, D)" means

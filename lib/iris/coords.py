@@ -1191,7 +1191,7 @@ def _get_2d_coord_bound_grid(bounds):
 
 
 class Cell(namedtuple("Cell", ["point", "bound"])):
-    """An coordinate cell containing a single point, or point and bounds.
+    """A coordinate cell containing a single point, or point and bounds.
 
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.

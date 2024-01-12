@@ -4,8 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda` subclass.
 
-ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda`
-subclass that manages the Conda environment via custom user scripts.
+Manages the Conda environment via custom user scripts.
 
 """
 

@@ -1716,8 +1716,9 @@ def _create_field_data(field, data_shape, land_mask_field=None):
     """Modify a field's ``_data`` attribute.
 
     Modify a field's ``_data`` attribute either by:
-     * converting a 'deferred array bytes' tuple into a lazy array,
-     * converting LoadedArrayBytes into an actual numpy array.
+
+    * converting a 'deferred array bytes' tuple into a lazy array,
+    * converting LoadedArrayBytes into an actual numpy array.
 
     If 'land_mask_field' is passed (not None), then it contains the associated
     landmask, which is also a field :  Its data array is used as a template for

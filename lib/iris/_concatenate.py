@@ -733,7 +733,7 @@ class _ProtoCube:
     """Framework for concatenating multiple source-cubes over one common dimension."""
 
     def __init__(self, cube):
-        """Create a new _ProtoCube  and record the cube as a source-cube.
+        """Create a new _ProtoCube and record the cube as a source-cube.
 
         Create a new _ProtoCube from the given cube and record the cube
         as a source-cube.

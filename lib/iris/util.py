@@ -1736,10 +1736,6 @@ def _meshgrid(*xi, **kwargs):
     associated input 1D coordinate. This is not the case prior to numpy v1.13,
     where the output dtype is cast up to its highest resolution, regardlessly.
 
-    @numpy v1.13, the dtype of each output n-D coordinate is the same as its
-    associated input 1D coordinate. This is not the case prior to numpy v1.13,
-    where the output dtype is cast up to its highest resolution, regardlessly.
-
     Reference: https://github.com/numpy/numpy/pull/5302
 
     """

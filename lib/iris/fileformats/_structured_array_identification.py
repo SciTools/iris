@@ -4,15 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 r"""Identification of multi-dimensional structure in a flat sequence of homogeneous objects.
 
-One application of this is to efficiently identify a higher dimensional
-structure from a sorted sequence of PPField instances; for an example, given
-a list of 12 PPFields, identification that there are 3 unique "time" values
-and 4 unique "height" values where time and height are linearly independent
-means that we could construct a resulting cube with a shape of
-``(3, 4) + <shape of a single field>``.
-
 The purpose of this module is to provide utilities for the identification
 of multi-dimensional structure in a flat sequence of homogeneous objects.
+
 One application of this is to efficiently identify a higher dimensional
 structure from a sorted sequence of PPField instances; for an example, given
 a list of 12 PPFields, identification that there are 3 unique "time" values
