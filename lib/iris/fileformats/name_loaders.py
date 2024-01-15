@@ -193,7 +193,7 @@ def _build_lat_lon_for_NAME_timeseries(column_headings):
 
 
 def _calc_integration_period(time_avgs):
-    """Return a list of datetime.timedelta objects determined from the provided list.
+    """Calculate averaging/integration time periods.
 
     Return a list of datetime.timedelta objects determined from the provided
     list of averaging/integration period column headings.
@@ -396,7 +396,7 @@ def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
 
 
 def _generate_cubes(header, column_headings, coords, data_arrays, cell_methods=None):
-    """Yield :class:`iris.cube.Cube` instances.
+    """Generate NAME cubes.
 
     Yield :class:`iris.cube.Cube` instances given
     the headers, column headings, coords and data_arrays extracted
@@ -560,7 +560,7 @@ def _generate_cubes(header, column_headings, coords, data_arrays, cell_methods=N
 
 
 def _build_cell_methods(av_or_ints, coord):
-    """Build a list of :class:`iris.coords.CellMethod`.
+    """Create cell-methods.
 
     Return a list of :class:`iris.coords.CellMethod` instances
     based on the provided list of column heading entries and the
@@ -601,7 +601,7 @@ def _build_cell_methods(av_or_ints, coord):
 
 
 def load_NAMEIII_field(filename):
-    """Load NAME III file returning a generator of :class:`iris.cube.Cube` instances.
+    """Load NAME III cubes.
 
     Load a NAME III grid output file returning a
     generator of :class:`iris.cube.Cube` instances.

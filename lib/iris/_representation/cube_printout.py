@@ -9,7 +9,7 @@ from iris._representation.cube_summary import CubeSummary
 
 
 class Table:
-    """A container of text strings in rows + columns.
+    """A container of text strings in rows and columns.
 
     A container of text strings in rows + columns, that can format its content
     into a string per row, with contents in columns of fixed width.
@@ -118,7 +118,7 @@ class Table:
 
 
 class CubePrinter:
-    """An object created from a :class:`iris._representation.CubeSummary`.
+    """An object created from a cube summary.
 
     An object created from a
     :class:`iris._representation.CubeSummary`, which provides

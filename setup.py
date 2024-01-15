@@ -25,12 +25,12 @@ class BaseCommand(Command):
 
 
 def custom_command(cmd, help=""):
-    """Generate a custom command.
+    """Factory function to generate a custom command.
 
     Custom command will add additional behaviour to build the CF
     standard names module.
 
-    """
+    """  # noqa: D401
 
     class CustomCommand(cmd):
         description = help or cmd.description

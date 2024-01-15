@@ -530,7 +530,7 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
 
 
 def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
-    """Return indices to select data value(s) closest to the given coordinate point values.
+    """Calculate the cube nearest neighbour indices for the samples.
 
     Return the indices to select the data value(s) closest to the given
     coordinate point values.

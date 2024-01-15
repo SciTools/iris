@@ -12,7 +12,7 @@ class CubeEquality(FileMixin):
     r"""Benchmark time and memory costs.
 
     Benchmark time and memory costs of comparing :class:`~iris.cube.Cube`\\ s
-     with attached :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es.
+    with attached :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es.
 
     Uses :class:`FileMixin` as the realistic case will be comparing
     :class:`~iris.cube.Cube`\\ s that have been loaded from file.

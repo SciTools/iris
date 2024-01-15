@@ -859,6 +859,10 @@ def _build_separable_group(
 ):
     """Update the space with the first separable consistent group.
 
+    Update the space with the first separable consistent group that
+    satisfies a valid functional relationship with all other candidate
+    dimensions in the group.
+
     For example, the group ABCD and separable consistent group CD,
     if A = f(C, D) and B = f(C, D) then update the space with
     "A: (C, D), B: (C, D), C: None, D: None". Where "A: (C, D)" means
@@ -1518,7 +1522,7 @@ class ProtoCube:
         self._shape.extend(signature.data_shape)
 
     def _get_cube(self, data):
-        """Return fully constructed, containing all its coordinates and metadata.
+        """Generate fully constructed cube.
 
         Return a fully constructed cube for the given data, containing
         all its coordinates and metadata.

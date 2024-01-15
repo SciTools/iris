@@ -10,7 +10,7 @@ from . import SingleDiagnosticMixin
 @on_demand_benchmark
 class SingleDiagnosticLoad(SingleDiagnosticMixin):
     def time_load(self, _, __, ___):
-        """Time load, the 'real world comparison'.
+        """Perform a 'real world comparison'.
 
         * UM coords are always realised (DimCoords).
         * LFRic coords are not realised by default (MeshCoords).

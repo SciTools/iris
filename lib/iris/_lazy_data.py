@@ -42,7 +42,7 @@ def is_lazy_data(data):
 
 
 def is_lazy_masked_data(data):
-    """Is it 'lazy' data array and the underlying array is of masked type.
+    """Determine whether managed data is lazy and masked.
 
     Return True if the argument is both an Iris 'lazy' data array and the
     underlying array is of masked type.  Otherwise return False.

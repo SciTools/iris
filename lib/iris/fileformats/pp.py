@@ -273,7 +273,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
     __slots__ = ()
 
     def __new__(cls, model, section, item):
-        """STASH __init__.
+        """Create namedtuple STASH instance.
 
         Args
         ----
@@ -658,7 +658,7 @@ class PPDataProxy:
 def _data_bytes_to_shaped_array(
     data_bytes, lbpack, boundary_packing, data_shape, data_type, mdi, mask=None
 ):
-    """Convert the already read binary data payload into a numpy array.
+    """Convert binary payload into a numpy array.
 
     Convert the already read binary data payload into a numpy array, unpacking
     and decompressing as per the F3 specification.
@@ -845,7 +845,7 @@ def _pp_attribute_names(header_defn):
 
 
 class PPField(metaclass=ABCMeta):
-    """Heneric class for PP fields.
+    """Base class for PP fields.
 
     A generic class for PP fields - not specific to a particular
     header release number.
@@ -880,7 +880,7 @@ class PPField(metaclass=ABCMeta):
             self.raw_lbpack = header[self.HEADER_DICT["lbpack"][0]]
 
     def __getattr__(self, key):
-        """Support deferred attribute creation.
+        """Return the value of the key.
 
         Method supports deferred attribute creation, which offers a
         significant loading optimisation, particularly when not all attributes
@@ -1716,8 +1716,9 @@ def _create_field_data(field, data_shape, land_mask_field=None):
     """Modify a field's ``_data`` attribute.
 
     Modify a field's ``_data`` attribute either by:
-     * converting a 'deferred array bytes' tuple into a lazy array,
-     * converting LoadedArrayBytes into an actual numpy array.
+
+    * converting a 'deferred array bytes' tuple into a lazy array,
+    * converting LoadedArrayBytes into an actual numpy array.
 
     If 'land_mask_field' is passed (not None), then it contains the associated
     landmask, which is also a field :  Its data array is used as a template for

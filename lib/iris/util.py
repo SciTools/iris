@@ -710,7 +710,7 @@ def column_slices_generator(full_slice, ndims):
 
 
 def _build_full_slice_given_keys(keys, ndim):
-    """Bild an equivalent tuple of keys which span ndims.
+    """Build an equivalent tuple of keys which span ndims.
 
     Given the keys passed to a __getitem__ call, build an equivalent
     tuple of keys which span ndims.
@@ -865,7 +865,7 @@ def _wrap_function_for_method(function, docstring=None):
 
 
 class _MetaOrderedHashable(ABCMeta):
-    """Esures that non-abstract subclasses are given a default __init__ method.
+    """Ensures that non-abstract subclasses are given a default __init__ method.
 
     A metaclass that ensures that non-abstract subclasses of _OrderedHashable
     without an explicit __init__ method are given a default __init__ method
@@ -1256,7 +1256,7 @@ def squeeze(cube):
 
 
 def file_is_newer_than(result_path, source_paths):
-    """Determine if the 'result' file has a later modification.
+    """Determine if the 'result' file was modified last.
 
     Return whether the 'result' file has a later modification time than all of
     the 'source' files.
@@ -1521,7 +1521,7 @@ def _is_circular(points, modulus, bounds=None):
 
 
 def promote_aux_coord_to_dim_coord(cube, name_or_coord):
-    r"""Promotes an AuxCoord on the cube to a DimCoord.
+    r"""Promote an auxiliary to a dimension coordinate on the cube.
 
     This AuxCoord must be associated with a single cube dimension. If the
     AuxCoord is associated with a dimension that already has a DimCoord, that
@@ -1736,10 +1736,6 @@ def _meshgrid(*xi, **kwargs):
     associated input 1D coordinate. This is not the case prior to numpy v1.13,
     where the output dtype is cast up to its highest resolution, regardlessly.
 
-    @numpy v1.13, the dtype of each output n-D coordinate is the same as its
-    associated input 1D coordinate. This is not the case prior to numpy v1.13,
-    where the output dtype is cast up to its highest resolution, regardlessly.
-
     Reference: https://github.com/numpy/numpy/pull/5302
 
     """
@@ -1751,7 +1747,7 @@ def _meshgrid(*xi, **kwargs):
 
 
 def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
-    """Search the 'x' and 'y' coord on the cube for discontiguities.
+    """Identify spatial discontiguities.
 
     Searches the 'x' and 'y' coord on the cube for discontiguities in the
     bounds array, returned as a boolean array (True for all cells which are

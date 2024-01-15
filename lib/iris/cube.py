@@ -2777,7 +2777,7 @@ class Cube(CFVariableMixin):
         return tuple(self._aux_factories)
 
     def summary(self, shorten=False, name_padding=35):
-        """Summary (string) of the Cube.
+        """Summary of the Cube.
 
         String summary of the Cube with name+units, a list of dim coord names
         versus length and, optionally, a summary of all other components.

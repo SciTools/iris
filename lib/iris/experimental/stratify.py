@@ -49,7 +49,7 @@ def _copy_coords_without_z_dim(src, tgt, z_dim):
 
 
 def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
-    """Interpolate the cube onto the specified target levels.
+    """Perform vertical interpolation.
 
     Interpolate the cube onto the specified target levels, given the
     source levels of the cube.

@@ -51,7 +51,7 @@ warn_deprecated(wmsg)
 
 
 def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
-    """Regrid using using the area weighted mean of data values.
+    """Regrid using the area weighted mean of data values.
 
     Return a new cube with data values calculated using the area weighted
     mean of data values from src_grid regridded onto the horizontal grid of
@@ -521,7 +521,7 @@ class _ProjectedUnstructuredRegridder:
         return result
 
     def __call__(self, src_cube):
-        """Regrid this :class:`~iris.cube.Cube` on to the target grid.
+        """Regrid to the target grid.
 
         Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`UnstructuredProjectedRegridder`.
@@ -617,7 +617,7 @@ class ProjectedUnstructuredLinear:
     """
 
     def __init__(self, projection=None):
-        """Linear regridding scheme that uses scipy.interpolate.griddata.
+        """Linear regridding scheme.
 
         Linear regridding scheme that uses scipy.interpolate.griddata on
         projected unstructured data.

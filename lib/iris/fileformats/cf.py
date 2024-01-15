@@ -134,7 +134,7 @@ class CFVariable(metaclass=ABCMeta):
         pass
 
     def spans(self, cf_variable):
-        """Determine the dimensionality of this variable is a subset.
+        """Determine dimensionality coverage.
 
         Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
@@ -383,7 +383,7 @@ class CFBoundaryVariable(CFVariable):
         return result
 
     def spans(self, cf_variable):
-        """Determine the dimensionality of this variable is a subset.
+        """Determine dimensionality coverage.
 
         Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
@@ -459,7 +459,7 @@ class CFClimatologyVariable(CFVariable):
         return result
 
     def spans(self, cf_variable):
-        """Determine whether the dimensionality of this variable is a subset.
+        """Determine dimensionality coverage.
 
         Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
@@ -801,7 +801,7 @@ class CFLabelVariable(CFVariable):
         )
 
     def spans(self, cf_variable):
-        """Determine if dimensionality is a subset of the specified target variable.
+        """Determine dimensionality coverage.
 
         Determine whether the dimensionality of this variable
         is a subset of the specified target variable.

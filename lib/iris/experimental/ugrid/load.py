@@ -50,7 +50,7 @@ class _WarnComboCfDefaultingIgnoring(_WarnComboCfDefaulting, IrisIgnoringWarning
 
 class ParseUGridOnLoad(threading.local):
     def __init__(self):
-        """Flag for whether to use the experimental UGRID-aware version of Iris NetCDF loading.
+        """Thead-safe state to enable UGRID-aware NetCDF loading.
 
         A flag for dictating whether to use the experimental UGRID-aware
         version of Iris NetCDF loading. Object is thread-safe.

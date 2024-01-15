@@ -971,7 +971,7 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 
 def _sanitise_metadata(cube, unit):
-    """Clear the necessary or unsupported metadata from the resultant cube.
+    """Clear appropriate metadata from the resultant cube.
 
     As part of the maths metadata contract, clear the necessary or
     unsupported metadata from the resultant cube of the maths operation.

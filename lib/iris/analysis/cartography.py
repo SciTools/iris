@@ -83,7 +83,7 @@ def wrap_lons(lons, base, period):
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
-    """Convert arrays of rotated-pole to unrotated arrays of longitudes and latitudes.
+    """Convert rotated-pole to unrotated longitudes and latitudes.
 
     ``pole_lat`` should describe the location of the rotated pole that
     describes the arrays of rotated-pole longitudes and latitudes.
@@ -133,7 +133,7 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
 
 
 def rotate_pole(lons, lats, pole_lon, pole_lat):
-    """Convert arrays of longitudes and latitudes to arrays of rotated-pole longitudes and latitudes.
+    """Convert unrotated longitudes and latitudes to rotated-pole.
 
     The values of ``pole_lon`` and ``pole_lat``
     should describe the rotated pole that the arrays of longitudes and
@@ -496,7 +496,7 @@ def area_weights(cube, normalize=False):
 
 
 def cosine_latitude_weights(cube):
-    r"""Return an array of latitude weights, with the same dimensions as the cube.
+    r"""Calculate cosine latitude weights, with the same dimensions as the cube.
 
     Return an array of latitude weights, with the same dimensions as
     the cube. The weights are the cosine of latitude.
@@ -996,7 +996,7 @@ def _crs_distance_differentials(crs, x, y):
 
 
 def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
-    """Transform distance vectors from one coordinate reference system to another.
+    """Transform distance vectors to another coordinate reference system.
 
     Transform distance vectors from one coordinate reference system to
     another, preserving magnitude and physical direction.

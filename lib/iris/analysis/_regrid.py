@@ -431,7 +431,7 @@ class CurvilinearRegridder:
         return coords[0]
 
     def __call__(self, src):
-        """Regrid :class:`~iris.cube.Cube` onto the target grid :class:`_CurvilinearRegridder`.
+        """Regrid onto the target grid.
 
         Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
         this :class:`_CurvilinearRegridder`.
@@ -555,7 +555,7 @@ class RectilinearRegridder:
 
     @staticmethod
     def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
-        """Convert the rectilinear grid coordinates to a curvilinear grid.
+        """Convert the rectilinear grid to a curvilinear grid.
 
         Convert the rectilinear grid coordinates to a curvilinear grid in
         the source coordinate system.
@@ -852,7 +852,7 @@ class RectilinearRegridder:
                 raise ValueError(msg)
 
     def __call__(self, src):
-        """Regrid :class:`~iris.cube.Cube` onto target grid of :class:`RectilinearRegridder`.
+        """Regrid onto target grid.
 
         Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`RectilinearRegridder`.

@@ -387,9 +387,6 @@ class _CubeSignature:
     def __init__(self, cube):
         """Represent the cube metadata and associated coordinate metadata.
 
-        Represents the cube metadata and associated coordinate metadata that
-        allows suitable cubes for concatenation to be identified.
-
         Parameters
         ----------
         cube : :class:`iris.cube.Cube`
@@ -733,10 +730,7 @@ class _ProtoCube:
     """Framework for concatenating multiple source-cubes over one common dimension."""
 
     def __init__(self, cube):
-        """Create a new _ProtoCube  and record the cube as a source-cube.
-
-        Create a new _ProtoCube from the given cube and record the cube
-        as a source-cube.
+        """Create a new _ProtoCube from the given cube and record the cube as a source-cube.
 
         Parameters
         ----------

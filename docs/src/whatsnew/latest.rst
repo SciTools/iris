@@ -24,7 +24,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
+#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull:`5577`)
 
 #. `@HGWright`_, `@bjlittle`_ and `@trexfeathers`_ (reviewers) added a
    CITATION.cff file to Iris and updated the :ref:`citation documentation <Citing_Iris>`
@@ -82,6 +82,10 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ and `@trexfeathers`_ (reviewer) added handling for realization
    coordinates when saving pp files (:issue:`4747`, :pull:`5568`)
+
+#. `@ESadek-MO`_ has updated
+   :mod:`iris.fileformats._nc_load_rules.helpers` to lessen warning duplication.
+   (:issue:`5536`, :pull:`5685`)
 
 
 💣 Incompatible Changes
@@ -141,6 +145,17 @@ This document explains the changes made to Iris for this release
    for further topics. (:pull:`5588`)
 
 #. `@bouweandela`_ updated all hyperlinks to https. (:pull:`5621`)
+
+#. `@ESadek-MO`_ created an index page for :ref:`further_topics_index`, and
+   relocated all 'Technical Papers' into
+   :ref:`further_topics_index`. (:pull:`5602`)
+
+#. `@trexfeathers`_ made drop-down icons visible to show which pages link to
+   'sub-pages'. (:pull:`5684`)
+
+#. `@trexfeathers`_ improved the documentation of acceptable
+   :class:`~iris.cube.Cube` standard names in
+   :func:`iris.analysis.calculus.curl`. (:pull:`5680`)
 
 
 💼 Internal

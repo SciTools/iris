@@ -100,7 +100,7 @@ def scalar_cell_method(cube, method, coord_name):
 
 
 def has_aux_factory(cube, aux_factory_class):
-    """Try to find an class:`~iris.aux_factory.AuxCoordFactory`.
+    """Determine class:`~iris.aux_factory.AuxCoordFactory` availability within cube.
 
     Try to find an class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type on the cube.
@@ -113,7 +113,7 @@ def has_aux_factory(cube, aux_factory_class):
 
 
 def aux_factory(cube, aux_factory_class):
-    """Return class:`~iris.aux_factory.AuxCoordFactory` instance of the specified type from a cube.
+    """Retrieve class:`~iris.aux_factory.AuxCoordFactory` instance from cube.
 
     Return the class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type from a cube.
@@ -199,7 +199,7 @@ def _regrid_to_target(src_cube, target_coords, target_cube):
 
 
 def _ensure_aligned(regrid_cache, src_cube, target_cube):
-    """Return a cube suitable for use as an AuxCoord on target.
+    """Ensure dimension compatible cubes are spatially aligned.
 
     Returns a version of `src_cube` suitable for use as an AuxCoord
     on `target_cube`, or None if no version can be made.

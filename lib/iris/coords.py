@@ -783,7 +783,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.shape
 
     def xml_element(self, doc):
-        """Create :class:`xml.dom.minidom.Element` that describes :class:`_DimensionalMetadata`.
+        """Create XML element.
 
         Create the :class:`xml.dom.minidom.Element` that describes this
         :class:`_DimensionalMetadata`.
@@ -963,12 +963,12 @@ class AncillaryVariable(_DimensionalMetadata):
         return super()._lazy_values()
 
     def core_data(self):
-        """Core data array at the core of this ancillary variable.
+        """Data array at the core of this ancillary variable.
 
         The data array at the core of this ancillary variable, which may be a
         NumPy array or a dask array.
 
-        """
+        """  # noqa: D401
         return super()._core_values()
 
     def has_lazy_data(self):
@@ -1191,7 +1191,7 @@ def _get_2d_coord_bound_grid(bounds):
 
 
 class Cell(namedtuple("Cell", ["point", "bound"])):
-    """An immutable representation of a single cell of a coordinate.
+    """A coordinate cell containing a single point, or point and bounds.
 
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
@@ -1304,7 +1304,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         return result
 
     def __common_cmp__(self, other, operator_method):
-        """Perform common methods for rich comparison operators.
+        """Common equality comparison.
 
         Common method called by the rich comparison operators. The method of
         checking equality depends on the type of the object to be compared.
@@ -1312,7 +1312,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         Cell vs Cell comparison is used to define a strict order.
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
-        """
+        """  # noqa: D401
         if (isinstance(other, list) and len(other) == 1) or (
             isinstance(other, np.ndarray) and other.shape == (1,)
         ):
@@ -1579,7 +1579,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def bounds(self):
-        """The coordinate bounds values, as a NumPy array.
+        """Coordinate bounds values.
 
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
@@ -1620,7 +1620,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def climatological(self):
-        """A boolean that controls whether the coordinate is a climatological time axis.
+        """Flag for representing a climatological time axis.
 
         A boolean that controls whether the coordinate is a climatological
         time axis, in which case the bounds represent a climatological period
@@ -1715,7 +1715,7 @@ class Coord(_DimensionalMetadata):
         return super()._core_values()
 
     def core_bounds(self):
-        """Core bounds.  The points array at the core of this coord, which may be a NumPy array or a dask array."""
+        """Core bounds. The points array at the core of this coord, which may be a NumPy array or a dask array."""
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()
@@ -1728,7 +1728,7 @@ class Coord(_DimensionalMetadata):
         return super()._has_lazy_values()
 
     def has_lazy_bounds(self):
-        """Return a boolean whether the coord's bounds array is a lazy dask array or not.
+        """Whether coordinate bounds are lazy.
 
         Return a boolean indicating whether the coord's bounds array is a
         lazy dask array or not.
@@ -1915,7 +1915,7 @@ class Coord(_DimensionalMetadata):
         return contiguous, diffs
 
     def is_contiguous(self, rtol=1e-05, atol=1e-08):
-        """Check if the Coord is bounded with contiguous bounds.
+        """Whether coordinate has contiguous bounds.
 
         Return True if, and only if, this Coord is bounded with contiguous
         bounds to within the specified relative and absolute tolerances.
@@ -1947,7 +1947,7 @@ class Coord(_DimensionalMetadata):
         return contiguous
 
     def contiguous_bounds(self):
-        """Return the N+1 bound values for a contiguous bounded 1D coordinate.
+        """Contiguous bounds of 1D coordinate.
 
         Return the N+1 bound values for a contiguous bounded 1D coordinate
         of length N, or the (N+1, M+1) bound values for a contiguous bounded 2D
@@ -2043,7 +2043,7 @@ class Coord(_DimensionalMetadata):
 
     @property
     def bounds_dtype(self):
-        """The NumPy dtype of the coord's bounds.
+        """The NumPy dtype of the coordinates bounds.
 
         The NumPy dtype of the coord's bounds. Will be `None` if the coord
         does not have bounds.
@@ -2067,7 +2067,7 @@ class Coord(_DimensionalMetadata):
         return self._bounds_dm is not None
 
     def cell(self, index):
-        """Return the single :class:`Cell` instance from slicing the points/bounds.
+        """Point/bound cell at the given coordinate index.
 
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
