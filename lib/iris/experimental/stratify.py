@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Routines for putting data on new strata (aka. isosurfaces), often in the
-Z direction.
-
-"""
+"""Routines for putting data on new strata (aka. isosurfaces), often in the Z direction."""
 
 from functools import partial
 
@@ -52,7 +49,9 @@ def _copy_coords_without_z_dim(src, tgt, z_dim):
 
 
 def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
-    """Interpolate the cube onto the specified target levels, given the
+    """Perform vertical interpolation.
+
+    Interpolate the cube onto the specified target levels, given the
     source levels of the cube.
 
     For example, suppose we have two datasets `P(i,j,k)` and `H(i,j,k)`
@@ -64,8 +63,8 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     that are generally monotonic in the direction of interpolation, such as
     height/pressure or salinity/depth.
 
-    Args:
-
+    Parameters
+    ----------
     cube : :class:`~iris.cube.Cube`
         The phenomenon data to be re-levelled.
 

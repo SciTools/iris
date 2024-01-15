@@ -1,5 +1,6 @@
-"""Loading a Cube From a Custom File Format
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""
+Loading a Cube From a Custom File Format
+========================================
 
 This example shows how a custom text file can be loaded using the standard Iris
 load mechanism.
@@ -8,25 +9,25 @@ The first stage in the process is to define an Iris :class:`FormatSpecification
 <iris.io.format_picker.FormatSpecification>` for the file format. To create a
 format specification we need to define the following:
 
-* format_name - Some text that describes the format specification we are
+* **format_name** - Some text that describes the format specification we are
   creating
-* file_element - FileElement object describing the element which identifies
+* **file_element** - FileElement object describing the element which identifies
   this FormatSpecification.
 
   Possible values are:
 
-    ``iris.io.format_picker.MagicNumber(n, o)``
-        The n bytes from the file at offset o.
+  * ``iris.io.format_picker.MagicNumber(n, o)``
+      The n bytes from the file at offset o.
 
-    ``iris.io.format_picker.FileExtension()``
-        The file's extension.
+  * ``iris.io.format_picker.FileExtension()``
+      The file extension.
 
-    ``iris.io.format_picker.LeadingLine()``
-        The first line of the file.
+  * ``iris.io.format_picker.LeadingLine()``
+      The first line of the file.
 
-* file_element_value - The value that the file_element should take if a file
+* **file_element_value** - The value that the file_element should take if a file
   matches this FormatSpecification
-* handler (optional) - A generator function that will be called when the file
+* **handler** (optional) - A generator function that will be called when the file
   specification has been identified. This function is provided by the user and
   provides the means to parse the whole file. If no handler function is
   provided, then identification is still possible without any handling.
@@ -40,7 +41,7 @@ format specification we need to define the following:
   The handler function must be defined as generator which yields each cube as
   they are produced.
 
-* priority (optional) - Integer giving a priority for considering this
+* **priority** (optional) - Integer giving a priority for considering this
   specification where higher priority means sooner consideration
 
 In the following example, the function :func:`load_NAME_III` has been defined
@@ -52,7 +53,7 @@ In the ``main()`` function the filenames are loaded via the ``iris.load_cube``
 function which automatically invokes the ``FormatSpecification`` we defined.
 The cube returned from the load function is then used to produce a plot.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import datetime
 

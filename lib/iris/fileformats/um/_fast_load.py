@@ -2,7 +2,8 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Support for "fast" loading of structured UM files in iris load functions,
+"""Support for "fast" loading of structured UM files in iris load functions.
+
 i.e. :meth:`iris.load` and its associates.
 
 This provides a context manager to enable structured loading via all the iris
@@ -154,8 +155,7 @@ _HINTS = {name: i for i, name in zip(range(len(_HINT_COORDS)), _HINT_COORDS)}
 
 
 def _convert_collation(collation):
-    """Converts a FieldCollation into the corresponding items of Cube
-    metadata.
+    """Converts a FieldCollation into the corresponding items of Cube metadata.
 
     Parameters
     ----------
@@ -542,7 +542,9 @@ def structured_um_loading():
 
 @contextmanager
 def _raw_structured_loading():
-    """Private context manager called by :func:`iris.load_raw` to prevent
+    """Prevent structured loading from concatenating its result cubes.
+
+    Private context manager called by :func:`iris.load_raw` to prevent
     structured loading from concatenating its result cubes in that case.
 
     """

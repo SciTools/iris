@@ -57,7 +57,8 @@ def _canonical_sample_points(coords, sample_points):
 
 
 def extend_circular_coord(coord, points):
-    """Return coordinates points with a shape extended by one
+    """Return coordinate points with a shape extended by one.
+
     This is common when dealing with circular coordinates.
 
     """
@@ -67,7 +68,9 @@ def extend_circular_coord(coord, points):
 
 
 def extend_circular_coord_and_data(coord, data, coord_dim):
-    """Return coordinate points and a data array with a shape extended by one
+    """Return coordinate points and data with a shape extended by one in the provided axis.
+
+    Return coordinate points and a data array with a shape extended by one
     in the coord_dim axis. This is common when dealing with circular
     coordinates.
 
@@ -155,10 +158,7 @@ def get_xy_coords(cube, dim_coords=False):
 
 
 def snapshot_grid(cube):
-    """Helper function that returns deep copies of lateral (dimension) coordinates
-    from a cube.
-
-    """
+    """Helper function that returns deep copies of lateral (dimension) coordinates from a cube."""
     x, y = get_xy_dim_coords(cube)
     return x.copy(), y.copy()
 
@@ -251,10 +251,7 @@ class RectilinearInterpolator:
         return self._mode
 
     def _account_for_circular(self, points, data):
-        """Extend the given data array, and re-centralise coordinate points
-        for circular (1D) coordinates.
-
-        """
+        """Extend data array, and re-centralise coordinate points for circular (1D) coordinates."""
         from iris.analysis.cartography import wrap_lons
 
         for circular, modulus, index, dim, offset in self._circulars:
@@ -383,7 +380,9 @@ class RectilinearInterpolator:
         return new_coord
 
     def _setup(self):
-        """Perform initial start-up configuration and validation based on the
+        """Perform initial start-up configuration and validation.
+
+        Perform initial start-up configuration and validation based on the
         cube and the specified coordinates to be interpolated over.
 
         """
@@ -434,7 +433,9 @@ class RectilinearInterpolator:
         self._validate()
 
     def _validate(self):
-        """Perform all sanity checks to ensure that the interpolation request
+        """Perform checks to ensure interpolation request is valid.
+
+        Perform all sanity checks to ensure that the interpolation request
         over the cube with the specified coordinates is valid and can be
         performed.
 
@@ -458,10 +459,7 @@ class RectilinearInterpolator:
                     raise ValueError(msg.format(coord.name()))
 
     def _interpolated_dtype(self, dtype):
-        """Determine the minimum base dtype required by the
-        underlying interpolator.
-
-        """
+        """Determine the minimum base dtype required by the underlying interpolator."""
         if self._method == "nearest":
             result = dtype
         else:
@@ -469,7 +467,9 @@ class RectilinearInterpolator:
         return result
 
     def _points(self, sample_points, data, data_dims=None):
-        """Interpolate the given data values at the specified list of orthogonal
+        """Interpolate at the specified points.
+
+        Interpolate the given data values at the specified list of orthogonal
         (coord, points) pairs.
 
         Parameters

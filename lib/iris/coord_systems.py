@@ -115,10 +115,7 @@ class CoordSystem(metaclass=ABCMeta):
 
     @abstractmethod
     def as_cartopy_crs(self):
-        """Return a cartopy CRS representing our native coordinate
-        system.
-
-        """
+        """Return a cartopy CRS representing our native coordinate system."""
         pass
 
     @abstractmethod
@@ -141,7 +138,9 @@ _short_datum_names = {
 
 
 class GeogCS(CoordSystem):
-    """A geographic (ellipsoidal) coordinate system, defined by the shape of
+    """A geographic (ellipsoidal) coordinate system.
+
+    A geographic (ellipsoidal) coordinate system, defined by the shape of
     the Earth and a prime meridian.
     """
 
@@ -362,7 +361,9 @@ class GeogCS(CoordSystem):
         return ccrs.Geodetic(self._globe)
 
     def _wipe_cached_properties(self):
-        """Wipes the cached properties on the object as part of any update to a
+        """Wipes the cached properties on the object.
+
+        Wipes the cached properties on the object as part of any update to a
         value that invalidates the cache.
         """
         try:
@@ -383,9 +384,12 @@ class GeogCS(CoordSystem):
 
     @semi_major_axis.setter
     def semi_major_axis(self, value):
-        """Setting this property to a different value invalidates the current datum
+        """Assign semi_major_axis.
+
+        Setting this property to a different value invalidates the current datum
         (if any) because a datum encodes a specific semi-major axis. This also
         invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
+
         """
         value = float(value)
         if not np.isclose(self.semi_major_axis, value):
@@ -402,9 +406,12 @@ class GeogCS(CoordSystem):
 
     @semi_minor_axis.setter
     def semi_minor_axis(self, value):
-        """Setting this property to a different value invalidates the current datum
+        """Assign semi_minor_axis.
+
+        Setting this property to a different value invalidates the current datum
         (if any) because a datum encodes a specific semi-minor axis. This also
         invalidates the cached `cartopy.Globe` and `cartopy.CRS`.
+
         """
         value = float(value)
         if not np.isclose(self.semi_minor_axis, value):
@@ -421,8 +428,11 @@ class GeogCS(CoordSystem):
 
     @inverse_flattening.setter
     def inverse_flattening(self, value):
-        """Setting this property to a different value does not affect the behaviour
+        """Assign inverse_flattening.
+
+        Setting this property to a different value does not affect the behaviour
         of this object any further than the value of this property.
+
         """
         wmsg = (
             "Setting inverse_flattening does not affect other properties of "
@@ -443,10 +453,13 @@ class GeogCS(CoordSystem):
 
     @datum.setter
     def datum(self, value):
-        """Setting this property to a different value invalidates the current
+        """Assign datum.
+
+        Setting this property to a different value invalidates the current
         values of the ellipsoid measurements because a datum encodes its own
         ellipse. This also invalidates the cached `cartopy.Globe` and
         `cartopy.CRS`.
+
         """
         if self._datum != value:
             self._semi_major_axis = None
@@ -483,8 +496,7 @@ class RotatedGeogCS(CoordSystem):
         north_pole_grid_longitude=None,
         ellipsoid=None,
     ):
-        """Constructs a coordinate system with rotated pole, on an
-        optional :class:`GeogCS`.
+        """Constructs a coordinate system with rotated pole, on an optional :class:`GeogCS`.
 
         Args:
 

@@ -28,24 +28,26 @@ _LENIENT_PROTECTED = ("active", "enable")
 
 
 def _lenient_client(*dargs, services=None):
-    """Decorator that allows a client function/method to declare at runtime that
+    """Decorator implementing the lenient client protocol.
+
+    Decorator that allows a client function/method to declare at runtime that
     it is executing and requires lenient behaviour from a prior registered
     lenient service function/method.
 
-    This decorator supports being called with no arguments e.g.,
+    This decorator supports being called with no arguments e.g::
 
         @_lenient_client()
         def func():
             pass
 
-    This is equivalent to using it as a simple naked decorator e.g.,
+    This is equivalent to using it as a simple naked decorator e.g::
 
         @_lenient_client
         def func()
             pass
 
     Alternatively, this decorator supports the lenient client explicitly
-    declaring the lenient services that it wishes to use e.g.,
+    declaring the lenient services that it wishes to use e.g::
 
         @_lenient_client(services=(service1, service2, ...)
         def func():
@@ -87,7 +89,9 @@ def _lenient_client(*dargs, services=None):
 
         @wraps(func)
         def lenient_client_inner_naked(*args, **kwargs):
-            """Closure wrapper function to register the wrapped function/method
+            """Closure wrapper function.
+
+            Closure wrapper function to register the wrapped function/method
             as active at runtime before executing it.
 
             """
@@ -107,7 +111,9 @@ def _lenient_client(*dargs, services=None):
         def lenient_client_outer(func):
             @wraps(func)
             def lenient_client_inner(*args, **kwargs):
-                """Closure wrapper function to register the wrapped function/method
+                """Closure wrapper function.
+
+                Closure wrapper function to register the wrapped function/method
                 as active at runtime before executing it.
 
                 """
@@ -123,18 +129,20 @@ def _lenient_client(*dargs, services=None):
 
 
 def _lenient_service(*dargs):
-    """Decorator that allows a function/method to declare that it supports lenient
+    """Decorator implementing the lenient service protocol.
+
+    Decorator that allows a function/method to declare that it supports lenient
     behaviour as a service.
 
     Registration is at Python interpreter parse time.
 
-    The decorator supports being called with no arguments e.g.,
+    The decorator supports being called with no arguments e.g::
 
         @_lenient_service()
         def func():
             pass
 
-    This is equivalent to using it as a simple naked decorator e.g.,
+    This is equivalent to using it as a simple naked decorator e.g::
 
         @_lenient_service
         def func():
@@ -281,7 +289,9 @@ class Lenient(threading.local):
 
     @contextmanager
     def context(self, **kwargs):
-        """Return a context manager which allows temporary modification of the
+        """Context manager supporting temporary modification of lenient state.
+
+        Return a context manager which allows temporary modification of the
         lenient option state within the scope of the context manager.
 
         On entry to the context manager, all provided keyword arguments are
@@ -320,7 +330,9 @@ class Lenient(threading.local):
 
 class _Lenient(threading.local):
     def __init__(self, *args, **kwargs):
-        """A container for managing the run-time lenient services and client
+        """A container for managing the run-time lenient services and client options.
+
+        A container for managing the run-time lenient services and client
         options for pre-defined functions/methods.
 
         Parameters
@@ -354,7 +366,9 @@ class _Lenient(threading.local):
             self.register_client(client, services)
 
     def __call__(self, func):
-        """Determine whether it is valid for the function/method to provide a
+        """Determine whether it is valid for the function/method to provide a lenient service.
+
+        Determine whether it is valid for the function/method to provide a
         lenient service at runtime to the actively executing lenient client.
 
         Parameters
@@ -433,7 +447,9 @@ class _Lenient(threading.local):
 
     @contextmanager
     def context(self, *args, **kwargs):
-        """Return a context manager which allows temporary modification of
+        """Context manager supporting temporary modification of lenient state.
+
+        Return a context manager which allows temporary modification of
         the lenient option state for the active thread.
 
         On entry to the context manager, all provided keyword arguments are
@@ -526,7 +542,9 @@ class _Lenient(threading.local):
         self.__dict__["enable"] = state
 
     def register_client(self, func, services, append=False):
-        """Add the provided mapping of lenient client function/method to
+        """Add the lenient client to service mapping.
+
+        Add the provided mapping of lenient client function/method to
         required lenient service function/methods.
 
         Parameters
@@ -565,8 +583,7 @@ class _Lenient(threading.local):
         self.__dict__[func] = services
 
     def register_service(self, func):
-        """Add the provided function/method as providing a lenient service and
-        activate it.
+        """Add the provided function/method as providing a lenient service and activate it.
 
         Parameters
         ----------

@@ -51,7 +51,9 @@ warn_deprecated(wmsg)
 
 
 def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
-    """Return a new cube with data values calculated using the area weighted
+    """Regrid using the area weighted mean of data values.
+
+    Return a new cube with data values calculated using the area weighted
     mean of data values from src_grid regridded onto the horizontal grid of
     grid_cube.
 
@@ -123,7 +125,9 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
 
 
 def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
-    r"""Return a new cube with the data values calculated using the weighted
+    r"""Regrid using the weighted mean and the weights.
+
+    Return a new cube with the data values calculated using the weighted
     mean of data values from :data:`src_cube` and the weights from
     :data:`weights` regridded onto the horizontal grid of :data:`grid_cube`.
 
@@ -215,8 +219,7 @@ class PointInCell:
     """
 
     def __init__(self, weights=None):
-        """Point-in-cell regridding scheme suitable for regridding over one
-        or more orthogonal coordinates.
+        """Point-in-cell regridding scheme for regridding over one or more orthogonal coordinates.
 
         .. warning::
 
@@ -239,8 +242,7 @@ class _ProjectedUnstructuredRegridder:
     """Regridding that uses scipy.interpolate.griddata."""
 
     def __init__(self, src_cube, tgt_grid_cube, method, projection=None):
-        """Create a regridder for conversions between the source
-        and target grids.
+        """Create a regridder for conversions between the source and target grids.
 
         Parameters
         ----------
@@ -393,8 +395,7 @@ class _ProjectedUnstructuredRegridder:
         grid_y_coord,
         regrid_callback,
     ):
-        """Return a new Cube for the result of regridding the source Cube onto
-        the new grid.
+        """Return a new Cube for the result of regridding the source Cube onto the new grid.
 
         All the metadata and coordinates of the result Cube are copied from
         the source Cube, with two exceptions:
@@ -520,7 +521,9 @@ class _ProjectedUnstructuredRegridder:
         return result
 
     def __call__(self, src_cube):
-        """Regrid this :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid to the target grid.
+
+        Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`UnstructuredProjectedRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -614,7 +617,9 @@ class ProjectedUnstructuredLinear:
     """
 
     def __init__(self, projection=None):
-        """Linear regridding scheme that uses scipy.interpolate.griddata on
+        """Linear regridding scheme.
+
+        Linear regridding scheme that uses scipy.interpolate.griddata on
         projected unstructured data.
 
         .. note::
@@ -644,7 +649,9 @@ class ProjectedUnstructuredLinear:
         warn_deprecated(wmsg)
 
     def regridder(self, src_cube, target_grid):
-        """Creates a linear regridder to perform regridding, using
+        """Create a linear regridder to perform regridding.
+
+        Creates a linear regridder to perform regridding, using
         scipy.interpolate.griddata from unstructured source points to the
         target grid. The regridding calculation is performed in the given
         projection.
@@ -698,8 +705,7 @@ class ProjectedUnstructuredNearest:
     """
 
     def __init__(self, projection=None):
-        """Nearest regridding scheme that uses scipy.interpolate.griddata on
-        projected unstructured data.
+        """Nearest regridding scheme that uses scipy.interpolate.griddata on projected unstructured data.
 
         .. note::
 
@@ -730,7 +736,9 @@ class ProjectedUnstructuredNearest:
         warn_deprecated(wmsg)
 
     def regridder(self, src_cube, target_grid):
-        """Creates a nearest-neighbour regridder to perform regridding, using
+        """Creates a nearest-neighbour regridder to perform regridding.
+
+        Creates a nearest-neighbour regridder to perform regridding, using
         scipy.interpolate.griddata from unstructured source points to the
         target grid. The regridding calculation is performed in the given
         projection.

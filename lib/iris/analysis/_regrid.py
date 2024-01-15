@@ -376,8 +376,7 @@ class CurvilinearRegridder:
     """
 
     def __init__(self, src_grid_cube, target_grid_cube, weights=None):
-        """Create a regridder for conversions between the source
-        and target grids.
+        """Create a regridder for conversions between the source and target grids.
 
         Parameters
         ----------
@@ -408,8 +407,7 @@ class CurvilinearRegridder:
 
     @staticmethod
     def _get_horizontal_coord(cube, axis):
-        """Gets the horizontal coordinate on the supplied cube along the
-        specified axis.
+        """Gets the horizontal coordinate on the supplied cube along the specified axis.
 
         Parameters
         ----------
@@ -433,7 +431,9 @@ class CurvilinearRegridder:
         return coords[0]
 
     def __call__(self, src):
-        """Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid onto the target grid.
+
+        Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
         this :class:`_CurvilinearRegridder`.
 
         The given cube must be defined with the same grid as the source
@@ -494,8 +494,7 @@ class RectilinearRegridder:
     """
 
     def __init__(self, src_grid_cube, tgt_grid_cube, method, extrapolation_mode):
-        """Create a regridder for conversions between the source
-        and target grids.
+        """Create a regridder for conversions between the source and target grids.
 
         Parameters
         ----------
@@ -556,7 +555,9 @@ class RectilinearRegridder:
 
     @staticmethod
     def _sample_grid(src_coord_system, grid_x_coord, grid_y_coord):
-        """Convert the rectilinear grid coordinates to a curvilinear grid in
+        """Convert the rectilinear grid to a curvilinear grid.
+
+        Convert the rectilinear grid coordinates to a curvilinear grid in
         the source coordinate system.
 
         The `grid_x_coord` and `grid_y_coord` must share a common coordinate
@@ -851,7 +852,9 @@ class RectilinearRegridder:
                 raise ValueError(msg)
 
     def __call__(self, src):
-        """Regrid this :class:`~iris.cube.Cube` on to the target grid of
+        """Regrid onto target grid.
+
+        Regrid this :class:`~iris.cube.Cube` on to the target grid of
         this :class:`RectilinearRegridder`.
 
         The given cube must be defined with the same grid as the source

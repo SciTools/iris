@@ -1,4 +1,5 @@
-"""Plotting in Different Projections
+"""
+Plotting in Different Projections
 =================================
 
 This example shows how to overlay data and graphics in different projections,
@@ -11,7 +12,7 @@ We also add some lines and text annotations drawn in various projections.
 
 We plot these over a specified region, in two different map projections.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

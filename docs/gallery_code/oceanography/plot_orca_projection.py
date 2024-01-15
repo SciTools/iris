@@ -1,4 +1,5 @@
-"""Tri-Polar Grid Projected Plotting
+"""
+Tri-Polar Grid Projected Plotting
 =================================
 
 This example demonstrates cell plots of data on the semi-structured ORCA2 model
@@ -9,7 +10,7 @@ First, the data is projected into the PlateCarree coordinate reference system.
 Second four pcolormesh plots are created from this projected dataset,
 using different projections for the output image.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

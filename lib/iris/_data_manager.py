@@ -37,10 +37,7 @@ class DataManager:
         self._assert_axioms()
 
     def __copy__(self):
-        """Forbid :class:`~iris._data_manager.DataManager` instance
-        shallow-copy support.
-
-        """
+        """Forbid :class:`~iris._data_manager.DataManager` instance shallow-copy support."""
         name = type(self).__name__
         emsg = (
             "Shallow-copy of {!r} is not permitted. Use "
@@ -49,8 +46,7 @@ class DataManager:
         raise copy.Error(emsg.format(name, name))
 
     def __deepcopy__(self, memo):
-        """Allow :class:`~iris._data_manager.DataManager` instance
-        deepcopy support.
+        """Allow :class:`~iris._data_manager.DataManager` instance deepcopy support.
 
         Parameters
         ----------
@@ -62,6 +58,8 @@ class DataManager:
 
     def __eq__(self, other):
         """Perform :class:`~iris._data_manager.DataManager` instance equality.
+
+        Perform :class:`~iris._data_manager.DataManager` instance equality.
         Note that, this is explicitly not a lazy operation and will load any
         lazy payload to determine the equality result.
 
@@ -95,6 +93,8 @@ class DataManager:
 
     def __ne__(self, other):
         """Perform :class:`~iris._data_manager.DataManager` instance inequality.
+
+        Perform :class:`~iris._data_manager.DataManager` instance inequality.
         Note that, this is explicitly not a lazy operation and will load any
         lazy payload to determine the inequality result.
 
@@ -133,8 +133,7 @@ class DataManager:
         assert state, emsg.format("" if is_lazy else "no ", "" if is_real else "no ")
 
     def _deepcopy(self, memo, data=None):
-        """Perform a deepcopy of the :class:`~iris._data_manager.DataManager`
-        instance.
+        """Perform a deepcopy of the :class:`~iris._data_manager.DataManager` instance.
 
         Parameters
         ----------
@@ -204,7 +203,9 @@ class DataManager:
 
     @data.setter
     def data(self, data):
-        """Replaces the currently managed data with the specified data, which must
+        """Replace the currently managed data with the specified data.
+
+        Replace the currently managed data with the specified data, which must
         be of an equivalent shape.
 
         Note that, the only shape promotion permitted is for 0-dimensional
@@ -268,8 +269,7 @@ class DataManager:
         return self.core_data().shape
 
     def copy(self, data=None):
-        """Returns a deep copy of this :class:`~iris._data_manager.DataManager`
-        instance.
+        """Returns a deep copy of this :class:`~iris._data_manager.DataManager` instance.
 
         Parameters
         ----------
@@ -285,7 +285,9 @@ class DataManager:
         return self._deepcopy(memo, data=data)
 
     def core_data(self):
-        """If real data is being managed, then return the :class:`~numpy.ndarray`
+        """Provide real data or lazy data.
+
+        If real data is being managed, then return the :class:`~numpy.ndarray`
         or :class:`numpy.ma.core.MaskedArray`. Otherwise, return the lazy
         :class:`~dask.array.core.Array`.
 

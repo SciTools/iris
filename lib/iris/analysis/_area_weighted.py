@@ -21,8 +21,7 @@ class AreaWeightedRegridder:
     """Provide support for performing area-weighted regridding."""
 
     def __init__(self, src_grid_cube, target_grid_cube, mdtol=1):
-        """Create an area-weighted regridder for conversions between the source
-        and target grids.
+        """Create an area-weighted regridder for conversions between the source and target grids.
 
         Parameters
         ----------
@@ -75,8 +74,7 @@ class AreaWeightedRegridder:
         ) = _regrid_info
 
     def __call__(self, cube):
-        """Regrid this :class:`~iris.cube.Cube` onto the target grid of
-        this :class:`AreaWeightedRegridder`.
+        """Regrid :class:`~iris.cube.Cube` onto target grid :class:`AreaWeightedRegridder`.
 
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`AreaWeightedRegridder`.

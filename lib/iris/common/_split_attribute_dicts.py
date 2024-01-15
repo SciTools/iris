@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Dictionary operations for dealing with the CubeAttrsDict "split"-style attribute
-dictionaries.
+"""Dictionary operations for dealing with the CubeAttrsDict "split"-style attribute dictionaries.
 
 The idea here is to convert a split-dictionary into a "plain" one for calculations,
 whose keys are all pairs of the form ('global', <keyname>) or ('local', <keyname>).

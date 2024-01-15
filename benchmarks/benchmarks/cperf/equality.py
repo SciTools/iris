@@ -8,8 +8,11 @@ from . import SingleDiagnosticMixin
 
 
 class EqualityMixin(SingleDiagnosticMixin):
-    r"""Uses :class:`SingleDiagnosticMixin` as the realistic case will be comparing
+    r"""Use :class:`SingleDiagnosticMixin` as the realistic case.
+
+    Uses :class:`SingleDiagnosticMixin` as the realistic case will be comparing
     :class:`~iris.cube.Cube`\\ s that have been loaded from file.
+
     """
 
     # Cut down the parent parameters.
@@ -23,9 +26,7 @@ class EqualityMixin(SingleDiagnosticMixin):
 
 @on_demand_benchmark
 class CubeEquality(EqualityMixin):
-    r"""Benchmark time and memory costs of comparing LFRic and UM
-    :class:`~iris.cube.Cube`\\ s.
-    """
+    r"""Benchmark time & memory costs of comparing LFRic & UM :class:`~iris.cube.Cube`\\ s."""
 
     def _comparison(self):
         _ = self.cube == self.other_cube

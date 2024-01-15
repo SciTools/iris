@@ -25,8 +25,10 @@ class BaseCommand(Command):
 
 
 def custom_command(cmd, help=""):
-    """Factory function to generate a custom command that adds additional
-    behaviour to build the CF standard names module.
+    """Factory function to generate a custom command.
+
+    Custom command will add additional behaviour to build the CF
+    standard names module.
 
     """
 

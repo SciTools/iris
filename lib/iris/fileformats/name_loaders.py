@@ -98,7 +98,9 @@ def read_header(file_handle):
 
 
 def _read_data_arrays(file_handle, n_arrays, shape):
-    """Return a list of NumPy arrays containing the data extracted from
+    """Return a list of NumPy arrays containing the data extracted.
+
+    Return a list of NumPy arrays containing the data extracted from
     the provided file object. The number and shape of the arrays
     must be specified.
 
@@ -127,8 +129,11 @@ def _read_data_arrays(file_handle, n_arrays, shape):
 def _build_lat_lon_for_NAME_field(
     header, dimindex, x_or_y, coord_names=["longitude", "latitude"]
 ):
-    """Return regular latitude and longitude coordinates extracted from
+    """Return regular latitude and longitude coordinates.
+
+    Return regular latitude and longitude coordinates extracted from
     the provided header dictionary.
+
     """
     if x_or_y == "X":
         start = header["X grid origin"]
@@ -147,7 +152,9 @@ def _build_lat_lon_for_NAME_field(
 
 
 def _build_lat_lon_for_NAME_timeseries(column_headings):
-    """Return regular latitude and longitude coordinates extracted from
+    """Return regular latitude and longitude coordinates.
+
+    Return regular latitude and longitude coordinates extracted from
     the provided column_headings dictionary.
 
     """
@@ -186,7 +193,9 @@ def _build_lat_lon_for_NAME_timeseries(column_headings):
 
 
 def _calc_integration_period(time_avgs):
-    """Return a list of datetime.timedelta objects determined from the provided
+    """Calculate averaging/integration time periods.
+
+    Return a list of datetime.timedelta objects determined from the provided
     list of averaging/integration period column headings.
 
     """
@@ -387,7 +396,9 @@ def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
 
 
 def _generate_cubes(header, column_headings, coords, data_arrays, cell_methods=None):
-    """Yield :class:`iris.cube.Cube` instances given
+    """Generate NAME cubes.
+
+    Yield :class:`iris.cube.Cube` instances given
     the headers, column headings, coords and data_arrays extracted
     from a NAME file.
 
@@ -549,7 +560,9 @@ def _generate_cubes(header, column_headings, coords, data_arrays, cell_methods=N
 
 
 def _build_cell_methods(av_or_ints, coord):
-    """Return a list of :class:`iris.coords.CellMethod` instances
+    """Create cell-methods.
+
+    Return a list of :class:`iris.coords.CellMethod` instances
     based on the provided list of column heading entries and the
     associated coordinate. If a given entry does not correspond to a cell
     method (e.g. "No time averaging"), a value of None is inserted.
@@ -588,7 +601,9 @@ def _build_cell_methods(av_or_ints, coord):
 
 
 def load_NAMEIII_field(filename):
-    """Load a NAME III grid output file returning a
+    """Load NAME III cubes.
+
+    Load a NAME III grid output file returning a
     generator of :class:`iris.cube.Cube` instances.
 
     Parameters
