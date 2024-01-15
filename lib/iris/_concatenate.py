@@ -151,7 +151,7 @@ class _CoordMetaData(
 class _DerivedCoordAndDims(
     namedtuple("DerivedCoordAndDims", ["coord", "dims", "aux_factory"])
 ):
-    """Container for a derived coordinate and dimnesions(s).
+    """Container for a derived coordinate and dimensions(s).
 
     Container for a derived coordinate, the associated AuxCoordFactory, and the
     associated data dimension(s) spanned over a :class:`iris.cube.Cube`.
