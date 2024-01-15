@@ -47,7 +47,7 @@ dependencies:
   - requests
 
 # Documentation dependencies.
-  - pydata-sphinx-theme == 0.14.4  # See ??????
+  - pydata-sphinx-theme == 0.14.4  # See https://github.com/SciTools/iris/issues/5698
   - sphinx <=5.3                   # See https://github.com/SciTools/iris/issues/5123
   - sphinxcontrib-apidoc
   - sphinx-copybutton
