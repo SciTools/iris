@@ -30,7 +30,8 @@ def pearsonr(
     cube_a, cube_b : cubes
         Cubes between which the correlation will be calculated.  The cubes
         should either be the same shape and have the same dimension coordinates
-        or one cube should be broadcastable to the other.
+        or one cube should be broadcastable to the other.  Broadcasting rules
+        are the same as those for cube arithmetic (see :ref:`cube maths`).
     corr_coords : str or list of str
         The cube coordinate name(s) over which to calculate correlations. If no
         names are provided then correlation will be calculated over all common
