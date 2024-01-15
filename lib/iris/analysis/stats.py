@@ -90,12 +90,12 @@ def pearsonr(
 
     if lhs_cube_resolved.has_lazy_data() or rhs_cube_resolved.has_lazy_data():
         al = da
-        array_1 = lhs_cube_resolved.lazy_data()
-        array_2 = rhs_cube_resolved.lazy_data()
+        array_lhs = lhs_cube_resolved.lazy_data()
+        array_rhs = rhs_cube_resolved.lazy_data()
     else:
         al = np
-        array_1 = lhs_cube_resolved.data
-        array_2 = rhs_cube_resolved.data
+        array_lhs = lhs_cube_resolved.data
+        array_rhs = rhs_cube_resolved.data
 
     # If no coords passed then set to all common dimcoords of cubes.
     if corr_coords is None:
@@ -114,24 +114,24 @@ def pearsonr(
 
     # Match up data masks if required.
     if common_mask:
-        mask_1 = al.ma.getmaskarray(array_1)
+        mask_lhs = al.ma.getmaskarray(array_lhs)
         if al is np:
-            # Reduce all invariant dimensions of mask_1 to length 1.  This avoids
-            # unnecessary broadcasting of array_2.
+            # Reduce all invariant dimensions of mask_lhs to length 1.  This avoids
+            # unnecessary broadcasting of array_rhs.
             index = tuple(
                 slice(0, 1)
-                if np.array_equal(mask_1.any(axis=dim), mask_1.all(axis=dim))
+                if np.array_equal(mask_lhs.any(axis=dim), mask_lhs.all(axis=dim))
                 else slice(None)
-                for dim in range(mask_1.ndim)
+                for dim in range(mask_lhs.ndim)
             )
-            mask_1 = mask_1[index]
+            mask_lhs = mask_lhs[index]
 
-        array_2 = _mask_array(array_2, mask_1)
-        array_1 = _mask_array(array_1, al.ma.getmaskarray(array_2))
+        array_rhs = _mask_array(array_rhs, mask_lhs)
+        array_lhs = _mask_array(array_lhs, al.ma.getmaskarray(array_rhs))
 
     # Broadcast weights to shape of arrays if necessary.
     if weights is None:
-        weights_1 = weights_2 = None
+        weights_lhs = weights_rhs = None
     else:
         if weights.shape != smaller_shape:
             msg = f"weights array should have dimensions {smaller_shape}"
@@ -139,29 +139,29 @@ def pearsonr(
 
         wt_resolver = Resolve(cube_1, cube_2.copy(weights))
         weights = wt_resolver.rhs_cube_resolved.data
-        weights_2 = np.broadcast_to(weights, array_2.shape)
-        weights_1 = np.broadcast_to(weights, array_1.shape)
+        weights_rhs = np.broadcast_to(weights, array_rhs.shape)
+        weights_lhs = np.broadcast_to(weights, array_lhs.shape)
 
     # Calculate correlations.
-    s1 = array_1 - al.ma.average(
-        array_1, axis=corr_dims, weights=weights_1, keepdims=True
+    s_lhs = array_lhs - al.ma.average(
+        array_lhs, axis=corr_dims, weights=weights_lhs, keepdims=True
     )
-    s2 = array_2 - al.ma.average(
-        array_2, axis=corr_dims, weights=weights_2, keepdims=True
+    s_rhs = array_rhs - al.ma.average(
+        array_rhs, axis=corr_dims, weights=weights_rhs, keepdims=True
     )
 
-    s_prod = resolver.cube(s1 * s2)
+    s_prod = resolver.cube(s_lhs * s_rhs)
 
     # Use cube collapsed method as it takes care of coordinate collapsing and missing
     # data tolerance.
     covar = s_prod.collapsed(
-        corr_coords, iris.analysis.SUM, weights=weights_1, mdtol=mdtol
+        corr_coords, iris.analysis.SUM, weights=weights_lhs, mdtol=mdtol
     )
 
-    var_1 = iris.analysis._sum(s1**2, axis=corr_dims, weights=weights_1)
-    var_2 = iris.analysis._sum(s2**2, axis=corr_dims, weights=weights_2)
+    var_lhs = iris.analysis._sum(s_lhs**2, axis=corr_dims, weights=weights_lhs)
+    var_rhs = iris.analysis._sum(s_rhs**2, axis=corr_dims, weights=weights_rhs)
 
-    denom = np.sqrt(var_1 * var_2)
+    denom = np.sqrt(var_lhs * var_rhs)
 
     corr_cube = covar / denom
     corr_cube.rename("Pearson's r")
