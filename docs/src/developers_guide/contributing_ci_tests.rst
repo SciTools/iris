@@ -119,5 +119,32 @@ See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jo
   Append to the ``ignore-words-list`` option any **valid words** that are
   considered **not** a typo and should **not** be corrected by `codespell`_.
 
+ruff
+----
+As of **Iris 3.8** `ruff`_ has been adopted to ensure our codebase is using best
+practice.  rruff is configured in the `Iris`_ GitHub repository using  
+`.pre-commit-config.yaml`_.  
+
+You can install and run `ruff`_ into your development **iris-dev** conda environment
+via::
+
+   conda activate iris-dev
+   pip install ruff
+   cd iris
+   ruff .
+
+.. note::
+
+  The `ruff`_ ``pre-commit`` hook checks for compliance of the whole codebase.
+  This hook is configured in the ``[tool.ruff]`` section
+  of the ``pyproject.toml`` file.
+
+  Edit the ``.ruff.toml`` file to add any rules to ignore if appropriate.  We
+  aim to be ruff compliant where at all possible.
+
+For more information on how to use `ruff`_ please see the `ruff documentation`_.
+
+
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
+.. _ruff documentation: https://docs.astral.sh/ruff/tutorial/
