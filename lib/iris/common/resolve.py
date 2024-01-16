@@ -304,7 +304,6 @@ class Resolve:
         #: operands, where the direction of the mapping is governed by
         #: :attr:`~iris.common.resolve.Resolve.map_rhs_to_lhs`.
         self.mapping = None  # set in _metadata_mapping
-        self.reorder_src_dims = None  # set in _as_compatible_cubes
 
         #: Cache containing a list of dim, aux and scalar coordinates prepared
         #: and ready for creating and attaching to the resultant resolved
@@ -440,7 +439,6 @@ class Resolve:
 
         # Determine whether a transpose of the src cube is necessary.
         if order != sorted(order):
-            self.reorder_src_dims = order
             new_src_data = new_src_data.transpose(order)
             logger.debug(
                 f"transpose src {self._src_cube_position} cube with order {order}"
