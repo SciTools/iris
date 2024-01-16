@@ -203,6 +203,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ replaced `black`_ with `ruff`_. (:pull:`5634`)
 
+#. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to be compliant with
+   almost all of the rules for `ruff pydocstyle`_. 
+   (https://github.com/SciTools/iris/issues/5625#issuecomment-1859159734)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -219,3 +222,4 @@ This document explains the changes made to Iris for this release
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
 .. _codespell: https://github.com/codespell-project/codespell
 .. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info
+.. _ruff pydocstyle: https://docs.astral.sh/ruff/rules/#pydocstyle-d
