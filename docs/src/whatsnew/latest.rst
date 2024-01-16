@@ -120,6 +120,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ enforced the minimum pin of ``numpy>1.22`` in accordance with the `NEP29 Drop Schedule`_.
    (:pull:`5668`)
 
+#. `@tkknight`_ enforced the temporary pin of ``pydata-sphinx-theme==0.14.4`` to fix
+   the missing toctree in the sidebar. (:pull:`5694`)
+
 
 📚 Documentation
 ================
