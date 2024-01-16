@@ -221,6 +221,7 @@ def _get_bounds_in_units(coord, units, dtype):
     """Return a copy of coord's bounds in the specified units and dtype.
 
     Return as contiguous bounds.
+
     """
     # The bounds are cast to dtype before conversion to prevent issues when
     # mixing float32 and float64 types.

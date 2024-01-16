@@ -19,9 +19,9 @@ import iris
 def _3d_xyz_from_latlon(lon, lat):
     """Return locations of (lon, lat) in 3D space.
 
-    Args:
-
-    * lon, lat: (float array)
+    Parameters
+    ----------
+    lon, lat: (float array)
         Arrays of longitudes and latitudes, in degrees.
         Both the same shape.
 
@@ -48,9 +48,9 @@ def _3d_xyz_from_latlon(lon, lat):
 def _latlon_from_xyz(xyz):
     """Return arrays of lons+lats angles from xyz locations.
 
-    Args:
-
-    * xyz: (array)
+    Parameters
+    ----------
+    xyz : array
         Array of 3-D cartesian coordinates.
         Shape (3, <input_points_dimensions>).
         x / y / z values are in xyz[0 / 1 / 2],
@@ -76,10 +76,13 @@ def _angle(p, q, r):
     grid row, but at increasing column (grid-Eastward) positions.
 
     {P, Q, R} are locations of consecutive points in the same grid row.
-    These could be successive points in a single grid,
-        e.g. {T(i-1,j), T(i,j), T(i+1,j)}
-    or a mixture of U/V and T gridpoints if row positions are aligned,
-        e.g. {v(i,j), f(i,j), v(i+1,j)}.
+    These could be successive points in a single grid, e.g.::
+
+        {T(i-1,j), T(i,j), T(i+1,j)}
+
+    or a mixture of U/V and T gridpoints if row positions are aligned, e.g::
+
+        {v(i,j), f(i,j), v(i+1,j)}.
 
     Method:
 
@@ -89,7 +92,7 @@ def _angle(p, q, r):
         Discriminate between +/- angles by comparing latitudes of P and R.
         Return NaN where any P-->R are zero.
 
-        .. NOTE::
+        .. note::
 
             This method assumes that the vector PR is parallel to the surface
             at the longitude of Q, as it uses the length of PR as the basis for
@@ -101,9 +104,9 @@ def _angle(p, q, r):
             gridcell-orientation-angle arrays found in files output by the CICE
             model, which presumably uses an equivalent calculation.
 
-    Args:
-
-    * p, q, r : (float array)
+    Parameters
+    ----------
+    p, q, r : float array
         Arrays of angles, in degrees.
         All the same shape.
         Shape is (2, <input_points_dimensions>).
@@ -148,34 +151,28 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
     Input can be either two arrays, two coordinates, or a single cube
     containing two suitable coordinates identified with the 'x' and 'y' axes.
 
-    Args:
+    The inputs (x [,y]) can be different, see the parameters section.
 
-    The inputs (x [,y]) can be any of the following :
-
-    * x (:class:`~iris.cube.Cube`):
+    Parameters
+    ----------
+    x : :class:`~iris.cube.Cube`
         a grid cube with 2D X and Y coordinates, identified by 'axis'.
         The coordinates must be 2-dimensional with the same shape.
         The two dimensions represent grid dimensions in the order Y, then X.
-
-    * x, y (:class:`~iris.coords.Coord`):
+    x, y : :class:`~iris.coords.Coord`
         X and Y coordinates, specifying grid locations on the globe.
         The coordinates must be 2-dimensional with the same shape.
         The two dimensions represent grid dimensions in the order Y, then X.
         If there is no coordinate system, they are assumed to be true
         longitudes and latitudes.  Units must convertible to 'degrees'.
-
-    * x, y (2-dimensional arrays of same shape (ny, nx)):
+    x, y : 2-dimensional arrays of same shape (ny, nx)
         longitude and latitude cell center locations, in degrees.
         The two dimensions represent grid dimensions in the order Y, then X.
-
-    * x, y (3-dimensional arrays of same shape (ny, nx, 4)):
+    x, y : 3-dimensional arrays of same shape (ny, nx, 4)
         longitude and latitude cell bounds, in degrees.
         The first two dimensions are grid dimensions in the order Y, then X.
         The last index maps cell corners anticlockwise from bottom-left.
-
-    Optional Args:
-
-    * cell_angle_boundpoints (string):
+    cell_angle_boundpoints : str, optional, default="mid-lhs, mid-rhs"
         Controls which gridcell bounds locations are used to calculate angles,
         if the inputs are bounds or bounded coordinates.
         Valid values are 'lower-left, lower-right', which takes the angle from
@@ -397,7 +394,7 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
 
     Can also rotate by arbitrary angles, if they are passed in.
 
-    .. Note::
+    .. note::
 
         This operation overlaps somewhat in function with
         :func:`iris.analysis.cartography.rotate_winds`.
@@ -409,21 +406,17 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
         complex meshes defined by two-dimensional coordinates, such as most
         ocean grids.
 
-    Args:
-
-    * u_cube, v_cube : (cube)
+    Parameters
+    ----------
+    u_cube, v_cube : cube
         Cubes of grid-u and grid-v vector components.
         Units should be differentials of true-distance, e.g. 'm/s'.
-
-    Optional args:
-
-    * grid_angles_cube : (cube)
+    grid_angles_cube : cube, optional, default=None
         gridcell orientation angles.
         Units must be angular, i.e. can be converted to 'radians'.
         If not provided, grid angles are estimated from 'u_cube' using the
         :func:`gridcell_angles` method.
-
-    * grid_angles_kwargs : (dict or None)
+    **grid_angles_kwargs : dict or None
         Additional keyword args to be passed to the :func:`gridcell_angles`
         method, if it is used.
 
