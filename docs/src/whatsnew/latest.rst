@@ -157,6 +157,9 @@ This document explains the changes made to Iris for this release
    :class:`~iris.cube.Cube` standard names in
    :func:`iris.analysis.calculus.curl`. (:pull:`5680`)
 
+#. `@tkknight`_ added ruff documentation in the :ref:`developer_testing_ci` of the
+   :ref:`developers_guide`. (:pull:`5701`)
+
 
 💼 Internal
 ===========

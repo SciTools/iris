@@ -1,6 +1,6 @@
-.. _developer_testing_ci:
-
 .. include:: ../common_links.inc
+
+.. _developer_testing_ci:
 
 Continuous Integration (CI) Testing
 ===================================
