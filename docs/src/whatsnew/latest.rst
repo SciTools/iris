@@ -123,6 +123,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ enforced the temporary pin of ``pydata-sphinx-theme==0.14.4`` to fix
    the missing toctree in the sidebar. (:pull:`5694`)
 
+#. `@bjlittle`_ updated ``ubuntu`` and ``mambaforge`` to the latest versions for ``readthedocs``
+   (:pull:`5702`)
+
 
 📚 Documentation
 ================
