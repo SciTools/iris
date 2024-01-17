@@ -120,6 +120,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ enforced the minimum pin of ``numpy>1.22`` in accordance with the `NEP29 Drop Schedule`_.
    (:pull:`5668`)
 
+#. `@bjlittle`_ updated ``ubuntu`` and ``mambaforge`` to the latest versions for ``readthedocs``
+   (:pull:`5702`)
+
 
 📚 Documentation
 ================
