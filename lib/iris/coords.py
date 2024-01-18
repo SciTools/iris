@@ -963,12 +963,12 @@ class AncillaryVariable(_DimensionalMetadata):
         return super()._lazy_values()
 
     def core_data(self):
-        """Data array at the core of this ancillary variable.
+        """Return data array at the core of this ancillary variable.
 
         The data array at the core of this ancillary variable, which may be a
         NumPy array or a dask array.
 
-        """  # noqa: D401
+        """
         return super()._core_values()
 
     def has_lazy_data(self):
