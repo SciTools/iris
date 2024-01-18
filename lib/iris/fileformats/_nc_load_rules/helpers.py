@@ -2,7 +2,9 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""All the pure-Python 'helper' functions which were previously included in the
+"""Helper functions for NetCDF loading rules.
+
+All the pure-Python 'helper' functions which were previously included in the
 Pyke rules database 'fc_rules_cf.krb'.
 
 The 'action' routines now call these, as the rules used to do.
@@ -258,22 +260,28 @@ class _WarnComboIgnoringCfLoad(
 
 
 def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
-    """Split a CF cell_methods attribute string into a list of zero or more cell
+    """Split a CF cell_methods.
+
+    Split a CF cell_methods attribute string into a list of zero or more cell
     methods, each of which is then parsed with a regex to return a list of match
     objects.
 
-    Args:
-
-    * nc_cell_methods: The value of the cell methods attribute to be split.
+    Parameters
+    ----------
+    nc_cell_methods :
+        The value of the cell methods attribute to be split.
 
     Returns
     -------
     nc_cell_methods_matches: list of re.Match objects
         A list of re.Match objects associated with each parsed cell method
 
+    Notes
+    -----
     Splitting is done based on words followed by colons outside of any brackets.
     Validation of anything other than being laid out in the expected format is
     left to the calling function.
+
     """
     # Find name candidates
     name_start_inds = []
@@ -327,24 +335,26 @@ class UnknownCellMethodWarning(iris.exceptions.IrisUnknownCellMethodWarning):
     pass
 
 
-def parse_cell_methods(nc_cell_methods):
-    """Parse a CF cell_methods attribute string into a tuple of zero or
-    more CellMethod instances.
+def parse_cell_methods(nc_cell_methods, cf_name=None):
+    """Parse a CF cell_methods attribute string into a tuple of zero or more CellMethod instances.
 
-    Args:
-
-    * nc_cell_methods (str):
+    Parameters
+    ----------
+    nc_cell_methods : str
         The value of the cell methods attribute to be parsed.
 
     Returns
     -------
     iterable of :class:`iris.coords.CellMethod`.
 
+    Notes
+    -----
     Multiple coordinates, intervals and comments are supported.
     If a method has a non-standard name a warning will be issued, but the
     results are not affected.
 
     """
+    msg = None
     cell_methods = []
     if nc_cell_methods is not None:
         for m in _split_cell_methods(nc_cell_methods):
@@ -356,10 +366,16 @@ def parse_cell_methods(nc_cell_methods):
             method_words = method.split()
             if method_words[0].lower() not in _CM_KNOWN_METHODS:
                 msg = "NetCDF variable contains unknown cell method {!r}"
-                warnings.warn(
-                    msg.format("{}".format(method_words[0])),
-                    category=UnknownCellMethodWarning,
-                )
+                msg = msg.format(method_words[0])
+                if cf_name:
+                    name = "{}".format(cf_name)
+                    msg = msg.replace("variable", "variable {!r}".format(name))
+                else:
+                    warnings.warn(
+                        msg,
+                        category=UnknownCellMethodWarning,
+                    )
+                    msg = None
             d[_CM_METHOD] = method
             name = d[_CM_NAME]
             name = name.replace(" ", "")
@@ -417,6 +433,9 @@ def parse_cell_methods(nc_cell_methods):
                 comments=d[_CM_COMMENT],
             )
             cell_methods.append(cell_method)
+        # only prints one warning, rather than each loop
+        if msg:
+            warnings.warn(msg, category=UnknownCellMethodWarning)
     return tuple(cell_methods)
 
 
@@ -447,21 +466,7 @@ def build_cube_metadata(engine):
 
     # Incorporate cell methods
     nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-    with warnings.catch_warnings(record=True) as warning_records:
-        cube.cell_methods = parse_cell_methods(nc_att_cell_methods)
-    # Filter to get the warning we are interested in.
-    warning_records = [
-        record
-        for record in warning_records
-        if issubclass(record.category, UnknownCellMethodWarning)
-    ]
-    if len(warning_records) > 0:
-        # Output an enhanced warning message.
-        warn_record = warning_records[0]
-        name = "{}".format(cf_var.cf_name)
-        msg = warn_record.message.args[0]
-        msg = msg.replace("variable", "variable {!r}".format(name))
-        warnings.warn(message=msg, category=UnknownCellMethodWarning)
+    cube.cell_methods = parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
 
     # Set the cube global attributes.
     for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
@@ -477,8 +482,11 @@ def build_cube_metadata(engine):
 
 ################################################################################
 def _get_ellipsoid(cf_grid_var):
-    """Return a :class:`iris.coord_systems.GeogCS` using the relevant properties of
+    """Build a :class:`iris.coord_systems.GeogCS`.
+
+    Return a :class:`iris.coord_systems.GeogCS` using the relevant properties of
     `cf_grid_var`. Returns None if no relevant properties are specified.
+
     """
     major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
     minor = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MINOR_AXIS, None)
@@ -560,10 +568,7 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
-    """Create a transverse Mercator coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a transverse Mercator coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -603,10 +608,7 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
-    """Create a Lambert conformal conic coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a Lambert conformal conic coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -633,10 +635,7 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_stereographic_coordinate_system(engine, cf_grid_var):
-    """Create a stereographic coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a stereographic coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -667,10 +666,7 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_polar_stereographic_coordinate_system(engine, cf_grid_var):
-    """Create a polar stereographic coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a polar stereographic coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -702,10 +698,7 @@ def build_polar_stereographic_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_mercator_coordinate_system(engine, cf_grid_var):
-    """Create a Mercator coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a Mercator coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     longitude_of_projection_origin = getattr(
@@ -732,10 +725,7 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
-    """Create a lambert azimuthal equal area coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a lambert azimuthal equal area coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -760,10 +750,7 @@ def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
-    """Create a albers conical equal area coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a albers conical equal area coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -790,10 +777,7 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
-    """Create a vertical perspective coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a vertical perspective coordinate system from the CF-netCDF grid mapping variables."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -822,10 +806,7 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_geostationary_coordinate_system(engine, cf_grid_var):
-    """Create a geostationary coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create a geostationary coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     latitude_of_projection_origin = getattr(
@@ -856,10 +837,7 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
-    """Create an oblique mercator coordinate system from the CF-netCDF
-    grid mapping variable.
-
-    """
+    """Create an oblique mercator coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
     azimuth_of_central_line = getattr(cf_grid_var, CF_ATTR_GRID_AZIMUTH_CENT_LINE, None)
@@ -985,10 +963,7 @@ def get_names(cf_coord_var, coord_name, attributes):
 
 ################################################################################
 def get_cf_bounds_var(cf_coord_var):
-    """Return the CF variable representing the bounds of a coordinate
-    variable.
-
-    """
+    """Return the CF variable representing the bounds of a coordinate variable."""
     attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
     attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 
@@ -1020,8 +995,7 @@ def get_cf_bounds_var(cf_coord_var):
 
 ################################################################################
 def reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var):
-    """Return a bounds_data array with the vertex dimension as the most
-    rapidly varying.
+    """Return a bounds_data array with the vertex dimension as the most rapidly varying.
 
     .. note::
 
@@ -1429,10 +1403,7 @@ def is_longitude(engine, cf_name):
 
 ################################################################################
 def is_projection_x_coordinate(engine, cf_name):
-    """Determine whether the CF coordinate variable is a
-    projection_x_coordinate variable.
-
-    """
+    """Determine whether the CF coordinate variable is a projection_x_coordinate variable."""
     cf_var = engine.cf_var.cf_group[cf_name]
     attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
         cf_var, CF_ATTR_LONG_NAME, None
@@ -1442,10 +1413,7 @@ def is_projection_x_coordinate(engine, cf_name):
 
 ################################################################################
 def is_projection_y_coordinate(engine, cf_name):
-    """Determine whether the CF coordinate variable is a
-    projection_y_coordinate variable.
-
-    """
+    """Determine whether the CF coordinate variable is a projection_y_coordinate variable."""
     cf_var = engine.cf_var.cf_group[cf_name]
     attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
         cf_var, CF_ATTR_LONG_NAME, None
@@ -1561,8 +1529,11 @@ def has_supported_mercator_parameters(engine, cf_name):
 
 ################################################################################
 def has_supported_polar_stereographic_parameters(engine, cf_name):
-    """Determine whether the CF grid mapping variable has the supported
+    """Determine whether CF grid mapping variable supports Polar Stereographic.
+
+    Determine whether the CF grid mapping variable has the supported
     values for the parameters of the Polar Stereographic projection.
+
     """
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]

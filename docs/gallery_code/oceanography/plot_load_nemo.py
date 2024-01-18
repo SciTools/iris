@@ -1,11 +1,13 @@
-"""Load a Time Series of Data From the NEMO Model
+"""
+Load a Time Series of Data From the NEMO Model
 ==============================================
 
 This example demonstrates how to load multiple files containing data output by
 the NEMO model and combine them into a time series in a single cube. The
 different time dimensions in these files can prevent Iris from concatenating
 them without the intervention shown here.
-"""  # noqa: D400
+
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 

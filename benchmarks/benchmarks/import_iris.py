@@ -31,8 +31,7 @@ _ = iris.palette
 class Iris:
     @staticmethod
     def _import(module_name, reset_colormaps=False):
-        """Have experimented with adding sleep() commands into the imported
-        modules.
+        """Have experimented with adding sleep() commands into the imported modules.
 
         The results reveal:
 

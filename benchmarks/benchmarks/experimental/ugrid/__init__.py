@@ -15,7 +15,9 @@ from ...generate_data.stock import sample_mesh
 
 
 class UGridCommon:
-    """A base class running a generalised suite of benchmarks for any ugrid object.
+    """Run a generalised suite of benchmarks for any ugrid object.
+
+    A base class running a generalised suite of benchmarks for any ugrid object.
     Object to be specified in a subclass.
 
     ASV will run the benchmarks within this class for any subclasses.

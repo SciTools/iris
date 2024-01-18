@@ -16,7 +16,9 @@ from .mesh import Connectivity
 
 
 class CFUGridConnectivityVariable(cf.CFVariable):
-    """A CF_UGRID connectivity variable points to an index variable identifying
+    """A CF_UGRID connectivity variable.
+
+    A CF_UGRID connectivity variable points to an index variable identifying
     for every element (edge/face/volume) the indices of its corner nodes. The
     connectivity array will thus be a matrix of size n-elements x n-corners.
     For the indexing one may use either 0- or 1-based indexing; the convention
@@ -86,7 +88,9 @@ class CFUGridConnectivityVariable(cf.CFVariable):
 
 
 class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
-    """A CF-UGRID auxiliary coordinate variable is a CF-netCDF auxiliary
+    """A CF-UGRID auxiliary coordinate variable.
+
+    A CF-UGRID auxiliary coordinate variable is a CF-netCDF auxiliary
     coordinate variable representing the element (node/edge/face/volume)
     locations (latitude, longitude or other spatial coordinates, and optional
     elevation or other coordinates). These auxiliary coordinate variables will
@@ -163,7 +167,9 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
 
 
 class CFUGridMeshVariable(cf.CFVariable):
-    """A CF-UGRID mesh variable is a dummy variable for storing topology
+    """A CF-UGRID mesh variable is a dummy variable for storing topology information as attributes.
+
+    A CF-UGRID mesh variable is a dummy variable for storing topology
     information as attributes. The mesh variable has the ``cf_role``
     'mesh_topology'.
 
@@ -230,7 +236,9 @@ class CFUGridMeshVariable(cf.CFVariable):
 
 
 class CFUGridGroup(cf.CFGroup):
-    """Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
+    """Represents a collection of CF Metadata Conventions variables and netCDF global attributes.
+
+    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
     Conventions' variables and netCDF global attributes.
 
     Specialisation of :class:`~iris.fileformats.cf.CFGroup` that includes extra
@@ -255,10 +263,7 @@ class CFUGridGroup(cf.CFGroup):
 
     @property
     def non_data_variable_names(self):
-        """:class:`set` of the names of the CF-netCDF/CF-UGRID variables that are
-        not the data pay-load.
-
-        """
+        """:class:`set` of names of the CF-netCDF/CF-UGRID variables that are not the data pay-load."""
         extra_variables = (self.connectivities, self.ugrid_coords, self.meshes)
         extra_result = set()
         for variable in extra_variables:

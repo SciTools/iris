@@ -1,10 +1,11 @@
-"""Example of a Polar Stereographic Plot
+"""
+Example of a Polar Stereographic Plot
 =====================================
 
 Demonstrates plotting data that are defined on a polar stereographic
 projection.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 

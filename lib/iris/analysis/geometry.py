@@ -18,10 +18,11 @@ import iris.exceptions
 
 
 def _extract_relevant_cube_slice(cube, geometry):
-    """Given a shapely geometry object, this helper method returns
-    the tuple
+    """Calculate geometry intersection with spatial region defined by cube.
+
+    This helper method returns the tuple
     (subcube, x_coord_of_subcube, y_coord_of_subcube,
-     (min_x_index, min_y_index, max_x_index, max_y_index)).
+    (min_x_index, min_y_index, max_x_index, max_y_index)).
 
     If cube and geometry don't overlap, returns None.
 
@@ -134,7 +135,9 @@ def _extract_relevant_cube_slice(cube, geometry):
 
 
 def geometry_area_weights(cube, geometry, normalize=False):
-    """Returns the array of weights corresponding to the area of overlap between
+    """Return the array of weights corresponding to the area of overlap.
+
+    Return the array of weights corresponding to the area of overlap between
     the cells of cube's horizontal grid, and the given shapely geometry.
 
     The returned array is suitable for use with :const:`iris.analysis.MEAN`.

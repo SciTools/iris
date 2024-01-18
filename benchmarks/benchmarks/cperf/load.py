@@ -10,7 +10,8 @@ from . import SingleDiagnosticMixin
 @on_demand_benchmark
 class SingleDiagnosticLoad(SingleDiagnosticMixin):
     def time_load(self, _, __, ___):
-        """The 'real world comparison'
+        """Perform a 'real world comparison'.
+
         * UM coords are always realised (DimCoords).
         * LFRic coords are not realised by default (MeshCoords).
 
@@ -25,7 +26,7 @@ class SingleDiagnosticLoad(SingleDiagnosticMixin):
             assert coord.has_lazy_bounds() == expecting_lazy_coords
 
     def time_load_w_realised_coords(self, _, __, ___):
-        """A valuable extra comparison where both UM and LFRic coords are realised."""
+        """Valuable extra comparison where both UM and LFRic coords are realised."""
         cube = self.load()
         for coord_name in "longitude", "latitude":
             coord = cube.coord(coord_name)

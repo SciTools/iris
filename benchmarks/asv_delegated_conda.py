@@ -2,8 +2,9 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda`
-subclass that manages the Conda environment via custom user scripts.
+"""ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda` subclass.
+
+Manages the Conda environment via custom user scripts.
 
 """
 
@@ -42,7 +43,9 @@ class CondaDelegated(Conda):
         requirements: dict,
         tagged_env_vars: dict,
     ) -> None:
-        """Parameters
+        """__init__.
+
+        Parameters
         ----------
         conf : Config instance
 

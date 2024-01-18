@@ -39,7 +39,7 @@ def session_lockfile(session: nox.sessions.Session) -> Path:
 
 
 def session_cachefile(session: nox.sessions.Session) -> Path:
-    """Returns the path of the session lockfile cache."""
+    """Return the path of the session lockfile cache."""
     lockfile = session_lockfile(session)
     tmp_dir = Path(session.create_tmp())
     cache = tmp_dir / lockfile.name
@@ -55,7 +55,7 @@ def venv_populated(session: nox.sessions.Session) -> bool:
 
 
 def venv_changed(session: nox.sessions.Session) -> bool:
-    """Returns True if the installed session is different.
+    """Return True if the installed session is different.
 
     Compares to that specified in the lockfile.
     """
@@ -109,8 +109,9 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
 
 def prepare_venv(session: nox.sessions.Session) -> None:
-    """Create and cache the nox session conda environment, and additionally
-    provide conda environment package details and info.
+    """Create and cache the nox session conda environment.
+
+    Additionally provide conda environment package details and info.
 
     Note that, iris is installed into the environment using pip.
 

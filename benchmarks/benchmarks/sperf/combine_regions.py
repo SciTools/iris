@@ -83,7 +83,7 @@ class Mixin:
             )
 
     def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
-        """The combine-tests "standard" setup operation.
+        """Combine-tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.
@@ -195,7 +195,9 @@ class ComputeRealData(Mixin):
 
 @on_demand_benchmark
 class SaveData(Mixin):
-    """Test saving *only*, having replaced the input cube data with 'imaginary'
+    """Test saving *only*.
+
+    Test saving *only*, having replaced the input cube data with 'imaginary'
     array data, so that input data is not loaded from disk during the save
     operation.
 
@@ -217,8 +219,10 @@ class SaveData(Mixin):
 @on_demand_benchmark
 class FileStreamedCalc(Mixin):
     """Test the whole cost of file-to-file streaming.
+
     Uses the combined cube which is based on lazy data loading from the region
     cubes on disk.
+
     """
 
     def setup(self, n_cubesphere, imaginary_data=False, create_result_cube=True):

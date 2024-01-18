@@ -94,7 +94,9 @@ def hexdigest(item):
 
 
 class _NamedTupleMeta(ABCMeta):
-    """Meta-class to support the convenience of creating a namedtuple from
+    """Meta-class convenience for creating a namedtuple.
+
+    Meta-class to support the convenience of creating a namedtuple from
     names/members of the metadata class hierarchy.
 
     """
@@ -239,7 +241,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return f"{type(self).__name__}({', '.join(field_strings)})"
 
     def _api_common(self, other, func_service, func_operation, action, lenient=None):
-        """Common entry-point for lenient metadata API methods.
+        """Perform common entry-point for lenient metadata API methods.
 
         Parameters
         ----------
@@ -575,8 +577,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def combine(self, other, lenient=None):
-        """Return a new metadata instance created by combining each of the
-        associated metadata members.
+        """Return a new metadata instance created by combining each of the associated metadata members.
 
         Parameters
         ----------
@@ -598,7 +599,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def difference(self, other, lenient=None):
-        """Return a new metadata instance created by performing a difference
+        """Perform lenient metadata difference operation.
+
+        Return a new metadata instance created by performing a difference
         comparison between each of the associated metadata members.
 
         A metadata member returned with a value of "None" indicates that there
@@ -650,7 +653,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @classmethod
     def from_metadata(cls, other):
-        """Convert the provided metadata instance from a different type
+        """Convert metadata instance to this metadata type.
+
+        Convert the provided metadata instance from a different type
         to this metadata type, using only the relevant metadata members.
 
         Non-common metadata members are set to ``None``.
@@ -678,7 +683,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return result
 
     def name(self, default=None, token=False):
-        """Returns a string name representing the identity of the metadata.
+        """Return a string name representing the identity of the metadata.
 
         First it tries standard name, then it tries the long name, then
         the NetCDF variable name, before falling-back to a default value,
@@ -721,7 +726,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @classmethod
     def token(cls, name):
-        """Determine whether the provided name is a valid NetCDF name and thus
+        """Verify validity of provided NetCDF name.
+
+        Determine whether the provided name is a valid NetCDF name and thus
         safe to represent a single parsable token.
 
         Parameters
@@ -1124,7 +1131,9 @@ class CubeMetadata(BaseMetadata):
 
     @property
     def _names(self):
-        """A tuple containing the value of each name participating in the identity
+        """A tuple containing the value of each name participating in the identity of a cube.
+
+        A tuple containing the value of each name participating in the identity
         of a :class:`iris.cube.Cube`. This includes the standard name,
         long name, NetCDF variable name, and the STASH from the attributes
         dictionary.
@@ -1335,8 +1344,7 @@ def metadata_filter(
     attributes=None,
     axis=None,
 ):
-    """Filter a collection of objects by their metadata to fit the given metadata
-    criteria.
+    """Filter a collection of objects by their metadata to fit the given metadata criteria.
 
     Criteria can be either specific properties or other objects with metadata
     to be matched.
@@ -1492,7 +1500,9 @@ def _factory_cache(cls):
         return match
 
     def __reduce__(self):
-        """Dynamically created classes at runtime cannot be pickled, due to not
+        """Use the __reduce__ interface to allow 'pickle' to recreate this class instance.
+
+        Dynamically created classes at runtime cannot be pickled, due to not
         being defined at the top level of a module. As a result, we require to
         use the __reduce__ interface to allow 'pickle' to recreate this class
         instance, and dump and load instance state successfully.
@@ -1551,7 +1561,9 @@ def _factory_cache(cls):
 
 
 def metadata_manager_factory(cls, **kwargs):
-    """A class instance factory function responsible for manufacturing
+    """Manufacturing metadata instances.
+
+    A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.
 
     The factory instances returned by the factory are capable of managing

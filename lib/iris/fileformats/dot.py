@@ -55,8 +55,8 @@ DOT_AVAILABLE = _dot_path() is not None
 def save(cube, target):
     """Save a dot representation of the cube.
 
-    Args
-    ----
+    Parameters
+    ----------
     cube: :class:`iris.cube.Cube`.
     target
         A filename or open file handle.
@@ -83,17 +83,18 @@ def save(cube, target):
 
 
 def save_png(source, target, launch=False):
-    """Produce a "dot" instance diagram by calling dot and optionally launching
+    """Produce a "dot" instance diagram by calling dot.
+
+    Produce a "dot" instance diagram by calling dot and optionally launching
     the resulting image.
 
-    Args
-    ----
+    Parameters
+    ----------
     source: :class:`iris.cube.Cube`, or dot filename.
-    target
+    target :
         A filename or open file handle.
         If passing a file handle, take care to open it for binary output.
-
-    **kwargs
+    **kwargs :
         * launch
             Display the image. Default is False.
 
@@ -148,9 +149,9 @@ def save_png(source, target, launch=False):
 def cube_text(cube):
     """Return a DOT text representation a `iris.cube.Cube`.
 
-    Args
-    ----
-    cube
+    Parameters
+    ----------
+    cube :
        The cube for which to create DOT text.
 
     """
@@ -276,14 +277,13 @@ digraph CubeGraph{
 
 
 def _coord_text(label, coord):
-    """Return a string containing the dot representation for a single coordinate
-    node.
+    """Return a string containing the dot representation for a single coordinate node.
 
-    Args
-    ----
-    label
+    Parameters
+    ----------
+    label :
         The dot ID of the coordinate node.
-    coord
+    coord :
         The coordinate to convert.
 
     """
@@ -306,14 +306,13 @@ def _coord_text(label, coord):
 
 
 def _coord_system_text(cs, uid):
-    """Return a string containing the dot representation for a single coordinate
-    system node.
+    """Return string containing dot representation for a single coordinate system node.
 
-    Args
-    ----
-    cs
+    Parameters
+    ----------
+    cs :
         The coordinate system to convert.
-    uid
+    uid :
         The uid allows/distinguishes non-identical CoordSystems of the same
         type.
 
