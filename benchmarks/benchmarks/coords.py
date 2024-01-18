@@ -23,7 +23,9 @@ class CoordCommon:
     #       * make class an ABC
     #       * remove NotImplementedError
     #       * combine setup_common into setup
-    """A base class running a generalised suite of benchmarks for any coord.
+    """Run a generalised suite of benchmarks for any coord.
+
+    A base class running a generalised suite of benchmarks for any coord.
     Coord to be specified in a subclass.
 
     ASV will run the benchmarks within this class for any subclasses.

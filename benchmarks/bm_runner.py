@@ -332,7 +332,7 @@ class _SubParserGenerator(ABC):
     @staticmethod
     @abstractmethod
     def func(args: argparse.Namespace):
-        """The function to return when the subparser is parsed.
+        """Return when the subparser is parsed.
 
         `func` is then called, performing the user's selected sub-command.
 

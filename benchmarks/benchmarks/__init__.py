@@ -10,7 +10,7 @@ ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
 
 
 def disable_repeat_between_setup(benchmark_object):
-    """Decorator for benchmarks where object persistence would be inappropriate.
+    """Benchmarks where object persistence would be inappropriate (decorator).
 
     E.g:
         * Benchmarking data realisation
@@ -36,7 +36,9 @@ def disable_repeat_between_setup(benchmark_object):
 
 
 class TrackAddedMemoryAllocation:
-    """Context manager which measures by how much process resident memory grew,
+    """Measures by how much process resident memory grew, during execution.
+
+    Context manager which measures by how much process resident memory grew,
     during execution of its enclosed code block.
 
     Obviously limited as to what it actually measures : Relies on the current
@@ -84,7 +86,7 @@ class TrackAddedMemoryAllocation:
 
     @staticmethod
     def decorator(decorated_func):
-        """Decorates this benchmark to track growth in resident memory during execution.
+        """Benchmark to track growth in resident memory during execution.
 
         Intended for use on ASV ``track_`` benchmarks. Applies the
         :class:`TrackAddedMemoryAllocation` context manager to the benchmark
@@ -105,7 +107,9 @@ class TrackAddedMemoryAllocation:
 
 
 def on_demand_benchmark(benchmark_object):
-    """Decorator. Disables these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.
+    """Disables these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.
+
+    This is a decorator.
 
     For benchmarks that, for whatever reason, should not be run by default.
     E.g:

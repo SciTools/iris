@@ -192,7 +192,7 @@ class ABFField:
 
 
 def load_cubes(filespecs, callback=None):
-    """Loads cubes from a list of ABF filenames.
+    """Load cubes from a list of ABF filenames.
 
     Args:
 

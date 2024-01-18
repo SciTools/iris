@@ -1,4 +1,5 @@
-"""Plotting Wind Direction Using Barbs
+"""
+Plotting Wind Direction Using Barbs
 ===================================
 
 This example demonstrates using barbs to plot wind speed contours and wind
@@ -8,7 +9,7 @@ are co-located in space in this case.
 The magnitude of the wind in the original data is low and so doesn't illustrate
 the full range of barbs. The wind is scaled to simulate a storm that better
 illustrates the range of barbs that are available.
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 

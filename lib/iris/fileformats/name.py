@@ -6,7 +6,9 @@
 
 
 def _get_NAME_loader(filename):
-    """Return the appropriate load function for a NAME file based
+    """Return a NAME load function.
+
+    Return the appropriate load function for a NAME file based
     on the contents of its header.
 
     """
@@ -43,8 +45,7 @@ def _get_NAME_loader(filename):
 
 
 def load_cubes(filenames, callback):
-    """Return a generator of cubes given one or more filenames and an
-    optional callback.
+    """Return a generator of cubes given one or more filenames and an optional callback.
 
     Parameters
     ----------

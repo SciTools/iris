@@ -67,10 +67,7 @@ class InvalidCubeError(IrisError):
 
 
 class ConstraintMismatchError(IrisError):
-    """Raised when a constraint operation has failed to find the correct number
-    of results.
-
-    """
+    """Raised when a constraint operation has failed to find the correct number of results."""
 
     pass
 
@@ -98,18 +95,17 @@ class IgnoreCubeException(IrisError):
 
 
 class ConcatenateError(IrisError):
-    """Raised when concatenate is expected to produce a single cube, but fails to
-    do so.
-
-    """
+    """Raised when concatenate is expected to produce a single cube, but fails to do so."""
 
     def __init__(self, differences):
-        """Creates a ConcatenateError with a list of textual descriptions of
+        """Create a ConcatenateError with a list of textual descriptions of differences.
+
+        Create a ConcatenateError with a list of textual descriptions of
         the differences which prevented a concatenate.
 
-        Args:
-
-        * differences:
+        Parameters
+        ----------
+        differences : list of str
             The list of strings which describe the differences.
 
         """
@@ -122,18 +118,17 @@ class ConcatenateError(IrisError):
 
 
 class MergeError(IrisError):
-    """Raised when merge is expected to produce a single cube, but fails to
-    do so.
-
-    """
+    """Raised when merge is expected to produce a single cube, but fails to do so."""
 
     def __init__(self, differences):
-        """Creates a MergeError with a list of textual descriptions of
+        """Create a MergeError with a list of textual descriptions of the differences.
+
+        Creates a MergeError with a list of textual descriptions of
         the differences which prevented a merge.
 
-        Args:
-
-        * differences:
+        Parameters
+        ----------
+        differences : list of str
             The list of strings which describe the differences.
 
         """

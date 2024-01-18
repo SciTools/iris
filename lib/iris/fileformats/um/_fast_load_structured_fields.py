@@ -20,7 +20,9 @@ from iris.fileformats.um._optimal_array_structuring import optimal_array_structu
 
 
 class BasicFieldCollation:
-    """An object representing a group of UM fields with array structure that can
+    """An object representing a group of UM fields with array structure.
+
+    An object representing a group of UM fields with array structure that can
     be vectorized into a single cube.
 
     For example:
@@ -234,7 +236,7 @@ class BasicFieldCollation:
 
 
 def _um_collation_key_function(field):
-    """Standard collation key definition for fast structured field loading.
+    """Collation key definition for fast structured field loading.
 
     The elements used here are the minimum sufficient to define the
     'phenomenon', as described for :meth:`group_structured_fields`.
@@ -264,7 +266,9 @@ def _um_collation_key_function(field):
 def group_structured_fields(
     field_iterator, collation_class=BasicFieldCollation, **collation_kwargs
 ):
-    """Collect structured fields into identified groups whose fields can be
+    """Collect structured fields into identified groups.
+
+    Collect structured fields into identified groups whose fields can be
     combined to form a single cube.
 
     Parameters

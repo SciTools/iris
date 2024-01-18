@@ -51,7 +51,7 @@ def um_to_pp(filename, read_data=False, word_depth=None):
 
 
 def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
-    """Loads cubes from filenames of UM fieldsfile-like files.
+    """Load cubes from filenames of UM fieldsfile-like files.
 
     Parameters
     ----------
@@ -81,8 +81,7 @@ def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
-    """Loads cubes from filenames of 32bit ieee converted UM fieldsfile-like
-    files.
+    """Load cubes from filenames of 32bit ieee converted UM fieldsfile-like files.
 
     See Also
     --------

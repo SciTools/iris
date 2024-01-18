@@ -166,7 +166,9 @@ def izip(*cubes, **kwargs):
 
 
 class _ZipSlicesIterator(Iterator):
-    """Extension to _SlicesIterator (see cube.py) to support iteration over a
+    """Support iteration over a collection of cubes.
+
+    Extension to _SlicesIterator (see cube.py) to support iteration over a
     collection of cubes in step.
 
     """
@@ -278,7 +280,9 @@ class _ZipSlicesIterator(Iterator):
 
 
 class _CoordWrapper:
-    """Class for creating a coordinate wrapper that allows the use of an
+    """Create a coordinate wrapper.
+
+    Class for creating a coordinate wrapper that allows the use of an
     alternative equality function based on metadata rather than
     metadata + points/bounds.
 
