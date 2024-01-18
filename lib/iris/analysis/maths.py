@@ -323,7 +323,7 @@ def _add_subtract_common(
     dim=None,
     in_place=False,
 ):
-    """Function which shares common code between addition and subtraction of cubes.
+    """Share common code between addition and subtraction of cubes.
 
     Parameters
     ----------
@@ -532,7 +532,7 @@ def divide(cube, other, dim=None, in_place=False):
 
 
 def exponentiate(cube, exponent, in_place=False):
-    """Returns the result of the given cube to the power of a scalar.
+    """Return the result of the given cube to the power of a scalar.
 
     Parameters
     ----------
@@ -821,7 +821,7 @@ def _binary_op_common(
     in_place=False,
     sanitise_metadata=True,
 ):
-    """Function which shares common code between binary operations.
+    """Share common code between binary operations.
 
     Parameters
     ----------
@@ -1172,7 +1172,7 @@ class IFunc:
         new_name=None,
         **kwargs_data_func,
     ):
-        """Applies the ifunc to the cube(s).
+        """Apply the ifunc to the cube(s).
 
         Parameters
         ----------

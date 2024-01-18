@@ -103,7 +103,7 @@ def action_function(func):
 
 @action_function
 def action_default(engine):
-    """Standard operations for every cube."""
+    """Perform standard operations for every cube."""
     hh.build_cube_metadata(engine)
 
 

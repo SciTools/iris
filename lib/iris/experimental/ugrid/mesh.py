@@ -119,7 +119,7 @@ class Connectivity(_DimensionalMetadata):
         start_index=0,
         location_axis=0,
     ):
-        """Constructs a single connectivity.
+        """Construct a single connectivity.
 
         Parameters
         ----------
@@ -494,7 +494,7 @@ class Connectivity(_DimensionalMetadata):
         return super()._lazy_values()
 
     def core_indices(self):
-        """The indices array at the core of this connectivity.
+        """Return the indices array at the core of this connectivity.
 
         The indices array at the core of this connectivity, which may be a
         NumPy array or a Dask array.

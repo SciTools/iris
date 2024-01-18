@@ -407,7 +407,7 @@ class CurvilinearRegridder:
 
     @staticmethod
     def _get_horizontal_coord(cube, axis):
-        """Gets the horizontal coordinate on the supplied cube along the specified axis.
+        """Get the horizontal coordinate on the supplied cube along the specified axis.
 
         Parameters
         ----------

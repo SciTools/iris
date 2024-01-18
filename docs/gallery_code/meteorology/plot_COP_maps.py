@@ -32,7 +32,7 @@ import iris.plot as iplt
 
 
 def cop_metadata_callback(cube, field, filename):
-    """Function which adds an "Experiment" coordinate which comes from the filename."""
+    """Add an "Experiment" coordinate which comes from the filename."""
     # Extract the experiment name (such as A1B or E1) from the filename (in
     # this case it is just the start of the file name, before the first ".").
     fname = os.path.basename(filename)  # filename without path.
