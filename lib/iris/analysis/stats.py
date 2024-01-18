@@ -27,7 +27,7 @@ def pearsonr(
 
     Parameters
     ----------
-    cube_a, cube_b : cubes
+    cube_a, cube_b : :class:`iris.cube.Cube`
         Cubes between which the correlation will be calculated.  The cubes
         should either be the same shape and have the same dimension coordinates
         or one cube should be broadcastable to the other.  Broadcasting rules
@@ -37,21 +37,22 @@ def pearsonr(
         names are provided then correlation will be calculated over all common
         cube dimensions.
     weights : :class:`numpy.ndarray`, optional
-        Weights array of same shape as (the smaller of) cube_a and cube_b. Note
-        that latitude/longitude area weights can be calculated using
+        Weights array of same shape as (the smaller of) `cube_a` and `cube_b`.
+        Note that latitude/longitude area weights can be calculated using
         :func:`iris.analysis.cartography.area_weights`.
     mdtol : float, default=1.0
         Tolerance of missing data. The missing data fraction is calculated
-        based on the number of grid cells masked in both cube_a and cube_b. If
-        this fraction exceed mdtol, the returned value in the corresponding
-        cell is masked. mdtol=0 means no missing data is tolerated while
-        mdtol=1 means the resulting element will be masked if and only if all
-        contributing elements are masked in cube_a or cube_b. Defaults to 1.
+        based on the number of grid cells masked in both `cube_a` and `cube_b`.
+        If this fraction exceed `mdtol`, the returned value in the
+        corresponding cell is masked. `mdtol` =0 means no missing data is
+        tolerated while `mdtol` =1 means the resulting element will be masked
+        if and only if all contributing elements are masked in `cube_a` or
+        `cube_b`.
     common_mask : bool, default=False
-        If True, applies a common mask to cube_a and cube_b so only cells which
-        are unmasked in both cubes contribute to the calculation. If False, the
-        variance for each cube is calculated from all available cells. Defaults
-        to False.
+        If ``True``, applies a common mask to cube_a and cube_b so only cells
+        which are unmasked in both cubes contribute to the calculation. If
+        ``False``, the variance for each cube is calculated from all available
+        cells.
 
     Returns
     -------
@@ -61,7 +62,7 @@ def pearsonr(
         cubes.
 
         For example providing two time/altitude/latitude/longitude cubes and
-        corr_coords of 'latitude' and 'longitude' will result in a
+        `corr_coords` of 'latitude' and 'longitude' will result in a
         time/altitude cube describing the latitude/longitude (i.e. pattern)
         correlation at each time/altitude point.
 
