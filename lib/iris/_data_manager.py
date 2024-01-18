@@ -117,7 +117,7 @@ class DataManager:
         return result
 
     def __repr__(self):
-        """Returns an string representation of the instance."""
+        """Return an string representation of the instance."""
         fmt = "{cls}({data!r})"
         result = fmt.format(data=self.core_data(), cls=type(self).__name__)
 
@@ -269,7 +269,7 @@ class DataManager:
         return self.core_data().shape
 
     def copy(self, data=None):
-        """Returns a deep copy of this :class:`~iris._data_manager.DataManager` instance.
+        """Return a deep copy of this :class:`~iris._data_manager.DataManager` instance.
 
         Parameters
         ----------

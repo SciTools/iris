@@ -101,7 +101,7 @@ PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
 def _meshes_from_cf(cf_reader):
-    """Common behaviour for extracting meshes from a CFReader.
+    """Mesh from cf, common behaviour for extracting meshes from a CFReader.
 
     Simple now, but expected to increase in complexity as Mesh sharing develops.
 

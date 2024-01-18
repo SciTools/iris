@@ -804,7 +804,7 @@ class FF2PP:
 
 
 def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
-    """Replacement :func:`numpy.fromfile` due to python3 performance issues.
+    """Parse binary stream, replacement :func:`numpy.fromfile` due to python3 performance issues.
 
     Parameters
     ----------
@@ -835,7 +835,7 @@ def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
 
 
 def load_cubes(filenames, callback, constraints=None):
-    """Loads cubes from a list of fields files filenames.
+    """Load cubes from a list of fields files filenames.
 
     Parameters
     ----------
@@ -859,7 +859,7 @@ def load_cubes(filenames, callback, constraints=None):
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
-    """Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
+    """Load cubes from a list of 32bit ieee converted fieldsfiles filenames.
 
     See Also
     --------

@@ -155,7 +155,7 @@ _HINTS = {name: i for i, name in zip(range(len(_HINT_COORDS)), _HINT_COORDS)}
 
 
 def _convert_collation(collation):
-    """Converts a FieldCollation into the corresponding items of Cube metadata.
+    """Convert a FieldCollation into the corresponding items of Cube metadata.
 
     Parameters
     ----------
