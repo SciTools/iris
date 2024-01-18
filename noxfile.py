@@ -39,7 +39,7 @@ def session_lockfile(session: nox.sessions.Session) -> Path:
 
 
 def session_cachefile(session: nox.sessions.Session) -> Path:
-    """Returns the path of the session lockfile cache."""
+    """Return the path of the session lockfile cache."""
     lockfile = session_lockfile(session)
     tmp_dir = Path(session.create_tmp())
     cache = tmp_dir / lockfile.name
@@ -55,7 +55,7 @@ def venv_populated(session: nox.sessions.Session) -> bool:
 
 
 def venv_changed(session: nox.sessions.Session) -> bool:
-    """Returns True if the installed session is different.
+    """Return True if the installed session is different.
 
     Compares to that specified in the lockfile.
     """

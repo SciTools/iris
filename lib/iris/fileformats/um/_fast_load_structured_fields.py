@@ -236,7 +236,7 @@ class BasicFieldCollation:
 
 
 def _um_collation_key_function(field):
-    """Standard collation key definition for fast structured field loading.
+    """Collation key definition for fast structured field loading.
 
     The elements used here are the minimum sufficient to define the
     'phenomenon', as described for :meth:`group_structured_fields`.

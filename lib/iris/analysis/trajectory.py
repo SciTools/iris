@@ -37,7 +37,7 @@ class Trajectory:
     """A series of given waypoints with pre-calculated sample points."""
 
     def __init__(self, waypoints, sample_count=10):
-        """Defines a trajectory using a sequence of waypoints.
+        """Define a trajectory using a sequence of waypoints.
 
         Parameters
         ----------
@@ -128,7 +128,7 @@ class Trajectory:
         return [(k, v) for k, v in points.items()]
 
     def _src_cube_anon_dims(self, cube):
-        """A helper method to locate the index of anonymous dimensions.
+        """Locate the index of anonymous dimensions.
 
         A helper method to locate the index of anonymous dimensions on the
         interpolation target, ``cube``.
@@ -712,7 +712,7 @@ class UnstructuredNearestNeigbourRegridder:
     # TODO: cache the necessary bits of the operation so reuse can actually
     # be more efficient.
     def __init__(self, src_cube, target_grid_cube):
-        """A nearest-neighbour regridder.
+        """Nearest-neighbour regridder.
 
         A nearest-neighbour regridder to perform regridding from the source
         grid to the target grid.

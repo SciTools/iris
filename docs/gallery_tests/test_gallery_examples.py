@@ -17,7 +17,7 @@ from .conftest import GALLERY_DIR
 
 
 def gallery_examples():
-    """Generator to yield all current gallery examples."""
+    """Entry point for generator to yield all current gallery examples."""
     for example_file in GALLERY_DIR.glob("*/plot*.py"):
         yield example_file.stem
 
