@@ -100,8 +100,7 @@ This document explains the changes made to Iris for this release
    lazy data from file. This will also speed up coordinate comparison.
    (:pull:`5610`)
 
-#. `@bouweandela`_ made comparing coordinates, cubes, and arrays to themselves
-   faster. (:pull:`5691`)
+#. `@bouweandela`_ made comparing coordinates and arrays to themselves faster. (:pull:`5691`)
 
 
 🔥 Deprecations

@@ -3826,9 +3826,6 @@ class Cube(CFVariableMixin):
 
     # START OPERATOR OVERLOADS
     def __eq__(self, other):
-        if other is self:
-            return True
-
         result = NotImplemented
 
         if isinstance(other, Cube):
