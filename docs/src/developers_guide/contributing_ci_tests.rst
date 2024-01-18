@@ -125,7 +125,7 @@ As of **Iris 3.8** `ruff`_ has been adopted to ensure our codebase is using best
 practice.  `ruff`_ is configured in the `Iris`_ GitHub repository using  
 `.pre-commit-config.yaml`_.  
 
-You can install and run `ruff`_ into your development **iris-dev** conda environment
+You can install and run `ruff`_ in your development **iris-dev** conda environment
 via::
 
    conda activate iris-dev
