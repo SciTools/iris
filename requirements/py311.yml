@@ -54,7 +54,7 @@ dependencies:
   - sphinx-gallery >=0.11.0
   - sphinx-design
 
-
 # Temporary pins.
 # See https://github.com/SciTools/iris/pull/5051
   - graphviz >=6.0.0
+  
