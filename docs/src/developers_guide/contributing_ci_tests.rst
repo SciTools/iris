@@ -139,7 +139,7 @@ via::
   This hook is configured in the ``[tool.ruff]`` section
   of the ``pyproject.toml`` file.
 
-  Edit the ``.ruff.toml`` file to add any rules to ignore if appropriate.  We
+  Edit the ``.ruff.toml`` file to include any *temporary* rules to be ignored. Edit the ``pyproject.toml`` to include any *permanent* rules to be ignored. We
   aim to be fully `ruff`_ compliant as possible.
 
 For more information on how to use `ruff`_ please see the `ruff documentation`_.
