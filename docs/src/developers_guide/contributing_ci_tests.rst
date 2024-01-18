@@ -140,7 +140,7 @@ via::
   of the ``pyproject.toml`` file.
 
   Edit the ``.ruff.toml`` file to add any rules to ignore if appropriate.  We
-  aim to be ruff compliant where at all possible.
+  aim to be fully `ruff`_ compliant as possible.
 
 For more information on how to use `ruff`_ please see the `ruff documentation`_.
 
