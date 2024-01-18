@@ -104,9 +104,13 @@ This document explains the changes made to Iris for this release
    lazy data from file. This will also speed up coordinate comparison.
    (:pull:`5610`)
 
+#. `@bouweandela`_ changed :func:`iris.coords.Coord.cell` so it does not realize
+   all coordinate data and only loads a single cell instead. (:pull:`5693`)
+
 #. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified 
    :func:`~iris.analysis.stats.pearsonr` so it preserves lazy data in all cases
    and also runs a little faster.  (:pull:`5638`)
+
 
 🔥 Deprecations
 ===============
