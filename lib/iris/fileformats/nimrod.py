@@ -290,7 +290,7 @@ class NimrodField:
 
 
 def load_cubes(filenames, callback=None):
-    """Loads cubes from a list of NIMROD filenames.
+    """Load cubes from a list of NIMROD filenames.
 
     Parameters
     ----------

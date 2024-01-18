@@ -49,7 +49,7 @@ def _create_file__xios_common(func_name, **kwargs):
 def create_file__xios_2d_face_half_levels(
     temp_file_dir, dataset_name, n_faces=866, n_times=1
 ):
-    """Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_2d_face_half_levels`.
+    """Create file wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_2d_face_half_levels`.
 
     Have taken control of temp_file_dir
 
@@ -67,7 +67,7 @@ def create_file__xios_2d_face_half_levels(
 def create_file__xios_3d_face_half_levels(
     temp_file_dir, dataset_name, n_faces=866, n_times=1, n_levels=38
 ):
-    """Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_3d_face_half_levels`.
+    """Create file wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_3d_face_half_levels`.
 
     Have taken control of temp_file_dir
 
@@ -84,7 +84,7 @@ def create_file__xios_3d_face_half_levels(
 
 
 def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
-    """Wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
+    """Sample mesh wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
 
     def _external(*args, **kwargs):
         from iris.experimental.ugrid import save_mesh
@@ -112,7 +112,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
 
 def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
-    """Wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
+    """Sample meshcoord wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
 
     Parameters deviate from the original as cannot pass a
     :class:`iris.experimental.ugrid.Mesh to the separate Python instance - must

@@ -14,7 +14,7 @@ from iris.cube import Cube
 
 
 def _copy_coords_without_z_dim(src, tgt, z_dim):
-    """Helper function to copy across non z-dimenson coordinates between cubes.
+    """Copy across non z-dimenson coordinates between cubes.
 
     Parameters
     ----------

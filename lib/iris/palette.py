@@ -136,7 +136,7 @@ def cmap_norm(cube):
 
 
 def auto_palette(func):
-    """Decorator wrapper function to control the default behaviour.
+    """Auto palette decorator wrapper function to control the default behaviour.
 
     Decorator wrapper function to control the default behaviour of the
     matplotlib cmap and norm keyword arguments.

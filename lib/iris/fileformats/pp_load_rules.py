@@ -857,7 +857,7 @@ def _convert_scalar_pseudo_level_coords(lbuser5):
 
 
 def convert(f):
-    """Converts a PP field into the corresponding items of Cube metadata.
+    """Convert a PP field into the corresponding items of Cube metadata.
 
     Parameters
     ----------

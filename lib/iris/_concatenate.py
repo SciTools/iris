@@ -151,7 +151,7 @@ class _CoordMetaData(
 class _DerivedCoordAndDims(
     namedtuple("DerivedCoordAndDims", ["coord", "dims", "aux_factory"])
 ):
-    """Container for a derived coordinate and dimnesions(s).
+    """Container for a derived coordinate and dimensions(s).
 
     Container for a derived coordinate, the associated AuxCoordFactory, and the
     associated data dimension(s) spanned over a :class:`iris.cube.Cube`.
@@ -385,10 +385,7 @@ class _CubeSignature:
     """
 
     def __init__(self, cube):
-        """Represents the cube metadata and associated coordinate metadata.
-
-        Represents the cube metadata and associated coordinate metadata that
-        allows suitable cubes for concatenation to be identified.
+        """Represent the cube metadata and associated coordinate metadata.
 
         Parameters
         ----------
@@ -733,10 +730,7 @@ class _ProtoCube:
     """Framework for concatenating multiple source-cubes over one common dimension."""
 
     def __init__(self, cube):
-        """Create a new _ProtoCube and record the cube as a source-cube.
-
-        Create a new _ProtoCube from the given cube and record the cube
-        as a source-cube.
+        """Create a new _ProtoCube from the given cube and record the cube as a source-cube.
 
         Parameters
         ----------

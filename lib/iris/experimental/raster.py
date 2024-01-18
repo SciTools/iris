@@ -107,7 +107,7 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, f
 
 
 def export_geotiff(cube, fname):
-    """Writes cube data to raster file format as a PixelIsArea GeoTiff image.
+    """Write cube data to raster file format as a PixelIsArea GeoTiff image.
 
     .. deprecated:: 3.2.0
 

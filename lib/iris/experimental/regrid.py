@@ -736,9 +736,9 @@ class ProjectedUnstructuredNearest:
         warn_deprecated(wmsg)
 
     def regridder(self, src_cube, target_grid):
-        """Creates a nearest-neighbour regridder to perform regridding.
+        """Create a nearest-neighbour regridder to perform regridding.
 
-        Creates a nearest-neighbour regridder to perform regridding, using
+        Create a nearest-neighbour regridder to perform regridding, using
         scipy.interpolate.griddata from unstructured source points to the
         target grid. The regridding calculation is performed in the given
         projection.

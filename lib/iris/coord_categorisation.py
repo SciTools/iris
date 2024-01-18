@@ -204,7 +204,7 @@ def add_hour(cube, coord, name="hour"):
 
 
 def _months_in_season(season):
-    """Returns a list of month numbers corresponding to each month in the given season."""
+    """Return a list of month numbers corresponding to each month in the given season."""
     cyclic_months = "jfmamjjasondjfmamjjasond"
     m0 = cyclic_months.find(season.lower())
     if m0 < 0:

@@ -134,7 +134,7 @@ class CubePrinter:
     N_INDENT_EXTRA = 4
 
     def __init__(self, cube_or_summary):
-        """An object that provides a printout of a cube.
+        """Object that provides a printout of a cube.
 
         Parameters
         ----------
