@@ -373,6 +373,8 @@ def array_equal(array1, array2, withnans=False):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
+    if withnans and (array1 is array2):
+        return True
 
     def normalise_array(array):
         if not is_lazy_data(array):
