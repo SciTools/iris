@@ -8,17 +8,22 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from unittest import mock
+
+import dask
+import dask.array
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
+import iris._lazy_data
 import iris.analysis.stats as stats
 from iris.exceptions import CoordinateNotFoundError
 
 
-@tests.skip_data
-class Test(tests.IrisTest):
-    def setUp(self):
+class Mixin:
+    def setup_method(self):
         # 3D cubes:
         cube_temp = iris.load_cube(
             tests.get_data_path(
@@ -33,21 +38,36 @@ class Test(tests.IrisTest):
         cube_temp.coord("longitude").guess_bounds()
         self.weights = iris.analysis.cartography.area_weights(cube_temp)
 
-    def test_perfect_corr(self):
+
+@tests.skip_data
+class TestLazy(Mixin):
+    @pytest.fixture
+    def mocked_compute(self, monkeypatch):
+        m_compute = mock.Mock(wraps=dask.base.compute)
+
+        # The three dask compute functions are all the same function but monkeypatch
+        # does not automatically know that.
+        # https://stackoverflow.com/questions/77820437
+        monkeypatch.setattr(dask.base, dask.base.compute.__name__, m_compute)
+        monkeypatch.setattr(dask, dask.compute.__name__, m_compute)
+        monkeypatch.setattr(dask.array, dask.array.compute.__name__, m_compute)
+
+        return m_compute
+
+    def test_perfect_corr(self, mocked_compute):
         r = stats.pearsonr(self.cube_a, self.cube_a, ["latitude", "longitude"])
-        self.assertArrayEqual(r.data, np.array([1.0] * 6))
+        mocked_compute.assert_not_called()
+        np.testing.assert_array_equal(r.data, np.array([1.0] * 6))
 
-    def test_perfect_corr_all_dims(self):
+    def test_perfect_corr_all_dims(self, mocked_compute):
         r = stats.pearsonr(self.cube_a, self.cube_a)
-        self.assertArrayEqual(r.data, np.array([1.0]))
+        mocked_compute.assert_not_called()
+        np.testing.assert_array_equal(r.data, np.array([1.0]))
 
-    def test_incompatible_cubes(self):
-        with self.assertRaises(ValueError):
-            stats.pearsonr(self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude")
-
-    def test_compatible_cubes(self):
+    def test_compatible_cubes(self, mocked_compute):
         r = stats.pearsonr(self.cube_a, self.cube_b, ["latitude", "longitude"])
-        self.assertArrayAlmostEqual(
+        mocked_compute.assert_not_called()
+        np.testing.assert_array_almost_equal(
             r.data,
             [
                 0.81114936,
@@ -59,13 +79,15 @@ class Test(tests.IrisTest):
             ],
         )
 
-    def test_broadcast_cubes(self):
+    def test_broadcast_cubes(self, mocked_compute):
         r1 = stats.pearsonr(
             self.cube_a, self.cube_b[0, :, :], ["latitude", "longitude"]
         )
         r2 = stats.pearsonr(
             self.cube_b[0, :, :], self.cube_a, ["latitude", "longitude"]
         )
+
+        mocked_compute.assert_not_called()
         r_by_slice = [
             stats.pearsonr(
                 self.cube_a[i, :, :],
@@ -74,14 +96,16 @@ class Test(tests.IrisTest):
             ).data
             for i in range(6)
         ]
-        self.assertArrayEqual(r1.data, np.array(r_by_slice))
-        self.assertArrayEqual(r2.data, np.array(r_by_slice))
+        np.testing.assert_array_equal(r1.data, np.array(r_by_slice))
+        np.testing.assert_array_equal(r2.data, np.array(r_by_slice))
 
-    def test_compatible_cubes_weighted(self):
+    def test_compatible_cubes_weighted(self, mocked_compute):
         r = stats.pearsonr(
             self.cube_a, self.cube_b, ["latitude", "longitude"], self.weights
         )
-        self.assertArrayAlmostEqual(
+
+        mocked_compute.assert_not_called()
+        np.testing.assert_array_almost_equal(
             r.data,
             [
                 0.79105429,
@@ -93,13 +117,15 @@ class Test(tests.IrisTest):
             ],
         )
 
-    def test_broadcast_cubes_weighted(self):
+    def test_broadcast_cubes_weighted(self, mocked_compute):
         r = stats.pearsonr(
             self.cube_a,
             self.cube_b[0, :, :],
             ["latitude", "longitude"],
             weights=self.weights[0, :, :],
         )
+
+        mocked_compute.assert_not_called()
         r_by_slice = [
             stats.pearsonr(
                 self.cube_a[i, :, :],
@@ -109,10 +135,31 @@ class Test(tests.IrisTest):
             ).data
             for i in range(6)
         ]
-        self.assertArrayAlmostEqual(r.data, np.array(r_by_slice))
+        np.testing.assert_array_almost_equal(r.data, np.array(r_by_slice))
+
+    def test_broadcast_transpose_cubes_weighted(self, mocked_compute):
+        # Reference is calculated with no transposition.
+        r_ref = stats.pearsonr(
+            self.cube_a,
+            self.cube_b[0, :, :],
+            ["latitude", "longitude"],
+            weights=self.weights[0, :, :],
+        )
+
+        self.cube_a.transpose()
+        r_test = stats.pearsonr(
+            self.cube_a,
+            self.cube_b[0, :, :],
+            ["latitude", "longitude"],
+            weights=self.weights[0, :, :],
+        )
+
+        mocked_compute.assert_not_called()
+        # Should get the same result, but transposed.
+        np.testing.assert_array_almost_equal(r_test.data, r_ref.data.T)
 
     def test_weight_error(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             stats.pearsonr(
                 self.cube_a,
                 self.cube_b[0, :, :],
@@ -120,54 +167,74 @@ class Test(tests.IrisTest):
                 weights=self.weights,
             )
 
-    def test_non_existent_coord(self):
-        with self.assertRaises(CoordinateNotFoundError):
-            stats.pearsonr(self.cube_a, self.cube_b, "bad_coord")
-
-    def test_mdtol(self):
+    def test_mdtol(self, mocked_compute):
         cube_small = self.cube_a[:, 0, 0]
-        cube_small_masked = cube_small.copy()
-        cube_small_masked.data = ma.array(
-            cube_small.data, mask=np.array([0, 0, 0, 1, 1, 1], dtype=bool)
-        )
+        cube_small_masked = iris.util.mask_cube(cube_small, [0, 0, 0, 1, 1, 1])
         r1 = stats.pearsonr(cube_small, cube_small_masked)
         r2 = stats.pearsonr(cube_small, cube_small_masked, mdtol=0.49)
-        self.assertArrayAlmostEqual(r1.data, np.array([0.74586593]))
-        self.assertMaskedArrayEqual(r2.data, ma.array([0], mask=[True]))
 
-    def test_common_mask_simple(self):
+        mocked_compute.assert_not_called()
+        np.testing.assert_array_almost_equal(r1.data, np.array([0.74586593]))
+        tests.assert_masked_array_equal(r2.data, ma.array([0], mask=[True]))
+
+    def test_common_mask_simple(self, mocked_compute):
         cube_small = self.cube_a[:, 0, 0]
-        cube_small_masked = cube_small.copy()
-        cube_small_masked.data = ma.array(
-            cube_small.data, mask=np.array([0, 0, 0, 1, 1, 1], dtype=bool)
-        )
+        cube_small_masked = iris.util.mask_cube(cube_small, [0, 0, 0, 1, 1, 1])
         r = stats.pearsonr(cube_small, cube_small_masked, common_mask=True)
-        self.assertArrayAlmostEqual(r.data, np.array([1.0]))
 
-    def test_common_mask_broadcast(self):
-        cube_small = self.cube_a[:, 0, 0]
-        cube_small_2d = self.cube_a[:, 0:2, 0]
-        cube_small.data = ma.array(
-            cube_small.data, mask=np.array([0, 0, 0, 0, 0, 1], dtype=bool)
-        )
-        cube_small_2d.data = ma.array(
-            np.tile(cube_small.data[:, np.newaxis], 2),
-            mask=np.zeros((6, 2), dtype=bool),
-        )
+        mocked_compute.assert_not_called()
+        np.testing.assert_array_almost_equal(r.data, np.array([1.0]))
+
+    def test_common_mask_broadcast(self, mocked_compute):
+        cube_small = iris.util.mask_cube(self.cube_a[:, 0, 0], [0, 0, 0, 0, 0, 1])
+        mask_2d = np.zeros((6, 2), dtype=bool)
         # 2d mask varies on unshared coord:
-        cube_small_2d.data.mask[0, 1] = 1
+        mask_2d[0, 1] = 1
+
+        # Make a (6, 2) cube.
+        cube_small_2d = self.cube_a[:, 0:2, 0]
+        # Duplicate data along unshared coord's dimension.
+        new_data = iris.util.broadcast_to_shape(
+            cube_small.core_data(), (6, 2), dim_map=[0]
+        )
+        cube_small_2d.data = iris.util._mask_array(new_data, mask_2d)
+
         r = stats.pearsonr(
             cube_small,
             cube_small_2d,
             weights=self.weights[:, 0, 0],
             common_mask=True,
         )
-        self.assertArrayAlmostEqual(r.data, np.array([1.0, 1.0]))
+
+        mocked_compute.assert_not_called()
+        np.testing.assert_array_almost_equal(r.data, np.array([1.0, 1.0]))
         # 2d mask does not vary on unshared coord:
         cube_small_2d.data.mask[0, 0] = 1
         r = stats.pearsonr(cube_small, cube_small_2d, common_mask=True)
-        self.assertArrayAlmostEqual(r.data, np.array([1.0, 1.0]))
+        np.testing.assert_array_almost_equal(r.data, np.array([1.0, 1.0]))
 
 
-if __name__ == "__main__":
-    tests.main()
+class TestReal(TestLazy):
+    def setup_method(self):
+        super().setup_method()
+        for cube in [self.cube_a, self.cube_b]:
+            _ = cube.data
+
+
+class TestCoordHandling(Mixin):
+    def test_lenient_handling(self):
+        # Smoke test that mismatched var_name does not prevent operation.
+        self.cube_a.coord("time").var_name = "wibble"
+        stats.pearsonr(self.cube_a, self.cube_b)
+
+    def test_incompatible_cubes(self):
+        with pytest.raises(ValueError):
+            stats.pearsonr(self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude")
+
+    def test_single_coord(self):
+        # Smoke test that single coord can be passed as single string.
+        stats.pearsonr(self.cube_a, self.cube_b, "latitude")
+
+    def test_non_existent_coord(self):
+        with pytest.raises(CoordinateNotFoundError):
+            stats.pearsonr(self.cube_a, self.cube_b, "bad_coord")
