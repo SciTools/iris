@@ -111,6 +111,8 @@ This document explains the changes made to Iris for this release
    :func:`~iris.analysis.stats.pearsonr` so it preserves lazy data in all cases
    and also runs a little faster.  (:pull:`5638`)
 
+#. `@bouweandela`_ made comparing coordinates and arrays to themselves faster. (:pull:`5691`)
+
 
 🔥 Deprecations
 ===============
