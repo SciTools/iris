@@ -100,9 +100,9 @@ def scalar_cell_method(cube, method, coord_name):
 
 
 def has_aux_factory(cube, aux_factory_class):
-    """Determine class:`~iris.aux_factory.AuxCoordFactory` availability within cube.
+    """Determine :class:`~iris.aux_factory.AuxCoordFactory` availability within cube.
 
-    Try to find an class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    Try to find an :class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type on the cube.
 
     """
@@ -113,9 +113,9 @@ def has_aux_factory(cube, aux_factory_class):
 
 
 def aux_factory(cube, aux_factory_class):
-    """Retrieve class:`~iris.aux_factory.AuxCoordFactory` instance from cube.
+    """Retrieve :class:`~iris.aux_factory.AuxCoordFactory` instance from cube.
 
-    Return the class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    Return the :class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type from a cube.
 
     """
