@@ -300,7 +300,7 @@ html_theme_options = {
     "footer_start": ["copyright", "sphinx-version"],
     "footer_end": ["custom_footer"],
     "navigation_depth": 3,
-    "show_toc_level": 3,
+    "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
     # removes the search box from the top bar
