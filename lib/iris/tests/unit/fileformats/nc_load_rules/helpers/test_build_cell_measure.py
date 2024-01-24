@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_cell_measure`.
-
-"""
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_cell_measure`."""
 
 from unittest import mock
 

@@ -1,4 +1,5 @@
-"""Global Average Annual Temperature Maps
+"""
+Global Average Annual Temperature Maps
 ======================================
 
 Produces maps of global temperature forecasts from the A1B and E1 scenarios.
@@ -18,7 +19,7 @@ References
     Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21,
     doi:10.1029/2009EO210001.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import os.path
 
@@ -31,10 +32,7 @@ import iris.plot as iplt
 
 
 def cop_metadata_callback(cube, field, filename):
-    """A function which adds an "Experiment" coordinate which comes from the
-    filename.
-    """
-
+    """Add an "Experiment" coordinate which comes from the filename."""
     # Extract the experiment name (such as A1B or E1) from the filename (in
     # this case it is just the start of the file name, before the first ".").
     fname = os.path.basename(filename)  # filename without path.

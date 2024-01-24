@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides common metadata mixin behaviour.
-
-"""
+"""Provides common metadata mixin behaviour."""
 
 from collections.abc import Mapping
 from functools import wraps
@@ -121,7 +119,7 @@ class LimitedAttributeDict(dict):
         dict.__setitem__(self, key, value)
 
     def update(self, other, **kwargs):
-        """Standard ``dict.update()`` operation."""
+        """Perform standard ``dict.update()`` operation."""
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):
@@ -145,7 +143,7 @@ class CFVariableMixin:
         return self._metadata_manager.name(default=default, token=token)
 
     def rename(self, name):
-        """Changes the human-readable name.
+        """Change the human-readable name.
 
         If 'name' is a valid standard name it will assign it to
         :attr:`standard_name`, otherwise it will assign it to

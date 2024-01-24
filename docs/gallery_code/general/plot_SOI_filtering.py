@@ -1,4 +1,5 @@
-"""Applying a Filter to a Time-Series
+"""
+Applying a Filter to a Time-Series
 ==================================
 
 This example demonstrates low pass filtering a time-series by applying a
@@ -17,7 +18,7 @@ References
     Trenberth K. E. (1984) Signal Versus Noise in the Southern Oscillation.
     Monthly Weather Review, Vol 112, pp 326-332
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import numpy as np

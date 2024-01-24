@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Scripts for generating supporting data for UGRID-related benchmarking.
-"""
+"""Scripts for generating supporting data for UGRID-related benchmarking."""
 from iris import load_cube as iris_loadcube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
@@ -15,7 +14,9 @@ from .stock import (
 
 
 def generate_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool, output_path: str):
-    """Construct and save to file an LFRIc cubesphere-like cube for a given
+    """Construct and save to file an LFRIc cubesphere-like cube.
+
+    Construct and save to file an LFRIc cubesphere-like cube for a given
     cubesphere size, *or* a simpler structured (UM-like) cube of equivalent
     size.
 
@@ -55,7 +56,9 @@ def generate_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool, output_path: 
 
 
 def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
-    """Generate an LFRIc cubesphere-like cube for a given cubesphere size,
+    """Generate an LFRIc cubesphere-like cube.
+
+    Generate an LFRIc cubesphere-like cube for a given cubesphere size,
     *or* a simpler structured (UM-like) cube of equivalent size.
 
     All the cube data, coords and mesh content are LAZY, and produced without
@@ -156,7 +159,9 @@ def make_cube_like_umfield(xy_dims):
 
 
 def make_cubesphere_testfile(c_size, n_levels=0, n_times=1):
-    """Build a C<c_size> cubesphere testfile in a given directory, with a standard naming.
+    """Build a C<c_size> cubesphere testfile in a given directory.
+
+    Build a C<c_size> cubesphere testfile in a given directory, with a standard naming.
     If n_levels > 0 specified: 3d file with the specified number of levels.
     Return the file path.
 

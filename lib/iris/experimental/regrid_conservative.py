@@ -60,17 +60,14 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
     Add a grid mask if provided.
     Create and return a Field mapped on this Grid, setting data if provided.
 
-    Args:
-
-    * x_coord, y_coord (:class:`iris.coords.Coord`):
+    Parameters
+    ----------
+    x_coord, y_coord : :class:`iris.coords.Coord`
         One-dimensional coordinates of shape (nx,) and (ny,).
         Their contiguous bounds define an ESMF.Grid of shape (nx, ny).
-
-    Kwargs:
-
-    * data (:class:`numpy.ndarray`, shape (nx,ny)):
+    data : :class:`numpy.ndarray`, shape (nx,ny), optional
         Set the Field data content.
-    * mask (:class:`numpy.ndarray`, boolean, shape (nx,ny)):
+    mask : :class:`numpy.ndarray`, bool, shape (nx,ny), optional
         Add a mask item to the grid, assigning it 0/1 where mask=False/True.
 
     """
@@ -164,19 +161,23 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     Regrids the data of a source cube onto a new grid defined by a destination
     cube.
 
-    Args:
-
-    * source_cube (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    source_cube : :class:`iris.cube.Cube`
         Source data.  Must have two identifiable horizontal dimension
         coordinates.
-    * grid_cube (:class:`iris.cube.Cube`):
+    grid_cube : :class:`iris.cube.Cube`
         Define the target horizontal grid:  Only the horizontal dimension
         coordinates are actually used.
 
-    Returns:
+    Returns
+    -------
+    :class:`iris.cube.Cube`
         A new cube derived from source_cube, regridded onto the specified
         horizontal grid.
 
+    Notes
+    -----
     Any additional coordinates which map onto the horizontal dimensions are
     removed, while all other metadata is retained.
     If there are coordinate factories with 2d horizontal reference surfaces,

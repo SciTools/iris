@@ -1,4 +1,5 @@
-"""Seasonal Ensemble Model Plots
+"""
+Seasonal Ensemble Model Plots
 =============================
 
 This example demonstrates the loading of a lagged ensemble dataset from the
@@ -15,7 +16,7 @@ GloSea4 model, which is then used to produce two types of plot:
   better approach would be to take the climatological mean, calibrated to the
   model, from each ensemble member.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
@@ -26,7 +27,9 @@ import iris.plot as iplt
 
 
 def realization_metadata(cube, field, fname):
-    """A function which modifies the cube's metadata to add a "realization"
+    """Modify the cube's metadata to add a "realization" coordinate.
+
+    A function which modifies the cube's metadata to add a "realization"
     (ensemble member) coordinate from the filename if one doesn't already exist
     in the cube.
 

@@ -1,3 +1,5 @@
+"""Rotated pole."""
+
 import matplotlib.pyplot as plt
 
 import iris

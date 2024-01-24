@@ -45,9 +45,12 @@ def is_missing(field, value):
 
 def name(cube, field, handle_metadata_errors):
     """Set the cube's name from the field.
+
     Modifies the Nimrod object title based on other meta-data in the
     Nimrod field and known use cases.
+
     Adds "mean_of" or "standard_deviation_of_" to the cube name if appropriate.
+
     """
     title_from_field_code = {
         12: "air_pressure",
@@ -237,8 +240,7 @@ def reference_time(cube, field):
 
 
 def forecast_period(cube):
-    """Add a forecast_period coord based on existing time and
-    forecast_reference_time coords.
+    """Add forecast_period coord based on existing time and forecast_reference_time coords.
 
     Must be run after time() and reference_time()
 
@@ -293,8 +295,7 @@ def experiment(cube, field):
 
 
 def proj_biaxial_ellipsoid(field, handle_metadata_errors):
-    """Return the correct dictionary of arguments needed to define an
-    iris.coord_systems.GeogCS.
+    """Return correct dict of arguments needed to define an iris.coord_systems.GeogCS.
 
     Based firstly on the value given by ellipsoid, then by grid if ellipsoid is
     missing, select the right pre-defined ellipsoid dictionary (Airy_1830 or
@@ -339,7 +340,9 @@ def proj_biaxial_ellipsoid(field, handle_metadata_errors):
 
 
 def set_british_national_grid_defaults(field, handle_metadata_errors):
-    """Check for missing coord-system meta-data and set default values for
+    """Check for missing coord-system meta-data and set default values.
+
+    Check for missing coord-system meta-data and set default values for
     the Ordnance Survey GB Transverse Mercator projection. Some Radarnet
     files are missing these.
 
@@ -374,6 +377,7 @@ def set_british_national_grid_defaults(field, handle_metadata_errors):
 
 def coord_system(field, handle_metadata_errors):
     """Define the coordinate system for the field.
+
     Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
 
     Transverse Mercator projections will default to the British National Grid if any
@@ -411,6 +415,7 @@ def coord_system(field, handle_metadata_errors):
 
 def horizontal_grid(cube, field, handle_metadata_errors):
     """Add X and Y coordinates to the cube.
+
     Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
 
     coordinate reference system is supplied by coord_system(field)
@@ -455,7 +460,9 @@ def horizontal_grid(cube, field, handle_metadata_errors):
 
 
 def vertical_coord(cube, field):
-    """Add a vertical coord to the cube, with bounds, if appropriate.
+    """Add a vertical coord to the cube, with bounds.
+
+    Add a vertical coord to the cube, with bounds, if appropriate.
     Handles special numbers for "at-sea-level" (8888) and "at-ground-level"
     (9999).
 
@@ -695,7 +702,9 @@ def known_threshold_coord(field):
 
 
 def probability_coord(cube, field, handle_metadata_errors):
-    """Add a coord relating to probability meta-data from the header to the
+    """Add a coord relating to probability meta-data from the header to the cube.
+
+    Add a coord relating to probability meta-data from the header to the
     cube if appropriate.
 
     Must be run after the name method.

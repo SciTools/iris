@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test the cube concatenate mechanism.
-
-"""
+"""Test the cube concatenate mechanism."""
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -35,48 +33,37 @@ def _make_cube(
 ):
     """A convenience test function that creates a custom 2D cube.
 
-    Args:
-
-    * x:
-        A (start, stop, step) tuple for specifying the
-        x-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * y:
-        A (start, stop, step) tuple for specifying the
-        y-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * data:
+    Parameters
+    ----------
+    x :
+        A (start, stop, step) tuple for specifying the x-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    y :
+        A (start, stop, step) tuple for specifying the y-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    data :
         The data payload for the cube.
-
-    Kwargs:
-
-    * aux:
+    aux : optional, default=None
         A CSV string specifying which points only auxiliary
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * cell_measure:
+    cell_measure : optional, default=None
         A CSV string specifying which points only cell measures
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * ancil:
+    ancil : optional, default=None
         A CSV string specifying which points only ancillary variables
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * derived:
+    derived : optional, default=None
         A CSV string specifying which points only derived coordinates
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * offset:
+    offset : int, optional, default=0
         Offset value to be added to the 'xy' auxiliary coordinate
         points.
-
-    * scalar:
+    scalar : optional, default=None
         Create a 'height' scalar coordinate with the given value.
 
-    Returns:
-        The newly created 2D :class:`iris.cube.Cube`.
+    Returns
+    -------
+    The newly created 2D :class:`iris.cube.Cube`.
 
     """
     x_range = np.arange(*x, dtype=np.float32)
@@ -170,39 +157,30 @@ def _make_cube(
 def _make_cube_3d(x, y, z, data, aux=None, offset=0):
     """A convenience test function that creates a custom 3D cube.
 
-    Args:
-
-    * x:
-        A (start, stop, step) tuple for specifying the
-        x-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * y:
-        A (start, stop, step) tuple for specifying the
-        y-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * z:
-        A (start, stop, step) tuple for specifying the
-        z-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * data:
+    Parameters
+    ----------
+    x :
+        A (start, stop, step) tuple for specifying the x-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    y :
+        A (start, stop, step) tuple for specifying the y-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    z :
+        A (start, stop, step) tuple for specifying the z-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    data :
         The data payload for the cube.
-
-    Kwargs:
-
-    * aux:
+    aux : optional, default=None
         A CSV string specifying which points only auxiliary
         coordinates to create. Accepts either of 'x', 'y', 'z',
         'xy', 'xz', 'yz', 'xyz'.
-
-    * offset:
+    offset : int, optional, default=0
         Offset value to be added to non-1D auxiliary coordinate
         points.
 
-    Returns:
-        The newly created 3D :class:`iris.cube.Cube`.
+    Returns
+    -------
+    The newly created 3D :class:`iris.cube.Cube`.
 
     """
     x_range = np.arange(*x, dtype=np.float32)

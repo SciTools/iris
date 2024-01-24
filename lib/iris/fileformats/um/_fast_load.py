@@ -2,7 +2,8 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Support for "fast" loading of structured UM files in iris load functions,
+"""Support for "fast" loading of structured UM files in iris load functions.
+
 i.e. :meth:`iris.load` and its associates.
 
 This provides a context manager to enable structured loading via all the iris
@@ -49,12 +50,11 @@ class FieldCollation(BasicFieldCollation):
     def __init__(self, fields, filepath):
         """FieldCollation initialise.
 
-        Args:
-
-        * fields (iterable of :class:`iris.fileformats.pp.PPField`):
+        Parameters
+        ----------
+        fields : iterable of :class:`iris.fileformats.pp.PPField`
             The fields in the collation.
-
-        * filepath (string):
+        filepath : str
             The path of the file the collation is loaded from.
 
         """
@@ -72,8 +72,9 @@ class FieldCollation(BasicFieldCollation):
         This records the original file location of the individual data fields
         contained, within the input datafile.
 
-        Returns:
-            An integer array of shape `self.vector_dims_shape`.
+        Returns
+        -------
+        An integer array of shape `self.vector_dims_shape`.
 
         """
         # Get shape :  N.B. this calculates (and caches) the structure.
@@ -154,18 +155,21 @@ _HINTS = {name: i for i, name in zip(range(len(_HINT_COORDS)), _HINT_COORDS)}
 
 
 def _convert_collation(collation):
-    """Converts a FieldCollation into the corresponding items of Cube
-    metadata.
+    """Convert a FieldCollation into the corresponding items of Cube metadata.
 
-    Args:
-
-    * collation:
+    Parameters
+    ----------
+    collation :
         A FieldCollation object.
 
-    Returns:
-        A :class:`iris.fileformats.rules.ConversionMetadata` object.
+    Returns
+    -------
+    A :class:`iris.fileformats.rules.ConversionMetadata` object.
 
+    Notes
+    -----
     .. note:
+
         This is the 'loader.converter', in the control structure passed to the
         generic rules code, :meth:`iris.fileformats.rules.load_cubes`.
 
@@ -538,7 +542,9 @@ def structured_um_loading():
 
 @contextmanager
 def _raw_structured_loading():
-    """Private context manager called by :func:`iris.load_raw` to prevent
+    """Prevent structured loading from concatenating its result cubes.
+
+    Private context manager called by :func:`iris.load_raw` to prevent
     structured loading from concatenating its result cubes in that case.
 
     """

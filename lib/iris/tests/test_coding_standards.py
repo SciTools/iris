@@ -64,7 +64,9 @@ def test_netcdf4_import():
 
 
 def test_python_versions():
-    """This test is designed to fail whenever Iris' supported Python versions are
+    """Test Python Versions.
+
+    Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
     latest_supported = "3.11"

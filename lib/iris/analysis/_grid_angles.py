@@ -2,7 +2,10 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Code to implement vector rotation by angles, and inferring gridcell angles
+
+"""Implement vector rotation by angles.
+
+Code to implement vector rotation by angles, and inferring gridcell angles
 from coordinate points and bounds.
 
 """
@@ -67,7 +70,9 @@ def _latlon_from_xyz(xyz):
 
 
 def _angle(p, q, r):
-    """Estimate grid-angles to true-Eastward direction from positions in the same
+    """Estimate grid-angles to true-Eastward direction.
+
+    Estimate grid-angles to true-Eastward direction from positions in the same
     grid row, but at increasing column (grid-Eastward) positions.
 
     {P, Q, R} are locations of consecutive points in the same grid row.

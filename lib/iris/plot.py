@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot`
-interface.
+"""Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot` interface.
 
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
@@ -133,7 +132,9 @@ def _valid_bound_dim_coord(coord):
 
 
 def _get_plot_defn(cube, mode, ndims=2):
-    """Return data and plot-axis coords given a cube & a mode of either
+    """Return data and plot-axis coords.
+
+    Return data and plot-axis coords given a cube & a mode of either
     POINT_MODE or BOUND_MODE.
 
     """
@@ -234,7 +235,6 @@ def _broadcast_2d(u, v):
 
 def _string_coord_axis_tick_labels(string_axes, axes=None):
     """Apply tick labels for string coordinates."""
-
     ax = axes if axes else plt.gca()
     for axis, ticks in string_axes.items():
         # Define a tick formatter. This will assign a label to all ticks
@@ -276,7 +276,9 @@ def _invert_yaxis(v_coord, axes=None):
 
 
 def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
-    """Checks that any discontiguities in the bounds of the given coordinate only
+    """Check discontiguities in the bounds of the given coordinate.
+
+    Checks that any discontiguities in the bounds of the given coordinate only
     occur where the data is masked.
 
     Where a discontinuity occurs the grid created for plotting will not be
@@ -699,7 +701,9 @@ def _get_geodesic_params(globe):
 
 
 def _shift_plot_sections(u_object, u, v):
-    """Shifts subsections of u by multiples of 360 degrees within ranges
+    """Shifts subsections of u by multiples of 360 degrees.
+
+    Shifts subsections of u by multiples of 360 degrees within ranges
     defined by the points where the line should cross over the 0/360 degree
     longitude boundary.
 
@@ -810,7 +814,9 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
 
 def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
-    """This function is equivalend to _draw_two_1d_from_points but expects two
+    """Draw two 1d frompoints (expects two y-axis variables rather than one).
+
+    This function is equivalend to _draw_two_1d_from_points but expects two
     y-axis variables rather than one (such as is required for .fill_between). It
     can't be used where the y-axis variables are string coordinates. The y-axis
     variable provided first has precedence where the two differ on whether the
@@ -853,12 +859,13 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
 
 def _replace_axes_with_cartopy_axes(cartopy_proj):
-    """Replace non-cartopy subplot/axes with a cartopy alternative
+    """Replace non-cartopy subplot/axes with a cartopy alternative.
+
+    Replace non-cartopy subplot/axes with a cartopy alternative
     based on the provided projection. If the current axes are already an
     instance of :class:`cartopy.mpl.geoaxes.GeoAxes` then no action is taken.
 
     """
-
     ax = plt.gca()
     if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
         fig = ax.get_figure()
@@ -885,7 +892,9 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
 
 
 def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
-    """Replace the current non-cartopy axes with
+    """Replace the current non-cartopy axes with :class:`cartopy.mpl.geoaxes.GeoAxes`.
+
+    Replace the current non-cartopy axes with
     :class:`cartopy.mpl.geoaxes.GeoAxes` and return the appropriate kwargs dict
     based on the provided coordinates and kwargs.
 
@@ -1220,14 +1229,13 @@ def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
 
 
 def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at cell boundaries from the given Cube.
+    """Plot orography defined at cell boundaries from the given Cube.
 
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-
     # XXX Needs contiguous orography corners to work.
     raise NotImplementedError(
         "This operation is temporarily not provided "
@@ -1259,14 +1267,13 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at sample points from the given Cube.
+    """Plot orography defined at sample points from the given Cube.
 
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-
     style_args = {"facecolor": facecolor}
 
     def vert_plot(u_coord, orography, style_args):
@@ -1437,7 +1444,7 @@ def points(cube, *args, **kwargs):
 
 
 def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
-    """Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
+    """Vector component callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
 
     Returns arguments (x, y, u, v), to be passed to the underlying matplotlib
     call.
@@ -1477,7 +1484,9 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
 
 
 def barbs(u_cube, v_cube, *args, **kwargs):
-    """Draws a barb plot from two vector component cubes. Triangles, full-lines
+    """Draw a barb plot from two vector component cubes.
+
+    Draws a barb plot from two vector component cubes. Triangles, full-lines
     and half-lines represent increments of 50, 10 and 5 respectively.
 
     Args:
@@ -1672,7 +1681,7 @@ def scatter(x, y, *args, **kwargs):
 
 
 def fill_between(x, y1, y2, *args, **kwargs):
-    """Plots y1 and y2 against x, and fills the space between them.
+    """Plot y1 and y2 against x, and fills the space between them.
 
     Args:
 
@@ -1841,7 +1850,6 @@ def citation(text, figure=None, axes=None):
         provided.
 
     """
-
     if text is not None and len(text):
         if figure is None and not axes:
             figure = plt.gcf()

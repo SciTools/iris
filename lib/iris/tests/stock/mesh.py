@@ -27,16 +27,17 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
     Mesh has nodes, plus faces and/or edges, with face-coords and edge-coords,
     numbers of which can be controlled.
 
-    Args:
-    * n_nodes (int or None):
+    Parameters
+    ----------
+    n_nodes : int or None
         Number of nodes in mesh. Default is 15.  Cannot be 0.
-    * n_edges (int or None):
+    n_edges : int or None
         Number of edges in mesh. Default is 5.
         If not 0, edge coords and an 'edge_node_connectivity' are included.
-    * n_faces (int or None):
+    n_faces : int or None
         Number of faces in mesh. Default is 3.
         If not 0, face coords and a 'face_node_connectivity' are included.
-    * lazy_values (bool):
+    lazy_values : bool, default=False
         If True, all content values of coords and connectivities are lazy.
 
     """
@@ -124,25 +125,34 @@ def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
 def sample_mesh_cube(nomesh_faces=None, n_z=2, with_parts=False, **meshcoord_kwargs):
     """Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a Mesh).
 
-    Result contains : dimcoords for both dims; an auxcoord on the unstructured dim; 2 mesh-coords.
-    By default, the mesh is provided by :func:`sample_mesh`, so coordinates and connectivity  are not realistic.
+    Result contains : dimcoords for both dims; an auxcoord on the unstructured
+    dim; 2 mesh-coords.
 
-    Kwargs:
-    * nomesh_faces (int or None):
+    By default, the mesh is provided by :func:`sample_mesh`, so coordinates
+    and connectivity  are not realistic.
+
+    Parameters
+    ----------
+    nomesh_faces : int or None, optional, default=None
         If set, don't add MeshCoords, so dim 1 is just a plain anonymous dim.
         Set its length to the given value.
-    * n_z (int):
+    n_z : int, optional, default=2
         Length of the 'normal' dim.  If 0, it is *omitted*.
-    * with_parts (bool):
+    with_parts : bool, optional, default=False
         If set, return all the constituent component coords
-    * meshcoord_kwargs (dict):
-        Extra controls passed to :func:`sample_meshcoord` for MeshCoord creation, to allow user-specified
-        location/mesh.  The 'axis' key is not available, as we always add both an 'x' and 'y' MeshCOord.
+    **meshcoord_kwargs : dict, optional
+        Extra controls passed to :func:`sample_meshcoord` for MeshCoord
+        creation, to allow user-specified location/mesh.  The 'axis' key is
+        not available, as we always add both an 'x' and 'y' MeshCOord.
 
-    Returns:
-    * cube  :  if with_parts not set
-    * (cube, parts)  : if with_parts is set
-        'parts' is (mesh, dim0-dimcoord, dim1-dimcoord, dim1-auxcoord, x-meshcoord [or None], y-meshcoord [or None]).
+    Returns
+    -------
+    cube
+        if with_parts not set
+    (cube, parts)
+        if with_parts is set
+        'parts' is (mesh, dim0-dimcoord, dim1-dimcoord, dim1-auxcoord,
+        x-meshcoord [or None], y-meshcoord [or None]).
 
     """
     nomesh = nomesh_faces is not None

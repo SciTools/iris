@@ -17,6 +17,8 @@
 # serve to show the default.
 # ----------------------------------------------------------------------------
 
+"""sphinx config."""
+
 import datetime
 from importlib.metadata import version as get_version
 import ntpath
@@ -296,7 +298,6 @@ html_sidebars = {
 html_theme_options = {
     "footer_start": ["copyright", "sphinx-version"],
     "footer_end": ["custom_footer"],
-    "collapse_navigation": True,
     "navigation_depth": 3,
     "show_toc_level": 3,
     "show_prev_next": True,

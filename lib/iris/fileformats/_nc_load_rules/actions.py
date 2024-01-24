@@ -103,7 +103,7 @@ def action_function(func):
 
 @action_function
 def action_default(engine):
-    """Standard operations for every cube."""
+    """Perform standard operations for every cube."""
     hh.build_cube_metadata(engine)
 
 
@@ -544,7 +544,6 @@ def run_actions(engine):
     The specific cube being translated is "engine.cube".
 
     """
-
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 
