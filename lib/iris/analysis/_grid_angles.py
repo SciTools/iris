@@ -21,7 +21,7 @@ def _3d_xyz_from_latlon(lon, lat):
 
     Parameters
     ----------
-    lon, lat: (float array)
+    lon, lat: float array
         Arrays of longitudes and latitudes, in degrees.
         Both the same shape.
 
@@ -172,7 +172,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
         longitude and latitude cell bounds, in degrees.
         The first two dimensions are grid dimensions in the order Y, then X.
         The last index maps cell corners anticlockwise from bottom-left.
-    cell_angle_boundpoints : str, optional, default="mid-lhs, mid-rhs"
+    cell_angle_boundpoints : str, default="mid-lhs, mid-rhs"
         Controls which gridcell bounds locations are used to calculate angles,
         if the inputs are bounds or bounded coordinates.
         Valid values are 'lower-left, lower-right', which takes the angle from
@@ -411,7 +411,7 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
     u_cube, v_cube : cube
         Cubes of grid-u and grid-v vector components.
         Units should be differentials of true-distance, e.g. 'm/s'.
-    grid_angles_cube : cube, optional, default=None
+    grid_angles_cube : cube, optional
         gridcell orientation angles.
         Units must be angular, i.e. can be converted to 'radians'.
         If not provided, grid angles are estimated from 'u_cube' using the
