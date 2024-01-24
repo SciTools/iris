@@ -11,9 +11,31 @@ import cf_units
 import dask.array as da
 import numpy as np
 
+from iris._lazy_data import _optimum_chunksize
 from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
 from iris.exceptions import IrisIgnoringBoundsWarning
+
+
+def rechunk_args(func):
+    def wrapped(*args):
+        data = func(*args)
+        chunks = _optimum_chunksize(
+            data.chunksize,
+            shape=data.shape,
+            dtype=data.dtype,
+        )
+        rechunked_args = []
+        for arg in args:
+            if isinstance(arg, da.Array):
+                new_chunks = [
+                    1 if arg.shape[i] == 1 else chunk for i, chunk in enumerate(chunks)
+                ]
+                arg = arg.rechunk(new_chunks)
+            rechunked_args.append(arg)
+        return func(*rechunked_args)
+
+    return wrapped
 
 
 class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
@@ -813,6 +835,7 @@ class HybridPressureFactory(AuxCoordFactory):
             "surface_air_pressure": self.surface_air_pressure,
         }
 
+    @rechunk_args
     def _derive(self, delta, sigma, surface_air_pressure):
         return delta + sigma * surface_air_pressure
 
