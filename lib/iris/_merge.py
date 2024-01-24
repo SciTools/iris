@@ -1182,7 +1182,7 @@ class ProtoCube:
         raise iris.exceptions.DuplicateDataError(msg)
 
     def merge(self, unique=True):
-        """Returns the list of cubes resulting from merging the registered source-cubes.
+        """Return the list of cubes resulting from merging the registered source-cubes.
 
         Parameters
         ----------
@@ -1319,7 +1319,7 @@ class ProtoCube:
         return match
 
     def _guess_axis(self, name):
-        """Returns a "best guess" axis name of the candidate dimension.
+        """Return a "best guess" axis name of the candidate dimension.
 
         Heuristic categoration of the candidate dimension
         (i.e. scalar_defn index) into either label 'T', 'Z', 'Y', 'X'
@@ -1564,7 +1564,7 @@ class ProtoCube:
         return cube
 
     def _nd_index(self, position):
-        """Returns the n-dimensional index of thr source-cube, within the merged cube."""
+        """Return the n-dimensional index of thr source-cube, within the merged cube."""
         index = []
 
         # Determine the index of the source-cube cell for each dimension.

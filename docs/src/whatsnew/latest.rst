@@ -104,6 +104,15 @@ This document explains the changes made to Iris for this release
    lazy data from file. This will also speed up coordinate comparison.
    (:pull:`5610`)
 
+#. `@bouweandela`_ changed :func:`iris.coords.Coord.cell` so it does not realize
+   all coordinate data and only loads a single cell instead. (:pull:`5693`)
+
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified 
+   :func:`~iris.analysis.stats.pearsonr` so it preserves lazy data in all cases
+   and also runs a little faster.  (:pull:`5638`)
+
+#. `@bouweandela`_ made comparing coordinates and arrays to themselves faster. (:pull:`5691`)
+
 
 🔥 Deprecations
 ===============
@@ -119,6 +128,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ enforced the minimum pin of ``numpy>1.22`` in accordance with the `NEP29 Drop Schedule`_.
    (:pull:`5668`)
+
+#. `@bjlittle`_ updated ``ubuntu`` and ``mambaforge`` to the latest versions for ``readthedocs``
+   (:pull:`5702`)
 
 
 📚 Documentation

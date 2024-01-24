@@ -277,11 +277,11 @@ class STASH(collections.namedtuple("STASH", "model section item")):
 
         Args
         ----
-        model
+        model :
             A positive integer less than 100, or None.
-        section
+        section :
             A non-negative integer less than 100, or None.
-        item
+        item :
             A positive integer less than 1000, or None.
 
         """

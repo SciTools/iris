@@ -241,7 +241,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return f"{type(self).__name__}({', '.join(field_strings)})"
 
     def _api_common(self, other, func_service, func_operation, action, lenient=None):
-        """Common entry-point for lenient metadata API methods.
+        """Perform common entry-point for lenient metadata API methods.
 
         Parameters
         ----------
@@ -683,7 +683,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return result
 
     def name(self, default=None, token=False):
-        """Returns a string name representing the identity of the metadata.
+        """Return a string name representing the identity of the metadata.
 
         First it tries standard name, then it tries the long name, then
         the NetCDF variable name, before falling-back to a default value,
@@ -1561,7 +1561,7 @@ def _factory_cache(cls):
 
 
 def metadata_manager_factory(cls, **kwargs):
-    """Factory function for manufacturing metadata instances.
+    """Manufacturing metadata instances.
 
     A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.

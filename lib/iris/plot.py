@@ -1229,7 +1229,7 @@ def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
 
 
 def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at cell boundaries from the given Cube.
+    """Plot orography defined at cell boundaries from the given Cube.
 
     Notes
     -----
@@ -1267,7 +1267,7 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at sample points from the given Cube.
+    """Plot orography defined at sample points from the given Cube.
 
     Notes
     -----
@@ -1444,7 +1444,7 @@ def points(cube, *args, **kwargs):
 
 
 def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
-    """Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
+    """Vector component callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
 
     Returns arguments (x, y, u, v), to be passed to the underlying matplotlib
     call.
@@ -1681,7 +1681,7 @@ def scatter(x, y, *args, **kwargs):
 
 
 def fill_between(x, y1, y2, *args, **kwargs):
-    """Plots y1 and y2 against x, and fills the space between them.
+    """Plot y1 and y2 against x, and fills the space between them.
 
     Args:
 

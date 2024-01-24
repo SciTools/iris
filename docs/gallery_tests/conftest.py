@@ -18,7 +18,7 @@ GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
 
 @pytest.fixture
 def image_setup_teardown():
-    """Setup and teardown fixture.
+    """Perform setup and teardown fixture.
 
     Ensures all figures are closed before and after test to prevent one test
     polluting another if it fails with a figure unclosed.

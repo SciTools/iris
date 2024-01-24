@@ -28,7 +28,7 @@ _LENIENT_PROTECTED = ("active", "enable")
 
 
 def _lenient_client(*dargs, services=None):
-    """Decorator implementing the lenient client protocol.
+    """Allow a client function/method to declare at runtime.
 
     Decorator that allows a client function/method to declare at runtime that
     it is executing and requires lenient behaviour from a prior registered
@@ -129,7 +129,7 @@ def _lenient_client(*dargs, services=None):
 
 
 def _lenient_service(*dargs):
-    """Decorator implementing the lenient service protocol.
+    """Implement the lenient service protocol.
 
     Decorator that allows a function/method to declare that it supports lenient
     behaviour as a service.
@@ -223,7 +223,7 @@ def _qualname(func):
 
 class Lenient(threading.local):
     def __init__(self, **kwargs):
-        """A container for managing the run-time lenient features and options.
+        """Container for managing the run-time lenient features and options.
 
         Parameters
         ----------
@@ -330,7 +330,7 @@ class Lenient(threading.local):
 
 class _Lenient(threading.local):
     def __init__(self, *args, **kwargs):
-        """A container for managing the run-time lenient services and client options.
+        """Container for managing the run-time lenient services and client options.
 
         A container for managing the run-time lenient services and client
         options for pre-defined functions/methods.
