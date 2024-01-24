@@ -2841,9 +2841,18 @@ class Test_convert_units(tests.IrisTest):
 class Test__eq__data(tests.IrisTest):
     """Partial cube equality testing, for data type only."""
 
+    def test_cube_identical_to_itself(self):
+        cube = Cube([1.0])
+        self.assertTrue(cube == cube)
+
     def test_data_float_eq(self):
         cube1 = Cube([1.0])
         cube2 = Cube([1.0])
+        self.assertTrue(cube1 == cube2)
+
+    def test_data_float_nan_eq(self):
+        cube1 = Cube([np.nan, 1.0])
+        cube2 = Cube([np.nan, 1.0])
         self.assertTrue(cube1 == cube2)
 
     def test_data_float_eqtol(self):
