@@ -147,7 +147,7 @@ def expand_filespecs(file_specs, files_expected=True):
     ----------
     file_specs : iterable of str
         File paths which may contain ``~`` elements or wildcards.
-    files_expected : bool, optional, default=True
+    files_expected : bool, default=True
         Whether file is expected to exist (i.e. for load).
 
     Returns

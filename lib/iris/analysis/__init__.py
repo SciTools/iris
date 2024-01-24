@@ -227,7 +227,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
 
     Returns
     -------
-    result (dict mapping string: list of _CoordGroup):
+    result : dict mapping str,  list of _CoordGroup
         A dictionary whose keys are match categories and values are groups of
         coordinates, cell-measures or ancillary-variables.
 
@@ -243,42 +243,42 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
 
     Returned Keys:
 
-    * grouped_coords
-       A list of coordinate groups of all the coordinates grouped together
-       by their coordinate definition
-    * ungroupable
-       A list of coordinate groups which contain at least one None,
-       meaning not all Cubes provide an equivalent coordinate
-    * not_equal
-       A list of coordinate groups of which not all are equal
-       (superset of ungroupable)
-    * no_data_dimension
-       A list of coordinate groups of which all have no data dimensions on
-       their respective cubes
-    * scalar
-       A list of coordinate groups of which all have shape (1, )
-    * non_equal_data_dimension
-       A list of coordinate groups of which not all have the same
-       data dimension on their respective cubes
-    * non_equal_shape
-       A list of coordinate groups of which not all have the same shape
-    * equal_data_dimension
-       A list of coordinate groups of which all have the same data dimension
-       on their respective cubes
-    * equal
-       A list of coordinate groups of which all are equal
-    * ungroupable_and_dimensioned
-       A list of coordinate groups of which not all cubes had an equivalent
-       (in metadata) coordinate which also describe a data dimension
-    * dimensioned
-       A list of coordinate groups of which all describe a data dimension on
-       their respective cubes
-    * ignorable
-       A list of scalar, ungroupable non_equal coordinate groups
-    * resamplable
-        A list of equal, different data dimensioned coordinate groups
-    * transposable
-       A list of non equal, same data dimensioned, non scalar coordinate groups
+    * **grouped_coords**.
+      A list of coordinate groups of all the coordinates grouped together
+      by their coordinate definition
+    * **ungroupable**.
+      A list of coordinate groups which contain at least one None,
+      meaning not all Cubes provide an equivalent coordinate
+    * **not_equal**.
+      A list of coordinate groups of which not all are equal
+      (superset of ungroupable)
+    * **no_data_dimension**>
+      A list of coordinate groups of which all have no data dimensions on
+      their respective cubes
+    * **scalar**>
+      A list of coordinate groups of which all have shape (1, )
+    * **non_equal_data_dimension**.
+      A list of coordinate groups of which not all have the same
+      data dimension on their respective cubes
+    * **non_equal_shape**.
+      A list of coordinate groups of which not all have the same shape
+    * **equal_data_dimension**.
+      A list of coordinate groups of which all have the same data dimension
+      on their respective cubes
+    * **equal**.
+      A list of coordinate groups of which all are equal
+    * **ungroupable_and_dimensioned**.
+      A list of coordinate groups of which not all cubes had an equivalent
+      (in metadata) coordinate which also describe a data dimension
+    * **dimensioned**.
+      A list of coordinate groups of which all describe a data dimension on
+      their respective cubes
+    * **ignorable**.
+      A list of scalar, ungroupable non_equal coordinate groups
+    * **resamplable**.
+      A list of equal, different data dimensioned coordinate groups
+    * **transposable**.
+      A list of non equal, same data dimensioned, non scalar coordinate groups
 
     Example usage::
 
@@ -511,11 +511,11 @@ class _Aggregator:
         ----------
         data : :class:`dask.array.Array`
             A lazy array.
-        axis: int or list of int
+        axis : int or list of int
             The dimensions to aggregate over -- note that this is defined
             differently to the 'aggregate' method 'axis' argument, which only
             accepts a single dimension index.
-        **kwargs:
+        **kwargs :
             All keyword arguments are passed through to the data aggregation
             function.
 
@@ -555,7 +555,7 @@ class _Aggregator:
             mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
             will return the resulting value from the aggregation function.
             Defaults to 1.
-        **kwargs:
+        **kwargs :
             All keyword arguments apart from those specified above, are
             passed through to the data aggregation function.
 
@@ -635,8 +635,9 @@ class _Aggregator:
 
         Parameters
         ----------
-        This function is intended to be used in conjunction with aggregate()
-        and should be passed the same keywords.
+        **kwargs :
+            This function is intended to be used in conjunction with aggregate()
+            and should be passed the same keywords.
 
         Returns
         -------
@@ -890,7 +891,7 @@ class WeightedPercentileAggregator(PercentileAggregator):
 
         Parameters
         ----------
-        units_func : callable
+        units_func : callable or None
             | *Call signature*: ``(units, **kwargs)``.
 
             If provided, called to convert a cube's units.
@@ -1063,7 +1064,7 @@ class WeightedAggregator(Aggregator):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
-        ** kwargs :
+        **kwargs :
             Passed through to :data:`call_func`, :data:`lazy_func`, and
             :data:`units_func`.
 
@@ -1461,7 +1462,7 @@ def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs)
         array with the weights.  Must have same shape as data
     percent : float or sequence of floats
         Percentile rank/s at which to extract value/s.
-    returned : bool, optional
+    returned : bool, default=False
         Default False.  If True, returns a tuple with the percentiles as the
         first element and the sum of the weights as the second element.
 
@@ -2286,7 +2287,7 @@ class _Groupby:
             One or more coordinates (including multidimensional coordinates)
             that share the same group-by coordinate axis.  The `int` identifies
             which dimension of the coord is on the group-by coordinate axis.
-        climatological : bool
+        climatological : bool, default=False
             Indicates whether the output is expected to be climatological. For
             any aggregated time coord(s), this causes the climatological flag to
             be set and the point for each cell to equal its first bound, thereby
