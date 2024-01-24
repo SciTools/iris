@@ -195,13 +195,13 @@ copybutton_line_continuation_character = "\\"
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = True
 
-# sphinx.ext.autodocconfiguration ---------------------------------------------
+# sphinx.ext.autodoc configuration --------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
 autodoc_default_options = {
     "members": True,
     "member-order": "alphabetical",
     "undoc-members": True,
-    "private-members" : False,
+    "private-members": False,
     "special-members": False,
     "inherited-members": True,
     "show-inheritance": True,
@@ -211,6 +211,7 @@ autodoc_default_options = {
 autodoc_typehints = "none"
 autosummary_generate = True
 autosummary_imported_members = True
+autopackage_name = ["iris"]
 autoclass_content = "both"
 modindex_common_prefix = ["iris"]
 
