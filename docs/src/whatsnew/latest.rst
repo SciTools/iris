@@ -91,7 +91,8 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@bouweandela`_ updated cube comparison so cubes with data containing a
+   :obj:`numpy.nan` are now considered equal (:pull:`5713`)
 
 
 🚀 Performance Enhancements
@@ -112,6 +113,8 @@ This document explains the changes made to Iris for this release
    and also runs a little faster.  (:pull:`5638`)
 
 #. `@bouweandela`_ made comparing coordinates and arrays to themselves faster. (:pull:`5691`)
+
+#. `@bouweandela`_ made comparing cubes to themselves faster. (:pull:`5713`)
 
 
 🔥 Deprecations
