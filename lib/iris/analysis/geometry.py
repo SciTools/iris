@@ -163,17 +163,14 @@ def geometry_area_weights(cube, geometry, normalize=False):
         This function does not maintain laziness when called; it realises data.
         See more at :doc:`/userguide/real_and_lazy_data`.
 
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         A Cube containing a bounded, horizontal grid definition.
-    * geometry (a shapely geometry instance):
+    geometry : shapely geometry instance
         The geometry of interest. To produce meaningful results this geometry
         must have a non-zero area. Typically a Polygon or MultiPolygon.
-
-    Kwargs:
-
-    * normalize:
+    normalize : bool, default=False
         Calculate each individual cell weight as the cell area overlap between
         the cell and the given shapely geometry divided by the total cell area.
         Default is False.
