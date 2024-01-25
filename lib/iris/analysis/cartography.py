@@ -205,7 +205,7 @@ def _xy_range(cube, mode=None):
     ----------
     cube :
         The cube for which to calculate xy extents.
-    mode : optional, default=None
+    mode : optional
         If the coordinate has bounds, set this to specify the
         min/max calculation.
         Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
@@ -397,7 +397,7 @@ def area_weights(cube, normalize=False):
     ----------
     cube : :class:`iris.cube.Cube`
         The cube to calculate area weights for.
-    normalize : bool, optional, default=False
+    normalize : bool, default=False
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
 
@@ -605,10 +605,10 @@ def project(cube, target_proj, nx=None, ny=None):
         An instance of the Cartopy Projection class, or an instance of
         :class:`iris.coord_systems.CoordSystem` from which a projection
         will be obtained.
-    nx : optional, default=None
+    nx : optional
         Desired number of sample points in the x direction for a domain
         covering the globe.
-    ny : optional, default=None
+    ny : optional
         Desired number of sample points in the y direction for a domain
         covering the globe.
 

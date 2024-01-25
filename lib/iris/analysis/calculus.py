@@ -144,6 +144,8 @@ def cube_delta(cube, coord):
 
         change_in_temperature_wrt_pressure = cube_delta(temperature_cube, 'pressure')
 
+    Notes
+    -----
     .. note:: Missing data support not yet implemented.
 
     .. note::
@@ -770,8 +772,8 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
 
     Notes
     -----
-            This function maintains laziness when called; it does not realise data.
-            See more at :doc:`/userguide/real_and_lazy_data`.
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
 
     """
