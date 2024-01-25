@@ -488,7 +488,7 @@ class _CubeSignature:
         attr : str
             The _CubeSignature attribute within which differences exist
             between `self` and `other`.
-        reason : str
+        reason : str, default="metadata"
             The reason to give for mismatch (function is normally, but not
             always, testing metadata)
 
@@ -854,22 +854,22 @@ class _ProtoCube:
         axis : optional
             Seed the dimension of concatenation for the :class:`_ProtoCube`
             rather than rely on negotiation with source-cubes.
-        error_on_mismatch : bool, optional
+        error_on_mismatch : bool, default=False
             If True, raise an informative error if registration fails.
-        check_aux_coords : bool, optional
+        check_aux_coords : bool, default=False
             Checks if the points and bounds of auxiliary coordinates of the
             cubes match. This check is not applied to auxiliary coordinates
             that span the dimension the concatenation is occurring along.
             Defaults to False.
-        check_cell_measures : bool, optional
+        check_cell_measures : bool, default=False
             Checks if the data of cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension the
             concatenation is occurring along. Defaults to False.
-        check_ancils : bool, optional
+        check_ancils : bool, default=False
             Checks if the data of ancillary variables of the cubes match. This
             check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to False.
-        check_derived_coords : bool, optional
+        check_derived_coords : bool, default=False
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
             the dimension the concatenation is occurring along. Note that

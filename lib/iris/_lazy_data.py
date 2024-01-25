@@ -72,12 +72,12 @@ def _optimum_chunksize_internals(
         Pre-existing chunk shape of the target data.
     shape : tuple of int
         The full array shape of the target data.
-    limit : int
+    limit : int, optional
         The 'ideal' target chunk size, in bytes.  Default from
         :mod:`dask.config`.
     dtype : np.dtype
         Numpy dtype of target data.
-    dims_fixed : list of bool
+    dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or 'shape'.
         'True' values indicate a dimension that can not be changed, i.e. that
         element of the result must equal the corresponding value in 'chunks' or
@@ -232,14 +232,14 @@ def as_lazy_data(
         This will be converted to a :class:`dask.array.Array`.
     chunks : list of int, optional
         If present, a source chunk shape, e.g. for a chunked netcdf variable.
-    asarray : bool, optional
+    asarray : bool, default=False
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
     dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or data.ndim.
         'True' values indicate a dimension which can not be changed, i.e. the
         result for that index must equal the value in 'chunks' or data.shape.
-    dask_chunking : bool, optional
+    dask_chunking : bool, default=False
         If True, Iris chunking optimisation will be bypassed, and dask's default
         chunking will be used instead. Including a value for chunks while dask_chunking
         is set to True will result in a failure.

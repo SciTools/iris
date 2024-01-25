@@ -103,7 +103,7 @@ def delta(ndarray, dimension, circular=False):
         The array over which to do the difference.
     dimension :
         The dimension over which to do the difference on ndarray.
-    circular : bool, optional, default=False
+    circular : bool, default=False
         If not False then return n results in the requested dimension
         with the delta between the last and first element included in
         the result otherwise the result will be of length n-1 (where n
@@ -171,7 +171,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
     cube_b :
         An instance of :class:`iris.cube.Cube` or
         :class:`iris.cube.CubeMetadata`.
-    output_file :
+    output_file : optional
         A :class:`file` or file-like object to receive output. Defaults to
         sys.stdout.
 
@@ -287,11 +287,11 @@ def rolling_window(a, window=1, step=1, axis=-1):
     ----------
     a : array_like
         Array to add rolling window to
-    window : int, optional
+    window : int, default=1
         Size of rolling window
-    step : int, optional
+    step : int, default=1
         Size of step between rolling windows
-    axis : int, optional
+    axis : int, default=-1
         Axis to take the rolling window over
 
     Returns
@@ -359,7 +359,7 @@ def array_equal(array1, array2, withnans=False):
     ----------
     array1, array2 : arraylike
         args to be compared, normalised if necessary with :func:`np.asarray`.
-    withnans : bool, optional, default=False
+    withnans : bool, default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
         When set, return True if inputs contain the same value in all elements,
@@ -440,7 +440,7 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         The left hand element of the inequality
     rh :
         The right hand element of the inequality
-    lh_inclusive : bool, optional
+    lh_inclusive : bool, default=True
         Affects the left hand comparison operator to use in the inequality.
         True for ``<=`` false for ``<``. Defaults to True.
     rh_inclusive : bool, default=True
@@ -579,9 +579,9 @@ def monotonic(array, strict=False, return_direction=False):
 
     Parameters
     ----------
-    strict : boolean, optional, default=False
+    strict : boolean, default=False
         Flag to enable strict monotonic checking
-    return_direction : bool, optional, default=False
+    return_direction : bool, default=False
         Flag to change return behaviour to return
         (monotonic_status, direction). Direction will be 1 for positive
         or -1 for negative. The direction is meaningless if the array is
@@ -1022,10 +1022,10 @@ def clip_string(the_str, clip_length=70, rider="..."):
     ----------
     the_str : str
         The string to be clipped
-    clip_length :
+    clip_length : int, default=70
         The length in characters that the input string should be clipped
         to. Defaults to a preconfigured value if not specified.
-    rider : str, optional, default="..."
+    rider : str, default="..."
         A series of characters appended at the end of the returned
         string to show it has been clipped. Defaults to a preconfigured
         value if not specified.
@@ -1100,7 +1100,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     ----------
     src_cube : :class:`iris.cube.Cube`
         Source cube on which to generate a new axis.
-    scalar_coord : :class:`iris.coord.Coord` or 'string', optional, default=None
+    scalar_coord : :class:`iris.coord.Coord` or 'string', optional
         Scalar coordinate to promote to a dimension coordinate.
     expand_extras : iterable, optional
         Auxiliary coordinates, ancillary variables and cell measures which will
@@ -1367,10 +1367,8 @@ def regular_points(zeroth, step, count):
     ----------
     zeroth : number
         The value *prior* to the first point value.
-
     step : number
         The numeric difference between successive point values.
-
     count : number
         The number of point values.
 
@@ -1760,10 +1758,10 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     cube : `iris.cube.Cube`
         The cube to be checked for discontinuities in its 'x' and 'y'
         coordinates. These coordinates must be 2D.
-    rel_tol : float, optional, default=1e-5
+    rel_tol : float, default=1e-5
         The relative equality tolerance to apply in coordinate bounds
         checking.
-    abs_tol : float, optional, default=1e-8
+    abs_tol : float, default=1e-8
         The absolute value tolerance to apply in coordinate bounds
         checking.
 
@@ -1908,15 +1906,12 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     ----------
     cube : iris.cube.Cube
         Cube containing data that requires masking.
-
     points_to_mask : numpy.ndarray, dask.array.Array, iris.coords.Coord or iris.cube.Cube
         Specifies booleans (or ones and zeros) indicating which points will
         be masked.
-
     in_place : bool, default=False
         If `True`, masking is applied to the input cube.  Otherwise a copy is
         masked and returned.
-
     dim : int, optional
         If `points_to_mask` is a coord which does not exist on the cube,
         specify the dimension to which it should be mapped.

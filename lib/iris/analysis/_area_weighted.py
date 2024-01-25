@@ -29,7 +29,7 @@ class AreaWeightedRegridder:
             The :class:`~iris.cube.Cube` providing the source grid.
         target_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-        mdtol : float, optional
+        mdtol : float, default=1
             Tolerance of missing data. The value returned in each element of
             the returned array will be masked if the fraction of masked data
             exceeds mdtol. mdtol=0 means no missing data is tolerated while
