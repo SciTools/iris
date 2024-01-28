@@ -43,7 +43,7 @@ class Trajectory:
         ----------
         waypoints :
             A sequence of dictionaries, mapping coordinate names to values.
-        sample_count : int, optional, default=10
+        sample_count : int, default=10
             The number of sample positions to use along the trajectory.
 
         Examples
@@ -156,7 +156,7 @@ class Trajectory:
         ----------
         cube :
              The source Cube to interpolate.
-        method :
+        method : optional
             The interpolation method to use; "linear" (default) or "nearest".
             Only nearest is available when specifying multi-dimensional
             coordinates.
@@ -191,7 +191,7 @@ def interpolate(cube, sample_points, method=None):
         The source Cube.
     sample_points :
         A sequence of coordinate (name) - values pairs.
-    method : optional, default=None
+    method : optional
         Request "linear" interpolation (default) or "nearest" neighbour.
         Only nearest neighbour is available when specifying multi-dimensional
         coordinates.

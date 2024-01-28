@@ -273,7 +273,7 @@ class DataManager:
 
         Parameters
         ----------
-        data :
+        data : optional
             Replace the data of the copy with this data.
 
         Returns
