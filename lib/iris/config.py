@@ -46,24 +46,24 @@ def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler
 
     Parameters
     ----------
-    name
+    name :
         The name of the logger. Typically this is the module filename that
         owns the logger.
-    datefmt: optional
+    datefmt : optional
         The date format string of the :class:`logging.Formatter`.
         Defaults to ``%d-%m-%Y %H:%M:%S``.
-    fmt: optional
+    fmt : optional
         The additional format string of the :class:`logging.Formatter`.
         This is appended to the default format string
         ``%(asctime)s %(name)s %(levelname)s - %(message)s``.
-    level: optional
+    level : optional
         The threshold level of the logger. Defaults to ``INFO``.
-    propagate: optional
+    propagate : optional
         Sets the ``propagate`` attribute of the :class:`logging.Logger`,
         which determines whether events logged to this logger will be
         passed to the handlers of higher level loggers. Defaults to
         ``False``.
-    handler: optional
+    handler : bool, default=True
         Create and attach a :class:`logging.StreamHandler` to the
         logger. Defaults to ``True``.
 

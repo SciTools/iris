@@ -1355,7 +1355,7 @@ class PPField(metaclass=ABCMeta):
 
         Returns
         -------
-        :class:`~iris.coord_systems.GeogCS` or class:`~iris.coord_systems.RotatedGeogCS`.
+        :class:`~iris.coord_systems.GeogCS` or :class:`~iris.coord_systems.RotatedGeogCS`.
 
         """
         geog_cs = iris.coord_systems.GeogCS(EARTH_RADIUS)

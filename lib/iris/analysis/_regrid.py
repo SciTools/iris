@@ -384,7 +384,7 @@ class CurvilinearRegridder:
             The :class:`~iris.cube.Cube` providing the source grid.
         tgt_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-        weights : optional, default=None
+        weights : optional
             A :class:`numpy.ndarray` instance that defines the weights
             for the grid cells of the source grid. Must have the same shape
             as the data of the source grid.
@@ -636,9 +636,9 @@ class RectilinearRegridder:
             A 2-dimensional array of sample X values.
         sample_grid_y :
             A 2-dimensional array of sample Y values.
-        method: str, optional
+        method: str, default="linear"
             Either 'linear' or 'nearest'. The default method is 'linear'.
-        extrapolation_mode : str, optional
+        extrapolation_mode : str, default="nanmask"
             Must be one of the following strings:
 
             * 'linear' - The extrapolation points will be calculated by
@@ -656,7 +656,7 @@ class RectilinearRegridder:
 
         Returns
         -------
-        NumPu array
+        NumPy array
             The regridded data as an N-dimensional NumPy array. The lengths
             of the X and Y dimensions will now match those of the sample
             grid.

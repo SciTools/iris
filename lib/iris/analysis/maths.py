@@ -43,13 +43,15 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
         The dtype of the first or only argument to the operator.
     second_dtype : optional, default=None
         The dtype of the second argument to the operator.
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether the operation is to be performed in place.
 
     Returns
     -------
     :class:`numpy.dtype`
 
+    Notes
+    -----
     .. note::
 
         The function always returns the dtype which would result if the
@@ -94,7 +96,7 @@ def abs(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -152,8 +154,6 @@ def intersection_of_cubes(cube, other_cube):
           intersections = cubes.extract_overlapping(coords)
           cube1, cube2 = (intersections[0], intersections[1])
 
-    Notes
-    -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -221,15 +221,12 @@ def add(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         First operand to add.
-
     other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Second operand to add.
-
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
-
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -276,15 +273,12 @@ def subtract(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         Cube from which to subtract.
-
     other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Object to subtract from the cube.
-
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
-
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -342,7 +336,7 @@ def _add_subtract_common(
     dim : optional, default=None
         Dimension along which to apply `other` if it's a coordinate that is not
         found in `cube`
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether or not to apply the operation in place to `cube` and `cube.data`
 
     """
@@ -386,15 +380,12 @@ def multiply(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         First operand to multiply.
-
     other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Second operand to multiply.
-
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
-
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -474,15 +465,12 @@ def divide(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         Numerator.
-
     other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Denominator.
-
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
         dimension to which it should be mapped.
-
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         If `True`, alters the input cube.  Otherwise a new cube is created.
 
     Returns
@@ -546,7 +534,7 @@ def exponentiate(cube, exponent, in_place=False):
             powers of the basic units.
 
             e.g. Unit('meter^-2 kilogram second^-1')
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -557,6 +545,7 @@ def exponentiate(cube, exponent, in_place=False):
     -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(
@@ -591,7 +580,7 @@ def exp(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -621,7 +610,7 @@ def log(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -653,7 +642,7 @@ def log2(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -681,7 +670,7 @@ def log10(cube, in_place=False):
     ----------
     cube :
         An instance of :class:`iris.cube.Cube`.
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -722,17 +711,14 @@ def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=
         :func:`numpy.mod`.
     cube :
         An instance of :class:`iris.cube.Cube`.
-
-    Kwargs:
-
-    other ::class:`iris.cube.Cube`, optional, default=False
+    other ::class:`iris.cube.Cube`, optional
         An instance of :class:`iris.cube.Cube` to be given as the second
         argument to :func:`numpy.ufunc`.
-    new_unit : optional, default=False
+    new_unit : optional
         Unit for the resulting Cube.
-    new_name : optional, default=False
+    new_name : optional
         Name for the resulting Cube.
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         Whether to create a new Cube, or alter the given "cube".
 
     Returns
@@ -836,14 +822,14 @@ def _binary_op_common(
         as the second argument
     new_dtype :
         The expected dtype of the output. Used in the case of scalar masked arrays
-    new_unit : optional, default=None
+    new_unit : optional
         Unit for the resulting quantity
-    dim : optional, default=None
+    dim : optional
         Dimension along which to apply `other` if it's a coordinate that is
         not found in `cube`
-    in_place : bool, optional, default=False
+    in_place : bool, default=False
         whether or not to apply the operation in place to `cube` and `cube.data`
-    sanitise_metadata : bool, optional, default=True
+    sanitise_metadata : bool, default=True
         Whether or not to remove metadata using _sanitise_metadata function
 
     """
@@ -1179,17 +1165,17 @@ class IFunc:
         cube :
             An instance of :class:`iris.cube.Cube`, whose data is used
             as the first argument to the data function.
-        * other : optional, default=None
+        other : optional
             A cube, coord, ndarray, dask array or number whose data is used as the
             second argument to the data function.
-        * new_name : optional, default=None
+        new_name : optional
             Name for the resulting Cube.
-        * in_place : bool, optional, default=False
+        in_place : bool, default=False
             Whether to create a new Cube, or alter the given "cube".
-        * dim : optional, default=None
+        dim : optional
             Dimension along which to apply `other` if it's a coordinate that is
             not found in `cube`
-        ** kwargs_data_func :
+        **kwargs_data_func :
             Keyword arguments that get passed on to the data_func.
 
         Returns

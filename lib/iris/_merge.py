@@ -68,7 +68,7 @@ class _CoordMetaData(
     bounds_dtype :
         The bounds data :class:`numpy.dtype` of an associated coordinate.
         None otherwise.
-    kwargs:
+    kwargs :
         A dictionary of key/value pairs required to create a coordinate.
 
     """
@@ -162,11 +162,11 @@ class _CoordPayload(namedtuple("CoordPayload", ["scalar", "vector", "factory_def
 
     Parameters
     ----------
-    scalar:
+    scalar :
         A :class:`_ScalarCoordPayload` instance.
-    vector:
+    vector :
         A :class:`_VectorCoordPayload` instance.
-    factory_defns:
+    factory_defns :
         A list of :class:`_FactoryDefn` instances.
 
     """
@@ -637,7 +637,7 @@ def _separable(name, indexes):
 
     Returns
     -------
-    tupl
+    tuple
         A tuple containing the set of separable and inseparable
         candidate dimensions.
 
@@ -777,7 +777,7 @@ def _is_dependent(dependent, independent, positions, function_mapping=None):
     positions :
         A list containing a dictionary of candidate dimension key to
         scalar value pairs for each source-cube.
-    function_mapping : optional, default=None
+    function_mapping : optional
         A dictionary that enumerates a valid functional relationship
         between the dependent candidate dimension and the independent
         candidate dimension/s.
@@ -1052,7 +1052,7 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
     positions :
         A list containing a dictionary of candidate dimension key to
         scalar value pairs for each source-cube.
-    function_matrix : optional, default=None
+    function_matrix : optional
           The function mapping dictionary for each candidate dimension that
           participates in a functional relationship.
 
@@ -1186,7 +1186,7 @@ class ProtoCube:
 
         Parameters
         ----------
-        unique :
+        unique : bool, default=True
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
@@ -1294,7 +1294,7 @@ class ProtoCube:
         cube :
             Candidate :class:`iris.cube.Cube` to be associated with
             this :class:`ProtoCube`.
-        error_on_mismatch :bool,  optional, default=False
+        error_on_mismatch :bool, default=False
             If True, raise an informative
             :class:`~iris.exceptions.MergeError` if registration fails.
 
