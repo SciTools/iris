@@ -307,6 +307,7 @@ class FFHeader:
         ----------
         filename : str
             Specify the name of the FieldsFile.
+        word_depth : int, default=DEFAULT_FF_WORD_DEPTH
 
         Returns
         -------
@@ -445,9 +446,10 @@ class FF2PP:
         ----------
         filename : str
             Specify the name of the FieldsFile.
-        read_data : bool, optional
+        read_data : bool, default=False
             Specify whether to read the associated PPField data within
             the FieldsFile.  Default value is False.
+        word_depth : int, default=DEFAULT_FF_WORD_DEPTH
 
         Returns
         -------
