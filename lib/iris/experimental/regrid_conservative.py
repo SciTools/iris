@@ -65,6 +65,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
     x_coord, y_coord : :class:`iris.coords.Coord`
         One-dimensional coordinates of shape (nx,) and (ny,).
         Their contiguous bounds define an ESMF.Grid of shape (nx, ny).
+    ref_name : stre, default="field"
     data : :class:`numpy.ndarray`, shape (nx,ny), optional
         Set the Field data content.
     mask : :class:`numpy.ndarray`, bool, shape (nx,ny), optional
