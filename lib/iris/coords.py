@@ -2268,7 +2268,7 @@ class Coord(_DimensionalMetadata):
 
         Parameters
         ----------
-        bound_position : floatm default=0.5
+        bound_position : float, default=0.5
             The desired position of the bounds relative to the position
             of the points.
 
