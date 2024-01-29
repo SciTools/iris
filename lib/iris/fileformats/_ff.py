@@ -184,7 +184,7 @@ class Grid:
 
         Returns
         -------
-            A 2-tuple of X-vector, Y-vector.
+        A 2-tuple of X-vector, Y-vector.
 
         """
         x_p, x_u = self._x_vectors()
@@ -223,7 +223,7 @@ class ArakawaC(Grid):
 
         Returns
         -------
-            A 2-tuple of BZX, BDX.
+        A 2-tuple of BZX, BDX.
 
         """
         bdx = self.ew_spacing
@@ -245,7 +245,7 @@ class ArakawaC(Grid):
 
         Returns
         -------
-            A 2-tuple of BZY, BDY.
+        A 2-tuple of BZY, BDY.
 
         """
         bdy = self.ns_spacing

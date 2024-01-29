@@ -275,8 +275,8 @@ class STASH(collections.namedtuple("STASH", "model section item")):
     def __new__(cls, model, section, item):
         """Create namedtuple STASH instance.
 
-        Args
-        ----
+        Parameters
+        ----------
         model :
             A positive integer less than 100, or None.
         section :
@@ -370,28 +370,27 @@ class SplittableInt:
 
     Notes
     -----
-    No support for negative numbers
+    No support for negative numbers.
 
     """
 
     def __init__(self, value, name_mapping_dict=None):
         """Build a SplittableInt given the positive integer value provided.
 
-        Args
-        ----
-        **kwargs
-            * name_mapping_dict - (dict)
-                A special mapping to provide name based access to specific
-                integer positions:
+        Parameters
+        ----------
+        name_mapping_dict : dict
+            A special mapping to provide name based access to specific
+            integer positions:
 
-                >>> a = SplittableInt(1234, {'hundreds': 2})
-                >>> print(a.hundreds)
-                2
-                >>> a.hundreds = 9
-                >>> print(a.hundreds)
-                9
-                >>> print(a)
-                1934
+            >>> a = SplittableInt(1234, {'hundreds': 2})
+            >>> print(a.hundreds)
+            2
+            >>> a.hundreds = 9
+            >>> print(a.hundreds)
+            9
+            >>> print(a)
+            1934
 
 
         """
@@ -1617,17 +1616,16 @@ LoadedArrayBytes = collections.namedtuple("LoadedArrayBytes", "bytes, dtype")
 def load(filename, read_data=False, little_ended=False):
     """Return an iterator of PPFields given a filename.
 
-    Args
-    ----
-    filename
+    Parameters
+    ----------
+    filename : str
         string of the filename to load.
-    **kwargs
-        * read_data - boolean
-            Flag whether or not the data should be read, if False an empty
-            data manager will be provided which can subsequently load the data
-            on demand. Default False.
-        * little_ended - boolean
-            If True, file contains all little-ended words (header and data).
+    read_data : bool, default=False
+        Flag whether or not the data should be read, if False an empty
+        data manager will be provided which can subsequently load the data
+        on demand. Default False.
+    little_ended : bool, default=False
+        If True, file contains all little-ended words (header and data).
 
     Notes
     -----
@@ -2007,11 +2005,10 @@ def load_cubes(filenames, callback=None, constraints=None):
     ----------
     filenames :
         list of pp filenames to load
-    **kwargs :
-        * constraints
-            a list of Iris constraints
-        * callback
-            a function which can be passed on to :func:`iris.io.run_callback`
+    constraints : optional
+        A list of Iris constraints
+    callback : optional
+        A function which can be passed on to :func:`iris.io.run_callback`
 
     Notes
     -----
@@ -2028,21 +2025,20 @@ def load_cubes(filenames, callback=None, constraints=None):
 def load_cubes_little_endian(filenames, callback=None, constraints=None):
     """Load cubes from a list of pp filenames containing little-endian data.
 
-    Args
-    ----
-    filenames
+    Parameters
+    ----------
+    filenames :
         list of pp filenames to load
-    **kwargs
-        * constraints
-            a list of Iris constraints
-        * callback
-            a function which can be passed on to :func:`iris.io.run_callback`
+    constraints : optional
+        a list of Iris constraints
+    callback : optional
+        a function which can be passed on to :func:`iris.io.run_callback`
 
     Notes
     -----
     The resultant cubes may not be in the order that they are in the file
     (order is not preserved when there is a field with orography
-    references)
+    references).
 
     """
     return _load_cubes_variable_loader(
@@ -2057,9 +2053,9 @@ def load_cubes_little_endian(filenames, callback=None, constraints=None):
 def load_pairs_from_fields(pp_fields):
     r"""Convert an iterable of PP fields into an iterable of tuples of (Cubes, PPField).
 
-    Args
-    ----
-    pp_fields:
+    Parameters
+    ----------
+    pp_fields :
         An iterable of :class:`iris.fileformats.pp.PPField`.
 
     Returns
@@ -2152,27 +2148,24 @@ def _load_cubes_variable_loader(
 def save(cube, target, append=False, field_coords=None):
     """Use the PP saving rules (and any user rules) to save a cube to a PP file.
 
-    Args
-    ----
-    cube: :class:`iris.cube.Cube`
-
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
     target
         A filename or open file handle.
-
-    **kwargs
-        * append
-            Whether to start a new file afresh or add the cube(s)
-            to the end of the file.
-            Only applicable when target is a filename, not a file
-            handle.
-            Default is False.
-        * field_coords
-            list of 2 coords or coord names which are to be used
-            for reducing the given cube into 2d slices,
-            which will ultimately determine the x and y
-            coordinates of the resulting fields.
-            If None, the final two  dimensions are chosen
-            for slicing.
+    append : bool, default=False
+        Whether to start a new file afresh or add the cube(s)
+        to the end of the file.
+        Only applicable when target is a filename, not a file
+        handle.
+        Default is False.
+    field_coords : optional
+        list of 2 coords or coord names which are to be used
+        for reducing the given cube into 2d slices,
+        which will ultimately determine the x and y
+        coordinates of the resulting fields.
+        If None, the final two  dimensions are chosen
+        for slicing.
 
     Notes
     -----
@@ -2191,18 +2184,17 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
     Use the PP saving rules to convert a cube or
     iterable of cubes to an iterable of (2D cube, PP field) pairs.
 
-    Args
-    ----
-    cube:
+    Parameters
+    ----------
+    cube :
         A :class:`iris.cube.Cube`
-    **kwargs
-        * field_coords:
-            List of 2 coords or coord names which are to be used for
-            reducing the given cube into 2d slices, which will ultimately
-            determine the x and y coordinates of the resulting fields.
-            If None, the final two  dimensions are chosen for slicing.
-        * target:
-            A filename or open file handle.
+    field_coords : optional
+        List of 2 coords or coord names which are to be used for
+        reducing the given cube into 2d slices, which will ultimately
+        determine the x and y coordinates of the resulting fields.
+        If None, the final two  dimensions are chosen for slicing.
+    target : optional
+        A filename or open file handle.
 
     """
     # Open issues
@@ -2309,18 +2301,16 @@ def as_fields(cube, field_coords=None, target=None):
     Use the PP saving rules (and any user rules) to convert a cube to
     an iterable of PP fields.
 
-    Args
-    ----
-    cube
-        A :class:`iris.cube.Cube`
-    **kwargs :
-        * field_coords:
-            List of 2 coords or coord names which are to be used for
-            reducing the given cube into 2d slices, which will ultimately
-            determine the x and y coordinates of the resulting fields.
-            If None, the final two  dimensions are chosen for slicing.
-        * target:
-            A filename or open file handle.
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+    field_coords : optional
+        List of 2 coords or coord names which are to be used for
+        reducing the given cube into 2d slices, which will ultimately
+        determine the x and y coordinates of the resulting fields.
+        If None, the final two  dimensions are chosen for slicing.
+    target : optional
+        A filename or open file handle.
 
     """
     return (
@@ -2331,21 +2321,20 @@ def as_fields(cube, field_coords=None, target=None):
     )
 
 
-def save_fields(fields, target, append=False):
+def save_fields(fields, target, append: bool = False):
     """Save an iterable of PP fields to a PP file.
 
-    Args
-    ----
-    fields:
+    Parameters
+    ----------
+    fields :
         An iterable of PP fields.
-    target:
+    target :
         A filename or open file handle.
-    **kwargs :
-        * append:
-            Whether to start a new file afresh or add the cube(s) to the end
-            of the file.
-            Only applicable when target is a filename, not a file handle.
-            Default is False.
+    append : bool, default=False
+        Whether to start a new file afresh or add the cube(s) to the end
+        of the file.
+        Only applicable when target is a filename, not a file handle.
+        Default is False.
 
     See Also
     --------

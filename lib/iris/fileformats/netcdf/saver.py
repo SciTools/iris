@@ -182,9 +182,9 @@ class CFNameCoordMap:
 
         Parameters
         ----------
-        name:
+        name :
             CF name of the associated coordinate.
-        coord:
+        coord :
             The coordinate of the associated CF name.
 
         Returns
@@ -209,7 +209,7 @@ class CFNameCoordMap:
 
         Parameters
         ----------
-        coord:
+        coord :
             The coordinate of the associated CF name.
 
         Returns
@@ -229,12 +229,13 @@ class CFNameCoordMap:
 
         Parameters
         ----------
-        name:
+        name :
             CF name of the associated coordinate, or None if not recognised.
 
         Returns
         -------
         CF name or None.
+
         """
         result = None
         for pair in self._map:
@@ -338,7 +339,7 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
         whether the data array was masked
     contains_fill_value : bool
         whether the data array contained the fill-value
-    warn : bool, optional
+    warn : bool, default=False
         if True, also issue any resulting warning immediately.
 
     Returns
@@ -390,11 +391,9 @@ class Saver:
         filename : str or netCDF4.Dataset
             Name of the netCDF file to save the cube.
             OR a writeable object supporting the :class:`netCF4.Dataset` api.
-
         netcdf_format : str
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
-
         compute : bool, default=True
             If ``True``, delayed variable saves will be completed on exit from the Saver
             context (after first closing the target file), equivalent to
@@ -404,7 +403,7 @@ class Saver:
             variables for which the source data was lazy.  These writes can be
             completed later, see :meth:`delayed_completion`.
 
-            .. Note::
+            .. note::
                 If ``filename`` is an open dataset, rather than a filepath, then the
                 caller must specify ``compute=False``, **close the dataset**, and
                 complete delayed saving afterwards.
@@ -543,39 +542,38 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        local_keys : iterable of str
+        local_keys : iterable of str, optional
             An interable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
             than global attributes.
 
-            .. Note::
+            .. note::
 
                 Has no effect if :attr:`iris.FUTURE.save_split_attrs` is ``True``.
-
-        unlimited_dimensions : iterable of str and/or :class:`iris.coords.Coord`
+        unlimited_dimensions : iterable of str and/or :class:`iris.coords.Coord`, optional
             List of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
             NetCDF dimension variable length 'UNLIMITED'. By default, no
             unlimited dimensions are saved. Only the 'NETCDF4' format
             supports multiple 'UNLIMITED' dimensions.
-        zlib : bool
+        zlib : bool, default=False
             If `True`, the data will be compressed in the netCDF file using
             gzip compression (default `False`).
-        complevel : int
+        complevel : int, default=4
             An integer between 1 and 9 describing the level of compression
             desired (default 4). Ignored if `zlib=False`.
-        shuffle : bool
+        shuffle : bool, default=True
             If `True`, the HDF5 shuffle filter will be applied before
             compressing the data (default `True`). This significantly improves
             compression. Ignored if `zlib=False`.
-        fletcher32 : bool
+        fletcher32 : bool, default=False
             If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
             detect errors. Default `False`.
-        contiguous : bool
+        contiguous : bool, default=False
             If `True`, the variable data is stored contiguously on disk.
             Default `False`. Setting to `True` for a variable with an unlimited
             dimension will trigger an error.
-        chunksizes : tuple of int
+        chunksizes : tuple of int, optional
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
             performance is available
@@ -583,7 +581,7 @@ class Saver:
             Basically, you want the chunk size for each dimension to match
             as closely as possible the size of the data block that users will
             read from the file. `chunksizes` cannot be set if `contiguous=True`.
-        endian : str
+        endian : str, default="native"
             Used to control whether the data is stored in little or big endian
             format on disk. Possible values are 'little', 'big' or 'native'
             (default). The library will automatically handle endian conversions
@@ -591,7 +589,7 @@ class Saver:
             on a computer with the opposite format as the one used to create
             the file, there may be some performance advantage to be gained by
             setting the endian-ness.
-        least_significant_digit : int
+        least_significant_digit : int, optional
             If `least_significant_digit` is specified, variable data will be
             truncated (quantized). In conjunction with `zlib=True` this
             produces 'lossy', but significantly more efficient compression. For
@@ -603,7 +601,7 @@ class Saver:
             "least_significant_digit -- power of ten of the smallest decimal
             place in unpacked data that is a reliable value". Default is
             `None`, or no quantization, or 'lossless' compression.
-        packing : type or str or dict or list
+        packing : type or str or dict or list, optional
             A numpy integer datatype (signed or unsigned) or a string that
             describes a numpy integer dtype(i.e. 'i2', 'short', 'u4') or a
             dict of packing parameters as described below. This provides
@@ -618,7 +616,7 @@ class Saver:
             manually using a dict to avoid this. The default is `None`, in
             which case the datatype is determined from the cube and no packing
             will occur.
-        fill_value:
+        fill_value : optional
             The value to use for the `_FillValue` attribute on the netCDF
             variable. If `packing` is specified the value of `fill_value`
             should be in the domain of the packed data.
@@ -783,7 +781,7 @@ class Saver:
 
         Parameters
         ----------
-        attributes : dict or iterable of key, value pairs
+        attributes : dict or iterable of key, value pairs, optional
             CF global attributes to be updated.
         """
         # TODO: when when iris.FUTURE.save_split_attrs is removed, this routine will
@@ -807,12 +805,14 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` in which to lookup coordinates.
+        dimension_names :
         unlimited_dimensions : iterable of strings and/or :class:`iris.coords.Coord` objects):
             List of coordinates to make unlimited (None by default).
 
         Returns
         -------
         None.
+
         """
         unlimited_dim_names = []
         if unlimited_dimensions is not None:
@@ -1497,7 +1497,7 @@ class Saver:
         ----------
         coord : :class:`iris.coords.Coord`
             A coordinate of a cube.
-        cf_var:
+        cf_var :
             CF-netCDF variable
         cf_name : str
             name of the CF-NetCDF variable.
@@ -1763,12 +1763,12 @@ class Saver:
             An Iris :class:`iris.coords._DimensionalMetadata`, belonging to the
             cube.  Provides data, units and standard/long/var names.
             Not used if 'element_dims' is not None.
-        element_dims : list of str, or None
+        element_dims : list of str, optionsl
             If set, contains the variable dimension (names),
             otherwise these are taken from `element.cube_dims[cube]`.
             For Mesh components (element coordinates and connectivities), this
             *must* be passed in, as "element.cube_dims" does not function.
-        fill_value : number or None
+        fill_value : number, optional
             If set, create the variable with this fill-value, and fill any
             masked data points with this value.
             If not set, standard netcdf4-python behaviour : the variable has no
@@ -2207,6 +2207,8 @@ class Saver:
         fill_value : optional
             See :func:`iris.fileformats.netcdf.Saver.write`
 
+        Notes
+        -----
         All other keywords are passed through to the dataset's `createVariable`
         method.
 
@@ -2619,7 +2621,7 @@ def save(
             When saving to a dataset, ``compute`` **must** be ``False`` :
             See the ``compute`` parameter.
 
-    netcdf_format : str
+    netcdf_format : str, default="NETCDF"
         Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
     local_keys : iterable of str, optional
@@ -2637,20 +2639,20 @@ def save(
         variable length 'UNLIMITED'. By default, no unlimited dimensions are
         saved. Only the 'NETCDF4' format supports multiple 'UNLIMITED'
         dimensions.
-    zlib : bool, optional
+    zlib : bool, default=False
         If `True`, the data will be compressed in the netCDF file using gzip
         compression (default `False`).
-    complevel : int
+    complevel : int, default=4
         An integer between 1 and 9 describing the level of compression desired
         (default 4). Ignored if `zlib=False`.
-    shuffle : bool, optional
+    shuffle : bool, default=True
         If `True`, the HDF5 shuffle filter will be applied before compressing
         the data (default `True`). This significantly improves compression.
         Ignored if `zlib=False`.
-    fletcher32 : bool, optional
+    fletcher32 : bool, default=False
         If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
         detect errors. Default `False`.
-    contiguous : bool, optional
+    contiguous : bool, default=False
         If `True`, the variable data is stored contiguously on disk. Default
         `False`. Setting to `True` for a variable with an unlimited dimension
         will trigger an error.
@@ -2662,7 +2664,7 @@ def save(
         Basically, you want the chunk size for each dimension to match as
         closely as possible the size of the data block that users will read
         from the file. `chunksizes` cannot be set if `contiguous=True`.
-    endian : str
+    endian : str, default="native"
         Used to control whether the data is stored in little or big endian
         format on disk. Possible values are 'little', 'big' or 'native'
         (default). The library will automatically handle endian conversions
@@ -2707,7 +2709,7 @@ def save(
         same number of elements as `cube` if `cube` is a
         :class:`iris.cube.CubeList`, or a single element, and each element of
         this argument will be applied to each cube separately.
-    compute : bool, optional
+    compute : bool, default=True
         Default is ``True``, meaning complete the file immediately, and return ``None``.
 
         When ``False``, create the output file but don't write any lazy array content to
@@ -2717,12 +2719,12 @@ def save(
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
 
-        .. Note::
+        .. note::
             when computed, the returned :class:`dask.delayed.Delayed` object returns
             a list of :class:`Warning` :  These are any warnings which *would* have
             been issued in the save call, if ``compute`` had been ``True``.
 
-        .. Note::
+        .. note::
             If saving to an open dataset instead of a filepath, then the caller
             **must** specify ``compute=False``, and complete delayed saves **after
             closing the dataset**.
@@ -2732,7 +2734,7 @@ def save(
 
     Returns
     -------
-    result: None or dask.delayed.Delayed
+    result : None or dask.delayed.Delayed
         If `compute=True`, returns `None`.
         Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
         writing to fill in the variables data.
