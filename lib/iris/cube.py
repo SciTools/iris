@@ -76,7 +76,7 @@ class _CubeFilter:
 
         Parameters
         ----------
-        unique : bool, optional, default=False
+        unique : bool, default=False
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
@@ -117,7 +117,7 @@ class _CubeFilterCollection:
 
         Parameters
         ----------
-        unique : bool, optional, default=False
+        unique : bool, default=False
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
@@ -250,7 +250,7 @@ class CubeList(list):
 
         Parameters
         ----------
-         constraints : :class:`~iris.Constraint` or iterable of constraints
+        constraints : :class:`~iris.Constraint` or iterable of constraints
             A single constraint or an iterable.
 
         """
@@ -405,7 +405,7 @@ class CubeList(list):
 
         Parameters
         ----------
-        unique : bool, optional, default=True
+        unique : bool, default=True
             If True, raises `iris.exceptions.DuplicateDataError` if
             duplicate cubes are detected.
 
@@ -511,20 +511,20 @@ class CubeList(list):
 
         Parameters
         ----------
-        check_aux_coords : bool, optional, default=True
+        check_aux_coords : bool, default=True
             Checks if the points and bounds of auxiliary coordinates of the
             cubes match. This check is not applied to auxiliary coordinates
             that span the dimension the concatenation is occurring along.
             Defaults to True.
-        check_cell_measures : bool, optional, default=True
+        check_cell_measures : bool, default=True
             Checks if the data of cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension the
             concatenation is occurring along. Defaults to True.
-        check_ancils : bool, optional, default=True
+        check_ancils : bool, default=True
             Checks if the data of ancillary variables of the cubes match. This
             check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
-        check_derived_coords : bool, optional, default=True
+        check_derived_coords : bool, default=True
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
             the dimension the concatenation is occurring along. Note that
@@ -584,20 +584,20 @@ class CubeList(list):
 
         Parameters
         ----------
-        check_aux_coords : bool, optional, default=True
+        check_aux_coords : bool, default=True
             Checks if the points and bounds of auxiliary coordinates of the
             cubes match. This check is not applied to auxiliary coordinates
             that span the dimension the concatenation is occurring along.
             Defaults to True.
-        check_cell_measures : bool, optional, default=True
+        check_cell_measures : bool, default=True
             Checks if the data of cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension the
             concatenation is occurring along. Defaults to True.
-        check_ancils : bool, optional, default=True
+        check_ancils : bool, default=True
             Checks if the data of ancillary variables of the cubes match. This
             check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to True.
-        check_derived_coords : bool, optional, default=True
+        check_derived_coords : bool, default=True
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
             the dimension the concatenation is occurring along. Note that
@@ -1199,33 +1199,33 @@ class Cube(CFVariableMixin):
             array_like (as described in :func:`numpy.asarray`).
 
             See :attr:`Cube.data<iris.cube.Cube.data>`.
-        standard_name : optional, default=None
+        standard_name : optional
             The standard name for the Cube's data.
-        long_name : optional, default=None
+        long_name : optional
             An unconstrained description of the cube.
-        var_name : optional, default=None
+        var_name : optional
             The NetCDF variable name for the cube.
-        units : optional, default=None
+        units : optional
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary of cube attributes
-        cell_methods : optional, default=None
+        cell_methods : optional
             A tuple of CellMethod objects, generally set by Iris, e.g.
             ``(CellMethod("mean", coords='latitude'), )``.
-        dim_coords_and_dims : optional, default=None
+        dim_coords_and_dims : optional
             A list of coordinates with scalar dimension mappings, e.g
             ``[(lat_coord, 0), (lon_coord, 1)]``.
-        aux_coords_and_dims : optional, default=None
+        aux_coords_and_dims : optional
             A list of coordinates with dimension mappings,
             e.g ``[(lat_coord, 0), (lon_coord, (0, 1))]``.
             See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
             and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
-        aux_factories : optional, default=None
+        aux_factories : optional
             A list of auxiliary coordinate factories. See
             :mod:`iris.aux_factory`.
-        cell_measures_and_dims : optional, default=None
+        cell_measures_and_dims : optional
             A list of CellMeasures with dimension mappings.
-        ancillary_variables_and_dims : optional, default=None
+        ancillary_variables_and_dims : optional
             A list of AncillaryVariables with dimension mappings.
 
         Examples
@@ -1381,7 +1381,7 @@ class Cube(CFVariableMixin):
         other :
             An instance of :class:`iris.cube.Cube` or
             :class:`iris.cube.CubeMetadata`.
-        ignore : optional, default=None
+        ignore : optional
            A single attribute key or iterable of attribute keys to ignore when
            comparing the cubes. Default is None. To ignore all attributes set
            this to other.attributes.
@@ -1472,7 +1472,7 @@ class Cube(CFVariableMixin):
         coord :
             The :class:`iris.coords.DimCoord` or :class:`iris.coords.AuxCoord`
             instance to add to the cube.
-        data_dims : optional, default=None
+        data_dims : optional
             Integer or iterable of integers giving the data dimensions spanned
             by the coordinate.
 
@@ -1613,7 +1613,7 @@ class Cube(CFVariableMixin):
         cell_measure :
             The :class:`iris.coords.CellMeasure`
             instance to add to the cube.
-        data_dims : optional, default=None
+        data_dims : optional
             Integer or iterable of integers giving the data dimensions spanned
             by the coordinate.
 
@@ -1646,7 +1646,7 @@ class Cube(CFVariableMixin):
         ancillary_variable :
             The :class:`iris.coords.AncillaryVariable` instance to be added to
             the cube
-        data_dims : optional, default=None
+        data_dims : optional
             Integer or iterable of integers giving the data dimensions spanned
             by the ancillary variable.
 
@@ -1686,7 +1686,7 @@ class Cube(CFVariableMixin):
 
         See Also
         --------
-        See also :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
+        :meth:`Cube.remove_coord()<iris.cube.Cube.remove_coord>`.
 
         """
         if self.coords(dim_coord):
@@ -1960,15 +1960,15 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name : optional, default=None
+        name : optional
             If not None, matches against factory.name().
-        standard_name : optional, default=None
+        standard_name : optional
             The CF standard name of the desired coordinate factory.
             If None, does not check for standard name.
-        long_name : optional, default=None
+        long_name : optional
             An unconstrained description of the coordinate factory.
             If None, does not check for long_name.
-        var_name : optional, default=None
+        var_name : optional
             The NetCDF variable name of the desired coordinate factory.
             If None, does not check for var_name.
 
@@ -2036,7 +2036,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_coord : optional, default=None
+        name_or_coord : optional
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2047,39 +2047,39 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-        standard_name : optional, default=None
+        standard_name : optional
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-        long_name : optional, default=None
+        long_name : optional
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-        var_name : optional, default=None
+        var_name : optional
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
-        axis : optional, default=None
+        axis : optional
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        contains_dimension : optional, default=None
+        contains_dimension : optional
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        dimensions : optional, default=None
+        dimensions : optional
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-        coord_system : optional, default=None
+        coord_system : optional
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-        dim_coords : optional, default=None
+        dim_coords : optional
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-        mesh_coords : optional, default=None
+        mesh_coords : optional
             Set to ``True`` to return only coordinates which are
             :class:`~iris.experimental.ugrid.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
@@ -2192,7 +2192,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_coord : optional, default=None
+        name_or_coord : optional
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2203,39 +2203,39 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-        standard_name : optional, default=None
+        standard_name : optional
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-        long_name : optional, default=None
+        long_name : optional
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-        var_name : optional, default=None
+        var_name : optional
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
-        axis : optional, default=None
+        axis : optional
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        contains_dimension : optional, default=None
+        contains_dimension : optional
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        dimensions : optional, default=None
+        dimensions : optional
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-        coord_system : optional, default=None
+        coord_system : optional
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-        dim_coords : optional, default=None
+        dim_coords : optional
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-        mesh_coords : optional, default=None
+        mesh_coords : optional
             Set to ``True`` to return only coordinates which are
             :class:`~iris.experimental.ugrid.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
@@ -2303,7 +2303,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        spec : optional, default=None
+        spec : optional
             The the name or type of a coordinate system subclass.
             E.g. ::
 
@@ -2421,7 +2421,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_cell_measure : optional, default=None
+        name_or_cell_measure : optional
             Either
 
             * (a) a :attr:`standard_name`, :attr:`long_name`, or
@@ -2508,7 +2508,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_ancillary_variable : optional, default=None
+        name_or_ancillary_variable : optional
             Either
 
             * (a) a :attr:`standard_name`, :attr:`long_name`, or
@@ -2784,11 +2784,11 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        shorten : bool
+        shorten : bool, default=False
             If set, produce a one-line summary of minimal width, showing only
             the cube name, units and dimensions.
             When not set (default), produces a full multi-line summary string.
-        name_padding : int
+        name_padding : int, default=35
             Control the *minimum* width of the cube name + units,
             i.e. the indent of the dimension map section.
 
@@ -3448,7 +3448,7 @@ class Cube(CFVariableMixin):
             the dimensions that are not iterated over).
             A mix of input types can also be provided. They must all be
             orthogonal (i.e. point to different dimensions).
-        ordered : bool, optional
+        ordered : bool, default=True
             if True, the order which the coords to slice or data_dims
             are given will be the order in which they represent the data in
             the resulting cube slices.  If False, the order will follow that of
@@ -3764,7 +3764,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        data : optional, default=None
+        data : optional
             Replace the data of the cube copy with provided data payload.
 
         Returns
@@ -4197,7 +4197,7 @@ class Cube(CFVariableMixin):
             performed.
         aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied to each group.
-        climatological : bool
+        climatological : bool, default=False
             Indicates whether the output is expected to be climatological. For
             any aggregated time coord(s), this causes the climatological flag to
             be set and the point for each cell to equal its first bound, thereby
@@ -4680,7 +4680,7 @@ x            -               -
 
             * :class:`iris.analysis.Linear`, and
             * :class:`iris.analysis.Nearest`.
-        collapse_scalar : bool, optional
+        collapse_scalar : bool, default=True
             Whether to collapse the dimension of scalar sample points
             in the resulting cube. Default is True.
 

@@ -207,17 +207,23 @@ class CubeRepresentation:
     def _make_row(self, title, body=None, col_span=0):
         """Produce one row for the table body.
 
-        For example::
+        Parameters
+        ----------
+        body : str, optional
+            Contains the content for each cell not in the left-most (title) column.
+            If None, indicates this row is a title row (see below).
+        title : stre, optional
+            Contains the row heading. If `body` is None, indicates
+            that the row contains a sub-heading;
+            e.g. 'Dimension coordinates:'.
+        col_span : int, default=0
+            Indicates how many columns the string should span.
+
+        Examples
+        --------
+        ::
 
             <tr><td>Coord name</td><td>x</td><td>-</td>...</tr>.
-
-        * `body` contains the content for each cell not in the left-most (title)
-          column.
-          If None, indicates this row is a title row (see below).
-        * `title` contains the row heading. If `body` is None, indicates
-          that the row contains a sub-heading;
-          e.g. 'Dimension coordinates:'.
-        * `col_span` indicates how many columns the string should span.
 
         """
         row = ['<tr class="iris">']

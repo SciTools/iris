@@ -92,7 +92,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
     grid_cube : :class:`iris.cube.Cube`
         An instance of :class:`iris.cube.Cube` that supplies the desired
         horizontal grid definition.
-    mdtol : int, optional, default=0
+    mdtol : int, default=0
         Tolerance of missing data. The value returned in each element of the
         returned cube's data array will be masked if the fraction of masked
         data in the overlapping cells of the source cube exceeds mdtol. This
