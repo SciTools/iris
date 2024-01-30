@@ -5,7 +5,7 @@
 """Automatic collation of cubes into higher-dimensional cubes.
 
 Typically the cube merge process is handled by
-:method:`iris.cube.CubeList.merge`.
+:meth:`iris.cube.CubeList.merge`.
 
 """
 
