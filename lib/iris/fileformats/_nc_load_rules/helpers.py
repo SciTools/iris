@@ -267,7 +267,7 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
 
     Parameters
     ----------
-    nc_cell_methods :
+    nc_cell_methods : str
         The value of the cell methods attribute to be split.
 
     Returns
@@ -341,6 +341,7 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
     ----------
     nc_cell_methods : str
         The value of the cell methods attribute to be parsed.
+    cf_name : optional
 
     Returns
     -------
@@ -1330,8 +1331,10 @@ def build_ancil_var(engine, cf_av_var):
 def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
     """Determine whether the CF coordinate variable is a latitude/longitude variable.
 
-    Ref: [CF] Section 4.1 Latitude Coordinate.
-         [CF] Section 4.2 Longitude Coordinate.
+    Ref:
+
+    * [CF] Section 4.1 Latitude Coordinate.
+    * [CF] Section 4.2 Longitude Coordinate.
 
     """
     is_valid = False

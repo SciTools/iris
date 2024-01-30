@@ -354,7 +354,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
     ----------
     points : :class:`numpy.ndarray`
         Array of points values.
-    bounds : :class:`numpy.ndarray`, optional, default=None
+    bounds : :class:`numpy.ndarray`, optional
         Array of bounds values. This array should have an additional vertex
         dimension (typically of length 2) when compared to the  points array
         i.e. bounds.shape = points.shape + (nvertex,)
@@ -463,12 +463,12 @@ def _new_coord_and_dims(
         Standard name of coordinate.
     units : str or cf_unit.Unit
         Units of coordinate.
-    lower_and_upper_bounds : pair of array-like or None, optional, default=None
+    lower_and_upper_bounds : pair of array-like or None, optional
         Corresponding bounds values (lower, upper), if any.
 
     Returns
     -------
-        a new (coordinate, dims) pair.
+    A new (coordinate, dims) pair.
 
     """
     bounds = lower_and_upper_bounds
@@ -813,7 +813,7 @@ def _model_level_number(lblev):
 
     Returns
     -------
-        Model level number (int).
+    Model level number (int).
 
     """
     # See Word no. 33 (LBLEV) in section 4 of UM Model Docs (F3).

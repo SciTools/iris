@@ -562,10 +562,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
     file_sources : str or list
         One or more NetCDF filenames/OPeNDAP URLs to load from.
         OR open datasets.
-
     callback : function, optional
         Function which can be passed on to :func:`iris.io.run_callback`.
-
     constraints : optional
 
     Returns
@@ -801,6 +799,7 @@ class ChunkControl(threading.local):
         Notes
         -----
         This function acts as a context manager, for use in a ``with`` block.
+
         """
         old_mode = self.mode
         old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)

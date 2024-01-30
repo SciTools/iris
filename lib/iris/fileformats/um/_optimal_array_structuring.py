@@ -65,8 +65,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
             structure.  The order of this is significant, in that earlier
             elements get priority when associating dimensions with specific
             elements.
-
-    actual_values_elements : iterable of (name, 1-d array), optional, default=None
+    actual_values_elements : iterable of (name, 1-d array), optional
         The 'real' values used to construct the result arrays, if different
         from 'ordering_elements'.  Must contain all the same names (but not
         necessarily in the same order).

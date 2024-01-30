@@ -489,9 +489,9 @@ def _non_std_cross_section_rules(cube, pp):
 
     Parameters
     ----------
-    cube:
+    cube :
         The cube being saved as a series of PP fields.
-    pp:
+    pp :
         The current PP field having save rules applied.
 
     Returns
@@ -622,9 +622,9 @@ def _lbproc_rules(cube, pp):
 
     Parameters
     ----------
-    cube:
+    cube :
         The cube being saved as a series of PP fields.
-    pp:
+    pp :
         The current PP field having save rules applied.
 
     Returns
