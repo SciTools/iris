@@ -1154,7 +1154,7 @@ class Resolve:
         can be completed.
 
         Once the ``src`` has been mapped to the ``tgt``, the cubes are checked to
-        ensure that theywill successfully broadcast, and the ``src``
+        ensure that they will successfully broadcast, and the ``src``
         :class:`~iris.cube.Cube` is transposed appropriately, if necessary.
 
         The :attr:`~iris.common.resolve.Resolve._broadcast_shape` is set, along with
