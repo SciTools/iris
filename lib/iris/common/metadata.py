@@ -583,7 +583,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         ----------
         other : metadata
             A metadata instance of the same type.
-        lenient : bool
+        lenient : bool, optional
             Enable/disable lenient combination. The default is to automatically
             detect whether this lenient operation is enabled.
 
@@ -694,7 +694,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         default : optional
             The fall-back string representing the default name. Defaults to
             the string 'unknown'.
-        token : bool, optional
+        token : bool, default=False
             If True, ensures that the name returned satisfies the criteria for
             the characters required by a valid NetCDF name. If it is not
             possible to return a valid name, then a ValueError exception is
@@ -1574,7 +1574,7 @@ def metadata_manager_factory(cls, **kwargs):
     cls :
         A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
         the metadata to be managed.
-    **kwargs :
+    **kwargs : dict, optional
         Initial values for the manufactured metadata instance. Unspecified
         fields will default to a value of 'None'.
 

@@ -58,7 +58,7 @@ class Table:
             Per-column content.  Length must match the other rows (if any).
         aligns : list of {'left', 'right'}
             Per-column alignments.  Length must match 'cols'.
-        i_col_unlimited : int or None, optional
+        i_col_unlimited : int, optional
             Column beyond which content does not affect the column widths.
             ( meaning contents will print without limit ).
 
@@ -325,10 +325,10 @@ class CubePrinter:
 
         Parameters
         ----------
-        oneline : bool, optional, default=False
+        oneline : bool, default=False
             If set, produce a one-line summary.
             Default is False = produce full (multiline) summary.
-        name_padding int, optional, default=35
+        name_padding : int, default=35
             The minimum width for the "name" (#0) column.
 
         Returns
