@@ -119,11 +119,11 @@ class CFVariable(metaclass=ABCMeta):
         ----------
         variables :
             Dictionary of netCDF4.Variable instance by variable name.
-        ignore : optional, default=None
+        ignore : optional
             List of variable names to ignore.
-        target : optional, default=None
+        target : optional
             Name of a single variable to check.
-        warn : optional, default=None
+        warn : bool, default=True
             Issue a warning if a missing variable is referenced.
 
         Returns
@@ -300,8 +300,10 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
     Identified by the CF-netCDF variable attribute 'coordinates'.
     Also see :class:`iris.fileformats.cf.CFLabelVariable`.
 
-    Ref: [CF] Chapter 5. Coordinate Systems.
-         [CF] Section 6.2. Alternative Coordinates.
+    Ref:
+
+    * [CF] Chapter 5. Coordinate Systems.
+    * [CF] Section 6.2. Alternative Coordinates.
 
     """
 
@@ -554,8 +556,10 @@ class _CFFormulaTermsVariable(CFVariable):
 
     Identified by the CF-netCDF variable attribute 'formula_terms'.
 
-    Ref: [CF] Section 4.3.2. Dimensional Vertical Coordinate.
-         [CF] Appendix D. Dimensionless Vertical Coordinates.
+    Ref:
+
+    * [CF] Section 4.3.2. Dimensional Vertical Coordinate.
+    * [CF] Appendix D. Dimensionless Vertical Coordinates.
 
     """
 
@@ -628,8 +632,10 @@ class CFGridMappingVariable(CFVariable):
 
     Identified by the CF-netCDF variable attribute 'grid_mapping'.
 
-    Ref: [CF] Section 5.6. Horizontal Coordinate Reference Systems, Grid Mappings, and Projections.
-         [CF] Appendix F. Grid Mappings.
+    Ref:
+
+    * [CF] Section 5.6. Horizontal Coordinate Reference Systems, Grid Mappings, and Projections.
+    * [CF] Appendix F. Grid Mappings.
 
     """
 
