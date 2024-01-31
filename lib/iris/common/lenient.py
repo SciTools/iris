@@ -60,7 +60,7 @@ def _lenient_client(*dargs, services=None):
         wrapped by the decorator. This is automatically populated by Python
         through the decorator interface. No argument requires to be manually
         provided.
-    services : callable or str or iterable of callable/str, optional, default=None
+    services : callable or str or iterable of callable/str, optional
         Zero or more function/methods, or equivalent fully qualified string names, of
         lenient service function/methods.
 
@@ -227,7 +227,7 @@ class Lenient(threading.local):
 
         Parameters
         ----------
-        **kwargs : dict
+        **kwargs : dict, optional
             Mapping of lenient key/value options to enable/disable. Note that,
             only the lenient "maths" options is available, which controls
             lenient/strict cube arithmetic.
@@ -297,7 +297,6 @@ class Lenient(threading.local):
         On entry to the context manager, all provided keyword arguments are
         applied. On exit from the context manager, the previous lenient
         option state is restored.
-
 
         For example::
 
@@ -555,7 +554,7 @@ class _Lenient(threading.local):
         services : callable or str or iterable of callable/str
             One or more service function/methods or fully qualified string names
             of the required service function/method.
-        append : bool, optional
+        append : bool, default=False
             If True, append the lenient services to any pre-registered lenient
             services for the provided lenient client. Default is False.
 

@@ -147,8 +147,8 @@ def as_cube(
 
     Example usage::
 
-            as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
-            as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
+        as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
+        as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
@@ -583,8 +583,6 @@ def as_series(cube, copy=True):
     If you have a large array that cannot be copied,
     make sure it is not masked and use copy=False.
 
-    Notes
-    -----
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
@@ -626,7 +624,7 @@ def as_data_frame(
 
     Parameters
     ----------
-    cube: :class:`~iris.cube.Cube`
+    cube : :class:`~iris.cube.Cube`
         The :class:`~iris.cube.Cube` to be converted to a :class:`pandas.DataFrame`.
     copy : bool, default=True
         Whether the :class:`pandas.DataFrame` is a copy of the the Cube
@@ -638,7 +636,7 @@ def as_data_frame(
     add_cell_measures : bool, default=False
         If True, add :attr:`~iris.cube.Cube.cell_measures` to the returned
         :class:`pandas.DataFrame`.
-    add_ancillary_variables: bool, default=False
+    add_ancillary_variables : bool, default=False
         If True, add :attr:`~iris.cube.Cube.ancillary_variables` to the returned
         :class:`pandas.DataFrame`.
 
