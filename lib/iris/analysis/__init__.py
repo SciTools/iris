@@ -515,7 +515,7 @@ class _Aggregator:
             The dimensions to aggregate over -- note that this is defined
             differently to the 'aggregate' method 'axis' argument, which only
             accepts a single dimension index.
-        **kwargs :
+        **kwargs : dict, optional
             All keyword arguments are passed through to the data aggregation
             function.
 
@@ -555,7 +555,7 @@ class _Aggregator:
             mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
             will return the resulting value from the aggregation function.
             Defaults to 1.
-        **kwargs :
+        **kwargs : dict, optional
             All keyword arguments apart from those specified above, are
             passed through to the data aggregation function.
 
@@ -593,7 +593,7 @@ class _Aggregator:
             Source cube that requires metadata update.
         coords : :class:`iris.coords.Coord`
             The one or more coordinates that were aggregated.
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords (for example, the "ddof"
             keyword for a standard deviation aggregator).
@@ -617,7 +617,7 @@ class _Aggregator:
             Result from :func:`iris.analysis.Aggregator.aggregate`
         coords :
             The one or more coordinates that were aggregated over.
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords (for example, the "ddof"
             keyword from a standard deviation aggregator).
@@ -635,7 +635,7 @@ class _Aggregator:
 
         Parameters
         ----------
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords.
 
@@ -684,7 +684,7 @@ class PercentileAggregator(_Aggregator):
             value that can be made into one.
             To ensure backwards-compatibility, also accepts a callable with
             call signature (units).
-        **kwargs :
+        **kwargs : dict, optional
             Passed through to :data:`call_func`, :data:`lazy_func`, and
             :data:`units_func`.
 
@@ -737,7 +737,7 @@ class PercentileAggregator(_Aggregator):
             mdtol.  mdtol=0 means no missing data is tolerated while mdtol=1
             will return the resulting value from the aggregation function.
             Defaults to 1.
-        **kwargs :
+        **kwargs : dict, optional
             All keyword arguments apart from those specified above, are
             passed through to the data aggregation function.
 
@@ -767,7 +767,7 @@ class PercentileAggregator(_Aggregator):
             The dimensions to aggregate over -- note that this is defined
             differently to the 'aggregate' method 'axis' argument, which only
             accepts a single dimension index.
-        **kwargs :
+        **kwargs : dict, optional
             All keyword arguments are passed through to the data aggregation
             function.
 
@@ -789,7 +789,7 @@ class PercentileAggregator(_Aggregator):
             Result from :func:`iris.analysis.Aggregator.aggregate`
         coords :
             The one or more coordinates that were aggregated over.
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords (for example, the "percent"
             keywords from a percentile aggregator).
@@ -844,7 +844,7 @@ class PercentileAggregator(_Aggregator):
 
         Parameters
         ----------
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords.
 
@@ -914,7 +914,7 @@ class WeightedPercentileAggregator(PercentileAggregator):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
-        **kwargs :
+        **kwargs : dict, optional
             Passed through to :data:`call_func`, :data:`lazy_func`, and
             :data:`units_func`.
 
@@ -958,7 +958,7 @@ class WeightedPercentileAggregator(PercentileAggregator):
             Result from :func:`iris.analysis.Aggregator.aggregate`
         coords :
             The one or more coordinates that were aggregated over.
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords (for example, the "weights"
             keyword).
@@ -998,7 +998,7 @@ class Aggregator(_Aggregator):
             Source cube that requires metadata update.
         coords : :class:`iris.coords.Coord`
             The one or more coordinates that were aggregated.
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords (for example, the "ddof"
             keyword for a standard deviation aggregator).
@@ -1064,7 +1064,7 @@ class WeightedAggregator(Aggregator):
             An alternative to :data:`call_func` implementing a lazy
             aggregation. Note that, it need not support all features of the
             main operation, but should raise an error in unhandled cases.
-        **kwargs :
+        **kwargs : dict, optional
             Passed through to :data:`call_func`, :data:`lazy_func`, and
             :data:`units_func`.
 
@@ -1086,7 +1086,7 @@ class WeightedAggregator(Aggregator):
 
         Parameters
         ----------
-        **kwargs :
+        **kwargs : dict, optional
             Arguments to filter of weighted keywords.
 
         Returns
@@ -1114,7 +1114,7 @@ class WeightedAggregator(Aggregator):
             Result from :func:`iris.analysis.Aggregator.aggregate`
         coords :
             The one or more coordinates that were aggregated over.
-        **kwargs :
+        **kwargs : dict, optional
             This function is intended to be used in conjunction with aggregate()
             and should be passed the same keywords (for example, the "weights"
             keywords from a mean aggregator).
@@ -1218,7 +1218,7 @@ def create_weighted_aggregator_fn(aggregator_fn, axis, **kwargs):
     axis : int
         Axis to aggregate over. This argument is directly passed to
         ``aggregator_fn``.
-    **kwargs :
+    **kwargs : dict, optional
         Arbitrary keyword arguments passed to ``aggregator_fn``. Should not
         include ``weights`` (this will be removed if present).
 
@@ -1412,7 +1412,7 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
         matching mask.
     quantiles : float or sequence of floats
         Quantile(s) to compute. Must have a value between 0 and 1.
-    **kwargs :
+    **kwargs : dict, optional
         passed to `scipy.interpolate.interp1d`
 
     Returns

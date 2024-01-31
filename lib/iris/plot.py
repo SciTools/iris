@@ -1421,7 +1421,7 @@ def points(cube, *args, **kwargs):
     axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-    **kwargs :dict
+    **kwargs : dict, optional
         See :func:`matplotlib.pyplot.scatter` for details of other valid
         keyword arguments.
 

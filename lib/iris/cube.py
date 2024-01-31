@@ -3962,7 +3962,7 @@ class Cube(CFVariableMixin):
             collapsed.
         aggregator : :class:`iris.analysis.Aggregator`
             Aggregator to be applied for collapse operation.
-        **kwargs :
+        **kwargs : dict, optional
             Aggregation function keyword arguments.
 
         Returns
@@ -4202,7 +4202,7 @@ class Cube(CFVariableMixin):
             any aggregated time coord(s), this causes the climatological flag to
             be set and the point for each cell to equal its first bound, thereby
             preserving the time of year.
-        **kwargs : optional
+        **kwargs : dict, optional
             Aggregator and aggregation function keyword arguments.
 
         Returns
@@ -4466,7 +4466,7 @@ x            -              -
             Aggregator to be applied to the data.
         window : int
             Size of window to use.
-        **kwargs : optional
+        **kwargs : dict, optional
             Aggregator and aggregation function keyword arguments. The weights
             argument to the aggregator, if any, should be a 1d array, cube, or
             (names of) :meth:`~iris.cube.Cube.coords`,
