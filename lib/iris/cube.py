@@ -739,14 +739,14 @@ def _is_single_item(testee):
 
 
 class CubeAttrsDict(MutableMapping):
-    r"""A :class:`dict`\\-like object for :attr:`iris.cube.Cube.attributes`.
+    """A :class:`dict`-like object for :attr:`iris.cube.Cube.attributes`.
 
-    A :class:`dict`\\-like object for :attr:`iris.cube.Cube.attributes`,
+    A :class:`dict`-like object for :attr:`iris.cube.Cube.attributes`,
     providing unified user access to combined cube "local" and "global" attributes
     dictionaries, with the access behaviour of an ordinary (single) dictionary.
 
     Properties :attr:`globals` and :attr:`locals` are regular
-    :class:`~iris.common.mixin.LimitedAttributeDict`\\s, which can be accessed and
+    :class:`~iris.common.mixin.LimitedAttributeDict`, which can be accessed and
     modified separately.  The :class:`CubeAttrsDict` itself contains *no* additional
     state, but simply provides a 'combined' view of both global + local attributes.
 
@@ -2359,7 +2359,7 @@ class Cube(CFVariableMixin):
 
         Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
         associated with the cube, if the cube has any
-        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        :class:`~iris.experimental.ugrid.MeshCoord`,
         or ``None`` if it has none.
 
         Returns
@@ -2380,14 +2380,14 @@ class Cube(CFVariableMixin):
         r"""Return the mesh "location" of the cube data.
 
         Return the mesh "location" of the cube data, if the cube has any
-        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        :class:`~iris.experimental.ugrid.MeshCoord`,
         or ``None`` if it has none.
 
         Returns
         -------
         location : str or None
             The mesh location of the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`'s
+            :class:`~iris.experimental.ugrid.MeshCoords`
             (i.e. one of 'face' / 'edge' / 'node'), or ``None``.
 
         """
@@ -2400,14 +2400,14 @@ class Cube(CFVariableMixin):
         r"""Return the cube dimension of the mesh.
 
         Return the cube dimension of the mesh, if the cube has any
-        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        :class:`~iris.experimental.ugrid.MeshCoord`,
         or ``None`` if it has none.
 
         Returns
         -------
         mesh_dim : int or None
             The cube dimension which the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`\\s map to,
+            :class:`~iris.experimental.ugrid.MeshCoord` map to,
             or ``None``.
 
         """

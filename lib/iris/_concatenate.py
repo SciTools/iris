@@ -69,7 +69,7 @@ class _CoordMetaData(
         The points data :class:`np.dtype` of an associated coordinate.
     bounds_dtype : :class:`np.dtype`
         The bounds data :class:`np.dtype` of an associated coordinate.
-    **kwargs :
+    **kwargs : dict, optional
         A dictionary of key/value pairs required to define a coordinate.
 
     """

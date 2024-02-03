@@ -141,7 +141,7 @@ class Future(threading.local):
     """Run-time configuration controller."""
 
     def __init__(self, datum_support=False, pandas_ndim=False, save_split_attrs=False):
-        r"""Container for run-time options controls.
+        """Container for run-time options controls.
 
         To adjust the values simply update the relevant attribute from
         within your code. For example::
@@ -156,7 +156,7 @@ class Future(threading.local):
         ----------
         datum_support : bool, default=False
             Opts in to loading coordinate system datum information from NetCDF
-            files into :class:`~iris.coord_systems.CoordSystem`\\ s, wherever
+            files into :class:`~iris.coord_systems.CoordSystem`, wherever
             this information is present.
         pandas_ndim : bool, default=False
             See :func:`iris.pandas.as_data_frame` for details - opts in to the
