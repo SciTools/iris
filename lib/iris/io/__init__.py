@@ -381,12 +381,12 @@ def save(source, target, saver=None, **kwargs):
     Iris currently supports three file formats for saving, which it can
     recognise by filename extension:
 
-    * netCDF - the Unidata network Common Data Format:
-        * see :func:`iris.fileformats.netcdf.save`
-    * GRIB2 - the WMO GRIdded Binary data format:
-        * see :func:`iris_grib.save_grib2`.
-    * PP - the Met Office UM Post Processing Format:
-        * see :func:`iris.fileformats.pp.save`
+    * **netCDF** - the Unidata network Common Data Format,
+      see :func:`iris.fileformats.netcdf.save`
+    * **GRIB2** - the WMO GRIdded Binary data format,
+      see :func:`iris_grib.save_grib2`.
+    * **PP** - the Met Office UM Post Processing Format,
+      see :func:`iris.fileformats.pp.save`
 
     A custom saver can be provided to the function to write to a different
     file format.

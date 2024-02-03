@@ -1512,6 +1512,8 @@ class Coord(_DimensionalMetadata):
     def copy(self, points=None, bounds=None):
         """Return a copy of this coordinate.
 
+        Parameters
+        ----------
         points : optional
             A points array for the new coordinate.
             This may be a different shape to the points of the coordinate

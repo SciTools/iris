@@ -72,9 +72,9 @@ All the load functions share very similar arguments:
 
     1. Function signature must be: ``(cube, field, filename)``.
     2. Modifies the given cube inplace, unless a new cube is
-        returned by the function.
+       returned by the function.
     3. If the cube is to be rejected the callback must raise
-        an :class:`iris.exceptions.IgnoreCubeException`.
+       an :class:`iris.exceptions.IgnoreCubeException`.
 
     For example::
 
