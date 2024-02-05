@@ -222,6 +222,10 @@ This document explains the changes made to Iris for this release
    almost all of the rules for `ruff pydocstyle`_. 
    (https://github.com/SciTools/iris/issues/5625#issuecomment-1859159734)
 
+#. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to ensure docstrings
+   that are not covered by the ruff checks, are consistent with numpydocstyle.
+   (:issue:`4721`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
