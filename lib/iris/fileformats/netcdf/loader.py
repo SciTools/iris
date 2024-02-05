@@ -706,7 +706,7 @@ class ChunkControl(threading.local):
         ----------
         var_names : str or list of str, default=None
             apply the `dimension_chunksizes` controls only to these variables,
-            or when building :class:`~iris.cube.Cube`\\ s from these data variables.
+            or when building :class:`~iris.cube.Cube` from these data variables.
             If ``None``, settings apply to all loaded variables.
         dimension_chunksizes : dict of {str: int}
             Kwargs specifying chunksizes for dimensions of file variables.
@@ -777,7 +777,7 @@ class ChunkControl(threading.local):
         ------
         KeyError
             If any NetCDF data variables - those that become
-            :class:`~iris.cube.Cube`\\ s - do not specify chunk sizes.
+            :class:`~iris.cube.Cube` - do not specify chunk sizes.
 
         Notes
         -----

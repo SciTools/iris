@@ -15,13 +15,15 @@ To do this, we create a custom value mapping function (normalization) using
 the matplotlib Norm class :obj:`matplotlib.colors.SymLogNorm`.
 We use this to make a cell-filled pseudocolor plot with a colorbar.
 
-NOTE: By "pseudocolour", we mean that each data point is drawn as a "cell"
-region on the plot, coloured according to its data value.
-This is provided in Iris by the functions :meth:`iris.plot.pcolor` and
-:meth:`iris.plot.pcolormesh`, which call the underlying matplotlib
-functions of the same names (i.e., :obj:`matplotlib.pyplot.pcolor`
-and :obj:`matplotlib.pyplot.pcolormesh`).
-See also: https://en.wikipedia.org/wiki/False_color#Pseudocolor.
+.. note::
+
+    By "pseudocolour", we mean that each data point is drawn as a "cell"
+    region on the plot, coloured according to its data value.
+    This is provided in Iris by the functions :meth:`iris.plot.pcolor` and
+    :meth:`iris.plot.pcolormesh`, which call the underlying matplotlib
+    functions of the same names (i.e., :obj:`matplotlib.pyplot.pcolor`
+    and :obj:`matplotlib.pyplot.pcolormesh`).
+    See also: https://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 """  # noqa: D205, D212, D400
 

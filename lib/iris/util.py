@@ -579,7 +579,7 @@ def monotonic(array, strict=False, return_direction=False):
 
     Parameters
     ----------
-    strict : boolean, default=False
+    strict : bool, default=False
         Flag to enable strict monotonic checking
     return_direction : bool, default=False
         Flag to change return behaviour to return

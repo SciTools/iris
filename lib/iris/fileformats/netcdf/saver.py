@@ -2592,7 +2592,7 @@ def save(
 
     * Iris will write CF 1.7 compliant NetCDF files.
     * **If split-attribute saving is disabled**, i.e.
-      :data:`iris.FUTURE`\\ ``.save_split_attrs`` is ``False``, then attributes
+      :data:`iris.FUTURE` ``.save_split_attrs`` is ``False``, then attributes
       dictionaries on each cube in the saved cube list will be compared, and common
       attributes saved as NetCDF global attributes where appropriate.
 
