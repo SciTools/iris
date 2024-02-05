@@ -23,10 +23,10 @@ def um_to_pp(filename, read_data=False, word_depth=None):
     ----------
     filename : str
         Specify the name of the FieldsFile.
-    read_data : bool, optional, default=read_data
+    read_data : bool, default=False
         Specify whether to read the associated PPField data within
         the FieldsFile.  Default value is False.
-    word_depth : optional, default=None
+    word_depth : optional
 
     Returns
     -------
@@ -57,10 +57,10 @@ def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
     ----------
     filenames :
         list of filenames to load
-    callback :
+    callback : optional
         A function which can be passed on to :func:`iris.io.run_callback`
-    constraints : optional, default=None
-    _loader_kwargs : optional, default=None
+    constraints : optional
+    _loader_kwargs : optional
 
     Notes
     -----

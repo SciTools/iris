@@ -58,7 +58,7 @@ def save(cube, target):
     Parameters
     ----------
     cube: :class:`iris.cube.Cube`.
-    target
+    target :
         A filename or open file handle.
 
     See Also
@@ -94,9 +94,8 @@ def save_png(source, target, launch=False):
     target :
         A filename or open file handle.
         If passing a file handle, take care to open it for binary output.
-    **kwargs :
-        * launch
-            Display the image. Default is False.
+    launch : bool, default=False
+        Display the image. Default is False.
 
     See Also
     --------
@@ -342,6 +341,7 @@ def _dot_node(indent, id, name, attributes):
         The visual name of the node.
     attributes :
         An iterable of (name, value) attribute pairs.
+
     """  # noqa: D410, D411
     attributes = r"\n".join("%s: %s" % item for item in attributes)
     template = """%(indent)s"%(id)s" [

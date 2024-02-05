@@ -172,6 +172,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ added ruff documentation in the :ref:`developer_testing_ci` of the
    :ref:`developers_guide`. (:pull:`5701`)
 
+#. `@tkknight`_ configured the API documentation to show 2 levels
+   for the ToC (Table of Contents) for each page. (:pull:`5714`)
+
 
 💼 Internal
 ===========

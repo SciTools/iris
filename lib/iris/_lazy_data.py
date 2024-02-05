@@ -252,7 +252,7 @@ def as_lazy_data(
     Notes
     -----
     The result chunk size is a multiple of 'chunks', if given, up to the
-    dask default chunksize, i.e. `dask.config.get('array.chunk-size'),
+    dask default chunksize, i.e. `dask.config.get('array.chunk-size')`,
     or the full data shape if that is smaller.
     If 'chunks' is not given, the result has chunks of the full data shape,
     but reduced by a factor if that exceeds the dask default chunksize.

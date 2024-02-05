@@ -40,7 +40,7 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
     category_function : callable
         function(coordinate, value), returning a category value for a
         coordinate point-value
-    units : str, optional, default="1"
+    units : str, default="1"
         units of the category value, typically 'no_unit' or '1'.
     """
     # Interpret coord, if given as a name
@@ -303,7 +303,7 @@ def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son"))
         it.
     coord : :class:`iris.coords.Coord` or str
         Coordinate in 'cube', or its name, representing time.
-    name : str, optional
+    name : str, default="season"
         Name of the created coordinate. Defaults to "season".
     seasons : :class:`list` of str, optional
         List of seasons defined by month abbreviations. Each month must
@@ -341,7 +341,7 @@ def add_season_number(
         it.
     coord : :class:`iris.coords.Coord` or str
         Coordinate in 'cube', or its name, representing time.
-    name : str, optional
+    name : str, default="season"
         Name of the created coordinate. Defaults to "season_number".
     seasons : :class:`list` of str, optional
         List of seasons defined by month abbreviations. Each month must
@@ -425,7 +425,7 @@ def add_season_membership(cube, coord, season, name="season_membership"):
         Coordinate in 'cube', or its name, representing time.
     season : str
         Season defined by month abbreviations.
-    name : str, optional
+    name : str, default="season_membership"
         Name of the created coordinate. Defaults to "season_membership".
 
     """

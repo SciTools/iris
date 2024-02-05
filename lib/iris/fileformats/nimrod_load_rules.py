@@ -890,11 +890,10 @@ def time_averaging(cube, field):
 def run(field, handle_metadata_errors=True):
     """Convert a NIMROD field to an Iris cube.
 
-    Args
-    ----
-    field: :class:`~iris.fileformats.nimrod.NimrodField`
-
-    handle_metadata_errors
+    Parameters
+    ----------
+    field : :class:`~iris.fileformats.nimrod.NimrodField`
+    handle_metadata_errors : bool, default=True
         Set to False to omit handling of known meta-data deficiencies
         in Nimrod-format data
 
@@ -902,6 +901,7 @@ def run(field, handle_metadata_errors=True):
     -------
     :class:`~iris.cube.Cube`
         A new :class:`~iris.cube.Cube`, created from the NimrodField.
+
     """
     cube = iris.cube.Cube(field.data)
 
