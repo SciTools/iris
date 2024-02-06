@@ -9,7 +9,7 @@ vertical electron content in the ionosphere.
 The plot exhibits an interesting outline effect due to excluding data
 values below a certain threshold.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import numpy.ma as ma

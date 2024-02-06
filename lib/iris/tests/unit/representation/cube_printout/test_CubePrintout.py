@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris._representation.cube_printout.CubePrintout`."""
 import iris.tests as tests  # isort:skip
 
@@ -10,13 +9,7 @@ import numpy as np
 
 from iris._representation.cube_printout import CubePrinter
 from iris._representation.cube_summary import CubeSummary
-from iris.coords import (
-    AncillaryVariable,
-    AuxCoord,
-    CellMeasure,
-    CellMethod,
-    DimCoord,
-)
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
 from iris.tests.stock.mesh import sample_mesh_cube
 
@@ -115,9 +108,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
 
     def test_columns_long_coordname(self):
         cube = Cube([0], long_name="short", units=1)
-        coord = AuxCoord(
-            [0], long_name="very_very_very_very_very_long_coord_name"
-        )
+        coord = AuxCoord([0], long_name="very_very_very_very_very_long_coord_name")
         cube.add_aux_coord(coord, 0)
         rep = cube_replines(cube)
         expected = [
@@ -152,19 +143,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
         # include : vector + scalar
         cube = Cube([0, 1], long_name="name", units=1)
         # Add a pair of vector coords with same name but different attributes.
-        cube.add_aux_coord(
-            AuxCoord([0, 1], long_name="co1", attributes=dict(a=1)), 0
-        )
-        cube.add_aux_coord(
-            AuxCoord([0, 1], long_name="co1", attributes=dict(a=2)), 0
-        )
+        cube.add_aux_coord(AuxCoord([0, 1], long_name="co1", attributes=dict(a=1)), 0)
+        cube.add_aux_coord(AuxCoord([0, 1], long_name="co1", attributes=dict(a=2)), 0)
         # Likewise for scalar coords with same name but different attributes.
-        cube.add_aux_coord(
-            AuxCoord([0], long_name="co2", attributes=dict(a=10, b=12))
-        )
-        cube.add_aux_coord(
-            AuxCoord([1], long_name="co2", attributes=dict(a=10, b=11))
-        )
+        cube.add_aux_coord(AuxCoord([0], long_name="co2", attributes=dict(a=10, b=12)))
+        cube.add_aux_coord(AuxCoord([1], long_name="co2", attributes=dict(a=10, b=11)))
 
         rep = cube_replines(cube)
         expected = [
@@ -241,9 +224,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
         cube = Cube(0, long_name="name", units=1)
         cube.add_aux_coord(AuxCoord([1], long_name="co"))
         cube.add_aux_coord(
-            AuxCoord(
-                [2], long_name="co", attributes=dict(note="string content")
-            )
+            AuxCoord([2], long_name="co", attributes=dict(note="string content"))
         )
         rep = cube_replines(cube)
         expected = [
@@ -337,9 +318,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
 
     def test_section_vector_ancils(self):
         cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
-        cube.add_ancillary_variable(
-            AncillaryVariable([0, 1], long_name="av1"), 0
-        )
+        cube.add_ancillary_variable(AncillaryVariable([0, 1], long_name="av1"), 0)
 
         rep = cube_replines(cube)
         expected = [
@@ -416,9 +395,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "A string value which is very very very very very very "
             "very very very very very very very very long."
         )
-        cube.add_aux_coord(
-            AuxCoord([long_string], long_name="very_long_string")
-        )
+        cube.add_aux_coord(AuxCoord([long_string], long_name="very_long_string"))
 
         rep = cube_replines(cube)
         expected = [

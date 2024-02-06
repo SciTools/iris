@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Generate FF, PP and NetCDF files based on a minimal synthetic FF file.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Generate FF, PP and NetCDF files based on a minimal synthetic FF file.
 
 NOTE: uses the Mule package, so depends on an environment with Mule installed.
 """
@@ -13,8 +11,7 @@ NOTE: uses the Mule package, so depends on an environment with Mule installed.
 def _create_um_files(
     len_x: int, len_y: int, len_z: int, len_t: int, compress, save_paths: dict
 ) -> None:
-    """
-    Generate an FF object of given shape and compression, save to FF/PP/NetCDF.
+    """Generate an FF object of given shape and compression, save to FF/PP/NetCDF.
 
     This is run externally
     (:func:`benchmarks.generate_data.run_function_elsewhere`), so all imports
@@ -47,8 +44,7 @@ def _create_um_files(
     array_provider = ArrayDataProvider(data_array)
 
     def add_field(level_: int, time_step_: int) -> None:
-        """
-        Add a minimal field to the new :class:`~mule.FieldsFile`.
+        """Add a minimal field to the new :class:`~mule.FieldsFile`.
 
         Includes the minimum information to allow Mule saving and Iris
         loading, as well as incrementation for vertical levels and time
@@ -90,15 +86,11 @@ def _create_um_files(
         three_rec = six_rec / 2
 
         new_field.blev = level_1**2 * six_rec - six_rec
-        new_field.brsvd1 = (
-            level_1**2 * six_rec + (six_rec * level_1) - three_rec
-        )
+        new_field.brsvd1 = level_1**2 * six_rec + (six_rec * level_1) - three_rec
 
         brsvd2_simulated = np.linspace(0.995, 0, len_z)
         shift = min(len_z, 2)
-        bhrlev_simulated = np.concatenate(
-            [np.ones(shift), brsvd2_simulated[:-shift]]
-        )
+        bhrlev_simulated = np.concatenate([np.ones(shift), brsvd2_simulated[:-shift]])
         new_field.brsvd2 = brsvd2_simulated[level_]
         new_field.bhrlev = bhrlev_simulated[level_]
 
@@ -163,8 +155,7 @@ def create_um_files(
     compress: bool,
     file_types: list,
 ) -> dict:
-    """
-    Generate FF-based FF / PP / NetCDF files with specified shape and compression.
+    """Generate FF-based FF / PP / NetCDF files with specified shape and compression.
 
     All files representing a given shape are saved in a dedicated directory. A
     dictionary of the saved paths is returned.

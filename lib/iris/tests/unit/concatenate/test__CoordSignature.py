@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit-tests for :class:`iris._concatenate._CoordSignature`."""
 
 from __future__ import annotations
@@ -45,9 +44,7 @@ class MockCubeSignature:
 @pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_dim(
-    order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool
-) -> None:
+def test_dim(order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
     """Test extent calculation of vector dimension coordinates."""
     metadata = create_metadata(
         dim_coord=True,
@@ -89,9 +86,7 @@ def test_dim(
 @pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_dim__scalar(
-    coord_dtype: np.dtype, lazy: bool, with_bounds: bool
-) -> None:
+def test_dim__scalar(coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
     """Test extent calculation of scalar dimension coordinates."""
     metadata = create_metadata(
         dim_coord=True,

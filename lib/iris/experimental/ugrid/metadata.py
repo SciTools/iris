@@ -1,11 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
-"""
-The common metadata API classes for :mod:`iris.experimental.ugrid.mesh`.
+"""The common metadata API classes for :mod:`iris.experimental.ugrid.mesh`.
 
 Eventual destination: :mod:`iris.common.metadata`.
 
@@ -23,10 +21,7 @@ from ...common.metadata import (
 
 
 class ConnectivityMetadata(BaseMetadata):
-    """
-    Metadata container for a :class:`~iris.experimental.ugrid.mesh.Connectivity`.
-
-    """
+    """Metadata container for a :class:`~iris.experimental.ugrid.mesh.Connectivity`."""
 
     # The "location_axis" member is stateful only, and does not participate in
     # lenient/strict equivalence.
@@ -40,17 +35,17 @@ class ConnectivityMetadata(BaseMetadata):
         return super().__eq__(other)
 
     def _combine_lenient(self, other):
-        """
-        Perform lenient combination of metadata members for connectivities.
+        """Perform lenient combination of metadata members for connectivities.
 
-        Args:
-
-        * other (ConnectivityMetadata):
+        Parameters
+        ----------
+        other : ConnectivityMetadata
             The other connectivity metadata participating in the lenient
             combination.
 
-        Returns:
-            A list of combined metadata member values.
+        Returns
+        -------
+        A list of combined metadata member values.
 
         """
 
@@ -69,17 +64,17 @@ class ConnectivityMetadata(BaseMetadata):
         return result
 
     def _compare_lenient(self, other):
-        """
-        Perform lenient equality of metadata members for connectivities.
+        """Perform lenient equality of metadata members for connectivities.
 
-        Args:
-
-        * other (ConnectivityMetadata):
+        Parameters
+        ----------
+        other : ConnectivityMetadata
             The other connectivity metadata participating in the lenient
             comparison.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Perform "strict" comparison for "cf_role", "start_index".
@@ -89,10 +84,7 @@ class ConnectivityMetadata(BaseMetadata):
             ConnectivityMetadata._members,
         )
         result = all(
-            [
-                getattr(self, field) == getattr(other, field)
-                for field in members
-            ]
+            [getattr(self, field) == getattr(other, field) for field in members]
         )
         if result:
             # Perform lenient comparison of the other parent members.
@@ -101,17 +93,17 @@ class ConnectivityMetadata(BaseMetadata):
         return result
 
     def _difference_lenient(self, other):
-        """
-        Perform lenient difference of metadata members for connectivities.
+        """Perform lenient difference of metadata members for connectivities.
 
-        Args:
-
-        * other (ConnectivityMetadata):
+        Parameters
+        ----------
+        other : ConnectivityMetadata
             The other connectivity metadata participating in the lenient
             difference.
 
-        Returns:
-            A list of difference metadata member values.
+        Returns
+        -------
+        A list of difference metadata member values.
 
         """
 
@@ -146,10 +138,7 @@ class ConnectivityMetadata(BaseMetadata):
 
 
 class MeshMetadata(BaseMetadata):
-    """
-    Metadata container for a :class:`~iris.experimental.ugrid.mesh.Mesh`.
-
-    """
+    """Metadata container for a :class:`~iris.experimental.ugrid.mesh.Mesh`."""
 
     # The node_dimension", "edge_dimension" and "face_dimension" members are
     # stateful only; they not participate in lenient/strict equivalence.
@@ -168,17 +157,17 @@ class MeshMetadata(BaseMetadata):
         return super().__eq__(other)
 
     def _combine_lenient(self, other):
-        """
-        Perform lenient combination of metadata members for meshes.
+        """Perform lenient combination of metadata members for meshes.
 
-        Args:
-
-        * other (MeshMetadata):
+        Parameters
+        ----------
+        other : MeshMetadata
             The other mesh metadata participating in the lenient
             combination.
 
-        Returns:
-            A list of combined metadata member values.
+        Returns
+        -------
+        A list of combined metadata member values.
 
         """
 
@@ -198,17 +187,17 @@ class MeshMetadata(BaseMetadata):
         return result
 
     def _compare_lenient(self, other):
-        """
-        Perform lenient equality of metadata members for meshes.
+        """Perform lenient equality of metadata members for meshes.
 
-        Args:
-
-        * other (MeshMetadata):
+        Parameters
+        ----------
+        other : MeshMetadata
             The other mesh metadata participating in the lenient
             comparison.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Perform "strict" comparison for "topology_dimension".
@@ -222,17 +211,17 @@ class MeshMetadata(BaseMetadata):
         return result
 
     def _difference_lenient(self, other):
-        """
-        Perform lenient difference of metadata members for meshes.
+        """Perform lenient difference of metadata members for meshes.
 
-        Args:
-
-        * other (MeshMetadata):
+        Parameters
+        ----------
+        other : MeshMetadata
             The other mesh metadata participating in the lenient
             difference.
 
-        Returns:
-            A list of difference metadata member values.
+        Returns
+        -------
+        A list of difference metadata member values.
 
         """
 
@@ -268,9 +257,7 @@ class MeshMetadata(BaseMetadata):
 
 
 class MeshCoordMetadata(BaseMetadata):
-    """
-    Metadata container for a :class:`~iris.coords.MeshCoord`.
-    """
+    """Metadata container for a :class:`~iris.coords.MeshCoord`."""
 
     _members = ("location", "axis")
     # NOTE: in future, we may add 'mesh' as part of this metadata,
@@ -288,16 +275,16 @@ class MeshCoordMetadata(BaseMetadata):
         return super().__eq__(other)
 
     def _combine_lenient(self, other):
-        """
-        Perform lenient combination of metadata members for MeshCoord.
+        """Perform lenient combination of metadata members for MeshCoord.
 
-        Args:
-
-        * other (MeshCoordMetadata):
+        Parameters
+        ----------
+        other : MeshCoordMetadata
             The other metadata participating in the lenient combination.
 
-        Returns:
-            A list of combined metadata member values.
+        Returns
+        -------
+        A list of combined metadata member values.
 
         """
 
@@ -316,25 +303,22 @@ class MeshCoordMetadata(BaseMetadata):
         return result
 
     def _compare_lenient(self, other):
-        """
-        Perform lenient equality of metadata members for MeshCoord.
+        """Perform lenient equality of metadata members for MeshCoord.
 
-        Args:
-
-        * other (MeshCoordMetadata):
+        Parameters
+        ----------
+        other : MeshCoordMetadata
             The other metadata participating in the lenient comparison.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Perform "strict" comparison for the MeshCoord specific members
         # 'location', 'axis' : for equality, they must all match.
         result = all(
-            [
-                getattr(self, field) == getattr(other, field)
-                for field in self._members
-            ]
+            [getattr(self, field) == getattr(other, field) for field in self._members]
         )
         if result:
             # Perform lenient comparison of the other parent members.
@@ -343,17 +327,17 @@ class MeshCoordMetadata(BaseMetadata):
         return result
 
     def _difference_lenient(self, other):
-        """
-        Perform lenient difference of metadata members for MeshCoord.
+        """Perform lenient difference of metadata members for MeshCoord.
 
-        Args:
-
-        * other (MeshCoordMetadata):
+        Parameters
+        ----------
+        other : MeshCoordMetadata
             The other MeshCoord metadata participating in the lenient
             difference.
 
-        Returns:
-            A list of different metadata member values.
+        Returns
+        -------
+        A list of different metadata member values.
 
         """
 

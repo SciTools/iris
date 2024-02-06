@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # -*- coding: utf-8 -*-
 #
@@ -16,8 +15,9 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 # ----------------------------------------------------------------------------
+
+"""sphinx config."""
 
 import datetime
 from importlib.metadata import version as get_version
@@ -195,9 +195,17 @@ copybutton_line_continuation_character = "\\"
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = True
 
-# api generation configuration
-autodoc_member_order = "groupwise"
-autodoc_default_flags = ["show-inheritance"]
+# sphinx.ext.autodoc configuration --------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
+autodoc_default_options = {
+    "members": True,
+    "member-order": "alphabetical",
+    "undoc-members": True,
+    "private-members": False,
+    "special-members": False,
+    "inherited-members": True,
+    "show-inheritance": True,
+}
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
 autodoc_typehints = "none"
@@ -291,8 +299,8 @@ html_sidebars = {
 html_theme_options = {
     "footer_start": ["copyright", "sphinx-version"],
     "footer_end": ["custom_footer"],
-    "collapse_navigation": True,
     "navigation_depth": 3,
+    "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
     # removes the search box from the top bar
@@ -320,7 +328,6 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "show_toc_level": 1,
     # Omit `theme-switcher` from navbar_end below to disable it
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
     # "navbar_end": ["navbar-icon-links"],
@@ -333,9 +340,7 @@ html_theme_options = {
 
 # if we are building via Read The Docs and it is the latest (not stable)
 if on_rtd and rtd_version == "latest":
-    html_theme_options[
-        "announcement"
-    ] = f"""
+    html_theme_options["announcement"] = f"""
         You are viewing the <b>latest</b> unreleased documentation
         <strong>{version}</strong>. You can switch to a
         <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
@@ -382,22 +387,23 @@ html_js_files = [
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
-    "http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
-    "http://cfconventions.org",
-    "http://code.google.com/p/msysgit/downloads/list",
-    "http://effbot.org",
+    "https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
+    "https://cfconventions.org",
+    "https://code.google.com/p/msysgit/downloads/list",
+    "https://effbot.org",
     "https://help.github.com",
     "https://docs.github.com",
     "https://github.com",
-    "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "http://scitools.github.com/cartopy",
-    "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
+    "https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
+    "https://scitools.github.com/cartopy",
+    "https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",
-    "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
-    "http://www.nationalarchives.gov.uk/doc/open-government-licence",
+    "https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
+    "https://www.nationalarchives.gov.uk/doc/open-government-licence",
     "https://www.metoffice.gov.uk/",
     "https://biggus.readthedocs.io/",
     "https://stickler-ci.com/",
+    "https://twitter.com/scitools_iris",
 ]
 
 # list of sources to exclude from the build.

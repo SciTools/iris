@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.SUM` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -93,9 +92,7 @@ class Test_weights_and_returned(tests.IrisTest):
         self.assertArrayEqual(weights, [4, 2, 2, 2, 2])
 
     def test_masked_weights_and_returned(self):
-        array = ma.array(
-            self.cube_2d.data, mask=[[0, 0, 1, 0, 0], [0, 0, 0, 1, 0]]
-        )
+        array = ma.array(self.cube_2d.data, mask=[[0, 0, 1, 0, 0], [0, 0, 0, 1, 0]])
         data, weights = SUM.aggregate(
             array, axis=0, weights=self.weights, returned=True
         )

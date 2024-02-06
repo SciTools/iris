@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for :meth:`iris.analysis.trajectory.interpolate`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :meth:`iris.analysis.trajectory.interpolate`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -71,12 +67,8 @@ class TestNearest:
         ]
 
         # Work out cube indices of the testpoint.
-        single_point_iy = np.where(src_cube.coord("latitude").points == y_val)[
-            0
-        ][0]
-        single_point_ix = np.where(
-            src_cube.coord("longitude").points == x_val
-        )[0][0]
+        single_point_iy = np.where(src_cube.coord("latitude").points == y_val)[0][0]
+        single_point_ix = np.where(src_cube.coord("longitude").points == x_val)[0][0]
 
         point = namedtuple("point", "ix iy sample_point")
         return point(single_point_ix, single_point_iy, sample_point)
@@ -100,18 +92,14 @@ class TestNearest:
         expected.add_aux_coord(co_x, 1)
         # Result 'latitude' is now an aux coord containing 4*[0].
         expected.remove_coord("latitude")
-        co_y = AuxCoord(
-            [0, 0, 0, 0], standard_name="latitude", units="degrees"
-        )
+        co_y = AuxCoord([0, 0, 0, 0], standard_name="latitude", units="degrees")
         expected.add_aux_coord(co_y, 1)
 
         return expected
 
     def test_single_point_same_cube(self, src_cube, single_point):
         # Check exact result matching for a single point.
-        result = interpolate(
-            src_cube, single_point.sample_point, method="nearest"
-        )
+        result = interpolate(src_cube, single_point.sample_point, method="nearest")
         # Check that the result is a single trajectory point, exactly equal to
         # the expected part of the original data.
         assert result.shape[-1] == 1
@@ -139,9 +127,7 @@ class TestNearest:
 
         result = interpolate(src_cube, multi_sample_points, method="nearest")
         assert result == expected_multipoint_cube
-        assert np.allclose(
-            result.data.mask, expected_multipoint_cube.data.mask
-        )
+        assert np.allclose(result.data.mask, expected_multipoint_cube.data.mask)
 
     def test_dtype_preserved(
         self, src_cube, multi_sample_points, expected_multipoint_cube
@@ -158,9 +144,7 @@ class TestNearest:
         src_cube.add_aux_coord(DimCoord([17, 19], long_name="aux0"), 0)
 
         # The result cube should exactly equal a single source point.
-        result = interpolate(
-            src_cube, single_point.sample_point, method="nearest"
-        )
+        result = interpolate(src_cube, single_point.sample_point, method="nearest")
         assert result.shape[-1] == 1
         result = result[..., 0]
         expected = src_cube[:, single_point.iy, single_point.ix]
@@ -168,14 +152,10 @@ class TestNearest:
 
     def test_aux_coord_one_interp_dim(self, src_cube, single_point):
         # Check exact result with an aux-coord over one interpolation dims.
-        src_cube.add_aux_coord(
-            AuxCoord([11, 12, 13, 14], long_name="aux_x"), 2
-        )
+        src_cube.add_aux_coord(AuxCoord([11, 12, 13, 14], long_name="aux_x"), 2)
 
         # The result cube should exactly equal a single source point.
-        result = interpolate(
-            src_cube, single_point.sample_point, method="nearest"
-        )
+        result = interpolate(src_cube, single_point.sample_point, method="nearest")
         assert result.shape[-1] == 1
         result = result[..., 0]
         expected = src_cube[:, single_point.iy, single_point.ix]
@@ -192,9 +172,7 @@ class TestNearest:
         )
 
         # The result cube should exactly equal a single source point.
-        result = interpolate(
-            src_cube, single_point.sample_point, method="nearest"
-        )
+        result = interpolate(src_cube, single_point.sample_point, method="nearest")
         assert result.shape[-1] == 1
         result = result[..., 0]
         expected = src_cube[:, single_point.iy, single_point.ix]
@@ -222,9 +200,7 @@ class TestNearest:
         # attributes and cell-methods.
         src_cube.attributes["ODD_ATTR"] = "string-value-example"
         src_cube.add_cell_method(iris.coords.CellMethod("mean", "area"))
-        result = interpolate(
-            src_cube, single_point.sample_point, method="nearest"
-        )
+        result = interpolate(src_cube, single_point.sample_point, method="nearest")
         # Check that the result is a single trajectory point, exactly equal to
         # the expected part of the original data.
         assert result.shape[-1] == 1
@@ -290,9 +266,7 @@ class TestLinear(tests.IrisTest):
         expected.add_aux_coord(co_x, 1)
         # Result 'latitude' is now an aux coord containing 4*[0].
         expected.remove_coord("latitude")
-        co_y = AuxCoord(
-            [0, 0, 0, 0], standard_name="latitude", units="degrees"
-        )
+        co_y = AuxCoord([0, 0, 0, 0], standard_name="latitude", units="degrees")
         expected.add_aux_coord(co_y, 1)
         self.assertEqual(result, expected)
 

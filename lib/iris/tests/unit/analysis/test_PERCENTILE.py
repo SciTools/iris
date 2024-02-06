@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.PERCENTILE` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -20,8 +19,7 @@ from iris.analysis import PERCENTILE
 
 
 class AggregateMixin:
-    """
-    Percentile aggregation tests for both numpy and scipy methods within lazy
+    """Percentile aggregation tests for both numpy and scipy methods within lazy
     and real percentile aggregation.
 
     """
@@ -90,8 +88,7 @@ class AggregateMixin:
 
 
 class ScipyAggregateMixin:
-    """
-    Tests for calculations specific to the default (scipy) function.  Includes
+    """Tests for calculations specific to the default (scipy) function.  Includes
     tests on masked data and tests to verify that the function is called with
     the expected keywords.  Needs to be used with AggregateMixin, as some of
     these tests reuse its method.
@@ -173,9 +170,7 @@ class ScipyAggregateMixin:
         if self.lazy:
             data = as_lazy_data(data)
 
-        self.agg_method(
-            data, axis=axis, percent=percent, alphap=0.6, betap=0.5
-        )
+        self.agg_method(data, axis=axis, percent=percent, alphap=0.6, betap=0.5)
 
         # Trigger calculation for lazy case.
         as_concrete_data(data)
@@ -223,9 +218,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
             "mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
-            PERCENTILE.aggregate(
-                data, axis=0, percent=50, fast_percentile_method=True
-            )
+            PERCENTILE.aggregate(data, axis=0, percent=50, fast_percentile_method=True)
 
     def test_masked_mdtol_0(self):
         # Using (3,11) because np.percentile returns a masked array anyway with
@@ -262,14 +255,11 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
             fast_percentile_method=True,
             method="nearest",
         )
-        self.assertEqual(
-            mocked_percentile.call_args.kwargs["method"], "nearest"
-        )
+        self.assertEqual(mocked_percentile.call_args.kwargs["method"], "nearest")
 
 
 class MultiAxisMixin:
-    """
-    Tests for axis passed as a tuple.  Only relevant for lazy aggregation since
+    """Tests for axis passed as a tuple.  Only relevant for lazy aggregation since
     axis is always specified as int for real aggregation.
 
     """
@@ -382,9 +372,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
 
         self.assertTrue(is_lazy_data(result))
         as_concrete_data(result)
-        self.assertEqual(
-            mocked_percentile.call_args.kwargs["method"], "nearest"
-        )
+        self.assertEqual(mocked_percentile.call_args.kwargs["method"], "nearest")
 
 
 class Test_lazy_aggregate(

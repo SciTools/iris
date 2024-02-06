@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the
 `iris.aux_factory.OceanSigmaZFactory` class.
 
 """
@@ -260,9 +258,7 @@ class Test_make_coord(tests.IrisTest):
         nsigma = self.nsigma.points.reshape(nsigma.shape + (1,))
         zlev = self.zlev.bounds.reshape(zlev.shape + (2,))
         # Calculate the expected bounds.
-        bounds = self.derive(
-            sigma, eta, depth, depth_c, nsigma, zlev, coord=False
-        )
+        bounds = self.derive(sigma, eta, depth, depth_c, nsigma, zlev, coord=False)
         expected_coord.bounds = bounds
         # Calculate the actual result.
         factory = OceanSigmaZFactory(**self.kwargs)

@@ -58,9 +58,7 @@ class TestBasicCubeMasking(tests.IrisTest):
     def test_cube_list_error(self):
         cubelist = iris.cube.CubeList([self.basic_cube])
         shape = shapely.geometry.box(1, 1, 2, 2)
-        with pytest.raises(
-            TypeError, match="CubeList object rather than Cube"
-        ):
+        with pytest.raises(TypeError, match="CubeList object rather than Cube"):
             mask_cube_from_shapefile(cubelist, shape)
 
     def test_non_cube_error(self):

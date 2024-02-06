@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 build_vertical_perspective_coordinate_system`.
 
 """
@@ -24,8 +22,7 @@ from iris.fileformats._nc_load_rules.helpers import (
 
 class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
     def _test(self, inverse_flattening=False, no_offsets=False):
-        """
-        Generic test that can check vertical perspective validity with or
+        """Generic test that can check vertical perspective validity with or
         without inverse flattening, and false_east/northing-s.
         """
         test_easting = 100.0

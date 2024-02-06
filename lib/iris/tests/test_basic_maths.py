@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -100,9 +99,7 @@ class TestBasicMaths(tests.IrisTest):
         self.assertArrayEqual(b.data[:, 1:2], b.data[:, 1:2])
 
         # subtract an array of 1 dimension more than the cube
-        d_array = data_array.reshape(
-            data_array.shape[0], data_array.shape[1], 1
-        )
+        d_array = data_array.reshape(data_array.shape[0], data_array.shape[1], 1)
         self.assertRaises(ValueError, iris.analysis.maths.subtract, a, d_array)
 
         # Check that the subtraction has had no effect on the original
@@ -205,9 +202,7 @@ class TestBasicMaths(tests.IrisTest):
             points=np.arange(a.shape[xdim]), long_name="x_coord", units="volts"
         )
 
-        self.assertRaises(
-            ValueError, iris.analysis.maths.add, a, c_axis_length_fail
-        )
+        self.assertRaises(ValueError, iris.analysis.maths.add, a, c_axis_length_fail)
         self.assertRaises(
             NotYetImplementedError,
             iris.analysis.maths.add,
@@ -278,19 +273,13 @@ class TestBasicMaths(tests.IrisTest):
         a = self.cube
 
         # should fail because 'blah' is a string, not a np.ufunc
-        self.assertRaises(
-            TypeError, iris.analysis.maths.apply_ufunc, "blah", a
-        )
+        self.assertRaises(TypeError, iris.analysis.maths.apply_ufunc, "blah", a)
 
         # should fail because math.sqrt is not a np.ufunc
-        self.assertRaises(
-            TypeError, iris.analysis.maths.apply_ufunc, math.sqrt, a
-        )
+        self.assertRaises(TypeError, iris.analysis.maths.apply_ufunc, math.sqrt, a)
 
         # should fail because np.frexp gives 2 arrays as output
-        self.assertRaises(
-            ValueError, iris.analysis.maths.apply_ufunc, np.frexp, a
-        )
+        self.assertRaises(ValueError, iris.analysis.maths.apply_ufunc, np.frexp, a)
 
     def test_ifunc(self):
         a = self.cube
@@ -312,9 +301,7 @@ class TestBasicMaths(tests.IrisTest):
         c = a.copy() + 2
 
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
-        my_ifunc = iris.analysis.maths.IFunc(
-            vec_mag_ufunc, lambda a, b: (a + b).units
-        )
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, lambda a, b: (a + b).units)
 
         b = my_ifunc(a, c)
         self.assertCMLApproxData(b, ("analysis", "apply_ifunc_frompyfunc.cml"))
@@ -357,9 +344,7 @@ class TestBasicMaths(tests.IrisTest):
             with self.assertRaises(ValueError):
                 my_ifunc(a, a)
 
-        my_ifunc = iris.analysis.maths.IFunc(
-            np.multiply, lambda a: cf_units.Unit("1")
-        )
+        my_ifunc = iris.analysis.maths.IFunc(np.multiply, lambda a: cf_units.Unit("1"))
 
         # should fail because giving 1 arguments to an ifunc that expects
         # 2
@@ -432,9 +417,7 @@ class TestDivideAndMultiply(tests.IrisTest):
         # test division by exactly the same shape data
         c = a / data_array
         self.assertArrayEqual(c.data, np.array(1, dtype=np.float32))
-        self.assertCML(
-            c, ("analysis", "division_by_array.cml"), checksum=False
-        )
+        self.assertCML(c, ("analysis", "division_by_array.cml"), checksum=False)
 
         # test division by array of fewer dimensions
         c = a / data_array[0, :]
@@ -632,9 +615,7 @@ class TestIFunc(tests.IrisTest):
         c = a.copy() + 2
 
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
-        my_ifunc = iris.analysis.maths.IFunc(
-            vec_mag_ufunc, lambda x, y: (x + y).units
-        )
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, lambda x, y: (x + y).units)
         b = my_ifunc(a, c)
 
         answer = (a.data**2 + c.data**2) ** 0.5
@@ -835,27 +816,19 @@ class TestMathOperations(tests.IrisTest):
             self.assertArrayAlmostEqual(result3.data, result4)
 
     def test_cube_itruediv__int(self):
-        with self.assertRaisesRegex(
-            ArithmeticError, "Cannot perform inplace division"
-        ):
+        with self.assertRaisesRegex(ArithmeticError, "Cannot perform inplace division"):
             operator.itruediv(self.cube_1i, self.cube_2i)
 
     def test_cube_itruediv__uint(self):
-        with self.assertRaisesRegex(
-            ArithmeticError, "Cannot perform inplace division"
-        ):
+        with self.assertRaisesRegex(ArithmeticError, "Cannot perform inplace division"):
             operator.itruediv(self.cube_1u, self.cube_2u)
 
     def test_int_cube_itruediv__scalar(self):
-        with self.assertRaisesRegex(
-            ArithmeticError, "Cannot perform inplace division"
-        ):
+        with self.assertRaisesRegex(ArithmeticError, "Cannot perform inplace division"):
             operator.itruediv(self.cube_1i, 5)
 
     def test_uint_cube_itruediv__scalar(self):
-        with self.assertRaisesRegex(
-            ArithmeticError, "Cannot perform inplace division"
-        ):
+        with self.assertRaisesRegex(ArithmeticError, "Cannot perform inplace division"):
             operator.itruediv(self.cube_1u, 5)
 
 

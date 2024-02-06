@@ -1,21 +1,16 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
-"""
-Definitions of how Iris objects should be represented.
-
-"""
+"""Definitions of how Iris objects should be represented."""
 
 from html import escape
 import re
 
 
 class CubeRepresentation:
-    """
-    Produce representations of a :class:`~iris.cube.Cube`.
+    """Produce representations of a :class:`~iris.cube.Cube`.
 
     This includes:
 
@@ -105,8 +100,7 @@ class CubeRepresentation:
             "Attributes:",
         ]
         self.sections_data = {
-            name: None
-            for name in self.vector_section_names + self.scalar_section_names
+            name: None for name in self.vector_section_names + self.scalar_section_names
         }
         # 'Scalar-cell-measures' is currently alone amongst the scalar sections,
         # in displaying only a 'name' and no 'value' field.
@@ -122,7 +116,8 @@ class CubeRepresentation:
         self.units = escape(str(self.cube.units))
 
     def _get_dim_names(self):
-        """
+        """Get dimension-describing coordinate names.
+
         Get dimension-describing coordinate names, or '--' if no coordinate]
         describes the dimension.
 
@@ -135,9 +130,7 @@ class CubeRepresentation:
         # Add the dim_coord names that participate in the associated data
         # dimensions.
         for dim in range(len(self.cube.shape)):
-            dim_coords = self.cube.coords(
-                contains_dimension=dim, dim_coords=True
-            )
+            dim_coords = self.cube.coords(contains_dimension=dim, dim_coords=True)
             if dim_coords:
                 dim_names[dim] = dim_coords[0].name()
             else:
@@ -155,7 +148,8 @@ class CubeRepresentation:
         return self.cube_str.split("\n")
 
     def _get_bits(self, bits):
-        """
+        """Parse the body content (`bits`) of the cube string.
+
         Parse the body content (`bits`) of the cube string in preparation for
         being converted into table rows.
 
@@ -185,50 +179,51 @@ class CubeRepresentation:
             self.sections_data[str_heading_name] = content
 
     def _make_header(self):
-        """
+        """Make the table header.
+
         Make the table header. This is similar to the summary of the cube,
         but does not include dim shapes. These are included on the next table
         row down, and produced with `make_shapes_row`.
 
         """
         # Header row.
-        tlc_template = (
-            '<th class="iris iris-word-cell">{self.name} ({self.units})</th>'
-        )
+        tlc_template = '<th class="iris iris-word-cell">{self.name} ({self.units})</th>'
         top_left_cell = tlc_template.format(self=self)
         cells = ['<tr class="iris">', top_left_cell]
         for dim_name in self.names:
-            cells.append(
-                '<th class="iris iris-word-cell">{}</th>'.format(dim_name)
-            )
+            cells.append('<th class="iris iris-word-cell">{}</th>'.format(dim_name))
         cells.append("</tr>")
         return "\n".join(cell for cell in cells)
 
     def _make_shapes_row(self):
         """Add a row to show data / dimensions shape."""
-        title_cell = (
-            '<td class="iris-word-cell iris-subheading-cell">Shape</td>'
-        )
+        title_cell = '<td class="iris-word-cell iris-subheading-cell">Shape</td>'
         cells = ['<tr class="iris">', title_cell]
         for shape in self.shapes:
-            cells.append(
-                '<td class="iris iris-inclusion-cell">{}</td>'.format(shape)
-            )
+            cells.append('<td class="iris iris-inclusion-cell">{}</td>'.format(shape))
         cells.append("</tr>")
         return "\n".join(cell for cell in cells)
 
     def _make_row(self, title, body=None, col_span=0):
-        """
-        Produce one row for the table body; i.e.
-            <tr><td>Coord name</td><td>x</td><td>-</td>...</tr>
+        """Produce one row for the table body.
 
-        `body` contains the content for each cell not in the left-most (title)
-               column.
-               If None, indicates this row is a title row (see below).
-        `title` contains the row heading. If `body` is None, indicates
-                that the row contains a sub-heading;
-                e.g. 'Dimension coordinates:'.
-        `col_span` indicates how many columns the string should span.
+        Parameters
+        ----------
+        body : str, optional
+            Contains the content for each cell not in the left-most (title) column.
+            If None, indicates this row is a title row (see below).
+        title : stre, optional
+            Contains the row heading. If `body` is None, indicates
+            that the row contains a sub-heading;
+            e.g. 'Dimension coordinates:'.
+        col_span : int, default=0
+            Indicates how many columns the string should span.
+
+        Examples
+        --------
+        ::
+
+            <tr><td>Coord name</td><td>x</td><td>-</td>...</tr>.
 
         """
         row = ['<tr class="iris">']
@@ -245,9 +240,7 @@ class CubeRepresentation:
             )
             # Add blank cells for the rest of the rows.
             for _ in range(self.ndims):
-                row.append(
-                    template.format(html_cls=' class="iris-title"', content="")
-                )
+                row.append(template.format(html_cls=' class="iris-title"', content=""))
         else:
             # This is not a title row.
             # Deal with name of coord/attr etc. first.
@@ -260,9 +253,7 @@ class CubeRepresentation:
             )
             # One further item or more than that?
             if col_span != 0:
-                html_cls = ' class="{}" colspan="{}"'.format(
-                    "iris-word-cell", col_span
-                )
+                html_cls = ' class="{}" colspan="{}"'.format("iris-word-cell", col_span)
                 row.append(template.format(html_cls=html_cls, content=body))
             else:
                 # "Inclusion" - `x` or `-`.
@@ -299,13 +290,11 @@ class CubeRepresentation:
                             title = line[:split_point].strip()
                             body = line[split_point + 2 :].strip()
 
-                    elements.extend(
-                        self._make_row(title, body=body, col_span=colspan)
-                    )
+                    elements.extend(self._make_row(title, body=body, col_span=colspan))
         return "\n".join(element for element in elements)
 
     def repr_html(self):
-        """The `repr` interface for Jupyter."""
+        """Represent html, the `repr` interface for Jupyter."""
         # Deal with the header first.
         header = self._make_header()
 
@@ -403,9 +392,7 @@ class CubeListRepresentation:
     def make_content(self):
         html = []
         for i, cube in enumerate(self.cubelist):
-            title = "{i}: {summary}".format(
-                i=i, summary=cube.summary(shorten=True)
-            )
+            title = "{i}: {summary}".format(i=i, summary=cube.summary(shorten=True))
             title = escape(title)
             content = cube._repr_html_()
             html.append(
@@ -418,6 +405,4 @@ class CubeListRepresentation:
     def repr_html(self):
         contents = self.make_content()
         contents_str = "\n".join(contents)
-        return self._template.format(
-            uid=self.cubelist_id, contents=contents_str
-        )
+        return self._template.format(uid=self.cubelist_id, contents=contents_str)

@@ -233,7 +233,7 @@ both Iris cubes and coordinates, and for computing deferred operations on lazy a
 
 Dask provides processing options to control how deferred operations on lazy arrays
 are computed. This is provided via the ``dask.set_options`` interface. See the
-`dask documentation <http://dask.pydata.org/en/latest/scheduler-overview.html>`_
+`dask documentation <https://dask.pydata.org/en/latest/scheduler-overview.html>`_
 for more information on setting dask processing options.
 
 

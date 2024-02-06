@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides iris loading support for UM Fieldsfile-like file types, and PP.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides iris loading support for UM Fieldsfile-like file types, and PP.
 
 At present, the only UM file types supported are true FieldsFiles and LBCs.
 Other types of UM file may fail to load correctly (or at all).

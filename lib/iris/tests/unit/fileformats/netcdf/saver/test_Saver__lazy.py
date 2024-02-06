@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Mirror of :mod:`iris.tests.unit.fileformats.netcdf.test_Saver`, but with lazy arrays."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -35,9 +34,7 @@ class Test__create_cf_bounds(test_Saver.Test__create_cf_bounds):
     def climatology_3d():
         cube = stock.climatology_3d()
         aux_coord = AuxCoord.from_coord(cube.coord("time"))
-        lazy_coord = aux_coord.copy(
-            aux_coord.lazy_points(), aux_coord.lazy_bounds()
-        )
+        lazy_coord = aux_coord.copy(aux_coord.lazy_points(), aux_coord.lazy_bounds())
         cube.replace_coord(lazy_coord)
         return cube
 
@@ -103,9 +100,7 @@ class TestStreamed(tests.IrisTest):
 
     def test_lazy_streamed_coord(self):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
-        lazy_coord = aux_coord.copy(
-            aux_coord.lazy_points(), aux_coord.lazy_bounds()
-        )
+        lazy_coord = aux_coord.copy(aux_coord.lazy_points(), aux_coord.lazy_bounds())
         self.cube.replace_coord(lazy_coord)
         self.save_common(self.cube)
         self.assertTrue(self.store_watch.called)

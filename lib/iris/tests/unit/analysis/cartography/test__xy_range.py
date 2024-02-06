@@ -1,10 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
-"""Unit tests for :func:`iris.analysis.cartography._xy_range`"""
+"""Unit tests for :func:`iris.analysis.cartography._xy_range`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -37,9 +36,7 @@ class Test(tests.IrisTest):
         assert cube.coord("longitude").circular
 
         result = _xy_range(cube)
-        np.testing.assert_array_almost_equal(
-            result, ((0, 360), (-90, 90)), decimal=0
-        )
+        np.testing.assert_array_almost_equal(result, ((0, 360), (-90, 90)), decimal=0)
 
     @tests.skip_data
     def test_geog_cs_regional(self):

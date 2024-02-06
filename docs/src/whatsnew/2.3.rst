@@ -29,7 +29,7 @@ Features
 .. admonition:: Climatological Coordinate Support
 
   Iris can now load, store and save `NetCDF climatological coordinates
-  <http://cfconventions.org/Data/cf-conventions/cf-conventions-1
+  <https://cfconventions.org/Data/cf-conventions/cf-conventions-1
   .7/cf-conventions.html#climatological-statistics>`_. Any cube time
   coordinate can be marked as a climatological time axis using the boolean
   property: ``climatological``. The climatological bounds are stored in the
@@ -41,7 +41,7 @@ Features
   coordinate's ``bounds`` property are written to a NetCDF boundary variable
   called '<coordinate-name>_bounds'.  These are in place of a standard
   'bounds' attribute and accompanying boundary variable. See below
-  for an `example adapted from CF conventions <http://cfconventions
+  for an `example adapted from CF conventions <https://cfconventions
   .org/Data/cf-conventions/cf-conventions-1.7/cf-conventions
   .html#climatological-statistics>`_:
 
@@ -116,7 +116,7 @@ Features
 
 * New coordinate system: :class:`iris.coord_systems.Geostationary`,
   including load and save support, based on the `CF Geostationary projection
-  definition <http://cfconventions
+  definition <https://cfconventions
   .org/cf-conventions/cf-conventions.html#_geostationary_projection>`_.
 
 * :class:`iris.coord_systems.VerticalPerspective` can now be saved to and
@@ -126,7 +126,7 @@ Features
   :class:`iris.analysis.PointInCell` to make this regridding scheme public
 
 * Iris now supports standard name modifiers. See
-  `Appendix C, Standard Name Modifiers <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#standard-name-modifiers>`_ 
+  `Appendix C, Standard Name Modifiers <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#standard-name-modifiers>`_ 
   for more information.
 
 * :meth:`iris.cube.Cube.remove_cell_measure` now also allows removal of a cell
@@ -138,10 +138,10 @@ Features
   realisation of the original cube data.
 
 * Iris now supports NetCDF Climate and Forecast (CF) Metadata Conventions 1.7
-  (see `CF 1.7 Conventions Document <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html>`_ for more information)
+  (see `CF 1.7 Conventions Document <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html>`_ for more information)
 
 * Updated standard name support to
-  `CF standard name table version 70, 2019-12-10 <http://cfconventions.org/Data/cf-standard-names/70/build/cf-standard-name-table.html>`_
+  `CF standard name table version 70, 2019-12-10 <https://cfconventions.org/Data/cf-standard-names/70/build/cf-standard-name-table.html>`_
 
 * Updated UM STASH translations to
   `metarelate/metOcean commit 448f2ef, 2019-11-29 <https://github.com/metarelate/metOcean/tree/448f2ef5e676edaaa27408b9f3ddbecbf05e3289>`_
@@ -164,7 +164,7 @@ Bugs Fixed
   points.
 
 * :class:`iris.coord_systems.VerticalPerspective` coordinate system now uses
-  the `CF Vertical perspective definition <http://cfconventions
+  the `CF Vertical perspective definition <https://cfconventions
   .org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
   erroneously using Geostationary.
 

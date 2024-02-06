@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.rolling_window`."""
 
 # import iris tests first so that some things can be initialised before
@@ -19,9 +18,7 @@ class Test_rolling_window(tests.IrisTest):
     def test_1d(self):
         # 1-d array input
         a = np.array([0, 1, 2, 3, 4], dtype=np.int32)
-        expected_result = np.array(
-            [[0, 1], [1, 2], [2, 3], [3, 4]], dtype=np.int32
-        )
+        expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]], dtype=np.int32)
         result = rolling_window(a, window=2)
         self.assertArrayEqual(result, expected_result)
 

@@ -12,7 +12,7 @@ We also add some lines and text annotations drawn in various projections.
 
 We plot these over a specified region, in two different map projections.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -56,9 +56,7 @@ def make_plot(projection_name, projection_crs):
     overlay_data = iris.load_cube(overlay_filepath, "total electron content")
     # NOTE: as above, "iris.plot.contour" calls "pyplot.contour" with a
     # 'transform' keyword, enabling Cartopy reprojection.
-    iplt.contour(
-        overlay_data, 20, linewidths=2.0, colors="darkgreen", linestyles="-"
-    )
+    iplt.contour(overlay_data, 20, linewidths=2.0, colors="darkgreen", linestyles="-")
 
     # Draw a high resolution margin line, inset from the pcolormesh border.
     # First calculate rectangle corners, 7% in from each corner of the data.
@@ -72,12 +70,8 @@ def make_plot(projection_name, projection_crs):
     steps = np.linspace(0, 1)
     zeros, ones = np.zeros(steps.size), np.ones(steps.size)
     x_delta, y_delta = (x_upper - x_lower), (y_upper - y_lower)
-    x_points = x_lower + x_delta * np.concatenate(
-        (steps, ones, steps[::-1], zeros)
-    )
-    y_points = y_lower + y_delta * np.concatenate(
-        (zeros, steps, ones, steps[::-1])
-    )
+    x_points = x_lower + x_delta * np.concatenate((steps, ones, steps[::-1], zeros))
+    y_points = y_lower + y_delta * np.concatenate((zeros, steps, ones, steps[::-1]))
     # Get the Iris coordinate system of the X coordinate (Y should be the same).
     cs_data1 = x_coord.coord_system
     # Construct an equivalent Cartopy coordinate reference system ("crs").
@@ -115,9 +109,7 @@ def make_plot(projection_name, projection_crs):
         )
         # NOTE: the "plt.annotate call" does not have a "transform=" keyword,
         # so for this one we transform the coordinates with a Cartopy call.
-        at_x, at_y = ax.projection.transform_point(
-            lon, lat, src_crs=crs_latlon
-        )
+        at_x, at_y = ax.projection.transform_point(lon, lat, src_crs=crs_latlon)
         plt.annotate(
             name,
             xy=(at_x, at_y),
@@ -131,8 +123,9 @@ def make_plot(projection_name, projection_crs):
 
     # Add a title, and display.
     plt.title(
-        "A pseudocolour plot on the {} projection,\n"
-        "with overlaid contours.".format(projection_name)
+        "A pseudocolour plot on the {} projection,\nwith overlaid contours.".format(
+            projection_name
+        )
     )
     iplt.show()
 

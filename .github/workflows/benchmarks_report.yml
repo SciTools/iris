@@ -20,7 +20,7 @@ jobs:
       - name: Download artifact
         id: download-artifact
         # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#using-data-from-the-triggering-workflow
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -54,7 +54,7 @@ jobs:
           echo "reports_exist=$reports_exist" >> "$GITHUB_OUTPUT"
 
       - name: Store artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark_reports
           path: benchmark_reports
@@ -65,17 +65,17 @@ jobs:
     if: needs.download.outputs.reports_exist == 1
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: benchmark_reports
           path: .github/workflows/benchmark_reports
 
       - name: Set up Python
         # benchmarks/bm_runner.py only needs builtins to run.
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
 
       - name: Post reports
         env:

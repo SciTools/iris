@@ -40,7 +40,7 @@ Features
         iris.Constraint(time=lambda cell: cell.point.month != 1 and cell.point.day != 1)
 
     Note that, :class:`iris.Future` also supports a
-    `context manager <http://docs.python.org/2/reference/datamodel.html#context-managers>`_
+    `context manager <https://docs.python.org/2/reference/datamodel.html#context-managers>`_
     which allows multiple sections of code to execute with different run-time
     behaviour.
 

@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the cf module.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the cf module."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -99,9 +95,7 @@ class TestCFReader(tests.IrisTest):
         )
 
     def test_bounds_pass_0(self):
-        self.assertEqual(
-            sorted(self.cfr.cf_group.bounds.keys()), ["time_bnds"]
-        )
+        self.assertEqual(sorted(self.cfr.cf_group.bounds.keys()), ["time_bnds"])
 
         time_bnds = self.cfr.cf_group["time_bnds"]
         self.assertEqual(time_bnds.shape, (4, 2))
@@ -150,9 +144,7 @@ class TestCFReader(tests.IrisTest):
         self.assertEqual(time.cf_attrs(), tuple(attr))
 
     def test_data_pass_0(self):
-        self.assertEqual(
-            sorted(self.cfr.cf_group.data_variables.keys()), ["pr"]
-        )
+        self.assertEqual(sorted(self.cfr.cf_group.data_variables.keys()), ["pr"])
 
         data = self.cfr.cf_group["pr"]
         self.assertEqual(data.shape, (4, 190, 174))
@@ -208,18 +200,10 @@ class TestCFReader(tests.IrisTest):
             ],
         )
 
-        self.assertEqual(
-            self.cfr.cf_group.global_attributes["Conventions"], "CF-1.0"
-        )
-        self.assertEqual(
-            self.cfr.cf_group.global_attributes["experiment"], "ER3"
-        )
-        self.assertEqual(
-            self.cfr.cf_group.global_attributes["institution"], "DMI"
-        )
-        self.assertEqual(
-            self.cfr.cf_group.global_attributes["source"], "HIRHAM"
-        )
+        self.assertEqual(self.cfr.cf_group.global_attributes["Conventions"], "CF-1.0")
+        self.assertEqual(self.cfr.cf_group.global_attributes["experiment"], "ER3")
+        self.assertEqual(self.cfr.cf_group.global_attributes["institution"], "DMI")
+        self.assertEqual(self.cfr.cf_group.global_attributes["source"], "HIRHAM")
 
     def test_variable_cf_group_pass_0(self):
         self.assertEqual(
@@ -258,9 +242,7 @@ class TestCFReader(tests.IrisTest):
             lat.cf_attrs_used(),
             (("long_name", "latitude"), ("units", "degrees_north")),
         )
-        self.assertEqual(
-            lat.cf_attrs_unused(), (("standard_name", "latitude"),)
-        )
+        self.assertEqual(lat.cf_attrs_unused(), (("standard_name", "latitude"),))
 
         # clear the attribute touch history.
         lat.cf_attrs_reset()
@@ -282,9 +264,7 @@ class TestCFReader(tests.IrisTest):
         """
         with self.temp_filename(suffix=".nc") as fn:
             with open(fn, "wb+") as fh:
-                fh.write(
-                    b"\x89HDF\r\n\x1a\nBroken file with correct signature"
-                )
+                fh.write(b"\x89HDF\r\n\x1a\nBroken file with correct signature")
                 fh.flush()
 
                 with io.StringIO() as buf:
@@ -367,9 +347,7 @@ class TestClimatology(tests.IrisTest):
             yield
 
     def test_bounds(self):
-        time = self.cfr.cf_group["temp_dmax_tmean_abs"].cf_group.coordinates[
-            "time"
-        ]
+        time = self.cfr.cf_group["temp_dmax_tmean_abs"].cf_group.coordinates["time"]
         climatology = time.cf_group.climatology
         self.assertEqual(len(climatology), 1)
         self.assertEqual(list(climatology.keys()), ["climatology_bounds"])
@@ -405,30 +383,18 @@ class TestLabels(tests.IrisTest):
         cf_data_var = self.cfr_start.cf_group["temp_dmax_tmean_abs"]
 
         region_group = self.cfr_start.cf_group.labels["region_name"]
-        self.assertEqual(
-            sorted(self.cfr_start.cf_group.labels.keys()), ["region_name"]
-        )
-        self.assertEqual(
-            sorted(cf_data_var.cf_group.labels.keys()), ["region_name"]
-        )
+        self.assertEqual(sorted(self.cfr_start.cf_group.labels.keys()), ["region_name"])
+        self.assertEqual(sorted(cf_data_var.cf_group.labels.keys()), ["region_name"])
 
-        self.assertEqual(
-            region_group.cf_label_dimensions(cf_data_var), ("georegion",)
-        )
+        self.assertEqual(region_group.cf_label_dimensions(cf_data_var), ("georegion",))
         self.assertEqual(region_group.cf_label_data(cf_data_var)[0], "Anglian")
 
         cf_data_var = self.cfr_start.cf_group["cdf_temp_dmax_tmean_abs"]
 
-        self.assertEqual(
-            sorted(self.cfr_start.cf_group.labels.keys()), ["region_name"]
-        )
-        self.assertEqual(
-            sorted(cf_data_var.cf_group.labels.keys()), ["region_name"]
-        )
+        self.assertEqual(sorted(self.cfr_start.cf_group.labels.keys()), ["region_name"])
+        self.assertEqual(sorted(cf_data_var.cf_group.labels.keys()), ["region_name"])
 
-        self.assertEqual(
-            region_group.cf_label_dimensions(cf_data_var), ("georegion",)
-        )
+        self.assertEqual(region_group.cf_label_dimensions(cf_data_var), ("georegion",))
         self.assertEqual(region_group.cf_label_data(cf_data_var)[0], "Anglian")
 
     def test_label_dim_end(self):
@@ -450,9 +416,7 @@ class TestLabels(tests.IrisTest):
             ("ensemble",),
         )
         self.assertEqual(
-            self.cfr_end.cf_group.labels["experiment_id"].cf_label_data(
-                cf_data_var
-            )[0],
+            self.cfr_end.cf_group.labels["experiment_id"].cf_label_data(cf_data_var)[0],
             "2005",
         )
 
@@ -463,22 +427,16 @@ class TestLabels(tests.IrisTest):
             ("ensemble",),
         )
         self.assertEqual(
-            self.cfr_end.cf_group.labels["institution"].cf_label_data(
-                cf_data_var
-            )[0],
+            self.cfr_end.cf_group.labels["institution"].cf_label_data(cf_data_var)[0],
             "ECMWF",
         )
 
         self.assertEqual(
-            self.cfr_end.cf_group.labels["source"].cf_label_dimensions(
-                cf_data_var
-            ),
+            self.cfr_end.cf_group.labels["source"].cf_label_dimensions(cf_data_var),
             ("ensemble",),
         )
         self.assertEqual(
-            self.cfr_end.cf_group.labels["source"].cf_label_data(cf_data_var)[
-                0
-            ],
+            self.cfr_end.cf_group.labels["source"].cf_label_data(cf_data_var)[0],
             "IFS33R1/HOPE-E, Sys 1, Met 1, ENSEMBLES",
         )
 

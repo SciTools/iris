@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Common test code for `iris.plot.pcolor` and `iris.plot.pcolormesh`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -55,9 +54,7 @@ class MixinStringCoordPlot:
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        self.assertRaises(
-            TypeError, self.blockplot_func(), self.lat_lon_cube, axes=ax
-        )
+        self.assertRaises(TypeError, self.blockplot_func(), self.lat_lon_cube, axes=ax)
         plt.close(fig)
 
 

@@ -12,7 +12,6 @@ Model (Johns et al. 2011; Lowe et al. 2009).
 
 References
 ----------
-
    Johns T.C., et al. (2011) Climate change under aggressive mitigation: the
    ENSEMBLES multi-model experiment. Climate Dynamics, Vol 37, No. 9-10,
    doi:10.1007/s00382-011-1005-5.
@@ -27,7 +26,7 @@ References
     Further details on the aggregation functionality being used in this example
     can be found in :ref:`cube-statistics`.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -90,9 +89,7 @@ def main():
     )
 
     # Constrain the period 1860-1999 and extract the observed data from a1b
-    constraint = iris.Constraint(
-        time=lambda cell: 1860 <= cell.point.year <= 1999
-    )
+    constraint = iris.Constraint(time=lambda cell: 1860 <= cell.point.year <= 1999)
     observed = a1b_mean.extract(constraint)
 
     # Assert that this data set is the same as the e1 scenario:

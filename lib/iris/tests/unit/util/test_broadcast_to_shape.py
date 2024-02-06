@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.broadcast_to_shape`."""
 
 # import iris tests first so that some things can be initialised before
@@ -73,9 +72,7 @@ class Test_broadcast_to_shape(tests.IrisTest):
         mocked_compute.assert_not_called()
         for i in range(5):
             for j in range(4):
-                self.assertMaskedArrayEqual(
-                    b[i, :, j, :].compute().T, m.compute()
-                )
+                self.assertMaskedArrayEqual(b[i, :, j, :].compute().T, m.compute())
 
     def test_masked_degenerate(self):
         # masked arrays can have degenerate masks too

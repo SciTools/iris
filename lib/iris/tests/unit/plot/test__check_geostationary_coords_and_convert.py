@@ -1,10 +1,10 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.plot._check_geostationary_coords_and_convert
-function."""
+function.
+"""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -32,8 +32,7 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
 
         # Expected arrays if conversion takes place.
         self.x_converted, self.y_converted = (
-            i * geostationary_altitude
-            for i in (self.x_original, self.y_original)
+            i * geostationary_altitude for i in (self.x_original, self.y_original)
         )
 
     def _test(self, geostationary=True):

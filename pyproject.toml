@@ -15,7 +15,7 @@ authors = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "License :: OSI Approved :: BSD License",
     "Operating System :: MacOS",
     "Operating System :: POSIX",
     "Operating System :: POSIX :: Linux",
@@ -48,7 +48,7 @@ keywords = [
     "ugrid",
     "visualisation",
 ]
-license = {text = "LGPL-3.0-or-later"}
+license = {text = "BSD-3-Clause"}
 name = "scitools-iris"
 requires-python = ">=3.9"
 
@@ -58,8 +58,66 @@ Discussions = "https://github.com/SciTools/iris/discussions"
 Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
 Issues = "https://github.com/SciTools/iris/issues"
 
+[tool.ruff]
+# Exclude the following, in addition to the standard set of exclusions.
+# https://docs.astral.sh/ruff/settings/#exclude
+extend-exclude = [
+    "_ff_cross_references.py",
+    "um_cf_map.py",
+    "docs/src/sphinxext",
+    "tools",
+]
+line-length = 88
+src = [
+    "benchmarks",
+    "lib",
+    "docs/src",
+]
+target-version = "py39"
+
+[tool.ruff.format]
+preview = false
+
+[tool.ruff.lint]
+ignore = [
+    # NOTE: Non-permanent exclusions should be added to the ".ruff.toml" file.
+
+    # flake8-commas (COM)
+    # https://docs.astral.sh/ruff/rules/#flake8-commas-com
+    "COM812",  # Trailing comma missing.
+    "COM819",  # Trailing comma prohibited.
+
+    # flake8-implicit-str-concat (ISC)
+    # https://docs.astral.sh/ruff/rules/single-line-implicit-string-concatenation/
+    # NOTE: This rule may cause conflicts when used with "ruff format".
+    "ISC001",  # Implicitly concatenate string literals on one line.
+    ]
+    preview = false
+    select = [
+        "ALL",
+        # list specific rules to include that is skipped using numpy convention.
+        "D212",  # Multi-line docstring summary should start at the first line
+    ]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["iris"]
+
+[tool.ruff.lint.per-file-ignores]
+# All test scripts
+
+"lib/iris/tests/*.py" = [
+    # https://docs.astral.sh/ruff/rules/undocumented-public-module/
+    "D100",  # Missing docstring in public module
+    "D205",  # 1 blank line required between summary line and description
+    "D401",  # 1 First line of docstring should be in imperative mood
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
 [tool.setuptools]
-license-files = ["COPYING", "COPYING.LESSER"]
+license-files = ["LICENSE"]
 zip-safe = false
 
 [tool.setuptools.dynamic]
@@ -74,36 +132,6 @@ where = ["lib"]
 write_to = "lib/iris/_version.py"
 local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
-
-[tool.black]
-line-length = 79
-target-version = ['py39']
-include = '\.pyi?$'
-extend-exclude = '''
-(
-  /(
-    | sphinxext
-    | tools
-    | benchmarks\/\.asv.*
-  )/
-  | _ff_cross_references.py
-  | um_cf_map.py
-)
-'''
-
-[tool.isort]
-force_sort_within_sections = "True"
-known_first_party = "iris"
-line_length = 79
-profile = "black"
-extend_skip = [
-  "_build",
-  "generated",
-  "sphinxext",
-  "tools",
-]
-skip_gitignore = "True"
-verbose = "False"
 
 [tool.pytest.ini_options]
 addopts = "-ra"

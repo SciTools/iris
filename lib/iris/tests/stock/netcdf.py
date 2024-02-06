@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Routines for generating synthetic NetCDF files from template headers."""
 
 from pathlib import Path
@@ -20,11 +19,8 @@ from iris.tests import env_bin_path
 NCGEN_PATHSTR = str(env_bin_path("ncgen"))
 
 
-def ncgen_from_cdl(
-    cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str
-):
-    """
-    Generate a test netcdf file from cdl.
+def ncgen_from_cdl(cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str):
+    """Generate a test netcdf file from cdl.
 
     Source is CDL in either a string or a file.
     If given a string, will either save a CDL file, or pass text directly.
@@ -63,23 +59,17 @@ def ncgen_from_cdl(
     subprocess.run(call_args, check=True, **call_kwargs)
 
 
-def _file_from_cdl_template(
-    temp_file_dir, dataset_name, dataset_type, template_subs
-):
+def _file_from_cdl_template(temp_file_dir, dataset_name, dataset_type, template_subs):
     """Shared template filling behaviour.
 
     Substitutes placeholders in the appropriate CDL template, saves to a
     NetCDF file.
 
     """
-    nc_write_path = (
-        Path(temp_file_dir).joinpath(dataset_name).with_suffix(".nc")
-    )
+    nc_write_path = Path(temp_file_dir).joinpath(dataset_name).with_suffix(".nc")
     # Fetch the specified CDL template type.
     templates_dir = Path(__file__).parent / "file_headers"
-    template_filepath = templates_dir.joinpath(dataset_type).with_suffix(
-        ".cdl"
-    )
+    template_filepath = templates_dir.joinpath(dataset_type).with_suffix(".cdl")
     # Substitute placeholders.
     with open(template_filepath) as file:
         template_string = Template(file.read())
@@ -99,7 +89,6 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
     dimension size, 'dimension coordinates' and a possible unlimited dimension.
 
     """
-
     ds = _thread_safe_nc.DatasetWrapper(nc_path, "r+")
 
     unlimited_dim_names = [

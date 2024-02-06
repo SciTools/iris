@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp._interpret_field` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -66,7 +65,7 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         warn_msg = warn.call_args[0][0]
         self.assertTrue(
             warn_msg.startswith(
-                "Landmask compressed fields " "existed without a landmask"
+                "Landmask compressed fields existed without a landmask"
             ),
             "Unexpected warning message: {!r}".format(warn_msg),
         )
@@ -74,9 +73,7 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
     def test_deferred_mask_field(self):
         # Check that the order of the load is yielded last if the mask
         # hasn't yet been seen.
-        result = list(
-            pp._interpret_fields([self.pp_field, self.land_mask_field])
-        )
+        result = list(pp._interpret_fields([self.pp_field, self.land_mask_field]))
         self.assertEqual(result, [self.land_mask_field, self.pp_field])
 
     def test_not_deferred_mask_field(self):
@@ -125,9 +122,7 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         mask_data_name = mask_toplev_item[1]
 
         # Check that the item this refers to is a PPDataProxy.
-        self.assertIsInstance(
-            lazy_mask_array.dask[mask_data_name], pp.PPDataProxy
-        )
+        self.assertIsInstance(lazy_mask_array.dask[mask_data_name], pp.PPDataProxy)
 
         # Check that the soil-temp graph references the *same* lazy element,
         # showing that the mask+data calculation is handled by dask.

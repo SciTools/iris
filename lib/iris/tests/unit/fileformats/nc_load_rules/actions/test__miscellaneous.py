@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the engine.activate() call within the
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the engine.activate() call within the
 `iris.fileformats.netcdf._load_cube` function.
 
 Tests for rules activation relating to some isolated aspects :
@@ -18,9 +16,7 @@ import iris.tests as tests  # isort: skip
 
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure
 from iris.fileformats.pp import STASH
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Test__ukmo_attributes(Mixin__nc_load_actions, tests.IrisTest):

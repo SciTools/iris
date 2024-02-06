@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.analysis._regrid.CurvilinearRegridder`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -96,12 +95,8 @@ class Test___call__(tests.IrisTest):
                 self.func_operate, return_value=self.dummy_slice_result
             ) as patch_operate:
                 result = regridder(src_grid)
-        patch_setup.assert_called_once_with(
-            src_grid, self.weights, target_grid
-        )
-        patch_operate.assert_called_once_with(
-            src_grid, mock.sentinel.regrid_info
-        )
+        patch_setup.assert_called_once_with(src_grid, self.weights, target_grid)
+        patch_operate.assert_called_once_with(src_grid, mock.sentinel.regrid_info)
         # The result is a re-merged version of the internal result, so it is
         # therefore '==' but not the same object.
         self.assertEqual(result, self.dummy_slice_result)
@@ -114,9 +109,7 @@ class Test___call__(tests.IrisTest):
         with mock.patch(
             self.func_setup, return_value=mock.sentinel.regrid_info
         ) as patch_setup:
-            with mock.patch(
-                self.func_operate, return_value=self.dummy_slice_result
-            ):
+            with mock.patch(self.func_operate, return_value=self.dummy_slice_result):
                 _ = regridder(src_grid)
         patch_setup.assert_called_once_with(src_grid, None, target_grid)
 
@@ -130,9 +123,7 @@ class Test___call__(tests.IrisTest):
         different_src_cube = self.src_grid.copy()
         # Rename so we can distinguish them.
         different_src_cube.rename("Different_source")
-        with mock.patch(
-            self.func_setup, return_value=mock.sentinel.regrid_info
-        ):
+        with mock.patch(self.func_setup, return_value=mock.sentinel.regrid_info):
             with mock.patch(
                 self.func_operate, return_value=self.dummy_slice_result
             ) as patch_operate:
@@ -157,9 +148,7 @@ class Test___call__(tests.IrisTest):
             ) as patch_operate:
                 _ = regridder(src_grid)
                 _ = regridder(different_src_cube)
-        patch_setup.assert_called_once_with(
-            src_grid, self.weights, target_grid
-        )
+        patch_setup.assert_called_once_with(src_grid, self.weights, target_grid)
         self.assertEqual(len(patch_operate.call_args_list), 2)
         self.assertEqual(
             patch_operate.call_args_list,
@@ -179,15 +168,9 @@ class Test__derived_coord(tests.IrisTest):
             src.coord("grid_latitude").points,
         )
         coord_system = src.coord("grid_latitude").coord_system
-        lat = AuxCoord(
-            new_lat, standard_name="latitude", coord_system=coord_system
-        )
-        lon = AuxCoord(
-            new_lon, standard_name="longitude", coord_system=coord_system
-        )
-        lat_t = AuxCoord(
-            new_lat.T, standard_name="latitude", coord_system=coord_system
-        )
+        lat = AuxCoord(new_lat, standard_name="latitude", coord_system=coord_system)
+        lon = AuxCoord(new_lon, standard_name="longitude", coord_system=coord_system)
+        lat_t = AuxCoord(new_lat.T, standard_name="latitude", coord_system=coord_system)
         lon_t = AuxCoord(
             new_lon.T, standard_name="longitude", coord_system=coord_system
         )
@@ -270,9 +253,7 @@ class Test___call____bad_src(tests.IrisTest):
             self.regridder(np.ones((3, 4)))
 
     def test_bad_src_shape(self):
-        with self.assertRaisesRegex(
-            ValueError, "not defined on the same source grid"
-        ):
+        with self.assertRaisesRegex(ValueError, "not defined on the same source grid"):
             self.regridder(self.src_grid[::2, ::2])
 
 
@@ -304,9 +285,7 @@ class Test__call__multidimensional(tests.IrisTest):
 
         # Define some key points in true-lat/lon that have known positions
         # First 3x2 points in the centre of each output cell.
-        x_centres, y_centres = np.meshgrid(
-            grid_x_coord.points, grid_y_coord.points
-        )
+        x_centres, y_centres = np.meshgrid(grid_x_coord.points, grid_y_coord.points)
         # An extra point also falling in cell 1, 1
         x_in11, y_in11 = 26.3, -48.2
         # An extra point completely outside the target grid
@@ -386,9 +365,7 @@ class Test__call__multidimensional(tests.IrisTest):
             result.coord("extra_scalar_coord"),
             src_cube.coord("extra_scalar_coord"),
         )
-        self.assertEqual(
-            result.coord("longitude"), grid_cube.coord("longitude")
-        )
+        self.assertEqual(result.coord("longitude"), grid_cube.coord("longitude"))
         self.assertEqual(result.coord("latitude"), grid_cube.coord("latitude"))
         self.assertMaskedArrayAlmostEqual(result.data, expected_result)
 

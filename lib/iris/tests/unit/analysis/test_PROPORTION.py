@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.PROPORTION` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -37,9 +36,7 @@ class Test_masked(tests.IrisTest):
         # Test corner case where mask is returned as boolean value rather
         # than boolean array when the mask is unspecified on construction.
         masked_cube = iris.cube.Cube(ma.array([1, 2, 3, 4, 5]))
-        masked_cube.add_dim_coord(
-            DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0
-        )
+        masked_cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
         cube = masked_cube.collapsed("foo", PROPORTION, function=self.func)
         self.assertArrayEqual(cube.data, ma.array([0.6]))
 

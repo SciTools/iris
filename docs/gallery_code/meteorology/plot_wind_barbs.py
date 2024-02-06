@@ -9,7 +9,8 @@ are co-located in space in this case.
 The magnitude of the wind in the original data is low and so doesn't illustrate
 the full range of barbs. The wind is scaled to simulate a storm that better
 illustrates the range of barbs that are available.
-"""
+
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 
@@ -32,9 +33,7 @@ def main():
     # that a storm is passing over
     magnitude = (uwind**2 + vwind**2) ** 0.5
     magnitude.convert_units("knot")
-    max_speed = magnitude.collapsed(
-        ("latitude", "longitude"), iris.analysis.MAX
-    ).data
+    max_speed = magnitude.collapsed(("latitude", "longitude"), iris.analysis.MAX).data
     max_desired = 65
 
     uwind = uwind / max_speed * max_desired

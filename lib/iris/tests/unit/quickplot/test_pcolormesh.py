@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.quickplot.pcolormesh` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -42,9 +41,7 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(coord.points.size + 1)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.mpl_patch = self.patch(
-            "matplotlib.pyplot.pcolormesh", return_value=None
-        )
+        self.mpl_patch = self.patch("matplotlib.pyplot.pcolormesh", return_value=None)
         self.draw_func = qplt.pcolormesh
 
 

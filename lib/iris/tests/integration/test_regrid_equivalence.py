@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Tests to check the validity of replacing
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Tests to check the validity of replacing
 "iris.analysis._interpolate.regrid`('nearest')" with
 "iris.cube.Cube.regrid(scheme=iris.analysis.Nearest())".
 
@@ -127,9 +125,7 @@ class MixinCheckingCode:
         src_cube.data[1, 1] = np.ma.masked
         _debug_data(src_cube, "masked SOURCE")
         dst_cube = grid_cube(dst_x, dst_y)
-        result_cube = self.regrid(
-            src_cube, dst_cube, translate_nans_to_mask=True
-        )
+        result_cube = self.regrid(src_cube, dst_cube, translate_nans_to_mask=True)
         _debug_data(result_cube, "masked RESULT")
         self.assertMaskedArrayEqual(result_cube.data, expected_result)
 

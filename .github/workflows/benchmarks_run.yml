@@ -36,7 +36,7 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Cache environment directories
         id: cache-env-dir
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .nox
@@ -56,7 +56,7 @@ jobs:
 
       - name: Cache test data directory
         id: cache-test-data
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ env.IRIS_TEST_DATA_PATH }}
@@ -113,14 +113,14 @@ jobs:
 
       - name: Upload any benchmark reports
         if: success() || steps.overnight.outcome == 'failure'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark_reports
           path: .github/workflows/benchmark_reports
 
       - name: Archive asv results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: asv-raw-results
           path: benchmarks/.asv/results

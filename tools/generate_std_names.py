@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 A script to convert the standard names information from the provided XML
 file into a Python dictionary format.
@@ -13,8 +12,8 @@ is the name of the file to write the Python dictionary file into.
 By default, Iris will use the source XML file:
     etc/cf-standard-name-table.xml
 as obtained from:
-    http://cfconventions.org/standard-names.html
-    E.G. http://cfconventions.org/Data/cf-standard-names/78/src/cf-standard-name-table.xml
+    https://cfconventions.org/standard-names.html
+    E.G. https://cfconventions.org/Data/cf-standard-names/78/src/cf-standard-name-table.xml
     - N.B. no fixed 'latest' url is provided.
 
 """
@@ -27,9 +26,8 @@ import xml.etree.ElementTree as ET
 STD_VALUES_FILE_TEMPLATE = '''
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 This file contains a dictionary of standard value names that are mapped
 to another dictionary of other standard name attributes. Currently only

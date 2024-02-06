@@ -27,7 +27,7 @@ def create_shapefile_mask(
     cube,
     minimum_weight=0.0,
 ):
-    """Makes a mask for a cube from a shape
+    """Make a mask for a cube from a shape.
 
     Get the mask of the intersection between the
     given shapely geometry and cube with x/y DimCoords.
@@ -35,7 +35,7 @@ def create_shapefile_mask(
 
 
     Parameters
-    -----------
+    ----------
         geometry        : A :class:`shapely.Geometry` object
 
         cube            : A :class:`iris.cube.Cube`
@@ -48,12 +48,10 @@ def create_shapefile_mask(
                             Defaults to 0.0 (eg only test intersection)
 
     Returns
-    --------
-
+    -------
         A :class:`np.array` of the shape of the x & y coordinates of the cube, with points to mask equal to True
 
     """
-
     from iris.cube import Cube, CubeList
 
     try:
@@ -101,14 +99,11 @@ def create_shapefile_mask(
     y_bounds = _get_mod_rebased_coord_bounds(y_coord)
     # prepare array for dark
     box_template = [
-        sgeom.box(x[0], y[0], x[1], y[1])
-        for x, y in product(x_bounds, y_bounds)
+        sgeom.box(x[0], y[0], x[1], y[1]) for x, y in product(x_bounds, y_bounds)
     ]
     # shapely can do lazy evaluation of intersections if it's given a list of grid box shapes
     # delayed lets us do it in parallel
-    intersect_template = dask.delayed(
-        shapely.intersects(trans_geo, box_template)
-    )
+    intersect_template = dask.delayed(shapely.intersects(trans_geo, box_template))
     # we want areas not under shapefile to be True (to mask)
     intersect_template = np.invert(intersect_template).compute()
     # now calc area overlaps if doing weights and adjust mask
@@ -125,8 +120,8 @@ def create_shapefile_mask(
 def _transform_coord_system(geometry, cube, geometry_system=None):
     """Project the shape onto another coordinate system.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
                 geometry: A :class:`shapely.Geometry` object
 
                     cube: A :class:`iris.cube.Cube` with the coord_system to
@@ -136,8 +131,8 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
                         the coord_system of the shapefile. Defaults to None,
                         which is treated as GeogCS
 
-    Returns:
-    -----------
+    Returns
+    -------
         A transformed copy of the provided :class:`shapely.Geometry`
     """
     y_name, x_name = _cube_primary_xy_coord_names(cube)
@@ -167,7 +162,7 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
 
 
 def _trans_func(geometry):
-    """pocket function for transforming the x coord of a geometry from -180 to 180 to 0-360"""
+    """Pocket function for transforming the x coord of a geometry from -180 to 180 to 0-360."""
     for point in geometry:
         if point[0] < 0:
             point[0] = 360 - np.abs(point[0])
@@ -175,13 +170,13 @@ def _trans_func(geometry):
 
 
 def _cube_primary_xy_coord_names(cube):
-    """Return the primary latitude and longitude coordinate standard names, or
-    long names, from a cube.
+    """Return the primary latitude and longitude coordinate names, or long names, from a cube.
 
     Arguments:
         cube (:class:`iris.cube.Cube`): An Iris cube
 
-    Returns:
+    Returns
+    -------
         The names of the primary latitude and longitude coordinates
     """
     latc = (
@@ -205,14 +200,16 @@ def _cube_primary_xy_coord_names(cube):
 
 
 def _get_mod_rebased_coord_bounds(coord):
-    """Takes in a coord and returns a array of
-    the bounds of that coord rebased to the modulus
+    """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
+
     Arguments:
         coord (:class:`iris.coords.Coord`): An Iris coordinate
         with a modulus
 
-    Returns:
-        A 1d Numpy array of [start,end] pairs for bounds of the coord"""
+    Returns
+    -------
+    A 1d Numpy array of [start,end] pairs for bounds of the coord
+    """
     modulus = coord.units.modulus
     # Force realisation (rather than core_bounds) - more efficient for the
     #  repeated indexing happening downstream.

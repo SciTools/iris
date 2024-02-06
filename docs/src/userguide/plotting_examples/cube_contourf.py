@@ -1,3 +1,8 @@
+"""Simple filled contour plot of a cube.
+
+Can use iris.plot.contour() or iris.quickplot.contour().
+
+"""
 import matplotlib.pyplot as plt
 
 import iris
