@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Wrapper for animating iris cubes using iris or matplotlib plotting functions
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Wrapper for animating iris cubes using iris or matplotlib plotting functions.
 
 Notes
 -----
@@ -18,8 +16,7 @@ release.
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):
-    """
-    Animates the given cube iterator.
+    """Animates the given cube iterator.
 
     Warnings
     --------

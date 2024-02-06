@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridAuxiliaryCoordinateVariable` class.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridAuxiliaryCoordinateVariable` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
@@ -50,9 +48,7 @@ class TestIdentify(tests.IrisTest):
         }
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {
-            subject_name: CFUGridAuxiliaryCoordinateVariable(
-                subject_name, ref_subject
-            )
+            subject_name: CFUGridAuxiliaryCoordinateVariable(subject_name, ref_subject)
         }
 
         for identity in self.cf_identities:
@@ -66,8 +62,7 @@ class TestIdentify(tests.IrisTest):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source_vars = {
-            name: named_variable(name)
-            for name in ("ref_source_1", "ref_source_2")
+            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
             setattr(var, self.cf_identities[0], subject_name)
@@ -81,22 +76,17 @@ class TestIdentify(tests.IrisTest):
 
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {
-            subject_name: CFUGridAuxiliaryCoordinateVariable(
-                subject_name, ref_subject
-            )
+            subject_name: CFUGridAuxiliaryCoordinateVariable(subject_name, ref_subject)
         }
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
         self.assertDictEqual(expected, result)
 
     def test_two_coords(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name) for name in subject_names
-        }
+        ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source_vars = {
-            name: named_variable(name)
-            for name in ("ref_source_1", "ref_source_2")
+            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, self.cf_identities[ix], subject_names[ix])
@@ -116,9 +106,7 @@ class TestIdentify(tests.IrisTest):
 
     def test_two_part_ref(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name) for name in subject_names
-        }
+        ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source = named_variable("ref_source")
         setattr(ref_source, self.cf_identities[0], " ".join(subject_names))
@@ -150,13 +138,10 @@ class TestIdentify(tests.IrisTest):
 
     def test_ignore(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name) for name in subject_names
-        }
+        ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source_vars = {
-            name: named_variable(name)
-            for name in ("ref_source_1", "ref_source_2")
+            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, self.cf_identities[0], subject_names[ix])
@@ -180,9 +165,7 @@ class TestIdentify(tests.IrisTest):
 
     def test_target(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name) for name in subject_names
-        }
+        ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         source_names = ("ref_source_1", "ref_source_2")
         ref_source_vars = {name: named_variable(name) for name in source_names}
@@ -220,16 +203,14 @@ class TestIdentify(tests.IrisTest):
                 "emit at least 1 warning",
                 category=iris.exceptions.IrisUserWarning,
             )
-            result = CFUGridAuxiliaryCoordinateVariable.identify(
-                vars_all, warn=warn
-            )
+            result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all, warn=warn)
             self.assertDictEqual({}, result)
 
         # Missing warning.
-        warn_regex = rf"Missing CF-netCDF auxiliary coordinate variable {subject_name}.*"
-        with pytest.warns(
-            iris.exceptions.IrisCfMissingVarWarning, match=warn_regex
-        ):
+        warn_regex = (
+            rf"Missing CF-netCDF auxiliary coordinate variable {subject_name}.*"
+        )
+        with pytest.warns(iris.exceptions.IrisCfMissingVarWarning, match=warn_regex):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)
@@ -238,12 +219,8 @@ class TestIdentify(tests.IrisTest):
 
         # String variable warning.
         warn_regex = r".*is a CF-netCDF label variable.*"
-        vars_all[subject_name] = netcdf_ugrid_variable(
-            subject_name, "", np.bytes_
-        )
-        with pytest.warns(
-            iris.exceptions.IrisCfLabelVarWarning, match=warn_regex
-        ):
+        vars_all[subject_name] = netcdf_ugrid_variable(subject_name, "", np.bytes_)
+        with pytest.warns(iris.exceptions.IrisCfLabelVarWarning, match=warn_regex):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)

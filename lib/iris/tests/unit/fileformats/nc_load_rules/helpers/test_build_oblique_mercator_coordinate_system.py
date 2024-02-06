@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.build_oblique_mercator_coordinate_system`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_oblique_mercator_coordinate_system`."""
 from typing import List, NamedTuple, Type
 from unittest import mock
 
@@ -14,12 +10,7 @@ import pytest
 
 from iris import coord_systems
 from iris._deprecation import IrisDeprecation
-from iris.coord_systems import (
-    CoordSystem,
-    GeogCS,
-    ObliqueMercator,
-    RotatedMercator,
-)
+from iris.coord_systems import CoordSystem, GeogCS, ObliqueMercator, RotatedMercator
 from iris.fileformats._nc_load_rules.helpers import (
     build_oblique_mercator_coordinate_system,
 )
@@ -140,16 +131,12 @@ class TestAttributes:
         ellipsoid=None,
     )
 
-    @pytest.fixture(
-        autouse=True, params=kwarg_permutations, ids=permutation_ids
-    )
+    @pytest.fixture(autouse=True, params=kwarg_permutations, ids=permutation_ids)
     def make_variant_inputs(self, request) -> None:
         """Parse a ParamTuple into usable test information."""
         inputs: ParamTuple = request.param
 
-        self.nc_attributes = dict(
-            self.nc_attributes_default, **inputs.nc_attributes
-        )
+        self.nc_attributes = dict(self.nc_attributes_default, **inputs.nc_attributes)
         self.expected_class = inputs.expected_class
         coord_system_kwargs_expected = dict(
             self.coord_system_kwargs_default, **inputs.coord_system_kwargs
@@ -158,9 +145,7 @@ class TestAttributes:
         if self.expected_class is RotatedMercator:
             del coord_system_kwargs_expected["azimuth_of_central_line"]
 
-        self.coord_system_args_expected = list(
-            coord_system_kwargs_expected.values()
-        )
+        self.coord_system_args_expected = list(coord_system_kwargs_expected.values())
 
     def test_attributes(self):
         cf_var_mock = mock.Mock(spec=[], **self.nc_attributes)

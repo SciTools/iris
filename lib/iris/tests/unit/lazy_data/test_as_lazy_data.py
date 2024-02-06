@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test the function :func:`iris._lazy data.as_lazy_data`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -42,6 +41,25 @@ class Test_as_lazy_data(tests.IrisTest):
         (result,) = np.unique(lazy_data.chunks)
         self.assertEqual(result, 24)
 
+    def test_dask_chunking(self):
+        data = np.arange(24)
+        chunks = (12,)
+        optimum = self.patch("iris._lazy_data._optimum_chunksize")
+        optimum.return_value = chunks
+        _ = as_lazy_data(data, chunks=None, dask_chunking=True)
+        self.assertFalse(optimum.called)
+
+    def test_dask_chunking_error(self):
+        data = np.arange(24)
+        chunks = (12,)
+        optimum = self.patch("iris._lazy_data._optimum_chunksize")
+        optimum.return_value = chunks
+        with self.assertRaisesRegex(
+            ValueError,
+            r"Dask chunking chosen, but chunks already assigned value",
+        ):
+            as_lazy_data(data, chunks=chunks, dask_chunking=True)
+
     def test_with_masked_constant(self):
         masked_data = ma.masked_array([8], mask=True)
         masked_constant = masked_data[0]
@@ -69,9 +87,7 @@ class Test__optimised_chunks(tests.IrisTest):
         ]
         err_fmt = "Result of optimising chunks {} was {}, expected {}"
         for shape, expected in given_shapes_and_resulting_chunks:
-            chunks = _optimum_chunksize(
-                shape, shape, limit=self.FIXED_CHUNKSIZE_LIMIT
-            )
+            chunks = _optimum_chunksize(shape, shape, limit=self.FIXED_CHUNKSIZE_LIMIT)
             msg = err_fmt.format(shape, chunks, expected)
             self.assertEqual(chunks, expected, msg)
 
@@ -128,17 +144,13 @@ class Test__optimised_chunks(tests.IrisTest):
             result = _optimum_chunksize(
                 chunks=chunks, shape=shape, limit=limit, dtype=np.dtype("b1")
             )
-            msg = err_fmt_main.format(
-                chunks, shape, limit, result, expected_result
-            )
+            msg = err_fmt_main.format(chunks, shape, limit, result, expected_result)
             self.assertEqual(result, expected_result, msg)
 
     def test_default_chunksize(self):
         # Check that the "ideal" chunksize is taken from the dask config.
         with dask.config.set({"array.chunk-size": "20b"}):
-            chunks = _optimum_chunksize(
-                (1, 8), shape=(400, 20), dtype=np.dtype("f4")
-            )
+            chunks = _optimum_chunksize((1, 8), shape=(400, 20), dtype=np.dtype("f4"))
             self.assertEqual(chunks, (1, 4))
 
     def test_default_chunks_limiting(self):
@@ -152,7 +164,10 @@ class Test__optimised_chunks(tests.IrisTest):
             limitcall_patch.call_args_list,
             [
                 mock.call(
-                    list(test_shape), shape=test_shape, dtype=np.dtype("f4")
+                    list(test_shape),
+                    shape=test_shape,
+                    dtype=np.dtype("f4"),
+                    dims_fixed=None,
                 )
             ],
         )

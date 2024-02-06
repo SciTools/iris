@@ -101,7 +101,7 @@ run::
 See :data:`iris.cube.Cube.data` for an example of using the `doctest`_
 approach.
 
-.. _doctest: http://www.sphinx-doc.org/en/stable/ext/doctest.html
+.. _doctest: https://www.sphinx-doc.org/en/stable/ext/doctest.html
 
 The hyperlinks in the documentation can be checked automatically.
 If there is a link that is known to work it can be excluded from the checks by

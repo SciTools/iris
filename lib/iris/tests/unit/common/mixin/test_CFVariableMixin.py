@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.common.mixin.CFVariableMixin`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.common.mixin.CFVariableMixin`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -85,9 +81,7 @@ class Test__setter(tests.IrisTest):
     def test_standard_name__valid(self):
         standard_name = "air_temperature"
         self.item.standard_name = standard_name
-        self.assertEqual(
-            self.item._metadata_manager.standard_name, standard_name
-        )
+        self.assertEqual(self.item._metadata_manager.standard_name, standard_name)
 
     def test_standard_name__none(self):
         self.item.standard_name = None
@@ -177,9 +171,7 @@ class Test__metadata_setter(tests.IrisTest):
         metadata = dict(**self.args)
         self.item.metadata = metadata
         self.assertEqual(self.item._metadata_manager.values, metadata)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, self.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, self.attributes)
 
     def test_dict__partial(self):
         metadata = dict(**self.args)
@@ -187,17 +179,13 @@ class Test__metadata_setter(tests.IrisTest):
         self.item.metadata = metadata
         metadata["standard_name"] = mock.sentinel.standard_name
         self.assertEqual(self.item._metadata_manager.values, metadata)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, self.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, self.attributes)
 
     def test_ordereddict(self):
         metadata = self.args
         self.item.metadata = metadata
         self.assertEqual(self.item._metadata_manager.values, metadata)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, self.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, self.attributes)
 
     def test_ordereddict__partial(self):
         metadata = self.args
@@ -218,9 +206,7 @@ class Test__metadata_setter(tests.IrisTest):
             ]
         )
         self.assertEqual(result, metadata)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, self.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, self.attributes)
 
     def test_tuple__missing(self):
         metadata = list(self.args.values())
@@ -236,12 +222,8 @@ class Test__metadata_setter(tests.IrisTest):
         )
         metadata = Metadata(**self.args)
         self.item.metadata = metadata
-        self.assertEqual(
-            self.item._metadata_manager.values, metadata._asdict()
-        )
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, metadata.attributes
-        )
+        self.assertEqual(self.item._metadata_manager.values, metadata._asdict())
+        self.assertIsNot(self.item._metadata_manager.attributes, metadata.attributes)
 
     def test_namedtuple__partial(self):
         Metadata = namedtuple(
@@ -257,22 +239,14 @@ class Test__metadata_setter(tests.IrisTest):
     def test_class_ancillaryvariablemetadata(self):
         metadata = AncillaryVariableMetadata(**self.args)
         self.item.metadata = metadata
-        self.assertEqual(
-            self.item._metadata_manager.values, metadata._asdict()
-        )
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, metadata.attributes
-        )
+        self.assertEqual(self.item._metadata_manager.values, metadata._asdict())
+        self.assertIsNot(self.item._metadata_manager.attributes, metadata.attributes)
 
     def test_class_basemetadata(self):
         metadata = BaseMetadata(**self.args)
         self.item.metadata = metadata
-        self.assertEqual(
-            self.item._metadata_manager.values, metadata._asdict()
-        )
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, metadata.attributes
-        )
+        self.assertEqual(self.item._metadata_manager.values, metadata._asdict())
+        self.assertIsNot(self.item._metadata_manager.attributes, metadata.attributes)
 
     def test_class_cellmeasuremetadata(self):
         self.args["measure"] = None
@@ -281,14 +255,10 @@ class Test__metadata_setter(tests.IrisTest):
         expected = metadata._asdict()
         del expected["measure"]
         self.assertEqual(self.item._metadata_manager.values, expected)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, metadata.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, metadata.attributes)
 
     def test_class_connectivitymetadata(self):
-        self.args.update(
-            dict(cf_role=None, start_index=None, location_axis=None)
-        )
+        self.args.update(dict(cf_role=None, start_index=None, location_axis=None))
         metadata = ConnectivityMetadata(**self.args)
         self.item.metadata = metadata
         expected = metadata._asdict()
@@ -296,9 +266,7 @@ class Test__metadata_setter(tests.IrisTest):
         del expected["start_index"]
         del expected["location_axis"]
         self.assertEqual(self.item._metadata_manager.values, expected)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, metadata.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, metadata.attributes)
 
     def test_class_coordmetadata(self):
         self.args.update(dict(coord_system=None, climatological=False))
@@ -308,9 +276,7 @@ class Test__metadata_setter(tests.IrisTest):
         del expected["coord_system"]
         del expected["climatological"]
         self.assertEqual(self.item._metadata_manager.values, expected)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, metadata.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, metadata.attributes)
 
     def test_class_cubemetadata(self):
         self.args["cell_methods"] = None
@@ -319,9 +285,7 @@ class Test__metadata_setter(tests.IrisTest):
         expected = metadata._asdict()
         del expected["cell_methods"]
         self.assertEqual(self.item._metadata_manager.values, expected)
-        self.assertIsNot(
-            self.item._metadata_manager.attributes, metadata.attributes
-        )
+        self.assertIsNot(self.item._metadata_manager.attributes, metadata.attributes)
 
 
 class Test_rename(tests.IrisTest):

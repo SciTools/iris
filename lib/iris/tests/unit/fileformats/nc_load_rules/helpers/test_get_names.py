@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 get_names`.
 
 """
@@ -21,13 +19,12 @@ from iris.fileformats._nc_load_rules.helpers import get_names
 
 
 class TestGetNames(tests.IrisTest):
-    """
-    The tests included in this class cover all the variations of possible
+    """The tests included in this class cover all the variations of possible
     combinations of the following inputs:
     * standard_name = [None, 'projection_y_coordinate', 'latitude_coordinate']
     * long_name = [None, 'lat_long_name']
     * var_name = ['grid_latitude', 'lat_var_name']
-    * coord_name = [None, 'latitude']
+    * coord_name = [None, 'latitude'].
 
     standard_name, var_name and coord_name each contain a different valid CF
     standard name so that it is clear which is being used to set the resulting

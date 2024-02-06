@@ -1,11 +1,10 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda`
-subclass that manages the Conda environment via custom user scripts.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda` subclass.
+
+Manages the Conda environment via custom user scripts.
 
 """
 
@@ -23,8 +22,7 @@ from asv.repo import Repo
 
 
 class CondaDelegated(Conda):
-    """
-    Manage a Conda environment using custom user scripts, run at each commit.
+    """Manage a Conda environment using custom user scripts, run at each commit.
 
     Ignores user input variations - ``matrix`` / ``pythons`` /
     ``conda_environment_file``, since environment is being managed outside ASV.
@@ -45,7 +43,8 @@ class CondaDelegated(Conda):
         requirements: dict,
         tagged_env_vars: dict,
     ) -> None:
-        """
+        """__init__.
+
         Parameters
         ----------
         conf : Config instance
@@ -84,14 +83,10 @@ class CondaDelegated(Conda):
         super().__init__(conf, python, requirements, tagged_env_vars)
         self._update_info()
 
-        self._env_commands = self._interpolate_commands(
-            conf.delegated_env_commands
-        )
+        self._env_commands = self._interpolate_commands(conf.delegated_env_commands)
         # Again using _interpolate_commands to get env parent path - allows use
         #  of the same ASV env variables.
-        env_parent_interpolated = self._interpolate_commands(
-            conf.delegated_env_parent
-        )
+        env_parent_interpolated = self._interpolate_commands(conf.delegated_env_parent)
         # Returns list of tuples, we just want the first.
         env_parent_first = env_parent_interpolated[0]
         # The 'command' is the first item in the returned tuple.
@@ -153,9 +148,7 @@ class CondaDelegated(Conda):
             # Adapt the build_dir to the cache location.
             build_root_path = Path(self._build_root)
             build_dir_original = build_root_path / self._repo_subdir
-            build_dir_subpath = build_dir_original.relative_to(
-                build_root_path.parent
-            )
+            build_dir_subpath = build_dir_original.relative_to(build_root_path.parent)
             build_dir = asv_cache_path / build_dir_subpath
 
             # Run the script(s) for delegated environment creation/updating.
@@ -185,9 +178,7 @@ class CondaDelegated(Conda):
                     env_path.unlink(missing_ok=True)
                 except IsADirectoryError:
                     rmtree(env_path)
-                env_path.symlink_to(
-                    delegated_env_path, target_is_directory=True
-                )
+                env_path.symlink_to(delegated_env_path, target_is_directory=True)
 
             # Check that environment exists.
             try:
@@ -207,6 +198,4 @@ class CondaDelegated(Conda):
         """Check out the working tree of the project at given commit hash."""
         super().checkout_project(repo, commit_hash)
         self._prep_env()
-        log.info(
-            f"Environment {self.name} updated to spec at {commit_hash[:8]}"
-        )
+        log.info(f"Environment {self.name} updated to spec at {commit_hash[:8]}")

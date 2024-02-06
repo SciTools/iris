@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris._constraints.NameConstraint` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -110,9 +109,7 @@ class Test__cube_func(tests.IrisTest):
         constraint = NameConstraint(long_name=None)
         self.assertFalse(constraint._cube_func(self.cube))
         # No match.
-        constraint = NameConstraint(
-            standard_name=None, long_name=self.long_name
-        )
+        constraint = NameConstraint(standard_name=None, long_name=self.long_name)
         self.assertFalse(constraint._cube_func(self.cube))
 
     def test_var_name(self):

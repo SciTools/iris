@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test set up of limited area map extents which bridge the date line.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test set up of limited area map extents which bridge the date line."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -32,8 +28,7 @@ class TestExtent(tests.IrisTest):
         # This is set in longitudes with the datum set to the
         # International Date Line.
         self.assertTrue(
-            -10 < plt.gca().get_xlim()[0] < -5
-            and 5 < plt.gca().get_xlim()[1] < 10
+            -10 < plt.gca().get_xlim()[0] < -5 and 5 < plt.gca().get_xlim()[1] < 10
         )
 
 

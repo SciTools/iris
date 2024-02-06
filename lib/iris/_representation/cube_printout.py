@@ -1,19 +1,16 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides text printouts of Iris cubes.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides text printouts of Iris cubes."""
 from copy import deepcopy
 
 from iris._representation.cube_summary import CubeSummary
 
 
 class Table:
-    """
+    """A container of text strings in rows and columns.
+
     A container of text strings in rows + columns, that can format its content
     into a string per row, with contents in columns of fixed width.
 
@@ -53,25 +50,22 @@ class Table:
             # - a crude alternative to proper column spanning
 
     def add_row(self, cols, aligns, i_col_unlimited=None):
-        """
-        Create a new row at the bottom.
+        """Create a new row at the bottom.
 
-        Args:
-        * cols (list of string):
+        Parameters
+        ----------
+        cols : list of str
             Per-column content.  Length must match the other rows (if any).
-        * aligns (list of {'left', 'right'}):
+        aligns : list of {'left', 'right'}
             Per-column alignments.  Length must match 'cols'.
-        * i_col_unlimited (int or None):
+        i_col_unlimited : int, optional
             Column beyond which content does not affect the column widths.
             ( meaning contents will print without limit ).
 
         """
         n_cols = len(cols)
         if len(aligns) != n_cols:
-            msg = (
-                f"Number of aligns ({len(aligns)})"
-                f" != number of cols ({n_cols})"
-            )
+            msg = f"Number of aligns ({len(aligns)})" f" != number of cols ({n_cols})"
             raise ValueError(msg)
         if self.n_columns is not None:
             # For now, all rows must have same number of columns
@@ -105,18 +99,13 @@ class Table:
         result_lines = []
         for row in self.rows:
             col_texts = []
-            for col, align, width in zip(
-                row.cols, row.aligns, self.col_widths
-            ):
+            for col, align, width in zip(row.cols, row.aligns, self.col_widths):
                 if align == "left":
                     col_text = col.ljust(width)
                 elif align == "right":
                     col_text = col.rjust(width)
                 else:
-                    msg = (
-                        f'Unknown alignment "{align}" '
-                        'not in ("left", "right")'
-                    )
+                    msg = f'Unknown alignment "{align}" ' 'not in ("left", "right")'
                     raise ValueError(msg)
                 col_texts.append(col_text)
 
@@ -129,7 +118,8 @@ class Table:
 
 
 class CubePrinter:
-    """
+    """An object created from a cube summary.
+
     An object created from a
     :class:`iris._representation.CubeSummary`, which provides
     text printout of a :class:`iris.cube.Cube`.
@@ -144,15 +134,15 @@ class CubePrinter:
     N_INDENT_EXTRA = 4
 
     def __init__(self, cube_or_summary):
-        """
-        An object that provides a printout of a cube.
+        """Object that provides a printout of a cube.
 
-        Args:
-
-        * cube_or_summary (Cube or CubeSummary):
+        Parameters
+        ----------
+        cube_or_summary : Cube or CubeSummary
             If a cube, first create a CubeSummary from it.
 
-
+        Notes
+        -----
         .. note::
             The CubePrinter is based on a digest of a CubeSummary, but does
             not reference or store it.
@@ -275,13 +265,11 @@ class CubePrinter:
 
     @staticmethod
     def _decorated_table(table, name_padding=None):
-        """
-        Return a modified table with added characters in the header.
+        """Return a modified table with added characters in the header.
 
         Note: 'name_padding' sets a minimum width for the name column (#0).
 
         """
-
         # Copy the input table + extract the header + its columns.
         table = table.copy()
         header = table.rows[0]
@@ -333,18 +321,19 @@ class CubePrinter:
         return result
 
     def to_string(self, oneline=False, name_padding=35):
-        """
-        Produce a printable summary.
+        """Produce a printable summary.
 
-        Args:
-        * oneline (bool):
+        Parameters
+        ----------
+        oneline : bool, default=False
             If set, produce a one-line summary.
             Default is False = produce full (multiline) summary.
-        * name_padding (int):
+        name_padding : int, default=35
             The minimum width for the "name" (#0) column.
 
-        Returns:
-            result (string)
+        Returns
+        -------
+        str
 
         """
         if oneline:

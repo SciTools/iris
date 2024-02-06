@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -11,9 +10,8 @@ from iris.std_names import CF_STANDARD_NAMES_TABLE_VERSION, STD_NAMES
 
 
 class TestStandardNames(tests.IrisTest):
-    """
-    standard_names.py is a machine generated file which contains a single dictionary
-    called STD_NAMES
+    """standard_names.py is a machine generated file which contains a single dictionary
+    called STD_NAMES.
     """
 
     longMessage = True

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis._axis_to_single_trailing` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -25,8 +24,7 @@ class TestInputReshape(tests.IrisTest):
         self.stat_func = mock.Mock()
 
     def check_input(self, data, axis, expected):
-        """
-        Given data and axis passed to the wrapped function, check that expected
+        """Given data and axis passed to the wrapped function, check that expected
         array is passed to the inner function.
 
         """

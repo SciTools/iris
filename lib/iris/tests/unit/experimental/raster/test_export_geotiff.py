@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.experimental.raster.export_geotiff` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -177,9 +176,7 @@ class TestGeoTransform(tests.IrisTest):
         with self.temp_filename(".tif") as temp_filename:
             export_geotiff(cube, temp_filename)
             dataset = gdal.Open(temp_filename, gdal.GA_ReadOnly)
-            self.assertEqual(
-                dataset.GetGeoTransform(), (-12.5, 5, 0, 55, 0, -10)
-            )
+            self.assertEqual(dataset.GetGeoTransform(), (-12.5, 5, 0, 55, 0, -10))
 
 
 if __name__ == "__main__":

@@ -1,11 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-# !/usr/bin/env python
-"""
-Contains Iris graphic testing utilities
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Contains Iris graphic testing utilities.
 
 By default, this module sets the matplotlib backend to "agg". But when
 this module is imported it checks ``sys.argv`` for the flag "-d". If
@@ -29,15 +26,15 @@ import filelock
 # Test for availability of matplotlib.
 # (And remove matplotlib as an iris.tests dependency.)
 try:
-    import matplotlib
+    import matplotlib as mpl
 
     # Override any user settings e.g. from matplotlibrc file.
-    matplotlib.rcdefaults()
+    mpl.rcdefaults()
     # Set backend *after* rcdefaults, as we don't want that overridden (#3846).
-    matplotlib.use("agg")
+    mpl.use("agg")
     # Standardise the figure size across matplotlib versions.
     # This permits matplotlib png image comparison.
-    matplotlib.rcParams["figure.figsize"] = [8.0, 6.0]
+    mpl.rcParams["figure.figsize"] = [8.0, 6.0]
     import matplotlib.pyplot as plt
 except ImportError:
     MPL_AVAILABLE = False
@@ -85,9 +82,7 @@ __all__ = [
 
 
 def _output_dir() -> Path:
-    test_output_dir = Path(__file__).parents[1] / Path(
-        "result_image_comparison"
-    )
+    test_output_dir = Path(__file__).parents[1] / Path("result_image_comparison")
 
     if not os.access(test_output_dir, os.W_OK):
         if not os.access(Path("."), os.W_OK):
@@ -132,8 +127,8 @@ def repos_equal(repo1: Dict[str, str], repo2: Dict[str, str]) -> bool:
 
 
 def get_phash(input: Path) -> str:
-    from PIL import Image
     import imagehash
+    from PIL import Image
 
     return imagehash.phash(Image.open(input), hash_size=HASH_SIZE)
 
@@ -156,8 +151,7 @@ def fully_qualify(test_id: str, repo: str) -> Dict[str, str]:
 
 
 def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
-    """
-    Check the hash of the current matplotlib figure matches the expected
+    """Check the hash of the current matplotlib figure matches the expected
     image hash for the current graphic test.
 
     To create missing image test results, set the IRIS_TEST_CREATE_MISSING
@@ -223,9 +217,7 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
                     _create_missing(phash)
                 else:
                     figure.savefig(result_path)
-                    msg = (
-                        "Bad phash {} with hamming distance {} " "for test {}."
-                    )
+                    msg = "Bad phash {} with hamming distance {} for test {}."
                     msg = msg.format(phash, distance, test_id)
                     if _DISPLAY_FIGURES:
                         emsg = "Image comparison would have failed: {}"
@@ -268,8 +260,7 @@ class GraphicsTestMixin:
 
 
 def skip_plot(fn: Callable) -> Callable:
-    """
-    Decorator to choose whether to run tests, based on the availability of the
+    """Decorator to choose whether to run tests, based on the availability of the
     matplotlib library.
 
     Example usage:

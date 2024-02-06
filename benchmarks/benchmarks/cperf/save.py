@@ -1,26 +1,20 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-File saving benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""File saving benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project."""
 
 from iris import save
 
-from . import _N_CUBESPHERE_UM_EQUIVALENT, _UM_DIMS_YX
 from .. import TrackAddedMemoryAllocation, on_demand_benchmark
-from ..generate_data.ugrid import (
-    make_cube_like_2d_cubesphere,
-    make_cube_like_umfield,
-)
+from ..generate_data.ugrid import make_cube_like_2d_cubesphere, make_cube_like_umfield
+from . import _N_CUBESPHERE_UM_EQUIVALENT, _UM_DIMS_YX
 
 
 @on_demand_benchmark
 class NetcdfSave:
-    """
-    Benchmark time and memory costs of saving ~large-ish data cubes to netcdf.
+    """Benchmark time and memory costs of saving ~large-ish data cubes to netcdf.
+
     Parametrised by file type.
 
     """

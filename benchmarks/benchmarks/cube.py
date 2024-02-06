@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Cube benchmark tests.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Cube benchmark tests."""
 
 import numpy as np
 
@@ -32,8 +28,8 @@ class ComponentCommon:
     #       * make class an ABC
     #       * remove NotImplementedError
     #       * combine setup_common into setup
+    """Run a generalised suite of benchmarks for cubes.
 
-    """
     A base class running a generalised suite of benchmarks for cubes that
     include a specified component (e.g. Coord, CellMeasure etc.). Component to
     be specified in a subclass.
@@ -45,12 +41,15 @@ class ComponentCommon:
     """
 
     def setup(self):
-        """Prevent ASV instantiating (must therefore override setup() in any subclasses.)"""
+        """Prevent ASV instantiating (must therefore override setup() in any subclasses.)."""
         raise NotImplementedError
 
     def create(self):
-        """Generic cube creation. cube_kwargs allow dynamic inclusion of
-        different components; specified in subclasses."""
+        """Create a cube (generic).
+
+        cube_kwargs allow dynamic inclusion of different components;
+        specified in subclasses.
+        """
         return cube.Cube(data=data_2d, **self.cube_kwargs)
 
     def setup_common(self):
@@ -118,10 +117,7 @@ class AuxFactory(ComponentCommon):
 
         # Variables needed by the overridden time_add benchmark in this subclass.
         cube_w_coord = self.cube.copy()
-        [
-            cube_w_coord.remove_aux_factory(i)
-            for i in cube_w_coord.aux_factories
-        ]
+        [cube_w_coord.remove_aux_factory(i) for i in cube_w_coord.aux_factories]
         self.cube_w_coord = cube_w_coord
 
     def time_add(self):
@@ -159,9 +155,7 @@ class AncillaryVariable(ComponentCommon):
         ancillary_variable = coords.AncillaryVariable(data_1d)
 
         # Variables needed by the ComponentCommon base class.
-        self.cube_kwargs = {
-            "ancillary_variables_and_dims": [(ancillary_variable, 0)]
-        }
+        self.cube_kwargs = {"ancillary_variables_and_dims": [(ancillary_variable, 0)]}
         self.add_method = cube.Cube.add_ancillary_variable
         self.add_args = (ancillary_variable, 0)
 
@@ -177,9 +171,7 @@ class MeshCoord:
     param_names = ["number of faces"]
 
     def setup(self, n_faces):
-        mesh_kwargs = dict(
-            n_nodes=n_faces + 2, n_edges=n_faces * 2, n_faces=n_faces
-        )
+        mesh_kwargs = dict(n_nodes=n_faces + 2, n_edges=n_faces * 2, n_faces=n_faces)
 
         self.mesh_coord = sample_meshcoord(sample_mesh_kwargs=mesh_kwargs)
         self.data = np.zeros(n_faces)
@@ -187,9 +179,7 @@ class MeshCoord:
         self.cube = self.create()
 
     def create(self):
-        return cube.Cube(
-            data=self.data, aux_coords_and_dims=[(self.mesh_coord, 0)]
-        )
+        return cube.Cube(data=self.data, aux_coords_and_dims=[(self.mesh_coord, 0)])
 
     def time_create(self, n_faces):
         _ = self.create()

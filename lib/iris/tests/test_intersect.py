@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the intersection of Coords
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the intersection of Coords."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -55,9 +51,7 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
             0,
         )
         cube.add_aux_coord(
-            iris.coords.DimCoord(
-                points=np.int32(11), long_name="pressure", units="Pa"
-            )
+            iris.coords.DimCoord(points=np.int32(11), long_name="pressure", units="Pa")
         )
         cube.rename("temperature")
         cube.units = "K"
@@ -95,9 +89,7 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
             0,
         )
         cube2.add_aux_coord(
-            iris.coords.DimCoord(
-                points=np.int32(11), long_name="pressure", units="Pa"
-            )
+            iris.coords.DimCoord(points=np.int32(11), long_name="pressure", units="Pa")
         )
         cube2.rename("")
 

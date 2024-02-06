@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides access to Iris-specific configuration values.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides access to Iris-specific configuration values.
 
 The default configuration values can be overridden by creating the file
 ``iris/etc/site.cfg``. If it exists, this file must conform to the format
@@ -23,11 +21,8 @@ defined by :mod:`configparser`.
 
     The full path to the Iris palette configuration directory
 
-.. py:data:: iris.config.IMPORT_LOGGER
-
-    The [optional] name of the logger to notify when first imported.
-
 ----------
+
 """
 
 import configparser
@@ -39,45 +34,38 @@ import warnings
 import iris.exceptions
 
 
-def get_logger(
-    name, datefmt=None, fmt=None, level=None, propagate=None, handler=True
-):
-    """
+def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler=True):
+    """Create a custom class for logging.
+
     Create a :class:`logging.Logger` with a :class:`logging.StreamHandler`
     and custom :class:`logging.Formatter`.
 
-    Args:
-
-    * name:
+    Parameters
+    ----------
+    name :
         The name of the logger. Typically this is the module filename that
         owns the logger.
-
-    Kwargs:
-
-    * datefmt:
+    datefmt : optional
         The date format string of the :class:`logging.Formatter`.
         Defaults to ``%d-%m-%Y %H:%M:%S``.
-
-    * fmt:
+    fmt : optional
         The additional format string of the :class:`logging.Formatter`.
         This is appended to the default format string
         ``%(asctime)s %(name)s %(levelname)s - %(message)s``.
-
-    * level:
+    level : optional
         The threshold level of the logger. Defaults to ``INFO``.
-
-    * propagate:
+    propagate : optional
         Sets the ``propagate`` attribute of the :class:`logging.Logger`,
         which determines whether events logged to this logger will be
         passed to the handlers of higher level loggers. Defaults to
         ``False``.
-
-    * handler:
+    handler : bool, default=True
         Create and attach a :class:`logging.StreamHandler` to the
         logger. Defaults to ``True``.
 
-    Returns:
-        A :class:`logging.Logger`.
+    Returns
+    -------
+    :class:`logging.Logger`.
 
     """
     if level is None:
@@ -118,7 +106,8 @@ def get_logger(
 
 # Returns simple string options
 def get_option(section, option, default=None):
-    """
+    """Return the option value for the given section.
+
     Returns the option value for the given section, or the default value
     if the section/option is not present.
 
@@ -131,7 +120,8 @@ def get_option(section, option, default=None):
 
 # Returns directory path options
 def get_dir_option(section, option, default=None):
-    """
+    """Return the directory path from the given option and section.
+
     Returns the directory path from the given option and section, or
     returns the given default value if the section/option is not present
     or does not represent a valid directory.
@@ -194,23 +184,21 @@ class NetCDF:
     """Control Iris NetCDF options."""
 
     def __init__(self, conventions_override=None):
-        """
-        Set up NetCDF processing options for Iris.
+        """Set up NetCDF processing options for Iris.
 
-        Currently accepted kwargs:
-
-        * conventions_override (bool):
+        Parameters
+        ----------
+        conventions_override : bool, optional
             Define whether the CF Conventions version (e.g. `CF-1.6`) set when
             saving a cube to a NetCDF file should be defined by
-            Iris (the default) or the cube being saved.
-
-            If `False` (the default), specifies that Iris should set the
+            Iris (the default) or the cube being saved.  If `False`
+            (the default), specifies that Iris should set the
             CF Conventions version when saving cubes as NetCDF files.
             If `True`, specifies that the cubes being saved to NetCDF should
             set the CF Conventions version for the saved NetCDF files.
 
-        Example usages:
-
+        Examples
+        --------
         * Specify, for the lifetime of the session, that we want all cubes
           written to NetCDF to define their own CF Conventions versions::
 
@@ -275,8 +263,8 @@ class NetCDF:
 
     @contextlib.contextmanager
     def context(self, **kwargs):
-        """
-        Allow temporary modification of the options via a context manager.
+        """Allow temporary modification of the options via a context manager.
+
         Accepted kwargs are the same as can be supplied to the Option.
 
         """

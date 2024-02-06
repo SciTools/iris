@@ -1,3 +1,5 @@
+"""Interpolate using iris.analysis.Linear()."""
+
 import matplotlib.pyplot as plt
 
 import iris
@@ -12,7 +14,7 @@ global_psl = rotated_psl.regrid(global_air_temp, scheme)
 
 plt.figure(figsize=(4, 3))
 iplt.pcolormesh(global_psl)
-plt.title("Air pressure\n" "on a global longitude latitude grid")
+plt.title("Air pressure\non a global longitude latitude grid")
 ax = plt.gca()
 ax.coastlines()
 ax.gridlines()

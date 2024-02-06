@@ -32,6 +32,7 @@
 .. _pull requests: https://github.com/SciTools/iris/pulls
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/main/requirements/readthedocs.yml
+.. _ruff: https://github.com/astral-sh/ruff
 .. _SciTools: https://github.com/SciTools
 .. _scitools-iris: https://pypi.org/project/scitools-iris/
 .. _sphinx: https://www.sphinx-doc.org/en/master/

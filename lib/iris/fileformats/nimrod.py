@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Provides NIMROD file format capabilities."""
 
 import glob
@@ -166,21 +165,20 @@ def _read_chars(infile, num):
 
 
 class NimrodField:
-    """
-    A data field from a NIMROD file.
+    """A data field from a NIMROD file.
 
     Capable of converting itself into a :class:`~iris.cube.Cube`
 
-    References:
-        Met Office (2003): Met Office Rain Radar Data from the NIMROD System.
-        NCAS British Atmospheric Data Centre, date of citation.
-        http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
+    References
+    ----------
+    Met Office (2003): Met Office Rain Radar Data from the NIMROD System.
+    NCAS British Atmospheric Data Centre, date of citation.
+    https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
 
     """
 
     def __init__(self, from_file=None):
-        """
-        Create a NimrodField object and optionally read from an open file.
+        """Create a NimrodField object and optionally read from an open file.
 
         Example::
 
@@ -206,7 +204,6 @@ class NimrodField:
 
     def _read_header(self, infile):
         """Load the 512 byte header (surrounded by 4-byte length)."""
-
         leading_length = struct.unpack(">L", infile.read(4))[0]
         if leading_length != 512:
             raise TranslationError("Expected header leading_length of 512")
@@ -237,13 +234,13 @@ class NimrodField:
         trailing_length = struct.unpack(">L", infile.read(4))[0]
         if trailing_length != leading_length:
             raise TranslationError(
-                "Expected header trailing_length of {}, "
-                "got {}.".format(leading_length, trailing_length)
+                "Expected header trailing_length of {}, got {}.".format(
+                    leading_length, trailing_length
+                )
             )
 
     def _read_data(self, infile):
-        """
-        Read the data array: int8, int16, int32 or float32
+        """Read the data array: int8, int16, int32 or float32.
 
         (surrounded by 4-byte length, at start and end)
 
@@ -265,9 +262,7 @@ class NimrodField:
             elif self.datum_len == 4:
                 numpy_dtype = np.int32
             else:
-                raise TranslationError(
-                    "Undefined datum length " "%d" % self.datum_type
-                )
+                raise TranslationError("Undefined datum length %d" % self.datum_type)
         # 2:byte
         elif self.datum_type == 2:
             numpy_dtype = np.byte
@@ -295,18 +290,17 @@ class NimrodField:
 
 
 def load_cubes(filenames, callback=None):
-    """
-    Loads cubes from a list of NIMROD filenames.
+    """Load cubes from a list of NIMROD filenames.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        List of NIMROD filenames to load
+    callback : optional
+        A function which can be passed on to :func:`iris.io.run_callback`
 
-    * filenames - list of NIMROD filenames to load
-
-    Kwargs:
-
-    * callback - a function which can be passed on to
-                 :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the same order as in the files.
@@ -329,9 +323,7 @@ def load_cubes(filenames, callback=None):
 
                     # Were we given a callback?
                     if callback is not None:
-                        cube = iris.io.run_callback(
-                            callback, cube, field, filename
-                        )
+                        cube = iris.io.run_callback(callback, cube, field, filename)
                     if cube is None:
                         continue
 

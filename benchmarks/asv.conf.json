@@ -4,7 +4,7 @@
     "project_url": "https://github.com/SciTools/iris",
     "repo": "..",
     "environment_type": "conda-delegated",
-    "show_commit_url": "http://github.com/scitools/iris/commit/",
+    "show_commit_url": "https://github.com/scitools/iris/commit/",
     "branches": ["upstream/main"],
 
     "benchmark_dir": "./benchmarks",

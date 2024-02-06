@@ -12,14 +12,13 @@ less than 7 years.
 
 References
 ----------
-
     Duchon C. E. (1979) Lanczos Filtering in One and Two Dimensions.
     Journal of Applied Meteorology, Vol 18, pp 1016-1022.
 
     Trenberth K. E. (1984) Signal Versus Noise in the Southern Oscillation.
     Monthly Weather Review, Vol 112, pp 326-332
 
-"""
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,12 +30,11 @@ import iris.plot as iplt
 def low_pass_weights(window, cutoff):
     """Calculate weights for a low pass Lanczos filter.
 
-    Args:
-
-    window: int
+    Parameters
+    ----------
+    window : int
         The length of the filter window.
-
-    cutoff: float
+    cutoff : float
         The cutoff frequency in inverse time steps.
 
     """
@@ -69,12 +67,8 @@ def main():
     # Apply each filter using the rolling_window method used with the weights
     # keyword argument. A weighted sum is required because the magnitude of
     # the weights are just as important as their relative sizes.
-    soi24 = soi.rolling_window(
-        "time", iris.analysis.SUM, len(wgts24), weights=wgts24
-    )
-    soi84 = soi.rolling_window(
-        "time", iris.analysis.SUM, len(wgts84), weights=wgts84
-    )
+    soi24 = soi.rolling_window("time", iris.analysis.SUM, len(wgts24), weights=wgts24)
+    soi84 = soi.rolling_window("time", iris.analysis.SUM, len(wgts84), weights=wgts84)
 
     # Plot the SOI time series and both filtered versions.
     plt.figure(figsize=(9, 4))

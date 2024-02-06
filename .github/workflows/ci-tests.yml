@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: "checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "environment configure"
         env:
@@ -80,7 +80,7 @@ jobs:
           env_name: ${{ env.ENV_NAME }}
 
       - name: "conda install"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-version: latest
           channels: conda-forge,defaults
@@ -140,5 +140,5 @@ jobs:
           nox --session ${{ matrix.session }} -- --verbose ${{ matrix.coverage }}
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         if: ${{ matrix.coverage }}

@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`."""
 from pathlib import Path
 import shutil
 import tempfile
@@ -36,8 +32,7 @@ For this, we just use 'tests.stock.netcdf.ncgen_from_cdl'.
 
 
 class Mixin__nc_load_actions:
-    """
-    Class to make testcases for rules or actions code, and check results.
+    """Class to make testcases for rules or actions code, and check results.
 
     Defines standard setUpClass/tearDownClass methods, to create a temporary
     directory for intermediate files.
@@ -70,8 +65,7 @@ class Mixin__nc_load_actions:
         shutil.rmtree(cls.temp_dirpath)
 
     def load_cube_from_cdl(self, cdl_string, cdl_path, nc_path):
-        """
-        Load the 'phenom' data variable in a CDL testcase, as a cube.
+        """Load the 'phenom' data variable in a CDL testcase, as a cube.
 
         Using ncgen, CFReader and the _load_cube call.
 
@@ -121,8 +115,7 @@ class Mixin__nc_load_actions:
             return cube
 
     def run_testcase(self, warning_regex=None, **testcase_kwargs):
-        """
-        Run a testcase with chosen options, returning a test cube.
+        """Run a testcase with chosen options, returning a test cube.
 
         The kwargs apply to the '_make_testcase_cdl' method.
 

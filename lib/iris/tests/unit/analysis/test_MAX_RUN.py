@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.MAX_RUN` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -23,12 +22,10 @@ def bool_func(x):
 
 class UnmaskedTest(tests.IrisTest):
     def setUp(self):
-        """
-        Set up 1d and 2d unmasked data arrays for max run testing.
+        """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
         """
-
         self.data_1ds = [
             (np.array([3, 1, 1, 3, 3, 3]), 2),  # One run
             (np.array([3, 1, 1, 3, 1, 3]), 2),  # Two runs
@@ -58,12 +55,10 @@ class UnmaskedTest(tests.IrisTest):
 
 class MaskedTest(tests.IrisTest):
     def setUp(self):
-        """
-        Set up 1d and 2d unmasked data arrays for max run testing.
+        """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
         """
-
         self.data_1ds = [
             (
                 ma.masked_array(

@@ -295,6 +295,6 @@ Documentation
 
 
 .. _Biggus: https://biggus.readthedocs.io/en/latest/
-.. _Dask: http://dask.pydata.org/en/latest/
+.. _Dask: https://dask.pydata.org/en/latest/
 .. _iris_grib: https://github.com/SciTools/iris-grib/
-.. _schedulers: http://dask.pydata.org/en/latest/scheduler-overview.html
+.. _schedulers: https://dask.pydata.org/en/latest/scheduler-overview.html

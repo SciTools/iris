@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit-test infrastructure for the :mod:`iris._concatenate` package."""
 
 from __future__ import annotations
@@ -92,8 +91,7 @@ def create_metadata(
             else:
                 start, stop, step = 0, N_POINTS, 1
             points = (
-                array_lib.arange(start, stop, step, dtype=coord_dtype)
-                * SCALE_FACTOR
+                array_lib.arange(start, stop, step, dtype=coord_dtype) * SCALE_FACTOR
             )
 
         if with_bounds:

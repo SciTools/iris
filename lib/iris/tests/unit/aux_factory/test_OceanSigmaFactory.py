@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the
 `iris.aux_factory.OceanSigmaFactory` class.
 
 """
@@ -98,9 +96,7 @@ class Test_make_coord(tests.IrisTest):
         return result
 
     def setUp(self):
-        self.sigma = DimCoord(
-            np.linspace(-0.05, -1, 5), long_name="sigma", units="1"
-        )
+        self.sigma = DimCoord(np.linspace(-0.05, -1, 5), long_name="sigma", units="1")
         self.eta = AuxCoord(
             np.arange(-1, 3, dtype=np.float64).reshape(2, 2),
             long_name="eta",

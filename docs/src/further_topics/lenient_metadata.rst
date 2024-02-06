@@ -17,10 +17,10 @@ and also :ref:`conversion <metadata conversion>`.
 
 The common metadata API is implemented through the ``metadata`` property
 on each of the Iris `CF Conventions`_ class containers
-(:numref:`metadata classes table`), and provides a common gateway for users to
+(:ref:`metadata classes table`), and provides a common gateway for users to
 easily manage and manipulate their metadata in a consistent and unified way.
 
-This is primarily all thanks to the metadata classes (:numref:`metadata classes table`)
+This is primarily all thanks to the metadata classes (:ref:`metadata classes table`)
 that support the necessary state and behaviour required by the common metadata
 API. Namely, it is the ``equal`` (``__eq__``), ``difference`` and ``combine``
 methods that provide this rich metadata behaviour, all of which are explored
@@ -267,7 +267,7 @@ Now, compare our metadata,
     >>> metadata.equal(latitude.metadata, lenient=True)
     True
 
-Again, lenient equality (:numref:`lenient equality table`) offers a more
+Again, lenient equality (:ref:`lenient equality table`) offers a more
 forgiving and practical alternative to strict behaviour.
 
 
@@ -277,7 +277,7 @@ Lenient Difference
 ------------------
 
 Similar to :ref:`lenient equality`, the lenient ``difference`` method
-(:numref:`lenient difference table`) considers there to be no difference between
+(:ref:`lenient difference table`) considers there to be no difference between
 comparing **something** with **nothing** (``None``). This working assumption is
 not naively applied to all metadata members, but rather a more pragmatic approach
 is adopted, as discussed later in :ref:`lenient members`.
@@ -334,7 +334,7 @@ Lenient Combination
 -------------------
 
 The behaviour of the lenient ``combine`` metadata class method is outlined
-in :numref:`lenient combine table`, and as with :ref:`lenient equality` and
+in :ref:`lenient combine table`, and as with :ref:`lenient equality` and
 :ref:`lenient difference` is enabled through the ``lenient`` keyword argument.
 
 The difference in behaviour between **lenient** and

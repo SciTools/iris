@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.io.expand_filespecs` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -45,9 +44,7 @@ class TestExpandFilespecs(tests.IrisTest):
         try:
             os.chdir(self.tmpdir)
             item_out = iio.expand_filespecs(["*"])
-            item_in = [
-                os.path.join(self.tmpdir, fname) for fname in self.fnames
-            ]
+            item_in = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
             self.assertEqual(item_out, item_in)
         finally:
             os.chdir(cwd)
@@ -62,9 +59,7 @@ class TestExpandFilespecs(tests.IrisTest):
             os.path.join(self.tmpdir, "a.*"),
             os.path.join(self.tmpdir, "b.*"),
         ]
-        expected = [
-            os.path.join(self.tmpdir, fname) for fname in ["a.foo", "b.txt"]
-        ]
+        expected = [os.path.join(self.tmpdir, fname) for fname in ["a.foo", "b.txt"]]
         result = iio.expand_filespecs(patterns)
         self.assertEqual(result, expected)
         result = iio.expand_filespecs(patterns[::-1])

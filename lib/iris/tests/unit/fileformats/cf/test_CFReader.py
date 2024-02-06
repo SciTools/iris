@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the `iris.fileformats.cf.CFReader` class.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the `iris.fileformats.cf.CFReader` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -75,25 +71,15 @@ class Test_translate__global_attributes(tests.IrisTest):
             return_value=self.dataset,
         ):
             global_attrs = CFReader("dummy").cf_group.global_attributes
-            self.assertEqual(
-                global_attrs["dimensions"], "something something_else"
-            )
+            self.assertEqual(global_attrs["dimensions"], "something something_else")
 
 
 class Test_translate__formula_terms(tests.IrisTest):
     def setUp(self):
-        self.delta = netcdf_variable(
-            "delta", "height", np.float64, bounds="delta_bnds"
-        )
-        self.delta_bnds = netcdf_variable(
-            "delta_bnds", "height bnds", np.float64
-        )
-        self.sigma = netcdf_variable(
-            "sigma", "height", np.float64, bounds="sigma_bnds"
-        )
-        self.sigma_bnds = netcdf_variable(
-            "sigma_bnds", "height bnds", np.float64
-        )
+        self.delta = netcdf_variable("delta", "height", np.float64, bounds="delta_bnds")
+        self.delta_bnds = netcdf_variable("delta_bnds", "height bnds", np.float64)
+        self.sigma = netcdf_variable("sigma", "height", np.float64, bounds="sigma_bnds")
+        self.sigma_bnds = netcdf_variable("sigma_bnds", "height bnds", np.float64)
         self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"
         standard_name = "atmosphere_hybrid_height_coordinate"
@@ -138,9 +124,7 @@ class Test_translate__formula_terms(tests.IrisTest):
             file_format="NetCDF4", variables=self.variables, ncattrs=ncattrs
         )
         # Restrict the CFReader functionality to only performing translations.
-        build_patch = mock.patch(
-            "iris.fileformats.cf.CFReader._build_cf_groups"
-        )
+        build_patch = mock.patch("iris.fileformats.cf.CFReader._build_cf_groups")
         reset_patch = mock.patch("iris.fileformats.cf.CFReader._reset")
         build_patch.start()
         reset_patch.start()
@@ -187,18 +171,10 @@ class Test_translate__formula_terms(tests.IrisTest):
 
 class Test_build_cf_groups__formula_terms(tests.IrisTest):
     def setUp(self):
-        self.delta = netcdf_variable(
-            "delta", "height", np.float64, bounds="delta_bnds"
-        )
-        self.delta_bnds = netcdf_variable(
-            "delta_bnds", "height bnds", np.float64
-        )
-        self.sigma = netcdf_variable(
-            "sigma", "height", np.float64, bounds="sigma_bnds"
-        )
-        self.sigma_bnds = netcdf_variable(
-            "sigma_bnds", "height bnds", np.float64
-        )
+        self.delta = netcdf_variable("delta", "height", np.float64, bounds="delta_bnds")
+        self.delta_bnds = netcdf_variable("delta_bnds", "height bnds", np.float64)
+        self.sigma = netcdf_variable("sigma", "height", np.float64, bounds="sigma_bnds")
+        self.sigma_bnds = netcdf_variable("sigma_bnds", "height bnds", np.float64)
         self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"
         standard_name = "atmosphere_hybrid_height_coordinate"
@@ -284,9 +260,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                 self.assertIs(group[name].cf_data, getattr(self, name))
             # Check all the auxiliary coordinates are formula terms.
             formula_terms = cf_group.formula_terms
-            self.assertTrue(
-                set(formula_terms.items()).issubset(list(group.items()))
-            )
+            self.assertTrue(set(formula_terms.items()).issubset(list(group.items())))
             # Check the terms by root.
             for name, term in zip(aux_coordinates, ["a", "b", "orog"]):
                 self.assertEqual(

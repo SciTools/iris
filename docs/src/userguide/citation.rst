@@ -5,53 +5,16 @@ Citing Iris
 ===========
 
 If Iris played an important part in your research then please add us to your
-reference list by using one of the recommendations below.
+reference list by using the recommendations below.
 
-************
-BibTeX Entry
-************
+Iris can be cited directly from the `GitHub repository <https://github.com/SciTools/iris>`_
+, for more information including where to find the citation on the repo please
+see the `GitHub documentation`_.
 
-For example::
+The Iris citation does not contain the version of the software used. We
+recommend that you use the version number of the release you used, and the
+commit hash if you checked out a unreleased version of Iris. This will allow
+others to reproduce the environment that you worked in. You can see what a
+citation should look like for a particular version of Iris, on the `GitHub documentation`_.
 
- @manual{Iris,
- author = {{Met Office}},
- title = {Iris: A powerful, format-agnostic, and community-driven Python package for analysing and visualising Earth science data},
- edition = {v3.6},
- year = {2010 - 2023},
- address = {Exeter, Devon},
- url = {http://scitools.org.uk/},
- doi = {10.5281/zenodo.7948293}
- }
-
-
-*******************
-Downloaded Software
-*******************
-
-Suggested format::
-
- ProductName. Version. ReleaseDate. Publisher. Location. DOIorURL. DownloadDate.
-
-For example::
-
- Iris. v3.5. 27-Apr-2023. Met Office. UK. https://doi.org/10.5281/zenodo.7871017 22-12-2022
-
-
-********************
-Checked Out Software
-********************
-
-Suggested format::
-
- ProductName. Publisher. URL. CheckoutDate. RepositorySpecificCheckoutInformation.
-
-For example::
-
- Iris. Met Office. git@github.com:SciTools/iris.git 22-12-2022
-
-.. _How to cite and describe software: https://software.ac.uk/how-cite-software
-
-
-Reference: [Jackson]_.
-
-.. [Jackson] Jackson, M. 2012. `How to cite and describe software`_. Accessed 06-03-2013.
+.. _GitHub documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files/
