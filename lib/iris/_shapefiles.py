@@ -82,7 +82,7 @@ def create_shapefile_mask(
             """Shape is of invalid type for minimum weight masking,
             must use a Polygon rather than Line shape.\n
               Masking based off intersection instead. """,
-            IrisDefaultingWarning,
+            category=IrisDefaultingWarning,
         )
 
     # prepare 2D cube
