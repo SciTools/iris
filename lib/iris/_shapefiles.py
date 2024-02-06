@@ -144,7 +144,7 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     if not target_system:
         warnings.warn(
             "Cube has no coord_system; using default GeogCS lat/lon",
-            IrisDefaultingWarning,
+            category=IrisDefaultingWarning,
         )
         target_system = DEFAULT_CS
     if geometry_system is None:
