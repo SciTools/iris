@@ -12,7 +12,6 @@
 from itertools import product
 import warnings
 
-import dask.array
 import numpy as np
 import shapely
 import shapely.errors
@@ -103,9 +102,9 @@ def create_shapefile_mask(
     ]
     # shapely can do lazy evaluation of intersections if it's given a list of grid box shapes
     # delayed lets us do it in parallel
-    intersect_template = dask.delayed(shapely.intersects(trans_geo, box_template))
+    intersect_template = shapely.intersects(trans_geo, box_template)
     # we want areas not under shapefile to be True (to mask)
-    intersect_template = np.invert(intersect_template).compute()
+    intersect_template = np.invert(intersect_template)
     # now calc area overlaps if doing weights and adjust mask
     if minimum_weight > 0.0:
         intersections = np.array(box_template)[~intersect_template]
