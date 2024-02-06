@@ -2097,8 +2097,7 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     Default behaviour is to count any overlap between shape and cell as valid
 
     Parameters
-    -----------
-
+    ----------
     shape : Shapely.Geometry object
         A single `shape` of the area to remain unmasked on the `cube`.
         If it a line object of some kind then minimum_weight will be ignored,
@@ -2113,19 +2112,17 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
         Defaults to False.
 
     Returns
-    --------
-
+    -------
     iris.Cube
         A masked version of the input cube, if in_place is False
 
 
     See Also
-    ---------
-
+    --------
     :func:`~iris.util.mask_cube'
 
     Notes
-    -------
+    -----
     This function allows masking a cube with any cartopy projection by a shape object,
     most commonly from Natural Earth Shapefiles via cartopy.
     To mask a cube from a shapefile, both must first be on the same coordinate system.
@@ -2137,7 +2134,7 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     results if your cube has other dimensions the same length as the x/y dimensions
 
     Examples
-    ----------
+    --------
     >>> shape = shapely.geometry.box(30,30, 50,40) # box between 30N-40N 30E-50E
     >>> masked_cube = mask_cube_from_shapefile(shape, cube):
 

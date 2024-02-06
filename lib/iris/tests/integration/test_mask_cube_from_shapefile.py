@@ -85,9 +85,7 @@ class TestCubeMasking(tests.IrisTest):
         ), "rotated europe data with 0.9 weight germany mask failed test"
 
     def test_4d_global_proj_brazil(self):
-        path = tests.get_data_path(
-            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
-        )
+        path = tests.get_data_path(["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"])
         test_4d_brazil = iris.load_cube(path, "Carbon Dioxide")
         ne_brazil = [
             country.geometry
