@@ -99,9 +99,7 @@ def create_shapefile_mask(
     y_bounds = _get_mod_rebased_coord_bounds(y_coord)
     # prepare array for dark
     box_template = [
-        sgeom.box(x[0], y[0], x[1], y[1])
-        for x, y
-        in product(x_bounds, y_bounds)
+        sgeom.box(x[0], y[0], x[1], y[1]) for x, y in product(x_bounds, y_bounds)
     ]
     # shapely can do lazy evaluation of intersections if it's given a list of grid box shapes
     # delayed lets us do it in parallel
