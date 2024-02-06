@@ -98,8 +98,11 @@ def create_shapefile_mask(
     x_bounds = _get_mod_rebased_coord_bounds(x_coord)
     y_bounds = _get_mod_rebased_coord_bounds(y_coord)
     # prepare array for dark
-    bounds_array = np.asarray(list(product(x_bounds, y_bounds)))
-    box_template = _template_func(bounds_array)
+    box_template = [
+        sgeom.box(x[0], y[0], x[1], y[1])
+        for x, y
+        in product(x_bounds, y_bounds)
+    ]
     # shapely can do lazy evaluation of intersections if it's given a list of grid box shapes
     # delayed lets us do it in parallel
     intersect_template = dask.delayed(shapely.intersects(trans_geo, box_template))
