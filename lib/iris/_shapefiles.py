@@ -27,23 +27,29 @@ def create_shapefile_mask(
     cube,
     minimum_weight=0.0,
 ):
-    """Makes a mask for a cube from the shapefile
+    """Makes a mask for a cube from a shape
 
     Get the mask of the intersection between the
-    given shapely geometry and cube.
+    given shapely geometry and cube with x/y DimCoords.
+    Can take a minimum weight and evaluate area overlaps instead
+
 
     Parameters
     -----------
         geometry        : A :class:`shapely.Geometry` object
 
         cube            : A :class:`iris.cube.Cube`
-                            with at least 1d x and y coordinates
+                            which has 1d x and y coordinates
         minimum_weight  : A float between 0 and 1 determining what % of a cell
                             a shape must cover for the cell to remain unmasked.
                             eg: 0.1 means that at least 10% of the shape overlaps the cell
                             to be unmasked
+                            Requires geometry to be a Polygon or MultiPolygon
+                            Defaults to 0.0 (eg only test intersection)
 
-    Returns:
+    Returns
+    --------
+
         A :class:`np.array` of the shape of the x & y coordinates of the cube, with points to mask equal to True
 
     """
@@ -82,14 +88,13 @@ def create_shapefile_mask(
             IrisDefaultingWarning,
         )
 
-    # prepare shape
-    trans_geo = _transform_coord_system(geometry, cube)
     # prepare 2D cube
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     cube_2d = cube.slices([y_name, x_name]).next()
     for coord in cube_2d.dim_coords:
         if not coord.has_bounds():
             coord.guess_bounds()
+    trans_geo = _transform_coord_system(geometry, cube_2d)
 
     y_coord, x_coord = [cube_2d.coord(n) for n in (y_name, x_name)]
     x_bounds = _get_mod_rebased_coord_bounds(x_coord)
@@ -137,13 +142,20 @@ def _template_func(bounds_array):
 def _transform_coord_system(geometry, cube, geometry_system=None):
     """Project the shape onto another coordinate system.
 
-    Arguments:
-        target: The target :class:`iris.coord_systems.CoordSystem`
-                or a :class:`iris.cube.Cube` object defining the coordinate
-                system to which the shape should be transformed
+    Parameters:
+    -----------
+                geometry: A :class:`shapely.Geometry` object
+
+                    cube: A :class:`iris.cube.Cube` with the coord_system to
+                        be projected to and a x coordinate
+
+         geometry_system: A :class:`iris.coord_systems` object describing
+                        the coord_system of the shapefile. Defaults to None,
+                        which is treated as GeogCS
 
     Returns:
-        A transformed shape (copy)
+    -----------
+        A transformed copy of the provided :class:`shapely.Geometry`
     """
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     import iris.analysis.cartography
@@ -210,8 +222,14 @@ def _cube_primary_xy_coord_names(cube):
 
 
 def _get_mod_rebased_coord_bounds(coord):
-    """takes in a coord and returns the bounds of that coord
-    rebased to the modulus"""
+    """Takes in a coord and returns a array of
+    the bounds of that coord rebased to the modulus
+    Arguments:
+        coord (:class:`iris.coords.Coord`): An Iris coordinate
+        with a modulus
+
+    Returns:
+        A 1d Numpy array of [start,end] pairs for bounds of the coord"""
     modulus = coord.units.modulus
     # Force realisation (rather than core_bounds) - more efficient for the
     #  repeated indexing happening downstream.

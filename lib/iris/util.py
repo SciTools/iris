@@ -2185,11 +2185,15 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
 
     Notes
     -------
+    This function allows masking a cube with any cartopy projection by a shape object,
+    most commonly from Natural Earth Shapefiles via cartopy.
     To mask a cube from a shapefile, both must first be on the same coordinate system.
     Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
-    The shapefile is projected to the coord system of the cube, then each cell
+    The shapefile is projected to the coord system of the cube using cartopy, then each cell
     is compared to the shapefile to determine overlap and populate a true/false array
     This array is then used to mask the cube using the `iris.util.mask_cube' function
+    This uses numpy arithmetic logic for broadcasting, so you may encounter unexpected
+    results if your cube has other dimensions the same length as the x/y dimensions
 
     Examples
     ----------

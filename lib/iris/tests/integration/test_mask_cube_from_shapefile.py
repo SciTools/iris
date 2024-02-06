@@ -83,3 +83,23 @@ class TestCubeMasking(tests.IrisTest):
         assert math.isclose(
             np.sum(masked_test.data), 125.60199, rel_tol=0.001
         ), "rotated europe data with 0.9 weight germany mask failed test"
+
+    def test_4d_global_proj_brazil(self):
+        path = tests.get_data_path(
+            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        )
+        test_4d_brazil = iris.load_cube(path, "Carbon Dioxide")
+        ne_brazil = [
+            country.geometry
+            for country in self.reader.records()
+            if "Brazil" in country.attributes["NAME_LONG"]
+        ][0]
+        masked_test = mask_cube_from_shapefile(
+            test_4d_brazil,
+            ne_brazil,
+        )
+        print(np.sum(masked_test.data))
+        # breakpoint()
+        assert math.isclose(
+            np.sum(masked_test.data), 18616921.2, rel_tol=0.001
+        ), "4d data with brazil mask failed test"
