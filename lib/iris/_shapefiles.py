@@ -100,8 +100,10 @@ def create_shapefile_mask(
     x_bounds = _get_mod_rebased_coord_bounds(x_coord)
     y_bounds = _get_mod_rebased_coord_bounds(y_coord)
     # prepare array for dark
-    bounds_array = np.asarray(list(product(x_bounds, y_bounds)))
-    box_template = _template_func(bounds_array)
+    box_template = [
+        sgeom.box(x[0], y[0], x[1], y[1])
+        for x, y in product(x_bounds, y_bounds)
+    ]
     # shapely can do lazy evaluation of intersections if it's given a list of grid box shapes
     # delayed lets us do it in parallel
     intersect_template = dask.delayed(
@@ -109,34 +111,15 @@ def create_shapefile_mask(
     )
     # we want areas not under shapefile to be True (to mask)
     intersect_template = np.invert(intersect_template).compute()
-    # now calc area overlaps if doing weighted comparison
+    # now calc area overlaps if doing weights and adjust mask
     if minimum_weight > 0.0:
-        for count, bol in enumerate(intersect_template):
-            if not bol:
-                intersect_area = trans_geo.intersection(
-                    box_template[count]
-                ).area
-                if (
-                    intersect_area / box_template[count].area
-                ) <= minimum_weight:
-                    intersect_template[count] = True
-                else:
-                    intersect_template[count] = False
+        intersections = np.array(box_template)[~intersect_template]
+        intersect_template[~intersect_template] = [
+            trans_geo.intersection(box).area / box.area <= minimum_weight
+            for box in intersections
+        ]
     mask_template = np.reshape(intersect_template, cube_2d.shape[::-1]).T
     return mask_template
-
-
-def _template_func(bounds_array):
-    """Take array of 2x2 bounds of cells, and returns list of Shapely Polygons of cell bounds"""
-    template = list(range(bounds_array.shape[0]))
-    for count, idx in enumerate(bounds_array):
-        # get the bounds of the grid cell
-        x0, x1 = idx[0]
-        y0, y1 = idx[1]
-        # create a new polygon of the grid cell a
-        template[count] = sgeom.box(x0, y0, x1, y1)
-
-    return template
 
 
 def _transform_coord_system(geometry, cube, geometry_system=None):
