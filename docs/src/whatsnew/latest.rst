@@ -175,7 +175,7 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ configured the API documentation to show 2 levels
    for the ToC (Table of Contents) for each page. (:pull:`5714`)
 
-#. `@hsteptoe`_ added more deatiled examples to :func:`~iris.cube.Cube.slices` and 
+#. `@hsteptoe`_ added more detailed examples to :func:`~iris.cube.Cube.slices` and 
     :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
 
 
