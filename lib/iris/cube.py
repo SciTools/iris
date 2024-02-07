@@ -3394,8 +3394,8 @@ class Cube(CFVariableMixin):
         `longitude`:
 
         >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
-        >>> air_press = iris.load_cube(fname, 'surface_temperature')
-        >>> print(air_press)
+        >>> cube = iris.load_cube(fname, 'surface_temperature')
+        >>> print(cube)
         surface_temperature / (K)           \
         (realization: 2; time: 6; latitude: 145; longitude: 192)
     Dimension coordinates:
@@ -3422,12 +3422,12 @@ class Cube(CFVariableMixin):
 
         To get all 12 2d longitude/latitude subcubes:
         
-        >>> for sub_cube in air_press.slices_over(['realization', 'time']):
+        >>> for sub_cube in cube.slices_over(['realization', 'time']):
                 print(sub_cube)
 
-        To get return each realization as a separate subcube, using dimension indicies:
+        To get return each realization as a separate subcube, using dimension indices:
 
-        >>> for sub_cube in air_press.slices_over(0):
+        >>> for sub_cube in cube.slices_over(0):
                 print(sub_cube)
 
         Notes
@@ -3498,8 +3498,8 @@ class Cube(CFVariableMixin):
         `longitude`:
 
         >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
-        >>> air_press = iris.load_cube(fname, 'surface_temperature')
-        >>> print(air_press)
+        >>> cube = iris.load_cube(fname, 'surface_temperature')
+        >>> print(cube)
         surface_temperature / (K)           \
         (realization: 2; time: 6; latitude: 145; longitude: 192)
     Dimension coordinates:
@@ -3526,12 +3526,12 @@ class Cube(CFVariableMixin):
 
         To get all 12 2d longitude/latitude subcubes:
         
-        >>> for sub_cube in air_press.slices(['longitude', 'latitude']):
+        >>> for sub_cube in cube.slices(['longitude', 'latitude']):
                 print(sub_cube)
 
-        To get return each realization as a separate subcube, using dimension indicies:
+        To get return each realization as a separate subcube, using dimension indices:
 
-        >>> for sub_cube in air_press.slices([1, 2, 3]):
+        >>> for sub_cube in cube.slices([1, 2, 3]):
                 print(sub_cube)
 
         See Also
@@ -4556,8 +4556,8 @@ x            -              -
         --------
             >>> import iris, iris.analysis
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
-            >>> air_press = iris.load_cube(fname, 'surface_temperature')
-            >>> print(air_press)
+            >>> cube = iris.load_cube(fname, 'surface_temperature')
+            >>> print(cube)
             surface_temperature / (K)           \
 (time: 6; latitude: 145; longitude: 192)
                 Dimension coordinates:
@@ -4581,7 +4581,7 @@ x            -               -
 'Data from Met Office Unified Model'
                     um_version                  '7.6'
 
-            >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
+            >>> print(cube.rolling_window('time', iris.analysis.MEAN, 3))
             surface_temperature / (K)           \
 (time: 4; latitude: 145; longitude: 192)
                 Dimension coordinates:
