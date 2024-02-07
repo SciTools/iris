@@ -3449,10 +3449,9 @@ class Cube(CFVariableMixin):
             A mix of input types can also be provided. They must all be
             orthogonal (i.e. point to different dimensions).
         ordered : bool, default=True
-            if True, the order which the coords to slice or data_dims
-            are given will be the order in which they represent the data in
-            the resulting cube slices.  If False, the order will follow that of
-            the source cube.  Default is True.
+            If True, subcube dimensions are ordered to match the dimension order
+            in `ref_to_slice`. If False, the order will follow that of
+            the source cube.
 
         Returns
         -------
@@ -3460,10 +3459,44 @@ class Cube(CFVariableMixin):
 
         Examples
         --------
-        For example, to get all 2d longitude/latitude subcubes from a
-        multi-dimensional cube::
+        For example, for a cube with dimensions `realization`, `time`, `latitude` and
+        `longitude`:
 
-            for sub_cube in cube.slices(['longitude', 'latitude']):
+        >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
+        >>> air_press = iris.load_cube(fname, 'surface_temperature')
+        >>> print(air_press)
+        surface_temperature / (K)           \
+        (realization: 2; time: 6; latitude: 145; longitude: 192)
+    Dimension coordinates:
+        realization                             \
+        x        -            -               -
+        time                                    \
+        -        x            -               -
+        latitude                                \
+        -        -            x               -
+        longitude                               \
+        -        -            -               x
+    Auxiliary coordinates:
+        forecast_period                         \
+        -        x            -               -
+    Scalar coordinates:
+        forecast_reference_time     2011-07-23 00:00:00
+    Cell methods:
+        0                           time: mean (interval: 1 hour)
+    Attributes:
+        STASH                       m01s00i024
+        source                      \
+        'Data from Met Office Unified Model'
+        um_version                  '7.6'
+
+        To get all 12 2d longitude/latitude subcubes:
+        
+        >>> for sub_cube in air_press.slices(['longitude', 'latitude']):
+                print(sub_cube)
+
+        To get return each realization as a separate subcube, using dimension indicies:
+
+        >>> for sub_cube in air_press.slices([1, 2, 3]):
                 print(sub_cube)
 
         See Also
