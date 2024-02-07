@@ -43,6 +43,14 @@ class TestBasicCubeMasking(tests.IrisTest):
             np.sum(masked_cube.data) == 8
         ), f"basic cube masking failed test - expected 8 got {np.sum(masked_cube.data)}"
 
+    def test_basic_cube_intersect_in_place(self):
+        shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
+        cube = self.basic_cube.copy()
+        mask_cube_from_shapefile(cube, shape, in_place=True)
+        assert (
+            np.sum(cube.data) == 8
+        ), f"basic cube masking failed test - expected 8 got {np.sum(cube.data)}"
+
     def test_basic_cube_intersect_low_weight(self):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
         masked_cube = mask_cube_from_shapefile(
@@ -94,7 +102,19 @@ class TestBasicCubeMasking(tests.IrisTest):
                 shape,
             )
 
-    def test_shape_invalid(self):
+    def test_missing_xy_coord(self):
+        shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
+        cube = self.basic_cube
+        cube.remove_coord("projection_x_coordinate")
+        with pytest.raises(ValueError, match="1d xy coordinates"):
+            mask_cube_from_shapefile(cube, shape)
+
+    def test_shape_not_shape(self):
         shape = [5, 6, 7, 8]  # random array
+        with pytest.raises(TypeError, match="valid Shapely"):
+            mask_cube_from_shapefile(self.basic_cube, shape)
+
+    def test_shape_invalid(self):
+        shape = shapely.box(0, 1, 1, 1)
         with pytest.raises(TypeError, match="valid Shapely"):
             mask_cube_from_shapefile(self.basic_cube, shape)

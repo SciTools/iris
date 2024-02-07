@@ -54,7 +54,7 @@ def create_shapefile_mask(
 
     try:
         msg = "Geometry is not a valid Shapely object"
-        if shapely.is_valid(geometry) is False:
+        if not shapely.is_valid(geometry):
             raise TypeError(msg)
     except Exception:
         raise TypeError(msg)
