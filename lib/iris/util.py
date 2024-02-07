@@ -2139,7 +2139,7 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     >>> from iris.util import mask_cube_from_shapefile
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
-    >>> masked_cube = mask_cube_from_shapefile(shape, cube)
+    >>> masked_cube = mask_cube_from_shapefile(cube, shape)
 
     ...
     """
