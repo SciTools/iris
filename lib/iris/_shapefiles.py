@@ -156,7 +156,7 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     # A default coord system in iris can be either -180 to 180 or 0 to 360
     if target_system == DEFAULT_CS and cube.coord(x_name).points[-1] > 180:
         trans_geometry = shapely.transform(trans_geometry, _trans_func)
-    elif target_system != DEFAULT_CS and cube.coord(x_name).points[-1] > 180:
+    if target_system != DEFAULT_CS and cube.coord(x_name).points[-1] > 180:
         # this may lead to incorrect masking or not depending on projection type so warn user
         warnings.warn(
             """Cube has x-coordinates over 180E and a non-standard projection time.\n
