@@ -2090,7 +2090,7 @@ def _strip_metadata_from_dims(cube, dims):
 
 
 def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
-    """Takes a shape object and masks all points not touching it in a cube
+    """Take a shape object and masks all points not touching it in a cube.
 
     Finds the overlap between the `shape` and the `cube` in 2D xy space and
     masks out any cells with less % overlap with shape than set.
@@ -2135,8 +2135,10 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
 
     Examples
     --------
-    >>> shape = shapely.geometry.box(30,30, 50,40) # box between 30N-40N 30E-50E
-    >>> masked_cube = mask_cube_from_shapefile(shape, cube):
+    >>> import shapely
+    >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+    >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
+    >>> masked_cube = mask_cube_from_shapefile(shape, cube)
 
     ...
     """
