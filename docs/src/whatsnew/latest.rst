@@ -87,6 +87,9 @@ This document explains the changes made to Iris for this release
    :mod:`iris.fileformats._nc_load_rules.helpers` to lessen warning duplication.
    (:issue:`5536`, :pull:`5685`)
 
+#. `ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` to set
+   `pp.lbelv` of surface fields to 9999. (:issue:`3280`, :pull:``)
+
 
 💣 Incompatible Changes
 =======================
