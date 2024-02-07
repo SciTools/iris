@@ -1,3 +1,8 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+
 import math
 
 import cartopy.io.shapereader as shpreader
@@ -12,7 +17,7 @@ from iris.util import mask_cube_from_shapefile
 class TestCubeMasking(tests.IrisTest):
     """integration tests of mask_cube_from_shapefile
     using different projections in iris_test_data -
-    values are the KGO calculated using ASCEND
+    values are the KGO calculated using ASCEND.
     """
 
     def setUp(self):
