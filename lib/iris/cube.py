@@ -3398,7 +3398,7 @@ class Cube(CFVariableMixin):
         >>> print(air_press)
         surface_temperature / (K)           \
         (realization: 2; time: 6; latitude: 145; longitude: 192)
-    Dimension coordinates:
+        Dimension coordinates:
         realization                             \
         x        -            -               -
         time                                    \
@@ -3407,21 +3407,23 @@ class Cube(CFVariableMixin):
         -        -            x               -
         longitude                               \
         -        -            -               x
-    Auxiliary coordinates:
+        Auxiliary coordinates:
         forecast_period                         \
         -        x            -               -
-    Scalar coordinates:
+        Scalar coordinates:
         forecast_reference_time     2011-07-23 00:00:00
-    Cell methods:
+        Cell methods:
         0                           time: mean (interval: 1 hour)
-    Attributes:
+
+        Attributes
+        ----------
         STASH                       m01s00i024
         source                      \
         'Data from Met Office Unified Model'
         um_version                  '7.6'
 
         To get all 12 2d longitude/latitude subcubes:
-        
+
         >>> for sub_cube in air_press.slices_over(['realization', 'time']):
                 print(sub_cube)
 
@@ -3502,7 +3504,7 @@ class Cube(CFVariableMixin):
         >>> print(air_press)
         surface_temperature / (K)           \
         (realization: 2; time: 6; latitude: 145; longitude: 192)
-    Dimension coordinates:
+        Dimension coordinates:
         realization                             \
         x        -            -               -
         time                                    \
@@ -3511,21 +3513,23 @@ class Cube(CFVariableMixin):
         -        -            x               -
         longitude                               \
         -        -            -               x
-    Auxiliary coordinates:
+        Auxiliary coordinates:
         forecast_period                         \
         -        x            -               -
-    Scalar coordinates:
+        Scalar coordinates:
         forecast_reference_time     2011-07-23 00:00:00
-    Cell methods:
+        Cell methods:
         0                           time: mean (interval: 1 hour)
-    Attributes:
+
+        Attributes
+        ----------
         STASH                       m01s00i024
         source                      \
         'Data from Met Office Unified Model'
         um_version                  '7.6'
 
         To get all 12 2d longitude/latitude subcubes:
-        
+
         >>> for sub_cube in air_press.slices(['longitude', 'latitude']):
                 print(sub_cube)
 
