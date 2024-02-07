@@ -41,6 +41,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
+#. `ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` to set
+   `pp.lbelv` of surface fields to 9999. (:issue:`3280`, :pull:``)
+
 
 💣 Incompatible Changes
 =======================

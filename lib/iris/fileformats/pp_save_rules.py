@@ -773,6 +773,21 @@ def _vertical_rules(cube, pp):
         pp.brsvd[0] = depth_coord.bounds[0, 0]
         pp.brlev = depth_coord.bounds[0, 1]
 
+    # Surface field.
+    if (
+        height_coord is None
+        and depth_coord is None
+        and pressure_coord is None
+        and soil_mln_coord is None
+        and apt_coord is None
+        and air_pres_coord is None
+        and level_height_coord is None
+        and mln_coord is None
+        and sigma_coord is None
+    ):
+        pp.lbvc = 129
+        pp.lblev = 9999
+
     # Single potential-temperature level.
     if (
         apt_coord is not None
