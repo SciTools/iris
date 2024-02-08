@@ -125,7 +125,7 @@ Or you can target Warnings raised by specific lines of specific modules, e.g.
 .. doctest:: filtering_warnings
 
     >>> with warnings.catch_warnings():
-    ...     warnings.filterwarnings("ignore", module="iris.coord_systems", lineno=441)
+    ...     warnings.filterwarnings("ignore", module="iris.coord_systems", lineno=442)
     ...     my_operation()
     ...
     iris/coord_systems.py:768: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
