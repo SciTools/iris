@@ -232,6 +232,7 @@ This document explains the changes made to Iris for this release
 .. _@scottrobinson02: https://github.com/scottrobinson02
 .. _@acchamber: https://github.com/acchamber
 .. _@fazledyn-or: https://github.com/fazledyn-or
+.. _@hsteptoe: https://github.com/hsteptoe
 
 
 .. comment
