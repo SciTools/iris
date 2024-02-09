@@ -3408,9 +3408,7 @@ class Cube(CFVariableMixin):
             forecast_reference_time     2011-07-23 00:00:00
         Cell methods:
             0                           time: mean (interval: 1 hour)
-
-        Attributes
-        ----------
+        Attributes:
             STASH                       m01s00i024
             source                      'Data from Met Office Unified Model'
             um_version                  '7.6'
@@ -3437,7 +3435,7 @@ class Cube(CFVariableMixin):
         --------
         :meth:`iris.cube.Cube.slices`.
 
-        """
+        """ # noqa: D214, D406, D407, D410, D411
         # Required to handle a mix between types.
         if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
@@ -3507,9 +3505,7 @@ class Cube(CFVariableMixin):
             forecast_reference_time     2011-07-23 00:00:00
         Cell methods:
             0                           time: mean (interval: 1 hour)
-
-        Attributes
-        ----------
+        Attributes:
             STASH                       m01s00i024
             source                      'Data from Met Office Unified Model'
             um_version                  '7.6'
@@ -3528,7 +3524,7 @@ class Cube(CFVariableMixin):
         --------
         :meth:`iris.cube.Cube.slices_over`.
 
-        """
+        """ # noqa: D214, D406, D407, D410, D411
         if not isinstance(ordered, bool):
             raise TypeError("'ordered' argument to slices must be boolean.")
 
