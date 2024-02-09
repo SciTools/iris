@@ -3415,22 +3415,15 @@ class Cube(CFVariableMixin):
         Cell methods:
         0                           time: mean (interval: 1 hour)
 
-        Attributes
-        ----------
-        STASH                       m01s00i024
-        source                      \
-        'Data from Met Office Unified Model'
-        um_version                  '7.6'
+        To get all 12x2D longitude/latitude subcubes:
 
-        To get all 12 2d longitude/latitude subcubes:
+        >>> for sub_cube in cube.slices_over(['realization', 'time']):
+        ...     print(sub_cube)
 
-        >>> for sub_cube in air_press.slices_over(['realization', 'time']):
-                print(sub_cube)
-
-        To get return each realization as a separate subcube, using dimension indices:
+        To get realizations as 2x3D separate subcubes, using dimension indices:
 
         >>> for sub_cube in cube.slices_over(0):
-                print(sub_cube)
+        ...     print(sub_cube)
 
         Notes
         -----
@@ -3521,15 +3514,15 @@ class Cube(CFVariableMixin):
         Cell methods:
         0                           time: mean (interval: 1 hour)
 
-        To get all 12 2d longitude/latitude subcubes:
+        To get all 12x2D longitude/latitude subcubes:
 
-        >>> for sub_cube in air_press.slices(['longitude', 'latitude']):
-                print(sub_cube)
+        >>> for sub_cube in cube.slices(['longitude', 'latitude']):
+        ...     print(sub_cube)
 
-        To get return each realization as a separate subcube, using dimension indices:
+        To get all realizations as 2x3D separate subcubes, using dimension indices:
 
         >>> for sub_cube in cube.slices([1, 2, 3]):
-                print(sub_cube)
+        ...     print(sub_cube)
 
         See Also
         --------
