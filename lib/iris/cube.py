@@ -3521,13 +3521,6 @@ class Cube(CFVariableMixin):
         Cell methods:
         0                           time: mean (interval: 1 hour)
 
-        Attributes
-        ----------
-        STASH                       m01s00i024
-        source                      \
-        'Data from Met Office Unified Model'
-        um_version                  '7.6'
-
         To get all 12 2d longitude/latitude subcubes:
 
         >>> for sub_cube in air_press.slices(['longitude', 'latitude']):
