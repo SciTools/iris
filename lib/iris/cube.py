@@ -3396,22 +3396,22 @@ class Cube(CFVariableMixin):
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
             >>> cube = iris.load_cube(fname, 'surface_temperature')
             >>> print(cube)  # doctest: SKIP
-        surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
-        Dimension coordinates:
-            realization                             x        -            -               -
-            time                                    -        x            -               -
-            latitude                                -        -            x               -
-            longitude                               -        -            -               x
-        Auxiliary coordinates:
-            forecast_period                         -        x            -               -
-        Scalar coordinates:
-            forecast_reference_time     2011-07-23 00:00:00
-        Cell methods:
-            0                           time: mean (interval: 1 hour)
-        Attributes:
-            STASH                       m01s00i024
-            source                      'Data from Met Office Unified Model'
-            um_version                  '7.6'
+            surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
+            Dimension coordinates:
+                realization                             x        -            -               -
+                time                                    -        x            -               -
+                latitude                                -        -            x               -
+                longitude                               -        -            -               x
+            Auxiliary coordinates:
+                forecast_period                         -        x            -               -
+            Scalar coordinates:
+                forecast_reference_time     2011-07-23 00:00:00
+            Cell methods:
+                0                           time: mean (interval: 1 hour)
+            Attributes:
+                STASH                       m01s00i024
+                source                      'Data from Met Office Unified Model'
+                um_version                  '7.6'
 
         To get all 12x2D longitude/latitude subcubes:
 
