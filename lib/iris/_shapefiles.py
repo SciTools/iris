@@ -165,10 +165,9 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
         trans_geometry = trans_geometry.difference(prime_meridian_line.buffer(0.00001))
         trans_geometry = shapely.transform(trans_geometry, _trans_func)
 
-    if (
-        (not isinstance(target_system, iris.coord_systems.GeogCS))
-        and cube.coord(x_name).points[-1] > 180
-    ):
+    if (not isinstance(target_system, iris.coord_systems.GeogCS)) and cube.coord(
+        x_name
+    ).points[-1] > 180:
         # this may lead to incorrect masking or not depending on projection type so warn user
         warnings.warn(
             """Cube has x-coordinates over 180E and a non-standard projection type.\n
