@@ -3390,10 +3390,38 @@ class Cube(CFVariableMixin):
 
         Examples
         --------
-        For example, to get all subcubes along the time dimension::
+        For example, for a cube with dimensions `realization`, `time`, `latitude` and
+        `longitude`:
 
-            for sub_cube in cube.slices_over('time'):
-                print(sub_cube)
+            >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
+            >>> cube = iris.load_cube(fname, 'surface_temperature')
+            >>> print(cube)  # doctest: SKIP
+            surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
+            Dimension coordinates:
+                realization                             x        -            -               -
+                time                                    -        x            -               -
+                latitude                                -        -            x               -
+                longitude                               -        -            -               x
+            Auxiliary coordinates:
+                forecast_period                         -        x            -               -
+            Scalar coordinates:
+                forecast_reference_time     2011-07-23 00:00:00
+            Cell methods:
+                0                           time: mean (interval: 1 hour)
+            Attributes:
+                STASH                       m01s00i024
+                source                      'Data from Met Office Unified Model'
+                um_version                  '7.6'
+
+        To get all 12x2D longitude/latitude subcubes:
+
+            >>> for sub_cube in cube.slices_over(['realization', 'time']):
+            ...     print(sub_cube)  # doctest: SKIP
+
+        To get realizations as 2x3D separate subcubes, using dimension indices:
+
+            >>> for sub_cube in cube.slices_over(0):
+            ...     print(sub_cube)  # doctest: SKIP
 
         Notes
         -----
@@ -3407,7 +3435,7 @@ class Cube(CFVariableMixin):
         --------
         :meth:`iris.cube.Cube.slices`.
 
-        """
+        """  # noqa: D214, D406, D407, D410, D411
         # Required to handle a mix between types.
         if _is_single_item(ref_to_slice):
             ref_to_slice = [ref_to_slice]
@@ -3449,10 +3477,9 @@ class Cube(CFVariableMixin):
             A mix of input types can also be provided. They must all be
             orthogonal (i.e. point to different dimensions).
         ordered : bool, default=True
-            if True, the order which the coords to slice or data_dims
-            are given will be the order in which they represent the data in
-            the resulting cube slices.  If False, the order will follow that of
-            the source cube.  Default is True.
+            If True, subcube dimensions are ordered to match the dimension order
+            in `ref_to_slice`. If False, the order will follow that of
+            the source cube.
 
         Returns
         -------
@@ -3460,17 +3487,44 @@ class Cube(CFVariableMixin):
 
         Examples
         --------
-        For example, to get all 2d longitude/latitude subcubes from a
-        multi-dimensional cube::
+        For example, for a cube with dimensions `realization`, `time`, `latitude` and
+        `longitude`:
 
-            for sub_cube in cube.slices(['longitude', 'latitude']):
-                print(sub_cube)
+            >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
+            >>> cube = iris.load_cube(fname, 'surface_temperature')
+            >>> print(cube)  # doctest: SKIP
+            surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
+            Dimension coordinates:
+                realization                             x        -            -               -
+                time                                    -        x            -               -
+                latitude                                -        -            x               -
+                longitude                               -        -            -               x
+            Auxiliary coordinates:
+                forecast_period                         -        x            -               -
+            Scalar coordinates:
+                forecast_reference_time     2011-07-23 00:00:00
+            Cell methods:
+                0                           time: mean (interval: 1 hour)
+            Attributes:
+                STASH                       m01s00i024
+                source                      'Data from Met Office Unified Model'
+                um_version                  '7.6'
+
+        To get all 12x2D longitude/latitude subcubes:
+
+            >>> for sub_cube in cube.slices(['longitude', 'latitude']):
+            ...     print(sub_cube)  # doctest: SKIP
+
+        To get all realizations as 2x3D separate subcubes, using dimension indices:
+
+            >>> for sub_cube in cube.slices([1, 2, 3]):
+            ...     print(sub_cube)  # doctest: SKIP
 
         See Also
         --------
         :meth:`iris.cube.Cube.slices_over`.
 
-        """
+        """  # noqa: D214, D406, D407, D410, D411
         if not isinstance(ordered, bool):
             raise TypeError("'ordered' argument to slices must be boolean.")
 
@@ -4488,8 +4542,8 @@ x            -              -
         --------
             >>> import iris, iris.analysis
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_010.pp')
-            >>> air_press = iris.load_cube(fname, 'surface_temperature')
-            >>> print(air_press)
+            >>> cube = iris.load_cube(fname, 'surface_temperature')
+            >>> print(cube)
             surface_temperature / (K)           \
 (time: 6; latitude: 145; longitude: 192)
                 Dimension coordinates:
@@ -4513,7 +4567,7 @@ x            -               -
 'Data from Met Office Unified Model'
                     um_version                  '7.6'
 
-            >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
+            >>> print(cube.rolling_window('time', iris.analysis.MEAN, 3))
             surface_temperature / (K)           \
 (time: 4; latitude: 145; longitude: 192)
                 Dimension coordinates:
