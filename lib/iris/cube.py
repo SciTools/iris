@@ -3408,7 +3408,9 @@ class Cube(CFVariableMixin):
             forecast_reference_time     2011-07-23 00:00:00
         Cell methods:
             0                           time: mean (interval: 1 hour)
-        Attributes:
+
+        Attributes
+        ----------
             STASH                       m01s00i024
             source                      'Data from Met Office Unified Model'
             um_version                  '7.6'
@@ -3505,7 +3507,9 @@ class Cube(CFVariableMixin):
             forecast_reference_time     2011-07-23 00:00:00
         Cell methods:
             0                           time: mean (interval: 1 hour)
-        Attributes:
+
+        Attributes
+        ----------
             STASH                       m01s00i024
             source                      'Data from Met Office Unified Model'
             um_version                  '7.6'
