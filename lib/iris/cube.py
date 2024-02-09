@@ -3392,7 +3392,7 @@ class Cube(CFVariableMixin):
         --------
         For example, for a cube with dimensions `realization`, `time`, `latitude` and
         `longitude`:
-        
+
             >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
             >>> cube = iris.load_cube(fname, 'surface_temperature')
             >>> print(cube)  # doctest: SKIP
