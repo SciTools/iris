@@ -155,15 +155,25 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     source_proj = geometry_system.as_cartopy_projection()
 
     trans_geometry = target_proj.project_geometry(geometry, source_proj)
-    # A default coord system in iris can be either -180 to 180 or 0 to 360
-    if target_system == DEFAULT_CS and cube.coord(x_name).points[-1] > 180:
+    # A GeogCS in iris can be either -180 to 180 or 0 to 360. If cube is 0-360, shift geom to match
+    if (
+        isinstance(target_system, iris.coord_systems.GeogCS)
+        and cube.coord(x_name).points[-1] > 180
+    ):
+        # chop geom at 0 degree line very finely then transform
+        prime_meridian_line = shapely.LineString([(0, 90), (0, -90)])
+        trans_geometry = trans_geometry.difference(prime_meridian_line.buffer(0.00001))
         trans_geometry = shapely.transform(trans_geometry, _trans_func)
-    if target_system != DEFAULT_CS and cube.coord(x_name).points[-1] > 180:
+
+    if (
+        isinstance(target_system, iris.coord_systems.GeogCS)
+        and cube.coord(x_name).points[-1] > 180
+    ):
         # this may lead to incorrect masking or not depending on projection type so warn user
         warnings.warn(
-            """Cube has x-coordinates over 180E and a non-standard projection time.\n
+            """Cube has x-coordinates over 180E and a non-standard projection type.\n
               This may lead to incorrect masking. \n
-             If the result is not as expected, you might want to transform the x coordinate points to -180 to 180  """,
+             If the result is not as expected, you might want to transform the x coordinate points of your cube to -180-180 """,
             category=IrisUserWarning,
         )
     return trans_geometry
