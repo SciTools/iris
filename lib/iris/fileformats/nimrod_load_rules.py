@@ -6,7 +6,7 @@
 
 import re
 import string
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import cf_units
 import cftime
@@ -179,7 +179,7 @@ def units(cube, field):
         cube.units = field_units
     except ValueError:
         # Just add it as an attribute.
-        warnings.warn(
+        warn_once_at_level(
             "Unhandled units '{0}' recorded in cube attributes.".format(field_units),
             category=IrisNimrodTranslationWarning,
         )
@@ -398,7 +398,7 @@ def coord_system(field, handle_metadata_errors):
             field.tm_meridian_scaling,
         )
         if any([is_missing(field, v) for v in crs_args]):
-            warnings.warn(
+            warn_once_at_level(
                 "Coordinate Reference System is not completely defined. "
                 "Plotting and reprojection may be impaired.",
                 category=IrisNimrodTranslationWarning,
@@ -524,7 +524,7 @@ def vertical_coord(cube, field):
             f"{field.vertical_coord_type} != {field.reference_vertical_coord_type}. "
             f"Assuming {field.vertical_coord_type}"
         )
-        warnings.warn(msg, category=IrisNimrodTranslationWarning)
+        warn_once_at_level(msg, category=IrisNimrodTranslationWarning)
 
     coord_point = field.vertical_coord
     if coord_point == 8888.0:
@@ -564,7 +564,7 @@ def vertical_coord(cube, field):
         cube.add_aux_coord(new_coord)
         return
 
-    warnings.warn(
+    warn_once_at_level(
         "Vertical coord {!r} not yet handled".format(field.vertical_coord_type),
         category=TranslationWarning,
     )
@@ -803,7 +803,7 @@ def probability_coord(cube, field, handle_metadata_errors):
                 "standard_name",
                 coord_keys.get("long_name", coord_keys.get("var_name", None)),
             )
-            warnings.warn(
+            warn_once_at_level(
                 f"No default units for {coord_name} coord of {cube.name()}. "
                 "Meta-data may be incomplete.",
                 category=IrisNimrodTranslationWarning,

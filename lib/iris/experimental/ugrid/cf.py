@@ -8,7 +8,7 @@
 Eventual destination: :mod:`iris.fileformats.cf`.
 
 """
-import warnings
+from iris.exceptions import warn_once_at_level
 
 from ...exceptions import IrisCfLabelVarWarning, IrisCfMissingVarWarning
 from ...fileformats import cf
@@ -65,7 +65,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                 f"{nc_var_name}"
                             )
                             if warn:
-                                warnings.warn(message, category=IrisCfMissingVarWarning)
+                                warn_once_at_level(message, category=IrisCfMissingVarWarning)
                         else:
                             # Restrict to non-string type i.e. not a
                             # CFLabelVariable.
@@ -80,7 +80,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                     f"CF-netCDF label variable."
                                 )
                                 if warn:
-                                    warnings.warn(
+                                    warn_once_at_level(
                                         message, category=IrisCfLabelVarWarning
                                     )
 
@@ -139,7 +139,7 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                     f"variable {nc_var_name}"
                                 )
                                 if warn:
-                                    warnings.warn(
+                                    warn_once_at_level(
                                         message,
                                         category=IrisCfMissingVarWarning,
                                     )
@@ -158,7 +158,7 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                         f"CF-netCDF label variable."
                                     )
                                     if warn:
-                                        warnings.warn(
+                                        warn_once_at_level(
                                             message,
                                             category=IrisCfLabelVarWarning,
                                         )
@@ -217,7 +217,7 @@ class CFUGridMeshVariable(cf.CFVariable):
                             f"referenced by netCDF variable {nc_var_name}"
                         )
                         if warn:
-                            warnings.warn(message, category=IrisCfMissingVarWarning)
+                            warn_once_at_level(message, category=IrisCfMissingVarWarning)
                     else:
                         # Restrict to non-string type i.e. not a
                         # CFLabelVariable.
@@ -230,7 +230,7 @@ class CFUGridMeshVariable(cf.CFVariable):
                                 f"variable."
                             )
                             if warn:
-                                warnings.warn(message, category=IrisCfLabelVarWarning)
+                                warn_once_at_level(message, category=IrisCfLabelVarWarning)
 
         return result
 

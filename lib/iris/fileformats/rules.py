@@ -5,7 +5,7 @@
 """Generalised mechanisms for metadata translation and cube construction."""
 
 import collections
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import cf_units
 
@@ -40,7 +40,7 @@ class ConcreteReferenceTarget:
                 # time-varying surface pressure in hybrid-presure.
                 src_cubes = src_cubes.merge(unique=False)
                 if len(src_cubes) > 1:
-                    warnings.warn(
+                    warn_once_at_level(
                         "Multiple reference cubes for {}".format(self.name),
                         category=iris.exceptions.IrisUserWarning,
                     )
@@ -313,7 +313,7 @@ def _make_cube(field, converter):
             cube.units = metadata.units
         except ValueError:
             msg = "Ignoring PP invalid units {!r}".format(metadata.units)
-            warnings.warn(msg, category=iris.exceptions.IrisIgnoringWarning)
+            warn_once_at_level(msg, category=iris.exceptions.IrisIgnoringWarning)
             cube.attributes["invalid_units"] = metadata.units
             cube.units = cf_units._UNKNOWN_UNIT_STRING
 
@@ -334,7 +334,7 @@ def _resolve_factory_references(
         except _ReferenceError as e:
             msg = "Unable to create instance of {factory}. " + str(e)
             factory_name = factory.factory_class.__name__
-            warnings.warn(
+            warn_once_at_level(
                 msg.format(factory=factory_name),
                 category=iris.exceptions.IrisUserWarning,
             )

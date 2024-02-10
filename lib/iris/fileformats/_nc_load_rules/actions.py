@@ -40,7 +40,7 @@ longer useful, this can be considerably simplified.
 """
 
 from functools import wraps
-import warnings
+from iris.exceptions import warn_once_at_level
 
 from iris.config import get_logger
 import iris.exceptions
@@ -495,7 +495,7 @@ def action_formula_type(engine, formula_root_fact):
         succeed = False
         rule_name += f"(FAILED - unrecognised formula type = {formula_type!r})"
         msg = f"Ignored formula of unrecognised type: {formula_type!r}."
-        warnings.warn(
+        warn_once_at_level(
             msg,
             category=_WarnComboCfLoadIgnoring,
         )
@@ -513,7 +513,7 @@ def action_formula_type(engine, formula_root_fact):
                 f"Formula of type ={formula_type!r} "
                 f"overrides another of type ={existing_type!r}.)"
             )
-            warnings.warn(
+            warn_once_at_level(
                 msg,
                 category=_WarnComboLoadIgnoring,
             )

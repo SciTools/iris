@@ -11,7 +11,7 @@ import operator
 import os
 import re
 import struct
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import cf_units
 import cftime
@@ -1154,7 +1154,7 @@ class PPField(metaclass=ABCMeta):
                 "missing data. To save these as normal values, please "
                 "set the field BMDI not equal to any valid data points."
             )
-            warnings.warn(
+            warn_once_at_level(
                 msg.format(mdi),
                 category=_WarnComboLoadingMask,
             )
@@ -1271,7 +1271,7 @@ class PPField(metaclass=ABCMeta):
         if data.dtype == np.dtype(">f4"):
             lb[self.HEADER_DICT["lbuser"][0]] = 1
         elif data.dtype == np.dtype(">f8"):
-            warnings.warn(
+            warn_once_at_level(
                 "Downcasting array precision from float64 to float32"
                 " for save.If float64 precision is required then"
                 " please save in a different format",
@@ -1694,7 +1694,7 @@ def _interpret_fields(fields):
     # they were encountered before the landmask reference field.
     if landmask_compressed_fields:
         if land_mask_field is None:
-            warnings.warn(
+            warn_once_at_level(
                 "Landmask compressed fields existed without a "
                 "landmask to decompress with. The data will have "
                 "a shape of (0, 0) and will not read.",
@@ -1862,7 +1862,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                     "Unable to interpret field {}. {}. Skipping "
                     "the remainder of the file.".format(field_count, str(e))
                 )
-                warnings.warn(
+                warn_once_at_level(
                     msg,
                     category=_WarnComboIgnoringLoad,
                 )
@@ -1882,7 +1882,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                     "after the header in the file ({} and {}). "
                     "Skipping the remainder of the file."
                 )
-                warnings.warn(
+                warn_once_at_level(
                     wmsg.format(
                         pp_field.lblrec * PP_WORD_DEPTH, len_of_data_plus_extra
                     ),

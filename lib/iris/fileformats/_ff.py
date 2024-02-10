@@ -5,7 +5,7 @@
 """Provides UK Met Office Fields File (FF) format specific capabilities."""
 
 import os
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import numpy as np
 
@@ -419,7 +419,7 @@ class FFHeader:
         grid_class = self.GRID_STAGGERING_CLASS.get(self.grid_staggering)
         if grid_class is None:
             grid_class = NewDynamics
-            warnings.warn(
+            warn_once_at_level(
                 "Staggered grid type: {} not currently interpreted, assuming "
                 "standard C-grid".format(self.grid_staggering),
                 category=_WarnComboLoadingDefaulting,
@@ -539,7 +539,7 @@ class FF2PP:
                 "may be incorrect, not having taken into account the "
                 "boundary size."
             )
-            warnings.warn(msg, category=IrisLoadWarning)
+            warn_once_at_level(msg, category=IrisLoadWarning)
         else:
             range2 = field_dim[0] - res_low
             range1 = field_dim[0] - halo_dim * res_low
@@ -608,7 +608,7 @@ class FF2PP:
             field.y = self._det_border(field.y, boundary_packing.y_halo)
         else:
             if field.bdy < 0:
-                warnings.warn(
+                warn_once_at_level(
                     "The LBC has a bdy less than 0. No "
                     "case has previously been seen of "
                     "this, and the decompression may be "
@@ -720,7 +720,7 @@ class FF2PP:
                     else:
                         subgrid = stash_entry.grid_code
                         if subgrid not in HANDLED_GRIDS:
-                            warnings.warn(
+                            warn_once_at_level(
                                 "The stash code {} is on a grid {} "
                                 "which has not been explicitly "
                                 "handled by the fieldsfile loader."
@@ -742,7 +742,7 @@ class FF2PP:
                                 "STASH to grid type mapping. Picking the P "
                                 "position as the cell type".format(stash)
                             )
-                            warnings.warn(
+                            warn_once_at_level(
                                 msg,
                                 category=_WarnComboLoadingDefaulting,
                             )
@@ -751,7 +751,7 @@ class FF2PP:
                         field.bplat = grid.pole_lat
                         field.bplon = grid.pole_lon
                     elif no_x or no_y:
-                        warnings.warn(
+                        warn_once_at_level(
                             "Partially missing X or Y coordinate values.",
                             category=IrisLoadWarning,
                         )
@@ -799,7 +799,7 @@ class FF2PP:
                         "Input field skipped as PPField creation failed :"
                         " error = {!r}"
                     )
-                    warnings.warn(msg.format(str(valerr)), category=IrisLoadWarning)
+                    warn_once_at_level(msg.format(str(valerr)), category=IrisLoadWarning)
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())

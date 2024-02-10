@@ -18,7 +18,7 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
 import os
 import re
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import numpy as np
 import numpy.ma as ma
@@ -276,7 +276,7 @@ class CFAncillaryDataVariable(CFVariable):
                         if name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF ancillary data variable %r, referenced by netCDF variable %r"
-                                warnings.warn(
+                                warn_once_at_level(
                                     message % (name, nc_var_name),
                                     category=iris.exceptions.IrisCfMissingVarWarning,
                                 )
@@ -325,7 +325,7 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
                         if name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF auxiliary coordinate variable %r, referenced by netCDF variable %r"
-                                warnings.warn(
+                                warn_once_at_level(
                                     message % (name, nc_var_name),
                                     category=iris.exceptions.IrisCfMissingVarWarning,
                                 )
@@ -375,7 +375,7 @@ class CFBoundaryVariable(CFVariable):
                     if name not in variables:
                         if warn:
                             message = "Missing CF-netCDF boundary variable %r, referenced by netCDF variable %r"
-                            warnings.warn(
+                            warn_once_at_level(
                                 message % (name, nc_var_name),
                                 category=iris.exceptions.IrisCfMissingVarWarning,
                             )
@@ -451,7 +451,7 @@ class CFClimatologyVariable(CFVariable):
                     if name not in variables:
                         if warn:
                             message = "Missing CF-netCDF climatology variable %r, referenced by netCDF variable %r"
-                            warnings.warn(
+                            warn_once_at_level(
                                 message % (name, nc_var_name),
                                 category=iris.exceptions.IrisCfMissingVarWarning,
                             )
@@ -591,7 +591,7 @@ class _CFFormulaTermsVariable(CFVariable):
                         if variable_name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF formula term variable %r, referenced by netCDF variable %r"
-                                warnings.warn(
+                                warn_once_at_level(
                                     message % (variable_name, nc_var_name),
                                     category=iris.exceptions.IrisCfMissingVarWarning,
                                 )
@@ -658,7 +658,7 @@ class CFGridMappingVariable(CFVariable):
                     if name not in variables:
                         if warn:
                             message = "Missing CF-netCDF grid mapping variable %r, referenced by netCDF variable %r"
-                            warnings.warn(
+                            warn_once_at_level(
                                 message % (name, nc_var_name),
                                 category=iris.exceptions.IrisCfMissingVarWarning,
                             )
@@ -699,7 +699,7 @@ class CFLabelVariable(CFVariable):
                         if name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF label variable %r, referenced by netCDF variable %r"
-                                warnings.warn(
+                                warn_once_at_level(
                                     message % (name, nc_var_name),
                                     category=iris.exceptions.IrisCfMissingVarWarning,
                                 )
@@ -874,7 +874,7 @@ class CFMeasureVariable(CFVariable):
                         if variable_name not in variables:
                             if warn:
                                 message = "Missing CF-netCDF measure variable %r, referenced by netCDF variable %r"
-                                warnings.warn(
+                                warn_once_at_level(
                                     message % (variable_name, nc_var_name),
                                     category=iris.exceptions.IrisCfMissingVarWarning,
                                 )
@@ -1080,7 +1080,7 @@ class CFReader:
             "NETCDF3_CLASSIC",
             "NETCDF3_64BIT",
         ]:
-            warnings.warn(
+            warn_once_at_level(
                 "Optimise CF-netCDF loading by converting data from NetCDF3 "
                 'to NetCDF4 file format using the "nccopy" command.',
                 category=iris.exceptions.IrisLoadWarning,
@@ -1219,7 +1219,7 @@ class CFReader:
                                 cf_variable.dimensions,
                             )
                         )
-                        warnings.warn(
+                        warn_once_at_level(
                             msg,
                             category=iris.exceptions.IrisCfNonSpanningVarWarning,
                         )
@@ -1268,7 +1268,7 @@ class CFReader:
                                         cf_variable.dimensions,
                                     )
                                 )
-                                warnings.warn(
+                                warn_once_at_level(
                                     msg,
                                     category=iris.exceptions.IrisCfNonSpanningVarWarning,
                                 )

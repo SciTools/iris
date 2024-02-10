@@ -6,7 +6,7 @@
 
 from collections import namedtuple
 import copy
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import cartopy.crs as ccrs
 import cartopy.img_transform
@@ -410,7 +410,7 @@ def area_weights(cube, normalize=False):
     cs = cube.coord_system("CoordSystem")
     if isinstance(cs, iris.coord_systems.GeogCS):
         if cs.inverse_flattening != 0.0:
-            warnings.warn(
+            warn_once_at_level(
                 "Assuming spherical earth from ellipsoid.",
                 category=iris.exceptions.IrisDefaultingWarning,
             )
@@ -419,13 +419,13 @@ def area_weights(cube, normalize=False):
         cs.ellipsoid is not None
     ):
         if cs.ellipsoid.inverse_flattening != 0.0:
-            warnings.warn(
+            warn_once_at_level(
                 "Assuming spherical earth from ellipsoid.",
                 category=iris.exceptions.IrisDefaultingWarning,
             )
         radius_of_earth = cs.ellipsoid.semi_major_axis
     else:
-        warnings.warn(
+        warn_once_at_level(
             "Using DEFAULT_SPHERICAL_EARTH_RADIUS.",
             category=iris.exceptions.IrisDefaultingWarning,
         )
@@ -567,7 +567,7 @@ def cosine_latitude_weights(cube):
     if np.any(lat.points < -np.pi / 2.0 - threshold) or np.any(
         lat.points > np.pi / 2.0 + threshold
     ):
-        warnings.warn(
+        warn_once_at_level(
             "Out of range latitude values will be clipped to the valid range.",
             category=iris.exceptions.IrisDefaultingWarning,
         )
@@ -683,7 +683,7 @@ def project(cube, target_proj, nx=None, ny=None):
     # Determine source coordinate system
     if lat_coord.coord_system is None:
         # Assume WGS84 latlon if unspecified
-        warnings.warn(
+        warn_once_at_level(
             "Coordinate system of latitude and longitude "
             "coordinates is not specified. Assuming WGS84 Geodetic.",
             category=iris.exceptions.IrisDefaultingWarning,
@@ -871,7 +871,7 @@ def project(cube, target_proj, nx=None, ny=None):
             new_cube.add_aux_coord(coord.copy(), cube.coord_dims(coord))
     discarded_coords = coords_to_ignore.difference([lat_coord, lon_coord])
     if discarded_coords:
-        warnings.warn(
+        warn_once_at_level(
             "Discarding coordinates that share dimensions with {} and {}: {}".format(
                 lat_coord.name(),
                 lon_coord.name(),

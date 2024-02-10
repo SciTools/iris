@@ -16,7 +16,7 @@ from copy import deepcopy
 from enum import Enum, auto
 import threading
 from typing import Union
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import numpy as np
 
@@ -413,7 +413,7 @@ def _load_aux_factory(engine, cube):
                 for coord, cf_var_name in engine.cube_parts["coordinates"]:
                     if cf_var_name == name:
                         return coord
-                warnings.warn(
+                warn_once_at_level(
                     "Unable to find coordinate for variable {!r}".format(name),
                     category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
                 )
@@ -644,7 +644,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 try:
                     _load_aux_factory(engine, cube)
                 except ValueError as e:
-                    warnings.warn(
+                    warn_once_at_level(
                         "{}".format(e),
                         category=iris.exceptions.IrisLoadWarning,
                     )

@@ -15,7 +15,7 @@ from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
 import threading
-import warnings
+from iris.exceptions import warn_once_at_level
 
 from ...config import get_logger
 from ...coords import AuxCoord
@@ -356,7 +356,7 @@ def _build_mesh(cf, mesh_var, file_path):
         cf_role_message = f"{mesh_var.cf_name} has an inappropriate cf_role: {cf_role}."
     if cf_role_message:
         cf_role_message += " Correcting to 'mesh_topology'."
-        warnings.warn(
+        warn_once_at_level(
             cf_role_message,
             category=_WarnComboCfDefaulting,
         )
@@ -377,7 +377,7 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        warnings.warn(msg, category=_WarnComboCfDefaulting)
+        warn_once_at_level(msg, category=_WarnComboCfDefaulting)
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -389,7 +389,7 @@ def _build_mesh(cf, mesh_var, file_path):
                 f"{quoted_topology_dimension}"
                 " -- ignoring this as it is inconsistent."
             )
-            warnings.warn(
+            warn_once_at_level(
                 msg,
                 category=_WarnComboCfDefaultingIgnoring,
             )

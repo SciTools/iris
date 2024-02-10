@@ -355,7 +355,7 @@ def warn_once(msg, type, stacklevel, frame):
     warnings.warn(msg, type, stacklevel=stacklevel)
 
 
-def warn_once_at_level(msg, type, stacklevel):
+def warn_once_at_level(msg, type=None, stacklevel=0):
     """
     Raise a warning only if a similar one hasn't been raised from the same line
     for a given stack level.

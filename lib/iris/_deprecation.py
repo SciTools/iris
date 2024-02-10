@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Utilities for producing runtime deprecation messages."""
 
-import warnings
+from iris.exceptions import warn_once_at_level
 
 
 class IrisDeprecation(UserWarning):
@@ -44,7 +44,7 @@ def warn_deprecated(msg, stacklevel=2):
         >>>
 
     """
-    warnings.warn(msg, category=IrisDeprecation, stacklevel=stacklevel)
+    warn_once_at_level(msg, category=IrisDeprecation, stacklevel=stacklevel)
 
 
 # A Mixin for a wrapper class that copies the docstring of the wrapped class

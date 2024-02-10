@@ -5,7 +5,7 @@
 
 """PP Save Rules."""
 
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import cftime
 
@@ -904,4 +904,4 @@ def verify(cube, field):
 
 def _conditional_warning(condition, warning):
     if condition:
-        warnings.warn(warning, category=IrisPpClimModifiedWarning)
+        warn_once_at_level(warning, category=IrisPpClimModifiedWarning)

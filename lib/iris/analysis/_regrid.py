@@ -5,7 +5,7 @@
 
 import copy
 import functools
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import numpy as np
 import numpy.ma as ma
@@ -1106,6 +1106,6 @@ def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback)
                 "Cannot update aux_factory {!r} because of dropped"
                 " coordinates.".format(factory.name())
             )
-            warnings.warn(msg, category=IrisImpossibleUpdateWarning)
+            warn_once_at_level(msg, category=IrisImpossibleUpdateWarning)
 
     return result

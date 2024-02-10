@@ -9,7 +9,7 @@
 
 """
 
-import warnings
+from iris.exceptions import warn_once_at_level
 
 import numpy as np
 from shapely.geometry import Polygon
@@ -69,7 +69,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_min_ix = np.where(x_bounds_lower <= x_min_geom)[0]
         x_min_ix = x_min_ix[np.argmax(x_bounds_lower[x_min_ix])]
     except ValueError:
-        warnings.warn(
+        warn_once_at_level(
             "The geometry exceeds the cube's x dimension at the lower end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )
@@ -79,7 +79,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_max_ix = np.where(x_bounds_upper >= x_max_geom)[0]
         x_max_ix = x_max_ix[np.argmin(x_bounds_upper[x_max_ix])]
     except ValueError:
-        warnings.warn(
+        warn_once_at_level(
             "The geometry exceeds the cube's x dimension at the upper end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )
@@ -89,7 +89,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         y_min_ix = np.where(y_bounds_lower <= y_min_geom)[0]
         y_min_ix = y_min_ix[np.argmax(y_bounds_lower[y_min_ix])]
     except ValueError:
-        warnings.warn(
+        warn_once_at_level(
             "The geometry exceeds the cube's y dimension at the lower end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )
@@ -99,7 +99,7 @@ def _extract_relevant_cube_slice(cube, geometry):
         y_max_ix = np.where(y_bounds_upper >= y_max_geom)[0]
         y_max_ix = y_max_ix[np.argmin(y_bounds_upper[y_max_ix])]
     except ValueError:
-        warnings.warn(
+        warn_once_at_level(
             "The geometry exceeds the cube's y dimension at the upper end.",
             category=iris.exceptions.IrisGeometryExceedWarning,
         )

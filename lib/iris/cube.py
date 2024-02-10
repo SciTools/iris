@@ -20,7 +20,7 @@ from typing import (
     Optional,
     Union,
 )
-import warnings
+from iris.exceptions import warn_once_at_level
 from xml.dom.minidom import Document
 import zlib
 
@@ -4040,7 +4040,7 @@ class Cube(CFVariableMixin):
             lat_match = [coord for coord in coords if "latitude" in coord.name()]
             if lat_match:
                 for coord in lat_match:
-                    warnings.warn(
+                    warn_once_at_level(
                         msg.format(coord.name()),
                         category=iris.exceptions.IrisUserWarning,
                     )
@@ -4593,7 +4593,7 @@ x            -               -
         # now update all of the coordinates to reflect the aggregation
         for coord_ in self.coords(dimensions=dimension):
             if coord_.has_bounds():
-                warnings.warn(
+                warn_once_at_level(
                     "The bounds of coordinate %r were ignored in "
                     "the rolling window operation." % coord_.name(),
                     category=iris.exceptions.IrisIgnoringBoundsWarning,
