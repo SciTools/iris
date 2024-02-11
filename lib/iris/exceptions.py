@@ -350,16 +350,16 @@ class IrisSaverFillValueWarning(IrisMaskValueMatchWarning, IrisSaveWarning):
 
 
 @lru_cache(None)
-def warn_once(msg, type, stacklevel, frame):
+def warn_once(msg, type, stacklevel, frame, **kwargs):
     """Raise a warning only if a similar one has not been raised before."""
-    warnings.warn(msg, type, stacklevel=stacklevel)
+    warnings.warn(msg, type, stacklevel=stacklevel, **kwargs)
 
 
-def warn_once_at_level(msg, type=None, stacklevel=0):
+def warn_once_at_level(msg, type=None, stacklevel=0, **kwargs):
     """
     Raise a warning only if a similar one hasn't been raised from the same line
     for a given stack level.
     """
     stacklevel += 1
     frame = traceback.format_stack()[-stacklevel]
-    warn_once(msg, type, stacklevel + 1, frame)
+    warn_once(msg, type, stacklevel + 1, frame, **kwargs)
