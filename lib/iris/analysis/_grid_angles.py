@@ -416,7 +416,7 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
         Units must be angular, i.e. can be converted to 'radians'.
         If not provided, grid angles are estimated from 'u_cube' using the
         :func:`gridcell_angles` method.
-    **grid_angles_kwargs : dict or None
+    **grid_angles_kwargs : dict, optional
         Additional keyword args to be passed to the :func:`gridcell_angles`
         method, if it is used.
 

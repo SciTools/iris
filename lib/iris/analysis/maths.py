@@ -41,7 +41,7 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
         A unary or binary operator which can be applied to array-like objects.
     first_dtype :
         The dtype of the first or only argument to the operator.
-    second_dtype : optional, default=None
+    second_dtype : optional
         The dtype of the second argument to the operator.
     in_place : bool, default=False
         Whether the operation is to be performed in place.
@@ -333,7 +333,7 @@ def _add_subtract_common(
     new_dtype :
         The expected dtype of the output. Used in the case of scalar
         masked arrays
-    dim : optional, default=None
+    dim : optional
         Dimension along which to apply `other` if it's a coordinate that is not
         found in `cube`
     in_place : bool, default=False

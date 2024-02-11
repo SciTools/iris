@@ -3,10 +3,10 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-r"""Allow the construction of :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es.
+r"""Allow the construction of :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
 Extensions to Iris' NetCDF loading to allow the construction of
-:class:`~iris.experimental.ugrid.mesh.Mesh`\\ es from UGRID data in the file.
+:class:`~iris.experimental.ugrid.mesh.Mesh` from UGRID data in the file.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
@@ -155,7 +155,7 @@ def load_meshes(uris, var_name=None):
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
         must support OpenDAP.
     var_name : str, optional
-        Only return :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es that have
+        Only return :class:`~iris.experimental.ugrid.mesh.Mesh` that have
         var_names matching this value.
 
     Returns
@@ -163,7 +163,7 @@ def load_meshes(uris, var_name=None):
     dict
         A dictionary mapping each mesh-containing file path/URL in the input
         ``uris`` to a list of the
-        :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es returned from each.
+        :class:`~iris.experimental.ugrid.mesh.Mesh` returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded

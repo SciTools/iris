@@ -195,7 +195,7 @@ def as_cubes(
     r"""Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
     The index of `pandas_structure` will be used for generating the
-    :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`\\ s.
+    :class:`~iris.cube.Cube` dimension(s) and :class:`~iris.coords.DimCoord`.
     Other dimensional metadata may span multiple dimensions - based on how the
     column values vary with the index values.
 
@@ -227,7 +227,7 @@ def as_cubes(
     A :class:`~pandas.DataFrame` using columns as a second data dimension will
     need to be 'melted' before conversion. See the Examples for how.
 
-    :class:`dask.dataframe.DataFrame`\\ s are not supported.
+    :class:`dask.dataframe.DataFrame` are not supported.
 
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
@@ -303,7 +303,7 @@ def as_cubes(
             in_region                             x            x          -
 
     Pandas uses ``NaN`` rather than masking data. Converted
-    :class:`~iris.cube.Cube`\\s can be masked in downstream user code :
+    :class:`~iris.cube.Cube` can be masked in downstream user code :
 
     >>> my_series = Series([300, np.NaN, 302], name="air_temperature")
     >>> converted_cube = as_cubes(my_series)[0]
@@ -651,7 +651,7 @@ def as_data_frame(
     #. This documentation is for the new ``as_data_frame()`` behaviour, which
        is **currently opt-in** to preserve backwards compatibility. The default
        legacy behaviour is documented in pre-``v3.4`` documentation (summary:
-       limited to 2-dimensional :class:`~iris.cube.Cube`\\ s, with only the
+       limited to 2-dimensional :class:`~iris.cube.Cube`, with only the
        :attr:`~iris.cube.Cube.data` and :attr:`~iris.cube.Cube.dim_coords`
        being added). The legacy behaviour will be removed in a future version
        of Iris, so please opt-in to the new behaviour at your earliest
@@ -671,7 +671,7 @@ def as_data_frame(
 
     Notes
     -----
-    :class:`dask.dataframe.DataFrame`\\ s are not supported.
+    :class:`dask.dataframe.DataFrame` are not supported.
 
     A :class:`~pandas.MultiIndex` :class:`~pandas.DataFrame` is returned by default.
     Use the :meth:`~pandas.DataFrame.reset_index` to return a

@@ -21,10 +21,6 @@ defined by :mod:`configparser`.
 
     The full path to the Iris palette configuration directory
 
-.. py:data:: iris.config.IMPORT_LOGGER
-
-    The [optional] name of the logger to notify when first imported.
-
 ----------
 
 """

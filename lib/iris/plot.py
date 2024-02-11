@@ -1421,7 +1421,7 @@ def points(cube, *args, **kwargs):
     axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-    **kwargs :dict
+    **kwargs : dict, optional
         See :func:`matplotlib.pyplot.scatter` for details of other valid
         keyword arguments.
 
@@ -1845,29 +1845,25 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     fig : :class:`matplotlib.figure.Figure` instance, optional
         By default, the current figure will be used or a new figure instance
         created if no figure is available. See :func:`matplotlib.pyplot.gcf`.
+    coords: list of :class:`~iris.coords.Coord` objects or coordinate names, optional
+        Use the given coordinates as the axes for the plot. The order of the
+        given coordinates indicates which axis to use for each, where the first
+        element is the horizontal axis of the plot and the second element is
+        the vertical axis of the plot.
+    interval: int, float or long, optional
+        Defines the time interval in milliseconds between successive frames.
+        A default interval of 100ms is set.
+    vmin, vmax: int, float or long, optional
+        Color scaling values, see :class:`matplotlib.colors.Normalize` for
+        further details. Default values are determined by the min-max across
+        the data set over the entire sequence.
     **kwargs : dict, optional
-        Valid keyword arguments:
-
-        coords: list of :class:`~iris.coords.Coord` objects or coordinate names
-            Use the given coordinates as the axes for the plot. The order of the
-            given coordinates indicates which axis to use for each, where the first
-            element is the horizontal axis of the plot and the second element is
-            the vertical axis of the plot.
-        interval: int, float or long
-            Defines the time interval in milliseconds between successive frames.
-            A default interval of 100ms is set.
-        vmin, vmax: int, float or long
-            Color scaling values, see :class:`matplotlib.colors.Normalize` for
-            further details. Default values are determined by the min-max across
-            the data set over the entire sequence.
-
         See :class:`matplotlib.animation.FuncAnimation` for details of other
         valid keyword arguments.
 
     Returns
     -------
-    :class:`~matplotlib.animation.FuncAnimation` object suitable for
-    saving and or plotting.
+    :class:`~matplotlib.animation.FuncAnimation` object suitable for saving and or plotting.
 
     Examples
     --------

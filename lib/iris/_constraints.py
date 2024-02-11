@@ -40,7 +40,7 @@ class Constraint:
         coord_values : dict or None, optional
             If a dict, it must map coordinate name to the condition on the
             associated coordinate.
-        **kwargs :
+        ***kwargs : dict, optional
             The remaining keyword arguments are converted to coordinate
             constraints. The name of the argument gives the name of a
             coordinate, and the value of the argument is the condition to meet

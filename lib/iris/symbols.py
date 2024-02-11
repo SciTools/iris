@@ -227,8 +227,8 @@ CLOUD_COVER = {
 A dictionary mapping WMO cloud cover codes to their corresponding symbol.
 
 See https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
-    Part II, Appendix II.4, Graphical Representation of Data, Analyses
-    and Forecasts
+Part II, Appendix II.4, Graphical Representation of Data, Analyses
+and Forecasts
 
 """
 

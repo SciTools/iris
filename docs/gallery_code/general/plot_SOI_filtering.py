@@ -30,12 +30,11 @@ import iris.plot as iplt
 def low_pass_weights(window, cutoff):
     """Calculate weights for a low pass Lanczos filter.
 
-    Args:
-
-    window: int
+    Parameters
+    ----------
+    window : int
         The length of the filter window.
-
-    cutoff: float
+    cutoff : float
         The cutoff frequency in inverse time steps.
 
     """
