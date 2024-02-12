@@ -91,10 +91,10 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. `@bouweandela`_ updated :class:`~iris.cube.Cube` comparison so equality is
-   now possible between cubes with data containing a :obj:`numpy.nan`.
-   e.g. ``Cube([np.nan, 1.0]) != Cube([np.nan, 2.0])``,
-   ``Cube([np.nan, 1.0]) == Cube([np.nan, 1.0])``. (:pull:`5713`)
+#. `@bouweandela`_ and  `@trexfeathers`_ (reviewer) updated :class:`~iris.cube.Cube`
+   comparison so equality is now possible between cubes with data containing a
+   :obj:`numpy.nan`. e.g. ``Cube([np.nan, 1.0]) == Cube([np.nan, 1.0])`` will now
+   evaluate to :obj:`True`, while previously this would have been :obj:`False`. (:pull:`5713`)
 
 
 🚀 Performance Enhancements
@@ -116,7 +116,8 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ made comparing coordinates and arrays to themselves faster. (:pull:`5691`)
 
-#. `@bouweandela`_ made comparing cubes to themselves faster. (:pull:`5713`)
+#. `@bouweandela`_ and  `@trexfeathers`_ (reviewer) made comparing cubes to
+   themselves faster. (:pull:`5713`)
 
 
 🔥 Deprecations

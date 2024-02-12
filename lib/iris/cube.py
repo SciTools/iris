@@ -3865,11 +3865,13 @@ class Cube(CFVariableMixin):
             if result:
                 # TODO: why do we use allclose() here, but strict equality in
                 #  _DimensionalMetadata (via util.array_equal())?
-                result = da.allclose(
-                    self.core_data(),
-                    other.core_data(),
-                    equal_nan=True,
-                ).compute()
+                result = bool(
+                    np.allclose(
+                        self.core_data(),
+                        other.core_data(),
+                        equal_nan=True,
+                    )
+                )
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
