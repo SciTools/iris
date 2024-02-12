@@ -7,13 +7,13 @@
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
 import re
-from iris.exceptions import warn_once_at_level
 
 import cartopy.crs as ccrs
 import numpy as np
 
 from iris._deprecation import warn_deprecated
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 
 
 def _arg_default(value, default, cast_as=float):

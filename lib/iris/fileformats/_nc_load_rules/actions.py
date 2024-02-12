@@ -40,10 +40,10 @@ longer useful, this can be considerably simplified.
 """
 
 from functools import wraps
-from iris.exceptions import warn_once_at_level
 
 from iris.config import get_logger
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 

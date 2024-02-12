@@ -65,7 +65,9 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                 f"{nc_var_name}"
                             )
                             if warn:
-                                warn_once_at_level(message, category=IrisCfMissingVarWarning)
+                                warn_once_at_level(
+                                    message, category=IrisCfMissingVarWarning
+                                )
                         else:
                             # Restrict to non-string type i.e. not a
                             # CFLabelVariable.
@@ -217,7 +219,9 @@ class CFUGridMeshVariable(cf.CFVariable):
                             f"referenced by netCDF variable {nc_var_name}"
                         )
                         if warn:
-                            warn_once_at_level(message, category=IrisCfMissingVarWarning)
+                            warn_once_at_level(
+                                message, category=IrisCfMissingVarWarning
+                            )
                     else:
                         # Restrict to non-string type i.e. not a
                         # CFLabelVariable.
@@ -230,7 +234,9 @@ class CFUGridMeshVariable(cf.CFVariable):
                                 f"variable."
                             )
                             if warn:
-                                warn_once_at_level(message, category=IrisCfLabelVarWarning)
+                                warn_once_at_level(
+                                    message, category=IrisCfLabelVarWarning
+                                )
 
         return result
 

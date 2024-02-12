@@ -10,7 +10,6 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 import collections
 import datetime
-from iris.exceptions import warn_once_at_level
 
 import cartopy.crs as ccrs
 from cartopy.geodesic import Geodesic
@@ -30,7 +29,11 @@ import iris.analysis.cartography as cartography
 import iris.coord_systems
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisError, IrisUnsupportedPlottingWarning
+from iris.exceptions import (
+    IrisError,
+    IrisUnsupportedPlottingWarning,
+    warn_once_at_level,
+)
 
 # Importing iris.palette to register the brewer palettes.
 import iris.palette

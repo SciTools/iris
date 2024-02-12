@@ -9,12 +9,11 @@
 
 """
 
-from iris.exceptions import warn_once_at_level
-
 import numpy as np
 from shapely.geometry import Polygon
 
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 
 
 def _extract_relevant_cube_slice(cube, geometry):

@@ -11,7 +11,6 @@ import copy
 from functools import lru_cache
 from itertools import zip_longest
 import operator
-from iris.exceptions import warn_once_at_level
 import zlib
 
 import dask.array as da
@@ -30,6 +29,7 @@ from iris.common import (
     metadata_manager_factory,
 )
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 import iris.time
 import iris.util
 

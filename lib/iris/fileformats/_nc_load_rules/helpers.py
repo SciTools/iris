@@ -321,7 +321,9 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
         nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str.strip())
         if not nc_cell_method_match:
             msg = f"Failed to fully parse cell method string: {nc_cell_methods}"
-            warn_once_at_level(msg, category=iris.exceptions.IrisCfLoadWarning, stacklevel=2)
+            warn_once_at_level(
+                msg, category=iris.exceptions.IrisCfLoadWarning, stacklevel=2
+            )
             continue
         nc_cell_methods_matches.append(nc_cell_method_match)
 

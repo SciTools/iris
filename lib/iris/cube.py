@@ -20,7 +20,6 @@ from typing import (
     Optional,
     Union,
 )
-from iris.exceptions import warn_once_at_level
 from xml.dom.minidom import Document
 import zlib
 
@@ -44,6 +43,7 @@ from iris.common.mixin import LimitedAttributeDict
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 import iris.util
 
 __all__ = ["Cube", "CubeAttrsDict", "CubeList"]

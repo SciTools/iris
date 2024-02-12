@@ -9,7 +9,6 @@ See also: :mod:`NumPy <numpy>`.
 """
 
 import re
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 import numpy as np
@@ -22,7 +21,7 @@ from iris.analysis.cartography import (
 import iris.analysis.maths
 import iris.coord_systems
 import iris.coords
-from iris.exceptions import IrisUserWarning
+from iris.exceptions import IrisUserWarning, warn_once_at_level
 from iris.util import delta
 
 __all__ = ["DIRECTIONAL_NAMES", "cube_delta", "curl", "differentiate"]

@@ -5,7 +5,6 @@
 """Provides UK Met Office Fields File (FF) format specific capabilities."""
 
 import os
-from iris.exceptions import warn_once_at_level
 
 import numpy as np
 
@@ -13,6 +12,7 @@ from iris.exceptions import (
     IrisDefaultingWarning,
     IrisLoadWarning,
     NotYetImplementedError,
+    warn_once_at_level,
 )
 from iris.fileformats._ff_cross_references import STASH_TRANS
 
@@ -799,7 +799,9 @@ class FF2PP:
                         "Input field skipped as PPField creation failed :"
                         " error = {!r}"
                     )
-                    warn_once_at_level(msg.format(str(valerr)), category=IrisLoadWarning)
+                    warn_once_at_level(
+                        msg.format(str(valerr)), category=IrisLoadWarning
+                    )
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())

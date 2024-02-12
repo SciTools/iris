@@ -16,7 +16,6 @@ from copy import deepcopy
 from enum import Enum, auto
 import threading
 from typing import Union
-from iris.exceptions import warn_once_at_level
 
 import numpy as np
 
@@ -35,6 +34,7 @@ import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS

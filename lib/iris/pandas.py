@@ -9,7 +9,6 @@ See also: https://pandas.pydata.org/
 """
 import datetime
 from itertools import chain, combinations
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 from cf_units import Unit
@@ -17,6 +16,8 @@ import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
+
+from iris.exceptions import warn_once_at_level
 
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20

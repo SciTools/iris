@@ -8,7 +8,6 @@ from functools import lru_cache
 import inspect
 import math
 import operator
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 import dask.array as da
@@ -22,6 +21,7 @@ from iris.common.lenient import _lenient_client
 from iris.config import get_logger
 import iris.coords
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 import iris.util
 
 # Configure the logger.

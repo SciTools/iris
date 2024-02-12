@@ -8,7 +8,6 @@ import collections
 import datetime
 from operator import itemgetter
 import re
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 import numpy as np
@@ -16,7 +15,7 @@ import numpy as np
 import iris.coord_systems
 from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
-from iris.exceptions import IrisLoadWarning, TranslationError
+from iris.exceptions import IrisLoadWarning, TranslationError, warn_once_at_level
 import iris.util
 
 EARTH_RADIUS = 6371229.0
@@ -265,7 +264,9 @@ def _parse_units(units):
     try:
         units = cf_units.Unit(units)
     except ValueError:
-        warn_once_at_level("Unknown units: {!r}".format(units), category=IrisLoadWarning)
+        warn_once_at_level(
+            "Unknown units: {!r}".format(units), category=IrisLoadWarning
+        )
         units = cf_units.Unit(None)
 
     return units

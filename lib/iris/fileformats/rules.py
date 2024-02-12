@@ -5,13 +5,13 @@
 """Generalised mechanisms for metadata translation and cube construction."""
 
 import collections
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 
 from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 import iris.fileformats.um_cf_map
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])

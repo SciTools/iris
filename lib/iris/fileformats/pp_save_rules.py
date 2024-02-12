@@ -5,13 +5,11 @@
 
 """PP Save Rules."""
 
-from iris.exceptions import warn_once_at_level
-
 import cftime
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisPpClimModifiedWarning
+from iris.exceptions import IrisPpClimModifiedWarning, warn_once_at_level
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (

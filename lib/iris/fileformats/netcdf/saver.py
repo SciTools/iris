@@ -20,7 +20,6 @@ import os.path
 import re
 import string
 from typing import List
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 import dask
@@ -45,6 +44,7 @@ import iris.coord_systems
 import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
@@ -2565,7 +2565,9 @@ class Saver:
         if issue_warnings:
             # Issue any delayed warnings from the compute.
             for delayed_warning in result_warnings:
-                warn_once_at_level(delayed_warning, category=iris.exceptions.IrisSaveWarning)
+                warn_once_at_level(
+                    delayed_warning, category=iris.exceptions.IrisSaveWarning
+                )
 
         return result_warnings
 

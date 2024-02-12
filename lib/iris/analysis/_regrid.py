@@ -5,7 +5,6 @@
 
 import copy
 import functools
-from iris.exceptions import warn_once_at_level
 
 import numpy as np
 import numpy.ma as ma
@@ -19,7 +18,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.exceptions import IrisImpossibleUpdateWarning
+from iris.exceptions import IrisImpossibleUpdateWarning, warn_once_at_level
 from iris.util import _meshgrid, guess_coord_axis
 
 

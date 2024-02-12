@@ -18,7 +18,6 @@
 """
 import copy
 import functools
-from iris.exceptions import warn_once_at_level
 
 import cartopy.crs as ccrs
 import numpy as np
@@ -37,7 +36,7 @@ from iris.analysis._regrid import (
 import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
-from iris.exceptions import IrisImpossibleUpdateWarning
+from iris.exceptions import IrisImpossibleUpdateWarning, warn_once_at_level
 from iris.util import _meshgrid
 
 wmsg = (

@@ -6,7 +6,6 @@
 
 from collections import namedtuple
 import copy
-from iris.exceptions import warn_once_at_level
 
 import cartopy.crs as ccrs
 import cartopy.img_transform
@@ -18,6 +17,7 @@ import numpy.ma as ma
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 from iris.util import _meshgrid
 
 from ._grid_angles import gridcell_angles, rotate_grid_vectors

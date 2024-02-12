@@ -11,7 +11,6 @@ import operator
 import os
 import re
 import struct
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 import cftime
@@ -24,6 +23,7 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
 import iris.coord_systems
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?

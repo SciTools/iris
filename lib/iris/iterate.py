@@ -6,11 +6,10 @@
 
 from collections.abc import Iterator
 import itertools
-from iris.exceptions import warn_once_at_level
 
 import numpy as np
 
-from iris.exceptions import IrisUserWarning
+from iris.exceptions import IrisUserWarning, warn_once_at_level
 
 __all__ = ["izip"]
 

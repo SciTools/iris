@@ -5,7 +5,6 @@
 """Automatic concatenation of multiple cubes over one or more existing dimensions."""
 
 from collections import defaultdict, namedtuple
-from iris.exceptions import warn_once_at_level
 
 import dask.array as da
 import numpy as np
@@ -13,6 +12,7 @@ import numpy as np
 import iris.coords
 import iris.cube
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 from iris.util import array_equal, guess_coord_axis
 
 #

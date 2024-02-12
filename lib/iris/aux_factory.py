@@ -5,7 +5,6 @@
 """Definitions of derived coordinates."""
 
 from abc import ABCMeta, abstractmethod
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 import dask.array as da
@@ -13,7 +12,7 @@ import numpy as np
 
 from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
-from iris.exceptions import IrisIgnoringBoundsWarning
+from iris.exceptions import IrisIgnoringBoundsWarning, warn_once_at_level
 
 
 class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
@@ -429,7 +428,9 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
                     f"Coordinate '{coord.name()}' has bounds. These will "
                     "be disregarded"
                 )
-                warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                warn_once_at_level(
+                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                )
 
         # Check units
         if sigma.units.is_unknown():
@@ -704,7 +705,9 @@ class HybridHeightFactory(AuxCoordFactory):
                     "Orography coordinate {!r} has bounds."
                     " These will be disregarded.".format(new_coord.name())
                 )
-                warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                warn_once_at_level(
+                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                )
             self.orography = new_coord
 
 
@@ -968,7 +971,9 @@ class OceanSigmaZFactory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                warn_once_at_level(
+                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                )
 
         for coord, term in ((depth_c, "depth_c"), (nsigma, "nsigma")):
             if coord is not None and coord.shape != (1,):
@@ -1125,7 +1130,9 @@ class OceanSigmaZFactory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                    warn_once_at_level(
+                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                    )
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1205,7 +1212,9 @@ class OceanSigmaFactory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                warn_once_at_level(
+                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                )
 
         # Check units.
         if sigma is not None and sigma.units.is_unknown():
@@ -1281,7 +1290,9 @@ class OceanSigmaFactory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                    warn_once_at_level(
+                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                    )
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1372,7 +1383,9 @@ class OceanSg1Factory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                warn_once_at_level(
+                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                )
 
         if depth_c is not None and depth_c.shape != (1,):
             msg = "Expected scalar {} coordinate {!r}: got shape {!r}.".format(
@@ -1466,7 +1479,9 @@ class OceanSg1Factory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                    warn_once_at_level(
+                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                    )
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1561,7 +1576,9 @@ class OceanSFactory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                warn_once_at_level(
+                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                )
 
         coords = ((a, "a"), (b, "b"), (depth_c, "depth_c"))
         for coord, term in coords:
@@ -1658,7 +1675,9 @@ class OceanSFactory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                    warn_once_at_level(
+                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                    )
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)
@@ -1753,7 +1772,9 @@ class OceanSg2Factory(AuxCoordFactory):
                     "The {} coordinate {!r} has bounds. "
                     "These are being disregarded.".format(term, coord.name())
                 )
-                warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                warn_once_at_level(
+                    msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                )
 
         if depth_c is not None and depth_c.shape != (1,):
             msg = "Expected scalar depth_c coordinate {!r}: got shape {!r}.".format(
@@ -1847,7 +1868,9 @@ class OceanSg2Factory(AuxCoordFactory):
                         "The {} coordinate {!r} has bounds. "
                         "These are being disregarded.".format(key, name)
                     )
-                    warn_once_at_level(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
+                    warn_once_at_level(
+                        msg, category=IrisIgnoringBoundsWarning, stacklevel=2
+                    )
                     # Swap bounds with points.
                     bds_shape = list(nd_points_by_key[key].shape) + [1]
                     bounds = nd_points_by_key[key].reshape(bds_shape)

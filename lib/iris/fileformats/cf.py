@@ -18,12 +18,12 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
 import os
 import re
-from iris.exceptions import warn_once_at_level
 
 import numpy as np
 import numpy.ma as ma
 
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 from iris.fileformats.netcdf import _thread_safe_nc
 import iris.util
 

@@ -356,8 +356,7 @@ def warn_once(msg, stacklevel, frame, **kwargs):
 
 
 def warn_once_at_level(msg, stacklevel=0, **kwargs):
-    """
-    Raise a warning only if a similar one hasn't been raised from the same line
+    """Raise a warning only if a similar one hasn't been raised from the same line
     for a given stack level.
     """
     stacklevel += 1

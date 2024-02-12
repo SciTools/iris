@@ -6,7 +6,6 @@
 
 import re
 import string
-from iris.exceptions import warn_once_at_level
 
 import cf_units
 import cftime
@@ -19,6 +18,7 @@ from iris.exceptions import (
     CoordinateNotFoundError,
     IrisNimrodTranslationWarning,
     TranslationError,
+    warn_once_at_level,
 )
 
 __all__ = ["run"]

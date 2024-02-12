@@ -29,9 +29,9 @@ import configparser
 import contextlib
 import logging
 import os.path
-from iris.exceptions import warn_once_at_level
 
 import iris.exceptions
+from iris.exceptions import warn_once_at_level
 
 
 def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler=True):
