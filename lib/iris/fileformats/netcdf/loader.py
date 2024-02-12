@@ -454,7 +454,7 @@ def _load_aux_factory(engine, cube):
                             "Ignoring atmosphere hybrid sigma pressure "
                             "scalar coordinate {!r} bounds.".format(coord_p0.name())
                         )
-                        warnings.warn(
+                        warn_once_at_level(
                             msg,
                             category=_WarnComboIgnoringBoundsLoad,
                         )

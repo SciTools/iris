@@ -2829,7 +2829,7 @@ def save(
                     # Catch any demoted attrs where there is already a local version
                     blocked_attrs = demote_attrs & set(cube.attributes.locals)
                     if blocked_attrs:
-                        warnings.warn(
+                        warn_once_at_level(
                             f"Global cube attributes {sorted(blocked_attrs)} "
                             f'of cube "{cube.name()}" were not saved, overlaid '
                             "by existing local attributes with the same names.",

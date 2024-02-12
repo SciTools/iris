@@ -15,7 +15,6 @@ build routines, and which it does not use.
 """
 import re
 from typing import List
-import warnings
 
 import cf_units
 import numpy as np
@@ -438,7 +437,7 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
             cell_methods.append(cell_method)
         # only prints one warning, rather than each loop
         if msg:
-            warnings.warn(msg, category=UnknownCellMethodWarning)
+            warn_once_at_level(msg, category=UnknownCellMethodWarning)
     return tuple(cell_methods)
 
 
