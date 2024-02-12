@@ -5,7 +5,8 @@ Subsetting a Cube
 =================
 
 The :doc:`loading_iris_cubes` section of the user guide showed how to load data into multidimensional Iris cubes.
-However it is often necessary to reduce the dimensionality of a cube down to something more appropriate and/or manageable.
+However it is often necessary to reduce the dimensionality of a cube down to something more appropriate and/or manageable,
+or only examine and analyse a subset of data in a dimension.
 
 Iris provides several ways of reducing both the amount of data and/or the number of dimensions in your cube depending on the circumstance.
 In all cases **the subset of a valid cube is itself a valid cube**.
@@ -329,6 +330,36 @@ on bounds can be done in the following way::
 The above example constrains to cells where either the upper or lower bound occur
 after 1st January 2008.
 
+Cube Masking
+--------------
+
+
+
+Masking from a shapefile
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Often we want to perform so kind of analysis over a complex geographical feature - only over land points or sea points:
+or over a continent, a country, a river watershed or administrative region. These geographical features can often be described by shapefiles.
+Shapefiles are a file format first developed for GIS software in the 1990s, and now `Natural Earth`_ maintain a large freely usable database of shapefiles of many geographical and poltical divisions,
+accessible via cartopy. Users may also provide their own custom shapefiles.
+
+These shapefiles can be used to mask an iris cube, so that any data outside the bounds of the shapefile is hidden from further analysis or plotting.
+
+First, we load the correct shapefile from NaturalEarth via the `Cartopy`_ instructions. Here we get one for Brazil.
+The `.geometry` attribute of the records in the reader contain the shapely polygon we're interested in - once we have those we just need to provide them to
+the :class:`iris.util.mask_cube_from_shapefile` function. Once plotted, we can see that only our area of interest remains in the data.
+
+
+.. plot:: userguide/plotting_examples/masking_brazil_plot.py
+   :include-source:
+
+We can see that the dimensions of the cube haven't changed - the plot is still global. But only the data over Brazil is plotted - the rest is masked. 
+
+.. note::
+    While Iris will try to dynamically adjust the shapefile to mask cubes of different projections, it can struggle with rotated pole projections and cubes with Meridians not at 0°
+    Converting your Cube's coordinate system may help if you get a fully masked cube from this function.
+
+
 Cube Iteration
 --------------
 It is not possible to directly iterate over an Iris cube. That is, you cannot use code such as
@@ -440,3 +471,7 @@ Similarly, Iris cubes have indexing capability::
 	# Get the second element of the first dimension and all of the second dimension
 	# in reverse, by steps of two.
 	print(cube[1, ::-2])
+
+
+.. _Cartopy: https://scitools.org.uk/cartopy/docs/latest/tutorials/using_the_shapereader.html#id1
+.. _Natural Earth: https://www.naturalearthdata.com/
