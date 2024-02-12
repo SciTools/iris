@@ -2813,7 +2813,7 @@ def save(
         }
         if invalid_globals:
             # Some cubes have different global attributes: modify cubes as required.
-            warnings.warn(
+            warn_once_at_level(
                 f"Saving the cube global attributes {sorted(invalid_globals)} as local "
                 "(i.e. data-variable) attributes, where possible, since they are not "
                 "the same on all input cubes.",
