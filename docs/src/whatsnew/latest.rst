@@ -91,8 +91,10 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. `@bouweandela`_ updated cube comparison so cubes with data containing a
-   :obj:`numpy.nan` are now considered equal (:pull:`5713`)
+#. `@bouweandela`_ updated :class:`~iris.cube.Cube` comparison so equality is
+   now possible between cubes with data containing a :obj:`numpy.nan`.
+   e.g. ``Cube([np.nan, 1.0]) != Cube([np.nan, 2.0])``,
+   ``Cube([np.nan, 1.0]) == Cube([np.nan, 1.0])``. (:pull:`5713`)
 
 
 🚀 Performance Enhancements
