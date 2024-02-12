@@ -349,7 +349,7 @@ class IrisSaverFillValueWarning(IrisMaskValueMatchWarning, IrisSaveWarning):
     pass
 
 
-@lru_cache(None)
+@lru_cache(128)
 def warn_once(msg, stacklevel, frame, **kwargs):
     """Raise a warning only if a similar one has not been raised before."""
     warnings.warn(msg, stacklevel=stacklevel, **kwargs)
