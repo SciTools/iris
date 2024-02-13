@@ -3824,6 +3824,9 @@ class Cube(CFVariableMixin):
 
     # START OPERATOR OVERLOADS
     def __eq__(self, other):
+        if other is self:
+            return True
+
         result = NotImplemented
 
         if isinstance(other, Cube):
@@ -3862,7 +3865,13 @@ class Cube(CFVariableMixin):
             if result:
                 # TODO: why do we use allclose() here, but strict equality in
                 #  _DimensionalMetadata (via util.array_equal())?
-                result = da.allclose(self.core_data(), other.core_data()).compute()
+                result = bool(
+                    np.allclose(
+                        self.core_data(),
+                        other.core_data(),
+                        equal_nan=True,
+                    )
+                )
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
