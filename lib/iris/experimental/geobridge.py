@@ -47,9 +47,7 @@ def cube_faces_to_polydata(cube):
             polydata = Transform.from_1d(**kwargs)
 
         else:
-            raise NotImplementedError(
-                "Only 1D and 2D coordinates are supported"
-            )
+            raise NotImplementedError("Only 1D and 2D coordinates are supported")
     else:
         raise NotImplementedError("Cube must have a mesh or have 2 dimensions")
 
@@ -62,9 +60,7 @@ def region_extraction(cube, mesh, region, preference):
 
     region_cube = cube[:, indices]
 
-    new_mesh = Mesh.from_coords(
-        *region_cube.coords(dimensions=cube.mesh_dim())
-    )
+    new_mesh = Mesh.from_coords(*region_cube.coords(dimensions=cube.mesh_dim()))
     new_mesh_coords = new_mesh.to_MeshCoords(cube.location)
 
     for coord in new_mesh_coords:
