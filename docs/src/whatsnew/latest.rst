@@ -67,6 +67,12 @@ This document explains the changes made to Iris for this release
    NetCDF chunking with the use of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`
    context manager. (:pull:`5588`)
 
+#. `@acchamber`_ and `@trexfeathers`_ (reviewer) added
+   :func:`iris.util.mask_cube_from_shapefile`. This builds on the original work
+   of `@ckmo`_, `@david-bentley`_, `@jmendesmetoffice`_, `@evyve`_ and
+   `@pelson`_ for the UK Met Office **ASCEND** library. See
+   :ref:`masking-from-shapefile` for documentation. (:pull:`5470`)
+
 
 🐛 Bugs Fixed
 =============
@@ -107,7 +113,7 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ changed :func:`iris.coords.Coord.cell` so it does not realize
    all coordinate data and only loads a single cell instead. (:pull:`5693`)
 
-#. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified 
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified
    :func:`~iris.analysis.stats.pearsonr` so it preserves lazy data in all cases
    and also runs a little faster.  (:pull:`5638`)
 
@@ -229,6 +235,10 @@ This document explains the changes made to Iris for this release
 .. _@scottrobinson02: https://github.com/scottrobinson02
 .. _@acchamber: https://github.com/acchamber
 .. _@fazledyn-or: https://github.com/fazledyn-or
+.. _@ckmo: https://github.com/ckmo
+.. _@david-bentley: https://github.com/david-bentley
+.. _@jmendesmetoffice: https://github.com/jmendesmetoffice
+.. _@evyve: https://github.com/evyve
 
 
 .. comment

@@ -333,7 +333,7 @@ after 1st January 2008.
 Cube Masking
 --------------
 
-
+.. _masking-from-shapefile:
 
 Masking from a shapefile
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -353,7 +353,7 @@ the :class:`iris.util.mask_cube_from_shapefile` function. Once plotted, we can s
 .. plot:: userguide/plotting_examples/masking_brazil_plot.py
    :include-source:
 
-We can see that the dimensions of the cube haven't changed - the plot is still global. But only the data over Brazil is plotted - the rest is masked. 
+We can see that the dimensions of the cube haven't changed - the plot is still global. But only the data over Brazil is plotted - the rest is masked.
 
 .. note::
     While Iris will try to dynamically adjust the shapefile to mask cubes of different projections, it can struggle with rotated pole projections and cubes with Meridians not at 0°
