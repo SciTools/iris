@@ -1577,7 +1577,7 @@ def _lazy_max_run(array, axis=-1, **kwargs):
     stepped_run_lengths = da.reductions.cumreduction(
         np.maximum.accumulate,
         np.maximum,
-        np.NINF,
+        -np.inf,
         run_totals,
         axis=axis,
         dtype=cum_sum.dtype,
