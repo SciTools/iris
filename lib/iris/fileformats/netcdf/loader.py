@@ -708,7 +708,7 @@ class ChunkControl(threading.local):
             apply the `dimension_chunksizes` controls only to these variables,
             or when building :class:`~iris.cube.Cube` from these data variables.
             If ``None``, settings apply to all loaded variables.
-        dimension_chunksizes : dict of {str: int}
+        **dimension_chunksizes : dict of {str: int}
             Kwargs specifying chunksizes for dimensions of file variables.
             Each key-value pair defines a chunk size for a named file
             dimension, e.g. ``{'time': 10, 'model_levels':1}``.
