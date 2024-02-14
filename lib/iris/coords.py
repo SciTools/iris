@@ -1662,10 +1662,10 @@ class Coord(_DimensionalMetadata):
 
     @property
     def ignore_axis(self):
-        """A boolean that controls whether guess_coord_axis acts on this coordinate.
+        """A boolean controlling if iris.util.guess_coord_axis acts on this coordinate.
 
-        Defaults to False, and when set to True it will be skipped by
-        guess_coord_axis.
+        Defaults to ``False``, and when set to ``True`` it will be skipped by
+        :func:`iris.util.guess_coord_axis`.
         """
         return self._ignore_axis
 
