@@ -61,7 +61,7 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
    intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
-   coordinate. (:pull:`5551`)
+   coordinate. `@trexfeathers`_ documented this. (:pull:`5551`, :pull:`5744`)
 
 #. `@pp-mo`_, `@trexfeathers`_ and `@ESadek-MO`_ added more control over
    NetCDF chunking with the use of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`
@@ -234,7 +234,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ replaced `black`_ with `ruff`_. (:pull:`5634`)
 
 #. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to be compliant with
-   almost all of the rules for `ruff pydocstyle`_. 
+   almost all of the rules for `ruff pydocstyle`_.
    (https://github.com/SciTools/iris/issues/5625#issuecomment-1859159734)
 
 #. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to ensure docstrings
