@@ -232,6 +232,7 @@ class TestCoordConstruction(tests.IrisTest):
         )
 
         points = np.arange(6)
+        units = "days since 1970-01-01"
         self.cf_coord_var = mock.Mock(
             spec=threadsafe_nc.VariableWrapper,
             dimensions=("foo",),
@@ -241,7 +242,7 @@ class TestCoordConstruction(tests.IrisTest):
             cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None), spec=[]),
             standard_name=None,
             long_name="wibble",
-            units="days since 1970-01-01",
+            units=units,
             calendar=None,
             shape=points.shape,
             size=np.prod(points.shape),
@@ -250,13 +251,20 @@ class TestCoordConstruction(tests.IrisTest):
         )
 
         bounds = np.arange(12).reshape(6, 2)
+        cf_data = mock.MagicMock(chunking=mock.Mock(return_value=None))
+        # we want to mock the absence of flag attributes to helpers.get_attr_units
+        # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
+        del cf_data.flag_values
+        del cf_data.flag_masks
+        del cf_data.flag_meanings
         self.cf_bounds_var = mock.Mock(
             spec=threadsafe_nc.VariableWrapper,
             dimensions=("x", "nv"),
             scale_factor=1,
             add_offset=0,
             cf_name="wibble_bnds",
-            cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None)),
+            cf_data=cf_data,
+            units=units,
             shape=bounds.shape,
             size=np.prod(bounds.shape),
             dtype=bounds.dtype,
