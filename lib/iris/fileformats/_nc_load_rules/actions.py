@@ -235,6 +235,10 @@ def action_provides_coordinate(engine, dimcoord_fact):
         coord_type = "projection_x"
     elif hh.is_projection_y_coordinate(engine, var_name):
         coord_type = "projection_y"
+    elif hh.is_projection_x_angular_coordinate(engine, var_name):
+        coord_type = "projection_x_angular"
+    elif hh.is_projection_y_angular_coordinate(engine, var_name):
+        coord_type = "projection_y_angular"
 
     if coord_type is None:
         # Not identified as a specific known coord_type.
@@ -274,6 +278,8 @@ _COORDTYPE_GRIDTYPES_AND_COORDNAMES = {
     ),
     "projection_x": ("projected", hh.CF_VALUE_STD_NAME_PROJ_X),
     "projection_y": ("projected", hh.CF_VALUE_STD_NAME_PROJ_Y),
+    "projection_x_angular": ("projected", hh.CF_VALUE_STD_NAME_PROJ_X_ANGULAR),
+    "projection_y_angular": ("projected", hh.CF_VALUE_STD_NAME_PROJ_Y_ANGULAR),
     "time": (None, None),
     "time_period": (None, None),
     "miscellaneous": (None, None),

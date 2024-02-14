@@ -262,12 +262,14 @@ def guess_coord_axis(coord):
         "longitude",
         "grid_longitude",
         "projection_x_coordinate",
+        "projection_x_angular_coordinate",
     ):
         axis = "X"
     elif coord.standard_name in (
         "latitude",
         "grid_latitude",
         "projection_y_coordinate",
+        "projection_y_angular_coordinate",
     ):
         axis = "Y"
     elif coord.units.is_convertible("hPa") or coord.attributes.get("positive") in (
