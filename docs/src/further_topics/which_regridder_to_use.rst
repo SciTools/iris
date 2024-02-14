@@ -61,7 +61,7 @@ AreaWeighted
 +-----------------+----------------------------------------------------+
 | Weights caching | False                                              |
 +-----------------+----------------------------------------------------+
-| Notes           | Supports masked data with `mdtol` argument.        |
+| Notes           | Supports masked data with ``mdtol`` argument.      |
 |                 | See `area conservation`_.                          |
 +-----------------+----------------------------------------------------+
 
@@ -228,14 +228,14 @@ ESMFNearest
 | Weights caching | True                                                                |
 +-----------------+---------------------------------------------------------------------+
 
-.. _comparing metods:
+.. _comparing methods:
 
 Comparing Methods
 =================
 
 The various regridding algorithms are implementations of the following
 methods. While there may be slight differences in the way each regridder
-implements a given method, each regridder broadly follows the priciples
+implements a given method, each regridder broadly follows the principles
 of that method. We give here a very brief overview of what situations
 each method are best suited to followed by a more detailed discussion.
 
