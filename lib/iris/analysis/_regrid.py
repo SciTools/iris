@@ -825,7 +825,7 @@ class RectilinearRegridder:
         return data
 
     def _check_units(self, coord):
-        from iris.coord_systems import GeogCS, RotatedGeogCS, Geostationary
+        from iris.coord_systems import GeogCS, Geostationary, RotatedGeogCS
 
         if coord.coord_system is None:
             # No restriction on units.
