@@ -45,7 +45,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             cf_data=cf_data,
             standard_name=None,
             long_name="wibble",
-            units="m",
+            units="km",
             shape=points.shape,
             size=np.prod(points.shape),
             dtype=points.dtype,
@@ -100,28 +100,29 @@ class TestBoundsVertexDim(tests.IrisTest):
         shape = tuple(cls.dim_names_lens[name] for name in dimension_names)
         cf_data = mock.MagicMock(_FillValue=None, spec=[])
         cf_data.chunking = mock.MagicMock(return_value=shape)
-        return np.zeros(shape), cf_data
+        data = np.arange(np.prod(shape), dtype=float).reshape(shape)
+        return data, cf_data
 
     def _make_cf_bounds_var(self, dimension_names):
         # Create the bounds cf variable.
         bounds, cf_data = self._make_array_and_cf_data(dimension_names)
+        bounds *= 1000  # Convert to metres.
         cf_bounds_var = mock.Mock(
             spec=CFVariable,
             dimensions=dimension_names,
             cf_name="wibble_bnds",
             cf_data=cf_data,
+            units="m",
             shape=bounds.shape,
             size=np.prod(bounds.shape),
             dtype=bounds.dtype,
             __getitem__=lambda self, key: bounds[key],
         )
 
-        return bounds, cf_bounds_var
+        return cf_bounds_var
 
     def _check_case(self, dimension_names):
-        bounds, self.cf_bounds_var = self._make_cf_bounds_var(
-            dimension_names=dimension_names
-        )
+        self.cf_bounds_var = self._make_cf_bounds_var(dimension_names=dimension_names)
 
         # Asserts must lie within context manager because of deferred loading.
         build_auxiliary_coordinate(self.engine, self.cf_coord_var)
@@ -133,15 +134,15 @@ class TestBoundsVertexDim(tests.IrisTest):
         expected_list = [(self.expected_coord, self.cf_coord_var.cf_name)]
         self.assertEqual(self.engine.cube_parts["coordinates"], expected_list)
 
-    def test_fastest_varying_vertex_dim(self):
+    def test_fastest_varying_vertex_dim__normalise_bounds(self):
         # The usual order.
         self._check_case(dimension_names=("foo", "bar", "nv"))
 
-    def test_slowest_varying_vertex_dim(self):
+    def test_slowest_varying_vertex_dim__normalise_bounds(self):
         # Bounds in the first (slowest varying) dimension.
         self._check_case(dimension_names=("nv", "foo", "bar"))
 
-    def test_fastest_with_different_dim_names(self):
+    def test_fastest_with_different_dim_names__normalise_bounds(self):
         # Despite the dimension names ('x', and 'y') differing from the coord's
         # which are 'foo' and 'bar' (as permitted by the cf spec),
         # this should still work because the vertex dim is the fastest varying.

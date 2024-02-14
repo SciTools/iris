@@ -293,22 +293,22 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             standard_name=None,
             long_name="wibble",
             cf_data=mock.Mock(spec=[]),
-            units="m",
+            units="km",
             shape=points.shape,
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
         )
 
-    def test_slowest_varying_vertex_dim(self):
+    def test_slowest_varying_vertex_dim__normalise_bounds(self):
         # Create the bounds cf variable.
-        bounds = np.arange(12).reshape(2, 6)
+        bounds = np.arange(12).reshape(2, 6) * 1000
         dimensions = ("nv", "foo")
         units = "m"
         self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
 
         # Expected bounds on the resulting coordinate should be rolled so that
         # the vertex dimension is at the end.
-        expected_bounds = bounds.transpose()
+        expected_bounds = bounds.transpose() / 1000
         expected_coord = DimCoord(
             self.cf_coord_var[:],
             long_name=self.cf_coord_var.long_name,
@@ -328,8 +328,8 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
             self.assertEqual(self.engine.cube_parts["coordinates"], expected_list)
 
-    def test_fastest_varying_vertex_dim(self):
-        bounds = np.arange(12).reshape(6, 2)
+    def test_fastest_varying_vertex_dim__normalise_bounds(self):
+        bounds = np.arange(12).reshape(6, 2) * 1000
         dimensions = ("foo", "nv")
         units = "m"
         self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
@@ -339,7 +339,7 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             long_name=self.cf_coord_var.long_name,
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
-            bounds=bounds,
+            bounds=bounds / 1000,
         )
 
         # Asserts must lie within context manager because of deferred loading.
@@ -353,11 +353,11 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
             self.assertEqual(self.engine.cube_parts["coordinates"], expected_list)
 
-    def test_fastest_with_different_dim_names(self):
+    def test_fastest_with_different_dim_names__normalise_bounds(self):
         # Despite the dimension names 'x' differing from the coord's
         # which is 'foo' (as permitted by the cf spec),
         # this should still work because the vertex dim is the fastest varying.
-        bounds = np.arange(12).reshape(6, 2)
+        bounds = np.arange(12).reshape(6, 2) * 1000
         dimensions = ("x", "nv")
         units = "m"
         self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
@@ -367,7 +367,7 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             long_name=self.cf_coord_var.long_name,
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
-            bounds=bounds,
+            bounds=bounds / 1000,
         )
 
         # Asserts must lie within context manager because of deferred loading.
