@@ -1042,7 +1042,7 @@ def _normalise_bounds_units(
     If the bounds units are not convertible, a warning will be issued and
     the `bounds_data` will be ignored.
 
-    Bounds with invalid units will be gracefully left unconverted.
+    Bounds with invalid units will be gracefully left unconverted and passed through.
 
     Parameters
     ----------
@@ -1072,7 +1072,7 @@ def _normalise_bounds_units(
             else:
                 wmsg = (
                     f"Ignoring bounds on NetCDF variable {cf_bounds_var.cf_name!r}. "
-                    f"Expected {points_units.origin!r} units, got "
+                    f"Expected units compatible with {points_units.origin!r}, got "
                     f"{bounds_units.origin!r}."
                 )
                 warnings.warn(
