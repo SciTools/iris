@@ -249,8 +249,8 @@ def guess_coord_axis(coord):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
-    The ``guess_coord_axis`` behaviour can be skipped by setting the coordinate
-    property ``ignore_axis`` to ``False``.
+    The ``guess_coord_axis`` behaviour can be skipped by setting the
+    :attr:`~iris.coords.Coord.ignore_axis` property on `coord` to ``False``.
 
     """
     axis = None
