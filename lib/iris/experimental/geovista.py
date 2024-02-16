@@ -12,7 +12,7 @@ from iris.experimental.ugrid import Mesh
 
 
 def _get_coord(cube, axis):
-    """Helper function to get the coordinates from the cube."""
+    """Get the axis coordinates from the cube."""
     try:
         coord = cube.coord(axis=axis, dim_coords=True)
     except CoordinateNotFoundError:
@@ -21,17 +21,109 @@ def _get_coord(cube, axis):
 
 
 def cube_faces_to_polydata(cube, **kwargs):
-    """Function to convert a cube or the mesh attached to a cube into a polydata
-    object that can be used by GeoVista to generate plots.
+    r"""Create a :class:`pyvista.PolyData` object from a :class:`~iris.cube.Cube`.
+
+    The resulting :class:`~pyvista.PolyData` object can be plotted using
+    a :class:`geovista.geoplotter.GeoPlotter`.
+
+    Uses :class:`geovista.bridge.Transform` to parse the cube's information - one
+    of: :meth:`~geovista.bridge.Transform.from_1d` /
+    :meth:`~geovista.bridge.Transform.from_2d` /
+    :meth:`~geovista.bridge.Transform.from_unstructured`.
 
     Parameters
     ----------
     cube : :class:`~iris.cube.Cube`
-        Incoming cube containing the arrays or the mesh to be converted into the
-        polydata object.
+        The Cube containing the spatial information and data for creating the
+        class:`~pyvista.PolyData`.
 
     **kwargs : dict
-        Additional keyword arguments to be passed to the Transform method.
+        Additional keyword arguments to be passed to the relevant
+        :class:`~geovista.bridge.Transform` method (e.g ``zlevel``).
+
+    Returns
+    -------
+    :class:`~pyvista.PolyData`
+        The PolyData object representing the cube's spatial information and data.
+
+    Raises
+    ------
+    NotImplementedError
+        If a :class:`~iris.cube.Cube` with too many dimensions is passed. Only
+        the horizontal data can be represented, meaning a 2D Cube, or 1D Cube
+        if the horizontal space is described by
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+
+    Examples
+    --------
+    .. testsetup::
+
+        from iris import load_cube, sample_data_path
+        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+
+        cube = load_cube(sample_data_path("air_temp.pp"))
+        cube_w_time = load_cube(sample_data_path("A1B_north_america.nc"))
+        with PARSE_UGRID_ON_LOAD.context():
+            cube_mesh = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+
+    >>> from iris.experimental.geovista import cube_faces_to_polydata
+
+    Converting a standard 2-dimensional :class:`~iris.cube.Cube` with
+    1-dimensional coordinates:
+
+    >>> print(cube.summary(shorten=True))
+    air_temperature / (K)               (latitude: 73; longitude: 96)
+    >>> print(cube_faces_to_polydata(cube))
+    PolyData (...
+      N Cells:    7008
+      N Points:   7178
+      N Strips:   0
+      X Bounds:   -9.992e-01, 9.992e-01
+      Y Bounds:   -9.992e-01, 9.992e-01
+      Z Bounds:   -1.000e+00, 1.000e+00
+      N Arrays:   4
+
+    Configure the conversion by passing additional keyword arguments:
+
+    >>> print(cube_faces_to_polydata(cube, radius=2))
+    PolyData (...
+      N Cells:    7008
+      N Points:   7178
+      N Strips:   0
+      X Bounds:   -1.998e+00, 1.998e+00
+      Y Bounds:   -1.998e+00, 1.998e+00
+      Z Bounds:   -2.000e+00, 2.000e+00
+      N Arrays:   4
+
+    Converting a :class:`~iris.cube.Cube` that has a
+    :attr:`~iris.cube.Cube.mesh` describing its horizontal space:
+
+    >>> print(cube_mesh.summary(shorten=True))
+    synthetic / (1)                     (-- : 96)
+    >>> print(cube_faces_to_polydata(cube_mesh))
+    PolyData (...
+      N Cells:    96
+      N Points:   98
+      N Strips:   0
+      X Bounds:   -1.000e+00, 1.000e+00
+      Y Bounds:   -1.000e+00, 1.000e+00
+      Z Bounds:   -1.000e+00, 1.000e+00
+      N Arrays:   4
+
+    Remember to reduce the dimensionality of your :class:`~iris.cube.Cube` to
+    just be the horizontal space:
+
+    >>> print(cube_w_time.summary(shorten=True))
+    air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+    >>> print(cube_faces_to_polydata(cube_w_time[0, :, :]))
+    PolyData (...
+      N Cells:    1813
+      N Points:   1900
+      N Strips:   0
+      X Bounds:   -6.961e-01, 6.961e-01
+      Y Bounds:   -9.686e-01, -3.411e-01
+      Z Bounds:   2.483e-01, 8.714e-01
+      N Arrays:   4
 
     """
     if cube.mesh:
@@ -79,8 +171,116 @@ def cube_faces_to_polydata(cube, **kwargs):
 
 
 def region_extraction(cube, polydata, region, **kwargs):
-    """Function to extract a region from a cube and its associated mesh and return
-    a new cube containing the region.
+    """Index a :class:`~iris.cube.Cube` with a :attr:`~iris.cube.Cube.mesh` to a specific region.
+
+    Uses :meth:`geovista.geodesic.BBox.enclosed` to identify the `cube` indices
+    that are within the specified region (`region` being a
+    :class:`~geovista.geodesic.BBox` class).
+
+    Parameters
+    ----------
+    cube : :class:`~iris.cube.Cube`
+        The cube to be indexed (must have a :attr:`~iris.cube.Cube.mesh`).
+    polydata : :class:`pyvista.PolyData`
+        A :class:`~pyvista.PolyData` representing the same horizontal space as
+        `cube`. The region extraction is first applied to `polydata`, with the
+        resulting indices then applied to `cube`. In many cases `polydata` can
+        be created by applying :func:`cube_faces_to_polydata` to `cube`.
+    region : :class:`geovista.geodesic.BBox`
+        A :class:`~geovista.geodesic.BBox` representing the region to be
+        extracted.
+    **kwargs : dict
+        Additional keyword arguments to be passed to the
+        :meth:`geovista.geodesic.BBox.enclosed` method (e.g ``preference``).
+
+    Returns
+    -------
+    :class:`~iris.cube.Cube`
+        The region extracted cube.
+
+    Raises
+    ------
+    ValueError
+        If `polydata` and the :attr:`~iris.cube.Cube.mesh` on `cube` do not
+        have the same shape.
+
+    Examples
+    --------
+    .. testsetup::
+
+        from iris import load_cube, sample_data_path
+        from iris.coords import AuxCoord
+        from iris.cube import CubeList
+        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+
+        file_path = sample_data_path("mesh_C4_synthetic_float.nc")
+        with PARSE_UGRID_ON_LOAD.context():
+            cube_w_mesh = load_cube(file_path)
+
+        level_cubes = CubeList()
+        for height_level in range(72):
+            height_coord = AuxCoord([height_level], standard_name="height")
+            level_cube = cube_w_mesh.copy()
+            level_cube.add_aux_coord(height_coord)
+            level_cubes.append(level_cube)
+
+        cube_w_mesh = level_cubes.merge_cube()
+        other_cube_w_mesh = cube_w_mesh[:20, :]
+
+    The parameters of :func:`region_extraction` have been designed with
+    flexibility and reuse in mind. This is demonstrated below.
+
+    >>> from geovista import BBox
+    >>> from iris.experimental.geovista import cube_faces_to_polydata, region_extraction
+    >>> print(cube_w_mesh.shape)
+    (72, 96)
+    >>> # The mesh dimension represents the horizontal space of the cube.
+    >>> print(cube_w_mesh.shape[cube_w_mesh.mesh_dim()])
+    96
+    >>> cube_polydata = cube_faces_to_polydata(cube_w_mesh[0, :])
+    >>> extracted_cube = region_extraction(
+    ...     cube=cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45]),
+    ... )
+    >>> print(extracted_cube.shape)
+    (72, 11)
+
+    Now reuse the same `cube` and `polydata` to extract a different region:
+
+    >>> new_region = BBox(lons=[0, 35, 35, 0], lats=[-25, -25, 45, 45])
+    >>> extracted_cube = region_extraction(
+    ...     cube=cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=new_region,
+    ... )
+    >>> print(extracted_cube.shape)
+    (72, 6)
+
+    Now apply the same region extraction to a different `cube` that has the
+    same horizontal shape:
+
+    >>> print(other_cube_w_mesh.shape)
+    (20, 96)
+    >>> extracted_cube = region_extraction(
+    ...     cube=other_cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=new_region,
+    ... )
+    >>> print(extracted_cube.shape)
+    (20, 6)
+
+    Arbitrary keywords can be passed down to
+    :meth:`geovista.geodesic.BBox.enclosed` (``outside`` in this example):
+
+    >>> extracted_cube = region_extraction(
+    ...     cube=other_cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=new_region,
+    ...     outside=True,
+    ... )
+    >>> print(extracted_cube.shape)
+    (20, 90)
 
     """
     if cube.mesh:
