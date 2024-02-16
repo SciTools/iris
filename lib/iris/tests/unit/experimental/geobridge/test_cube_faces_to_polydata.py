@@ -13,7 +13,7 @@ import pytest
 
 import iris.analysis.cartography
 import iris.coord_systems
-from iris.experimental.geobridge import cube_faces_to_polydata
+from iris.experimental.geovista import cube_faces_to_polydata
 from iris.tests.stock import lat_lon_cube, sample_2d_latlons
 from iris.tests.stock.mesh import sample_mesh_cube
 
@@ -36,7 +36,16 @@ def cube_2d():
     return sample_2d_latlons()
 
 
+@pytest.fixture()
+def default_cs():
+    return iris.coord_systems.GeogCS(
+        iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
+    )
+
+
 class ParentClass:
+    MOCKED_OPERATION = NotImplemented
+
     @pytest.fixture()
     def expected(self):
         pass
@@ -49,41 +58,46 @@ class ParentClass:
     def cube(self):
         pass
 
-    @staticmethod
-    def test_to_poly(expected, operation, cube):
+    @pytest.fixture()
+    def cube_with_crs(self, default_cs, cube):
+        cube_crs = cube.copy()
+        for coord in cube_crs.coords():
+            coord.coord_system = default_cs
+        return cube_crs
+
+    @pytest.fixture()
+    def mocked_operation(self):
         mocking = Mock()
-        setattr(Transform, operation, mocking)
-        cube_faces_to_polydata(cube)
-        getattr(Transform, operation)
-        actual = mocking.call_args.kwargs
-        for key, actual_value in actual.items():
-            if isinstance(actual_value, np.ndarray):
-                np.testing.assert_array_equal(expected[key], actual_value)
-            else:
-                assert expected[key] == actual_value
+        setattr(Transform, self.MOCKED_OPERATION, mocking)
+        return mocking
 
     @staticmethod
-    def test_to_poly_crs(expected, operation, cube):
-        default_cs = iris.coord_systems.GeogCS(
-            iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
-        )
-        expected["crs"] = default_cs.as_cartopy_crs().proj4_init
-        for coord in cube.coords():
-            coord.coord_system = default_cs
-        mocking = Mock()
-        setattr(Transform, operation, mocking)
+    def test_to_poly(expected, mocked_operation, cube):
         cube_faces_to_polydata(cube)
-        getattr(Transform, operation)
-        actual = mocking.call_args.kwargs
-        print(actual)
-        for key, actual_value in actual.items():
-            if isinstance(actual_value, np.ndarray):
-                np.testing.assert_array_equal(expected[key], actual_value)
+        actual = mocked_operation.call_args.kwargs
+        for key, expected_value in expected.items():
+            if hasattr(expected_value, "shape"):
+                np.testing.assert_array_equal(actual[key], expected_value)
             else:
-                assert expected[key] == actual_value
+                assert actual[key] == expected_value
+
+    @staticmethod
+    def test_to_poly_crs(mocked_operation, default_cs, cube_with_crs):
+        cube_faces_to_polydata(cube_with_crs)
+        actual = mocked_operation.call_args.kwargs
+        assert actual["crs"] == default_cs.as_cartopy_crs().proj4_init
+
+    @staticmethod
+    def test_to_poly_kwargs(mocked_operation, cube):
+        kwargs = {"test": "test"}
+        cube_faces_to_polydata(cube, **kwargs)
+        actual = mocked_operation.call_args.kwargs
+        assert actual["test"] == "test"
 
 
 class Test2dToPoly(ParentClass):
+    MOCKED_OPERATION = "from_2d"
+
     @pytest.fixture()
     def expected(self, cube_2d):
         return {
@@ -103,6 +117,8 @@ class Test2dToPoly(ParentClass):
 
 
 class Test1dToPoly(ParentClass):
+    MOCKED_OPERATION = "from_1d"
+
     @pytest.fixture()
     def expected(self, cube_1d):
         return {
@@ -122,11 +138,14 @@ class Test1dToPoly(ParentClass):
 
 
 class TestMeshToPoly(ParentClass):
+    MOCKED_OPERATION = "from_unstructured"
+
     @pytest.fixture()
     def expected(self, cube_mesh):
         return {
-            "xs": cube_mesh.coord(axis="X"),
-            "ys": cube_mesh.coord(axis="Y"),
+            "xs": cube_mesh.mesh.node_coords[0].points,
+            "ys": cube_mesh.mesh.node_coords[1].points,
+            "connectivity": cube_mesh.mesh.face_node_connectivity.indices_by_location(),
             "data": cube_mesh.data,
             "name": cube_mesh.name() + " / " + str(cube_mesh.units),
             "start_index": 0,
@@ -146,20 +165,28 @@ class TestMeshToPoly(ParentClass):
 
 
 class TestExtras:
-    def test_too_many_dims(self):
-        pytest.raises(
-            ValueError,
-            match=r"There are too many dimensions on this coordinate",
-        )
+    @pytest.fixture()
+    def cube_1d_2d(self, cube_2d):
+        my_cube = cube_2d.copy()
+        lat_coord = my_cube.aux_coords[0]
+        lat_coord_small = lat_coord[0]
+        lat_coord_small.bounds = None
+        lat_coord_small.points = np.arange(len(lat_coord_small.points))
+        my_cube.remove_coord(lat_coord)
+        my_cube.add_aux_coord(lat_coord_small, 1)
+        return my_cube
 
-    def test_not_1d_or_2d(self):
-        pytest.raises(
+    def test_not_1d_or_2d(self, cube_1d_2d):
+        with pytest.raises(
             NotImplementedError,
             match=r"Only 1D and 2D coordinates are supported",
-        )
+        ):
+            cube_faces_to_polydata(cube_1d_2d)
 
-    def test_no_mesh_or_2d(self):
-        pytest.raises(
+    def test_no_mesh_or_2d(self, cube_1d):
+        cube = cube_1d[0]
+        with pytest.raises(
             NotImplementedError,
             match=r"Cube must have a mesh or have 2 dimensions",
-        )
+        ):
+            cube_faces_to_polydata(cube)
