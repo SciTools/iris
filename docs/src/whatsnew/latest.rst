@@ -93,6 +93,10 @@ This document explains the changes made to Iris for this release
    :mod:`iris.fileformats._nc_load_rules.helpers` to lessen warning duplication.
    (:issue:`5536`, :pull:`5685`)
 
+#. `@bjlittle`_ fixed coordinate construction in the NetCDF loading pipeline to
+   ensure that bounds have the same units as the associated points.
+   (:issue:`1801`, :pull:`5746`)
+
 
 💣 Incompatible Changes
 =======================

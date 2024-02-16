@@ -13,8 +13,10 @@ acquired an extra initial 'engine' argument, purely for consistency with other
 build routines, and which it does not use.
 
 """
+from __future__ import annotations
+
 import re
-from typing import List
+from typing import TYPE_CHECKING, List, Optional
 import warnings
 
 import cf_units
@@ -34,6 +36,12 @@ import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
 import iris.std_names
 import iris.util
+
+if TYPE_CHECKING:
+    from numpy.ma import MaskedArray
+    from numpy.typing import ArrayLike
+
+    from iris.fileformats.cf import CFBoundaryVariable
 
 # TODO: should un-addable coords / cell measures / etcetera be skipped? iris#5068.
 
@@ -896,8 +904,9 @@ def get_attr_units(cf_var, attributes):
         cf_units.as_unit(attr_units)
     except ValueError:
         # Using converted unicode message. Can be reverted with Python 3.
-        msg = "Ignoring netCDF variable {!r} invalid units {!r}".format(
-            cf_var.cf_name, attr_units
+        msg = (
+            f"Ignoring invalid units {attr_units!r} on netCDF variable "
+            f"{cf_var.cf_name!r}."
         )
         warnings.warn(
             msg,
@@ -1025,6 +1034,57 @@ def reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var):
 
 
 ################################################################################
+def _normalise_bounds_units(
+    points_units: str, cf_bounds_var: CFBoundaryVariable, bounds_data: ArrayLike
+) -> Optional[MaskedArray]:
+    """Ensure bounds have units compatible with points.
+
+    If required, the `bounds_data` will be converted to the `points_units`.
+    If the bounds units are not convertible, a warning will be issued and
+    the `bounds_data` will be ignored.
+
+    Bounds with invalid units will be gracefully left unconverted and passed through.
+
+    Parameters
+    ----------
+    points_units : str
+        The units of the coordinate points.
+    cf_bounds_var : CFBoundaryVariable
+        The serialized NetCDF bounds variable.
+    bounds_data : MaskedArray
+        The pre-processed data of the bounds variable.
+
+    Returns
+    -------
+    MaskedArray or None
+        The bounds data with the same units as the points, or ``None``
+        if the bounds units are not convertible to the points units.
+
+    """
+    bounds_units = get_attr_units(cf_bounds_var, {})
+
+    if bounds_units != UNKNOWN_UNIT_STRING:
+        points_units = cf_units.Unit(points_units)
+        bounds_units = cf_units.Unit(bounds_units)
+
+        if bounds_units != points_units:
+            if bounds_units.is_convertible(points_units):
+                bounds_data = bounds_units.convert(bounds_data, points_units)
+            else:
+                wmsg = (
+                    f"Ignoring bounds on NetCDF variable {cf_bounds_var.cf_name!r}. "
+                    f"Expected units compatible with {points_units.origin!r}, got "
+                    f"{bounds_units.origin!r}."
+                )
+                warnings.warn(
+                    wmsg, category=iris.exceptions.IrisCfLoadWarning, stacklevel=2
+                )
+                bounds_data = None
+
+    return bounds_data
+
+
+################################################################################
 def build_dimension_coordinate(
     engine, cf_coord_var, coord_name=None, coord_system=None
 ):
@@ -1061,6 +1121,8 @@ def build_dimension_coordinate(
         # dimension names.
         if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
             bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var)
+
+        bounds_data = _normalise_bounds_units(attr_units, cf_bounds_var, bounds_data)
     else:
         bounds_data = None
 
@@ -1186,6 +1248,8 @@ def build_auxiliary_coordinate(
             # compatibility with array creators (i.e. dask)
             bounds_data = np.asarray(bounds_data)
             bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var)
+
+        bounds_data = _normalise_bounds_units(attr_units, cf_bounds_var, bounds_data)
     else:
         bounds_data = None
 
