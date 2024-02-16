@@ -52,7 +52,7 @@ def cube_faces_to_polydata(cube, **kwargs):
         If a :class:`~iris.cube.Cube` with too many dimensions is passed. Only
         the horizontal data can be represented, meaning a 2D Cube, or 1D Cube
         if the horizontal space is described by
-        :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+        :class:`~iris.experimental.ugrid.MeshCoord`\ s.
 
     Examples
     --------
