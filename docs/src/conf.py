@@ -193,7 +193,8 @@ copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
-todo_include_todos = True
+todo_include_todos = False
+todo_emit_warnings = False
 
 # api generation configuration
 autodoc_member_order = "alphabetical"
@@ -397,6 +398,7 @@ linkcheck_ignore = [
     "https://biggus.readthedocs.io/",
     "https://stickler-ci.com/",
     "https://twitter.com/scitools_iris",
+    "https://stackoverflow.com/questions/tagged/python-iris",
 ]
 
 # list of sources to exclude from the build.
