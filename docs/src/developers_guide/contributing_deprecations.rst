@@ -7,7 +7,7 @@ If you need to make a backwards-incompatible change to a public API
 [#public-api]_ that has been included in a release (e.g. deleting a
 method), then you must first deprecate the old behaviour in at least
 one release, before removing/updating it in the next
-`major release <http://semver.org/>`_.
+`major release <https://semver.org/>`_.
 
 
 Adding a Deprecation

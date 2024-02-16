@@ -24,12 +24,26 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull: `5577`)
+#. `@lbdreyer`_ relicensed Iris from LGPL-3 to BSD-3. (:pull:`5577`)
+
+#. `@HGWright`_, `@bjlittle`_ and `@trexfeathers`_ (reviewers) added a
+   CITATION.cff file to Iris and updated the :ref:`citation documentation <Citing_Iris>`
+   , to help users cite Iris in their work. (:pull:`5483`)
 
 
 ✨ Features
 ===========
-   
+#. `@pp-mo`_, `@lbdreyer`_ and `@trexfeathers`_ improved
+   :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` handling to
+   better preserve the distinction between dataset-level and variable-level
+   attributes, allowing file-Cube-file round-tripping of NetCDF attributes. See
+   :class:`~iris.cube.CubeAttrsDict`, NetCDF
+   :func:`~iris.fileformats.netcdf.saver.save` and :data:`~iris.Future` for more.
+   (:pull:`5152`, `split attributes project`_)
+
+#. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
+   lazy data. (:pull:`5307`)
+
 #. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
    :class:`UserWarning`\s for richer filtering. The full index of
    sub-categories can be seen here: :mod:`iris.exceptions` . (:pull:`5498`)
@@ -44,10 +58,20 @@ This document explains the changes made to Iris for this release
    Winter - December to February) will be assigned to the preceding year (e.g.
    the year of December) instead of the following year (the default behaviour).
    (:pull:`5573`)
-   
-   #. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
+
+#. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
    intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
-   coordinate. (:pull:`5551`)
+   coordinate. `@trexfeathers`_ documented this. (:pull:`5551`, :pull:`5744`)
+
+#. `@pp-mo`_, `@trexfeathers`_ and `@ESadek-MO`_ added more control over
+   NetCDF chunking with the use of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`
+   context manager. (:pull:`5588`)
+
+#. `@acchamber`_ and `@trexfeathers`_ (reviewer) added
+   :func:`iris.util.mask_cube_from_shapefile`. This builds on the original work
+   of `@ckmo`_, `@david-bentley`_, `@jmendesmetoffice`_, `@evyve`_ and
+   `@pelson`_ for the UK Met Office **ASCEND** library. See
+   :ref:`masking-from-shapefile` for documentation. (:pull:`5470`)
 
 
 🐛 Bugs Fixed
@@ -62,17 +86,48 @@ This document explains the changes made to Iris for this release
 #. `@acchamber`_ and `@rcomer`_ modified 2D plots so that time axes and their
    ticks have more sensible default labels.  (:issue:`5426`, :pull:`5561`)
 
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) added handling for realization
+   coordinates when saving pp files (:issue:`4747`, :pull:`5568`)
+
+#. `@ESadek-MO`_ has updated
+   :mod:`iris.fileformats._nc_load_rules.helpers` to lessen warning duplication.
+   (:issue:`5536`, :pull:`5685`)
+
+#. `@bjlittle`_ fixed coordinate construction in the NetCDF loading pipeline to
+   ensure that bounds have the same units as the associated points.
+   (:issue:`1801`, :pull:`5746`)
+
 
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@bouweandela`_ and  `@trexfeathers`_ (reviewer) updated :class:`~iris.cube.Cube`
+   comparison so equality is now possible between cubes with data containing a
+   :obj:`numpy.nan`. e.g. ``Cube([np.nan, 1.0]) == Cube([np.nan, 1.0])`` will now
+   evaluate to :obj:`True`, while previously this would have been :obj:`False`. (:pull:`5713`)
 
 
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@stephenworsley`_ improved the speed of :class:`~iris.analysis.AreaWeighted`
+   regridding. (:pull:`5543`)
+
+#. `@bouweandela`_ made :func:`iris.util.array_equal` faster when comparing
+   lazy data from file. This will also speed up coordinate comparison.
+   (:pull:`5610`)
+
+#. `@bouweandela`_ changed :func:`iris.coords.Coord.cell` so it does not realize
+   all coordinate data and only loads a single cell instead. (:pull:`5693`)
+
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified
+   :func:`~iris.analysis.stats.pearsonr` so it preserves lazy data in all cases
+   and also runs a little faster.  (:pull:`5638`)
+
+#. `@bouweandela`_ made comparing coordinates and arrays to themselves faster. (:pull:`5691`)
+
+#. `@bouweandela`_ and  `@trexfeathers`_ (reviewer) made comparing cubes to
+   themselves faster. (:pull:`5713`)
 
 
 🔥 Deprecations
@@ -86,6 +141,12 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ enforced the minimum pin of ``numpy>1.21`` in accordance with the `NEP29 Drop Schedule`_.
    (:pull:`5525`)
+
+#. `@bjlittle`_ enforced the minimum pin of ``numpy>1.22`` in accordance with the `NEP29 Drop Schedule`_.
+   (:pull:`5668`)
+
+#. `@bjlittle`_ updated ``ubuntu`` and ``mambaforge`` to the latest versions for ``readthedocs``
+   (:pull:`5702`)
 
 
 📚 Documentation
@@ -106,6 +167,29 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ added a phrasebook for synonymous terms used in similar
    packages. (:pull:`5564`)
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created a technical paper for NetCDF
+   saving and loading, :ref:`netcdf_io` with a section on chunking, and placeholders
+   for further topics. (:pull:`5588`)
+
+#. `@bouweandela`_ updated all hyperlinks to https. (:pull:`5621`)
+
+#. `@ESadek-MO`_ created an index page for :ref:`further_topics_index`, and
+   relocated all 'Technical Papers' into
+   :ref:`further_topics_index`. (:pull:`5602`)
+
+#. `@trexfeathers`_ made drop-down icons visible to show which pages link to
+   'sub-pages'. (:pull:`5684`)
+
+#. `@trexfeathers`_ improved the documentation of acceptable
+   :class:`~iris.cube.Cube` standard names in
+   :func:`iris.analysis.calculus.curl`. (:pull:`5680`)
+
+#. `@tkknight`_ added ruff documentation in the :ref:`developer_testing_ci` of the
+   :ref:`developers_guide`. (:pull:`5701`)
+
+#. `@tkknight`_ configured the API documentation to show 2 levels
+   for the ToC (Table of Contents) for each page. (:pull:`5714`)
 
 
 💼 Internal
@@ -136,6 +220,30 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ corrected various comment spelling mistakes detected by
    `codespell`_. (:pull:`5546`)
 
+#. `@rcomer`_ reduced the size of the conda environment used for testing.
+   (:pull:`5606`)
+
+#. `@trexfeathers`_ and `@pp-mo`_ improved how the conda-forge feedstock
+   release candidate branch is managed, via:
+   :doc:`../developers_guide/release_do_nothing`.
+   (:pull:`5515`)
+
+#. `@bjlittle`_ adopted and configured the `ruff`_ linter. (:pull:`5623`)
+
+#. `@bjlittle`_ configured the ``line-length = 88`` for `black`_, `isort`_
+   and `ruff`_. (:pull:`5632`)
+
+#. `@bjlittle`_ replaced `isort`_ with `ruff`_. (:pull:`5633`)
+
+#. `@bjlittle`_ replaced `black`_ with `ruff`_. (:pull:`5634`)
+
+#. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to be compliant with
+   almost all of the rules for `ruff pydocstyle`_.
+   (https://github.com/SciTools/iris/issues/5625#issuecomment-1859159734)
+
+#. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to ensure docstrings
+   that are not covered by the ruff checks, are consistent with numpydocstyle.
+   (:issue:`4721`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -144,6 +252,10 @@ This document explains the changes made to Iris for this release
 .. _@scottrobinson02: https://github.com/scottrobinson02
 .. _@acchamber: https://github.com/acchamber
 .. _@fazledyn-or: https://github.com/fazledyn-or
+.. _@ckmo: https://github.com/ckmo
+.. _@david-bentley: https://github.com/david-bentley
+.. _@jmendesmetoffice: https://github.com/jmendesmetoffice
+.. _@evyve: https://github.com/evyve
 
 
 .. comment
@@ -151,4 +263,5 @@ This document explains the changes made to Iris for this release
 
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
 .. _codespell: https://github.com/codespell-project/codespell
-
+.. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info
+.. _ruff pydocstyle: https://docs.astral.sh/ruff/rules/#pydocstyle-d

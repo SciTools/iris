@@ -109,9 +109,7 @@ class Test__cube_func(tests.IrisTest):
         constraint = NameConstraint(long_name=None)
         self.assertFalse(constraint._cube_func(self.cube))
         # No match.
-        constraint = NameConstraint(
-            standard_name=None, long_name=self.long_name
-        )
+        constraint = NameConstraint(standard_name=None, long_name=self.long_name)
         self.assertFalse(constraint._cube_func(self.cube))
 
     def test_var_name(self):

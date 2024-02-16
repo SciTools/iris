@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for :func:`iris.fileformats.netcdf.parse_cell_methods`.
-
-"""
+"""Unit tests for :func:`iris.fileformats.netcdf.parse_cell_methods`."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -34,9 +31,7 @@ class Test(tests.IrisTest):
             "time: variance (interval: 1 hr)",
             "time : variance (interval: 1 hr)",
         ]
-        expected = (
-            CellMethod(method="variance", coords="time", intervals="1 hr"),
-        )
+        expected = (CellMethod(method="variance", coords="time", intervals="1 hr"),)
         for cell_method_str in cell_method_strings:
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
@@ -48,9 +43,7 @@ class Test(tests.IrisTest):
             "lat : lon: standard_deviation",
             "lat : lon : standard_deviation",
         ]
-        expected = (
-            CellMethod(method="standard_deviation", coords=["lat", "lon"]),
-        )
+        expected = (CellMethod(method="standard_deviation", coords=["lat", "lon"]),)
         for cell_method_str in cell_method_strings:
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
@@ -149,9 +142,7 @@ class Test(tests.IrisTest):
             "area: mean where sea_ice over sea",
             "area : mean where sea_ice over sea",
         ]
-        expected = (
-            CellMethod(method="mean where sea_ice over sea", coords="area"),
-        )
+        expected = (CellMethod(method="mean where sea_ice over sea", coords="area"),)
         for cell_method_str in cell_method_strings:
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)

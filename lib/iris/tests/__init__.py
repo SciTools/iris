@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides testing capabilities and customisations specific to Iris.
+"""Provides testing capabilities and customisations specific to Iris.
 
 .. note:: This module needs to control the matplotlib backend, so it
           **must** be imported before ``matplotlib.pyplot``.
@@ -43,6 +42,7 @@ import requests
 
 import iris.config
 import iris.cube
+import iris.fileformats
 import iris.tests.graphics as graphics
 import iris.util
 
@@ -124,16 +124,12 @@ def main():
                 11,
                 "                       NOTE: To compare results of failing tests, ",
             )
-            lines.insert(
-                12, "                             use idiff.py instead"
-            )
+            lines.insert(12, "                             use idiff.py instead")
             lines.insert(
                 13,
                 "  --data-files-used    Save a list of files used to a temporary file",
             )
-            lines.insert(
-                14, "  -m                   Create missing test results"
-            )
+            lines.insert(14, "  -m                   Create missing test results")
             print("\n".join(lines))
     else:
         unittest.main()
@@ -157,18 +153,14 @@ def _assert_masked_array(assertion, a, b, strict, **kwargs):
 
 
 def assert_masked_array_equal(a, b, strict=False):
-    """
-    Check that masked arrays are equal. This requires the
+    """Check that masked arrays are equal. This requires the
     unmasked values and masks to be identical.
 
-    Args:
-
-    * a, b (array-like):
+    Parameters
+    ----------
+    a, b : array-like
         Two arrays to compare.
-
-    Kwargs:
-
-    * strict (bool):
+    strict : bool, optional
         If True, perform a complete mask and data array equality check.
         If False (default), the data array equality considers only unmasked
         elements.
@@ -178,24 +170,19 @@ def assert_masked_array_equal(a, b, strict=False):
 
 
 def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
-    """
-    Check that masked arrays are almost equal. This requires the
+    """Check that masked arrays are almost equal. This requires the
     masks to be identical, and the unmasked values to be almost
     equal.
 
-    Args:
-
-    * a, b (array-like):
+    Parameters
+    ----------
+    a, b : array-like
         Two arrays to compare.
-
-    Kwargs:
-
-    * strict (bool):
+    strict : bool, optional
         If True, perform a complete mask and data array equality check.
         If False (default), the data array equality considers only unmasked
         elements.
-
-    * decimal (int):
+    decimal : int, optional, default=6
         Equality tolerance level for
         :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
         'abs(desired-actual) < 0.5 * 10**(-decimal)'
@@ -237,8 +224,7 @@ class IrisTest(unittest.TestCase):
 
     @staticmethod
     def get_data_path(relative_path):
-        """
-        Return the absolute path to a data file when given the relative path
+        """Return the absolute path to a data file when given the relative path
         as a string, or sequence of strings.
 
         """
@@ -274,8 +260,7 @@ class IrisTest(unittest.TestCase):
 
     @staticmethod
     def get_result_path(relative_path):
-        """
-        Returns the absolute path to a result file when given the relative path
+        """Returns the absolute path to a result file when given the relative path
         as a string, or sequence of strings.
 
         """
@@ -284,15 +269,15 @@ class IrisTest(unittest.TestCase):
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
     def result_path(self, basename=None, ext=""):
-        """
-        Return the full path to a test result, generated from the \
+        """Return the full path to a test result, generated from the \
         calling file, class and, optionally, method.
 
-        Optional kwargs :
-
-            * basename    - File basename. If omitted, this is \
-                            generated from the calling method.
-            * ext         - Appended file extension.
+        Parameters
+        ----------
+        basename : optional, default=None
+            File basename. If omitted, this is generated from the calling method.
+        ext : str, optional, default=""
+            Appended file extension.
 
         """
         if ext and not ext.startswith("."):
@@ -337,27 +322,22 @@ class IrisTest(unittest.TestCase):
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags="-h"):
-        """
-        Test that the CDL for the given netCDF file matches the contents
+        """Test that the CDL for the given netCDF file matches the contents
         of the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * netcdf_filename:
+        Parameters
+        ----------
+        netcdf_filename :
             The path to the netCDF file.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * flags:
+        flags : str, optional
             Command-line flags for `ncdump`, as either a whitespace
             separated string or an iterable. Defaults to '-h'.
 
@@ -406,27 +386,22 @@ class IrisTest(unittest.TestCase):
         self._check_same(cdl, reference_path, type_comparison_name="CDL")
 
     def assertCML(self, cubes, reference_filename=None, checksum=True):
-        """
-        Test that the CML for the given cubes matches the contents of
+        """Test that the CML for the given cubes matches the contents of
         the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * cubes:
+        Parameters
+        ----------
+        cubes :
             Either a Cube or a sequence of Cubes.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * checksum:
+        checksum : bool, optional
             When True, causes the CML to include a checksum for each
             Cube's data. Defaults to True.
 
@@ -445,9 +420,7 @@ class IrisTest(unittest.TestCase):
         reference_path = self.get_result_path(reference_filename)
         self._check_same(xml, reference_path)
 
-    def assertTextFile(
-        self, source_filename, reference_filename, desc="text file"
-    ):
+    def assertTextFile(self, source_filename, reference_filename, desc="text file"):
         """Check if two text files are the same, printing any diffs."""
         with open(source_filename) as source_file:
             source_text = source_file.readlines()
@@ -477,9 +450,7 @@ class IrisTest(unittest.TestCase):
             with open(reference_path, "r") as reference_file:
                 stats = json.load(reference_file)
                 self.assertEqual(stats.get("shape", []), list(data.shape))
-                self.assertEqual(
-                    stats.get("masked", False), ma.is_masked(data)
-                )
+                self.assertEqual(stats.get("masked", False), ma.is_masked(data))
                 nstats = np.array(
                     (
                         stats.get("mean", 0.0),
@@ -525,20 +496,16 @@ class IrisTest(unittest.TestCase):
             shutil.copy(test_filename, reference_path)
 
     def assertString(self, string, reference_filename=None):
-        """
-        Test that `string` matches the contents of the reference file.
+        """Test that `string` matches the contents of the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * string:
+        Parameters
+        ----------
+        string : str
             The string to check.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
@@ -549,9 +516,7 @@ class IrisTest(unittest.TestCase):
             reference_path = self.result_path(None, "txt")
         else:
             reference_path = self.get_result_path(reference_filename)
-        self._check_same(
-            string, reference_path, type_comparison_name="Strings"
-        )
+        self._check_same(string, reference_path, type_comparison_name="Strings")
 
     def assertRepr(self, obj, reference_filename):
         self.assertString(repr(obj), reference_filename)
@@ -562,19 +527,14 @@ class IrisTest(unittest.TestCase):
                 reference = "".join(
                     part.decode("utf-8") for part in reference_fh.readlines()
                 )
-            self._assert_str_same(
-                reference, item, reference_path, type_comparison_name
-            )
+            self._assert_str_same(reference, item, reference_path, type_comparison_name)
         else:
             self._ensure_folder(reference_path)
             with open(reference_path, "wb") as reference_fh:
                 reference_fh.writelines(part.encode("utf-8") for part in item)
 
     def assertXMLElement(self, obj, reference_filename):
-        """
-        Calls the xml_element method given obj and asserts the result is the same as the test file.
-
-        """
+        """Calls the xml_element method given obj and asserts the result is the same as the test file."""
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
         # sort the attributes on xml elements before testing against known good state.
@@ -583,9 +543,7 @@ class IrisTest(unittest.TestCase):
         doc = iris.cube.Cube._sort_xml_attrs(doc)
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = self.get_result_path(reference_filename)
-        self._check_same(
-            pretty_xml, reference_path, type_comparison_name="XML"
-        )
+        self._check_same(pretty_xml, reference_path, type_comparison_name="XML")
 
     def assertArrayEqual(self, a, b, err_msg=""):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
@@ -603,8 +561,7 @@ class IrisTest(unittest.TestCase):
 
     @contextlib.contextmanager
     def assertLogs(self, logger=None, level=None, msg_regex=None):
-        """
-        An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
+        """An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
         which also exercises the logger's message formatting.
 
         Also adds the ``msg_regex`` kwarg:
@@ -652,24 +609,20 @@ class IrisTest(unittest.TestCase):
     def assertArrayAlmostEqual(self, a, b, decimal=6):
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
 
-    assertMaskedArrayAlmostEqual = staticmethod(
-        assert_masked_array_almost_equal
-    )
+    assertMaskedArrayAlmostEqual = staticmethod(assert_masked_array_almost_equal)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
-        """
-        Check arrays are equal, within given relative + absolute tolerances.
+        """Check arrays are equal, within given relative + absolute tolerances.
 
-        Args:
-
-        * a, b (array-like):
+        Parameters
+        ----------
+        a, b : array-like
             Two arrays to compare.
-
-        Kwargs:
-
-        * rtol, atol (float):
+        rtol, atol : float, optional
             Relative and absolute tolerances to apply.
 
+        Other Parameters
+        ----------------
         Any additional kwargs are passed to numpy.testing.assert_allclose.
 
         Performs pointwise toleranced comparison, and raises an assertion if
@@ -722,15 +675,12 @@ class IrisTest(unittest.TestCase):
             os.remove(filename)
 
     def file_checksum(self, file_path):
-        """
-        Generate checksum from file.
-        """
+        """Generate checksum from file."""
         with open(file_path, "rb") as in_file:
             return zlib.crc32(in_file.read())
 
     def _unique_id(self):
-        """
-        Returns the unique ID for the current assertion.
+        """Returns the unique ID for the current assertion.
 
         The ID is composed of two parts: a unique ID for the current test
         (which is itself composed of the module, class, and test names), and
@@ -771,9 +721,7 @@ class IrisTest(unittest.TestCase):
 
     def _check_reference_file(self, reference_path):
         reference_exists = os.path.isfile(reference_path)
-        if not (
-            reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")
-        ):
+        if not (reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")):
             msg = "Missing test result: {}".format(reference_path)
             raise AssertionError(msg)
         return reference_exists
@@ -784,8 +732,7 @@ class IrisTest(unittest.TestCase):
             os.makedirs(dir_path)
 
     def check_graphic(self):
-        """
-        Check the hash of the current matplotlib figure matches the expected
+        """Check the hash of the current matplotlib figure matches the expected
         image hash for the current graphic test.
 
         To create missing image test results, set the IRIS_TEST_CREATE_MISSING
@@ -808,15 +755,17 @@ class IrisTest(unittest.TestCase):
         self.testcase_patches.clear()
 
     def patch(self, *args, **kwargs):
-        """
-        Install a mock.patch, to be removed after the current test.
+        """Install a mock.patch, to be removed after the current test.
 
         The patch is created with mock.patch(*args, **kwargs).
 
-        Returns:
-            The substitute object returned by patch.start().
+        Returns
+        -------
+        The substitute object returned by patch.start().
 
-        For example::
+        Examples
+        --------
+        ::
 
             mock_call = self.patch('module.Class.call', return_value=1)
             module_Class_instance.call(3, 4)
@@ -844,8 +793,7 @@ class IrisTest(unittest.TestCase):
         return start_result
 
     def assertArrayShapeStats(self, result, shape, mean, std_dev, rtol=1e-6):
-        """
-        Assert that the result, a cube, has the provided shape and that the
+        """Assert that the result, a cube, has the provided shape and that the
         mean and standard deviation of the data array are also as provided.
         Thus build confidence that a cube processing operation, such as a
         cube.regrid, has maintained its behaviour.
@@ -856,22 +804,19 @@ class IrisTest(unittest.TestCase):
         self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
 
     def assertDictEqual(self, lhs, rhs, msg=None):
-        """
+        """Dictionary Comparison.
+
         This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
         in order to cope with dictionary comparison where the value of a key may
         be a numpy array.
 
         """
         if not isinstance(lhs, Mapping):
-            emsg = (
-                f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
-            )
+            emsg = f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
             self.fail(emsg)
 
         if not isinstance(rhs, Mapping):
-            emsg = (
-                f"Provided RHS argument is not a 'Mapping', got {type(rhs)}."
-            )
+            emsg = f"Provided RHS argument is not a 'Mapping', got {type(rhs)}."
             self.fail(emsg)
 
         if set(lhs.keys()) != set(rhs.keys()):
@@ -899,9 +844,7 @@ class IrisTest(unittest.TestCase):
                     raise AssertionError(emsg)
 
                 self.assertMaskedArrayEqual(lvalue, rvalue)
-            elif isinstance(lvalue, np.ndarray) or isinstance(
-                rvalue, np.ndarray
-            ):
+            elif isinstance(lvalue, np.ndarray) or isinstance(rvalue, np.ndarray):
                 if not isinstance(lvalue, np.ndarray):
                     emsg = (
                         f"Dictionary key {key!r} values are not equal, "
@@ -930,9 +873,7 @@ class IrisTest(unittest.TestCase):
     def assertEqualAndKind(self, value, expected):
         # Check a value, and also its type 'kind' = float/integer/string.
         self.assertEqual(value, expected)
-        self.assertEqual(
-            np.array(value).dtype.kind, np.array(expected).dtype.kind
-        )
+        self.assertEqual(np.array(value).dtype.kind, np.array(expected).dtype.kind)
 
 
 get_data_path = IrisTest.get_data_path
@@ -943,9 +884,95 @@ class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
     pass
 
 
+class PPTest:
+    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest."""
+
+    @contextlib.contextmanager
+    def cube_save_test(
+        self,
+        reference_txt_path,
+        reference_cubes=None,
+        reference_pp_path=None,
+        **kwargs,
+    ):
+        """A context manager for testing the saving of Cubes to PP files.
+
+        Args:
+
+        * reference_txt_path:
+            The path of the file containing the textual PP reference data.
+
+        Kwargs:
+
+        * reference_cubes:
+            The cube(s) from which the textual PP reference can be re-built if necessary.
+        * reference_pp_path:
+            The location of a PP file from which the textual PP reference can be re-built if necessary.
+            NB. The "reference_cubes" argument takes precedence over this argument.
+
+        The return value from the context manager is the name of a temporary file
+        into which the PP data to be tested should be saved.
+
+        Example::
+            with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
+                iris.save(cubes, temp_pp_path)
+
+        """
+        # Watch out for a missing reference text file
+        if not os.path.isfile(reference_txt_path):
+            if reference_cubes:
+                temp_pp_path = iris.util.create_temp_filename(".pp")
+                try:
+                    iris.save(reference_cubes, temp_pp_path, **kwargs)
+                    self._create_reference_txt(reference_txt_path, temp_pp_path)
+                finally:
+                    os.remove(temp_pp_path)
+            elif reference_pp_path:
+                self._create_reference_txt(reference_txt_path, reference_pp_path)
+            else:
+                raise ValueError(
+                    "Missing all of reference txt file, cubes, and PP path."
+                )
+
+        temp_pp_path = iris.util.create_temp_filename(".pp")
+        try:
+            # This value is returned to the target of the "with" statement's "as" clause.
+            yield temp_pp_path
+
+            # Load deferred data for all of the fields (but don't do anything with it)
+            pp_fields = list(iris.fileformats.pp.load(temp_pp_path))
+            for pp_field in pp_fields:
+                pp_field.data
+            with open(reference_txt_path, "r") as reference_fh:
+                reference = "".join(reference_fh)
+            self._assert_str_same(
+                reference + "\n",
+                str(pp_fields) + "\n",
+                reference_txt_path,
+                type_comparison_name="PP files",
+            )
+        finally:
+            os.remove(temp_pp_path)
+
+    def _create_reference_txt(self, txt_path, pp_path):
+        # Load the reference data
+        pp_fields = list(iris.fileformats.pp.load(pp_path))
+        for pp_field in pp_fields:
+            pp_field.data
+
+        # Clear any header words we don't use
+        unused = ("lbexp", "lbegin", "lbnrec", "lbproj", "lbtyp")
+        for pp_field in pp_fields:
+            for word_name in unused:
+                setattr(pp_field, word_name, 0)
+
+        # Save the textual representation of the PP fields
+        with open(txt_path, "w") as txt_file:
+            txt_file.writelines(str(pp_fields))
+
+
 def skip_data(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of
+    """Decorator to choose whether to run tests, based on the availability of
     external data.
 
     Example usage:
@@ -960,16 +987,13 @@ def skip_data(fn):
         or os.environ.get("IRIS_TEST_NO_DATA")
     )
 
-    skip = unittest.skipIf(
-        condition=no_data, reason="Test(s) require external data."
-    )
+    skip = unittest.skipIf(condition=no_data, reason="Test(s) require external data.")
 
     return skip(fn)
 
 
 def skip_gdal(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of the
+    """Decorator to choose whether to run tests, based on the availability of the
     GDAL library.
 
     Example usage:
@@ -978,9 +1002,7 @@ def skip_gdal(fn):
             ...
 
     """
-    skip = unittest.skipIf(
-        condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'."
-    )
+    skip = unittest.skipIf(condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'.")
     return skip(fn)
 
 
@@ -1012,8 +1034,7 @@ skip_stratify = unittest.skipIf(
 
 
 def no_warnings(func):
-    """
-    Provides a decorator to ensure that there are no warnings raised
+    """Provides a decorator to ensure that there are no warnings raised
     within the test, otherwise the test will fail.
 
     """
@@ -1025,7 +1046,7 @@ def no_warnings(func):
         self.assertEqual(
             0,
             warn.call_count,
-            ("Got unexpected warnings." " \n{}".format(warn.call_args_list)),
+            ("Got unexpected warnings.\n{}".format(warn.call_args_list)),
         )
         return result
 
@@ -1033,8 +1054,7 @@ def no_warnings(func):
 
 
 def env_bin_path(exe_name: AnyStr = None):
-    """
-    Return a Path object for (an executable in) the environment bin directory.
+    """Return a Path object for (an executable in) the environment bin directory.
 
     Parameters
     ----------

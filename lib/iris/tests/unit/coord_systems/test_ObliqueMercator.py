@@ -70,9 +70,7 @@ kwarg_permutations: List[ParamTuple] = [
     ParamTuple(
         "globe",
         dict(ellipsoid=GeogCS(1)),
-        dict(
-            globe=GlobeWithEq(semimajor_axis=1, semiminor_axis=1, ellipse=None)
-        ),
+        dict(globe=GlobeWithEq(semimajor_axis=1, semiminor_axis=1, ellipse=None)),
     ),
     ParamTuple(
         "combo",
@@ -92,9 +90,7 @@ kwarg_permutations: List[ParamTuple] = [
             false_easting=1000000,
             false_northing=-2000000,
             scale_factor=0.939692620786,
-            globe=GlobeWithEq(
-                semimajor_axis=1, semiminor_axis=1, ellipse=None
-            ),
+            globe=GlobeWithEq(semimajor_axis=1, semiminor_axis=1, ellipse=None),
         ),
     ),
 ]
@@ -118,15 +114,11 @@ class TestArgs:
         globe=None,
     )
 
-    @pytest.fixture(
-        autouse=True, params=kwarg_permutations, ids=permutation_ids
-    )
+    @pytest.fixture(autouse=True, params=kwarg_permutations, ids=permutation_ids)
     def make_variant_inputs(self, request) -> None:
         """Parse a ParamTuple into usable test information."""
         inputs: ParamTuple = request.param
-        self.class_kwargs = dict(
-            self.class_kwargs_default, **inputs.class_kwargs
-        )
+        self.class_kwargs = dict(self.class_kwargs_default, **inputs.class_kwargs)
         self.cartopy_kwargs_expected = dict(
             self.cartopy_kwargs_default, **inputs.cartopy_kwargs
         )

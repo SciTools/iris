@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the
+"""Unit tests for the
 :mod:`iris.fileformats._structured_array_identification.GroupStructure` class.
 
 """
@@ -26,9 +25,7 @@ def regular_array_structures(shape, names="abcdefg"):
     running_product = 1
     array_structures = {}
     for name, dim_len in zip(names, shape):
-        array_structures[name] = ArrayStructure(
-            running_product, np.arange(dim_len)
-        )
+        array_structures[name] = ArrayStructure(running_product, np.arange(dim_len))
         running_product *= dim_len
     return array_structures
 
@@ -75,8 +72,7 @@ class TestGroupStructure_possible_structures(tests.IrisTest):
         structure = GroupStructure(length, array_structures, array_order="f")
         allowed = structure.possible_structures()
         names = [
-            [name for (name, _) in allowed_structure]
-            for allowed_structure in allowed
+            [name for (name, _) in allowed_structure] for allowed_structure in allowed
         ]
         self.assertEqual(names, expected)
 
@@ -92,9 +88,7 @@ class TestGroupStructure_possible_structures(tests.IrisTest):
         # More than one potential dimension for dim 1.
         array_structures = regular_array_structures((4, 2, 3))
         array_structures.update(regular_array_structures((6, 4), names="xy"))
-        self.assert_potentials(
-            24, array_structures, [["x", "y"], ["a", "b", "c"]]
-        )
+        self.assert_potentials(24, array_structures, [["x", "y"], ["a", "b", "c"]])
 
     def test_shared_first_dimension(self):
         # One 2d potential as well as one 3d, using the same first dimension.
@@ -140,9 +134,7 @@ class TestGroupStructure_build_arrays(tests.IrisTest):
 
         result = grp.build_arrays((2, 3), {"a": a, "b": b})
         self.assert_built_array("a", result, ([0, 1], (0,)))
-        self.assert_built_array(
-            "b", result, ([[0, 100], [1, 101], [2, 102]], (1,))
-        )
+        self.assert_built_array("b", result, ([[0, 100], [1, 101], [2, 102]], (1,)))
 
     def test_build_arrays_unstructured(self):
         # Check that an unstructured array gets reshaped appropriately.
@@ -177,9 +169,7 @@ class TestGroupStructure_build_arrays(tests.IrisTest):
         elements["d"] = ArrayStructure(3, np.arange(4))
         grp = GroupStructure(12, elements, array_order="f")
 
-        d = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]).reshape(
-            (3, 4), order="f"
-        )
+        d = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]).reshape((3, 4), order="f")
         expected = np.array([[[0, 1, 2], [0, 2, 3]], [[0, 1, 3], [1, 2, 3]]])
         r = grp.build_arrays(
             (2, 2, 3),

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :func:`iris.fileformats.netcdf.load_cubes` function.
+"""Unit tests for the :func:`iris.fileformats.netcdf.load_cubes` function.
 
 todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
  switching to use netcdf.load_cubes() instead of iris.load()/load_cube().
@@ -209,12 +208,8 @@ class Tests(tests.IrisTest):
         self.assertEqual(cubes[0].units, as_unit("unknown"))
         self.assertEqual(cubes[0].coord("y").units, as_unit("unknown"))
         self.assertEqual(cubes[0].coord("x").units, as_unit(1))
-        self.assertEqual(
-            cubes[0].ancillary_variable("refs").units, as_unit("unknown")
-        )
-        self.assertEqual(
-            cubes[0].cell_measure("areas").units, as_unit("unknown")
-        )
+        self.assertEqual(cubes[0].ancillary_variable("refs").units, as_unit("unknown"))
+        self.assertEqual(cubes[0].cell_measure("areas").units, as_unit("unknown"))
 
 
 class TestsMesh(tests.IrisTest):
@@ -280,9 +275,7 @@ class TestsMesh(tests.IrisTest):
             self.assertIsNotNone(cube.coords("levels"))
 
     def test_mesh_coord(self):
-        cube = [
-            cube for cube in self.mesh_cubes if cube.var_name == "face_data"
-        ][0]
+        cube = [cube for cube in self.mesh_cubes if cube.var_name == "face_data"][0]
         face_x = cube.coord("longitude")
         face_y = cube.coord("latitude")
 

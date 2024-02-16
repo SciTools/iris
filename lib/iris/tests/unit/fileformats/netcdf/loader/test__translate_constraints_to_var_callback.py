@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for
+"""Unit tests for
 :func:`iris.fileformats.netcdf._translate_constraints_to_var_callback`.
 
 """
@@ -12,9 +11,7 @@ from unittest.mock import MagicMock
 
 import iris
 from iris.fileformats.cf import CFDataVariable
-from iris.fileformats.netcdf.loader import (
-    _translate_constraints_to_var_callback,
-)
+from iris.fileformats.netcdf.loader import _translate_constraints_to_var_callback
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -90,9 +87,7 @@ class Test(tests.IrisTest):
         self.assertArrayEqual(result, [False, False, False, True, False])
 
     def test_NameConstraint_with_STASH(self):
-        constr = iris.NameConstraint(
-            standard_name="x_wind", STASH="m01s00i024"
-        )
+        constr = iris.NameConstraint(standard_name="x_wind", STASH="m01s00i024")
         result = _translate_constraints_to_var_callback(constr)
         self.assertIsNone(result)
 

@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test function :func:`iris.util.find_discontiguities"""
+"""Test function :func:`iris.util.find_discontiguities."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -39,9 +39,7 @@ class Test(tests.IrisTest):
         )
         # Repeat for a discontiguity on the topmost bounds.
         self.testcube_discontig_top = full2d_global()
-        make_bounds_discontiguous_at_point(
-            self.testcube_discontig_top, 2, 4, in_y=True
-        )
+        make_bounds_discontiguous_at_point(self.testcube_discontig_top, 2, 4, in_y=True)
 
         # Repeat for a discontiguity on the botommost bounds.
         self.testcube_discontig_along_bottom = full2d_global()

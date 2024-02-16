@@ -91,8 +91,7 @@ def create_metadata(
             else:
                 start, stop, step = 0, N_POINTS, 1
             points = (
-                array_lib.arange(start, stop, step, dtype=coord_dtype)
-                * SCALE_FACTOR
+                array_lib.arange(start, stop, step, dtype=coord_dtype) * SCALE_FACTOR
             )
 
         if with_bounds:

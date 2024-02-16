@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :class:`iris.coords.DimCoord` class.
+"""Unit tests for the :class:`iris.coords.DimCoord` class.
 
 Note: a lot of these methods are actually defined by the :class:`Coord` class,
 but can only be tested on concrete instances (DimCoord or AuxCoord).
@@ -412,9 +411,7 @@ class Test__getitem__(tests.IrisTest, DimCoordTestMixin):
                 main_points = main_coord.core_points()
                 sub_points = sub_coord.core_points()
                 sub_main_points = main_points[:2]
-                self.assertEqualRealArraysAndDtypes(
-                    sub_points, sub_main_points
-                )
+                self.assertEqualRealArraysAndDtypes(sub_points, sub_main_points)
                 self.assertArraysDoNotShareData(
                     sub_points,
                     sub_main_points,
@@ -425,9 +422,7 @@ class Test__getitem__(tests.IrisTest, DimCoordTestMixin):
                 main_bounds = main_coord.core_bounds()
                 sub_bounds = sub_coord.core_bounds()
                 sub_main_bounds = main_bounds[:2]
-                self.assertEqualRealArraysAndDtypes(
-                    sub_bounds, sub_main_bounds
-                )
+                self.assertEqualRealArraysAndDtypes(sub_bounds, sub_main_bounds)
                 self.assertArraysDoNotShareData(
                     sub_bounds,
                     sub_main_bounds,
@@ -441,9 +436,7 @@ class Test_copy(tests.IrisTest, DimCoordTestMixin):
         self.setupTestArrays()
 
     def test_writable_points(self):
-        coord1 = DimCoord(
-            np.arange(5), bounds=[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]
-        )
+        coord1 = DimCoord(np.arange(5), bounds=[[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
         coord2 = coord1.copy()
         msg = "destination is read-only"
 

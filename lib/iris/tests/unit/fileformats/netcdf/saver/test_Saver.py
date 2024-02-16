@@ -244,9 +244,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, least_significant_digit=1)
             cube_saved = iris.load_cube(nc_path)
-            self.assertEqual(
-                cube_saved.attributes["least_significant_digit"], 1
-            )
+            self.assertEqual(cube_saved.attributes["least_significant_digit"], 1)
             self.assertFalse(np.all(cube.data == cube_saved.data))
             self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
 
@@ -456,9 +454,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
             ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(
-                ds.variables["longitude"].valid_range, vrange
-            )
+            self.assertArrayEqual(ds.variables["longitude"].valid_range, vrange)
             ds.close()
 
     def test_valid_min_saved(self):
@@ -641,9 +637,7 @@ class Test_cf_valid_var_name(tests.IrisTest):
 
     def test_no_hyphen(self):
         # CF explicitly prohibits hyphen, even though it is fine in NetCDF.
-        self.assertEqual(
-            Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf"
-        )
+        self.assertEqual(Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf")
 
 
 class _Common__check_attribute_compliance:
@@ -789,9 +783,7 @@ class Test_check_attribute_compliance__exception_handling(
         msg = 'Both "valid_range" and "valid_min"'
         with Saver("nonexistent test file", "NETCDF4") as saver:
             with self.assertRaisesRegex(ValueError, msg):
-                saver.check_attribute_compliance(
-                    self.container, self.data_dtype
-                )
+                saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
 class Test__cf_coord_identity(tests.IrisTest):
@@ -855,8 +847,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         return cube
 
     def _grid_mapping_variable(self, coord_system):
-        """
-        Return a mock netCDF variable that represents the conversion
+        """Return a mock netCDF variable that represents the conversion
         of the given coordinate system.
 
         """
@@ -878,14 +869,11 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         Saver._create_cf_grid_mapping(saver, cube, variable)
 
         self.assertEqual(create_var_fn.call_count, 1)
-        self.assertEqual(
-            variable.grid_mapping, grid_variable.grid_mapping_name
-        )
+        self.assertEqual(variable.grid_mapping, grid_variable.grid_mapping_name)
         return grid_variable
 
     def _variable_attributes(self, coord_system):
-        """
-        Return the attributes dictionary for the grid mapping variable
+        """Return the attributes dictionary for the grid mapping variable
         that is created from the given coordinate system.
 
         """

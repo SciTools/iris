@@ -37,12 +37,8 @@ class TestMeshCommon(tests.IrisTest):
         cls.EDGE_LAT = AuxCoord(
             [0, 0.5, 0.5], standard_name="latitude", var_name="edge_lat"
         )
-        cls.FACE_LON = AuxCoord(
-            [0.5], standard_name="longitude", var_name="face_lon"
-        )
-        cls.FACE_LAT = AuxCoord(
-            [0.5], standard_name="latitude", var_name="face_lat"
-        )
+        cls.FACE_LON = AuxCoord([0.5], standard_name="longitude", var_name="face_lon")
+        cls.FACE_LAT = AuxCoord([0.5], standard_name="latitude", var_name="face_lat")
 
         cls.EDGE_NODE = mesh.Connectivity(
             [[0, 1], [1, 2], [2, 0]],
@@ -51,16 +47,10 @@ class TestMeshCommon(tests.IrisTest):
             var_name="var_name",
             attributes={"test": 1},
         )
-        cls.FACE_NODE = mesh.Connectivity(
-            [[0, 1, 2]], cf_role="face_node_connectivity"
-        )
-        cls.FACE_EDGE = mesh.Connectivity(
-            [[0, 1, 2]], cf_role="face_edge_connectivity"
-        )
+        cls.FACE_NODE = mesh.Connectivity([[0, 1, 2]], cf_role="face_node_connectivity")
+        cls.FACE_EDGE = mesh.Connectivity([[0, 1, 2]], cf_role="face_edge_connectivity")
         # (Actually meaningless:)
-        cls.FACE_FACE = mesh.Connectivity(
-            [[0, 0, 0]], cf_role="face_face_connectivity"
-        )
+        cls.FACE_FACE = mesh.Connectivity([[0, 0, 0]], cf_role="face_face_connectivity")
         # (Actually meaningless:)
         cls.EDGE_FACE = mesh.Connectivity(
             [[0, 0], [0, 0], [0, 0]], cf_role="edge_face_connectivity"
@@ -191,9 +181,7 @@ class TestProperties1D(TestMeshCommon):
             {"cf_role": "edge_node_connectivity"},
         )
 
-        fake_connectivity = tests.mock.Mock(
-            __class__=mesh.Connectivity, cf_role="fake"
-        )
+        fake_connectivity = tests.mock.Mock(__class__=mesh.Connectivity, cf_role="fake")
         negative_kwargs = (
             {"item": fake_connectivity},
             {"item": "foo"},
@@ -238,9 +226,7 @@ class TestProperties1D(TestMeshCommon):
         # See Mesh.coords tests for thorough coverage of cases.
         func = self.mesh.coord
         exception = CoordinateNotFoundError
-        self.assertRaisesRegex(
-            exception, ".*but found 2", func, include_nodes=True
-        )
+        self.assertRaisesRegex(exception, ".*but found 2", func, include_nodes=True)
         self.assertRaisesRegex(exception, ".*but found none", func, axis="t")
 
     def test_coords(self):
@@ -307,9 +293,7 @@ class TestProperties1D(TestMeshCommon):
             self.assertEqual([], func(include_faces=True))
 
     def test_edge_dimension(self):
-        self.assertEqual(
-            self.kwargs["edge_dimension"], self.mesh.edge_dimension
-        )
+        self.assertEqual(self.kwargs["edge_dimension"], self.mesh.edge_dimension)
 
     def test_edge_coords(self):
         expected = mesh.MeshEdgeCoords(self.EDGE_LON, self.EDGE_LAT)
@@ -346,9 +330,7 @@ class TestProperties1D(TestMeshCommon):
         self.assertEqual(expected, self.mesh.node_coords)
 
     def test_node_dimension(self):
-        self.assertEqual(
-            self.kwargs["node_dimension"], self.mesh.node_dimension
-        )
+        self.assertEqual(self.kwargs["node_dimension"], self.mesh.node_dimension)
 
     def test_topology_dimension(self):
         self.assertEqual(
@@ -503,18 +485,14 @@ class TestProperties2D(TestProperties1D):
         self.assertEqual(expected, self.mesh.all_coords)
 
     def test_boundary_node(self):
-        self.assertEqual(
-            self.BOUNDARY_NODE, self.mesh.boundary_node_connectivity
-        )
+        self.assertEqual(self.BOUNDARY_NODE, self.mesh.boundary_node_connectivity)
 
     def test_connectivity(self):
         # See Mesh.connectivities tests for thorough coverage of cases.
         # Can only test Mesh.connectivity for 2D since we need >1 connectivity.
         func = self.mesh.connectivity
         exception = ConnectivityNotFoundError
-        self.assertRaisesRegex(
-            exception, ".*but found 3", func, contains_node=True
-        )
+        self.assertRaisesRegex(exception, ".*but found 3", func, contains_node=True)
         self.assertRaisesRegex(
             exception,
             ".*but found none",
@@ -634,9 +612,7 @@ class TestProperties2D(TestProperties1D):
         self.assertEqual(expected, self.mesh.face_coords)
 
     def test_face_dimension(self):
-        self.assertEqual(
-            self.kwargs["face_dimension"], self.mesh.face_dimension
-        )
+        self.assertEqual(self.kwargs["face_dimension"], self.mesh.face_dimension)
 
     def test_face_edge(self):
         self.assertEqual(self.FACE_EDGE, self.mesh.face_edge_connectivity)
@@ -778,9 +754,7 @@ class TestOperations1D(TestMeshCommon):
 
         self.assertEqual(false_metadata_manager, self.mesh._metadata_manager)
         self.assertEqual(false_coord_manager, self.mesh._coord_manager)
-        self.assertEqual(
-            false_connectivity_manager, self.mesh._connectivity_manager
-        )
+        self.assertEqual(false_connectivity_manager, self.mesh._connectivity_manager)
 
     def test_add_connectivities(self):
         # Cannot test ADD - 1D - nothing extra to add beyond minimum.
@@ -914,9 +888,7 @@ class TestOperations1D(TestMeshCommon):
             )
 
     def test_add_coords_single_face(self):
-        self.assertRaises(
-            TypeError, self.mesh.add_coords, face_x=self.FACE_LON
-        )
+        self.assertRaises(TypeError, self.mesh.add_coords, face_x=self.FACE_LON)
 
     def test_dimension_names(self):
         # Test defaults.
@@ -955,8 +927,7 @@ class TestOperations1D(TestMeshCommon):
         self.assertEqual("foo", self.mesh.node_dimension)
 
     def test_remove_connectivities(self):
-        """
-        Test that remove() mimics the connectivities() method correctly,
+        """Test that remove() mimics the connectivities() method correctly,
         and prevents removal of mandatory connectivities.
 
         """
@@ -972,9 +943,7 @@ class TestOperations1D(TestMeshCommon):
             {"contains_edge": True, "contains_node": True},
         )
 
-        fake_connectivity = tests.mock.Mock(
-            __class__=mesh.Connectivity, cf_role="fake"
-        )
+        fake_connectivity = tests.mock.Mock(__class__=mesh.Connectivity, cf_role="fake")
         negative_kwargs = (
             {"item": fake_connectivity},
             {"item": "foo"},
@@ -1074,9 +1043,7 @@ class TestOperations1D(TestMeshCommon):
 
     def test_to_MeshCoords_face(self):
         location = "face"
-        self.assertRaises(
-            CoordinateNotFoundError, self.mesh.to_MeshCoords, location
-        )
+        self.assertRaises(CoordinateNotFoundError, self.mesh.to_MeshCoords, location)
 
 
 class TestOperations2D(TestOperations1D):
@@ -1108,9 +1075,7 @@ class TestOperations2D(TestOperations1D):
         for new_len in (False, True):
             # First replace with ones of same length, then with ones of
             # different length.
-            kwargs = {
-                k: self.new_connectivity(v, new_len) for k, v in kwargs.items()
-            }
+            kwargs = {k: self.new_connectivity(v, new_len) for k, v in kwargs.items()}
             self.mesh.add_connectivities(*kwargs.values())
             self.assertEqual(
                 mesh.Mesh2DConnectivities(**kwargs),
@@ -1141,9 +1106,7 @@ class TestOperations2D(TestOperations1D):
             )
 
     def test_add_connectivities_invalid(self):
-        fake_cf_role = tests.mock.Mock(
-            __class__=mesh.Connectivity, cf_role="foo"
-        )
+        fake_cf_role = tests.mock.Mock(__class__=mesh.Connectivity, cf_role="foo")
         log_regex = r"Not adding connectivity.*"
         with self.assertLogs(logger, level="DEBUG", msg_regex=log_regex):
             self.mesh.add_connectivities(fake_cf_role)
@@ -1218,7 +1181,6 @@ class TestOperations2D(TestOperations1D):
 
     def test_remove_connectivities(self):
         """Do what 1D test could not - test removal of optional connectivity."""
-
         # Add an optional connectivity.
         self.mesh.add_connectivities(self.FACE_FACE)
         # Attempt to remove a non-existent connectivity.

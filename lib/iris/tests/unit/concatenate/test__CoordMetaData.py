@@ -9,12 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from iris._concatenate import (
-    _CONSTANT,
-    _DECREASING,
-    _INCREASING,
-    _CoordMetaData,
-)
+from iris._concatenate import _CONSTANT, _DECREASING, _INCREASING, _CoordMetaData
 
 from . import ExpectedItem, create_metadata
 
@@ -79,9 +74,7 @@ def test_dim__scalar(
 @pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_aux(
-    order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool
-) -> None:
+def test_aux(order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
     """Test :class:`iris._concatenate._CoordMetaData` with aux coord."""
     metadata = create_metadata(
         dim_coord=False,
@@ -99,9 +92,7 @@ def test_aux(
 @pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_aux__scalar(
-    coord_dtype: np.dtype, lazy: bool, with_bounds: bool
-) -> None:
+def test_aux__scalar(coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
     """Test :class:`iris._concatenate._CoordMetaData` with scalar aux coord."""
     metadata = create_metadata(
         dim_coord=False,

@@ -52,9 +52,7 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
             add(cube1, cube2)
 
 
-class TestMaskedConstant(
-    tests.IrisTest, CubeArithmeticMaskedConstantTestMixin
-):
+class TestMaskedConstant(tests.IrisTest, CubeArithmeticMaskedConstantTestMixin):
     @property
     def data_op(self):
         return operator.add

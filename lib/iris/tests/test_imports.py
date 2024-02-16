@@ -39,13 +39,9 @@ class TestImports(tests.IrisTest):
                     print(emsg.format(package))
                     raise
                 for child in children:
-                    parent = (
-                        f"{prefix}.{child.stem}" if child.is_dir() else prefix
-                    )
+                    parent = f"{prefix}.{child.stem}" if child.is_dir() else prefix
                     TestImports.itree(child, prefix=parent, debug=debug)
-        elif (
-            path.is_file() and path.name not in IGNORE and path.suffix == ".py"
-        ):
+        elif path.is_file() and path.name not in IGNORE and path.suffix == ".py":
             package = f"{prefix}.{path.stem}"
             if debug:
                 print(f"import {package}")

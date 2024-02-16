@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for :func:`iris.fileformats.netcdf.saver._data_fillvalue_check`.
+"""Unit tests for :func:`iris.fileformats.netcdf.saver._data_fillvalue_check`.
 
 Note: now runs all testcases on both real + lazy data.
 
@@ -41,9 +40,7 @@ class Check__fillvalueandmasking:
             results = results.compute()
 
         # Return a named tuple, for named-property access to the 2 result values.
-        result = collections.namedtuple("_", ["is_masked", "contains_value"])(
-            *results
-        )
+        result = collections.namedtuple("_", ["is_masked", "contains_value"])(*results)
         return result
 
     def test_no_fill_value_not_masked(self):

@@ -260,16 +260,11 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
 
     @staticmethod
     def is_forecast_period(coord):
-        return (
-            coord.standard_name == "forecast_period" and coord.units == "hours"
-        )
+        return coord.standard_name == "forecast_period" and coord.units == "hours"
 
     @staticmethod
     def is_time(coord):
-        return (
-            coord.standard_name == "time"
-            and coord.units == "hours since epoch"
-        )
+        return coord.standard_name == "time" and coord.units == "hours since epoch"
 
     def test_time_mean_ib2(self):
         field = self.base_field()
@@ -349,9 +344,7 @@ class TestLBRSVD(iris.tests.unit.fileformats.TestField):
 
 
 class TestLBSRCE(iris.tests.IrisTest):
-    def check_um_source_attrs(
-        self, lbsrce, source_str=None, um_version_str=None
-    ):
+    def check_um_source_attrs(self, lbsrce, source_str=None, um_version_str=None):
         field = _mock_field(lbsrce=lbsrce)
         (
             factories,
@@ -374,9 +367,7 @@ class TestLBSRCE(iris.tests.IrisTest):
             self.assertNotIn("um_version", attributes)
 
     def test_none(self):
-        self.check_um_source_attrs(
-            lbsrce=8123, source_str=None, um_version_str=None
-        )
+        self.check_um_source_attrs(lbsrce=8123, source_str=None, um_version_str=None)
 
     def test_no_um_version(self):
         self.check_um_source_attrs(

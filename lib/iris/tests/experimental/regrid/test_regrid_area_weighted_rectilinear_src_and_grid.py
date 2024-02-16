@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test area weighted regridding.
-
-"""
+"""Test area weighted regridding."""
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -34,8 +31,7 @@ RESULT_DIR = (
 def _scaled_and_offset_grid(
     cube, x_scalefactor, y_scalefactor, x_offset=0.0, y_offset=0.0
 ):
-    """
-    Return a cube with a horizontal grid that is scaled and offset
+    """Return a cube with a horizontal grid that is scaled and offset
     from the horizontal grid of `src`.
 
     """
@@ -47,8 +43,7 @@ def _scaled_and_offset_grid(
 
 
 def _subsampled_coord(coord, subsamplefactor):
-    """
-    Return a coordinate that is a subsampled copy of `coord`.
+    """Return a coordinate that is a subsampled copy of `coord`.
 
     .. note:: `subsamplefactor` must be an integer >= 1.
 
@@ -61,17 +56,14 @@ def _subsampled_coord(coord, subsamplefactor):
         raise ValueError("The coordinate must have bounds.")
     new_coord = coord[::subsamplefactor]
     new_bounds = new_coord.bounds.copy()
-    new_bounds[:, 1] = coord.bounds[
-        (subsamplefactor - 1) :: subsamplefactor, 1
-    ]
+    new_bounds[:, 1] = coord.bounds[(subsamplefactor - 1) :: subsamplefactor, 1]
     new_bounds[-1, 1] = coord.bounds[-1, 1]
     new_coord = coord.copy(points=new_coord.points, bounds=new_bounds)
     return new_coord
 
 
 def _subsampled_grid(cube, x_subsamplefactor, y_subsamplefactor):
-    """
-    Return a cube that has a horizontal grid that is a subsampled
+    """Return a cube that has a horizontal grid that is a subsampled
     version of the horizontal grid of `cube`.
 
     .. note:: The two subsamplefactors must both be integers >= 1.
@@ -96,8 +88,7 @@ def _subsampled_grid(cube, x_subsamplefactor, y_subsamplefactor):
 
 
 def _resampled_coord(coord, samplefactor):
-    """
-    Return a coordinate that has the same extent as `coord` but has
+    """Return a coordinate that has the same extent as `coord` but has
     `samplefactor` times as many points and bounds.
 
     """
@@ -109,9 +100,7 @@ def _resampled_coord(coord, samplefactor):
     lower = lower + delta
     upper = upper - delta
     samples = int(len(bounds) * samplefactor)
-    new_points, step = np.linspace(
-        lower, upper, samples, endpoint=False, retstep=True
-    )
+    new_points, step = np.linspace(lower, upper, samples, endpoint=False, retstep=True)
     new_points += step * 0.5
     new_coord = coord.copy(points=new_points)
     new_coord.guess_bounds()
@@ -119,8 +108,7 @@ def _resampled_coord(coord, samplefactor):
 
 
 def _resampled_grid(cube, x_samplefactor, y_samplefactor):
-    """
-    Return a cube that has the same horizontal extent as `cube` but has
+    """Return a cube that has the same horizontal extent as `cube` but has
     a reduced (or increased) number of points (and bounds) along the X and Y
     dimensions.
 
@@ -477,9 +465,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(lon, 1)
         dest.add_aux_coord(src.coord("grid_latitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lat_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lat_cross_section.cml",))
         # Constant latitude, data order [x, z]
         # Using original and transposing the result should give the
         # same answer.
@@ -487,9 +473,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lat_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lat_cross_section.cml",))
 
         # Constant longitude
         src = self.realistic_cube[0, :, :, 10]
@@ -501,9 +485,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(lat, 1)
         dest.add_aux_coord(src.coord("grid_longitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lon_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lon_cross_section.cml",))
         # Constant longitude, data order [y, z]
         # Using original and transposing the result should give the
         # same answer.
@@ -511,9 +493,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        self.assertCMLApproxData(
-            res, RESULT_DIR + ("const_lon_cross_section.cml",)
-        )
+        self.assertCMLApproxData(res, RESULT_DIR + ("const_lon_cross_section.cml",))
 
     def test_scalar_source_cube(self):
         src = self.simple_cube[1, 2]
@@ -601,6 +581,19 @@ class TestAreaWeightedRegrid(tests.IrisTest):
 
     @tests.skip_data
     def test_non_circular_subset(self):
+        """Test regridding behaviour when the source grid has circular latitude.
+
+        This tests the specific case when the longitude coordinate of the
+        source grid has the `circular` attribute as `False` but otherwise spans
+        the full 360 degrees.
+
+        Note: the previous behaviour was to always mask target cells when they
+        spanned the boundary of max/min longitude and `circular` was `False`,
+        however this has been changed so that such cells will only be masked
+        when there is a gap between max longitude and min longitude. In this
+        test these cells are expected to be unmasked and therefore the result
+        will be equal to the above test for circular longitudes.
+        """
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
         src.coord("longitude").guess_bounds()
@@ -620,7 +613,50 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
+        self.assertArrayShapeStats(res, (40, 7), 285.653960, 15.212710)
+
+    @tests.skip_data
+    def test__proper_non_circular_subset(self):
+        """Test regridding behaviour when the source grid has circular latitude.
+
+        This tests the specific case when the longitude coordinate of the
+        source grid does not span the full 360 degrees. Target cells which span
+        the boundary of max/min longitude will contain a section which is out
+        of bounds from the source grid and are therefore expected to be masked.
+        """
+        src = iris.tests.stock.global_pp()
+        src.coord("latitude").guess_bounds()
+        src.coord("longitude").guess_bounds()
+        src_lon_bounds = src.coord("longitude").bounds.copy()
+        # Leave a small gap between the first and last longitude value.
+        src_lon_bounds[0, 0] += 0.001
+        src_lon = src.coord("longitude").copy(
+            points=src.coord("longitude").points, bounds=src_lon_bounds
+        )
+        src.remove_coord("longitude")
+        src.add_dim_coord(src_lon, 1)
+        dest_lat = src.coord("latitude")[0:40]
+        dest_lon = iris.coords.DimCoord(
+            [-15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0],
+            standard_name="longitude",
+            units="degrees",
+            coord_system=dest_lat.coord_system,
+        )
+        # Note target grid (in -180 to 180) src in 0 to 360
+        dest_lon.guess_bounds()
+        data = np.zeros((dest_lat.shape[0], dest_lon.shape[0]))
+        dest = iris.cube.Cube(data)
+        dest.add_dim_coord(dest_lat, 0)
+        dest.add_dim_coord(dest_lon, 1)
+
+        res = regrid_area_weighted(src, dest)
         self.assertArrayShapeStats(res, (40, 7), 285.550814, 15.190245)
+
+        # The target cells straddling the gap between min and max source
+        # longitude should be masked.
+        expected_mask = np.zeros(res.shape)
+        expected_mask[:, 3] = 1
+        assert np.array_equal(expected_mask, res.data.mask)
 
 
 if __name__ == "__main__":

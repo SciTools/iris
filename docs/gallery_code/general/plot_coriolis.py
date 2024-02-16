@@ -6,7 +6,7 @@ This code computes the Coriolis frequency and stores it in a cube with
 associated metadata. It then plots the Coriolis frequency on an orthographic
 projection.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

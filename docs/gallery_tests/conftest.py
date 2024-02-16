@@ -18,8 +18,7 @@ GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
 
 @pytest.fixture
 def image_setup_teardown():
-    """
-    Setup and teardown fixture.
+    """Perform setup and teardown fixture.
 
     Ensures all figures are closed before and after test to prevent one test
     polluting another if it fails with a figure unclosed.
@@ -32,7 +31,8 @@ def image_setup_teardown():
 
 @pytest.fixture
 def import_patches(monkeypatch):
-    """
+    """Replace plt.show() with a function that does nothing, also add to sys.path.
+
     Replace plt.show() with a function that does nothing, also add all the
     gallery examples to sys.path.
 
@@ -52,7 +52,8 @@ def import_patches(monkeypatch):
 
 @pytest.fixture
 def iris_future_defaults():
-    """
+    """Create a fixture which resets all the iris.FUTURE settings to the defaults.
+
     Create a fixture which resets all the iris.FUTURE settings to the defaults,
     as otherwise changes made in one test can affect subsequent ones.
 

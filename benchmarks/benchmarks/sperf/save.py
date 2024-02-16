@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-File saving benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
-"""
+"""File saving benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
 import os.path
 
 from iris import save
@@ -16,10 +14,7 @@ from ..generate_data.ugrid import make_cube_like_2d_cubesphere
 
 @on_demand_benchmark
 class NetcdfSave:
-    """
-    Benchmark time and memory costs of saving ~large-ish data cubes to netcdf.
-
-    """
+    """Benchmark time and memory costs of saving ~large-ish data cubes to netcdf."""
 
     params = [[1, 100, 200, 300, 500, 1000, 1668], [False, True]]
     param_names = ["cubesphere_C<N>", "is_unstructured"]

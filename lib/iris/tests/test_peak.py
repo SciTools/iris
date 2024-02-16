@@ -96,9 +96,7 @@ class TestPeakAggregator(tests.IrisTest):
             collapsed_cube.data, np.array([3], dtype=np.float32)
         )
 
-        collapsed_cube = cube.collapsed(
-            ("latitude", "latitude"), iris.analysis.PEAK
-        )
+        collapsed_cube = cube.collapsed(("latitude", "latitude"), iris.analysis.PEAK)
         self.assertArrayAlmostEqual(
             collapsed_cube.data, np.array([3], dtype=np.float32)
         )
@@ -128,21 +126,15 @@ class TestPeakAggregator(tests.IrisTest):
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
         self.assertArrayAlmostEqual(
             collapsed_cube.data,
-            np.array(
-                [4.024977, 5.024977, 7.017852, 4.024977], dtype=np.float32
-            ),
+            np.array([4.024977, 5.024977, 7.017852, 4.024977], dtype=np.float32),
         )
 
-        collapsed_cube = cube.collapsed(
-            ("longitude", "latitude"), iris.analysis.PEAK
-        )
+        collapsed_cube = cube.collapsed(("longitude", "latitude"), iris.analysis.PEAK)
         self.assertArrayAlmostEqual(
             collapsed_cube.data, np.array([7.041787], dtype=np.float32)
         )
 
-        collapsed_cube = cube.collapsed(
-            ("latitude", "longitude"), iris.analysis.PEAK
-        )
+        collapsed_cube = cube.collapsed(("latitude", "longitude"), iris.analysis.PEAK)
         self.assertArrayAlmostEqual(
             collapsed_cube.data, np.array([7.041629], dtype=np.float32)
         )

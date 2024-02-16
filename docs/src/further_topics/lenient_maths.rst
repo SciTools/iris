@@ -35,9 +35,9 @@ introduced and discussed the concept of lenient metadata; a more pragmatic and
 forgiving approach to :ref:`comparing <lenient equality>`,
 :ref:`combining <lenient combination>` and understanding the
 :ref:`differences <lenient difference>` between your metadata
-(:numref:`metadata members table`). The lenient metadata philosophy introduced
+(:ref:`metadata members table`). The lenient metadata philosophy introduced
 there is extended to cube maths, with the view to also preserving as much common
-coordinate (:numref:`metadata classes table`) information, as well as common
+coordinate (:ref:`metadata classes table`) information, as well as common
 metadata, between the participating :class:`~iris.cube.Cube` operands as possible.
 
 Let's consolidate our understanding of lenient and strict cube maths through

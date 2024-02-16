@@ -1,3 +1,5 @@
+"""Simple 1D plot using iris.plot.plot()."""
+
 import matplotlib.pyplot as plt
 
 import iris

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides ABF (and ABL) file format capabilities.
+"""Provides ABF (and ABL) file format capabilities.
 
 ABF and ABL files are satellite file formats defined by Boston University.
 Including this module adds ABF and ABL loading to the session's capabilities.
@@ -57,22 +56,23 @@ month_numbers = {
 
 
 class ABFField:
-    """
-    A data field from an ABF (or ABL) file.
+    """A data field from an ABF (or ABL) file.
 
     Capable of creating a :class:`~iris.cube.Cube`.
 
     """
 
     def __init__(self, filename):
-        """
-        Create an ABFField object from the given filename.
+        """Create an ABFField object from the given filename.
 
-        Args:
+        Parameters
+        ----------
+        filename : str
+            An ABF filename.
 
-            * filename - An ABF filename.
-
-        Example::
+        Examples
+        --------
+        ::
 
             field = ABFField("AVHRRBUVI01.1985feba.abl")
 
@@ -80,8 +80,7 @@ class ABFField:
         basename = os.path.basename(filename)
         if len(basename) != 24:
             raise ValueError(
-                "ABFField expects a filename of 24 characters: "
-                "{}".format(basename)
+                "ABFField expects a filename of 24 characters: {}".format(basename)
             )
         self._filename = filename
 
@@ -120,7 +119,6 @@ class ABFField:
 
     def to_cube(self):
         """Return a new :class:`~iris.cube.Cube` from this ABFField."""
-
         cube = iris.cube.Cube(self.data)
 
         # Name.
@@ -167,7 +165,7 @@ class ABFField:
             end = calendar.monthrange(self.year, self.month)[1]
         else:
             raise iris.exceptions.TranslationError(
-                "Unknown period: " "{}".format(self.period)
+                "Unknown period: {}".format(self.period)
             )
 
         start = datetime.date(year=self.year, month=self.month, day=start)
@@ -197,17 +195,17 @@ class ABFField:
 
 
 def load_cubes(filespecs, callback=None):
-    """
-    Loads cubes from a list of ABF filenames.
+    """Load cubes from a list of ABF filenames.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        List of ABF filenames to load
+    callback : optional
+        A function that can be passed to :func:`iris.io.run_callback`
 
-    * filenames - list of ABF filenames to load
-
-    Kwargs:
-
-    * callback - a function that can be passed to :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the same order as in the file.

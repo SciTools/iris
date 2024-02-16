@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Code for fast loading of structured UM data.
+"""Code for fast loading of structured UM data.
 
 This module defines which pp-field elements take part in structured loading,
 and provides creation of :class:`BasicFieldCollation` objects from lists of
@@ -17,13 +16,12 @@ import cftime
 import numpy as np
 
 from iris._lazy_data import as_lazy_data, multidim_lazy_stack
-from iris.fileformats.um._optimal_array_structuring import (
-    optimal_array_structure,
-)
+from iris.fileformats.um._optimal_array_structuring import optimal_array_structure
 
 
 class BasicFieldCollation:
-    """
+    """An object representing a group of UM fields with array structure.
+
     An object representing a group of UM fields with array structure that can
     be vectorized into a single cube.
 
@@ -49,10 +47,11 @@ class BasicFieldCollation:
     """
 
     def __init__(self, fields):
-        """
-        Args:
+        """BasicFieldCollation initialise.
 
-        * fields (iterable of :class:`iris.fileformats.pp.PPField`):
+        Parameters
+        ----------
+        fields : iterable of :class:`iris.fileformats.pp.PPField`
             The fields in the collation.
 
         """
@@ -74,9 +73,7 @@ class BasicFieldCollation:
             self._calculate_structure()
         if self._data_cache is None:
             stack = np.empty(self.vector_dims_shape, "object")
-            for nd_index, field in zip(
-                np.ndindex(self.vector_dims_shape), self.fields
-            ):
+            for nd_index, field in zip(np.ndindex(self.vector_dims_shape), self.fields):
                 stack[nd_index] = as_lazy_data(field._data)
             self._data_cache = multidim_lazy_stack(stack)
         return self._data_cache
@@ -86,9 +83,7 @@ class BasicFieldCollation:
 
     @property
     def realised_dtype(self):
-        return np.result_type(
-            *[field.realised_dtype for field in self._fields]
-        )
+        return np.result_type(*[field.realised_dtype for field in self._fields])
 
     @property
     def data_proxy(self):
@@ -117,8 +112,7 @@ class BasicFieldCollation:
 
     @property
     def element_arrays_and_dims(self):
-        """
-        Value arrays for vector metadata elements.
+        """Value arrays for vector metadata elements.
 
         A dictionary mapping element_name: (value_array, dims).
 
@@ -174,8 +168,7 @@ class BasicFieldCollation:
     _TIME_ELEMENT_MULTIPLIERS = np.cumprod([1, 60, 60, 24, 31, 12])[::-1]
 
     def _time_comparable_int(self, yr, mon, dat, hr, min, sec):
-        """
-        Return a single unique number representing a date-time tuple.
+        """Return a single unique number representing a date-time tuple.
 
         This calculation takes no account of the time field's real calendar,
         instead giving every month 31 days, which preserves the required
@@ -230,10 +223,7 @@ class BasicFieldCollation:
                 # Flatten out the array apart from the last dimension,
                 # convert to cftime objects, then reshape back.
                 arr = np.array(
-                    [
-                        cftime.datetime(*args)
-                        for args in arr.reshape(-1, extra_length)
-                    ]
+                    [cftime.datetime(*args) for args in arr.reshape(-1, extra_length)]
                 ).reshape(arr_shape)
                 vector_element_arrays_and_dims[name] = (arr, dims)
 
@@ -246,8 +236,7 @@ class BasicFieldCollation:
 
 
 def _um_collation_key_function(field):
-    """
-    Standard collation key definition for fast structured field loading.
+    """Collation key definition for fast structured field loading.
 
     The elements used here are the minimum sufficient to define the
     'phenomenon', as described for :meth:`group_structured_fields`.
@@ -277,40 +266,43 @@ def _um_collation_key_function(field):
 def group_structured_fields(
     field_iterator, collation_class=BasicFieldCollation, **collation_kwargs
 ):
-    """
+    """Collect structured fields into identified groups.
+
     Collect structured fields into identified groups whose fields can be
     combined to form a single cube.
 
-    Args:
-
-    * field_iterator (iterator of :class:`iris.fileformats.pp.PPField`):
+    Parameters
+    ----------
+    field_iterator : iterator of :class:`iris.fileformats.pp.PPField`
         A source of PP or FF fields.  N.B. order is significant.
-
-    Kwargs:
-
-    * collation_class (class):
+    collation_class : class, optional, default=BasicFieldCollation
         Type of collation wrapper to create from each group of fields.
-    * collation_kwargs (dict):
+    **collation_kwargs : dict
         Additional constructor keywords for collation creation.
+
+    Returns
+    -------
+    Generator of 'collation_class' objects
+        A generator of 'collation_class' objects, each of which contains a
+        single collated group from the input fields.
+
+    Notes
+    -----
+    Implicitly, within each result group, *all* other metadata components
+    should be either:
+
+    * the same for all fields,
+    * completely irrelevant, or
+    * used by a vectorised rule function (such as
+      :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
 
     The function sorts and collates on phenomenon-relevant metadata only,
     defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
     'lbuser[6]' (model).
+
     Each distinct combination of these defines a specific phenomenon (or
     statistical aggregation of one), and those fields appear as a single
     iteration result.
-
-    Implicitly, within each result group, *all* other metadata components
-    should be either:
-
-    *  the same for all fields,
-    *  completely irrelevant, or
-    *  used by a vectorised rule function (such as
-       :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
-
-    Returns:
-        A generator of 'collation_class' objects, each of which contains a
-        single collated group from the input fields.
 
     .. note::
 

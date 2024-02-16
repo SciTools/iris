@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Wrappers for using :mod:`iris.tests.stock` methods for benchmarking.
+"""Wrappers for using :mod:`iris.tests.stock` methods for benchmarking.
 
 See :mod:`benchmarks.generate_data` for an explanation of this structure.
 """
@@ -33,9 +32,7 @@ def _create_file__xios_common(func_name, **kwargs):
         print(func(temp_file_dir, **kwargs_), end="")
 
     args_hash = hash_args(**kwargs)
-    save_path = (BENCHMARK_DATA / f"{func_name}_{args_hash}").with_suffix(
-        ".nc"
-    )
+    save_path = (BENCHMARK_DATA / f"{func_name}_{args_hash}").with_suffix(".nc")
     if not REUSE_DATA or not save_path.is_file():
         # The xios functions take control of save location so need to move to
         #  a more specific name that allows reuse.
@@ -52,15 +49,13 @@ def _create_file__xios_common(func_name, **kwargs):
 def create_file__xios_2d_face_half_levels(
     temp_file_dir, dataset_name, n_faces=866, n_times=1
 ):
-    """
-    Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_2d_face_half_levels`.
+    """Create file wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_2d_face_half_levels`.
 
     Have taken control of temp_file_dir
 
     todo: is create_file__xios_2d_face_half_levels still appropriate now we can
      properly save Mesh Cubes?
     """
-
     return _create_file__xios_common(
         func_name="create_file__xios_2d_face_half_levels",
         dataset_name=dataset_name,
@@ -72,15 +67,13 @@ def create_file__xios_2d_face_half_levels(
 def create_file__xios_3d_face_half_levels(
     temp_file_dir, dataset_name, n_faces=866, n_times=1, n_levels=38
 ):
-    """
-    Wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_3d_face_half_levels`.
+    """Create file wrapper for :meth:`iris.tests.stock.netcdf.create_file__xios_3d_face_half_levels`.
 
     Have taken control of temp_file_dir
 
     todo: is create_file__xios_3d_face_half_levels still appropriate now we can
      properly save Mesh Cubes?
     """
-
     return _create_file__xios_common(
         func_name="create_file__xios_3d_face_half_levels",
         dataset_name=dataset_name,
@@ -91,7 +84,7 @@ def create_file__xios_3d_face_half_levels(
 
 
 def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
-    """Wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
+    """Sample mesh wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
 
     def _external(*args, **kwargs):
         from iris.experimental.ugrid import save_mesh
@@ -105,13 +98,9 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
     arg_list = [n_nodes, n_faces, n_edges]
     args_hash = hash_args(*arg_list)
-    save_path = (BENCHMARK_DATA / f"sample_mesh_{args_hash}").with_suffix(
-        ".nc"
-    )
+    save_path = (BENCHMARK_DATA / f"sample_mesh_{args_hash}").with_suffix(".nc")
     if not REUSE_DATA or not save_path.is_file():
-        _ = run_function_elsewhere(
-            _external, *arg_list, save_path=str(save_path)
-        )
+        _ = run_function_elsewhere(_external, *arg_list, save_path=str(save_path))
     with PARSE_UGRID_ON_LOAD.context():
         if not lazy_values:
             # Realise everything.
@@ -123,8 +112,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
 
 def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
-    """
-    Wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
+    """Sample meshcoord wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
 
     Parameters deviate from the original as cannot pass a
     :class:`iris.experimental.ugrid.Mesh to the separate Python instance - must
@@ -149,9 +137,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
         save_mesh(new_meshcoord.mesh, save_path_)
 
     args_hash = hash_args(**sample_mesh_kwargs)
-    save_path = (
-        BENCHMARK_DATA / f"sample_mesh_coord_{args_hash}"
-    ).with_suffix(".nc")
+    save_path = (BENCHMARK_DATA / f"sample_mesh_coord_{args_hash}").with_suffix(".nc")
     if not REUSE_DATA or not save_path.is_file():
         _ = run_function_elsewhere(
             _external,

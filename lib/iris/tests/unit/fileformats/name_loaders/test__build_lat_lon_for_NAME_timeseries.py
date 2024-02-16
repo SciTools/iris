@@ -2,19 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for :func:`iris.analysis.name_loaders._build_lat_lon_for_NAME_timeseries`.
-
-"""
+"""Unit tests for :func:`iris.analysis.name_loaders._build_lat_lon_for_NAME_timeseries`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from iris.fileformats.name_loaders import (
-    NAMECoord,
-    _build_lat_lon_for_NAME_timeseries,
-)
+from iris.fileformats.name_loaders import NAMECoord, _build_lat_lon_for_NAME_timeseries
 
 
 class TestCellMethods(tests.IrisTest):

@@ -20,9 +20,7 @@ MyGrid = collections.namedtuple("MyGrid", "column row real horiz_grid_type")
 
 class Test_grid(tests.IrisTest):
     def _header(self, grid_staggering):
-        with mock.patch.object(
-            FFHeader, "__init__", mock.Mock(return_value=None)
-        ):
+        with mock.patch.object(FFHeader, "__init__", mock.Mock(return_value=None)):
             header = FFHeader()
         header.grid_staggering = grid_staggering
         header.column_dependent_constants = mock.sentinel.column
@@ -33,9 +31,7 @@ class Test_grid(tests.IrisTest):
 
     def _test_grid_staggering(self, grid_staggering):
         header = self._header(grid_staggering)
-        with mock.patch.dict(
-            FFHeader.GRID_STAGGERING_CLASS, {grid_staggering: MyGrid}
-        ):
+        with mock.patch.dict(FFHeader.GRID_STAGGERING_CLASS, {grid_staggering: MyGrid}):
             grid = header.grid()
         self.assertIsInstance(grid, MyGrid)
         self.assertIs(grid.column, mock.sentinel.column)

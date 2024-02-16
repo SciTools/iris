@@ -64,9 +64,7 @@ class TestCoordSystemSame(tests.IrisTest):
     def setUp(self):
         self.cs1 = iris.coord_systems.GeogCS(6371229)
         self.cs2 = iris.coord_systems.GeogCS(6371229)
-        self.cs3 = iris.coord_systems.RotatedGeogCS(
-            30, 30, ellipsoid=GeogCS(6371229)
-        )
+        self.cs3 = iris.coord_systems.RotatedGeogCS(30, 30, ellipsoid=GeogCS(6371229))
 
     def test_simple(self):
         a = self.cs1
@@ -101,9 +99,7 @@ class TestCoordSystemSame(tests.IrisTest):
 class Test_CoordSystem_xml_element(tests.IrisTest):
     def test_rotated(self):
         cs = RotatedGeogCS(30, 40, ellipsoid=GeogCS(6371229))
-        self.assertXMLElement(
-            cs, ("coord_systems", "CoordSystem_xml_element.xml")
-        )
+        self.assertXMLElement(cs, ("coord_systems", "CoordSystem_xml_element.xml"))
 
 
 class Test_GeogCS_construction(tests.IrisTest):
@@ -115,20 +111,12 @@ class Test_GeogCS_construction(tests.IrisTest):
         self.assertXMLElement(cs, ("coord_systems", "GeogCS_init_sphere.xml"))
 
     def test_no_major(self):
-        cs = GeogCS(
-            semi_minor_axis=6500000, inverse_flattening=151.42814163388104
-        )
-        self.assertXMLElement(
-            cs, ("coord_systems", "GeogCS_init_no_major.xml")
-        )
+        cs = GeogCS(semi_minor_axis=6500000, inverse_flattening=151.42814163388104)
+        self.assertXMLElement(cs, ("coord_systems", "GeogCS_init_no_major.xml"))
 
     def test_no_minor(self):
-        cs = GeogCS(
-            semi_major_axis=6543210, inverse_flattening=151.42814163388104
-        )
-        self.assertXMLElement(
-            cs, ("coord_systems", "GeogCS_init_no_minor.xml")
-        )
+        cs = GeogCS(semi_major_axis=6543210, inverse_flattening=151.42814163388104)
+        self.assertXMLElement(cs, ("coord_systems", "GeogCS_init_no_minor.xml"))
 
     def test_no_invf(self):
         cs = GeogCS(semi_major_axis=6543210, semi_minor_axis=6500000)
@@ -153,18 +141,14 @@ class Test_GeogCS_construction(tests.IrisTest):
 class Test_GeogCS_repr(tests.IrisTest):
     def test_repr(self):
         cs = GeogCS(6543210, 6500000)
-        expected = (
-            "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
-        )
+        expected = "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
         self.assertEqual(expected, repr(cs))
 
 
 class Test_GeogCS_str(tests.IrisTest):
     def test_str(self):
         cs = GeogCS(6543210, 6500000)
-        expected = (
-            "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
-        )
+        expected = "GeogCS(semi_major_axis=6543210.0, semi_minor_axis=6500000.0)"
         self.assertEqual(expected, str(cs))
 
 
@@ -214,7 +198,7 @@ class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
 
 
 class Test_GeogCS_equality(tests.IrisTest):
-    """Test cached values don't break GeogCS equality"""
+    """Test cached values don't break GeogCS equality."""
 
     def test_as_cartopy_globe(self):
         cs_const = GeogCS(6543210, 6500000)
@@ -266,7 +250,7 @@ class Test_GeogCS_equality(tests.IrisTest):
 
 
 class Test_GeogCS_mutation(tests.IrisTest):
-    "Test that altering attributes of a GeogCS instance behaves as expected"
+    """Test that altering attributes of a GeogCS instance behaves as expected."""
 
     def test_semi_major_axis_change(self):
         # Clear datum
@@ -359,14 +343,10 @@ class Test_RotatedGeogCS_construction(tests.IrisTest):
         self.assertXMLElement(rcs, ("coord_systems", "RotatedGeogCS_init.xml"))
 
         rcs = RotatedGeogCS(30, 40, north_pole_grid_longitude=50)
-        self.assertXMLElement(
-            rcs, ("coord_systems", "RotatedGeogCS_init_a.xml")
-        )
+        self.assertXMLElement(rcs, ("coord_systems", "RotatedGeogCS_init_a.xml"))
 
         rcs = RotatedGeogCS(30, 40)
-        self.assertXMLElement(
-            rcs, ("coord_systems", "RotatedGeogCS_init_b.xml")
-        )
+        self.assertXMLElement(rcs, ("coord_systems", "RotatedGeogCS_init_b.xml"))
 
 
 class Test_RotatedGeogCS_repr(tests.IrisTest):
@@ -418,9 +398,7 @@ class Test_RotatedGeogCS_str(tests.IrisTest):
 class Test_TransverseMercator_construction(tests.IrisTest):
     def test_osgb(self):
         tm = osgb()
-        self.assertXMLElement(
-            tm, ("coord_systems", "TransverseMercator_osgb.xml")
-        )
+        self.assertXMLElement(tm, ("coord_systems", "TransverseMercator_osgb.xml"))
 
 
 class Test_TransverseMercator_repr(tests.IrisTest):
@@ -441,9 +419,7 @@ class Test_TransverseMercator_as_cartopy_crs(tests.IrisTest):
         false_easting = -40000.0
         false_northing = 10000.0
         scale_factor_at_central_meridian = 0.9996012717
-        ellipsoid = GeogCS(
-            semi_major_axis=6377563.396, semi_minor_axis=6356256.909
-        )
+        ellipsoid = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)
 
         tmerc_cs = TransverseMercator(
             latitude_of_projection_origin,
@@ -478,9 +454,7 @@ class Test_TransverseMercator_as_cartopy_projection(tests.IrisTest):
         false_easting = -40000.0
         false_northing = 10000.0
         scale_factor_at_central_meridian = 0.9996012717
-        ellipsoid = GeogCS(
-            semi_major_axis=6377563.396, semi_minor_axis=6356256.909
-        )
+        ellipsoid = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)
 
         tmerc_cs = TransverseMercator(
             latitude_of_projection_origin,
@@ -553,9 +527,7 @@ class Test_Datums(tests.IrisTest):
     def test_set_persist(self):
         cs = GeogCS.from_datum(datum="WGS84")
         cartopy_crs = cs.as_cartopy_crs()
-        self.assertMultiLineEqual(
-            cartopy_crs.datum.name, "World Geodetic System 1984"
-        )
+        self.assertMultiLineEqual(cartopy_crs.datum.name, "World Geodetic System 1984")
 
         cs = GeogCS.from_datum(datum="OSGB36")
         cartopy_crs = cs.as_cartopy_crs()

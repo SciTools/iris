@@ -169,9 +169,7 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             keys[dim] = np.newaxis
             expected_data = self.data_op(cube.data, other.data[tuple(keys)])
             msg = "Problem broadcasting cubes when sliced on dimension {}."
-            self.assertArrayEqual(
-                res.data, expected_data, err_msg=msg.format(dim)
-            )
+            self.assertArrayEqual(res.data, expected_data, err_msg=msg.format(dim))
 
 
 class MathsAddOperationMixin:

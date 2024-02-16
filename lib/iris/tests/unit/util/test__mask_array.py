@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test function :func:`iris.util._mask_array"""
+"""Test function :func:`iris.util._mask_array."""
 
 import dask.array as da
 import numpy as np
@@ -38,8 +38,7 @@ array_choices = [(array_1d, expected1), (masked_arr_1d, expected2)]
 )
 @pytest.mark.parametrize("lazy_array", [False, True], ids=["real", "lazy"])
 def test_1d_not_in_place(array, mask, expected, lazy_array, lazy_mask):
-    """
-    Basic test for expected behaviour when working not in place with various
+    """Basic test for expected behaviour when working not in place with various
     array types for input.
 
     """
@@ -63,8 +62,7 @@ def test_1d_not_in_place(array, mask, expected, lazy_array, lazy_mask):
 
 
 def test_plain_array_in_place():
-    """
-    Test we get an informative error when trying to add a mask to a plain numpy
+    """Test we get an informative error when trying to add a mask to a plain numpy
     array.
 
     """
@@ -77,8 +75,7 @@ def test_plain_array_in_place():
 
 
 def test_masked_array_lazy_mask_in_place():
-    """
-    Test we get an informative error when trying to apply a lazy mask in-place
+    """Test we get an informative error when trying to apply a lazy mask in-place
     to a non-lazy array.
 
     """
@@ -94,10 +91,7 @@ def test_masked_array_lazy_mask_in_place():
     "mask", [mask_1d, masked_mask_1d], ids=["plain-mask", "masked-mask"]
 )
 def test_real_masked_array_in_place(mask):
-    """
-    Check expected behaviour for applying masks in-place to a masked array.
-
-    """
+    """Check expected behaviour for applying masks in-place to a masked array."""
     arr = masked_arr_1d.copy()
     result = _mask_array(arr, mask, in_place=True)
     assert_masked_array_equal(arr, expected2)
@@ -106,8 +100,7 @@ def test_real_masked_array_in_place(mask):
 
 
 def test_lazy_array_in_place():
-    """
-    Test that in place flag is ignored for lazy arrays, and result is the same
+    """Test that in place flag is ignored for lazy arrays, and result is the same
     as the not in_place case.
 
     """

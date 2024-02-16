@@ -1,0 +1,176 @@
+extend = "pyproject.toml"
+
+lint.ignore = [
+    # NOTE: To find a rule code to fix, run:
+    #    ruff --select="ALL" --statistics lib/iris/<sub-package>
+
+    # Pyflakes (F)
+    # https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "F",
+
+    # pycodestyle (E, W)
+    # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+    "E",
+
+    # mccabe (C90)
+    # https://docs.astral.sh/ruff/rules/#mccabe-c90
+    "C90",
+
+    # pep8-naming (N)
+    # https://docs.astral.sh/ruff/rules/#pep8-naming-n
+    "N",
+
+    # pydocstyle (D)
+    # https://docs.astral.sh/ruff/rules/#pydocstyle-d
+    # (D-1) Permanent
+    "D105",  # Missing docstring in magic method
+    # (D-2) Temporary, to be removed when we are more compliant. Rare cases mmove  to (1).
+    "D101",  # Missing docstring in public class
+    "D102",  # Missing docstring in public method
+    # (D-3) Temporary, before an initial review, either fix ocurrences or move to (2).
+    "D103",  # Missing docstring in public function
+
+    # pyupgrade (UP)
+    # https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "UP",
+
+    # flake8-annotations (ANN)
+    # https://docs.astral.sh/ruff/rules/#flake8-annotations-ann
+    "ANN",
+
+    # flake8-bandit (S)
+    # https://docs.astral.sh/ruff/rules/#flake8-bandit-s
+    "S",
+
+    # flake8-blind-except (BLE)
+    # https://docs.astral.sh/ruff/rules/#flake8-blind-except-ble
+    "BLE",
+
+    # flake8-boolean-trap (FBT)
+    # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
+    "FBT",
+
+    # flake8-bugbear (B)
+    # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "B",
+
+    # flake8-builtins (A)
+    # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
+    "A",
+
+    # flake8-comprehensions (C4)
+    # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "C4",
+
+    # flake8-datetimez (DTZ)
+    # https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
+    "DTZ",
+
+    # flake8-errmsg (EM)
+    # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
+    "EM",
+
+    # flake8-future-annotations (FA)
+    # https://docs.astral.sh/ruff/rules/#flake8-future-annotations-fa
+    "FA",
+
+    # flake8-logging-format (G)
+    # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g
+    "G",
+
+    # flake8-no-pep420 (INP)
+    # https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp
+    "INP",
+
+    # flake8-pie (PIE)
+    # https://docs.astral.sh/ruff/rules/#flake8-pie-pie
+    "PIE",
+
+    # flake8-print (T20)
+    # https://docs.astral.sh/ruff/rules/#flake8-print-t20
+    "T20",
+
+    # flake8-pyi (PYI)
+    # https://docs.astral.sh/ruff/rules/#flake8-pyi-pyi
+    "PYI",
+
+    # flake8-pytest-style (PT)
+    # https://docs.astral.sh/ruff/rules/#flake8-pytest-style-pt
+    "PT",
+
+    # flake8-raise (RSE)
+    # https://docs.astral.sh/ruff/rules/#flake8-raise-rse
+    "RSE",
+
+    # flake8-return (RET)
+    # https://docs.astral.sh/ruff/rules/#flake8-return-ret
+    "RET",
+
+    # flake8-self (SLF)
+    # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+    "SLF",
+
+    # flake8-slots (SLOT)
+    # https://docs.astral.sh/ruff/rules/#flake8-slots-slot
+    "SLOT",
+
+    # flake8-simplify (SIM)
+    # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
+    "SIM",
+
+    # flake8-tidy-imports (TID)
+    # https://docs.astral.sh/ruff/rules/#flake8-tidy-imports-tid
+    "TID",
+
+    # flake8-type-checking (TCH)
+    # https://docs.astral.sh/ruff/rules/#flake8-type-checking-tch
+    "TCH",
+
+    # flake8-unused-arguments (ARG)
+    # https://docs.astral.sh/ruff/rules/#flake8-unused-arguments-arg
+    "ARG",
+
+    # flake8-use-pathlib (PTH)
+    # https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
+    "PTH",
+
+    # flake8-todos (TD)
+    # https://docs.astral.sh/ruff/rules/#flake8-todos-td
+    "TD",
+
+    # flake8-fixme (FIX)
+    # https://docs.astral.sh/ruff/rules/#flake8-fixme-fix
+    "FIX",
+
+    # eradicate (ERA)
+    # https://docs.astral.sh/ruff/rules/#eradicate-era
+    "ERA",
+
+    # pandas-vet (PD)
+    # https://docs.astral.sh/ruff/rules/#pandas-vet-pd
+    "PD",
+
+    # pygrep-hooks (PGH)
+    # https://docs.astral.sh/ruff/rules/#pygrep-hooks-pgh
+    "PGH",
+
+    # Pylint (PL)
+    # https://docs.astral.sh/ruff/rules/#pylint-pl
+    "PL",
+
+    # tryceratops (TRY)
+    # https://docs.astral.sh/ruff/rules/#tryceratops-try
+    "TRY",
+
+    # flynt (FLY)
+    # https://docs.astral.sh/ruff/rules/#flynt-fly
+    "FLY",
+
+    # Perflint (PERF)
+    # https://docs.astral.sh/ruff/rules/#perflint-perf
+    "PERF",
+
+    # Ruff-specific rules (RUF)
+    # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
+    "RUF",
+]

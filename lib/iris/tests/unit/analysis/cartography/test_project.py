@@ -56,19 +56,11 @@ class TestAll(tests.IrisTest):
 
     def test_is_iris_coord_system(self):
         res, _ = project(self.cube, self.tcs)
-        self.assertEqual(
-            res.coord("projection_y_coordinate").coord_system, self.tcs
-        )
-        self.assertEqual(
-            res.coord("projection_x_coordinate").coord_system, self.tcs
-        )
+        self.assertEqual(res.coord("projection_y_coordinate").coord_system, self.tcs)
+        self.assertEqual(res.coord("projection_x_coordinate").coord_system, self.tcs)
 
-        self.assertIsNot(
-            res.coord("projection_y_coordinate").coord_system, self.tcs
-        )
-        self.assertIsNot(
-            res.coord("projection_x_coordinate").coord_system, self.tcs
-        )
+        self.assertIsNot(res.coord("projection_y_coordinate").coord_system, self.tcs)
+        self.assertIsNot(res.coord("projection_x_coordinate").coord_system, self.tcs)
 
     @tests.skip_data
     def test_bad_resolution_negative(self):

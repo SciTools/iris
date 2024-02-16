@@ -20,9 +20,7 @@ class Test(tests.IrisTest):
         cube_a = stock.hybrid_height()
         cube_b = cube_a.copy()
         promote_aux_coord_to_dim_coord(cube_b, "model_level_number")
-        self.assertEqual(
-            cube_b.dim_coords, (cube_a.coord("model_level_number"),)
-        )
+        self.assertEqual(cube_b.dim_coords, (cube_a.coord("model_level_number"),))
 
     def test_old_dim_coord_is_now_aux_coord(self):
         cube_a = stock.hybrid_height()

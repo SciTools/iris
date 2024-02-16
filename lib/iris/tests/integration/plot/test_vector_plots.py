@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test some key usages of :func:`iris.plot.quiver`.
-
-"""
+"""Test some key usages of :func:`iris.plot.quiver`."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -28,8 +25,7 @@ if tests.MPL_AVAILABLE:
 
 @tests.skip_plot
 class MixinVectorPlotCases:
-    """
-    Test examples mixin, used by separate barb, quiver + streamplot classes.
+    """Test examples mixin, used by separate barb, quiver + streamplot classes.
 
     NOTE: at present for barb and quiver only, as streamplot does not support
     arbitrary coordinates.
@@ -118,9 +114,7 @@ class MixinVectorPlotCases:
         # Test 2d vector plotting with implicit (PlateCarree) coord system.
         u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons())
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
-        self.plot(
-            "latlon_2d", u_cube, v_cube, coords=("longitude", "latitude")
-        )
+        self.plot("latlon_2d", u_cube, v_cube, coords=("longitude", "latitude"))
         ax.coastlines(resolution="110m", color="red")
         ax.set_global()
         self.check_graphic()
@@ -129,9 +123,7 @@ class MixinVectorPlotCases:
         # Test 2d vector plotting onto a different projection.
         u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons())
         ax = plt.axes(projection=ccrs.NorthPolarStereo())
-        self.plot(
-            "latlon_2d_polar", u_cube, v_cube, coords=("longitude", "latitude")
-        )
+        self.plot("latlon_2d_polar", u_cube, v_cube, coords=("longitude", "latitude"))
         ax.coastlines(resolution="110m", color="red")
         self.check_graphic()
 
@@ -139,9 +131,7 @@ class MixinVectorPlotCases:
         # Test plotting vectors in a rotated latlon coord system.
         u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons(rotated=True))
         ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
-        self.plot(
-            "2d_rotated", u_cube, v_cube, coords=("longitude", "latitude")
-        )
+        self.plot("2d_rotated", u_cube, v_cube, coords=("longitude", "latitude"))
         ax.coastlines(resolution="110m", color="red")
         ax.set_global()
         self.check_graphic()
@@ -158,16 +148,12 @@ class MixinVectorPlotCases:
             r"This .* translates as Cartopy \+proj=merc .*"
         )
         with self.assertRaisesRegex(ValueError, re_msg):
-            self.plot(
-                "2d_rotated", u_cube, v_cube, coords=("longitude", "latitude")
-            )
+            self.plot("2d_rotated", u_cube, v_cube, coords=("longitude", "latitude"))
 
     def test_circular_longitude(self):
         # Test circular longitude does not cause a crash.
         res = 5
-        lat = DimCoord(
-            np.arange(-90, 91, res), "latitude", units="degrees_north"
-        )
+        lat = DimCoord(np.arange(-90, 91, res), "latitude", units="degrees_north")
         lon = DimCoord(
             np.arange(0, 360, res),
             "longitude",

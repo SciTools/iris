@@ -34,9 +34,7 @@ DOCS_DIR = iris.config.get_option("Resources", "doc_dir", default=DOCS_DIR)
 exclusion = ["Makefile", "build"]
 DOCS_DIRS = glob(os.path.join(DOCS_DIR, "*"))
 DOCS_DIRS = [
-    DOC_DIR
-    for DOC_DIR in DOCS_DIRS
-    if os.path.basename(DOC_DIR) not in exclusion
+    DOC_DIR for DOC_DIR in DOCS_DIRS if os.path.basename(DOC_DIR) not in exclusion
 ]
 # Get a dirpath to the git repository : allow setting with an environment
 # variable, so Travis can test for headers in the repo, not the installation.
@@ -66,8 +64,9 @@ def test_netcdf4_import():
 
 
 def test_python_versions():
-    """
-    This test is designed to fail whenever Iris' supported Python versions are
+    """Test Python Versions.
+
+    Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
     latest_supported = "3.11"
@@ -90,21 +89,16 @@ def test_python_versions():
         (
             pyproject_toml_file,
             "\n    ".join(
-                [
-                    f'"Programming Language :: Python :: {ver}",'
-                    for ver in all_supported
-                ]
+                [f'"Programming Language :: Python :: {ver}",' for ver in all_supported]
             ),
         ),
         (
             nox_file,
-            "_PY_VERSIONS_ALL = ["
-            + ", ".join([f'"{ver}"' for ver in all_supported]),
+            "_PY_VERSIONS_ALL = [" + ", ".join([f'"{ver}"' for ver in all_supported]),
         ),
         (
             ci_wheels_file,
-            "python-version: ["
-            + ", ".join([f'"{ver}"' for ver in all_supported]),
+            "python-version: [" + ", ".join([f'"{ver}"' for ver in all_supported]),
         ),
         (
             ci_tests_file,
@@ -133,8 +127,7 @@ def test_python_versions():
 
 
 def test_categorised_warnings():
-    """
-    To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
+    r"""To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
     :class:`iris.exceptions.IrisUserWarning`.
@@ -145,9 +138,9 @@ def test_categorised_warnings():
     .. code-block:: python
 
         class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
-            \"""
+            \"\"\"
             One-off combination of warning classes - enhances user filtering.
-            \"""
+            \"\"\"
             pass
 
     """
@@ -159,18 +152,14 @@ def test_categorised_warnings():
         file_text = file_path.read_text()
         parsed = ast.parse(source=file_text)
         calls = filter(lambda node: hasattr(node, "func"), ast.walk(parsed))
-        warn_calls = filter(
-            lambda c: getattr(c.func, "attr", None) == "warn", calls
-        )
+        warn_calls = filter(lambda c: getattr(c.func, "attr", None) == "warn", calls)
 
         warn_call: ast.Call
         for warn_call in warn_calls:
             warn_ref = f"{file_path}:{warn_call.lineno}"
             tmp_list.append(warn_ref)
 
-            category_kwargs = filter(
-                lambda k: k.arg == "category", warn_call.keywords
-            )
+            category_kwargs = filter(lambda k: k.arg == "category", warn_call.keywords)
             category_kwarg: ast.keyword = next(category_kwargs, None)
 
             if category_kwarg is None:
@@ -195,10 +184,9 @@ def test_categorised_warnings():
 class TestLicenseHeaders(tests.IrisTest):
     @staticmethod
     def whatchanged_parse(whatchanged_output):
-        """
-        Returns a generator of tuples of data parsed from
+        r"""Returns a generator of tuples of data parsed from
         "git whatchanged --pretty='TIME:%at". The tuples are of the form
-        ``(filename, last_commit_datetime)``
+        ``(filename, last_commit_datetime)``.
 
         Sample input::
 
@@ -220,8 +208,7 @@ class TestLicenseHeaders(tests.IrisTest):
 
     @staticmethod
     def last_change_by_fname():
-        """
-        Return a dictionary of all the files under git which maps to
+        """Return a dictionary of all the files under git which maps to
         the datetime of their last modification in the git history.
 
         .. note::
@@ -268,10 +255,7 @@ class TestLicenseHeaders(tests.IrisTest):
             last_change_by_fname = self.last_change_by_fname()
         except ValueError as err:
             # Caught the case where this is not a git repo.
-            msg = (
-                "Iris installation did not look like a git repo?"
-                "\nERR = {}\n\n"
-            )
+            msg = "Iris installation did not look like a git repo?\nERR = {}\n\n"
             return self.skipTest(msg.format(str(err)))
 
         failed = False

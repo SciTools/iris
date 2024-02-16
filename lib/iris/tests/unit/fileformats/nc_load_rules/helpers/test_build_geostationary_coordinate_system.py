@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 build_geostationary_coordinate_system`.
 
 """
@@ -22,11 +21,8 @@ from iris.fileformats._nc_load_rules.helpers import (
 
 
 class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
-    def _test(
-        self, inverse_flattening=False, replace_props=None, remove_props=None
-    ):
-        """
-        Generic test that can check vertical perspective validity with or
+    def _test(self, inverse_flattening=False, replace_props=None, remove_props=None):
+        """Generic test that can check vertical perspective validity with or
         without inverse flattening.
         """
         # Make a dictionary of the non-ellipsoid properties to be added to both a test
@@ -74,9 +70,7 @@ class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
         self._test(remove_props=["false_easting", "false_northing"])
 
     def test_false_offsets_none(self):
-        self._test(
-            replace_props={"false_easting": None, "false_northing": None}
-        )
+        self._test(replace_props={"false_easting": None, "false_northing": None})
 
 
 if __name__ == "__main__":

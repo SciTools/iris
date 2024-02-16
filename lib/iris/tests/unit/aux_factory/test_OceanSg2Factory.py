@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the
+"""Unit tests for the
 `iris.aux_factory.OceanSg2Factory` class.
 
 """
@@ -171,12 +170,8 @@ class Test_make_coord(tests.IrisTest):
         return result
 
     def setUp(self):
-        self.s = DimCoord(
-            np.linspace(-0.985, -0.014, 36), units="1", long_name="s"
-        )
-        self.c = DimCoord(
-            np.linspace(-0.959, -0.001, 36), units="1", long_name="c"
-        )
+        self.s = DimCoord(np.linspace(-0.985, -0.014, 36), units="1", long_name="s")
+        self.c = DimCoord(np.linspace(-0.959, -0.001, 36), units="1", long_name="c")
         self.eta = AuxCoord(
             np.arange(-1, 3, dtype=np.float64).reshape(2, 2),
             long_name="eta",

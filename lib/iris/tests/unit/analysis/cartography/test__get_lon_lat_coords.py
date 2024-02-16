@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test function :func:`iris.analysis.cartography._get_lon_lat_coords"""
+"""Test function :func:`iris.analysis.cartography._get_lon_lat_coords."""
 
 import pytest
 

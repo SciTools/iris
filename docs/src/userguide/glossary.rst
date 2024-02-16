@@ -22,7 +22,7 @@ Glossary
         This also forms the data model which iris is based on.
 
         | **Related:** :term:`NetCDF Format`
-        | **More information:** `CF Conventions <http://cfconventions.org/>`_
+        | **More information:** `CF Conventions <https://cfconventions.org/>`_
         |
 
    Coordinate
@@ -188,7 +188,7 @@ Glossary
 
    Standard Name
         A name describing a :term:`phenomenon`,  one from a fixed list
-        defined at `CF Standard Names <http://cfconventions.org/standard-names.html>`_.
+        defined at `CF Standard Names <https://cfconventions.org/standard-names.html>`_.
 
         | **Related:** :term:`Long Name` **|** :term:`Cube`
         | **More information:** :doc:`iris_cubes`

@@ -1,3 +1,5 @@
+"""Rotated pole."""
+
 import matplotlib.pyplot as plt
 
 import iris
@@ -13,7 +15,7 @@ rotated_air_temp = global_air_temp.regrid(rotated_psl, iris.analysis.Linear())
 plt.figure(figsize=(4, 3))
 
 iplt.pcolormesh(rotated_air_temp, norm=plt.Normalize(260, 300))
-plt.title("Air temperature\n" "on a limited area rotated pole grid")
+plt.title("Air temperature\non a limited area rotated pole grid")
 ax = plt.gca()
 ax.coastlines(resolution="50m")
 ax.gridlines()

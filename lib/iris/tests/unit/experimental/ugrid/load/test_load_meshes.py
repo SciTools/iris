@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Unit tests for the :func:`iris.experimental.ugrid.load.load_meshes` function.
-
-"""
+"""Unit tests for the :func:`iris.experimental.ugrid.load.load_meshes` function."""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -15,11 +12,7 @@ from shutil import rmtree
 import tempfile
 from uuid import uuid4
 
-from iris.experimental.ugrid.load import (
-    PARSE_UGRID_ON_LOAD,
-    load_meshes,
-    logger,
-)
+from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, load_meshes, logger
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -91,9 +84,7 @@ class TestsBasic(tests.IrisTest):
              """
         vars_string = "variables:"
         vars_start = self.ref_cdl.index(vars_string) + len(vars_string)
-        new_cdl = (
-            self.ref_cdl[:vars_start] + cdl_extra + self.ref_cdl[vars_start:]
-        )
+        new_cdl = self.ref_cdl[:vars_start] + cdl_extra + self.ref_cdl[vars_start:]
         return new_cdl, second_name
 
     def test_with_data(self):
@@ -110,9 +101,7 @@ class TestsBasic(tests.IrisTest):
 
     def test_no_data(self):
         cdl_lines = self.ref_cdl.split("\n")
-        cdl_lines = filter(
-            lambda line: ':mesh = "mesh"' not in line, cdl_lines
-        )
+        cdl_lines = filter(lambda line: ':mesh = "mesh"' not in line, cdl_lines)
         ref_cdl = "\n".join(cdl_lines)
 
         nc_path = cdl_to_nc(ref_cdl)
@@ -184,9 +173,7 @@ class TestsBasic(tests.IrisTest):
             _ = load_meshes(nc_path)
 
     def test_invalid_scheme(self):
-        with self.assertRaisesRegex(
-            ValueError, "Iris cannot handle the URI scheme:.*"
-        ):
+        with self.assertRaisesRegex(ValueError, "Iris cannot handle the URI scheme:.*"):
             with PARSE_UGRID_ON_LOAD.context():
                 _ = load_meshes("foo://bar")
 
@@ -205,26 +192,22 @@ class TestsHttp(tests.IrisTest):
     # Tests of HTTP (OpenDAP) loading need mocking since we can't have tests
     #  that rely on 3rd party servers.
     def setUp(self):
-        self.format_agent_mock = self.patch(
-            "iris.fileformats.FORMAT_AGENT.get_spec"
-        )
+        self.format_agent_mock = self.patch("iris.fileformats.FORMAT_AGENT.get_spec")
 
     def test_http(self):
-        url = "http://foo"
+        url = "https://foo"
         with PARSE_UGRID_ON_LOAD.context():
             _ = load_meshes(url)
         self.format_agent_mock.assert_called_with(url, None)
 
     def test_mixed_sources(self):
-        url = "http://foo"
+        url = "https://foo"
         file = TMP_DIR / f"{uuid4()}.nc"
         file.touch()
         glob = f"{TMP_DIR}/*.nc"
 
         with PARSE_UGRID_ON_LOAD.context():
             _ = load_meshes([url, glob])
-        file_uris = [
-            call[0][0] for call in self.format_agent_mock.call_args_list
-        ]
+        file_uris = [call[0][0] for call in self.format_agent_mock.call_args_list]
         for source in (url, Path(file).name):
             self.assertIn(source, file_uris)

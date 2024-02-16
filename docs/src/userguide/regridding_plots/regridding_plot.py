@@ -1,3 +1,5 @@
+"""Plot regridded data."""
+
 import matplotlib.pyplot as plt
 
 import iris
@@ -11,14 +13,14 @@ plt.figure(figsize=(9, 3.5))
 
 plt.subplot(1, 2, 1)
 iplt.pcolormesh(global_air_temp, norm=plt.Normalize(260, 300))
-plt.title("Air temperature\n" "on a global longitude latitude grid")
+plt.title("Air temperature\non a global longitude latitude grid")
 ax = plt.gca()
 ax.coastlines()
 ax.gridlines()
 
 plt.subplot(1, 2, 2)
 iplt.pcolormesh(rotated_psl)
-plt.title("Air pressure\n" "on a limited area rotated pole grid")
+plt.title("Air pressure\non a limited area rotated pole grid")
 ax = plt.gca()
 ax.coastlines(resolution="50m")
 ax.gridlines()

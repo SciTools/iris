@@ -23,9 +23,7 @@ class Test_add_categorised_coord(tests.IrisTest):
     def setUp(self):
         # Factor out common variables and objects.
         self.cube = mock.Mock(name="cube", coords=mock.Mock(return_value=[]))
-        self.coord = mock.Mock(
-            name="coord", points=np.arange(12).reshape(3, 4)
-        )
+        self.coord = mock.Mock(name="coord", points=np.arange(12).reshape(3, 4))
         self.units = "units"
         self.vectorised = mock.Mock(name="vectorized_result")
 
@@ -78,9 +76,9 @@ class Test_add_categorised_coord(tests.IrisTest):
 
         self.assertEqual(
             aux_coord_constructor.call_args[0][0],
-            vectorise_patch(fn, otypes=[object])(
-                self.coord, self.coord.points
-            ).astype("|S64"),
+            vectorise_patch(fn, otypes=[object])(self.coord, self.coord.points).astype(
+                "|S64"
+            ),
         )
 
 
@@ -89,9 +87,7 @@ class Test_add_day_of_year(tests.IrisTest):
         self.expected = {
             "standard": np.array(list(range(360, 367)) + list(range(1, 4))),
             "gregorian": np.array(list(range(360, 367)) + list(range(1, 4))),
-            "proleptic_gregorian": np.array(
-                list(range(360, 367)) + list(range(1, 4))
-            ),
+            "proleptic_gregorian": np.array(list(range(360, 367)) + list(range(1, 4))),
             "noleap": np.array(list(range(359, 366)) + list(range(1, 4))),
             "julian": np.array(list(range(360, 367)) + list(range(1, 4))),
             "all_leap": np.array(list(range(360, 367)) + list(range(1, 4))),
@@ -123,9 +119,7 @@ class Test_add_day_of_year(tests.IrisTest):
             points = cube.coord("day_of_year").points
             expected_points = self.expected[calendar]
             msg = "Test failed for the following calendar: {}."
-            self.assertArrayEqual(
-                points, expected_points, err_msg=msg.format(calendar)
-            )
+            self.assertArrayEqual(points, expected_points, err_msg=msg.format(calendar))
 
 
 if __name__ == "__main__":

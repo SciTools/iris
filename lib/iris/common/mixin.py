@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Provides common metadata mixin behaviour.
-
-"""
+"""Provides common metadata mixin behaviour."""
 
 from collections.abc import Mapping
 from functools import wraps
@@ -16,7 +13,7 @@ import iris.std_names
 
 from .metadata import BaseMetadata
 
-__all__ = ["CFVariableMixin"]
+__all__ = ["CFVariableMixin", "LimitedAttributeDict"]
 
 
 def _get_valid_standard_name(name):
@@ -44,15 +41,34 @@ def _get_valid_standard_name(name):
                 name_is_valid &= std_name_modifier in valid_std_name_modifiers
 
             if not name_is_valid:
-                raise ValueError(
-                    "{!r} is not a valid standard_name".format(name)
-                )
+                raise ValueError("{!r} is not a valid standard_name".format(name))
 
     return name
 
 
 class LimitedAttributeDict(dict):
-    _forbidden_keys = (
+    """A specialised 'dict' subclass, which forbids (errors) certain attribute names.
+
+    Used for the attribute dictionaries of all Iris data objects (that is,
+    :class:`CFVariableMixin` and its subclasses).
+
+    The "excluded" attributes are those which either :mod:`netCDF4` or Iris intpret and
+    control with special meaning, which therefore should *not* be defined as custom
+    'user' attributes on Iris data objects such as cubes.
+
+    For example : "coordinates", "grid_mapping", "scale_factor".
+
+    The 'forbidden' attributes are those listed in
+    :data:`iris.common.mixin.LimitedAttributeDict.CF_ATTRS_FORBIDDEN` .
+
+    All the forbidden attributes are amongst those listed in
+    `Appendix A of the CF Conventions: <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.10/cf-conventions.html#attribute-appendix>`_
+    -- however, not *all* of them, since not all are interpreted by Iris.
+
+    """
+
+    #: Attributes with special CF meaning, forbidden in Iris attribute dictionaries.
+    CF_ATTRS_FORBIDDEN = (
         "standard_name",
         "long_name",
         "units",
@@ -77,7 +93,7 @@ class LimitedAttributeDict(dict):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
         for key in self.keys():
-            if key in self._forbidden_keys:
+            if key in self.CF_ATTRS_FORBIDDEN:
                 raise ValueError(f"{key!r} is not a permitted attribute")
 
     def __eq__(self, other):
@@ -98,11 +114,12 @@ class LimitedAttributeDict(dict):
         return not self == other
 
     def __setitem__(self, key, value):
-        if key in self._forbidden_keys:
+        if key in self.CF_ATTRS_FORBIDDEN:
             raise ValueError(f"{key!r} is not a permitted attribute")
         dict.__setitem__(self, key, value)
 
     def update(self, other, **kwargs):
+        """Perform standard ``dict.update()`` operation."""
         # Gather incoming keys
         keys = []
         if hasattr(other, "keys"):
@@ -114,7 +131,7 @@ class LimitedAttributeDict(dict):
 
         # Check validity of keys
         for key in keys:
-            if key in self._forbidden_keys:
+            if key in self.CF_ATTRS_FORBIDDEN:
                 raise ValueError(f"{key!r} is not a permitted attribute")
 
         dict.update(self, other, **kwargs)
@@ -126,8 +143,7 @@ class CFVariableMixin:
         return self._metadata_manager.name(default=default, token=token)
 
     def rename(self, name):
-        """
-        Changes the human-readable name.
+        """Change the human-readable name.
 
         If 'name' is a valid standard name it will assign it to
         :attr:`standard_name`, otherwise it will assign it to
@@ -191,9 +207,7 @@ class CFVariableMixin:
 
     @attributes.setter
     def attributes(self, attributes):
-        self._metadata_manager.attributes = LimitedAttributeDict(
-            attributes or {}
-        )
+        self._metadata_manager.attributes = LimitedAttributeDict(attributes or {})
 
     @property
     def metadata(self):
@@ -221,15 +235,11 @@ class CFVariableMixin:
                 else:
                     # Generic iterable/container with no associated keys.
                     missing = [
-                        field
-                        for field in fields
-                        if not hasattr(metadata, field)
+                        field for field in fields if not hasattr(metadata, field)
                     ]
 
                     if missing:
-                        missing = ", ".join(
-                            map(lambda i: "{!r}".format(i), missing)
-                        )
+                        missing = ", ".join(map(lambda i: "{!r}".format(i), missing))
                         emsg = "Invalid {!r} metadata, require {} to be specified."
                         raise TypeError(emsg.format(type(arg), missing))
 

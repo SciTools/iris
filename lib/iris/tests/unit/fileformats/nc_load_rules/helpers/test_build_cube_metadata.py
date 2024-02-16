@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers\
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers\
 build_cube_metadata`.
 
 """
@@ -41,7 +40,7 @@ def _make_engine(global_attributes=None, standard_name=None, long_name=None):
     return engine
 
 
-class TestInvalidGlobalAttributes(tests.IrisTest):
+class TestGlobalAttributes(tests.IrisTest):
     def test_valid(self):
         global_attributes = {
             "Conventions": "CF-1.5",
@@ -50,7 +49,7 @@ class TestInvalidGlobalAttributes(tests.IrisTest):
         engine = _make_engine(global_attributes)
         build_cube_metadata(engine)
         expected = global_attributes
-        self.assertEqual(engine.cube.attributes, expected)
+        self.assertEqual(engine.cube.attributes.globals, expected)
 
     def test_invalid(self):
         global_attributes = {
@@ -64,13 +63,14 @@ class TestInvalidGlobalAttributes(tests.IrisTest):
         # Check for a warning.
         self.assertEqual(warn.call_count, 1)
         self.assertIn(
-            "Skipping global attribute 'calendar'", warn.call_args[0][0]
+            "Skipping disallowed global attribute 'calendar'",
+            warn.call_args[0][0],
         )
         # Check resulting attributes. The invalid entry 'calendar'
         # should be filtered out.
         global_attributes.pop("calendar")
         expected = global_attributes
-        self.assertEqual(engine.cube.attributes, expected)
+        self.assertEqual(engine.cube.attributes.globals, expected)
 
 
 class TestCubeName(tests.IrisTest):

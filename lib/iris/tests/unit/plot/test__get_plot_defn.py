@@ -20,24 +20,18 @@ class Test_get_plot_defn(tests.IrisTest):
     def test_axis_order_xy(self):
         cube_xy = simple_2d()
         defn = iplt._get_plot_defn(cube_xy, iris.coords.POINT_MODE)
-        self.assertEqual(
-            [coord.name() for coord in defn.coords], ["bar", "foo"]
-        )
+        self.assertEqual([coord.name() for coord in defn.coords], ["bar", "foo"])
 
     def test_axis_order_yx(self):
         cube_yx = simple_2d()
         cube_yx.transpose()
         defn = iplt._get_plot_defn(cube_yx, iris.coords.POINT_MODE)
-        self.assertEqual(
-            [coord.name() for coord in defn.coords], ["foo", "bar"]
-        )
+        self.assertEqual([coord.name() for coord in defn.coords], ["foo", "bar"])
 
     def test_2d_coords(self):
         cube = simple_2d_w_multidim_coords()
         defn = iplt._get_plot_defn(cube, iris.coords.BOUND_MODE)
-        self.assertEqual(
-            [coord.name() for coord in defn.coords], ["bar", "foo"]
-        )
+        self.assertEqual([coord.name() for coord in defn.coords], ["bar", "foo"])
 
 
 if __name__ == "__main__":
