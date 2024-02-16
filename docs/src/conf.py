@@ -194,7 +194,7 @@ copybutton_line_continuation_character = "\\"
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = False
-todo_emit_warnings = True
+todo_emit_warnings = False
 
 # api generation configuration
 autodoc_member_order = "alphabetical"
