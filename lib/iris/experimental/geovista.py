@@ -37,7 +37,7 @@ def cube_faces_to_polydata(cube, **kwargs):
         The Cube containing the spatial information and data for creating the
         class:`~pyvista.PolyData`.
 
-    **kwargs : dict
+    **kwargs : dict, optional
         Additional keyword arguments to be passed to the relevant
         :class:`~geovista.bridge.Transform` method (e.g ``zlevel``).
 
@@ -189,7 +189,7 @@ def region_extraction(cube, polydata, region, **kwargs):
     region : :class:`geovista.geodesic.BBox`
         A :class:`~geovista.geodesic.BBox` representing the region to be
         extracted.
-    **kwargs : dict
+    **kwargs : dict, optional
         Additional keyword arguments to be passed to the
         :meth:`geovista.geodesic.BBox.enclosed` method (e.g ``preference``).
 
