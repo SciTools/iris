@@ -529,7 +529,7 @@ some truly spectacular visualisations of high-res data please see the
 
         # Create the GeoVista plotter and add our mesh+data to it.
         my_plotter = GeoPlotter(off_screen=True)
-        my_plotter.add_coastlines()
+        my_plotter.add_coastlines(resolution="110m")
         my_plotter.add_mesh(face_polydata)
         my_plotter.camera.zoom(1.5)
 
