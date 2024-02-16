@@ -193,7 +193,8 @@ copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
-todo_include_todos = True
+todo_include_todos = False
+todo_emit_warnings = False
 
 # sphinx.ext.autodoc configuration --------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
@@ -244,6 +245,7 @@ templates_path = ["_templates"]
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3/", None),
@@ -405,6 +407,7 @@ linkcheck_ignore = [
     "https://biggus.readthedocs.io/",
     "https://stickler-ci.com/",
     "https://twitter.com/scitools_iris",
+    "https://stackoverflow.com/questions/tagged/python-iris",
 ]
 
 # list of sources to exclude from the build.
