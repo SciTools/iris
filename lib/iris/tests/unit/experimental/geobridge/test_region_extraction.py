@@ -47,9 +47,7 @@ class TestRegionExtraction:
         self.mocked_region = region
 
     def test_called_with(self):
-        region_extraction(
-            self.cube_mesh, self.mocked_polydata, self.mocked_region
-        )
+        region_extraction(self.cube_mesh, self.mocked_polydata, self.mocked_region)
         self.mocked_region.enclosed.assert_called_with(self.mocked_polydata)
 
     def test_kwarg(self):
@@ -84,15 +82,11 @@ class TestRegionExtraction:
             VTK_CELL_IDS: np.arange(0),
             VTK_POINT_IDS: np.arange(0),
         }
-        self.mocked_polydata.__getitem__.side_effect = (
-            mock_polydata_scalars.__getitem__
-        )
+        self.mocked_polydata.__getitem__.side_effect = mock_polydata_scalars.__getitem__
         with pytest.raises(
             IndexError, match="No part of `polydata` falls within `region`."
         ):
-            region_extraction(
-                self.cube_mesh, self.mocked_polydata, self.mocked_region
-            )
+            region_extraction(self.cube_mesh, self.mocked_polydata, self.mocked_region)
 
     def test_recreate_mesh(self):
         extracted_region = region_extraction(
@@ -126,12 +120,8 @@ class TestRegionExtraction:
             region_extraction(cube, self.mocked_polydata, self.mocked_region)
 
     def test_edge_location(self, cube_mesh_edge):
-        with pytest.raises(
-            NotImplementedError, match="Must be on face or node."
-        ):
-            region_extraction(
-                cube_mesh_edge, self.mocked_polydata, self.mocked_region
-            )
+        with pytest.raises(NotImplementedError, match="Must be on face or node."):
+            region_extraction(cube_mesh_edge, self.mocked_polydata, self.mocked_region)
 
     def test_cube_and_poly_shapes_mismatch(self):
         self.mocked_polydata.GetNumberOfCells.return_value = 4
@@ -140,6 +130,4 @@ class TestRegionExtraction:
             ValueError,
             match="The mesh on the cube and the polydata must have the same shape.",
         ):
-            region_extraction(
-                self.cube_mesh, self.mocked_polydata, self.mocked_region
-            )
+            region_extraction(self.cube_mesh, self.mocked_polydata, self.mocked_region)

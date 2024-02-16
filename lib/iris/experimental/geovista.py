@@ -12,10 +12,7 @@ from iris.experimental.ugrid import Mesh
 
 
 def _get_coord(cube, axis):
-    """
-    Helper function to get the coordinates from the cube.
-
-    """
+    """Helper function to get the coordinates from the cube."""
     try:
         coord = cube.coord(axis=axis, dim_coords=True)
     except CoordinateNotFoundError:
@@ -24,8 +21,7 @@ def _get_coord(cube, axis):
 
 
 def cube_faces_to_polydata(cube, **kwargs):
-    """
-    Function to convert a cube or the mesh attached to a cube into a polydata
+    """Function to convert a cube or the mesh attached to a cube into a polydata
     object that can be used by GeoVista to generate plots.
 
     Parameters
@@ -40,9 +36,7 @@ def cube_faces_to_polydata(cube, **kwargs):
     """
     if cube.mesh:
         if cube.ndim != 1:
-            raise NotImplementedError(
-                "Cubes with a mesh must be one dimensional"
-            )
+            raise NotImplementedError("Cubes with a mesh must be one dimensional")
         lons, lats = cube.mesh.node_coords
         face_node = cube.mesh.face_node_connectivity
         indices = face_node.indices_by_location()
@@ -77,9 +71,7 @@ def cube_faces_to_polydata(cube, **kwargs):
             polydata = Transform.from_1d(**transform_kwargs)
 
         else:
-            raise NotImplementedError(
-                "Only 1D and 2D coordinates are supported"
-            )
+            raise NotImplementedError("Only 1D and 2D coordinates are supported")
     else:
         raise NotImplementedError("Cube must have a mesh or have 2 dimensions")
 
@@ -87,8 +79,7 @@ def cube_faces_to_polydata(cube, **kwargs):
 
 
 def region_extraction(cube, polydata, region, **kwargs):
-    """
-    Function to extract a region from a cube and its associated mesh and return
+    """Function to extract a region from a cube and its associated mesh and return
     a new cube containing the region.
 
     """
@@ -109,8 +100,7 @@ def region_extraction(cube, polydata, region, **kwargs):
 
         if cube.shape[mesh_dim] != polydata_length:
             raise ValueError(
-                "The mesh on the cube and the polydata must have the"
-                " same shape."
+                "The mesh on the cube and the polydata must have the" " same shape."
             )
 
         region_polydata = region.enclosed(polydata, **kwargs)
@@ -119,10 +109,7 @@ def region_extraction(cube, polydata, region, **kwargs):
             raise IndexError("No part of `polydata` falls within `region`.")
 
         my_tuple = tuple(
-            [
-                slice(None) if i != mesh_dim else indices
-                for i in range(cube.ndim)
-            ]
+            [slice(None) if i != mesh_dim else indices for i in range(cube.ndim)]
         )
 
         region_cube = cube[my_tuple]

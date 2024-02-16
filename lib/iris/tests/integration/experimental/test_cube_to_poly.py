@@ -44,6 +44,4 @@ def test_integration_mesh():
 
     assert polydata.GetNumberOfCells() == 864
     assert polydata.GetNumberOfPoints() == 866
-    np.testing.assert_array_equal(
-        polydata.active_scalars, global_cube[0, :].data
-    )
+    np.testing.assert_array_equal(polydata.active_scalars, global_cube[0, :].data)
