@@ -26,6 +26,7 @@ dependencies:
 
 # Optional dependencies.
   - esmpy >=7.0
+  - geovista
   - graphviz
   - iris-sample-data >=2.4.0
   - mo_pack
