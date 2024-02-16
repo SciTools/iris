@@ -904,8 +904,9 @@ def get_attr_units(cf_var, attributes):
         cf_units.as_unit(attr_units)
     except ValueError:
         # Using converted unicode message. Can be reverted with Python 3.
-        msg = "Ignoring netCDF variable {!r} invalid units {!r}".format(
-            cf_var.cf_name, attr_units
+        msg = (
+            f"Ignoring invalid units {attr_units!r} on netCDF variable "
+            f"{cf_var.cf_name!r}."
         )
         warnings.warn(
             msg,

@@ -62,7 +62,7 @@ def test_invalid_units__pass_through() -> None:
     """Test bounds variable with invalid units."""
     units = "invalid"
     cf_bounds_var = _make_cf_bounds_var(units=units)
-    wmsg = f"Ignoring netCDF variable {CF_NAME!r} invalid units {units!r}"
+    wmsg = f"Ignoring invalid units {units!r} on netCDF variable {CF_NAME!r}"
     with pytest.warns(_WarnComboIgnoringCfLoad, match=wmsg):
         result = _normalise_bounds_units(None, cf_bounds_var, BOUNDS)
     assert result == BOUNDS
