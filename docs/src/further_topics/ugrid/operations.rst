@@ -480,7 +480,7 @@ easy via this convenience:
 Below is an example of using GeoVista to plot a low-res
 sample :attr:`~iris.cube.Cube.mesh` based :class:`~iris.cube.Cube`. For
 some truly spectacular visualisations of high-res data please see the
-`GeoVista gallery`_.
+GeoVista :external+geovista:doc:`generated/gallery/index`.
 
 .. dropdown:: Code
     :icon: code
@@ -893,5 +893,3 @@ data content.
 .. |unchanged| replace:: ♻️ Unchanged
 .. |different| replace:: ⚠️ Different
 .. |pending| replace:: 🚧 Support Pending
-
-.. _GeoVista gallery: https://geovista.readthedocs.io/en/latest/generated/gallery/index.html
