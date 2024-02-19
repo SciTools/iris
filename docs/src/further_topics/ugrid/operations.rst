@@ -485,21 +485,19 @@ some truly spectacular visualisations of high-res data please see the
 .. dropdown:: Code
     :icon: code
 
-    .. plot::
-        :include-source: True
+    .. code-block:: python
 
-        from geovista import GeoPlotter, Transform
-        from geovista.common import to_cartesian
-        import matplotlib.pyplot as plt
+        >>> from geovista import GeoPlotter, Transform
+        >>> from geovista.common import to_cartesian
+        >>> import matplotlib.pyplot as plt
 
-        from iris import load_cube, sample_data_path
-        from iris.experimental.geovista import cube_faces_to_polydata
-        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+        >>> from iris import load_cube, sample_data_path
+        >>> from iris.experimental.geovista import cube_faces_to_polydata
+        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
-        with PARSE_UGRID_ON_LOAD.context():
-            sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
-        print(sample_mesh_cube)
-        """
+        >>> with PARSE_UGRID_ON_LOAD.context():
+        ...     sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        >>> print(sample_mesh_cube)
         synthetic / (1)                     (-- : 96)
             Mesh coordinates:
                 latitude                        x
@@ -511,13 +509,11 @@ some truly spectacular visualisations of high-res data please see the
                 NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
                 history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
                 nco_openmp_thread_number    1
-        """
 
         # Convert our mesh+data to a PolyData object.
-        face_polydata = cube_faces_to_polydata(sample_mesh_cube)
-        print(face_polydata)
-        """
-        PolyData (0x7f99ef5a4f40)
+        >>> face_polydata = cube_faces_to_polydata(sample_mesh_cube)
+        >>> print(face_polydata)
+        PolyData (...
           N Cells:    96
           N Points:   98
           N Strips:   0
@@ -525,26 +521,15 @@ some truly spectacular visualisations of high-res data please see the
           Y Bounds:   -1.000e+00, 1.000e+00
           Z Bounds:   -1.000e+00, 1.000e+00
           N Arrays:   4
-        """
 
         # Create the GeoVista plotter and add our mesh+data to it.
-        my_plotter = GeoPlotter(off_screen=True)
-        my_plotter.add_coastlines()
-        my_plotter.add_mesh(face_polydata)
-        my_plotter.camera.zoom(1.5)
+        >>> my_plotter = GeoPlotter()
+        >>> my_plotter.add_coastlines()
+        >>> my_plotter.add_mesh(face_polydata)
+        >>> my_plotter.show()
 
-        # We usually view GeoVista plots dynamically. To work on the
-        #  documentation page we will save the plot to an image.
-        plot_image_path = "sample_mesh_plotted.png"
-        my_plotter.screenshot(plot_image_path)
-        my_plotter.close()
-        # Display the saved plot image using Matplotlib.
-        image = plt.imread(plot_image_path)
-        figure, axes = plt.subplots()
-        image_plotted = axes.imshow(image)
-        axes.axis("off")
-        plt.show()
-
+    .. image:: images/plotting.png
+       :alt: A GeoVista plot of low-res sample data.
 
 Region Extraction
 -----------------
