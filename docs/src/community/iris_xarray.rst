@@ -137,7 +137,7 @@ There is also relevant documentation
 In some particular aspects, CF data is not loaded well (or at all), and in many cases
 output is not fully CF compliant (as-per `the cf checker <https://cfchecker.ncas.ac.uk/>`_).
 
-* it has it's own interpretation of coordinates, which is different from the CF-based
+* xarray has it's own interpretation of coordinates, which is different from the CF-based
   approach in Iris, and means that the use of the "coordinates" attribute in output is
   often not CF compliant.
 * dates are converted to datetime-like objects internally.  There are special features
@@ -151,9 +151,9 @@ output is not fully CF compliant (as-per `the cf checker <https://cfchecker.ncas
   (See :ref:`xarray_missing_data` ).
   This means that fill values are not preserved, and that masked integer data is
   converted to floats.
-  The netCDF default fill-values are not supported, so that variables wit no
+  The netCDF default fill-values are not supported, so that variables with no
   "_FillValue" attribute will have missing points equal to the fill-value
-  in place of NaNs.  By default, output variables generally have `_FillValue = NaN`.
+  in place of NaNs.  By default, output variables generally have ``_FillValue = NaN``.
 
 Ultimately, however, nearly everything wanted in a particular desired result file
 **can** be achieved in Xarray, via provided override mechanisms (`loading keywords`_
