@@ -17,6 +17,8 @@ build:
       - git stash
     post_install:
       - git stash pop
+    pre_build:
+      - python -c "from geovista.cache import fetch_coastlines; _ = fetch_coastlines();"
 
 conda:
   environment: requirements/readthedocs.yml
