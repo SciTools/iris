@@ -25,13 +25,15 @@ available in Iris:
 The following are the regridding schemes that are currently available in Iris:
 
 * linear regridding (:class:`iris.analysis.Linear`),
-* nearest-neighbour regridding (:class:`iris.analysis.Nearest`), and
+* nearest-neighbour regridding (:class:`iris.analysis.Nearest` and :class:`iris.analysis.UnstructuredNearest`),
+* point in cell regridding (:class:`iris.analysis.PointInCell`) and
 * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order conservative).
 
 The linear, nearest-neighbor, and area-weighted regridding schemes support
 lazy regridding, i.e. if the source cube has lazy data, the resulting cube
 will also have lazy data.
 See :doc:`real_and_lazy_data` for an introduction to lazy data.
+See :doc:`../further_topics/which_regridder_to_use` for a more in depth overview of the different regridders.
 
 
 .. _interpolation:
