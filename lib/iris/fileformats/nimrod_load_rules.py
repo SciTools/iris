@@ -17,9 +17,9 @@ import iris.coord_systems
 from iris.coords import DimCoord
 from iris.exceptions import (
     CoordinateNotFoundError,
-    IrisNimrodTranslationWarning,
     TranslationError,
 )
+from iris.warnings import IrisNimrodTranslationWarning
 
 __all__ = ["run"]
 
@@ -32,7 +32,7 @@ TIME_UNIT = cf_units.Unit(
 
 
 class TranslationWarning(IrisNimrodTranslationWarning):
-    """Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`."""
+    """Backwards compatible form of :class:`iris.warnings.IrisNimrodTranslationWarning`."""
 
     # TODO: remove at the next major release.
     pass

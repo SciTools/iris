@@ -11,7 +11,6 @@ import cftime
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisPpClimModifiedWarning
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
@@ -23,6 +22,7 @@ from iris.fileformats.rules import (
 )
 from iris.fileformats.um_cf_map import CF_TO_LBFC
 from iris.util import is_regular, regular_step
+from iris.warnings import IrisPpClimModifiedWarning
 
 
 def _basic_coord_system_rules(cube, pp):

@@ -46,7 +46,7 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ and `@HGWright`_ (reviewer) sub-categorised all Iris'
    :class:`UserWarning`\s for richer filtering. The full index of
-   sub-categories can be seen here: :mod:`iris.exceptions` . (:pull:`5498`)
+   sub-categories can be seen here: :mod:`iris.warnings` . (:pull:`5498`)
 
 #. `@trexfeathers`_ added the :class:`~iris.coord_systems.ObliqueMercator`
    and :class:`~iris.coord_systems.RotatedMercator` coordinate systems,

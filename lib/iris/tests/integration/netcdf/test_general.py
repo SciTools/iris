@@ -29,6 +29,7 @@ from iris.fileformats.netcdf import Saver
 # Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+import iris.warnings
 
 nc = threadsafe_nc.netCDF4
 
@@ -138,7 +139,7 @@ class TestCellMethod_unknown(tests.IrisTest):
             warning_messages = [
                 warn
                 for warn in warning_messages
-                if isinstance(warn, iris.exceptions.IrisUnknownCellMethodWarning)
+                if isinstance(warn, iris.warnings.IrisUnknownCellMethodWarning)
             ]
             self.assertEqual(len(warning_messages), 1)
             message = warning_messages[0].args[0]
@@ -515,7 +516,7 @@ class TestWarningRepeats(tests.IrisTest):
             warnings.simplefilter("default")
             for fpath in fpaths:
                 iris.load(fpath)
-                warnings.warn("Dummy warning", category=iris.exceptions.IrisUserWarning)
+                warnings.warn("Dummy warning", category=iris.warnings.IrisUserWarning)
         assert len(record) == 2
 
 

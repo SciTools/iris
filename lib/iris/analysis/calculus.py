@@ -22,8 +22,8 @@ from iris.analysis.cartography import (
 import iris.analysis.maths
 import iris.coord_systems
 import iris.coords
-from iris.exceptions import IrisUserWarning
 from iris.util import delta
+from iris.warnings import IrisUserWarning
 
 __all__ = ["DIRECTIONAL_NAMES", "cube_delta", "curl", "differentiate"]
 

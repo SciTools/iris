@@ -26,7 +26,7 @@ import matplotlib.testing.compare as mcompare  # noqa
 from matplotlib.testing.exceptions import ImageComparisonFailure  # noqa
 import matplotlib.widgets as mwidget  # noqa
 
-from iris.exceptions import IrisIgnoringWarning  # noqa
+from iris.warnings import IrisIgnoringWarning  # noqa
 import iris.tests  # noqa
 import iris.tests.graphics as graphics  # noqa
 
