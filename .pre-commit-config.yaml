@@ -61,3 +61,11 @@ repos:
     hooks:
     -   id: sort-all
         types: [file, python]
+
+-   repo: https://github.com/numpy/numpydoc
+    rev: v1.6.0
+    hooks:
+      - id: numpydoc-validation
+        #files: "^src/"
+        #exclude: "^src/geovista/examples/"
+        types: [file, python]
