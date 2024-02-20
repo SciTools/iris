@@ -64,7 +64,7 @@ AreaWeighted
 | **Lazy          | ``True``                                               |
 | Regridding**    |                                                        |
 +-----------------+--------------------------------------------------------+
-| **Weights       | ``False``                                              |
+| **Weights       | ``True``                                               |
 | Caching**       |                                                        |
 +-----------------+--------------------------------------------------------+
 | **Notes**       | Supports masked data with ``mdtol`` argument.          |
