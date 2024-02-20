@@ -13,7 +13,7 @@ import cartopy.crs as ccrs
 import numpy as np
 
 from iris._deprecation import warn_deprecated
-import iris.exceptions
+import iris.warnings
 
 
 def _arg_default(value, default, cast_as=float):
@@ -439,7 +439,7 @@ class GeogCS(CoordSystem):
             "the GeogCS object. To change other properties set them explicitly"
             " or create a new GeogCS instance."
         )
-        warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
+        warnings.warn(wmsg, category=iris.warnings.IrisUserWarning)
         value = float(value)
         self._inverse_flattening = value
 
@@ -768,7 +768,7 @@ class Orthographic(CoordSystem):
         warnings.warn(
             "Discarding false_easting and false_northing that are "
             "not used by Cartopy.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            category=iris.warnings.IrisDefaultingWarning,
         )
 
         return ccrs.Orthographic(

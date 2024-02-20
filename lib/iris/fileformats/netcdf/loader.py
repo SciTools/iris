@@ -34,12 +34,12 @@ from iris.aux_factory import (
 import iris.config
 import iris.coord_systems
 import iris.coords
-import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
+import iris.warnings
 
 # Show actions activation statistics.
 DEBUG = False
@@ -53,8 +53,8 @@ NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
 
 
 class _WarnComboIgnoringBoundsLoad(
-    iris.exceptions.IrisIgnoringBoundsWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisIgnoringBoundsWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -415,7 +415,7 @@ def _load_aux_factory(engine, cube):
                         return coord
                 warnings.warn(
                     "Unable to find coordinate for variable {!r}".format(name),
-                    category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
+                    category=iris.warnings.IrisFactoryCoordNotFoundWarning,
                 )
 
         if formula_type == "atmosphere_sigma_coordinate":
@@ -646,7 +646,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 except ValueError as e:
                     warnings.warn(
                         "{}".format(e),
-                        category=iris.exceptions.IrisLoadWarning,
+                        category=iris.warnings.IrisLoadWarning,
                     )
 
                 # Perform any user registered callback function.

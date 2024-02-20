@@ -12,11 +12,11 @@ from unittest import mock
 import numpy as np
 import pytest
 
-from iris.exceptions import IrisCfLoadWarning
 from iris.fileformats._nc_load_rules.helpers import (
     _normalise_bounds_units,
     _WarnComboIgnoringCfLoad,
 )
+from iris.warnings import IrisCfLoadWarning
 
 BOUNDS = mock.sentinel.bounds
 CF_NAME = "dummy_bnds"

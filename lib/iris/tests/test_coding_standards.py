@@ -130,7 +130,7 @@ def test_categorised_warnings():
     r"""To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
-    :class:`iris.exceptions.IrisUserWarning`.
+    :class:`iris.warnings.IrisUserWarning`.
 
     Warning matches multiple categories? Create a one-off combo class. For
     example:

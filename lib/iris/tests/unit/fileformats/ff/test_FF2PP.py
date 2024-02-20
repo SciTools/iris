@@ -14,10 +14,11 @@ from unittest import mock
 
 import numpy as np
 
-from iris.exceptions import IrisLoadWarning, NotYetImplementedError
+from iris.exceptions import NotYetImplementedError
 import iris.fileformats._ff as ff
 from iris.fileformats._ff import FF2PP
 import iris.fileformats.pp as pp
+from iris.warnings import IrisLoadWarning
 
 # PP-field: LBPACK N1 values.
 _UNPACKED = 0

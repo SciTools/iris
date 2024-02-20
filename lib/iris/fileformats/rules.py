@@ -13,6 +13,7 @@ from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+import iris.warnings
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])
 ReferenceTarget = collections.namedtuple("ReferenceTarget", ("name", "transform"))
@@ -42,7 +43,7 @@ class ConcreteReferenceTarget:
                 if len(src_cubes) > 1:
                     warnings.warn(
                         "Multiple reference cubes for {}".format(self.name),
-                        category=iris.exceptions.IrisUserWarning,
+                        category=iris.warnings.IrisUserWarning,
                     )
             src_cube = src_cubes[-1]
 
@@ -313,7 +314,7 @@ def _make_cube(field, converter):
             cube.units = metadata.units
         except ValueError:
             msg = "Ignoring PP invalid units {!r}".format(metadata.units)
-            warnings.warn(msg, category=iris.exceptions.IrisIgnoringWarning)
+            warnings.warn(msg, category=iris.warnings.IrisIgnoringWarning)
             cube.attributes["invalid_units"] = metadata.units
             cube.units = cf_units._UNKNOWN_UNIT_STRING
 
@@ -336,7 +337,7 @@ def _resolve_factory_references(
             factory_name = factory.factory_class.__name__
             warnings.warn(
                 msg.format(factory=factory_name),
-                category=iris.exceptions.IrisUserWarning,
+                category=iris.warnings.IrisUserWarning,
             )
         else:
             aux_factory = factory.factory_class(*args)

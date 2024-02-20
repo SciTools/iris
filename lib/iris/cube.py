@@ -45,6 +45,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.util
+import iris.warnings
 
 __all__ = ["Cube", "CubeAttrsDict", "CubeList"]
 
@@ -4051,7 +4052,7 @@ class Cube(CFVariableMixin):
                 for coord in lat_match:
                     warnings.warn(
                         msg.format(coord.name()),
-                        category=iris.exceptions.IrisUserWarning,
+                        category=iris.warnings.IrisUserWarning,
                     )
 
         # Determine the dimensions we need to collapse (and those we don't)
@@ -4605,7 +4606,7 @@ x            -               -
                 warnings.warn(
                     "The bounds of coordinate %r were ignored in "
                     "the rolling window operation." % coord_.name(),
-                    category=iris.exceptions.IrisIgnoringBoundsWarning,
+                    category=iris.warnings.IrisIgnoringBoundsWarning,
                 )
 
             if coord_.ndim != 1:

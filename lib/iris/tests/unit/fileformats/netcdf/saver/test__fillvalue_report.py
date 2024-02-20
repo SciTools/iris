@@ -8,9 +8,9 @@ import warnings
 import numpy as np
 import pytest
 
-from iris.exceptions import IrisSaverFillValueWarning
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 from iris.fileformats.netcdf.saver import _fillvalue_report, _FillvalueCheckInfo
+from iris.warnings import IrisSaverFillValueWarning
 
 
 class Test__fillvaluereport:

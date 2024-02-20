@@ -31,7 +31,7 @@ import logging
 import os.path
 import warnings
 
-import iris.exceptions
+import iris.warnings
 
 
 def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler=True):
@@ -139,7 +139,7 @@ def get_dir_option(section, option, default=None):
             )
             warnings.warn(
                 msg.format(section, option, c_path),
-                category=iris.exceptions.IrisIgnoringWarning,
+                category=iris.warnings.IrisIgnoringWarning,
             )
     return path
 
@@ -246,7 +246,7 @@ class NetCDF:
                 )
                 warnings.warn(
                     wmsg.format(value, name, good_value),
-                    category=iris.exceptions.IrisDefaultingWarning,
+                    category=iris.warnings.IrisDefaultingWarning,
                 )
                 value = good_value
         self.__dict__[name] = value
