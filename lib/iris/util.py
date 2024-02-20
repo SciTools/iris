@@ -2098,12 +2098,12 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
 
     Parameters
     ----------
+    cube : :class:`~iris.cube.Cube` object
+        The `Cube` object to masked. Must be singular, rather than a `CubeList`.
     shape : Shapely.Geometry object
         A single `shape` of the area to remain unmasked on the `cube`.
         If it a line object of some kind then minimum_weight will be ignored,
-        because you cannot compare the area of a 1D line and 2D Cell
-    cube : :class:`~iris.cube.Cube` object
-        The `Cube` object to masked. Must be singular, rather than a `CubeList`
+        because you cannot compare the area of a 1D line and 2D Cell.
     minimum_weight : float , default=0.0
         A number between 0-1 describing what % of a cube cell area must
         the shape overlap to include it.
@@ -2114,8 +2114,7 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     Returns
     -------
     iris.Cube
-        A masked version of the input cube, if in_place is False
-
+        A masked version of the input cube, if in_place is False.
 
     See Also
     --------
@@ -2141,7 +2140,6 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
     >>> masked_cube = mask_cube_from_shapefile(cube, shape)
 
-    ...
     """
     shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
