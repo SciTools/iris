@@ -20,6 +20,7 @@ import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
+from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
@@ -248,8 +249,8 @@ def guess_coord_axis(coord):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
-    The ``guess_coord_axis`` behaviour can be skipped by setting the coordinate
-    property ``ignore_axis`` to ``False``.
+    The ``guess_coord_axis`` behaviour can be skipped by setting the
+    :attr:`~iris.coords.Coord.ignore_axis` property on `coord` to ``False``.
 
     """
     axis = None
@@ -2086,3 +2087,63 @@ def _strip_metadata_from_dims(cube, dims):
             reduced_cube.remove_cell_measure(cm)
 
     return reduced_cube
+
+
+def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
+    """Take a shape object and masks all points not touching it in a cube.
+
+    Finds the overlap between the `shape` and the `cube` in 2D xy space and
+    masks out any cells with less % overlap with shape than set.
+    Default behaviour is to count any overlap between shape and cell as valid
+
+    Parameters
+    ----------
+    shape : Shapely.Geometry object
+        A single `shape` of the area to remain unmasked on the `cube`.
+        If it a line object of some kind then minimum_weight will be ignored,
+        because you cannot compare the area of a 1D line and 2D Cell
+    cube : :class:`~iris.cube.Cube` object
+        The `Cube` object to masked. Must be singular, rather than a `CubeList`
+    minimum_weight : float , default=0.0
+        A number between 0-1 describing what % of a cube cell area must
+        the shape overlap to include it.
+    in_place : bool, default=False
+        Whether to mask the `cube` in-place or return a newly masked `cube`.
+        Defaults to False.
+
+    Returns
+    -------
+    iris.Cube
+        A masked version of the input cube, if in_place is False
+
+
+    See Also
+    --------
+    :func:`~iris.util.mask_cube`
+
+    Notes
+    -----
+    This function allows masking a cube with any cartopy projection by a shape object,
+    most commonly from Natural Earth Shapefiles via cartopy.
+    To mask a cube from a shapefile, both must first be on the same coordinate system.
+    Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
+    The shapefile is projected to the coord system of the cube using cartopy, then each cell
+    is compared to the shapefile to determine overlap and populate a true/false array
+    This array is then used to mask the cube using the `iris.util.mask_cube` function
+    This uses numpy arithmetic logic for broadcasting, so you may encounter unexpected
+    results if your cube has other dimensions the same length as the x/y dimensions
+
+    Examples
+    --------
+    >>> import shapely
+    >>> from iris.util import mask_cube_from_shapefile
+    >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+    >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
+    >>> masked_cube = mask_cube_from_shapefile(cube, shape)
+
+    ...
+    """
+    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
+    masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
+    if not in_place:
+        return masked_cube

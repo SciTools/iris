@@ -61,11 +61,20 @@ This document explains the changes made to Iris for this release
 
 #. `@HGWright`_ added :attr:`~iris.coords.Coord.ignore_axis` to allow manual
    intervention preventing :func:`~iris.util.guess_coord_axis` from acting on a
-   coordinate. (:pull:`5551`)
+   coordinate. `@trexfeathers`_ documented this. (:pull:`5551`, :pull:`5744`)
 
 #. `@pp-mo`_, `@trexfeathers`_ and `@ESadek-MO`_ added more control over
    NetCDF chunking with the use of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL`
    context manager. (:pull:`5588`)
+
+#. `@acchamber`_ and `@trexfeathers`_ (reviewer) added
+   :func:`iris.util.mask_cube_from_shapefile`. This builds on the original work
+   of `@ckmo`_, `@david-bentley`_, `@jmendesmetoffice`_, `@evyve`_ and
+   `@pelson`_ for the UK Met Office **ASCEND** library. See
+   :ref:`masking-from-shapefile` for documentation. (:pull:`5470`)
+
+#. `@trexfeathers`_ updated to the latest CF Standard Names Table v84
+   (19 January 2024). (:pull:`5761`)
 
 
 🐛 Bugs Fixed
@@ -87,11 +96,18 @@ This document explains the changes made to Iris for this release
    :mod:`iris.fileformats._nc_load_rules.helpers` to lessen warning duplication.
    (:issue:`5536`, :pull:`5685`)
 
+#. `@bjlittle`_ fixed coordinate construction in the NetCDF loading pipeline to
+   ensure that bounds have the same units as the associated points.
+   (:issue:`1801`, :pull:`5746`)
+
 
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@bouweandela`_ and  `@trexfeathers`_ (reviewer) updated :class:`~iris.cube.Cube`
+   comparison so equality is now possible between cubes with data containing a
+   :obj:`numpy.nan`. e.g. ``Cube([np.nan, 1.0]) == Cube([np.nan, 1.0])`` will now
+   evaluate to :obj:`True`, while previously this would have been :obj:`False`. (:pull:`5713`)
 
 
 🚀 Performance Enhancements
@@ -107,11 +123,14 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ changed :func:`iris.coords.Coord.cell` so it does not realize
    all coordinate data and only loads a single cell instead. (:pull:`5693`)
 
-#. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified 
+#. `@rcomer`_ and `@trexfeathers`_ (reviewer) modified
    :func:`~iris.analysis.stats.pearsonr` so it preserves lazy data in all cases
    and also runs a little faster.  (:pull:`5638`)
 
 #. `@bouweandela`_ made comparing coordinates and arrays to themselves faster. (:pull:`5691`)
+
+#. `@bouweandela`_ and  `@trexfeathers`_ (reviewer) made comparing cubes to
+   themselves faster. (:pull:`5713`)
 
 
 🔥 Deprecations
@@ -221,6 +240,13 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ replaced `black`_ with `ruff`_. (:pull:`5634`)
 
+#. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to be compliant with
+   almost all of the rules for `ruff pydocstyle`_.
+   (https://github.com/SciTools/iris/issues/5625#issuecomment-1859159734)
+
+#. `@tkknight`_ and `@bjlittle`_ (reviewer) updated codebase to ensure docstrings
+   that are not covered by the ruff checks, are consistent with numpydocstyle.
+   (:issue:`4721`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -229,6 +255,10 @@ This document explains the changes made to Iris for this release
 .. _@scottrobinson02: https://github.com/scottrobinson02
 .. _@acchamber: https://github.com/acchamber
 .. _@fazledyn-or: https://github.com/fazledyn-or
+.. _@ckmo: https://github.com/ckmo
+.. _@david-bentley: https://github.com/david-bentley
+.. _@jmendesmetoffice: https://github.com/jmendesmetoffice
+.. _@evyve: https://github.com/evyve
 
 
 .. comment
@@ -237,3 +267,4 @@ This document explains the changes made to Iris for this release
 .. _NEP29 Drop Schedule: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
 .. _codespell: https://github.com/codespell-project/codespell
 .. _split attributes project: https://github.com/orgs/SciTools/projects/5?pane=info
+.. _ruff pydocstyle: https://docs.astral.sh/ruff/rules/#pydocstyle-d
