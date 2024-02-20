@@ -50,7 +50,7 @@ class _ThreadSafeWrapper(ABC):
 
     @classmethod
     def from_existing(cls, instance):
-        """Pass an existing instance to __init__, where it is contained."""
+        """Routine to pass an existing instance to __init__, where it is contained."""
         assert cls.is_contained_type(instance)
         return cls(instance)
 

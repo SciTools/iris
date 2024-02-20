@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""import iris benchmarking."""
+"""Import iris benchmarking."""
 
 from importlib import import_module, reload
 
