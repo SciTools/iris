@@ -490,7 +490,7 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
         [coord][datum] list of sample_positions for each datum, formatted for
         fast use of :func:`_ll_to_cart()`.
     sample_point_coord_names :
-        [coord] list of n coord names
+        [coord] list of n coord names.
 
     Returns
     -------

@@ -133,7 +133,7 @@ def as_cube(
     Parameters
     ----------
     pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
-        The Pandas object to convert
+        The Pandas object to convert.
     copy : bool, default=True
         Whether to copy `pandas_array`, or to create array views where
         possible. Provided in case of memory limit concerns.
@@ -202,7 +202,7 @@ def as_cubes(
     Parameters
     ----------
     pandas_structure : :class:`pandas.Series` or :class:`pandas.DataFrame`
-        The Pandas object to convert
+        The Pandas object to convert.
     copy : bool, default=True
         Whether the Cube :attr:`~iris.cube.Cube.data` is a copy of the
         `pandas_structure` column, or a view of the same array. Arrays other than
@@ -571,7 +571,7 @@ def as_series(cube, copy=True):
 
     Parameters
     ----------
-    cube: :class:`Cube`
+    cube : :class:`Cube`
         The cube to convert to a Pandas Series.
     copy : bool, default=True
         Whether to make a copy of the data.
@@ -644,7 +644,7 @@ def as_data_frame(
     -------
     :class:`~pandas.DataFrame`
         A :class:`~pandas.DataFrame` with :class:`~iris.cube.Cube` dimensions
-        forming a :class:`~pandas.MultiIndex`
+        forming a :class:`~pandas.MultiIndex`.
 
     Warnings
     --------
@@ -664,8 +664,6 @@ def as_data_frame(
        :class:`~pandas.DataFrame` column (the legacy behaviour preserves 2
        dimensions via rows and columns).
 
-       |
-
     #. Where the :class:`~iris.cube.Cube` contains masked values, these become
        :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
 
@@ -679,6 +677,8 @@ def as_data_frame(
     'inplace=True` to preserve memory object reference.
 
     :class:`~iris.cube.Cube` data `dtype` is preserved.
+
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     Examples
     --------
@@ -793,10 +793,6 @@ def as_data_frame(
     419902           NaN
     419903    298.995148
     Name: surface_temperature, Length: 419904, dtype: float32
-
-    Notes
-    -----
-    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
 

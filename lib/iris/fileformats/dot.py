@@ -57,7 +57,7 @@ def save(cube, target):
 
     Parameters
     ----------
-    cube: :class:`iris.cube.Cube`.
+    cube : :class:`iris.cube.Cube`
     target :
         A filename or open file handle.
 
@@ -90,7 +90,7 @@ def save_png(source, target, launch=False):
 
     Parameters
     ----------
-    source: :class:`iris.cube.Cube`, or dot filename.
+    source : :class:`iris.cube.Cube`, or dot filename
     target :
         A filename or open file handle.
         If passing a file handle, take care to open it for binary output.

@@ -734,7 +734,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         Parameters
         ----------
         name : str
-            The string name to verify
+            The string name to verify.
 
         Returns
         -------

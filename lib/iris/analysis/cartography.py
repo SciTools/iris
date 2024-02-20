@@ -346,11 +346,11 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     Parameters
     ----------
     radian_lat_bounds :
-        [n,2] array of latitude bounds (radians)
+        [n,2] array of latitude bounds (radians).
     radian_lon_bounds :
-        [n,2] array of longitude bounds (radians)
+        [n,2] array of longitude bounds (radians).
     radius_of_earth :
-        radius of the earth (currently assumed spherical)
+        Radius of the earth (currently assumed spherical).
 
     """
     # ensure pairs of bounds
@@ -893,10 +893,12 @@ def _transform_xy(crs_from, x, y, crs_to):
 
     Parameters
     ----------
-    crs_from, crs_to : :class:`cartopy.crs.Projection`
+    crs_from : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
     x, y : array
-        point locations defined in 'crs_from'.
+        Point locations defined in 'crs_from'.
+    crs_to : :class:`cartopy.crs.Projection`
+        The coordinate reference systems.
 
     Returns
     -------
@@ -915,10 +917,13 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
     Parameters
     ----------
-    crs1, crs2 : :class:`cartopy.crs.Projection`
-        The coordinate systems, "from" and "to".
+    crs1 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "from".
     x, y : array
         Point locations defined in 'crs1'.
+    crs2 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "to".
+
 
     Returns
     -------
@@ -1046,7 +1051,7 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     tgt_crs : `cartopy.crs.Projection`
         The target coordinate reference systems.
     ds : `DistanceDifferential`
-        Distance differentials for src_crs and tgt_crs at specified locations
+        Distance differentials for src_crs and tgt_crs at specified locations.
     dx2, dy2 : `PartialDifferential`
         Partial differentials from src_crs to tgt_crs.
 

@@ -17,7 +17,7 @@
 # serve to show the default.
 # ----------------------------------------------------------------------------
 
-"""sphinx config."""
+"""Config for sphinx."""
 
 import datetime
 from importlib.metadata import version as get_version

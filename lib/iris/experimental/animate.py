@@ -16,7 +16,7 @@ release.
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):
-    """Animates the given cube iterator.
+    """Animate the given cube iterator.
 
     Warnings
     --------

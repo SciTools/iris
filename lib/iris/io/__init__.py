@@ -153,11 +153,11 @@ def expand_filespecs(file_specs, files_expected=True):
     Returns
     -------
     list of str
-        if files_expected is ``True``:
+        If files_expected is ``True``:
             A well-ordered list of matching absolute file paths.
             If any of the file-specs match no existing files, an
             exception is raised.
-        if files_expected is ``False``:
+        If files_expected is ``False``:
             A list of expanded file paths.
     """
     # Remove any hostname component - currently unused

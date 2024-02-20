@@ -175,21 +175,22 @@ class FormatSpecification:
         Parameters
         ----------
         format_name : str
-            string name of fileformat being described
+            String name of fileformat being described.
         file_element :
             FileElement instance of the element which identifies this
-            FormatSpecification
+            FormatSpecification.
         file_element_value :
             The value that the file_element should take if a file matches this
-            FormatSpecification
+            FormatSpecification.
         handler : optional
-            function which will be called when the specification has been
+            Function which will be called when the specification has been
             identified and is required to handler a format.  If None, then the
             file can still be identified but no handling can be done.
-        priority: int
+        priority : int
             Integer giving a priority for considering this specification where
             higher priority means sooner consideration.
-        constraint_aware_handler: default=False
+        constraint_aware_handler : default=False
+
         """
         if not isinstance(file_element, FileElement):
             raise ValueError(

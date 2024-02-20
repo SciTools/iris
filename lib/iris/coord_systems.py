@@ -161,9 +161,9 @@ class GeogCS(CoordSystem):
             Axes of ellipsoid, in metres.  At least one must be given (see note
             below).
         inverse_flattening : optional
-            Can be omitted if both axes given (see note below). Default 0.0
+            Can be omitted if both axes given (see note below). Default 0.0.
         longitude_of_prime_meridian : optional
-            Specifies the prime meridian on the ellipsoid, in degrees. Default 0.0
+            Specifies the prime meridian on the ellipsoid, in degrees. Default 0.0.
 
         Notes
         -----
@@ -357,14 +357,16 @@ class GeogCS(CoordSystem):
         This property is created when required and then cached for speed. That
         cached value is cleared when an assignment is made to a property of the
         class that invalidates the cache.
+
         """
         return ccrs.Geodetic(self._globe)
 
     def _wipe_cached_properties(self):
-        """Wipes the cached properties on the object.
+        """Wipe the cached properties on the object.
 
-        Wipes the cached properties on the object as part of any update to a
+        Wipe the cached properties on the object as part of any update to a
         value that invalidates the cache.
+
         """
         try:
             delattr(self, "_crs")
@@ -990,10 +992,10 @@ class Stereographic(CoordSystem):
             Y offset from planar origin in metres.
         true_scale_lat : float, optional
             Latitude of true scale.
-        scale_factor_at_projection_origin : float, optional
-            Scale factor at the origin of the projection
         ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
+        scale_factor_at_projection_origin : float, optional
+            Scale factor at the origin of the projection.
 
         Notes
         -----
@@ -1098,7 +1100,7 @@ class PolarStereographic(Stereographic):
         true_scale_lat : float, optional
             Latitude of true scale.
         scale_factor_at_projection_origin : float, optional
-            Scale factor at the origin of the projection
+            Scale factor at the origin of the projection.
         ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
 
@@ -1527,15 +1529,15 @@ class ObliqueMercator(CoordSystem):
             the centre line.
         latitude_of_projection_origin : float
             The true longitude of the central meridian in degrees.
-        longitude_of_projection_origin: float
+        longitude_of_projection_origin : float
             The true latitude of the planar origin in degrees.
-        false_easting: float, optional
+        false_easting : float, optional
             X offset from the planar origin in metres.
             Defaults to 0.0.
-        false_northing: float, optional
+        false_northing : float, optional
             Y offset from the planar origin in metres.
             Defaults to 0.0.
-        scale_factor_at_projection_origin: float, optional
+        scale_factor_at_projection_origin : float, optional
             Scale factor at the central meridian.
             Defaults to 1.0 .
         ellipsoid : :class:`GeogCS`, optional
@@ -1639,18 +1641,18 @@ class RotatedMercator(ObliqueMercator):
         ----------
         latitude_of_projection_origin : float
             The true longitude of the central meridian in degrees.
-        longitude_of_projection_origin: float
+        longitude_of_projection_origin : float
             The true latitude of the planar origin in degrees.
-        false_easting: float, optional
+        false_easting : float, optional
             X offset from the planar origin in metres.
             Defaults to 0.0.
-        false_northing: float, optional
+        false_northing : float, optional
             Y offset from the planar origin in metres.
             Defaults to 0.0.
-        scale_factor_at_projection_origin: float, optional
+        scale_factor_at_projection_origin : float, optional
             Scale factor at the central meridian.
             Defaults to 1.0 .
-        ellipsoid: :class:`GeogCS`, optional
+        ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
 
         """

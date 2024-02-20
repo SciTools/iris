@@ -209,13 +209,13 @@ class CubeRepresentation:
 
         Parameters
         ----------
-        body : str, optional
-            Contains the content for each cell not in the left-most (title) column.
-            If None, indicates this row is a title row (see below).
-        title : stre, optional
+        title : str, optional
             Contains the row heading. If `body` is None, indicates
             that the row contains a sub-heading;
             e.g. 'Dimension coordinates:'.
+        body : str, optional
+            Contains the content for each cell not in the left-most (title) column.
+            If None, indicates this row is a title row (see below).
         col_span : int, default=0
             Indicates how many columns the string should span.
 

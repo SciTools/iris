@@ -341,7 +341,7 @@ class _ProjectedUnstructuredRegridder:
         projection,
         method,
     ):
-        """Regrids input data from the source to the target. Calculation is."""
+        """Regrid input data from the source to the target. Calculation is."""
         # Transform coordinates into the projection the interpolation will be
         # performed in.
         src_projection = src_x_coord.coord_system.as_cartopy_projection()

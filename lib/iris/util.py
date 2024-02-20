@@ -190,7 +190,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
 
     See Also
     --------
-    :meth:`iris.cube.Cube.is_compatible()`
+    iris.cube.Cube.is_compatible
 
     """
     if output_file is None:
@@ -286,13 +286,13 @@ def rolling_window(a, window=1, step=1, axis=-1):
     Parameters
     ----------
     a : array_like
-        Array to add rolling window to
+        Array to add rolling window to.
     window : int, default=1
-        Size of rolling window
+        Size of rolling window.
     step : int, default=1
-        Size of step between rolling windows
+        Size of step between rolling windows.
     axis : int, default=-1
-        Axis to take the rolling window over
+        Axis to take the rolling window over.
 
     Returns
     -------
@@ -358,7 +358,7 @@ def array_equal(array1, array2, withnans=False):
     Parameters
     ----------
     array1, array2 : arraylike
-        args to be compared, normalised if necessary with :func:`np.asarray`.
+        Args to be compared, normalised if necessary with :func:`np.asarray`.
     withnans : bool, default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
@@ -437,9 +437,9 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
     Parameters
     ----------
     lh :
-        The left hand element of the inequality
+        The left hand element of the inequality.
     rh :
-        The right hand element of the inequality
+        The right hand element of the inequality.
     lh_inclusive : bool, default=True
         Affects the left hand comparison operator to use in the inequality.
         True for ``<=`` false for ``<``. Defaults to True.
@@ -580,7 +580,7 @@ def monotonic(array, strict=False, return_direction=False):
     Parameters
     ----------
     strict : bool, default=False
-        Flag to enable strict monotonic checking
+        Flag to enable strict monotonic checking.
     return_direction : bool, default=False
         Flag to change return behaviour to return
         (monotonic_status, direction). Direction will be 1 for positive
@@ -593,7 +593,7 @@ def monotonic(array, strict=False, return_direction=False):
         Whether the array was monotonic.
 
         If the return_direction flag was given then the returned value
-        will be: ``(monotonic_status, direction)``
+        will be: ``(monotonic_status, direction)``.
 
     Notes
     -----
@@ -782,9 +782,9 @@ def _slice_data_with_keys(data, keys):
     Parameters
     ----------
     data : array-like
-        array to index.
+        Array to index.
     keys : list
-        list of indexes, as received from a __getitem__ call.
+        List of indexes, as received from a __getitem__ call.
 
     Returns
     -------
@@ -1021,7 +1021,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
     Parameters
     ----------
     the_str : str
-        The string to be clipped
+        The string to be clipped.
     clip_length : int, default=70
         The length in characters that the input string should be clipped
         to. Defaults to a preconfigured value if not specified.
@@ -1100,7 +1100,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     ----------
     src_cube : :class:`iris.cube.Cube`
         Source cube on which to generate a new axis.
-    scalar_coord : :class:`iris.coord.Coord` or 'string', optional
+    scalar_coord : :class:`iris.coord.Coord` or str, optional
         Scalar coordinate to promote to a dimension coordinate.
     expand_extras : iterable, optional
         Auxiliary coordinates, ancillary variables and cell measures which will
@@ -1530,7 +1530,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
     Parameters
     ----------
     cube :
-        An instance of :class:`iris.cube.Cube`
+        An instance of :class:`iris.cube.Cube`.
     name_or_coord :
         * \(a) An instance of :class:`iris.coords.AuxCoord`
         * \(b) the :attr:`standard_name`, :attr:`long_name`, or
@@ -1642,7 +1642,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
 
 def demote_dim_coord_to_aux_coord(cube, name_or_coord):
-    r"""Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
+    r"""Demote a dimension coordinate  on the cube to an auxiliary coordinate.
 
     The DimCoord is demoted to an auxiliary coordinate on the cube.
     The dimension of the cube that was associated with the DimCoord becomes
@@ -1652,7 +1652,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     Parameters
     ----------
     cube :
-        An instance of :class:`iris.cube.Cube`
+        An instance of :class:`iris.cube.Cube`.
     name_or_coord :
         * \(a) An instance of :class:`iris.coords.DimCoord`
         * \(b) the :attr:`standard_name`, :attr:`long_name`, or
@@ -1768,7 +1768,7 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     Returns
     -------
     result : `numpy.ndarray` of bool
-        true/false map of which cells in the cube XY grid have
+        True/false map of which cells in the cube XY grid have
         discontiguities in the coordinate points array.
 
         This can be used as the input array for
@@ -1894,7 +1894,7 @@ def _mask_array(array, points_to_mask, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def mask_cube(cube, points_to_mask, in_place=False, dim=None):
-    """Masks any cells in the cube's data array.
+    """Mask any cells in the cube's data array.
 
     Masks any cells in the cube's data array which correspond to cells marked
     ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be

@@ -57,7 +57,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def climatological(self):
-        """Always returns False, as a factory itself can never have points/bounds.
+        """Return False, as a factory itself can never have points/bounds.
 
         Always returns False, as a factory itself can never have points/bounds
         and therefore can never be climatological by definition.
@@ -1787,9 +1787,9 @@ class OceanSg2Factory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """Returns a dicti mapping from constructor arg names to coordinates.
+        """Return a dicti mapping from constructor arg names to coordinates.
 
-        Returns a dictionary mapping from constructor argument names to
+        Return a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
         """

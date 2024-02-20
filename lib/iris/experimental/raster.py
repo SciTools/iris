@@ -58,7 +58,7 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, f
     coord_system : iris.coord_systems.CoordSystem
         Coordinate system for X and Y.
     data : numpy.ndarray
-        2d array of values to export
+        2d array of values to export.
     fname : str
         Output file name.
     ftype : str
