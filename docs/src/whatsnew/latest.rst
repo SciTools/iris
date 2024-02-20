@@ -73,6 +73,9 @@ This document explains the changes made to Iris for this release
    `@pelson`_ for the UK Met Office **ASCEND** library. See
    :ref:`masking-from-shapefile` for documentation. (:pull:`5470`)
 
+#. `@trexfeathers`_ updated to the latest CF Standard Names Table v84
+   (19 January 2024). (:pull:`5761`)
+
 
 🐛 Bugs Fixed
 =============
