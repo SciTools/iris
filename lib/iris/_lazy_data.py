@@ -471,9 +471,9 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
         data = src
     elif not hasattr(src, "has_lazy_data"):
         # Not a lazy array and not a cube.  So treat as ordinary numpy array.
-        return func(src)
+        return func(src, *args, **kwargs)
     elif not src.has_lazy_data():
-        return func(src.data)
+        return func(src.data, *args, **kwargs)
     else:
         data = src.lazy_data()
 
