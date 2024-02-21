@@ -14,6 +14,7 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 from iris.util import array_equal, guess_coord_axis
+import iris.warnings
 
 #
 # TODO:
@@ -910,7 +911,7 @@ class _ProtoCube:
                 raise iris.exceptions.ConcatenateError([msg])
             elif not match:
                 msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
-                warnings.warn(msg, category=iris.exceptions.IrisUserWarning)
+                warnings.warn(msg, category=iris.warnings.IrisUserWarning)
 
         # Check for compatible AuxCoords.
         if match:

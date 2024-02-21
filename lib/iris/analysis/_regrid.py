@@ -19,8 +19,8 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid, guess_coord_axis
+from iris.warnings import IrisImpossibleUpdateWarning
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):

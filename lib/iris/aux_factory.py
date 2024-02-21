@@ -13,7 +13,7 @@ import numpy as np
 
 from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
-from iris.exceptions import IrisIgnoringBoundsWarning
+from iris.warnings import IrisIgnoringBoundsWarning
 
 
 class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):

@@ -16,9 +16,9 @@ import dask.array as da
 import numpy as np
 import pytest
 
-from iris.exceptions import IrisMaskValueMatchWarning
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf.saver import Saver, _FillvalueCheckInfo
+from iris.warnings import IrisMaskValueMatchWarning
 
 
 class Test__lazy_stream_data:

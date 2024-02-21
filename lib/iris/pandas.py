@@ -27,7 +27,7 @@ import iris
 from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
-from iris.exceptions import IrisIgnoringWarning
+from iris.warnings import IrisIgnoringWarning
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):

@@ -37,8 +37,8 @@ from iris.analysis._regrid import (
 import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
-from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid
+from iris.warnings import IrisImpossibleUpdateWarning
 
 wmsg = (
     "The 'iris.experimental.regrid' package is deprecated since version 3.2, "

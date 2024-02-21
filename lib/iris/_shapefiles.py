@@ -17,7 +17,7 @@ import shapely.errors
 import shapely.geometry as sgeom
 import shapely.ops
 
-from iris.exceptions import IrisDefaultingWarning, IrisUserWarning
+from iris.warnings import IrisDefaultingWarning, IrisUserWarning
 
 
 def create_shapefile_mask(

@@ -49,6 +49,7 @@ import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
 import iris.util
+import iris.warnings
 
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
@@ -161,8 +162,8 @@ _FACTORY_DEFNS = {
 
 
 class _WarnComboMaskSave(
-    iris.exceptions.IrisMaskValueMatchWarning,
-    iris.exceptions.IrisSaveWarning,
+    iris.warnings.IrisMaskValueMatchWarning,
+    iris.warnings.IrisSaveWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -318,8 +319,8 @@ def _data_fillvalue_check(arraylib, data, check_value):
     return is_masked, contains_value
 
 
-class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
-    """Backwards compatible form of :class:`iris.exceptions.IrisSaverFillValueWarning`."""
+class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
+    """Backwards compatible form of :class:`iris.warnings.IrisSaverFillValueWarning`."""
 
     # TODO: remove at the next major release.
     pass
@@ -737,7 +738,7 @@ class Saver:
                 cf_patch(profile, self._dataset, cf_var_cube)
             else:
                 msg = "cf_profile is available but no {} defined.".format("cf_patch")
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
     @staticmethod
     def check_attribute_compliance(container, data_dtype):
@@ -1133,7 +1134,7 @@ class Saver:
                 msg = "Unable to determine formula terms for AuxFactory: {!r}".format(
                     factory
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
                 # primary coord that signals the presence of a dimensionless
@@ -2084,7 +2085,7 @@ class Saver:
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn(
                         "OSGB coordinate system not yet handled",
-                        category=iris.exceptions.IrisSaveWarning,
+                        category=iris.warnings.IrisSaveWarning,
                     )
 
                 # lambert azimuthal equal area
@@ -2172,7 +2173,7 @@ class Saver:
                         "Unable to represent the horizontal "
                         "coordinate system. The coordinate system "
                         "type %r is not yet implemented." % type(cs),
-                        category=iris.exceptions.IrisSaveWarning,
+                        category=iris.warnings.IrisSaveWarning,
                     )
 
                 self._coord_systems.append(cs)
@@ -2342,7 +2343,7 @@ class Saver:
                     "attribute, but {attr_name!r} should only be a CF "
                     "global attribute.".format(attr_name=attr_name)
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
             _setncattr(cf_var, attr_name, value)
 
@@ -2565,7 +2566,7 @@ class Saver:
         if issue_warnings:
             # Issue any delayed warnings from the compute.
             for delayed_warning in result_warnings:
-                warnings.warn(delayed_warning, category=iris.exceptions.IrisSaveWarning)
+                warnings.warn(delayed_warning, category=iris.warnings.IrisSaveWarning)
 
         return result_warnings
 
@@ -2815,7 +2816,7 @@ def save(
                 f"Saving the cube global attributes {sorted(invalid_globals)} as local "
                 "(i.e. data-variable) attributes, where possible, since they are not "
                 "the same on all input cubes.",
-                category=iris.exceptions.IrisSaveWarning,
+                category=iris.warnings.IrisSaveWarning,
             )
             cubes = cubes.copy()  # avoiding modifying the actual input arg.
             for i_cube in range(len(cubes)):
@@ -2831,7 +2832,7 @@ def save(
                             f"Global cube attributes {sorted(blocked_attrs)} "
                             f'of cube "{cube.name()}" were not saved, overlaid '
                             "by existing local attributes with the same names.",
-                            category=iris.exceptions.IrisSaveWarning,
+                            category=iris.warnings.IrisSaveWarning,
                         )
                     demote_attrs -= blocked_attrs
                     if demote_attrs:
@@ -2973,7 +2974,7 @@ def save(
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch_conventions"
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
         # Add conventions attribute.
         if iris.FUTURE.save_split_attrs:

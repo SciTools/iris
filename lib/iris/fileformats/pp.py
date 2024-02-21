@@ -32,6 +32,7 @@ from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 import iris.fileformats.rules
+import iris.warnings
 
 try:
     import mo_pack
@@ -216,8 +217,8 @@ LBUSER_DTYPE_LOOKUP = {
 
 
 class _WarnComboLoadingMask(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisMaskValueMatchWarning,
+    iris.warnings.IrisLoadWarning,
+    iris.warnings.IrisMaskValueMatchWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -225,8 +226,8 @@ class _WarnComboLoadingMask(
 
 
 class _WarnComboLoadingDefaulting(
-    iris.exceptions.IrisDefaultingWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisDefaultingWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -234,8 +235,8 @@ class _WarnComboLoadingDefaulting(
 
 
 class _WarnComboIgnoringLoad(
-    iris.exceptions.IrisIgnoringWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -1700,7 +1701,7 @@ def _interpret_fields(fields):
                 "Landmask compressed fields existed without a "
                 "landmask to decompress with. The data will have "
                 "a shape of (0, 0) and will not read.",
-                category=iris.exceptions.IrisLoadWarning,
+                category=iris.warnings.IrisLoadWarning,
             )
             mask_shape = (0, 0)
         else:

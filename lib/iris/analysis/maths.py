@@ -23,6 +23,7 @@ from iris.config import get_logger
 import iris.coords
 import iris.exceptions
 import iris.util
+import iris.warnings
 
 # Configure the logger.
 logger = get_logger(__name__)
@@ -942,7 +943,7 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
         warnings.warn(
             "Using {!r} with a bounded coordinate is not well "
             "defined; ignoring bounds.".format(operation_name),
-            category=iris.exceptions.IrisIgnoringBoundsWarning,
+            category=iris.warnings.IrisIgnoringBoundsWarning,
         )
 
     points = other.points

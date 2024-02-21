@@ -32,6 +32,7 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
+import iris.warnings
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
 DEFAULT_IGNORE_AXIS = False
@@ -1977,7 +1978,7 @@ class Coord(_DimensionalMetadata):
                 warnings.warn(
                     "Coordinate {!r} is not bounded, guessing "
                     "contiguous bounds.".format(self.name()),
-                    category=iris.exceptions.IrisGuessBoundsWarning,
+                    category=iris.warnings.IrisGuessBoundsWarning,
                 )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
@@ -2138,7 +2139,7 @@ class Coord(_DimensionalMetadata):
                 )
                 warnings.warn(
                     msg.format(self.name()),
-                    category=iris.exceptions.IrisVagueMetadataWarning,
+                    category=iris.warnings.IrisVagueMetadataWarning,
                 )
             else:
                 try:
@@ -2151,7 +2152,7 @@ class Coord(_DimensionalMetadata):
                     )
                     warnings.warn(
                         msg.format(str(exc), self.name()),
-                        category=iris.exceptions.IrisVagueMetadataWarning,
+                        category=iris.warnings.IrisVagueMetadataWarning,
                     )
                     self.bounds = None
                 else:
@@ -2162,7 +2163,7 @@ class Coord(_DimensionalMetadata):
                         )
                         warnings.warn(
                             msg.format(self.name()),
-                            category=iris.exceptions.IrisVagueMetadataWarning,
+                            category=iris.warnings.IrisVagueMetadataWarning,
                         )
 
             if self.has_bounds():
