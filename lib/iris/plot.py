@@ -30,11 +30,12 @@ import iris.analysis.cartography as cartography
 import iris.coord_systems
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisError, IrisUnsupportedPlottingWarning
+from iris.exceptions import IrisError
 
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
 from iris.util import _meshgrid
+from iris.warnings import IrisUnsupportedPlottingWarning
 
 # Cynthia Brewer citation text.
 BREWER_CITE = "Colours based on ColorBrewer.org"

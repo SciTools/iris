@@ -16,8 +16,8 @@ import pytest
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
-from iris.exceptions import IrisUserWarning
 import iris.tests.stock as stock
+from iris.warnings import IrisUserWarning
 
 
 def _make_cube(

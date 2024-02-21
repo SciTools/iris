@@ -10,12 +10,11 @@ import warnings
 import numpy as np
 
 from iris.exceptions import (
-    IrisDefaultingWarning,
-    IrisLoadWarning,
     NotYetImplementedError,
 )
 from iris.fileformats._ff_cross_references import STASH_TRANS
 
+from ..warnings import IrisDefaultingWarning, IrisLoadWarning
 from . import pp
 
 IMDI = -32768

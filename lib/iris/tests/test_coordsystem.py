@@ -17,8 +17,8 @@ from iris.coord_systems import (
 )
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisUserWarning
 import iris.tests.stock
+from iris.warnings import IrisUserWarning
 
 
 def osgb():

@@ -16,8 +16,9 @@ import numpy as np
 import iris.coord_systems
 from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
-from iris.exceptions import IrisLoadWarning, TranslationError
+from iris.exceptions import TranslationError
 import iris.util
+from iris.warnings import IrisLoadWarning
 
 EARTH_RADIUS = 6371229.0
 NAMEIII_DATETIME_FORMAT = "%d/%m/%Y  %H:%M %Z"

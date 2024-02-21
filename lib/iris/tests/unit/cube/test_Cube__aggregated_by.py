@@ -20,7 +20,6 @@ import iris.aux_factory
 import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube
-import iris.exceptions
 from iris.tests.stock import realistic_4d
 
 
