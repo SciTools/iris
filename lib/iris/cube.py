@@ -719,7 +719,7 @@ class CubeList(list):
             # Compute these stats together (avoiding multiple data passes).
             CubeList([a_std, b_std, ab_mean_diff, std_err]).realise_data()
 
-        .. Note::
+        .. note::
 
             Cubes with non-lazy data are not affected.
 

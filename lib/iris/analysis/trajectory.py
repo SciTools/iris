@@ -544,7 +544,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     Because this function can be slow for multidimensional coordinates,
     a 'cache' dictionary can be provided by the calling code.
 
-    .. Note::
+    .. note::
 
         If the points are longitudes/latitudes, these are handled correctly as
         points on the sphere, but the values must be in 'degrees'.
@@ -745,7 +745,7 @@ class UnstructuredNearestNeigbourRegridder:
 
         Notes
         -----
-        .. Note::
+        .. note::
 
             For latitude-longitude coordinates, the nearest-neighbour distances
             are computed on the sphere, otherwise flat Euclidean distances are

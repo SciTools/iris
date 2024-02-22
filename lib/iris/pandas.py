@@ -583,6 +583,7 @@ def as_series(cube, copy=True):
     Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     .. deprecated:: 3.4.0
+
         This function is scheduled for removal in a future release, being
         replaced by :func:`iris.pandas.as_data_frame`, which offers improved
         multi dimension handling.

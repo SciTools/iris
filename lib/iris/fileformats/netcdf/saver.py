@@ -2619,7 +2619,7 @@ def save(
         Name of the netCDF file to save the cube(s).
         **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
 
-        .. Note::
+        .. note::
             When saving to a dataset, ``compute`` **must** be ``False`` :
             See the ``compute`` parameter.
 

@@ -203,7 +203,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     Convenience function to help compare coordinates, cell-measures or
     ancillary-variables, on one or more cubes, by their metadata.
 
-    .. Note::
+    .. note::
 
         Up to Iris 2.x, this _used_ to be the public API method
         "iris.analysis.coord_comparison".
@@ -2927,7 +2927,7 @@ class UnstructuredNearest:
     must be.  Otherwise, the corresponding X and Y coordinates must have the
     same units in the source and grid cubes.
 
-    .. Note::
+    .. note::
         Currently only supports regridding, not interpolation.
 
     """

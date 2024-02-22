@@ -800,7 +800,7 @@ def _slice_data_with_keys(data, keys):
     both 'real' (numpy) arrays and other array-likes index in the same way,
     instead of numpy arrays doing 'fancy indexing'.
 
-    .. Note::
+    .. note::
 
         Avoids copying the data, where possible.
 

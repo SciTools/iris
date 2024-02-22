@@ -8,9 +8,9 @@ Notes
 -----
 .. deprecated:: 3.4.0
 
-``iris.experimental.animate.animate()`` has been moved to
-:func:`iris.plot.animate`. This module will therefore be removed in a future
-release.
+    ``iris.experimental.animate.animate()`` has been moved to
+    :func:`iris.plot.animate`. This module will therefore be removed in a future
+    release.
 
 """
 
