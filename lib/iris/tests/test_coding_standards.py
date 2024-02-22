@@ -64,7 +64,9 @@ def test_netcdf4_import():
 
 
 def test_python_versions():
-    """This test is designed to fail whenever Iris' supported Python versions are
+    """Test Python Versions.
+
+    Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
     latest_supported = "3.11"
@@ -128,7 +130,7 @@ def test_categorised_warnings():
     r"""To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
-    :class:`iris.exceptions.IrisUserWarning`.
+    :class:`iris.warnings.IrisUserWarning`.
 
     Warning matches multiple categories? Create a one-off combo class. For
     example:

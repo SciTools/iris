@@ -18,22 +18,18 @@ from iris.util import _meshgrid
 
 
 class AreaWeightedRegridder:
-    """This class provides support for performing area-weighted regridding."""
+    """Provide support for performing area-weighted regridding."""
 
     def __init__(self, src_grid_cube, target_grid_cube, mdtol=1):
-        """Create an area-weighted regridder for conversions between the source
-        and target grids.
+        """Create an area-weighted regridder for conversions between the source and target grids.
 
-        Args:
-
-        * src_grid_cube:
+        Parameters
+        ----------
+        src_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the source grid.
-        * target_grid_cube:
+        target_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-
-        Kwargs:
-
-        * mdtol (float):
+        mdtol : float, default=1
             Tolerance of missing data. The value returned in each element of
             the returned array will be masked if the fraction of masked data
             exceeds mdtol. mdtol=0 means no missing data is tolerated while
@@ -41,6 +37,8 @@ class AreaWeightedRegridder:
             if all the contributing elements of data are masked.
             Defaults to 1.
 
+        Notes
+        -----
         .. Note::
 
             Both source and target cubes must have an XY grid defined by
@@ -76,8 +74,7 @@ class AreaWeightedRegridder:
         ) = _regrid_info
 
     def __call__(self, cube):
-        """Regrid this :class:`~iris.cube.Cube` onto the target grid of
-        this :class:`AreaWeightedRegridder`.
+        """Regrid :class:`~iris.cube.Cube` onto target grid :class:`AreaWeightedRegridder`.
 
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`AreaWeightedRegridder`.
@@ -85,17 +82,21 @@ class AreaWeightedRegridder:
         If the source cube has lazy data, the returned cube will also
         have lazy data.
 
-        Args:
-
-        * cube:
+        Parameters
+        ----------
+        cube : :class:`~iris.cube.Cube`
             A :class:`~iris.cube.Cube` to be regridded.
 
-        Returns:
+        Returns
+        -------
+        :class:`~iris.cube.Cube`
             A cube defined with the horizontal dimensions of the target
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid using
             area-weighted regridding.
 
+        Notes
+        -----
         .. note::
 
             If the source cube has lazy data,
@@ -146,12 +147,14 @@ def _get_xy_coords(cube):
     have equal coordinate systems and that they do not occupy the same
     dimension on the cube.
 
-    Args:
-
-    * cube:
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
         An instance of :class:`iris.cube.Cube`.
 
-    Returns:
+    Returns
+    -------
+    tuple
         A tuple containing the cube's x and y coordinates.
 
     """
@@ -218,6 +221,7 @@ def _get_bounds_in_units(coord, units, dtype):
     """Return a copy of coord's bounds in the specified units and dtype.
 
     Return as contiguous bounds.
+
     """
     # The bounds are cast to dtype before conversion to prevent issues when
     # mixing float32 and float64 types.

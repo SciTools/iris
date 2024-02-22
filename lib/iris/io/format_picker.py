@@ -189,7 +189,7 @@ class FormatSpecification:
         priority: int
             Integer giving a priority for considering this specification where
             higher priority means sooner consideration.
-        constraint_aware_handler: optional, default=False
+        constraint_aware_handler: default=False
         """
         if not isinstance(file_element, FileElement):
             raise ValueError(
@@ -279,7 +279,7 @@ class FileElement:
 
         Parameters
         ----------
-        requires_fh : optional
+        requires_fh : bool, default=True
             Whether this FileElement needs a file buffer.
 
         """

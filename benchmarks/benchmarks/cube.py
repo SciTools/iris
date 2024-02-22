@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Cube benchmark tests.
-
-"""
+"""Cube benchmark tests."""
 
 import numpy as np
 
@@ -30,7 +28,9 @@ class ComponentCommon:
     #       * make class an ABC
     #       * remove NotImplementedError
     #       * combine setup_common into setup
-    """A base class running a generalised suite of benchmarks for cubes that
+    """Run a generalised suite of benchmarks for cubes.
+
+    A base class running a generalised suite of benchmarks for cubes that
     include a specified component (e.g. Coord, CellMeasure etc.). Component to
     be specified in a subclass.
 
@@ -45,7 +45,7 @@ class ComponentCommon:
         raise NotImplementedError
 
     def create(self):
-        """Generic cube creation.
+        """Create a cube (generic).
 
         cube_kwargs allow dynamic inclusion of different components;
         specified in subclasses.

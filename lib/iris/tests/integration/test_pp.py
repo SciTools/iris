@@ -17,12 +17,13 @@ import numpy as np
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IgnoreCubeException, IrisUserWarning
+from iris.exceptions import IgnoreCubeException
 import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 import iris.util
+from iris.warnings import IrisUserWarning
 
 
 class TestVertical(tests.IrisTest):

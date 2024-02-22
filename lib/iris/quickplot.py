@@ -49,8 +49,7 @@ def _title(cube_or_coord, with_units):
 
 
 def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
-    """Puts labels on the current plot using the given cube."""
-
+    """Put labels on the current plot using the given cube."""
     if axes is None:
         axes = plt.gca()
 
@@ -199,19 +198,17 @@ def contourf(cube, *args, **kwargs):
 def outline(cube, coords=None, color="k", linewidth=None, axes=None):
     """Draws cell outlines on a labelled plot based on the given Cube.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the plot. The order of the
         given coordinates indicates which axis to use for each, where the first
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
-
-    * color: None or mpl color
+    color : str, default="k"
         The color of the cell outlines. If None, the matplotlibrc setting
         patch.edgecolor is used by default.
-
-    * linewidth: None or number
+    linewidth : number, optional
         The width of the lines showing the cell outlines. If None, the default
         width in patch.linewidth in matplotlibrc is used.
 
@@ -283,8 +280,7 @@ def points(cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """Draws a labelled line plot based on the given cube(s) or
-    coordinate(s).
+    """Draws a labelled line plot based on the given cube(s) or coordinate(s).
 
     See :func:`iris.plot.plot` for details of valid arguments and
     keyword arguments.
@@ -302,8 +298,7 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """Draws a labelled scatter plot based on the given cubes or
-    coordinates.
+    """Draws a labelled scatter plot based on the given cubes or coordinates.
 
     See :func:`iris.plot.scatter` for details of valid arguments and
     keyword arguments.
@@ -330,6 +325,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     axes = kwargs.get("axes")
     result = iplt.fill_between(x, y1, y2, *args, **kwargs)
@@ -347,6 +343,7 @@ def hist(x, *args, **kwargs):
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     axes = kwargs.get("axes")
     result = iplt.hist(x, *args, **kwargs)

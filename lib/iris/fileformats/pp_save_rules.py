@@ -3,13 +3,14 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
+"""PP Save Rules."""
+
 import warnings
 
 import cftime
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisPpClimModifiedWarning
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
@@ -21,17 +22,22 @@ from iris.fileformats.rules import (
 )
 from iris.fileformats.um_cf_map import CF_TO_LBFC
 from iris.util import is_regular, regular_step
+from iris.warnings import IrisPpClimModifiedWarning
 
 
 def _basic_coord_system_rules(cube, pp):
     """Rules for setting the coord system of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
         pp: the current PP field having save rules applied.
+    pp :
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     if cube.coord_system("GeogCS") is not None or cube.coord_system(None) is None:
@@ -76,12 +82,16 @@ def _um_version_rules(cube, pp):
 def _stash_rules(cube, pp):
     """Attributes rules for setting the STASH attribute of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     if "STASH" in cube.attributes:
@@ -95,12 +105,16 @@ def _stash_rules(cube, pp):
 def _general_time_rules(cube, pp):
     """Rules for setting time metadata of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     time_coord = scalar_coord(cube, "time")
@@ -365,12 +379,16 @@ def _general_time_rules(cube, pp):
 def _calendar_rules(cube, pp):
     """Rules for setting the calendar of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     time_coord = scalar_coord(cube, "time")
@@ -387,12 +405,16 @@ def _calendar_rules(cube, pp):
 def _grid_and_pole_rules(cube, pp):
     """Rules for setting the horizontal grid and pole location of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     lon_coord = vector_coord(cube, "longitude")
@@ -465,12 +487,16 @@ def _grid_and_pole_rules(cube, pp):
 def _non_std_cross_section_rules(cube, pp):
     """Rules for applying non-standard cross-sections to the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # Define commonly-used coords.
@@ -594,12 +620,16 @@ def _lbproc_rules(cube, pp):
 
     Note: `pp.lbproc` must be set to 0 before these rules are run.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # Basic setting (this may be overridden by subsequent rules).
@@ -636,12 +666,16 @@ def _lbproc_rules(cube, pp):
 def _vertical_rules(cube, pp):
     """Rules for setting vertical levels for the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # Define commonly-used coords.
@@ -820,12 +854,16 @@ def _all_other_rules(cube, pp):
     * lbfc (field code)
     * lbrsvd[3] (ensemble member number)
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # "CFNAME mega-rule."

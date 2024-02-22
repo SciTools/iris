@@ -12,9 +12,9 @@ from unittest import mock
 
 import numpy as np
 
-from iris.exceptions import IrisDefaultingWarning, IrisMaskValueMatchWarning
 import iris.fileformats.pp as pp
 from iris.fileformats.pp import PPField, SplittableInt
+from iris.warnings import IrisDefaultingWarning, IrisMaskValueMatchWarning
 
 # The PPField class is abstract, so to test we define a minimal,
 # concrete subclass with the `t1` and `t2` properties.

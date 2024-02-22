@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Contains symbol definitions for use with :func:`iris.plot.symbols`.
-
-"""
+"""Contains symbol definitions for use with :func:`iris.plot.symbols`."""
 
 import itertools
 import math
@@ -195,8 +193,11 @@ def _backslash_path():
 
 
 def _wedge_fix(wedge_path):
-    """Fixes the problem with Path.wedge where it doesn't initialise the first,
+    """Fix the problem with Path.wedge.
+
+    Fixes the problem with Path.wedge where it doesn't initialise the first,
     and last two vertices.
+
     This fix should not have any side-effects once Path.wedge has been fixed,
     but will then be redundant and should be removed.
 
@@ -226,8 +227,8 @@ CLOUD_COVER = {
 A dictionary mapping WMO cloud cover codes to their corresponding symbol.
 
 See https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
-    Part II, Appendix II.4, Graphical Representation of Data, Analyses
-    and Forecasts
+Part II, Appendix II.4, Graphical Representation of Data, Analyses
+and Forecasts
 
 """
 

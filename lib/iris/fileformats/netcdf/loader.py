@@ -34,12 +34,12 @@ from iris.aux_factory import (
 import iris.config
 import iris.coord_systems
 import iris.coords
-import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
+import iris.warnings
 
 # Show actions activation statistics.
 DEBUG = False
@@ -53,8 +53,8 @@ NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
 
 
 class _WarnComboIgnoringBoundsLoad(
-    iris.exceptions.IrisIgnoringBoundsWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisIgnoringBoundsWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -415,7 +415,7 @@ def _load_aux_factory(engine, cube):
                         return coord
                 warnings.warn(
                     "Unable to find coordinate for variable {!r}".format(name),
-                    category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
+                    category=iris.warnings.IrisFactoryCoordNotFoundWarning,
                 )
 
         if formula_type == "atmosphere_sigma_coordinate":
@@ -562,10 +562,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
     file_sources : str or list
         One or more NetCDF filenames/OPeNDAP URLs to load from.
         OR open datasets.
-
     callback : function, optional
         Function which can be passed on to :func:`iris.io.run_callback`.
-
     constraints : optional
 
     Returns
@@ -648,7 +646,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 except ValueError as e:
                     warnings.warn(
                         "{}".format(e),
-                        category=iris.exceptions.IrisLoadWarning,
+                        category=iris.warnings.IrisLoadWarning,
                     )
 
                 # Perform any user registered callback function.
@@ -662,7 +660,11 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
 
 class ChunkControl(threading.local):
+    """Provide user control of Chunk Control."""
+
     class Modes(Enum):
+        """Modes Enums."""
+
         DEFAULT = auto()
         FROM_FILE = auto()
         AS_DASK = auto()
@@ -704,9 +706,9 @@ class ChunkControl(threading.local):
         ----------
         var_names : str or list of str, default=None
             apply the `dimension_chunksizes` controls only to these variables,
-            or when building :class:`~iris.cube.Cube`\\ s from these data variables.
+            or when building :class:`~iris.cube.Cube` from these data variables.
             If ``None``, settings apply to all loaded variables.
-        dimension_chunksizes : dict of {str: int}
+        **dimension_chunksizes : dict of {str: int}
             Kwargs specifying chunksizes for dimensions of file variables.
             Each key-value pair defines a chunk size for a named file
             dimension, e.g. ``{'time': 10, 'model_levels':1}``.
@@ -775,7 +777,7 @@ class ChunkControl(threading.local):
         ------
         KeyError
             If any NetCDF data variables - those that become
-            :class:`~iris.cube.Cube`\\ s - do not specify chunk sizes.
+            :class:`~iris.cube.Cube` - do not specify chunk sizes.
 
         Notes
         -----
@@ -797,6 +799,7 @@ class ChunkControl(threading.local):
         Notes
         -----
         This function acts as a context manager, for use in a ``with`` block.
+
         """
         old_mode = self.mode
         old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)

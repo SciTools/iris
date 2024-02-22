@@ -1,10 +1,11 @@
-"""Cross Section Plots
+"""
+Cross Section Plots
 ===================
 
 This example demonstrates contour plots of a cross-sectioned multi-dimensional
 cube which features a hybrid height vertical coordinate system.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 

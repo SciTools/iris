@@ -3,9 +3,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Updates imagerepo.json based on the baseline images.
-
-"""
+"""Updates imagerepo.json based on the baseline images."""
 
 import argparse
 from pathlib import Path

@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test the hybrid vertical coordinate representations.
-
-"""
+"""Test the hybrid vertical coordinate representations."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -16,8 +14,8 @@ import numpy as np
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisIgnoringBoundsWarning
 import iris.tests.stock
+from iris.warnings import IrisIgnoringBoundsWarning
 
 
 @tests.skip_plot

@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_oblique_mercator_coordinate_system`.
-
-"""
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_oblique_mercator_coordinate_system`."""
 from typing import List, NamedTuple, Type
 from unittest import mock
 

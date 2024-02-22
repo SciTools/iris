@@ -4,7 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving netcdf file attributes.
 
-Notes:
+Notes
+-----
 (1) attributes in netCDF files can be either "global attributes", or variable
 ("local") type.
 
@@ -178,6 +179,7 @@ class MixinAttrsTesting:
         N.B. "tmp_path_factory" is a standard PyTest fixture, which provides a dirpath
         *shared* by all tests.  This is a bit quicker and more debuggable than having a
         directory per-testcase.
+
         """
         # Store the temporary directory path on the test instance
         self.tmpdir = str(tmp_path_factory.getbasetemp())
@@ -220,6 +222,7 @@ class MixinAttrsTesting:
         Note: 'var_values_file<X>' args are dictionaries.  The named variables are
         created, with an attribute = the dictionary value, *except* that a dictionary
         value of None means that a local attribute is _not_ created on the variable.
+
         """
         # save attribute on the instance
         self.attrname = attr_name
@@ -307,6 +310,8 @@ class MixinAttrsTesting:
         create_cubes_or_files : str, default "files"
             create either cubes or testfiles.
 
+        Notes
+        -----
         If ``create_cubes_or_files`` == "files", create one temporary netCDF file per
         values-list, and record in ``self.input_filepaths``.
         Else if ``create_cubes_or_files`` == "cubes", create sets of cubes with common

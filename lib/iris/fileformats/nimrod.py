@@ -169,10 +169,11 @@ class NimrodField:
 
     Capable of converting itself into a :class:`~iris.cube.Cube`
 
-    References:
-        Met Office (2003): Met Office Rain Radar Data from the NIMROD System.
-        NCAS British Atmospheric Data Centre, date of citation.
-        https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
+    References
+    ----------
+    Met Office (2003): Met Office Rain Radar Data from the NIMROD System.
+    NCAS British Atmospheric Data Centre, date of citation.
+    https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
 
     """
 
@@ -203,7 +204,6 @@ class NimrodField:
 
     def _read_header(self, infile):
         """Load the 512 byte header (surrounded by 4-byte length)."""
-
         leading_length = struct.unpack(">L", infile.read(4))[0]
         if leading_length != 512:
             raise TranslationError("Expected header leading_length of 512")
@@ -290,17 +290,17 @@ class NimrodField:
 
 
 def load_cubes(filenames, callback=None):
-    """Loads cubes from a list of NIMROD filenames.
+    """Load cubes from a list of NIMROD filenames.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        List of NIMROD filenames to load
+    callback : optional
+        A function which can be passed on to :func:`iris.io.run_callback`
 
-    * filenames - list of NIMROD filenames to load
-
-    Kwargs:
-
-    * callback - a function which can be passed on to
-                 :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the same order as in the files.

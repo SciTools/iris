@@ -42,7 +42,9 @@ def is_lazy_data(data):
 
 
 def is_lazy_masked_data(data):
-    """Return True if the argument is both an Iris 'lazy' data array and the
+    """Determine whether managed data is lazy and masked.
+
+    Return True if the argument is both an Iris 'lazy' data array and the
     underlying array is of masked type.  Otherwise return False.
 
     """
@@ -58,47 +60,50 @@ def _optimum_chunksize_internals(
     dims_fixed=None,
     dask_array_chunksize=dask.config.get("array.chunk-size"),
 ):
-    """Reduce or increase an initial chunk shape to get close to a chosen ideal
+    """Reduce or increase an initial chunk shap.
+
+    Reduce or increase an initial chunk shape to get close to a chosen ideal
     size, while prioritising the splitting of the earlier (outer) dimensions
     and keeping intact the later (inner) ones.
 
-    Args:
-
-    * chunks (tuple of int):
+    Parameters
+    ----------
+    chunks : tuple of int
         Pre-existing chunk shape of the target data.
-    * shape (tuple of int):
+    shape : tuple of int
         The full array shape of the target data.
-    * limit (int):
+    limit : int, optional
         The 'ideal' target chunk size, in bytes.  Default from
         :mod:`dask.config`.
-    * dtype (np.dtype):
+    dtype : np.dtype
         Numpy dtype of target data.
-    * dims_fixed (list of bool):
+    dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or 'shape'.
         'True' values indicate a dimension that can not be changed, i.e. that
         element of the result must equal the corresponding value in 'chunks' or
         data.shape.
 
-    Returns:
-    * chunk (tuple of int):
+    Returns
+    -------
+    tuple of int
         The proposed shape of one full chunk.
 
-    .. note::
-        The purpose of this is very similar to
-        :func:`dask.array.core.normalize_chunks`, when called as
-        `(chunks='auto', shape, dtype=dtype, previous_chunks=chunks, ...)`.
-        Except, the operation here is optimised specifically for a 'c-like'
-        dimension order, i.e. outer dimensions first, as for netcdf variables.
-        So if, in future, this policy can be implemented in dask, then we would
-        prefer to replace this function with a call to that one.
-        Accordingly, the arguments roughly match 'normalize_chunks', except
-        that we don't support the alternative argument forms of that routine.
-        The return value, however, is a single 'full chunk', rather than a
-        complete chunking scheme : so an equivalent code usage could be
-        "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
+    Notes
+    -----
+    The purpose of this is very similar to
+    :func:`dask.array.core.normalize_chunks`, when called as
+    `(chunks='auto', shape, dtype=dtype, previous_chunks=chunks, ...)`.
+    Except, the operation here is optimised specifically for a 'c-like'
+    dimension order, i.e. outer dimensions first, as for netcdf variables.
+    So if, in future, this policy can be implemented in dask, then we would
+    prefer to replace this function with a call to that one.
+    Accordingly, the arguments roughly match 'normalize_chunks', except
+    that we don't support the alternative argument forms of that routine.
+    The return value, however, is a single 'full chunk', rather than a
+    complete chunking scheme : so an equivalent code usage could be
+    "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
 
     """
-
     # Set the chunksize limit.
     if limit is None:
         # Fetch the default 'optimal' chunksize from the dask config.
@@ -220,40 +225,37 @@ def as_lazy_data(
 ):
     """Convert the input array `data` to a :class:`dask.array.Array`.
 
-    Args:
-
-    * data (array-like):
+    Parameters
+    ----------
+    data : array-like
         An indexable object with 'shape', 'dtype' and 'ndim' properties.
         This will be converted to a :class:`dask.array.Array`.
-
-    Kwargs:
-
-    * chunks (list of int):
+    chunks : list of int, optional
         If present, a source chunk shape, e.g. for a chunked netcdf variable.
-
-    * asarray (bool):
+    asarray : bool, default=False
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
-
-    * dims_fixed (list of bool):
+    dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or data.ndim.
         'True' values indicate a dimension which can not be changed, i.e. the
         result for that index must equal the value in 'chunks' or data.shape.
-
-    * dask_chunking (bool):
+    dask_chunking : bool, default=False
         If True, Iris chunking optimisation will be bypassed, and dask's default
         chunking will be used instead. Including a value for chunks while dask_chunking
         is set to True will result in a failure.
 
-    Returns:
+    Returns
+    -------
+    :class:`dask.array.Array`
         The input array converted to a :class:`dask.array.Array`.
 
-    .. note::
-        The result chunk size is a multiple of 'chunks', if given, up to the
-        dask default chunksize, i.e. `dask.config.get('array.chunk-size'),
-        or the full data shape if that is smaller.
-        If 'chunks' is not given, the result has chunks of the full data shape,
-        but reduced by a factor if that exceeds the dask default chunksize.
+    Notes
+    -----
+    The result chunk size is a multiple of 'chunks', if given, up to the
+    dask default chunksize, i.e. `dask.config.get('array.chunk-size')`,
+    or the full data shape if that is smaller.
+    If 'chunks' is not given, the result has chunks of the full data shape,
+    but reduced by a factor if that exceeds the dask default chunksize.
 
     """
     if dask_chunking:
@@ -326,18 +328,21 @@ def _co_realise_lazy_arrays(arrays):
 
 def as_concrete_data(data):
     """Return the actual content of a lazy array, as a numpy array.
+
+    Return the actual content of a lazy array, as a numpy array.
     If the input data is a NumPy `ndarray` or masked array, return it
     unchanged.
 
     If the input data is lazy, return the realised result.
 
-    Args:
-
-    * data:
+    Parameters
+    ----------
+    data :
         A dask array, NumPy `ndarray` or masked array
 
-    Returns:
-        A NumPy `ndarray` or masked array.
+    Returns
+    -------
+    NumPy `ndarray` or masked array.
 
     """
     if is_lazy_data(data):
@@ -352,13 +357,14 @@ def multidim_lazy_stack(stack):
     This is needed because :meth:`dask.array.Array.stack` only accepts a
     1-dimensional list.
 
-    Args:
-
-    * stack:
+    Parameters
+    ----------
+    stack :
         An ndarray of :class:`dask.array.Array`.
 
-    Returns:
-        The input array converted to a lazy :class:`dask.array.Array`.
+    Returns
+    -------
+    The input array converted to a lazy :class:`dask.array.Array`.
 
     """
     if stack.ndim == 0:
@@ -380,12 +386,14 @@ def co_realise_cubes(*cubes):
     However, lazy calculations and data fetches can be shared between the
     computations, improving performance.
 
-    Args:
-
-    * cubes (list of :class:`~iris.cube.Cube`):
+    Parameters
+    ----------
+    cubes : list of :class:`~iris.cube.Cube`
         Arguments, each of which is a cube to be realised.
 
-    For example::
+    Examples
+    --------
+    ::
 
         # Form stats.
         a_std = cube_a.collapsed(['x', 'y'], iris.analysis.STD_DEV)
@@ -398,9 +406,9 @@ def co_realise_cubes(*cubes):
         co_realise_cubes(a_std, b_std, ab_mean_diff, std_err)
 
 
-    .. Note::
+        .. note::
 
-        Cubes with non-lazy data may also be passed, with no ill effect.
+            Cubes with non-lazy data may also be passed, with no ill effect.
 
     """
     results = _co_realise_lazy_arrays([cube.core_data() for cube in cubes])
@@ -414,13 +422,15 @@ def lazy_elementwise(lazy_array, elementwise_op):
     Elementwise means that it performs a independent calculation at each point
     of the input, producing a result array of the same shape.
 
-    Args:
-
-    * lazy_array:
+    Parameters
+    ----------
+    lazy_array :
         The lazy array object to operate on.
-    * elementwise_op:
+    elementwise_op :
         The elementwise operation, a function operating on numpy arrays.
 
+    Notes
+    -----
     .. note:
 
         A single-point "dummy" call is made to the operation function, to
@@ -445,15 +455,15 @@ def map_complete_blocks(src, func, dims, out_sizes):
 
     Complete means that the data is not chunked along the chosen dimensions.
 
-    Args:
-
-    * src (:class:`~iris.cube.Cube` or array-like):
+    Parameters
+    ----------
+    src : :class:`~iris.cube.Cube` or array-like
         Source cube that function is applied to.
-    * func:
+    func :
         Function to apply.
-    * dims (tuple of int):
+    dims : tuple of int
         Dimensions that cannot be chunked.
-    * out_sizes (tuple of int):
+    out_sizes : tuple of int
         Output size of dimensions that cannot be chunked.
 
     """

@@ -29,6 +29,7 @@ from iris.fileformats.netcdf import Saver
 # Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+import iris.warnings
 
 nc = threadsafe_nc.netCDF4
 
@@ -138,7 +139,7 @@ class TestCellMethod_unknown(tests.IrisTest):
             warning_messages = [
                 warn
                 for warn in warning_messages
-                if isinstance(warn, iris.exceptions.IrisUnknownCellMethodWarning)
+                if isinstance(warn, iris.warnings.IrisUnknownCellMethodWarning)
             ]
             self.assertEqual(len(warning_messages), 1)
             message = warning_messages[0].args[0]
@@ -482,6 +483,41 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         iris.save(self.testdata, path)
         self.assertCDL(tempfile_fromstr)
         self.assertCDL(tempfile_frompath)
+
+
+@tests.skip_data
+class TestWarningRepeats(tests.IrisTest):
+    def test_datum_once(self):
+        """Tests for warnings being duplicated.
+
+        Notes
+        -----
+        This test relies on `iris.load` throwing a warning. This warning might
+        be removed in the future, in which case `assert len(record) == 2 should`
+        be change to `assert len(record) == 1`.
+
+        toa_brightness_temperature.nc has an AuxCoord with lazy data, and triggers a
+        specific part of dask which contains a `catch_warnings()` call which
+        causes warnings to be repeated, and so has been removed from the
+        `fnames` list until a solution is found for such a file.
+
+        """
+        #
+        fnames = [
+            "false_east_north_merc.nc",
+            "non_unit_scale_factor_merc.nc",
+            # toa_brightness_temperature.nc,
+        ]
+        fpaths = [
+            tests.get_data_path(("NetCDF", "mercator", fname)) for fname in fnames
+        ]
+
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("default")
+            for fpath in fpaths:
+                iris.load(fpath)
+                warnings.warn("Dummy warning", category=iris.warnings.IrisUserWarning)
+        assert len(record) == 2
 
 
 if __name__ == "__main__":

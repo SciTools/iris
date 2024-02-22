@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
-"""
+"""Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
 import os.path
 
 from dask import array as da
@@ -64,7 +63,6 @@ class Mixin:
 
     def setup_cache(self):
         """Cache all the necessary source data on disk."""
-
         # Control dask, to minimise memory usage + allow largest data.
         self.fix_dask_settings()
 
@@ -85,7 +83,7 @@ class Mixin:
             )
 
     def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
-        """The combine-tests "standard" setup operation.
+        """Combine-tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.
@@ -102,7 +100,6 @@ class Mixin:
         NOTE: various test classes override + extend this.
 
         """
-
         # Load source cubes (full-mesh and regions)
         with PARSE_UGRID_ON_LOAD.context():
             self.full_mesh_cube = load_cube(
@@ -142,7 +139,6 @@ class Mixin:
         which is optimised for space saving so we can test largest data.
 
         """
-
         import dask.config as dcfg
 
         # Use single-threaded, to avoid process-switching costs and minimise memory usage.
@@ -199,7 +195,9 @@ class ComputeRealData(Mixin):
 
 @on_demand_benchmark
 class SaveData(Mixin):
-    """Test saving *only*, having replaced the input cube data with 'imaginary'
+    """Test saving *only*.
+
+    Test saving *only*, having replaced the input cube data with 'imaginary'
     array data, so that input data is not loaded from disk during the save
     operation.
 
@@ -221,8 +219,10 @@ class SaveData(Mixin):
 @on_demand_benchmark
 class FileStreamedCalc(Mixin):
     """Test the whole cost of file-to-file streaming.
+
     Uses the combined cube which is based on lazy data loading from the region
     cubes on disk.
+
     """
 
     def setup(self, n_cubesphere, imaginary_data=False, create_result_cube=True):

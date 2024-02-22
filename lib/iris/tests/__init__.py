@@ -42,6 +42,7 @@ import requests
 
 import iris.config
 import iris.cube
+import iris.fileformats
 import iris.tests.graphics as graphics
 import iris.util
 
@@ -155,14 +156,11 @@ def assert_masked_array_equal(a, b, strict=False):
     """Check that masked arrays are equal. This requires the
     unmasked values and masks to be identical.
 
-    Args:
-
-    * a, b (array-like):
+    Parameters
+    ----------
+    a, b : array-like
         Two arrays to compare.
-
-    Kwargs:
-
-    * strict (bool):
+    strict : bool, optional
         If True, perform a complete mask and data array equality check.
         If False (default), the data array equality considers only unmasked
         elements.
@@ -176,19 +174,15 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
     masks to be identical, and the unmasked values to be almost
     equal.
 
-    Args:
-
-    * a, b (array-like):
+    Parameters
+    ----------
+    a, b : array-like
         Two arrays to compare.
-
-    Kwargs:
-
-    * strict (bool):
+    strict : bool, optional
         If True, perform a complete mask and data array equality check.
         If False (default), the data array equality considers only unmasked
         elements.
-
-    * decimal (int):
+    decimal : int, optional, default=6
         Equality tolerance level for
         :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
         'abs(desired-actual) < 0.5 * 10**(-decimal)'
@@ -278,11 +272,12 @@ class IrisTest(unittest.TestCase):
         """Return the full path to a test result, generated from the \
         calling file, class and, optionally, method.
 
-        Optional kwargs :
-
-            * basename    - File basename. If omitted, this is \
-                            generated from the calling method.
-            * ext         - Appended file extension.
+        Parameters
+        ----------
+        basename : optional, default=None
+            File basename. If omitted, this is generated from the calling method.
+        ext : str, optional, default=""
+            Appended file extension.
 
         """
         if ext and not ext.startswith("."):
@@ -333,20 +328,16 @@ class IrisTest(unittest.TestCase):
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * netcdf_filename:
+        Parameters
+        ----------
+        netcdf_filename :
             The path to the netCDF file.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * flags:
+        flags : str, optional
             Command-line flags for `ncdump`, as either a whitespace
             separated string or an iterable. Defaults to '-h'.
 
@@ -401,20 +392,16 @@ class IrisTest(unittest.TestCase):
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * cubes:
+        Parameters
+        ----------
+        cubes :
             Either a Cube or a sequence of Cubes.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * checksum:
+        checksum : bool, optional
             When True, causes the CML to include a checksum for each
             Cube's data. Defaults to True.
 
@@ -514,14 +501,11 @@ class IrisTest(unittest.TestCase):
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * string:
+        Parameters
+        ----------
+        string : str
             The string to check.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
@@ -630,16 +614,15 @@ class IrisTest(unittest.TestCase):
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
         """Check arrays are equal, within given relative + absolute tolerances.
 
-        Args:
-
-        * a, b (array-like):
+        Parameters
+        ----------
+        a, b : array-like
             Two arrays to compare.
-
-        Kwargs:
-
-        * rtol, atol (float):
+        rtol, atol : float, optional
             Relative and absolute tolerances to apply.
 
+        Other Parameters
+        ----------------
         Any additional kwargs are passed to numpy.testing.assert_allclose.
 
         Performs pointwise toleranced comparison, and raises an assertion if
@@ -776,10 +759,13 @@ class IrisTest(unittest.TestCase):
 
         The patch is created with mock.patch(*args, **kwargs).
 
-        Returns:
-            The substitute object returned by patch.start().
+        Returns
+        -------
+        The substitute object returned by patch.start().
 
-        For example::
+        Examples
+        --------
+        ::
 
             mock_call = self.patch('module.Class.call', return_value=1)
             module_Class_instance.call(3, 4)
@@ -818,7 +804,9 @@ class IrisTest(unittest.TestCase):
         self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
 
     def assertDictEqual(self, lhs, rhs, msg=None):
-        """This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
+        """Dictionary Comparison.
+
+        This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
         in order to cope with dictionary comparison where the value of a key may
         be a numpy array.
 
@@ -894,6 +882,93 @@ get_result_path = IrisTest.get_result_path
 
 class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
     pass
+
+
+class PPTest:
+    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest."""
+
+    @contextlib.contextmanager
+    def cube_save_test(
+        self,
+        reference_txt_path,
+        reference_cubes=None,
+        reference_pp_path=None,
+        **kwargs,
+    ):
+        """A context manager for testing the saving of Cubes to PP files.
+
+        Args:
+
+        * reference_txt_path:
+            The path of the file containing the textual PP reference data.
+
+        Kwargs:
+
+        * reference_cubes:
+            The cube(s) from which the textual PP reference can be re-built if necessary.
+        * reference_pp_path:
+            The location of a PP file from which the textual PP reference can be re-built if necessary.
+            NB. The "reference_cubes" argument takes precedence over this argument.
+
+        The return value from the context manager is the name of a temporary file
+        into which the PP data to be tested should be saved.
+
+        Example::
+            with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
+                iris.save(cubes, temp_pp_path)
+
+        """
+        # Watch out for a missing reference text file
+        if not os.path.isfile(reference_txt_path):
+            if reference_cubes:
+                temp_pp_path = iris.util.create_temp_filename(".pp")
+                try:
+                    iris.save(reference_cubes, temp_pp_path, **kwargs)
+                    self._create_reference_txt(reference_txt_path, temp_pp_path)
+                finally:
+                    os.remove(temp_pp_path)
+            elif reference_pp_path:
+                self._create_reference_txt(reference_txt_path, reference_pp_path)
+            else:
+                raise ValueError(
+                    "Missing all of reference txt file, cubes, and PP path."
+                )
+
+        temp_pp_path = iris.util.create_temp_filename(".pp")
+        try:
+            # This value is returned to the target of the "with" statement's "as" clause.
+            yield temp_pp_path
+
+            # Load deferred data for all of the fields (but don't do anything with it)
+            pp_fields = list(iris.fileformats.pp.load(temp_pp_path))
+            for pp_field in pp_fields:
+                pp_field.data
+            with open(reference_txt_path, "r") as reference_fh:
+                reference = "".join(reference_fh)
+            self._assert_str_same(
+                reference + "\n",
+                str(pp_fields) + "\n",
+                reference_txt_path,
+                type_comparison_name="PP files",
+            )
+        finally:
+            os.remove(temp_pp_path)
+
+    def _create_reference_txt(self, txt_path, pp_path):
+        # Load the reference data
+        pp_fields = list(iris.fileformats.pp.load(pp_path))
+        for pp_field in pp_fields:
+            pp_field.data
+
+        # Clear any header words we don't use
+        unused = ("lbexp", "lbegin", "lbnrec", "lbproj", "lbtyp")
+        for pp_field in pp_fields:
+            for word_name in unused:
+                setattr(pp_field, word_name, 0)
+
+        # Save the textual representation of the PP fields
+        with open(txt_path, "w") as txt_file:
+            txt_file.writelines(str(pp_fields))
 
 
 def skip_data(fn):

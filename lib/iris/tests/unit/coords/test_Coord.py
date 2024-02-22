@@ -19,8 +19,9 @@ import pytest
 import iris
 from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IrisVagueMetadataWarning, UnitConversionError
+from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
+from iris.warnings import IrisVagueMetadataWarning
 
 Pair = collections.namedtuple("Pair", "points bounds")
 
@@ -240,9 +241,12 @@ class Test_cell(tests.IrisTest):
         coord = mock.Mock(
             spec=Coord,
             ndim=1,
-            points=np.array([mock.sentinel.time]),
-            bounds=np.array([[mock.sentinel.lower, mock.sentinel.upper]]),
         )
+        coord.core_points = lambda: np.array([mock.sentinel.time])
+        coord.core_bounds = lambda: np.array(
+            [[mock.sentinel.lower, mock.sentinel.upper]]
+        )
+
         return coord
 
     def test_time_as_object(self):

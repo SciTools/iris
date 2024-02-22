@@ -45,17 +45,17 @@ def build_mesh(
     Mesh has faces edges, face-coords and edge-coords, numbers of which can be
     controlled.
 
-    Args:
-
-    * n_nodes, n_faces, n_edges (int):
+    Parameters
+    ----------
+    n_nodes, n_faces, n_edges : int
         Basic dimensions of mesh components.  Zero means no such location.
-    * nodecoord_xyargs, edgecoord_xyargs, facecoord_xyargs (pair of dict):
+    nodecoord_xyargs, edgecoord_xyargs, facecoord_xyargs : pair of dict
         Pairs (x,y) of settings kwargs, applied after initial creation the
         relevant location coordinates.
-    * conn_role_kwargs (dict of string:dict):
+    conn_role_kwargs : dict of str
         Mapping from cf_role name to settings kwargs for connectivities,
         applied after initially creating them.
-    * mesh_kwargs (dict):
+    mesh_kwargs : dict
         Dictionary of key settings to apply to the Mesh, after creating it.
 
     """
@@ -129,11 +129,11 @@ def build_mesh(
 def make_mesh(basic=True, **kwargs):
     """Create a test mesh, with some built-in 'standard' settings.
 
-    Kwargs:
-
-    * basic (bool):
+    Parameters
+    ----------
+    basic : bool
         If true (default), create with 'standard' set of test properties.
-    * kwargs (dict):
+    **kwargs : dict
         Additional kwargs, passed through to 'build_mesh'.
         Items here override the 'standard' settings.
 
@@ -193,13 +193,13 @@ def default_mesh():
 def make_cube(mesh=None, location="face", **kwargs):
     """Create a test cube, based on a given mesh + location.
 
-    Kwargs:
-
-    * mesh (:class:`iris.experimental.ugrid.mesh.Mesh` or None):
+    Parameters
+    ----------
+    mesh : :class:`iris.experimental.ugrid.mesh.Mesh` or None, optional
         If None, use 'default_mesh()'
-    * location (string):
+    location : str, optional, default="face"
         Which mesh element to map the cube to.
-    * kwargs (dict):
+    **kwargs : dict, optional
         Additional property settings to apply to the cube (after creation).
 
     """
@@ -234,15 +234,15 @@ _VAR_DIMS = "<variable dimensions>"
 def scan_dataset(filepath):
     """Snapshot a netcdf dataset (the key metadata).
 
-    Returns:
-        dimsdict, varsdict
-        * dimsdict (dict):
-            A map of dimension-name: length.
-        * varsdict (dict):
-            A map of each variable's properties, {var_name: propsdict}
-            Each propsdict is {attribute-name: value} over the var's ncattrs().
-            Each propsdict ALSO contains a [_VAR_DIMS] entry listing the
-            variable's dims.
+    Returns
+    -------
+    dimsdict : dict
+        A map of dimension-name: length.
+    varsdict : dict
+        A map of each variable's properties, {var_name: propsdict}
+        Each propsdict is {attribute-name: value} over the var's ncattrs().
+        Each propsdict ALSO contains a [_VAR_DIMS] entry listing the
+        variable's dims.
 
     """
     ds = _thread_safe_nc.DatasetWrapper(filepath)
@@ -299,19 +299,23 @@ def vars_meshnames(vars):
 def vars_meshdim(vars, location, mesh_name=None):
     """Extract a dim-name for a given element location.
 
-    Args:
-        * vars (varsdict):
-            file varsdict, as returned from 'snapshot_dataset'.
-        * location (string):
-            a mesh location : 'node' / 'edge' / 'face'
-        * mesh_name (string or None):
-            If given, identifies the mesh var.
-            Otherwise, find a unique mesh var (i.e. there must be exactly 1).
+    Parameters
+    ----------
+    vars : varsdict
+        file varsdict, as returned from 'snapshot_dataset'.
+    location : string
+        a mesh location : 'node' / 'edge' / 'face'
+    mesh_name : str or None, optional, default=None
+        If given, identifies the mesh var.
+        Otherwise, find a unique mesh var (i.e. there must be exactly 1).
 
-    Returns:
-        dim_name (string)
-            The dim-name of the mesh dim for the given location.
+    Returns
+    -------
+    dim_name : str
+        The dim-name of the mesh dim for the given location.
 
+    Notes
+    -----
     TODO: relies on the element having coordinates, which in future will not
         always be the case. This can be fixed
 
@@ -650,7 +654,6 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
     def test_mixed_aux_coords(self):
         """``coordinates`` attribute should include mesh location coords and 'normal' coords."""
-
         cube = make_cube()
         mesh_dim = cube.mesh_dim()
         mesh_len = cube.shape[mesh_dim]

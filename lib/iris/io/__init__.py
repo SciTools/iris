@@ -147,7 +147,7 @@ def expand_filespecs(file_specs, files_expected=True):
     ----------
     file_specs : iterable of str
         File paths which may contain ``~`` elements or wildcards.
-    files_expected : bool, optional, default=True
+    files_expected : bool, default=True
         Whether file is expected to exist (i.e. for load).
 
     Returns
@@ -381,12 +381,12 @@ def save(source, target, saver=None, **kwargs):
     Iris currently supports three file formats for saving, which it can
     recognise by filename extension:
 
-    * netCDF - the Unidata network Common Data Format:
-        * see :func:`iris.fileformats.netcdf.save`
-    * GRIB2 - the WMO GRIdded Binary data format:
-        * see :func:`iris_grib.save_grib2`.
-    * PP - the Met Office UM Post Processing Format:
-        * see :func:`iris.fileformats.pp.save`
+    * **netCDF** - the Unidata network Common Data Format,
+      see :func:`iris.fileformats.netcdf.save`
+    * **GRIB2** - the WMO GRIdded Binary data format,
+      see :func:`iris_grib.save_grib2`.
+    * **PP** - the Met Office UM Post Processing Format,
+      see :func:`iris.fileformats.pp.save`
 
     A custom saver can be provided to the function to write to a different
     file format.

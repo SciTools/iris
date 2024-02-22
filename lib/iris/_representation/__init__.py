@@ -2,6 +2,4 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Code to make printouts and other representations (e.g. html) of Iris objects.
-
-"""
+"""Code to make printouts and other representations (e.g. html) of Iris objects."""
