@@ -20,7 +20,7 @@ on:
     types: [labeled, opened, synchronize, reopened]
 
 jobs:
-  run_type:
+  pre-checks:
     runs-on: ubuntu-latest
     if: github.repository == 'SciTools/iris'
     outputs:
@@ -47,8 +47,8 @@ jobs:
   
   benchmark:
     runs-on: ubuntu-latest
-    needs: run_type
-    if: needs.run_type.outputs.overnight == true || needs.run_type.outputs.branch == true
+    needs: pre-checks
+    if: needs.pre-checks.outputs.overnight == 'true' || needs.pre-checks.outputs.branch == 'true'
 
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
@@ -100,7 +100,7 @@ jobs:
           echo "OVERRIDE_TEST_DATA_REPOSITORY=${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}/test_data" >> $GITHUB_ENV
 
       - name: Benchmark this pull request
-        if: needs.run_type.outputs.branch == 'true'
+        if: needs.pre-checks.outputs.branch == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
@@ -109,7 +109,7 @@ jobs:
 
       - name: Run overnight benchmarks
         id: overnight
-        if: needs.run_type.outputs.overnight == 'true'
+        if: needs.pre-checks.outputs.overnight == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
