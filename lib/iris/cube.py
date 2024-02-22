@@ -2368,7 +2368,7 @@ class Cube(CFVariableMixin):
 
         Returns
         -------
-        mesh : :class:`iris.experimental.ugrid.mesh.Mesh` or None
+        :class:`iris.experimental.ugrid.mesh.Mesh` or None
             The mesh of the cube
             :class:`~iris.experimental.ugrid.MeshCoord`'s,
             or ``None``.
@@ -2389,7 +2389,7 @@ class Cube(CFVariableMixin):
 
         Returns
         -------
-        location : str or None
+        str or None
             The mesh location of the cube
             :class:`~iris.experimental.ugrid.MeshCoords`
             (i.e. one of 'face' / 'edge' / 'node'), or ``None``.
@@ -2409,7 +2409,7 @@ class Cube(CFVariableMixin):
 
         Returns
         -------
-        mesh_dim : int or None
+        int or None
             The cube dimension which the cube
             :class:`~iris.experimental.ugrid.MeshCoord` map to,
             or ``None``.

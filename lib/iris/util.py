@@ -590,11 +590,9 @@ def monotonic(array, strict=False, return_direction=False):
 
     Returns
     -------
-    monotonic_status : bool
-        Whether the array was monotonic.
-
-        If the return_direction flag was given then the returned value
-        will be: ``(monotonic_status, direction)``.
+    bool
+        Whether the array was monotonic.  If the return_direction flag was given
+        then the returned value will be: ``(monotonic_status, direction)``.
 
     Notes
     -----
@@ -1768,8 +1766,8 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
 
     Returns
     -------
-    result : `numpy.ndarray` of bool
-        True/false map of which cells in the cube XY grid have
+    numpy.ndarray
+        Boolean True/false map of which cells in the cube XY grid have
         discontiguities in the coordinate points array.
 
         This can be used as the input array for

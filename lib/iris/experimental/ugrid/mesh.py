@@ -933,7 +933,7 @@ class Mesh(CFVariableMixin):
 
         Returns
         -------
-        result : str
+        str
 
         """
         if shorten:
@@ -2957,7 +2957,8 @@ class MeshCoord(AuxCoord):
 
         Returns
         -------
-        points, bounds : array or None
+        array or None
+            Tuple of (points, bounds).
             Lazy arrays which calculate the correct points and bounds from the
             Mesh data, based on the location and axis.
             The Mesh coordinates accessed are not identified on construction,

@@ -308,7 +308,7 @@ def _reshape_vector_args(values_and_dims):
 
     Returns
     -------
-    reshaped_arrays : iterable of arrays
+    iterable object of arrays
         The inputs, transposed and reshaped onto common target dimensions.
 
     """
@@ -451,7 +451,7 @@ def _new_coord_and_dims(
 
     * dimensions with all points and bounds values the same are removed.
     * the result coordinate may be an AuxCoord if a DimCoord cannot be made
-        (e.g. if values are non-monotonic).
+      (e.g. if values are non-monotonic).
 
     Parameters
     ----------

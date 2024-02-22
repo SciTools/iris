@@ -1335,7 +1335,8 @@ class ProtoCube:
 
         Returns
         -------
-        axis : {'T', 'Z', 'Y', 'X'} or None.
+        str or None
+            {'T', 'Z', 'Y', 'X'} or None.
 
         """
         axis = None

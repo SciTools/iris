@@ -844,21 +844,22 @@ class Saver:
         Add the cube's mesh, and all related variables to the dataset.
         Includes all the mesh-element coordinate and connectivity variables.
 
-        ..note::
+        .. note::
 
             Here, we do *not* add the relevant referencing attributes to the
             data-variable, because we want to create the data-variable later.
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube`or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
         -------
-        cf_mesh_name : str or None
+        str or None
             The name of the mesh variable created, or None if the cube does not
             have a mesh.
+
         """
         cf_mesh_name = None
 
@@ -1750,7 +1751,7 @@ class Saver:
         Create the associated CF-netCDF variable in the netCDF dataset for the
         given dimensional_metadata.
 
-        ..note::
+        .. note::
             If the metadata element is a coord, it may also contain bounds.
             In which case, an additional var is created and linked to it.
 
@@ -2549,7 +2550,7 @@ class Saver:
 
         Returns
         -------
-        warnings : list of Warning
+        list of Warning
             Any warnings that were raised while writing delayed data.
 
         """
@@ -2735,7 +2736,7 @@ def save(
 
     Returns
     -------
-    result : None or dask.delayed.Delayed
+    None or dask.delayed.Delayed
         If `compute=True`, returns `None`.
         Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
         writing to fill in the variables data.

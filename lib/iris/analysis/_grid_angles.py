@@ -27,7 +27,7 @@ def _3d_xyz_from_latlon(lon, lat):
 
     Returns
     -------
-    xyz : array, dtype=float64
+    array of dtype=float64
         Cartesian coordinates on a unit sphere.
         Shape is (3, <input-shape>).
         The x / y / z coordinates are in xyz[0 / 1 / 2].
@@ -57,7 +57,7 @@ def _latlon_from_xyz(xyz):
 
     Returns
     -------
-    lonlat : array
+    np.array
         Longitude and latitude position angles, in degrees.
         Shape (2, <input_points_dimensions>).
         The longitudes / latitudes are in lonlat[0 / 1].
@@ -114,7 +114,7 @@ def _angle(p, q, r):
 
     Returns
     -------
-    angle : float array
+    float array
         Grid angles relative to true-East, in degrees.
         Positive when grid-East is anticlockwise from true-East.
         Shape is same as <input_points_dimensions>.
@@ -182,7 +182,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
 
     Returns
     -------
-    angles : 2-dimensional cube
+    2-dimensional cube
         Cube of angles of grid-x vector from true Eastward direction for
         each gridcell, in degrees.
         It also has "true" longitude and latitude coordinates, with no
@@ -422,20 +422,16 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
 
     Returns
     -------
-    true_u, true_v : cube
-        Cubes of true-north oriented vector components.
+    (cube, cube)
+        Tuple of cubes of true-north oriented vector components.
         Units are same as inputs.
 
     Notes
     -----
-    .. note::
+    Vector magnitudes will always be the same as the inputs.
 
-        Vector magnitudes will always be the same as the inputs.
-
-    .. note::
-
-        This function does not maintain laziness when called; it realises data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     u_out, v_out = (cube.copy() for cube in (u_cube, v_cube))

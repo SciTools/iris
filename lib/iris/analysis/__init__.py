@@ -227,7 +227,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
 
     Returns
     -------
-    result : dict mapping str,  list of _CoordGroup
+    (dict mapping str,  list of _CoordGroup)
         A dictionary whose keys are match categories and values are groups of
         coordinates, cell-measures or ancillary-variables.
 

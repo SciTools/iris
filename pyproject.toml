@@ -198,7 +198,6 @@ checks = [
     # Temporary checks to ignore, will be reviewed at a later date.
     "GL08",  # The object does not have a docstrings not have a docstring
     "RT01",  # No Returns section found
-    "RT02",  # The first line of the Returns section should contain only the type, unless multiple values are being returned
     "RT03",  # Return value has no description
     "PR01",  # Parameters ... not documented
     "PR04",  # Parameter "...." has no type

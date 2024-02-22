@@ -39,7 +39,8 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
 
     Returns
     -------
-    x, y :  Arrays of locations defined in 'crs_to'.
+    (array, array)
+        Arrays of locations defined in 'crs_to' of (x, y).
 
     """
     pts = crs_to.transform_points(crs_from, x, y)

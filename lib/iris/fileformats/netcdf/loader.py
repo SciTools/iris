@@ -515,8 +515,7 @@ def _translate_constraints_to_var_callback(constraints):
 
     Returns
     -------
-    function : (cf_var:CFDataVariable)
-        A bool, or None.
+    bool or None
 
     Notes
     -----

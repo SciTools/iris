@@ -289,7 +289,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         Returns
         -------
-        result : str
+        str
             Output text, with embedded newlines when :attr:`shorten`\ =False.
 
         Notes
