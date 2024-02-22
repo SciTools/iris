@@ -92,12 +92,11 @@ Iris target branch by a core developer.
 
 .. _testing_cla:
 
-SciTools CLA Checker
-********************
+`CLA Assistant`_
+****************
 
-A bot which checks that the GitHub author of the pull-request has signed the
-**SciTools Contributor's License Agreement (CLA)**.  For more information on
-this please see https://scitools.org.uk/organisation.html#governance.
+A bot which checks that the GitHub authors of the pull-request have signed the
+|SciTools Contributor's License Agreement (CLA)|_.
 
 
 .. _pre_commit_ci:
@@ -147,4 +146,6 @@ For more information on how to use `ruff`_ please see the `ruff documentation`_.
 
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
+.. _CLA Assistant: https://github.com/cla-assistant/cla-assistant
+.. |SciTools Contributor's License Agreement (CLA)| replace:: **SciTools Contributor's License Agreement (CLA)**
 .. _ruff documentation: https://docs.astral.sh/ruff/tutorial/
