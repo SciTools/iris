@@ -124,12 +124,6 @@ def as_cube(
 ):
     """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
-    .. deprecated:: 3.3.0
-
-        This function is scheduled for removal in a future release, being
-        replaced by :func:`iris.pandas.as_cubes`, which offers richer
-        dimensional intelligence.
-
     Parameters
     ----------
     pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
@@ -145,12 +139,20 @@ def as_cube(
     -----
     This function will copy your data by default.
 
-    Example usage::
+    Examples
+    --------
+    ::
 
         as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
         as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     Since this function converts to/from a Pandas object, laziness will not be preserved.
+
+    .. deprecated:: 3.3.0
+
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.pandas.as_cubes`, which offers richer
+        dimensional intelligence.
 
     """
     message = (
@@ -564,11 +566,6 @@ def _make_cell_measures_list(cube):
 def as_series(cube, copy=True):
     """Convert a 1D cube to a Pandas Series.
 
-    .. deprecated:: 3.4.0
-        This function is scheduled for removal in a future release, being
-        replaced by :func:`iris.pandas.as_data_frame`, which offers improved
-        multi dimension handling.
-
     Parameters
     ----------
     cube : :class:`Cube`
@@ -584,6 +581,11 @@ def as_series(cube, copy=True):
     make sure it is not masked and use copy=False.
 
     Since this function converts to/from a Pandas object, laziness will not be preserved.
+
+    .. deprecated:: 3.4.0
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.pandas.as_data_frame`, which offers improved
+        multi dimension handling.
 
     """
     message = (

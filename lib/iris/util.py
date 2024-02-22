@@ -400,6 +400,11 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
     Returns whether two numbers are almost equal, allowing for the finite
     precision of floating point numbers.
 
+    Notes
+    -----
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     .. deprecated:: 3.2.0
 
        Instead use :func:`math.isclose`. For example, rather than calling
@@ -407,11 +412,6 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
        b, max_rel, max_abs)``. Note that :func:`~math.isclose` will return True
        if the actual error equals the maximum, whereas :func:`util.approx_equal`
        will return False.
-
-    Notes
-    -----
-    This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     wmsg = (

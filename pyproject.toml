@@ -197,7 +197,6 @@ checks = [
 
     # Temporary checks to ignore, will be reviewed at a later date.
     "GL08",  # The object does not have a docstrings not have a docstring
-    "GL09",  # Deprecation warning should precede extended summary
     "PR01",  # Parameters ... not documented
     "PR02",  # Unknown parameters {....}
     "PR04",  # Parameter "...." has no type

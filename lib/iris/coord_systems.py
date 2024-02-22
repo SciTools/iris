@@ -1617,6 +1617,8 @@ class RotatedMercator(ObliqueMercator):
         The Rotated Mercator projection is an Oblique Mercator projection
         with azimuth = +90.
 
+    Notes
+    -----
     .. deprecated:: 3.8.0
         This coordinate system was introduced as already scheduled for removal
         in a future release, since CF version 1.11 onwards now requires use of
