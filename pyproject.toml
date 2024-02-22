@@ -197,14 +197,14 @@ checks = [
 
     # Temporary checks to ignore, will be reviewed at a later date.
     "GL08",  # The object does not have a docstrings not have a docstring
+    "GL09",  # Deprecation warning should precede extended summary
+    "PR01",  # Parameters ... not documented
+    "PR02",  # Unknown parameters {....}
+    "PR04",  # Parameter "...." has no type
+    "PR07",  # Parameter "...." has no description   
     "RT01",  # No Returns section found
     "RT03",  # Return value has no description
-    "PR01",  # Parameters ... not documented
-    "PR04",  # Parameter "...." has no type
-    "GL09",  # Deprecation warning should precede extended summary
     "SA04",  # Missing description for See Also "...." reference
-    "PR02",  # Unknown parameters {....}
-    "PR07",  # Parameter "...." has no description   
 ]
 exclude = [
     '\.__eq__$',
