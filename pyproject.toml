@@ -203,7 +203,7 @@ checks = [
     "PR07",  # Parameter "...." has no description   
     "RT01",  # No Returns section found
     "RT03",  # Return value has no description
-    "SA04",  # Missing description for See Also "...." reference
+    # "SA04",  # Missing description for See Also "...." reference
 ]
 exclude = [
     '\.__eq__$',

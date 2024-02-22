@@ -334,7 +334,8 @@ def add_saver(file_extension, new_saver):
 
     See Also
     --------
-    :func:`iris.io.save`
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # Make sure it's a func with 2+ args

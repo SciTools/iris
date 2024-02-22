@@ -1504,7 +1504,8 @@ class ObliqueMercator(CoordSystem):
 
     See Also
     --------
-    :class:`RotatedMercator`
+    RotatedMercator :
+        :class:`ObliqueMercator` with ``azimuth_of_central_line=90``.
 
     """
 

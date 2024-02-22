@@ -2341,7 +2341,8 @@ def save_fields(fields, target, append: bool = False):
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # Open issues

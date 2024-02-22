@@ -63,7 +63,8 @@ def save(cube, target):
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     if isinstance(target, str):
@@ -99,7 +100,8 @@ def save_png(source, target, launch=False):
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # From cube or dot file?

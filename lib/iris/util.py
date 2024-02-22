@@ -191,7 +191,8 @@ def describe_diff(cube_a, cube_b, output_file=None):
 
     See Also
     --------
-    iris.cube.Cube.is_compatible
+    iris.cube.Cube.is_compatible :
+        Check if a Cube is compatible with another.
 
     """
     if output_file is None:
@@ -2117,6 +2118,7 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     See Also
     --------
     :func:`~iris.util.mask_cube`
+        Mask any cells in the cube’s data array.
 
     Notes
     -----
