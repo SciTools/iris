@@ -3,13 +3,19 @@
 
 name: "Pull Request Labeler"
 on:
-- pull_request_target
+  - pull_request_target
 
 jobs:
-  labeler:
-    permissions:
-      contents: read
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: "Generate token"
+      uses: tibdex/github-app-token@v2
+      id: generate-token
+      with:
+        app_id: ${{ secrets.AUTH_APP_ID }}
+        private_key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
+
     - uses: actions/labeler@v5
+      with:
+        repo-token: ${{ steps.generate-token.outputs.token }}
