@@ -244,41 +244,41 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
         Returned Keys:
 
         * **grouped_coords**.
-            A list of coordinate groups of all the coordinates grouped together
-            by their coordinate definition
+          A list of coordinate groups of all the coordinates grouped together
+          by their coordinate definition
         * **ungroupable**.
-            A list of coordinate groups which contain at least one None,
-            meaning not all Cubes provide an equivalent coordinate
+          A list of coordinate groups which contain at least one None,
+          meaning not all Cubes provide an equivalent coordinate
         * **not_equal**.
-            A list of coordinate groups of which not all are equal
-            (superset of ungroupable)
+          A list of coordinate groups of which not all are equal
+          (superset of ungroupable)
         * **no_data_dimension**>
-            A list of coordinate groups of which all have no data dimensions on
-            their respective cubes
+          A list of coordinate groups of which all have no data dimensions on
+          their respective cubes
         * **scalar**>
-            A list of coordinate groups of which all have shape (1, )
+          A list of coordinate groups of which all have shape (1, )
         * **non_equal_data_dimension**.
-            A list of coordinate groups of which not all have the same
-            data dimension on their respective cubes
+          A list of coordinate groups of which not all have the same
+          data dimension on their respective cubes
         * **non_equal_shape**.
-            A list of coordinate groups of which not all have the same shape
+          A list of coordinate groups of which not all have the same shape
         * **equal_data_dimension**.
-            A list of coordinate groups of which all have the same data dimension
-            on their respective cubes
+          A list of coordinate groups of which all have the same data dimension
+          on their respective cubes
         * **equal**.
-            A list of coordinate groups of which all are equal
+          A list of coordinate groups of which all are equal
         * **ungroupable_and_dimensioned**.
-            A list of coordinate groups of which not all cubes had an equivalent
-            (in metadata) coordinate which also describe a data dimension
+          A list of coordinate groups of which not all cubes had an equivalent
+          (in metadata) coordinate which also describe a data dimension
         * **dimensioned**.
-            A list of coordinate groups of which all describe a data dimension on
-            their respective cubes
+          A list of coordinate groups of which all describe a data dimension on
+          their respective cubes
         * **ignorable**.
-            A list of scalar, ungroupable non_equal coordinate groups
+          A list of scalar, ungroupable non_equal coordinate groups
         * **resamplable**.
-            A list of equal, different data dimensioned coordinate groups
+          A list of equal, different data dimensioned coordinate groups
         * **transposable**.
-            A list of non equal, same data dimensioned, non scalar coordinate groups
+          A list of non equal, same data dimensioned, non scalar coordinate groups
 
     Examples
     --------
