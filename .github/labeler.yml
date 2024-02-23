@@ -1,0 +1,6 @@
+# Make sure any dependency changes are benchmarked (only changes to the locks
+#  make a material difference - changes to the Conda YAML files are not
+#  benchmarked).
+benchmark_this:
+- changed-files:
+  - any-glob-to-any-file: 'requirements/locks/*.lock'
