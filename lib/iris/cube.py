@@ -294,7 +294,7 @@ class CubeList(list):
 
         See Also
         --------
-        iris.cube.CubeList.extract
+        iris.cube.CubeList.extract :
             Filter each of the cubes which can be filtered by the given constraints.
 
         """
@@ -2099,7 +2099,7 @@ class Cube(CFVariableMixin):
 
         See Also
         --------
-        coord
+        coord :
             For matching exactly one coordinate.
 
 
@@ -2263,7 +2263,7 @@ class Cube(CFVariableMixin):
 
         See Also
         --------
-        coords
+        coords :
             For matching zero or more coordinates.
 
         """
@@ -2480,7 +2480,7 @@ class Cube(CFVariableMixin):
 
         See Also
         --------
-        cell_measures
+        cell_measures :
             For full keyword documentation.
 
         """

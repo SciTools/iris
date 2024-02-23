@@ -864,7 +864,7 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
 
     See Also
     --------
-    :func:`load_cubes`
+    :func:`load_cubes` :
         For keyword details.
 
     """
