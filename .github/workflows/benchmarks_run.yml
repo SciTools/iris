@@ -39,9 +39,13 @@ jobs:
         run: echo "overnight=true" >> "$GITHUB_OUTPUT"
       - id: branch
         if: >
-          steps.locks-changed.outputs.changed == 'true'
-          ||
-          github.event.label.name == 'benchmark_this'
+          github.event_name == 'pull_request'
+          &&
+          (
+            steps.locks-changed.outputs.changed == 'true'
+            ||
+            github.event.label.name == 'benchmark_this'
+          )
         run: echo "branch=true" >> "$GITHUB_OUTPUT"
         
   
