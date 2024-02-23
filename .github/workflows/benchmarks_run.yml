@@ -26,12 +26,13 @@ jobs:
     outputs:
       overnight: ${{ steps.overnight.outputs.overnight }}
       branch: ${{ steps.branch.outputs.branch }}
+      continue: ${{ steps.check-continue.outputs.continue }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: marceloprado/has-changed-path@df1b7a3161b8fb9fd8c90403c66a9e66dfde50cb
-        id: locks-changed
+      - id: locks-changed
+        uses: marceloprado/has-changed-path@df1b7a3161b8fb9fd8c90403c66a9e66dfde50cb
         with:
           paths: requirements/locks/*.lock
       - id: overnight
@@ -47,12 +48,18 @@ jobs:
             github.event.label.name == 'benchmark_this'
           )
         run: echo "branch=true" >> "$GITHUB_OUTPUT"
+      - id: check-continue
+        if: >
+          steps.overnight.outputs.overnight == 'true'
+          ||
+          steps.branch.outputs.branch == 'true'
+        run: echo "continue=true" >> "$GITHUB_OUTPUT"
         
   
   benchmark:
     runs-on: ubuntu-latest
     needs: pre-checks
-    if: needs.pre-checks.outputs.overnight == 'true' || needs.pre-checks.outputs.branch == 'true'
+    if: needs.pre-checks.outputs.continue == 'true'
 
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
