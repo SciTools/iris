@@ -72,11 +72,7 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. `@trexfeathers`_ used the `Pull Request Labeler Github action`_ to add the
-   ``benchmark_this`` label (:ref:`more info <on_demand_pr_benchmark>`) to
-   pull requests that modify ``requirements/locks/*.lock`` files - ensuring
-   that we know whether dependency changes will affect performance.
-   (:pull:`5763`)
+#. N/A
 
 
 .. comment
@@ -88,5 +84,3 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
-
-.. _Pull Request Labeler GitHub action: https://github.com/actions/labeler
