@@ -51,7 +51,7 @@ class Test_broadcast_to_shape(tests.IrisTest):
     def test_lazy_added_dimensions_transpose(self, mocked_compute):
         # adding dimensions and having the dimensions of the input
         # transposed
-        rng = np.random.default_rng()
+        rng = da.random.default_rng()
         a = rng.random((2, 3))
         b = broadcast_to_shape(a, (5, 3, 4, 2), (3, 1))
         mocked_compute.assert_not_called()
