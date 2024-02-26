@@ -2199,7 +2199,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
     Yields
     ------
     :class:`iris.cube.Cube`, :class:`iris.fileformats.pp.PPField`.
-        A 2-dimensional slice of the input cube together with its associated pp-field.
+        2-dimensional slices of the input cube together with their associated pp-fields.
 
     """
     # Open issues
