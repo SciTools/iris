@@ -8,8 +8,9 @@
 # importing anything else
 from iris import tests  # isort:skip
 
-import numpy as np
 import tracemalloc
+
+import numpy as np
 
 import iris
 from iris.analysis import AreaWeighted, PointInCell
@@ -59,7 +60,7 @@ class HorizontalChunkedRegridding:
         for _ in range(8):
             result = self.cube.regrid(self.template_cube, self.scheme_area_w)
         end_snapshot = tracemalloc.take_snapshot()
-        diff_stats = end_snapshot.compare_to(begin_snapshot, 'lineno')
+        diff_stats = end_snapshot.compare_to(begin_snapshot, "lineno")
         return diff_stats[0].size_diff
 
 
