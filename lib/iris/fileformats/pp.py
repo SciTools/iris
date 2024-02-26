@@ -2182,10 +2182,7 @@ def save(cube, target, append=False, field_coords=None):
 
 
 def save_pairs_from_cube(cube, field_coords=None, target=None):
-    """Use the PP saving rules to convert a cube.
-
-    Use the PP saving rules to convert a cube or
-    iterable of cubes to an iterable of (2D cube, PP field) pairs.
+    """Use the PP saving rules to generate (2D cube, PP field) pairs from a cube.
 
     Parameters
     ----------
@@ -2198,6 +2195,11 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         If None, the final two  dimensions are chosen for slicing.
     target : optional
         A filename or open file handle.
+
+    Yields
+    ------
+    :class:`iris.cube.Cube`, :class:`iris.fileformats.pp.PPField`.
+        A 2-dimensional slice of the input cube together with its associated pp-field.
 
     """
     # Open issues
