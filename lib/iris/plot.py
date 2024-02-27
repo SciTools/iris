@@ -256,7 +256,7 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
 
 
 def _invert_yaxis(v_coord, axes=None):
-    """Inverts the y-axis of the current plot based on conditions.
+    """Invert the y-axis of the current plot based on conditions.
 
     * If the y-axis is already inverted we don't want to re-invert it.
     * If v_coord is None then it will not have any attributes.
@@ -266,7 +266,7 @@ def _invert_yaxis(v_coord, axes=None):
     Parameters
     ----------
     v_coord :
-        The coord to be plotted on the y-axis
+        The coord to be plotted on the y-axis.
     axes : optional
 
     """
@@ -294,9 +294,9 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
     Parameters
     ----------
     coord : iris.coord.Coord
-        Coordinate the bounds of which will be checked for contiguity
+        Coordinate the bounds of which will be checked for contiguity.
     data : array
-        Data of the the cube we are plotting
+        Data of the the cube we are plotting.
     atol : optional
         Absolute tolerance when checking the contiguity. Defaults to None.
         If an absolute tolerance is not set, 1D coords are not checked (so
@@ -706,7 +706,7 @@ def _get_geodesic_params(globe):
 
 
 def _shift_plot_sections(u_object, u, v):
-    """Shifts subsections of u by multiples of 360 degrees.
+    """Shift subsections of u by multiples of 360 degrees.
 
     Shifts subsections of u by multiples of 360 degrees within ranges
     defined by the points where the line should cross over the 0/360 degree
@@ -1052,7 +1052,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwar
 
 
 def contour(cube, *args, **kwargs):
-    """Draws contour lines based on the given Cube.
+    """Draw contour lines based on the given Cube.
 
     Parameters
     ----------
@@ -1080,7 +1080,7 @@ def contour(cube, *args, **kwargs):
 
 
 def contourf(cube, *args, **kwargs):
-    """Draws filled contours based on the given Cube.
+    """Draw filled contours based on the given Cube.
 
     Parameters
     ----------
@@ -1298,7 +1298,7 @@ def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def outline(cube, coords=None, color="k", linewidth=None, axes=None):
-    """Draws cell outlines based on the given Cube.
+    """Draw cell outlines based on the given Cube.
 
     Parameters
     ----------
@@ -1339,7 +1339,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
 
 
 def pcolor(cube, *args, **kwargs):
-    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draw a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot the cube against.
@@ -1375,7 +1375,7 @@ def pcolor(cube, *args, **kwargs):
 
 
 def pcolormesh(cube, *args, **kwargs):
-    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draw a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot against each
@@ -1409,7 +1409,7 @@ def pcolormesh(cube, *args, **kwargs):
 
 
 def points(cube, *args, **kwargs):
-    """Draws sample point positions based on the given Cube.
+    """Draw sample point positions based on the given Cube.
 
     Parameters
     ----------
@@ -1479,7 +1479,7 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     return ((x_points, y_points, u_data, v_data), kwargs)
 
 
-def barbs(u_cube, v_cube, *args, **kwargs):
+def barbs(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
     """Draw a barb plot from two vector component cubes.
 
     Draws a barb plot from two vector component cubes. Triangles, full-lines
@@ -1531,8 +1531,8 @@ def barbs(u_cube, v_cube, *args, **kwargs):
     )
 
 
-def quiver(u_cube, v_cube, *args, **kwargs):
-    """Draws an arrow plot from two vector component cubes.
+def quiver(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
+    """Draw an arrow plot from two vector component cubes.
 
     Parameters
     ----------
@@ -1582,7 +1582,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """Draws a line plot based on the given cube(s) or coordinate(s).
+    """Draw a line plot based on the given cube(s) or coordinate(s).
 
     Parameters
     ----------
@@ -1635,7 +1635,7 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """Draws a scatter plot based on the given cube(s) or coordinate(s).
+    """Draw a scatter plot based on the given cube(s) or coordinate(s).
 
     Parameters
     ----------
@@ -1740,7 +1740,7 @@ show = plt.show
 
 
 def symbols(x, y, symbols, size, axes=None, units="inches"):
-    """Draws fixed-size symbols.
+    """Draw fixed-size symbols.
 
     See :mod:`iris.symbols` for available symbols.
 
@@ -1830,7 +1830,7 @@ def citation(text, figure=None, axes=None):
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):
-    """Animates the given cube iterator.
+    """Animate the given cube iterator.
 
     Parameters
     ----------
@@ -1846,15 +1846,15 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     fig : :class:`matplotlib.figure.Figure` instance, optional
         By default, the current figure will be used or a new figure instance
         created if no figure is available. See :func:`matplotlib.pyplot.gcf`.
-    coords: list of :class:`~iris.coords.Coord` objects or coordinate names, optional
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the plot. The order of the
         given coordinates indicates which axis to use for each, where the first
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
-    interval: int, float or long, optional
+    interval : int, float or long, optional
         Defines the time interval in milliseconds between successive frames.
         A default interval of 100ms is set.
-    vmin, vmax: int, float or long, optional
+    vmin, vmax : int, float or long, optional
         Color scaling values, see :class:`matplotlib.colors.Normalize` for
         further details. Default values are determined by the min-max across
         the data set over the entire sequence.

@@ -654,7 +654,7 @@ def attributes(cube, field):
 
 
 def known_threshold_coord(field):
-    """Supplies known threshold coord meta-data for known use cases.
+    """Supply known threshold coord meta-data for known use cases.
 
     threshold_value_alt exists because some meta-data are mis-assigned in the
     Nimrod data.
@@ -895,7 +895,7 @@ def run(field, handle_metadata_errors=True):
     field : :class:`~iris.fileformats.nimrod.NimrodField`
     handle_metadata_errors : bool, default=True
         Set to False to omit handling of known meta-data deficiencies
-        in Nimrod-format data
+        in Nimrod-format data.
 
     Returns
     -------

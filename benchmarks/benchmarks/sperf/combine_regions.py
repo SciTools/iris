@@ -83,7 +83,7 @@ class Mixin:
             )
 
     def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
-        """Combine-tests "standard" setup operation.
+        """Combine tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.

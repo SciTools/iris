@@ -34,14 +34,15 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
     cube : :class:`iris.cube.Cube`
         The cube containing 'from_coord'.  The new coord will be added into it.
     name : str
-        name of the created coordinate
+        Name of the created coordinate.
     from_coord : :class:`iris.coords.Coord` or str
-        coordinate in 'cube', or the name of one
+        Coordinate in 'cube', or the name of one.
     category_function : callable
-        function(coordinate, value), returning a category value for a
-        coordinate point-value
+        Function(coordinate, value), returning a category value for a
+        coordinate point-value.
     units : str, default="1"
-        units of the category value, typically 'no_unit' or '1'.
+        Units of the category value, typically 'no_unit' or '1'.
+
     """
     # Interpret coord, if given as a name
     if isinstance(from_coord, str):
@@ -91,9 +92,9 @@ def _pt_date(coord, time):
     Parameters
     ----------
     coord : Coord
-        coordinate (must be Time-type)
+        Coordinate (must be Time-type).
     time : float
-        value of a coordinate point
+        Value of a coordinate point.
 
     Returns
     -------
@@ -385,7 +386,7 @@ def add_season_year(
         List of seasons defined by month abbreviations. Each month must
         appear once and only once. Defaults to standard meteorological
         seasons (``djf``, ``mam``, ``jja``, ``son``).
-    use_year_at_season_start: bool, default=False
+    use_year_at_season_start : bool, default=False
         Seasons spanning the year boundary (e.g. Winter ``djf``) will belong
         fully to the following year by default (e.g. the year of Jan and Feb).
         Set to ``True`` for spanning seasons to belong to the preceding

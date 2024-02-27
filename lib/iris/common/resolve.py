@@ -1639,7 +1639,7 @@ class Resolve:
             Boolean stating whether the ``metadata`` is from the ``src`` (``True``)
             or ``tgt`` :class:`~iris.cube.Cube`.
             Defaults to ``True``.
-        from_local: bool, default=False
+        from_local : bool, default=False
             Boolean controlling whether the ``metadata`` is used to search the
             ``category_local`` (``True``) or the :attr:`~iris.common.resolve.Resolve.prepared_category`.
             Defaults to ``False``.

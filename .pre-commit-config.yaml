@@ -61,3 +61,10 @@ repos:
     hooks:
     -   id: sort-all
         types: [file, python]
+
+-   repo: https://github.com/numpy/numpydoc
+    rev: v1.6.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: "^lib/iris/tests/|docs/gallery_code/"
+        types: [file, python]

@@ -4,9 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Support for conservative regridding via ESMPy.
 
-.. note::
-
-    .. deprecated:: 3.2.0
+.. deprecated:: 3.2.0
 
     This package will be removed in a future release.
     Please use
@@ -143,22 +141,6 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
 def regrid_conservative_via_esmpy(source_cube, grid_cube):
     """Perform a conservative regridding with ESMPy.
 
-    .. note ::
-
-        .. deprecated:: 3.2.0
-
-        This function is scheduled to be removed in a future release.
-        Please use
-        `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
-        instead.
-
-        For example :
-
-        .. code::
-
-            from emsf_regrid.schemes import ESMFAreaWeighted
-            result = src_cube.regrid(grid_cube, ESMFAreaWeighted())
-
     Regrids the data of a source cube onto a new grid defined by a destination
     cube.
 
@@ -185,13 +167,10 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     the reference surfaces are also regridded, using ordinary bilinear
     interpolation.
 
-    .. note::
-
-        Both source and destination cubes must have two dimension coordinates
-        identified with axes 'X' and 'Y' which share a coord_system with a
-        Cartopy CRS.
-        The grids are defined by :meth:`iris.coords.Coord.contiguous_bounds` of
-        these.
+    Both source and destination cubes must have two dimension coordinates
+    identified with axes 'X' and 'Y' which share a coord_system with a
+    Cartopy CRS.  The grids are defined by :meth:`iris.coords.Coord.contiguous_bounds`
+    of these.
 
     .. note::
 
@@ -199,6 +178,20 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
         This implements default Manager operations (e.g. logging).
 
         To alter this, make a prior call to ESMF.Manager().
+
+    .. deprecated:: 3.2.0
+
+        This function is scheduled to be removed in a future release.
+        Please use
+        `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
+        instead.
+
+        For example :
+
+        .. code::
+
+            from emsf_regrid.schemes import ESMFAreaWeighted
+            result = src_cube.regrid(grid_cube, ESMFAreaWeighted())
 
     """
     wmsg = (

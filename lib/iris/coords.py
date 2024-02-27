@@ -289,7 +289,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         Returns
         -------
-        result : str
+        str
             Output text, with embedded newlines when :attr:`shorten`\ =False.
 
         Notes
@@ -1168,12 +1168,12 @@ def _get_2d_coord_bound_grid(bounds):
     Parameters
     ----------
     bounds : array
-        Coordinate bounds array of shape (Y, X, 4)
+        Coordinate bounds array of shape (Y, X, 4).
 
     Returns
     -------
     array
-        Grid of shape (Y+1, X+1)
+        Grid of shape (Y+1, X+1).
 
     """
     # Check bds has the shape (ny, nx, 4)
@@ -1952,7 +1952,7 @@ class Coord(_DimensionalMetadata):
             contiguous = False
         return contiguous
 
-    def contiguous_bounds(self):
+    def contiguous_bounds(self):  # numpydoc ignore=SS05
         """Contiguous bounds of 1D coordinate.
 
         Return the N+1 bound values for a contiguous bounded 1D coordinate
@@ -2614,7 +2614,7 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = circular
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo):  # numpydoc ignore=SS02
         """coord.__deepcopy__() -> Deep copy of coordinate.
 
         Used if copy.deepcopy is called on a coordinate.

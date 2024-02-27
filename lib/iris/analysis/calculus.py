@@ -134,7 +134,7 @@ def cube_delta(cube, coord):
     Parameters
     ----------
     coord :
-        either a Coord instance or the unique name of a coordinate in the cube.
+        Either a Coord instance or the unique name of a coordinate in the cube.
         If a Coord instance is provided, it does not necessarily have to
         exist in the cube.
 
@@ -423,7 +423,7 @@ def _coord_sin(coord):
     Parameters
     ----------
     coord :
-        Coord instance with values in either degrees or radians
+        Coord instance with values in either degrees or radians.
 
     """
     return _trig_method(coord, np.sin)
@@ -435,7 +435,7 @@ def _coord_cos(coord):
     Parameters
     ----------
     coord :
-        Coord instance with values in either degrees or radians
+        Coord instance with values in either degrees or radians.
 
     """
     return _trig_method(coord, np.cos)
@@ -447,9 +447,9 @@ def _trig_method(coord, trig_function):
     Parameters
     ----------
     coord :
-        Coord instance with points values in either degrees or radians
+        Coord instance with points values in either degrees or radians.
     trig_function :
-        Reference to a trigonometric function e.g. numpy.sin
+        Reference to a trigonometric function e.g. numpy.sin.
 
     """
     # If we are in degrees create a copy that is in radians.
@@ -483,11 +483,11 @@ def curl(i_cube, j_cube, k_cube=None):
     Parameters
     ----------
     i_cube :
-        The i cube of the vector to operate on
+        The i cube of the vector to operate on.
     j_cube :
-        The j cube of the vector to operate on
+        The j cube of the vector to operate on.
     k_cube : optional
-        The k cube of the vector to operate on
+        The k cube of the vector to operate on.
 
     Returns
     -------

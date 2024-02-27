@@ -112,7 +112,7 @@ class ManyVars:
 
     @staticmethod
     def _create_file(save_path: str) -> None:
-        """Is run externally - everything must be self-contained."""
+        """Run externally - everything must be self-contained."""
         import numpy as np
 
         from iris import save

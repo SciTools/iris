@@ -338,7 +338,7 @@ def as_concrete_data(data):
     Parameters
     ----------
     data :
-        A dask array, NumPy `ndarray` or masked array
+        A dask array, NumPy `ndarray` or masked array.
 
     Returns
     -------

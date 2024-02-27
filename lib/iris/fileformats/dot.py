@@ -57,13 +57,14 @@ def save(cube, target):
 
     Parameters
     ----------
-    cube: :class:`iris.cube.Cube`.
+    cube : :class:`iris.cube.Cube`
     target :
         A filename or open file handle.
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     if isinstance(target, str):
@@ -90,7 +91,7 @@ def save_png(source, target, launch=False):
 
     Parameters
     ----------
-    source: :class:`iris.cube.Cube`, or dot filename.
+    source : :class:`iris.cube.Cube`, or dot filename
     target :
         A filename or open file handle.
         If passing a file handle, take care to open it for binary output.
@@ -99,7 +100,8 @@ def save_png(source, target, launch=False):
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # From cube or dot file?
