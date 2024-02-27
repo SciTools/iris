@@ -24,8 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'SciTools/iris'
     outputs:
-      overnight: ${{ steps.overnight.outputs.overnight }}
-      branch: ${{ steps.branch.outputs.branch }}
+      overnight: ${{ steps.overnight.outputs.check }}
+      branch: ${{ steps.branch.outputs.check }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,7 +37,7 @@ jobs:
           paths: requirements/locks/*.lock setup.py
       - id: overnight
         if: github.event_name != 'pull_request'
-        run: echo "overnight=true" >> "$GITHUB_OUTPUT"
+        run: echo "check=true" >> "$GITHUB_OUTPUT"
       - id: branch
         if: >
           github.event_name == 'pull_request'
@@ -47,7 +47,7 @@ jobs:
             ||
             github.event.label.name == 'benchmark_this'
           )
-        run: echo "branch=true" >> "$GITHUB_OUTPUT"
+        run: echo "check=true" >> "$GITHUB_OUTPUT"
 
 
   benchmark:
