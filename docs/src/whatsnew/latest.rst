@@ -77,7 +77,7 @@ This document explains the changes made to Iris for this release
    requests are also labelled using the `Pull Request Labeler Github action`_
    to increase visibility. (:pull:`5763`, :pull:`5776`)
 
-#. `@tkknight`_ updated codebase to comply with a now enforced rule `NPY002`_ for
+#. `@tkknight`_ updated codebase to comply with a new enforced rule `NPY002`_ for
    `ruff`_.  (:pull:`5786`)
 
 #. `@tkknight`_ enabled `numpydoc validation`_ via the pre-commit hook.  The docstrings
