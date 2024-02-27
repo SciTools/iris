@@ -77,7 +77,7 @@ jobs:
 
       - name: Install ASV & Nox
         run: |
-          pip install "asv!=0.6.2" nox
+          pip install asv nox
 
       - name: Cache environment directories
         id: cache-env-dir
