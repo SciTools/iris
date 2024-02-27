@@ -47,17 +47,15 @@ class CondaDelegated(Conda):
 
         Parameters
         ----------
-        conf : Config instance
-
+        conf : Config
+            Config instance.
         python : str
             Version of Python.  Must be of the form "MAJOR.MINOR".
-
         requirements : dict
             Dictionary mapping a PyPI package name to a version
             identifier string.
-
         tagged_env_vars : dict
-            Environment variables, tagged for build vs. non-build
+            Environment variables, tagged for build vs. non-build.
 
         """
         ignored = ["`python`"]

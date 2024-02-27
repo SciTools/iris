@@ -8,15 +8,15 @@ Notes
 -----
 .. deprecated:: 3.4.0
 
-``iris.experimental.animate.animate()`` has been moved to
-:func:`iris.plot.animate`. This module will therefore be removed in a future
-release.
+    ``iris.experimental.animate.animate()`` has been moved to
+    :func:`iris.plot.animate`. This module will therefore be removed in a future
+    release.
 
 """
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):
-    """Animates the given cube iterator.
+    """Animate the given cube iterator.
 
     Warnings
     --------

@@ -282,7 +282,7 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     Returns
     -------
     nc_cell_methods_matches: list of re.Match objects
-        A list of re.Match objects associated with each parsed cell method
+        A list of re.Match objects associated with each parsed cell method.
 
     Notes
     -----

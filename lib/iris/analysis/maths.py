@@ -222,7 +222,7 @@ def add(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         First operand to add.
-    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+    other : iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Second operand to add.
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
@@ -274,7 +274,7 @@ def subtract(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         Cube from which to subtract.
-    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+    other : iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Object to subtract from the cube.
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
@@ -323,22 +323,22 @@ def _add_subtract_common(
     Parameters
     ----------
     operation_function :
-        function which does the operation (e.g. numpy.subtract)
+        Function which does the operation (e.g. numpy.subtract).
     operation_name :
-        The public name of the operation (e.g. 'divide')
+        The public name of the operation (e.g. 'divide').
     cube :
-        The cube whose data is used as the first argument to `operation_function`
+        The cube whose data is used as the first argument to `operation_function`.
     other :
         The cube, coord, ndarray, dask array or number whose
-        data is used as the second argument
+        data is used as the second argument.
     new_dtype :
         The expected dtype of the output. Used in the case of scalar
-        masked arrays
+        masked arrays.
     dim : optional
         Dimension along which to apply `other` if it's a coordinate that is not
-        found in `cube`
+        found in `cube`.
     in_place : bool, default=False
-        Whether or not to apply the operation in place to `cube` and `cube.data`
+        Whether or not to apply the operation in place to `cube` and `cube.data`.
 
     """
     _assert_is_cube(cube)
@@ -381,7 +381,7 @@ def multiply(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         First operand to multiply.
-    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+    other : iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Second operand to multiply.
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
@@ -466,7 +466,7 @@ def divide(cube, other, dim=None, in_place=False):
     ----------
     cube : iris.cube.Cube
         Numerator.
-    other: iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
+    other : iris.cube.Cube, iris.coords.Coord, number, numpy.ndarray or dask.array.Array
         Denominator.
     dim : int, optional
         If `other` is a coord which does not exist on the cube, specify the
@@ -482,6 +482,7 @@ def divide(cube, other, dim=None, in_place=False):
     -----
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     _assert_is_cube(cube)
 
@@ -712,7 +713,7 @@ def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=
         :func:`numpy.mod`.
     cube :
         An instance of :class:`iris.cube.Cube`.
-    other ::class:`iris.cube.Cube`, optional
+    other : :class:`iris.cube.Cube`, optional
         An instance of :class:`iris.cube.Cube` to be given as the second
         argument to :func:`numpy.ufunc`.
     new_unit : optional
@@ -813,25 +814,25 @@ def _binary_op_common(
     Parameters
     ----------
     operation_function :
-        Function which does the operation (e.g. numpy.divide)
+        Function which does the operation (e.g. numpy.divide).
     operation_name :
-           The public name of the operation (e.g. 'divide')
+        The public name of the operation (e.g. 'divide').
     cube :
-        The cube whose data is used as the first argument to `operation_function`
+        The cube whose data is used as the first argument to `operation_function`.
     other :
         The cube, coord, ndarray, dask array or number whose data is used
-        as the second argument
-    new_dtype :
-        The expected dtype of the output. Used in the case of scalar masked arrays
+        as the second argument.
     new_unit : optional
-        Unit for the resulting quantity
+        Unit for the resulting quantity.
+    new_dtype :
+        The expected dtype of the output. Used in the case of scalar masked arrays.
     dim : optional
         Dimension along which to apply `other` if it's a coordinate that is
-        not found in `cube`
+        not found in `cube`.
     in_place : bool, default=False
-        whether or not to apply the operation in place to `cube` and `cube.data`
+        Whether or not to apply the operation in place to `cube` and `cube.data`.
     sanitise_metadata : bool, default=True
-        Whether or not to remove metadata using _sanitise_metadata function
+        Whether or not to remove metadata using _sanitise_metadata function.
 
     """
     from iris.cube import Cube
@@ -1169,13 +1170,13 @@ class IFunc:
         other : optional
             A cube, coord, ndarray, dask array or number whose data is used as the
             second argument to the data function.
-        new_name : optional
-            Name for the resulting Cube.
-        in_place : bool, default=False
-            Whether to create a new Cube, or alter the given "cube".
         dim : optional
             Dimension along which to apply `other` if it's a coordinate that is
-            not found in `cube`
+            not found in `cube`.
+        in_place : bool, default=False
+            Whether to create a new Cube, or alter the given "cube".
+        new_name : optional
+            Name for the resulting Cube.
         **kwargs_data_func :
             Keyword arguments that get passed on to the data_func.
 

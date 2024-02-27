@@ -203,7 +203,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     Convenience function to help compare coordinates, cell-measures or
     ancillary-variables, on one or more cubes, by their metadata.
 
-    .. Note::
+    .. note::
 
         Up to Iris 2.x, this _used_ to be the public API method
         "iris.analysis.coord_comparison".
@@ -217,70 +217,72 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     Parameters
     ----------
     cubes : iterable of `iris.cube.Cube`
-        a set of cubes whose coordinates, cell-measures or ancillary-variables are to
+        A set of cubes whose coordinates, cell-measures or ancillary-variables are to
         be compared.
     object_get : callable(cube) or None, optional
         If not None, this must be a cube method returning a list of all cube elements
         of the required type, i.e. one of `iris.cube.Cube.coords`,
         `iris.cube.Cube.cell_measures`, or `iris.cube.Cube.ancillary_variables`.
-        If not specified, defaults to `iris.cube.Cube.coords`
+        If not specified, defaults to `iris.cube.Cube.coords`.
 
     Returns
     -------
-    result : dict mapping str,  list of _CoordGroup
+    (dict mapping str,  list of _CoordGroup)
         A dictionary whose keys are match categories and values are groups of
         coordinates, cell-measures or ancillary-variables.
 
-    The values of the returned dictionary are lists of _CoordGroup representing
-    grouped coordinates.  Each _CoordGroup contains all the input 'cubes', and a
-    matching list of the coord within each cube that matches some specific CoordDefn
-    (or maybe None).
+        The values of the returned dictionary are lists of _CoordGroup representing
+        grouped coordinates.  Each _CoordGroup contains all the input 'cubes', and a
+        matching list of the coord within each cube that matches some specific CoordDefn
+        (or maybe None).
 
-    The keys of the returned dictionary are strings naming 'categories' :  Each
-    represents a statement,
-    "Given these cubes list the coordinates which,
-    when grouped by metadata, are/have..."
+        The keys of the returned dictionary are strings naming 'categories' :  Each
+        represents a statement,
+        "Given these cubes list the coordinates which,
+        when grouped by metadata, are/have..."
 
-    Returned Keys:
+        Returned Keys:
 
-    * **grouped_coords**.
-      A list of coordinate groups of all the coordinates grouped together
-      by their coordinate definition
-    * **ungroupable**.
-      A list of coordinate groups which contain at least one None,
-      meaning not all Cubes provide an equivalent coordinate
-    * **not_equal**.
-      A list of coordinate groups of which not all are equal
-      (superset of ungroupable)
-    * **no_data_dimension**>
-      A list of coordinate groups of which all have no data dimensions on
-      their respective cubes
-    * **scalar**>
-      A list of coordinate groups of which all have shape (1, )
-    * **non_equal_data_dimension**.
-      A list of coordinate groups of which not all have the same
-      data dimension on their respective cubes
-    * **non_equal_shape**.
-      A list of coordinate groups of which not all have the same shape
-    * **equal_data_dimension**.
-      A list of coordinate groups of which all have the same data dimension
-      on their respective cubes
-    * **equal**.
-      A list of coordinate groups of which all are equal
-    * **ungroupable_and_dimensioned**.
-      A list of coordinate groups of which not all cubes had an equivalent
-      (in metadata) coordinate which also describe a data dimension
-    * **dimensioned**.
-      A list of coordinate groups of which all describe a data dimension on
-      their respective cubes
-    * **ignorable**.
-      A list of scalar, ungroupable non_equal coordinate groups
-    * **resamplable**.
-      A list of equal, different data dimensioned coordinate groups
-    * **transposable**.
-      A list of non equal, same data dimensioned, non scalar coordinate groups
+        * **grouped_coords**.
+          A list of coordinate groups of all the coordinates grouped together
+          by their coordinate definition
+        * **ungroupable**.
+          A list of coordinate groups which contain at least one None,
+          meaning not all Cubes provide an equivalent coordinate
+        * **not_equal**.
+          A list of coordinate groups of which not all are equal
+          (superset of ungroupable)
+        * **no_data_dimension**>
+          A list of coordinate groups of which all have no data dimensions on
+          their respective cubes
+        * **scalar**>
+          A list of coordinate groups of which all have shape (1, )
+        * **non_equal_data_dimension**.
+          A list of coordinate groups of which not all have the same
+          data dimension on their respective cubes
+        * **non_equal_shape**.
+          A list of coordinate groups of which not all have the same shape
+        * **equal_data_dimension**.
+          A list of coordinate groups of which all have the same data dimension
+          on their respective cubes
+        * **equal**.
+          A list of coordinate groups of which all are equal
+        * **ungroupable_and_dimensioned**.
+          A list of coordinate groups of which not all cubes had an equivalent
+          (in metadata) coordinate which also describe a data dimension
+        * **dimensioned**.
+          A list of coordinate groups of which all describe a data dimension on
+          their respective cubes
+        * **ignorable**.
+          A list of scalar, ungroupable non_equal coordinate groups
+        * **resamplable**.
+          A list of equal, different data dimensioned coordinate groups
+        * **transposable**.
+          A list of non equal, same data dimensioned, non scalar coordinate groups
 
-    Example usage::
+    Examples
+    --------
+    ::
 
         result = _dimensional_metadata_comparison(cube1, cube2)
         print('All equal coordinates: ', result['equal'])
@@ -607,14 +609,16 @@ class _Aggregator:
             else:  # new style (preferred)
                 cube.units = self.units_func(cube.units, **kwargs)
 
-    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+    def post_process(
+        self, collapsed_cube, data_result, coords, **kwargs
+    ):  # numpydoc ignore=SS05
         """Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
         Parameters
         ----------
-        collapsed_cube: :class:`iris.cube.Cube`.
+        collapsed_cube : :class:`iris.cube.Cube`
         data_result :
-            Result from :func:`iris.analysis.Aggregator.aggregate`
+            Result from :func:`iris.analysis.Aggregator.aggregate`.
         coords :
             The one or more coordinates that were aggregated over.
         **kwargs : dict, optional
@@ -779,14 +783,16 @@ class PercentileAggregator(_Aggregator):
         """
         return self._base_aggregate(data, axis, lazy=True, **kwargs)
 
-    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+    def post_process(
+        self, collapsed_cube, data_result, coords, **kwargs
+    ):  # numpydoc ignore=SS05
         """Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
         Parameters
         ----------
         collapsed_cube : :class:`iris.cube.Cube`
         data_result :
-            Result from :func:`iris.analysis.Aggregator.aggregate`
+            Result from :func:`iris.analysis.Aggregator.aggregate`.
         coords :
             The one or more coordinates that were aggregated over.
         **kwargs : dict, optional
@@ -945,7 +951,9 @@ class WeightedPercentileAggregator(PercentileAggregator):
         #: A list of keywords associated with weighted behaviour.
         self._weighting_keywords = ["returned", "weights"]
 
-    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+    def post_process(
+        self, collapsed_cube, data_result, coords, **kwargs
+    ):  # numpydoc ignore=SS05
         """Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
         Returns a tuple(cube, weights) if a tuple(data, weights) was returned
@@ -955,7 +963,7 @@ class WeightedPercentileAggregator(PercentileAggregator):
         ----------
         collapsed_cube : :class:`iris.cube.Cube`
         data_result :
-            Result from :func:`iris.analysis.Aggregator.aggregate`
+            Result from :func:`iris.analysis.Aggregator.aggregate`.
         coords :
             The one or more coordinates that were aggregated over.
         **kwargs : dict, optional
@@ -1101,7 +1109,9 @@ class WeightedAggregator(Aggregator):
                 break
         return result
 
-    def post_process(self, collapsed_cube, data_result, coords, **kwargs):
+    def post_process(
+        self, collapsed_cube, data_result, coords, **kwargs
+    ):  # numpydoc ignore=SS05
         """Process the result from :func:`iris.analysis.Aggregator.aggregate`.
 
         Returns a tuple(cube, weights) if a tuple(data, weights) was returned
@@ -1111,7 +1121,7 @@ class WeightedAggregator(Aggregator):
         ----------
         collapsed_cube : :class:`iris.cube.Cube`
         data_result :
-            Result from :func:`iris.analysis.Aggregator.aggregate`
+            Result from :func:`iris.analysis.Aggregator.aggregate`.
         coords :
             The one or more coordinates that were aggregated over.
         **kwargs : dict, optional
@@ -1363,14 +1373,14 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
 
     Parameters
     ----------
-    dataM : array-like
-        array from which percentiles are to be calculated
-    fast_percentile_method: bool, optional
+    data : array-like
+        Array from which percentiles are to be calculated.
+    fast_percentile_method : bool, optional
         When set to True, uses the numpy.percentiles method as a faster
         alternative to the scipy.mstats.mquantiles method. Does not handle
         masked arrays.
     **kwargs : dict, optional
-        passed to scipy.stats.mstats.mquantiles if fast_percentile_method is
+        Passed to scipy.stats.mstats.mquantiles if fast_percentile_method is
         False.  Otherwise passed to numpy.percentile.
 
     """
@@ -1406,20 +1416,20 @@ def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
     Parameters
     ----------
     data : array
-        One dimensional data array
-    weights: array
+        One dimensional data array.
+    weights : array
         Array of the same size of `data`.  If data is masked, weights must have
         matching mask.
     quantiles : float or sequence of floats
         Quantile(s) to compute. Must have a value between 0 and 1.
     **kwargs : dict, optional
-        passed to `scipy.interpolate.interp1d`
+        Passed to `scipy.interpolate.interp1d`.
 
     Returns
     -------
     array or float.
         Calculated quantile values (set to np.nan wherever sum
-        of weights is zero or masked)
+        of weights is zero or masked).
     """
     # Return np.nan if no usable points found
     if np.isclose(weights.sum(), 0.0) or ma.is_masked(weights.sum()):
@@ -1457,9 +1467,9 @@ def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs)
     ----------
     data : ndarray or masked array
     axis : int
-        axis to calculate percentiles over
+        Axis to calculate percentiles over.
     weights : ndarray
-        array with the weights.  Must have same shape as data
+        Array with the weights.  Must have same shape as data.
     percent : float or sequence of floats
         Percentile rank/s at which to extract value/s.
     returned : bool, default=False
@@ -2641,7 +2651,7 @@ class Linear:
         Returns
         -------
         A callable with the interface: ``callable(sample_points, collapse_scalar=True)``
-            where `sample_points` is a sequence containing an array of values
+            Where `sample_points` is a sequence containing an array of values
             for each of the coordinates passed to this method, and
             ``collapse_scalar`` determines whether to remove length one
             dimensions in the result cube caused by scalar values in
@@ -2690,7 +2700,7 @@ class Linear:
         Returns
         -------
         A callable with the interface ``callable(cube)``
-            where `cube` is a cube with the same grid as ``src_grid``
+            Where `cube` is a cube with the same grid as ``src_grid``
             that is to be regridded to the ``target_grid``.
 
         """
@@ -2770,7 +2780,7 @@ class AreaWeighted:
         Returns
         -------
         A callable with the interface  `callable(cube)`
-            where `cube` is a cube with the same grid as `src_grid_cube`
+            Where `cube` is a cube with the same grid as `src_grid_cube`
             that is to be regridded to the grid of `target_grid_cube`.
 
         """
@@ -2917,7 +2927,7 @@ class UnstructuredNearest:
     must be.  Otherwise, the corresponding X and Y coordinates must have the
     same units in the source and grid cubes.
 
-    .. Note::
+    .. note::
         Currently only supports regridding, not interpolation.
 
     """
@@ -2972,7 +2982,7 @@ class UnstructuredNearest:
         Returns
         -------
         A callable with the interface `callable(cube)`
-            where `cube` is a cube with the same grid as `src_cube`
+            Where `cube` is a cube with the same grid as `src_cube`
             that is to be regridded to the `target_grid`.
 
         """
