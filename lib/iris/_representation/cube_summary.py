@@ -5,6 +5,9 @@
 """Provides objects describing cube summaries."""
 import re
 
+import numpy as np
+
+import iris._lazy_data as _lazy
 from iris.common.metadata import hexdigest
 import iris.util
 
@@ -148,25 +151,36 @@ class ScalarCoordSummary(CoordSummary):
             self.unit = ""
         else:
             self.unit = " {!s}".format(coord.units)
-        coord_cell = coord.cell(0)
-        if isinstance(coord_cell.point, str):
+        coord_cell = None
+        if not _lazy.is_lazy_data(coord.core_points()):
+            coord_cell = coord.cell(0)
+        if coord.dtype.type is np.str_:
             self.string_type = True
-            # 'lines' is value split on '\n', and _each one_ length-clipped.
-            self.lines = [
-                iris.util.clip_string(str(item))
-                for item in coord_cell.point.split("\n")
-            ]
+            if coord_cell is not None:
+                # 'lines' is value split on '\n', and _each one_ length-clipped.
+                self.lines = [
+                    iris.util.clip_string(str(item))
+                    for item in coord_cell.point.split("\n")
+                ]
+                # 'content' contains a one-line printable version of the string,
+                content = string_repr(coord_cell.point)
+                content = iris.util.clip_string(content)
+            else:
+                content = "<lazy>"
+                self.lines = [content]
             self.point = None
             self.bound = None
-            # 'content' contains a one-line printable version of the string,
-            content = string_repr(coord_cell.point)
-            content = iris.util.clip_string(content)
             self.content = content
         else:
             self.string_type = False
             self.lines = None
-            self.point = "{!s}".format(coord_cell.point)
-            coord_cell_cbound = coord_cell.bound
+            coord_cell_cbound = None
+            if coord_cell is not None:
+                self.point = "{!s}".format(coord_cell.point)
+                coord_cell_cbound = coord_cell.bound
+            else:
+                self.point = "<lazy>"
+
             if coord_cell_cbound is not None:
                 self.bound = "({})".format(
                     ", ".join(str(val) for val in coord_cell_cbound)
@@ -174,6 +188,9 @@ class ScalarCoordSummary(CoordSummary):
                 self.content = "{}{}, bound={}{}".format(
                     self.point, self.unit, self.bound, self.unit
                 )
+            elif coord.has_bounds():
+                self.bound = "+bound"
+                self.content = "{}{}".format(self.point, self.bound)
             else:
                 self.bound = None
                 self.content = "{}{}".format(self.point, self.unit)
