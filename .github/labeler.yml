@@ -6,4 +6,4 @@
 #  and to reinforce the culture of using this label.
 benchmark_this:
 - changed-files:
-  - any-glob-to-any-file: ['requirements/locks/*.lock', "setup.py", "pyproject.toml"]
+  - any-glob-to-any-file: ['requirements/locks/*.lock', "setup.py"]

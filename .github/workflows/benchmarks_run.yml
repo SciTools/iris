@@ -34,7 +34,8 @@ jobs:
       - id: locks-changed
         uses: marceloprado/has-changed-path@df1b7a3161b8fb9fd8c90403c66a9e66dfde50cb
         with:
-          paths: requirements/locks/*.lock setup.py pyproject.toml
+          # SEE ALSO .github/labeler.yml .
+          paths: requirements/locks/*.lock setup.py
       - id: overnight
         if: github.event_name != 'pull_request'
         run: echo "overnight=true" >> "$GITHUB_OUTPUT"
