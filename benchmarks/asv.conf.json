@@ -6,6 +6,10 @@
     "environment_type": "conda-delegated",
     "show_commit_url": "https://github.com/scitools/iris/commit/",
     "branches": ["upstream/main"],
+    "build_command": [
+        "python setup.py build",
+        "python -mpip wheel --no-deps -w {build_cache_dir} {build_dir}"
+    ],
 
     "benchmark_dir": "./benchmarks",
     "env_dir": ".asv/env",
