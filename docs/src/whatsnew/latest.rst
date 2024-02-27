@@ -73,10 +73,9 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@trexfeathers`_ setup automatic benchmarking on pull requests that modify
-   ``requirements/locks/*.lock`` files - ensuring that we know whether
-   dependency changes will affect performance. Such pull requests are also
-   labelled using the `Pull Request Labeler Github action`_ to increase
-   visibility. (:pull:`5763`, :pull:`5776`)
+   files likely to affect performance or performance testing. Such pull
+   requests are also labelled using the `Pull Request Labeler Github action`_
+   to increase visibility. (:pull:`5763`, :pull:`5776`)
 
 
 .. comment
