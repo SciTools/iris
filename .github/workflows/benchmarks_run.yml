@@ -26,7 +26,6 @@ jobs:
     outputs:
       overnight: ${{ steps.overnight.outputs.overnight }}
       branch: ${{ steps.branch.outputs.branch }}
-      continue: ${{ steps.check-continue.outputs.continue }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,18 +48,14 @@ jobs:
             github.event.label.name == 'benchmark_this'
           )
         run: echo "branch=true" >> "$GITHUB_OUTPUT"
-      - id: check-continue
-        if: >
-          steps.overnight.outputs.overnight == 'true'
-          ||
-          steps.branch.outputs.branch == 'true'
-        run: echo "continue=true" >> "$GITHUB_OUTPUT"
 
 
   benchmark:
     runs-on: ubuntu-latest
     needs: pre-checks
-    if: needs.pre-checks.outputs.continue == 'true'
+    if: >
+      needs.pre-checks.outputs.overnight == 'true' ||
+      needs.pre-checks.outputs.branch == 'true'
 
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
