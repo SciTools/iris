@@ -467,7 +467,6 @@ class _CSPerf(_SubParserGenerator, ABC):
         # Activate on demand benchmarks (C/SPerf are deactivated for
         #  'standard' runs).
         environ["ON_DEMAND_BENCHMARKS"] = "True"
-        environ["PYTHONTRACEMALLOC"] = 25
         commit_range = "upstream/main^!"
 
         asv_command = ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
