@@ -34,7 +34,7 @@ jobs:
       - id: locks-changed
         uses: marceloprado/has-changed-path@df1b7a3161b8fb9fd8c90403c66a9e66dfde50cb
         with:
-          paths: requirements/locks/*.lock
+          paths: requirements/locks/*.lock setup.py pyproject.toml
       - id: overnight
         if: github.event_name != 'pull_request'
         run: echo "overnight=true" >> "$GITHUB_OUTPUT"
@@ -54,8 +54,8 @@ jobs:
           ||
           steps.branch.outputs.branch == 'true'
         run: echo "continue=true" >> "$GITHUB_OUTPUT"
-        
-  
+
+
   benchmark:
     runs-on: ubuntu-latest
     needs: pre-checks
