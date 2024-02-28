@@ -14,8 +14,6 @@ import iris
 from iris.analysis import AreaWeighted, PointInCell
 from iris.coords import AuxCoord
 
-from . import TrackAddedMemoryAllocation, on_demand_benchmark
-
 
 class HorizontalChunkedRegridding:
     def setup(self) -> None:
