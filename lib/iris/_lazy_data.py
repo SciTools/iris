@@ -454,6 +454,7 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
     """Apply a function to complete blocks.
 
     Complete means that the data is not chunked along the chosen dimensions.
+    Uses :func:`dask.array.map_blocks` to implement the mapping.
 
     Parameters
     ----------
@@ -465,6 +466,14 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
         Dimensions that cannot be chunked.
     out_sizes : tuple of int
         Output size of dimensions that cannot be chunked.
+    *args : tuple
+        Additional arguments to pass to `func`.
+    **kwargs : dict
+        Additional keyword arguments to pass to `func`.
+
+    See Also
+    --------
+    :func:`dask.array.map_blocks` : The function used for the mapping.
 
     """
     if is_lazy_data(src):
