@@ -450,10 +450,11 @@ def lazy_elementwise(lazy_array, elementwise_op):
     return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
 
 
-def map_complete_blocks(src, func, dims, out_sizes):
+def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
     """Apply a function to complete blocks.
 
     Complete means that the data is not chunked along the chosen dimensions.
+    Uses :func:`dask.array.map_blocks` to implement the mapping.
 
     Parameters
     ----------
@@ -465,27 +466,47 @@ def map_complete_blocks(src, func, dims, out_sizes):
         Dimensions that cannot be chunked.
     out_sizes : tuple of int
         Output size of dimensions that cannot be chunked.
+    *args : tuple
+        Additional arguments to pass to `func`.
+    **kwargs : dict
+        Additional keyword arguments to pass to `func`.
+
+    Returns
+    -------
+    Array-like
+
+    See Also
+    --------
+    :func:`dask.array.map_blocks` : The function used for the mapping.
 
     """
+    data = None
+    result = None
+
     if is_lazy_data(src):
         data = src
     elif not hasattr(src, "has_lazy_data"):
         # Not a lazy array and not a cube.  So treat as ordinary numpy array.
-        return func(src)
+        result = func(src, *args, **kwargs)
     elif not src.has_lazy_data():
-        return func(src.data)
+        result = func(src.data, *args, **kwargs)
     else:
         data = src.lazy_data()
 
-    # Ensure dims are not chunked
-    in_chunks = list(data.chunks)
-    for dim in dims:
-        in_chunks[dim] = src.shape[dim]
-    data = data.rechunk(in_chunks)
+    if result is None and data is not None:
+        # Ensure dims are not chunked
+        in_chunks = list(data.chunks)
+        for dim in dims:
+            in_chunks[dim] = src.shape[dim]
+        data = data.rechunk(in_chunks)
 
-    # Determine output chunks
-    out_chunks = list(data.chunks)
-    for dim, size in zip(dims, out_sizes):
-        out_chunks[dim] = size
+        # Determine output chunks
+        out_chunks = list(data.chunks)
+        for dim, size in zip(dims, out_sizes):
+            out_chunks[dim] = size
 
-    return data.map_blocks(func, chunks=out_chunks, dtype=src.dtype)
+        result = data.map_blocks(
+            func, *args, chunks=out_chunks, dtype=src.dtype, **kwargs
+        )
+
+    return result

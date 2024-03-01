@@ -1388,16 +1388,14 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
         percent = [percent]
     percent = np.array(percent)
 
-    # Perform the percentile calculation.
-    _partial_percentile = functools.partial(
+    result = iris._lazy_data.map_complete_blocks(
+        data,
         _calc_percentile,
+        (-1,),
+        percent.shape,
         percent=percent,
         fast_percentile_method=fast_percentile_method,
         **kwargs,
-    )
-
-    result = iris._lazy_data.map_complete_blocks(
-        data, _partial_percentile, (-1,), percent.shape
     )
 
     # Check whether to reduce to a scalar result, as per the behaviour
