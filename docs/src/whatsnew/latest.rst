@@ -48,7 +48,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@bouweandela`_ made :func:`iris.util.rolling_window` work with lazy arrays.
+   (:pull:`5775`)
 
 
 🔥 Deprecations

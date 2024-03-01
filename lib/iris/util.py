@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Miscellaneous utility functions."""
+from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
@@ -282,7 +283,12 @@ def guess_coord_axis(coord):
     return axis
 
 
-def rolling_window(a, window=1, step=1, axis=-1):
+def rolling_window(
+    a: np.ndarray | da.Array,
+    window: int = 1,
+    step: int = 1,
+    axis: int = -1,
+) -> np.ndarray | da.Array:
     """Make an ndarray with a rolling window of the last dimension.
 
     Parameters
@@ -323,8 +329,6 @@ def rolling_window(a, window=1, step=1, axis=-1):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-    # NOTE: The implementation of this function originates from
-    # https://github.com/numpy/numpy/pull/31#issuecomment-1304851 04/08/2011
     if window < 1:
         raise ValueError("`window` must be at least 1.")
     if window > a.shape[axis]:
@@ -332,25 +336,26 @@ def rolling_window(a, window=1, step=1, axis=-1):
     if step < 1:
         raise ValueError("`step` must be at least 1.")
     axis = axis % a.ndim
-    num_windows = (a.shape[axis] - window + step) // step
-    shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1 :]
-    strides = (
-        a.strides[:axis]
-        + (step * a.strides[axis], a.strides[axis])
-        + a.strides[axis + 1 :]
+    array_module = da if isinstance(a, da.Array) else np
+    steps = tuple(
+        slice(None, None, step) if i == axis else slice(None) for i in range(a.ndim)
     )
-    rw = np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
-    if ma.isMaskedArray(a):
-        mask = ma.getmaskarray(a)
-        strides = (
-            mask.strides[:axis]
-            + (step * mask.strides[axis], mask.strides[axis])
-            + mask.strides[axis + 1 :]
+
+    def _rolling_window(array):
+        return array_module.moveaxis(
+            array_module.lib.stride_tricks.sliding_window_view(
+                array,
+                window_shape=window,
+                axis=axis,
+            )[steps],
+            -1,
+            axis + 1,
         )
-        rw = ma.array(
-            rw,
-            mask=np.lib.stride_tricks.as_strided(mask, shape=shape, strides=strides),
-        )
+
+    rw = _rolling_window(a)
+    if isinstance(da.utils.meta_from_array(a), np.ma.MaskedArray):
+        mask = _rolling_window(array_module.ma.getmaskarray(a))
+        rw = array_module.ma.masked_array(rw, mask)
     return rw
 
 
