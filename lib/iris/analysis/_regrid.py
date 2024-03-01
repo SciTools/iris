@@ -956,9 +956,11 @@ class RectilinearRegridder:
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
 
-        # Define regrid function
-        regrid = functools.partial(
+        data = map_complete_blocks(
+            src,
             self._regrid,
+            (y_dim, x_dim),
+            sample_grid_x.shape,
             x_dim=x_dim,
             y_dim=y_dim,
             src_x_coord=src_x_coord,
@@ -967,10 +969,6 @@ class RectilinearRegridder:
             sample_grid_y=sample_grid_y,
             method=self._method,
             extrapolation_mode=self._extrapolation_mode,
-        )
-
-        data = map_complete_blocks(
-            src, regrid, (y_dim, x_dim), sample_grid_x.shape
         )
 
         # Wrap up the data as a Cube.
