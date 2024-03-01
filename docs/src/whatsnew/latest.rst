@@ -51,6 +51,10 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ made :func:`iris.util.rolling_window` work with lazy arrays.
    (:pull:`5775`)
 
+#. `@stephenworsley`_ fixed a potential memory leak for Iris uses of
+   :func:`dask.array.map_blocks`; known specifically to be a problem in the
+   :class:`iris.analysis.AreaWeighted` regridder. (:pull:`5767`)
+
 
 🔥 Deprecations
 ===============
