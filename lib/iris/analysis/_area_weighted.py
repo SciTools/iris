@@ -392,18 +392,16 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
 
     tgt_shape = (len(grid_y.points), len(grid_x.points))
 
-    # Calculate new data array for regridded cube.
-    regrid = functools.partial(
+    new_data = map_complete_blocks(
+        src_cube,
         _regrid_along_dims,
+        (src_y_dim, src_x_dim),
+        meshgrid_x.shape,
         x_dim=src_x_dim,
         y_dim=src_y_dim,
         weights=weights,
         tgt_shape=tgt_shape,
         mdtol=mdtol,
-    )
-
-    new_data = map_complete_blocks(
-        src_cube, regrid, (src_y_dim, src_x_dim), meshgrid_x.shape
     )
 
     # Wrap up the data as a Cube.
