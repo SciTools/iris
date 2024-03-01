@@ -493,7 +493,7 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
     else:
         data = src.lazy_data()
 
-    if result is not None and data is not None:
+    if result is None and data is None:
         # Ensure dims are not chunked
         in_chunks = list(data.chunks)
         for dim in dims:
