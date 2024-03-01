@@ -877,7 +877,7 @@ def _build_separable_group(
         dependency on any other candidate dimensions within the space.
     group :
         A set of related (chained) inseparable candidate dimensions.
-    separable_consistent_groups:
+    separable_consistent_groups :
         A list of candidate dimension groups that are consistently separable.
     positions :
         A list containing a dictionary of candidate dimension key to
@@ -1047,7 +1047,7 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
     ----------
     groups :
         A list of all related (chained) inseparable candidate dimensions.
-    relation_matrix:
+    relation_matrix :
         The relation dictionary for each candidate dimension.
     positions :
         A list containing a dictionary of candidate dimension key to
@@ -1294,7 +1294,7 @@ class ProtoCube:
         cube :
             Candidate :class:`iris.cube.Cube` to be associated with
             this :class:`ProtoCube`.
-        error_on_mismatch :bool, default=False
+        error_on_mismatch : bool, default=False
             If True, raise an informative
             :class:`~iris.exceptions.MergeError` if registration fails.
 
@@ -1335,7 +1335,8 @@ class ProtoCube:
 
         Returns
         -------
-        axis : {'T', 'Z', 'Y', 'X'} or None.
+        str or None
+            {'T', 'Z', 'Y', 'X'} or None.
 
         """
         axis = None

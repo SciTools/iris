@@ -10,11 +10,12 @@ ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
 
 
 def disable_repeat_between_setup(benchmark_object):
-    """Benchmarks where object persistence would be inappropriate (decorator).
+    """Benchmark where object persistence would be inappropriate (decorator).
 
     E.g:
-        * Benchmarking data realisation
-        * Benchmarking Cube coord addition
+
+    * Benchmarking data realisation
+    * Benchmarking Cube coord addition
 
     Can be applied to benchmark classes/methods/functions.
 
@@ -107,14 +108,15 @@ class TrackAddedMemoryAllocation:
 
 
 def on_demand_benchmark(benchmark_object):
-    """Disables these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.
+    """Disable these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.
 
     This is a decorator.
 
     For benchmarks that, for whatever reason, should not be run by default.
     E.g:
-        * Require a local file
-        * Used for scalability analysis instead of commit monitoring.
+
+    * Require a local file
+    * Used for scalability analysis instead of commit monitoring.
 
     Can be applied to benchmark classes/methods/functions.
 

@@ -8,8 +8,8 @@
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 .. _codespell: https://github.com/codespell-project/codespell
 .. _conda: https://docs.conda.io/en/latest/
-.. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
-.. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
+.. _contributor: https://github.com/SciTools/iris/graphs/contributors
+.. _core developers: https://github.com/orgs/SciTools/teams/iris-devs/members
 .. _generating ssh keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
 .. _GitHub Actions: https://docs.github.com/en/actions
 .. _GitHub Help Documentation: https://docs.github.com/en/github
@@ -45,6 +45,7 @@
 .. _python-stratify: https://github.com/SciTools/python-stratify
 .. _iris-esmf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
 .. _netCDF4: https://github.com/Unidata/netcdf4-python
+.. _SciTools Contributor's License Agreement (CLA): https://cla-assistant.io/SciTools/
 
 
 .. comment

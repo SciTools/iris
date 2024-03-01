@@ -39,7 +39,7 @@ class AreaWeightedRegridder:
 
         Notes
         -----
-        .. Note::
+        .. note::
 
             Both source and target cubes must have an XY grid defined by
             separate X and Y dimensions with dimension coordinates.

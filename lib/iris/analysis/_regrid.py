@@ -30,14 +30,17 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
 
     Parameters
     ----------
-    crs_from, crs_to : :class:`cartopy.crs.Projection`
+    crs_from : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
     x, y : arrays
-        point locations defined in 'crs_from'.
+        Point locations defined in 'crs_from'.
+    crs_to : :class:`cartopy.crs.Projection`
+        The coordinate reference systems.
 
     Returns
     -------
-    x, y :  Arrays of locations defined in 'crs_to'.
+    (array, array)
+        Arrays of locations defined in 'crs_to' of (x, y).
 
     """
     pts = crs_to.transform_points(crs_from, x, y)
@@ -636,7 +639,7 @@ class RectilinearRegridder:
             A 2-dimensional array of sample X values.
         sample_grid_y :
             A 2-dimensional array of sample Y values.
-        method: str, default="linear"
+        method : str, default="linear"
             Either 'linear' or 'nearest'. The default method is 'linear'.
         extrapolation_mode : str, default="nanmask"
             Must be one of the following strings:

@@ -8,6 +8,7 @@
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -33,6 +34,12 @@ class Test_rolling_window(tests.IrisTest):
             dtype=np.int32,
         )
         result = rolling_window(a, window=3, axis=1)
+        self.assertArrayEqual(result, expected_result)
+
+    def test_3d_lazy(self):
+        a = da.arange(2 * 3 * 4).reshape((2, 3, 4))
+        expected_result = np.arange(2 * 3 * 4).reshape((1, 2, 3, 4))
+        result = rolling_window(a, window=2, axis=0).compute()
         self.assertArrayEqual(result, expected_result)
 
     def test_1d_masked(self):

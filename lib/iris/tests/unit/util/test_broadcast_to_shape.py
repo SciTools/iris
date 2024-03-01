@@ -21,14 +21,17 @@ from iris.util import broadcast_to_shape
 class Test_broadcast_to_shape(tests.IrisTest):
     def test_same_shape(self):
         # broadcast to current shape should result in no change
-        a = np.random.random([2, 3])
+        rng = np.random.default_rng()
+        a = rng.random((2, 3))
+
         b = broadcast_to_shape(a, a.shape, (0, 1))
         self.assertArrayEqual(b, a)
 
     def test_added_dimensions(self):
         # adding two dimensions, on at the front and one in the middle of
         # the existing dimensions
-        a = np.random.random([2, 3])
+        rng = np.random.default_rng()
+        a = rng.random((2, 3))
         b = broadcast_to_shape(a, (5, 2, 4, 3), (1, 3))
         for i in range(5):
             for j in range(4):
@@ -37,7 +40,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
     def test_added_dimensions_transpose(self):
         # adding dimensions and having the dimensions of the input
         # transposed
-        a = np.random.random([2, 3])
+        rng = np.random.default_rng()
+        a = rng.random((2, 3))
         b = broadcast_to_shape(a, (5, 3, 4, 2), (3, 1))
         for i in range(5):
             for j in range(4):
@@ -47,7 +51,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
     def test_lazy_added_dimensions_transpose(self, mocked_compute):
         # adding dimensions and having the dimensions of the input
         # transposed
-        a = da.random.random([2, 3])
+        rng = da.random.default_rng()
+        a = rng.random((2, 3))
         b = broadcast_to_shape(a, (5, 3, 4, 2), (3, 1))
         mocked_compute.assert_not_called()
         for i in range(5):
@@ -56,7 +61,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
 
     def test_masked(self):
         # masked arrays are also accepted
-        a = np.random.random([2, 3])
+        rng = np.random.default_rng()
+        a = rng.random((2, 3))
         m = ma.array(a, mask=[[0, 1, 0], [0, 1, 1]])
         b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
         for i in range(5):
@@ -66,7 +72,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
     @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
     def test_lazy_masked(self, mocked_compute):
         # masked arrays are also accepted
-        a = np.random.random([2, 3])
+        rng = np.random.default_rng()
+        a = rng.random((2, 3))
         m = da.ma.masked_array(a, mask=[[0, 1, 0], [0, 1, 1]])
         b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
         mocked_compute.assert_not_called()
@@ -76,7 +83,8 @@ class Test_broadcast_to_shape(tests.IrisTest):
 
     def test_masked_degenerate(self):
         # masked arrays can have degenerate masks too
-        a = np.random.random([2, 3])
+        rng = np.random.default_rng()
+        a = rng.random((2, 3))
         m = ma.array(a)
         b = broadcast_to_shape(m, (5, 3, 4, 2), (3, 1))
         for i in range(5):
