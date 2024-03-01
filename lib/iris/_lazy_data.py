@@ -471,30 +471,42 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
     **kwargs : dict
         Additional keyword arguments to pass to `func`.
 
+    Returns
+    -------
+    Array-like
+
     See Also
     --------
     :func:`dask.array.map_blocks` : The function used for the mapping.
 
     """
+    data = None
+    result = None
+
     if is_lazy_data(src):
         data = src
     elif not hasattr(src, "has_lazy_data"):
         # Not a lazy array and not a cube.  So treat as ordinary numpy array.
-        return func(src, *args, **kwargs)
+        result = func(src, *args, **kwargs)
     elif not src.has_lazy_data():
-        return func(src.data, *args, **kwargs)
+        result = func(src.data, *args, **kwargs)
     else:
         data = src.lazy_data()
 
-    # Ensure dims are not chunked
-    in_chunks = list(data.chunks)
-    for dim in dims:
-        in_chunks[dim] = src.shape[dim]
-    data = data.rechunk(in_chunks)
+    if result is not None and data is not None:
+        # Ensure dims are not chunked
+        in_chunks = list(data.chunks)
+        for dim in dims:
+            in_chunks[dim] = src.shape[dim]
+        data = data.rechunk(in_chunks)
 
-    # Determine output chunks
-    out_chunks = list(data.chunks)
-    for dim, size in zip(dims, out_sizes):
-        out_chunks[dim] = size
+        # Determine output chunks
+        out_chunks = list(data.chunks)
+        for dim, size in zip(dims, out_sizes):
+            out_chunks[dim] = size
 
-    return data.map_blocks(func, *args, chunks=out_chunks, dtype=src.dtype, **kwargs)
+        result = data.map_blocks(
+            func, *args, chunks=out_chunks, dtype=src.dtype, **kwargs
+        )
+
+    return result
