@@ -47,6 +47,7 @@ from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
+from iris.fileformats.netcdf._thread_safe_nc import data_fillvalue_check
 import iris.io
 import iris.util
 import iris.warnings
@@ -287,36 +288,6 @@ MESH_ELEMENTS = ("node", "edge", "face")
 _FillvalueCheckInfo = collections.namedtuple(
     "_FillvalueCheckInfo", ["user_value", "check_value", "dtype", "varname"]
 )
-
-
-def _data_fillvalue_check(arraylib, data, check_value):
-    """Check whether an array is masked, and whether it contains a fill-value.
-
-    Parameters
-    ----------
-    arraylib : module
-        Either numpy or dask.array : When dask, results are lazy computations.
-    data : array-like
-        Array to check (numpy or dask).
-    check_value : number or None
-        If not None, fill-value to check for existence in the array.
-        If None, do not do value-in-array check.
-
-    Returns
-    -------
-    is_masked : bool
-        True if array has any masked points.
-    contains_value : bool
-        True if array contains check_value.
-        Always False if check_value is None.
-
-    """
-    is_masked = arraylib.any(arraylib.ma.getmaskarray(data))
-    if check_value is None:
-        contains_value = False
-    else:
-        contains_value = arraylib.any(data == check_value)
-    return is_masked, contains_value
 
 
 class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
@@ -2446,7 +2417,10 @@ class Saver:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
                     write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
-                        self.filepath, cf_var, self.file_write_lock
+                        filepath=self.filepath,
+                        cf_var=cf_var,
+                        file_write_lock=self.file_write_lock,
+                        fill_checking_value=fill_value_to_check,
                     )
                     # Add to the list of delayed writes, used in delayed_completion().
                     self._delayed_writes.append((data, write_wrapper, fill_info))
@@ -2460,7 +2434,7 @@ class Saver:
                 # We also check it immediately for any fill-value problems.
                 def store(data, cf_var, fill_info):
                     cf_var[:] = data
-                    return _data_fillvalue_check(np, data, fill_info.check_value)
+                    return data_fillvalue_check(data, fill_info.check_value)
 
             # Store the data and check if it is masked and contains the fill value.
             is_masked, contains_fill_value = store(data, cf_var, fill_info)
@@ -2494,28 +2468,25 @@ class Saver:
             sources, targets, fill_infos = zip(*self._delayed_writes)
             store_op = da.store(sources, targets, compute=False, lock=False)
 
-            # Construct a delayed fill-check operation for each (lazy) source array.
-            delayed_fillvalue_checks = [
-                # NB with arraylib=dask.array, this routine does lazy array computation
-                _data_fillvalue_check(da, source, fillinfo.check_value)
-                for source, fillinfo in zip(sources, fill_infos)
-            ]
-
-            # Return a single delayed object which completes the delayed saves and
+            # Return a single delayed object which completes those delayed saves and
             # returns a list of any fill-value warnings.
             @dask.delayed
-            def compute_and_return_warnings(store_op, fv_infos, fv_checks):
+            def compute_and_return_warnings(store_op, targets, fv_infos):
                 # Note: we don't actually *do* anything with the 'store_op' argument,
                 # but including it here ensures that dask will compute it (thus
                 # performing all the delayed saves), before calling this function.
+                # This also means that all data has been scanned for fill-value
+                # collisions, which are recorded by the proxy objects "targets".
                 results = []
                 # Pair each fill_check result (is_masked, contains_value) with its
                 # fillinfo and construct a suitable Warning if needed.
-                for fillinfo, (is_masked, contains_value) in zip(fv_infos, fv_checks):
+                for target, fillinfo in zip(targets, fv_infos):
+                    is_masked = target.is_masked
+                    contains_fill_value = target.contains_fill_value
                     fv_warning = _fillvalue_report(
                         fill_info=fillinfo,
                         is_masked=is_masked,
-                        contains_fill_value=contains_value,
+                        contains_fill_value=contains_fill_value,
                     )
                     if fv_warning is not None:
                         # Collect the warnings and return them.
@@ -2524,8 +2495,8 @@ class Saver:
 
             result = compute_and_return_warnings(
                 store_op,
+                targets=targets,
                 fv_infos=fill_infos,
-                fv_checks=delayed_fillvalue_checks,
             )
 
         else:

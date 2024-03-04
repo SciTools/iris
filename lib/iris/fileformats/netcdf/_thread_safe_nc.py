@@ -352,6 +352,34 @@ class NetCDFDataProxy:
             setattr(self, key, value)
 
 
+def data_fillvalue_check(data, check_value):
+    """Check whether a numpy array is masked, and whether it contains a fill-value.
+
+    Parameters
+    ----------
+    data : array-like
+        Array to check (numpy or dask).
+    check_value : number or None
+        If not None, fill-value to check for existence in the array.
+        If None, do not do value-in-array check.
+
+    Returns
+    -------
+    is_masked : bool
+        True if array has any masked points.
+    contains_value : bool
+        True if array contains check_value.
+        Always False if check_value is None.
+
+    """
+    is_masked = np.any(np.ma.getmaskarray(data))
+    if check_value is None:
+        contains_value = False
+    else:
+        contains_value = np.any(data == check_value)
+    return is_masked, contains_value
+
+
 class NetCDFWriteProxy:
     """An object mimicking the data access of a netCDF4.Variable.
 
@@ -361,13 +389,18 @@ class NetCDFWriteProxy:
     It encapsulates the netcdf file and variable which are actually to be
     written to.  This opens the file each time, to enable writing the data
     chunk, then closes it.
+    It also keeps track of whether any written data is masked, and/or has unmasked
+    points matching the fill-value.
     TODO: could be improved with a caching scheme, but this just about works.
     """
 
-    def __init__(self, filepath, cf_var, file_write_lock):
+    def __init__(self, filepath, cf_var, file_write_lock, fill_checking_value):
         self.path = filepath
         self.varname = cf_var.name
         self.lock = file_write_lock
+        self.fill_checking_value = fill_checking_value
+        self.is_masked = False
+        self.contains_fill_value = False
 
     def __setitem__(self, keys, array_data):
         # Write to the variable.
@@ -382,7 +415,14 @@ class NetCDFWriteProxy:
             try:
                 dataset = netCDF4.Dataset(self.path, "r+")
                 var = dataset.variables[self.varname]
+                # Save a section of data to the actual file variable
                 var[keys] = array_data
+                # Also record any possible fill-value collisions in the provided data
+                is_masked, contains_value = data_fillvalue_check(
+                    data=array_data, check_value=self.fill_checking_value
+                )
+                self.is_masked |= is_masked
+                self.contains_fill_value |= contains_value
             finally:
                 try:
                     if dataset:
