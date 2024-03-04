@@ -387,6 +387,8 @@ linkcheck_ignore = [
     "https://www.metoffice.gov.uk/",
     "https://biggus.readthedocs.io/",
     "https://stickler-ci.com/",
+    "https://twitter.com/scitools_iris",
+    "https://stackoverflow.com/questions/tagged/python-iris",
 ]
 
 # list of sources to exclude from the build.
