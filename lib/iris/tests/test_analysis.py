@@ -1495,6 +1495,32 @@ class TestRollingWindow(tests.IrisTest):
 
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
+    def test_longitude_masked_lazy(self):
+        self.cube.data = ma.array(
+            self.cube.data,
+            mask=[
+                [True, True, True, True],
+                [True, False, True, True],
+                [False, False, False, False],
+            ],
+        )
+        self.cube.data = self.cube.lazy_data()
+        res_cube = self.cube.rolling_window("longitude", iris.analysis.MEAN, window=2)
+
+        expected_result = np.ma.array(
+            [[-99.0, -99.0, -99.0], [12.0, 12.0, -99.0], [15.0, 11.0, 8.0]],
+            mask=[
+                [True, True, True],
+                [False, False, True],
+                [False, False, False],
+            ],
+            dtype=np.float64,
+        )
+
+        self.assertTrue(self.cube.has_lazy_data())
+        self.assertTrue(res_cube.has_lazy_data())
+        self.assertMaskedArrayEqual(expected_result, res_cube.data)
+
     def test_longitude_circular(self):
         cube = self.cube
         cube.coord("longitude").circular = True
