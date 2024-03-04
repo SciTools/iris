@@ -49,6 +49,7 @@ v3.8.1 (04 Mar 2024)
    :color: primary
    :icon: alert
    :animate: fade-in
+   :open:
 
    The patches in this release of Iris include:
 
