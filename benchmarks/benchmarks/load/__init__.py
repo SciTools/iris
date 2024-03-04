@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 File loading benchmark tests.
 
@@ -26,7 +27,7 @@ class LoadAndRealise:
     # For data generation
     timeout = 600.0
     params = [
-        [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
+        [(2, 2, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
         ["FF", "PP", "NetCDF"],
     ]
@@ -68,7 +69,7 @@ class LoadAndRealise:
 
 
 class STASHConstraint:
-    # xyz sizes mimic LoadAndRealise to maximise file reuse.
+    # xyz sizes mimic LoadAndRealise to maximise file re-use.
     params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"]]
     param_names = ["xyz", "file_format"]
 

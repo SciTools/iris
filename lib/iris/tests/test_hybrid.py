@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Test the hybrid vertical coordinate representations.
 
@@ -17,7 +18,6 @@ import numpy as np
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisIgnoringBoundsWarning
 import iris.tests.stock
 
 
@@ -136,7 +136,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(IrisIgnoringBoundsWarning):
+            with self.assertRaises(UserWarning):
                 _ = HybridHeightFactory(orography=sigma)
 
     def test_bounded_orography(self):
@@ -154,7 +154,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegex(IrisIgnoringBoundsWarning, msg):
+            with self.assertRaisesRegex(UserWarning, msg):
                 self.cube.coord("altitude")
 
 
@@ -215,7 +215,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(IrisIgnoringBoundsWarning):
+            with self.assertRaises(UserWarning):
                 _ = HybridPressureFactory(
                     sigma=sigma, surface_air_pressure=sigma
                 )
@@ -235,7 +235,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegex(IrisIgnoringBoundsWarning, msg):
+            with self.assertRaisesRegex(UserWarning, msg):
                 self.cube.coord("air_pressure")
 
 

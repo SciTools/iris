@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Replacement code for the Pyke rules.
 
@@ -43,7 +44,6 @@ from functools import wraps
 import warnings
 
 from iris.config import get_logger
-import iris.exceptions
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 
@@ -51,24 +51,6 @@ from . import helpers as hh
 
 # Configure the logger.
 logger = get_logger(__name__, fmt="[%(funcName)s]")
-
-
-class _WarnComboCfLoadIgnoring(
-    iris.exceptions.IrisCfLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
-
-
-class _WarnComboLoadIgnoring(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
 
 
 def _default_rulenamesfunc(func_name):
@@ -154,14 +136,6 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
     hh.CF_GRID_MAPPING_GEOSTATIONARY: (
         None,
         hh.build_geostationary_coordinate_system,
-    ),
-    hh.CF_GRID_MAPPING_OBLIQUE: (
-        None,
-        hh.build_oblique_mercator_coordinate_system,
-    ),
-    hh.CF_GRID_MAPPING_ROTATED_MERCATOR: (
-        None,
-        hh.build_oblique_mercator_coordinate_system,
     ),
 }
 
@@ -497,10 +471,7 @@ def action_formula_type(engine, formula_root_fact):
         succeed = False
         rule_name += f"(FAILED - unrecognised formula type = {formula_type!r})"
         msg = f"Ignored formula of unrecognised type: {formula_type!r}."
-        warnings.warn(
-            msg,
-            category=_WarnComboCfLoadIgnoring,
-        )
+        warnings.warn(msg)
     if succeed:
         # Check we don't already have one.
         existing_type = engine.requires.get("formula_type")
@@ -515,10 +486,7 @@ def action_formula_type(engine, formula_root_fact):
                 f"Formula of type ={formula_type!r} "
                 f"overrides another of type ={existing_type!r}.)"
             )
-            warnings.warn(
-                msg,
-                category=_WarnComboLoadIgnoring,
-            )
+            warnings.warn(msg)
         rule_name += f"_{formula_type}"
         # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
         engine.requires["formula_type"] = formula_type

@@ -58,7 +58,7 @@ Features
 
 * Use the latest release of Cartopy, v0.8.0.
 
-.. _OPeNDAP: http://www.opendap.org
+.. _OPeNDAP: http://www.opendap.org/about
 .. _exp-regrid:
 
 Experimental Regridding Enhancements

@@ -1,0 +1,20 @@
+{% extends "pydata_sphinx_theme/layout.html" %}
+
+{# This uses blocks.  See:
+     https://www.sphinx-doc.org/en/master/templating.html
+#}
+
+
+    {%- block docs_body %}
+
+    {% if on_rtd and rtd_version == 'latest' %}
+        <div id="slim-red-box-banner">
+            You are viewing the <b>latest</b> unreleased documentation
+            <b>v{{ version }}</b>. You can switch to a <b>stable</b> version
+            via the flyout menu in the bottom corner of the screen.
+        </div>
+        <p></p>
+    {%- endif %}
+
+    {{ super() }}
+{%- endblock %}

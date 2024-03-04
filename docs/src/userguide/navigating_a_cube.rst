@@ -191,10 +191,10 @@ Adding and Removing Metadata to the Cube at Load Time
 Sometimes when loading a cube problems occur when the amount of metadata is more or less than expected.
 This is often caused by one of the following:
 
-* The file does not contain enough metadata, and therefore the cube cannot know everything about the file.
-* Some of the metadata of the file is contained in the filename, but is not part of the actual file.
-* There is not enough metadata loaded from the original file as Iris has not handled the format fully. *(in which case, 
-  please let us know about it)*
+ * The file does not contain enough metadata, and therefore the cube cannot know everything about the file.
+ * Some of the metadata of the file is contained in the filename, but is not part of the actual file.
+ * There is not enough metadata loaded from the original file as Iris has not handled the format fully. *(in which case, 
+   please let us know about it)*
 
 To solve this, all of :func:`iris.load`, :func:`iris.load_cube`, and :func:`iris.load_cubes` support a callback keyword. 
 

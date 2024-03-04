@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Wrappers for using :mod:`iris.tests.stock` methods for benchmarking.
 
@@ -38,7 +39,7 @@ def _create_file__xios_common(func_name, **kwargs):
     )
     if not REUSE_DATA or not save_path.is_file():
         # The xios functions take control of save location so need to move to
-        #  a more specific name that allows reuse.
+        #  a more specific name that allows re-use.
         actual_path = run_function_elsewhere(
             _external,
             func_name_=func_name,

@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda`
 subclass that manages the Conda environment via custom user scripts.
@@ -65,8 +66,6 @@ class CondaDelegated(Conda):
             ignored.append("`requirements`")
         if tagged_env_vars:
             ignored.append("`tagged_env_vars`")
-        if conf.conda_channels:
-            ignored.append("conda_channels")
         if conf.conda_environment_file:
             ignored.append("`conda_environment_file`")
         message = (
@@ -76,8 +75,6 @@ class CondaDelegated(Conda):
         log.warning(message)
         requirements = {}
         tagged_env_vars = {}
-        # All that is required to create ASV's bare-bones environment.
-        conf.conda_channels = ["defaults"]
         conf.conda_environment_file = None
 
         super().__init__(conf, python, requirements, tagged_env_vars)

@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Rules for converting NIMROD fields into cubes."""
 
 import re
@@ -15,11 +16,7 @@ import numpy as np
 import iris
 import iris.coord_systems
 from iris.coords import DimCoord
-from iris.exceptions import (
-    CoordinateNotFoundError,
-    IrisNimrodTranslationWarning,
-    TranslationError,
-)
+from iris.exceptions import CoordinateNotFoundError, TranslationError
 
 __all__ = ["run"]
 
@@ -31,12 +28,7 @@ TIME_UNIT = cf_units.Unit(
 )
 
 
-class TranslationWarning(IrisNimrodTranslationWarning):
-    """
-    Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`.
-    """
-
-    # TODO: remove at the next major release.
+class TranslationWarning(Warning):
     pass
 
 
@@ -189,8 +181,7 @@ def units(cube, field):
         warnings.warn(
             "Unhandled units '{0}' recorded in cube attributes.".format(
                 field_units
-            ),
-            category=IrisNimrodTranslationWarning,
+            )
         )
         cube.attributes["invalid_units"] = field_units
 
@@ -426,8 +417,7 @@ def coord_system(field, handle_metadata_errors):
         if any([is_missing(field, v) for v in crs_args]):
             warnings.warn(
                 "Coordinate Reference System is not completely defined. "
-                "Plotting and reprojection may be impaired.",
-                category=IrisNimrodTranslationWarning,
+                "Plotting and reprojection may be impaired."
             )
         coord_sys = iris.coord_systems.TransverseMercator(
             *crs_args, iris.coord_systems.GeogCS(**ellipsoid)
@@ -549,7 +539,7 @@ def vertical_coord(cube, field):
             f"{field.vertical_coord_type} != {field.reference_vertical_coord_type}. "
             f"Assuming {field.vertical_coord_type}"
         )
-        warnings.warn(msg, category=IrisNimrodTranslationWarning)
+        warnings.warn(msg)
 
     coord_point = field.vertical_coord
     if coord_point == 8888.0:
@@ -596,7 +586,7 @@ def vertical_coord(cube, field):
     warnings.warn(
         "Vertical coord {!r} not yet handled"
         "".format(field.vertical_coord_type),
-        category=TranslationWarning,
+        TranslationWarning,
     )
 
 
@@ -841,8 +831,7 @@ def probability_coord(cube, field, handle_metadata_errors):
             )
             warnings.warn(
                 f"No default units for {coord_name} coord of {cube.name()}. "
-                "Meta-data may be incomplete.",
-                category=IrisNimrodTranslationWarning,
+                "Meta-data may be incomplete."
             )
         new_coord = iris.coords.AuxCoord(
             np.array(coord_val, dtype=np.float32), bounds=bounds, **coord_keys

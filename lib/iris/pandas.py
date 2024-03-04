@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Provide conversion to and from Pandas data structures.
 
@@ -28,7 +29,6 @@ import iris
 from iris._deprecation import warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
-from iris.exceptions import IrisIgnoringWarning
 
 
 def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
@@ -82,7 +82,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
     Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array.
     """
     # Most functionality has been abstracted to _get_dimensional_metadata,
-    #  allowing reuse in as_cube() and as_cubes().
+    #  allowing re-use in as_cube() and as_cubes().
     coord = _get_dimensional_metadata(name, points, calendar)
 
     if coord.__class__ == DimCoord:
@@ -398,7 +398,7 @@ def as_cubes(
 
     cube_shape = getattr(pandas_index, "levshape", (pandas_index.nunique(),))
     n_rows = len(pandas_structure)
-    if np.prod(cube_shape) > n_rows:
+    if np.product(cube_shape) > n_rows:
         message = (
             f"Not all index values have a corresponding row - {n_rows} rows "
             f"cannot be reshaped into {cube_shape}. Consider padding with NaN "
@@ -446,7 +446,7 @@ def as_cubes(
         if columns_ignored:
             ignored_args = ", ".join([t[2] for t in class_arg_mapping])
             message = f"The input pandas_structure is a Series; ignoring arguments: {ignored_args} ."
-            warnings.warn(message, category=IrisIgnoringWarning)
+            warnings.warn(message)
         class_arg_mapping = []
 
     non_data_names = []
@@ -896,7 +896,7 @@ def as_data_frame(
             "'iris.FUTURE.pandas_ndim = True'. More info is in the "
             "documentation."
         )
-        warnings.warn(message, category=FutureWarning)
+        warnings.warn(message, FutureWarning)
 
         # The legacy behaviour.
         data = cube.data

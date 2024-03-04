@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Unit tests for :func:`iris.fileformats.netcdf.saver._fillvalue_report`.
 """
@@ -10,9 +11,9 @@ import warnings
 import numpy as np
 import pytest
 
-from iris.exceptions import IrisSaverFillValueWarning
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 from iris.fileformats.netcdf.saver import (
+    SaverFillValueWarning,
     _fillvalue_report,
     _FillvalueCheckInfo,
 )
@@ -92,14 +93,12 @@ class Test__fillvaluereport:
             expected_msg = "'<testvar>' contains unmasked data points equal to the fill-value"
             # Enter a warnings context that checks for the error.
             warning_context = pytest.warns(
-                IrisSaverFillValueWarning, match=expected_msg
+                SaverFillValueWarning, match=expected_msg
             )
             warning_context.__enter__()
         else:
             # Check that we get NO warning of the expected type.
-            warnings.filterwarnings(
-                "error", category=IrisSaverFillValueWarning
-            )
+            warnings.filterwarnings("error", category=SaverFillValueWarning)
 
         # Do call: it should raise AND return a warning, ONLY IF there was a collision.
         result = _fillvalue_report(

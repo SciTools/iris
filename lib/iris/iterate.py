@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Cube functions for iteration in step.
 
@@ -12,8 +13,6 @@ import itertools
 import warnings
 
 import numpy as np
-
-from iris.exceptions import IrisUserWarning
 
 __all__ = ["izip"]
 
@@ -165,8 +164,7 @@ def izip(*cubes, **kwargs):
                 warnings.warn(
                     "Iterating over coordinate '%s' in step whose "
                     "definitions match but whose values "
-                    "differ." % coord_a.name(),
-                    category=IrisUserWarning,
+                    "differ." % coord_a.name()
                 )
 
     return _ZipSlicesIterator(

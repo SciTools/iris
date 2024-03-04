@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -23,16 +24,13 @@ from iris.coord_systems import (
     LambertAzimuthalEqualArea,
     LambertConformal,
     Mercator,
-    ObliqueMercator,
     RotatedGeogCS,
-    RotatedMercator,
     Stereographic,
     TransverseMercator,
     VerticalPerspective,
 )
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IrisMaskValueMatchWarning
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
 
@@ -557,7 +555,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">f4")
         fill_value = 1
         with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
+            UserWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
@@ -569,7 +567,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">i1")
         fill_value = 1
         with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
+            UserWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube, fill_value=fill_value):
@@ -581,7 +579,7 @@ class Test_write_fill_value(tests.IrisTest):
         cube = self._make_cube(">f4")
         cube.data[0, 0] = _thread_safe_nc.default_fillvals["f4"]
         with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
+            UserWarning,
             "contains unmasked data points equal to the fill-value",
         ):
             with self._netCDF_var(cube):
@@ -1065,50 +1063,6 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             "longitude_of_prime_meridian": 0,
         }
         self._test(coord_system, expected)
-
-    def test_oblique_cs(self):
-        # Some none-default settings to confirm all parameters are being
-        #  handled.
-
-        kwargs_rotated = dict(
-            latitude_of_projection_origin=90.0,
-            longitude_of_projection_origin=45.0,
-            false_easting=1000000.0,
-            false_northing=-2000000.0,
-            scale_factor_at_projection_origin=0.939692620786,
-            ellipsoid=GeogCS(1),
-        )
-
-        # Same as rotated, but with azimuth too.
-        oblique_azimuth = dict(azimuth_of_central_line=45.0)
-        kwargs_oblique = dict(kwargs_rotated, **oblique_azimuth)
-
-        expected_rotated = dict(
-            # Automatically converted to oblique_mercator in line with CF 1.11 .
-            grid_mapping_name=b"oblique_mercator",
-            # Azimuth should be automatically populated.
-            azimuth_of_central_line=90.0,
-            **kwargs_rotated,
-        )
-        # Convert the ellipsoid
-        expected_rotated.update(
-            dict(
-                earth_radius=expected_rotated.pop("ellipsoid").semi_major_axis,
-                longitude_of_prime_meridian=0.0,
-            )
-        )
-
-        # Same as rotated, but different azimuth.
-        expected_oblique = dict(expected_rotated, **oblique_azimuth)
-
-        oblique = ObliqueMercator(**kwargs_oblique)
-        rotated = RotatedMercator(**kwargs_rotated)
-
-        for coord_system, expected in [
-            (oblique, expected_oblique),
-            (rotated, expected_rotated),
-        ]:
-            self._test(coord_system, expected)
 
 
 if __name__ == "__main__":

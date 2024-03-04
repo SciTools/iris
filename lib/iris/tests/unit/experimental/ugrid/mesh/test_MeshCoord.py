@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
 
@@ -16,7 +17,7 @@ import unittest.mock as mock
 
 import dask.array as da
 import numpy as np
-from packaging import version
+from pkg_resources import parse_version
 import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
@@ -78,7 +79,7 @@ class Test__readonly_properties(tests.IrisTest):
     def test_fixed_metadata(self):
         # Check that you cannot set any of these on an existing MeshCoord.
         meshcoord = self.meshcoord
-        if version.parse(python_version()) >= version.parse("3.11"):
+        if parse_version(python_version()) >= parse_version("3.11"):
             msg = "object has no setter"
         else:
             msg = "can't set attribute"
@@ -577,7 +578,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         edge_xs = self.EDGECOORDS_BASENUM + np.arange(n_edges)
         face_xs = self.FACECOORDS_BASENUM + np.arange(n_faces)
 
-        # Record all these for reuse in tests
+        # Record all these for re-use in tests
         self.n_faces = n_faces
         self.n_nodes = n_nodes
         self.face_xs = face_xs

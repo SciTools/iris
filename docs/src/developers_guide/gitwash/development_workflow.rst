@@ -14,7 +14,8 @@ Workflow Summary
 In what follows we'll refer to the upstream iris ``main`` branch, as
 "trunk".
 
-* Don't use your ``main`` (that is on your fork) branch for development.
+* Don't use your ``main`` (that is on your fork) branch for anything.
+  Consider deleting it.
 * When you are starting a new set of changes, fetch any changes from trunk,
   and start a new *feature branch* from that.
 * Make a new branch for each separable set of changes |emdash| "one task, one
@@ -32,6 +33,13 @@ This in turn makes it easier for project maintainers (that might be you) to see
 what you've done, and why you did it.
 
 See `linux git workflow`_ for some explanation.
+
+Consider Deleting Your Main Branch
+==================================
+
+It may sound strange, but deleting your own ``main`` branch can help reduce
+confusion about which branch you are on.  See `deleting master on github`_ for
+details.
 
 .. _update-mirror-trunk:
 
@@ -74,7 +82,7 @@ what the changes in the branch are for.  For example ``add-ability-to-fly``, or
     git checkout my-new-feature
 
 Generally, you will want to keep your feature branches on your public github_
-fork of `iris`_.  To do this, you ``git push`` this new branch up to your
+fork of `iris`_.  To do this, you `git push`_ this new branch up to your
 github repo.  Generally (if you followed the instructions in these pages, and by
 default), git will have a link to your github repo, called ``origin``.  You push
 up to your own repo on github with::
@@ -108,7 +116,7 @@ In More Detail
 --------------
 
 #. Make some changes
-#. See which files have changed with ``git status``.
+#. See which files have changed with ``git status`` (see `git status`_).
    You'll see a listing like this one::
 
      # On branch ny-new-feature
@@ -124,15 +132,16 @@ In More Detail
      #	INSTALL
      no changes added to commit (use "git add" and/or "git commit -a")
 
-#. Check what the actual changes are with ``git diff``.
-#. Add any new files to version control ``git add new_file_name``.
+#. Check what the actual changes are with ``git diff`` (`git diff`_).
+#. Add any new files to version control ``git add new_file_name`` (see
+   `git add`_).
 #. To commit all modified files into the local copy of your repo, do
    ``git commit -am 'A commit message'``.  Note the ``-am`` options to
    ``commit``. The ``m`` flag just signals that you're going to type a
    message on the command line.  The ``a`` flag will automatically stage
    all files that have been modified and deleted.
 #. To push the changes up to your forked repo on github, do a ``git
-   push``.
+   push`` (see `git push`_).
 
 
 Testing Your Changes

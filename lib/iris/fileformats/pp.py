@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Provides UK Met Office Post Process (PP) format specific capabilities.
 
@@ -26,7 +27,6 @@ import numpy.ma as ma
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
 import iris.coord_systems
-import iris.exceptions
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
@@ -218,33 +218,6 @@ LBUSER_DTYPE_LOOKUP = {
     -3: np.dtype(">i4"),
     "default": np.dtype(">f4"),
 }
-
-
-class _WarnComboLoadingMask(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisMaskValueMatchWarning,
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
-
-
-class _WarnComboLoadingDefaulting(
-    iris.exceptions.IrisDefaultingWarning,
-    iris.exceptions.IrisLoadWarning,
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
-
-
-class _WarnComboIgnoringLoad(
-    iris.exceptions.IrisIgnoringWarning,
-    iris.exceptions.IrisLoadWarning,
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
 
 
 class STASH(collections.namedtuple("STASH", "model section item")):
@@ -1192,10 +1165,7 @@ class PPField(metaclass=ABCMeta):
                 "missing data. To save these as normal values, please "
                 "set the field BMDI not equal to any valid data points."
             )
-            warnings.warn(
-                msg.format(mdi),
-                category=_WarnComboLoadingMask,
-            )
+            warnings.warn(msg.format(mdi))
         if isinstance(data, ma.MaskedArray):
             if ma.is_masked(data):
                 data = data.filled(fill_value=mdi)
@@ -1320,8 +1290,7 @@ class PPField(metaclass=ABCMeta):
             warnings.warn(
                 "Downcasting array precision from float64 to float32"
                 " for save.If float64 precision is required then"
-                " please save in a different format",
-                category=_WarnComboLoadingDefaulting,
+                " please save in a different format"
             )
             data = data.astype(">f4")
             lb[self.HEADER_DICT["lbuser"][0]] = 1
@@ -1763,8 +1732,7 @@ def _interpret_fields(fields):
             warnings.warn(
                 "Landmask compressed fields existed without a "
                 "landmask to decompress with. The data will have "
-                "a shape of (0, 0) and will not read.",
-                category=iris.exceptions.IrisLoadWarning,
+                "a shape of (0, 0) and will not read."
             )
             mask_shape = (0, 0)
         else:
@@ -1933,10 +1901,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                     "Unable to interpret field {}. {}. Skipping "
                     "the remainder of the file.".format(field_count, str(e))
                 )
-                warnings.warn(
-                    msg,
-                    category=_WarnComboIgnoringLoad,
-                )
+                warnings.warn(msg)
                 break
 
             # Skip the trailing 4-byte word containing the header length
@@ -1956,8 +1921,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 warnings.warn(
                     wmsg.format(
                         pp_field.lblrec * PP_WORD_DEPTH, len_of_data_plus_extra
-                    ),
-                    category=_WarnComboIgnoringLoad,
+                    )
                 )
                 break
 

@@ -171,13 +171,23 @@ def main():
         )
         plt.gca().coastlines()
 
-    # Now add a colour bar which spans the two plots.  Here we pass Figure.axes
-    # which is a list of all (two) axes currently on the figure.  Note that
-    # these are different to the contents of ax_array, because those were
-    # standard Matplotlib Axes that Iris automatically replaced with Cartopy
-    # GeoAxes.
+    # Now add a colourbar who's leftmost point is the same as the leftmost
+    # point of the left hand plot and rightmost point is the rightmost
+    # point of the right hand plot.
+
+    # Get the positions of the 2nd plot and the left position of the 1st plot.
+    left, bottom, width, height = ax_array[1].get_position().bounds
+    first_plot_left = ax_array[0].get_position().bounds[0]
+
+    # The width of the colorbar should now be simple.
+    width = left - first_plot_left + width
+
+    # Add axes to the figure, to place the colour bar.
+    colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
+
+    # Add the colour bar.
     cbar = plt.colorbar(
-        contour_result, ax=fig.axes, aspect=60, orientation="horizontal"
+        contour_result, colorbar_axes, orientation="horizontal"
     )
 
     # Label the colour bar and add ticks.

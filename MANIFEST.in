@@ -17,7 +17,8 @@ exclude .readthedocs.yml
 exclude CHANGES
 exclude CODE_OF_CONDUCT.md
 exclude codecov.yml
-include LICENSE
+include COPYING
+include COPYING.LESSER
 exclude Makefile
 exclude noxfile.py
 

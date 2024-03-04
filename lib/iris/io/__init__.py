@@ -1,9 +1,12 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+"""
+Provides an interface to manage URI scheme support in iris.
 
-"""Provides an interface to manage URI scheme support in iris."""
+"""
 
 import collections
 from collections import OrderedDict
@@ -37,27 +40,29 @@ _savers = _SaversDict()
 
 def run_callback(callback, cube, field, filename):
     """
-    Run the callback mechanism given the appropriate arguments.
+    Runs the callback mechanism given the appropriate arguments.
 
-    Parameters
-    ----------
-    callback :
+    Args:
+
+    * callback:
         A function to add metadata from the originating field and/or URI which
         obeys the following rules:
 
-        1. Function signature must be: ``(cube, field, filename)``.
-        2. Modifies the given cube inplace, unless a new cube is
-           returned by the function.
-        3. If the cube is to be rejected the callback must raise
-           an :class:`iris.exceptions.IgnoreCubeException`.
+            1. Function signature must be: ``(cube, field, filename)``.
+            2. Modifies the given cube inplace, unless a new cube is
+               returned by the function.
+            3. If the cube is to be rejected the callback must raise
+               an :class:`iris.exceptions.IgnoreCubeException`.
 
-    Notes
-    -----
-    It is possible that this function returns None for certain callbacks,
-    the caller of this function should handle this case.
+    .. note::
 
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+        It is possible that this function returns None for certain callbacks,
+        the caller of this function should handle this case.
+
+    .. note::
+
+        This function maintains laziness when called; it does not realise data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -84,7 +89,7 @@ def run_callback(callback, cube, field, filename):
 
 def decode_uri(uri, default="file"):
     r"""
-    Decode a single URI into scheme and scheme-specific parts.
+    Decodes a single URI into scheme and scheme-specific parts.
 
     In addition to well-formed URIs, it also supports bare file paths as strings
     or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
@@ -96,26 +101,25 @@ def decode_uri(uri, default="file"):
 
         from iris.io import *
 
-    Examples
-    --------
-    >>> from iris.io import decode_uri
-    >>> print(decode_uri('http://www.thing.com:8080/resource?id=a:b'))
-    ('http', '//www.thing.com:8080/resource?id=a:b')
+    Examples:
+        >>> from iris.io import decode_uri
+        >>> print(decode_uri('http://www.thing.com:8080/resource?id=a:b'))
+        ('http', '//www.thing.com:8080/resource?id=a:b')
 
-    >>> print(decode_uri('file:///data/local/dataZoo/...'))
-    ('file', '///data/local/dataZoo/...')
+        >>> print(decode_uri('file:///data/local/dataZoo/...'))
+        ('file', '///data/local/dataZoo/...')
 
-    >>> print(decode_uri('/data/local/dataZoo/...'))
-    ('file', '/data/local/dataZoo/...')
+        >>> print(decode_uri('/data/local/dataZoo/...'))
+        ('file', '/data/local/dataZoo/...')
 
-    >>> print(decode_uri('file:///C:\data\local\dataZoo\...'))
-    ('file', '///C:\\data\\local\\dataZoo\\...')
+        >>> print(decode_uri('file:///C:\data\local\dataZoo\...'))
+        ('file', '///C:\\data\\local\\dataZoo\\...')
 
-    >>> print(decode_uri('C:\data\local\dataZoo\...'))
-    ('file', 'C:\\data\\local\\dataZoo\\...')
+        >>> print(decode_uri('C:\data\local\dataZoo\...'))
+        ('file', 'C:\\data\\local\\dataZoo\\...')
 
-    >>> print(decode_uri('dataZoo/...'))
-    ('file', 'dataZoo/...')
+        >>> print(decode_uri('dataZoo/...'))
+        ('file', 'dataZoo/...')
 
         >>> print(decode_uri({}))
         ('data', {})
@@ -153,7 +157,7 @@ def expand_filespecs(file_specs, files_expected=True):
     ----------
     file_specs : iterable of str
         File paths which may contain ``~`` elements or wildcards.
-    files_expected : bool, optional, default=True
+    files_expected : bool, default=True
         Whether file is expected to exist (i.e. for load).
 
     Returns
@@ -202,16 +206,14 @@ def expand_filespecs(file_specs, files_expected=True):
 
 def load_files(filenames, callback, constraints=None):
     """
-    Create a generator of Cubes from given files.
-
-    Take a list of filenames which may also be globs, and optionally a
+    Takes a list of filenames which may also be globs, and optionally a
     constraint set and a callback function, and returns a
     generator of Cubes from the given files.
 
-    Notes
-    -----
-    Typically, this function should not be called directly; instead, the
-    intended interface for loading is :func:`iris.load`.
+    .. note::
+
+        Typically, this function should not be called directly; instead, the
+        intended interface for loading is :func:`iris.load`.
 
     """
     from iris.fileformats import FORMAT_AGENT
@@ -242,15 +244,13 @@ def load_files(filenames, callback, constraints=None):
 
 def load_http(urls, callback):
     """
-    Create generator of Cubes from the given OPeNDAP URLs.
-
-    Take a list of OPeNDAP URLs and a callback function, and returns a generator
+    Takes a list of OPeNDAP URLs and a callback function, and returns a generator
     of Cubes from the given URLs.
 
-    Notes
-    -----
-    Typically, this function should not be called directly; instead, the
-    intended interface for loading is :func:`iris.load`.
+    .. note::
+
+        Typically, this function should not be called directly; instead, the
+        intended interface for loading is :func:`iris.load`.
 
     """
     #
@@ -277,8 +277,8 @@ def load_http(urls, callback):
 
 def load_data_objects(urls, callback):
     """
-    Take a list of data-source objects and a callback function, returns a generator of Cubes.
-
+    Takes a list of data-source objects and a callback function, and returns a
+    generator of Cubes.
     The 'objects' take the place of 'uris' in the load calls.
     The appropriate types of the data-source objects are expected to be
     recognised by the handlers :  This is done in the usual way by passing the
@@ -346,16 +346,12 @@ def add_saver(file_extension, new_saver):
     """
     Add a custom saver to the Iris session.
 
-    Parameters
-    ----------
-    file_extension : str
-        A string such as "pp" or "my_format".
-    new_saver : function
-        A function of the form ``my_saver(cube, target)``.
+    Args:
 
-    See Also
-    --------
-    :func:`iris.io.save`
+    * file_extension: A string such as "pp" or "my_format".
+    * new_saver:      A function of the form ``my_saver(cube, target)``.
+
+    See also :func:`iris.io.save`
 
     """
     # Make sure it's a func with 2+ args
@@ -373,16 +369,14 @@ def find_saver(filespec):
     """
     Find the saver function appropriate to the given filename or extension.
 
-    Parameters
-    ----------
-    filespec : str
-        A string such as "my_file.pp" or "PP".
+    Args:
 
-    Returns
-    -------
-    Save function
-        Save functions can be passed to :func:`iris.io.save`.  Value may also
-        be None.
+        * filespec
+            A string such as "my_file.pp" or "PP".
+
+    Returns:
+        A save function or None.
+        Save functions can be passed to :func:`iris.io.save`.
 
     """
     _check_init_savers()
@@ -407,12 +401,12 @@ def save(source, target, saver=None, **kwargs):
     Iris currently supports three file formats for saving, which it can
     recognise by filename extension:
 
-    * netCDF - the Unidata network Common Data Format:
-        * see :func:`iris.fileformats.netcdf.save`
-    * GRIB2 - the WMO GRIdded Binary data format:
-        * see :func:`iris_grib.save_grib2`.
-    * PP - the Met Office UM Post Processing Format:
-        * see :func:`iris.fileformats.pp.save`
+        * netCDF - the Unidata network Common Data Format:
+            * see :func:`iris.fileformats.netcdf.save`
+        * GRIB2 - the WMO GRIdded Binary data format:
+            * see :func:`iris_grib.save_grib2`.
+        * PP - the Met Office UM Post Processing Format:
+            * see :func:`iris.fileformats.pp.save`
 
     A custom saver can be provided to the function to write to a different
     file format.
@@ -476,7 +470,8 @@ def save(source, target, saver=None, **kwargs):
     >>> iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
     Notes
-    -----
+    ------
+
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 

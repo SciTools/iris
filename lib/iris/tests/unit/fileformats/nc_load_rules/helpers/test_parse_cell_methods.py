@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Unit tests for :func:`iris.fileformats.netcdf.parse_cell_methods`.
 
@@ -14,7 +15,6 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 from iris.coords import CellMethod
-from iris.exceptions import IrisCfLoadWarning
 from iris.fileformats._nc_load_rules.helpers import parse_cell_methods
 
 
@@ -123,7 +123,7 @@ class Test(tests.IrisTest):
         ]
         for cell_method_str in cell_method_strings:
             with self.assertWarns(
-                IrisCfLoadWarning,
+                UserWarning,
                 msg="Cell methods may be incorrectly parsed due to mismatched brackets",
             ):
                 _ = parse_cell_methods(cell_method_str)
@@ -139,7 +139,7 @@ class Test(tests.IrisTest):
         ]
         for cell_method_str in cell_method_strings:
             with self.assertWarns(
-                IrisCfLoadWarning,
+                UserWarning,
                 msg=f"Failed to fully parse cell method string: {cell_method_str}",
             ):
                 _ = parse_cell_methods(cell_method_str)

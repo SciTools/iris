@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """NAME file format loading functions."""
 
 import collections
@@ -16,7 +17,7 @@ import numpy as np
 import iris.coord_systems
 from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
-from iris.exceptions import IrisLoadWarning, TranslationError
+from iris.exceptions import TranslationError
 import iris.util
 
 EARTH_RADIUS = 6371229.0
@@ -272,9 +273,7 @@ def _parse_units(units):
     try:
         units = cf_units.Unit(units)
     except ValueError:
-        warnings.warn(
-            "Unknown units: {!r}".format(units), category=IrisLoadWarning
-        )
+        warnings.warn("Unknown units: {!r}".format(units))
         units = cf_units.Unit(None)
 
     return units
@@ -612,9 +611,7 @@ def _build_cell_methods(av_or_ints, coord):
         else:
             cell_method = None
             msg = "Unknown {} statistic: {!r}. Unable to create cell method."
-            warnings.warn(
-                msg.format(coord, av_or_int), category=IrisLoadWarning
-            )
+            warnings.warn(msg.format(coord, av_or_int))
         cell_methods.append(cell_method)  # NOTE: this can be a None
     return cell_methods
 

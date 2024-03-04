@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Unit tests for the :data:`iris.analysis.PERCENTILE` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -93,7 +94,7 @@ class ScipyAggregateMixin:
     Tests for calculations specific to the default (scipy) function.  Includes
     tests on masked data and tests to verify that the function is called with
     the expected keywords.  Needs to be used with AggregateMixin, as some of
-    these tests reuse its method.
+    these tests re-use its method.
 
     """
 

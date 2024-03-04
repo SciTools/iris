@@ -53,3 +53,5 @@ the below table.
 .. note:: The data in this table is updated every 30 minutes and is sourced
           from `voted-issues.json`_.
           For the latest data please see the `issues on GitHub`_.
+          Note that the list on Github does not show the number of votes 👍
+          only the total number of comments for the whole issue.

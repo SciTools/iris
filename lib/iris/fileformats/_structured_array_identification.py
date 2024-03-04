@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 r"""
 The purpose of this module is to provide utilities for the identification
 of multi-dimensional structure in a flat sequence of homogeneous objects.
@@ -416,7 +417,7 @@ class GroupStructure:
                 # If we are to build another dimension on top of this possible
                 # structure, we need to compute the stride that would be
                 # needed for that dimension.
-                next_stride = np.prod(
+                next_stride = np.product(
                     [struct.size for (_, struct) in potential]
                 )
 

@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Definitions of coordinates and other dimensional metadata.
 
@@ -35,9 +36,6 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
-
-#: The default value for ignore_axis which controls guess_coord_axis' behaviour
-DEFAULT_IGNORE_AXIS = False
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
@@ -863,6 +861,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 element.setAttribute(
                     "climatological", str(self.climatological)
                 )
+
         if self.attributes:
             attributes_element = doc.createElement("attributes")
             for name in sorted(self.attributes.keys()):
@@ -1595,8 +1594,6 @@ class Coord(_DimensionalMetadata):
         self.bounds = bounds
         self.climatological = climatological
 
-        self._ignore_axis = DEFAULT_IGNORE_AXIS
-
     def copy(self, points=None, bounds=None):
         """
         Returns a copy of this coordinate.
@@ -1629,10 +1626,6 @@ class Coord(_DimensionalMetadata):
             # self.
             new_coord.bounds = bounds
 
-        # The state of ignore_axis is controlled by the coordinate rather than
-        # the metadata manager
-        new_coord.ignore_axis = self.ignore_axis
-
         return new_coord
 
     @classmethod
@@ -1652,14 +1645,7 @@ class Coord(_DimensionalMetadata):
         if issubclass(cls, DimCoord):
             # DimCoord introduces an extra constructor keyword.
             kwargs["circular"] = getattr(coord, "circular", False)
-
-        new_coord = cls(**kwargs)
-
-        # The state of ignore_axis is controlled by the coordinate rather than
-        # the metadata manager
-        new_coord.ignore_axis = coord.ignore_axis
-
-        return new_coord
+        return cls(**kwargs)
 
     @property
     def points(self):
@@ -1750,24 +1736,6 @@ class Coord(_DimensionalMetadata):
                 raise ValueError(emsg)
 
         self._metadata_manager.climatological = value
-
-    @property
-    def ignore_axis(self):
-        """
-        A boolean that controls whether guess_coord_axis acts on this
-        coordinate.
-
-        Defaults to False, and when set to True it will be skipped by
-        guess_coord_axis.
-        """
-        return self._ignore_axis
-
-    @ignore_axis.setter
-    def ignore_axis(self, value):
-        if not isinstance(value, bool):
-            emsg = "'ignore_axis' can only be set to 'True' or 'False'"
-            raise ValueError(emsg)
-        self._ignore_axis = value
 
     def lazy_points(self):
         """
@@ -2089,8 +2057,7 @@ class Coord(_DimensionalMetadata):
             if self.ndim == 1:
                 warnings.warn(
                     "Coordinate {!r} is not bounded, guessing "
-                    "contiguous bounds.".format(self.name()),
-                    category=iris.exceptions.IrisGuessBoundsWarning,
+                    "contiguous bounds.".format(self.name())
                 )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
@@ -2257,10 +2224,7 @@ class Coord(_DimensionalMetadata):
                     "Collapsing a multi-dimensional coordinate. "
                     "Metadata may not be fully descriptive for {!r}."
                 )
-                warnings.warn(
-                    msg.format(self.name()),
-                    category=iris.exceptions.IrisVagueMetadataWarning,
-                )
+                warnings.warn(msg.format(self.name()))
             else:
                 try:
                     self._sanity_check_bounds()
@@ -2270,10 +2234,7 @@ class Coord(_DimensionalMetadata):
                         "Metadata may not be fully descriptive for {!r}. "
                         "Ignoring bounds."
                     )
-                    warnings.warn(
-                        msg.format(str(exc), self.name()),
-                        category=iris.exceptions.IrisVagueMetadataWarning,
-                    )
+                    warnings.warn(msg.format(str(exc), self.name()))
                     self.bounds = None
                 else:
                     if not self.is_contiguous():
@@ -2281,10 +2242,7 @@ class Coord(_DimensionalMetadata):
                             "Collapsing a non-contiguous coordinate. "
                             "Metadata may not be fully descriptive for {!r}."
                         )
-                        warnings.warn(
-                            msg.format(self.name()),
-                            category=iris.exceptions.IrisVagueMetadataWarning,
-                        )
+                        warnings.warn(msg.format(self.name()))
 
             if self.has_bounds():
                 item = self.core_bounds()
@@ -2727,6 +2685,7 @@ class DimCoord(Coord):
             Will set to True when a climatological time axis is loaded
             from NetCDF.
             Always False if no bounds exist.
+
         """
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(DimCoordMetadata)
@@ -3150,7 +3109,7 @@ class CellMethod(iris.util._OrderedHashable):
 
     def __add__(self, other):
         # Disable the default tuple behaviour of tuple concatenation
-        return NotImplemented
+        raise NotImplementedError()
 
     def xml_element(self, doc):
         """
