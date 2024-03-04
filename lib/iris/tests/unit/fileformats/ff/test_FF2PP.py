@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Unit tests for the :class:`iris.fileformat.ff.FF2PP` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -14,7 +15,7 @@ from unittest import mock
 
 import numpy as np
 
-from iris.exceptions import IrisLoadWarning, NotYetImplementedError
+from iris.exceptions import NotYetImplementedError
 import iris.fileformats._ff as ff
 from iris.fileformats._ff import FF2PP
 import iris.fileformats.pp as pp
@@ -466,7 +467,7 @@ class Test__det_border(tests.IrisTest):
 
         with mock.patch("warnings.warn") as warn:
             result = ff2pp._det_border(field_x, None)
-        warn.assert_called_with(msg, category=IrisLoadWarning)
+        warn.assert_called_with(msg)
         self.assertIs(result, field_x)
 
     def test_increasing_field_values(self):

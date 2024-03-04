@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridConnectivityVariable` class.
 
@@ -13,14 +14,9 @@ todo: fold these tests into cf tests when experimental.ugrid is folded into
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import re
-import warnings
-
 import numpy as np
-import pytest
 
-import iris.exceptions
-from iris.experimental.ugrid.cf import CFUGridConnectivityVariable
+from iris.experimental.ugrid.cf import CFUGridConnectivityVariable, logger
 from iris.experimental.ugrid.mesh import Connectivity
 from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
@@ -203,37 +199,26 @@ class TestIdentify(tests.IrisTest):
             "ref_source": ref_source,
         }
 
-        def operation(warn: bool):
-            warnings.warn(
-                "emit at least 1 warning",
-                category=iris.exceptions.IrisUserWarning,
-            )
-            result = CFUGridConnectivityVariable.identify(vars_all, warn=warn)
-            self.assertDictEqual({}, result)
+        # The warn kwarg and expected corresponding log level.
+        warn_and_level = {True: "WARNING", False: "DEBUG"}
 
         # Missing warning.
-        warn_regex = (
-            rf"Missing CF-UGRID connectivity variable {subject_name}.*"
-        )
-        with pytest.warns(
-            iris.exceptions.IrisCfMissingVarWarning, match=warn_regex
-        ):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        log_regex = rf"Missing CF-UGRID connectivity variable {subject_name}.*"
+        for warn, level in warn_and_level.items():
+            with self.assertLogs(logger, level=level, msg_regex=log_regex):
+                result = CFUGridConnectivityVariable.identify(
+                    vars_all, warn=warn
+                )
+                self.assertDictEqual({}, result)
 
         # String variable warning.
-        warn_regex = r".*is a CF-netCDF label variable.*"
-        vars_all[subject_name] = netcdf_ugrid_variable(
-            subject_name, "", np.bytes_
-        )
-        with pytest.warns(
-            iris.exceptions.IrisCfLabelVarWarning, match=warn_regex
-        ):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        log_regex = r".*is a CF-netCDF label variable.*"
+        for warn, level in warn_and_level.items():
+            with self.assertLogs(logger, level=level, msg_regex=log_regex):
+                vars_all[subject_name] = netcdf_ugrid_variable(
+                    subject_name, "", np.bytes_
+                )
+                result = CFUGridConnectivityVariable.identify(
+                    vars_all, warn=warn
+                )
+                self.assertDictEqual({}, result)

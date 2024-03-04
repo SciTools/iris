@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Utilities for producing runtime deprecation messages.
 
@@ -11,13 +12,7 @@ import warnings
 
 
 class IrisDeprecation(UserWarning):
-    """
-    An Iris deprecation warning.
-
-    Note this subclasses UserWarning for backwards compatibility with Iris'
-    original deprecation warnings. Should subclass DeprecationWarning at the
-    next major release.
-    """
+    """An Iris deprecation warning."""
 
     pass
 
@@ -49,7 +44,7 @@ def warn_deprecated(msg, stacklevel=2):
         >>>
 
     """
-    warnings.warn(msg, category=IrisDeprecation, stacklevel=stacklevel)
+    warnings.warn(msg, IrisDeprecation, stacklevel=stacklevel)
 
 
 # A Mixin for a wrapper class that copies the docstring of the wrapped class

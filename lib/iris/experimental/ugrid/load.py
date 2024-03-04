@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 """
 Extensions to Iris' NetCDF loading to allow the construction of
@@ -14,15 +15,9 @@ from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
 import threading
-import warnings
 
 from ...config import get_logger
 from ...coords import AuxCoord
-from ...exceptions import (
-    IrisCfWarning,
-    IrisDefaultingWarning,
-    IrisIgnoringWarning,
-)
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...fileformats.netcdf import loader as nc_loader
 from ...io import decode_uri, expand_filespecs
@@ -37,20 +32,6 @@ from .mesh import Connectivity, Mesh
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
-
-
-class _WarnComboCfDefaulting(IrisCfWarning, IrisDefaultingWarning):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
-
-
-class _WarnComboCfDefaultingIgnoring(
-    _WarnComboCfDefaulting, IrisIgnoringWarning
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
 
 
 class ParseUGridOnLoad(threading.local):
@@ -369,10 +350,8 @@ def _build_mesh(cf, mesh_var, file_path):
         )
     if cf_role_message:
         cf_role_message += " Correcting to 'mesh_topology'."
-        warnings.warn(
-            cf_role_message,
-            category=_WarnComboCfDefaulting,
-        )
+        # TODO: reconsider logging level when we have consistent practice.
+        logger.warning(cf_role_message, extra=dict(cls=None))
 
     if hasattr(mesh_var, "volume_node_connectivity"):
         topology_dimension = 3
@@ -390,7 +369,8 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        warnings.warn(msg, category=_WarnComboCfDefaulting)
+        # TODO: reconsider logging level when we have consistent practice.
+        logger.warning(msg, extra=dict(cls=None))
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -402,10 +382,8 @@ def _build_mesh(cf, mesh_var, file_path):
                 f"{quoted_topology_dimension}"
                 " -- ignoring this as it is inconsistent."
             )
-            warnings.warn(
-                msg,
-                category=_WarnComboCfDefaultingIgnoring,
-            )
+            # TODO: reconsider logging level when we have consistent practice.
+            logger.warning(msg=msg, extra=dict(cls=None))
 
     node_dimension = None
     edge_dimension = getattr(mesh_var, "edge_dimension", None)

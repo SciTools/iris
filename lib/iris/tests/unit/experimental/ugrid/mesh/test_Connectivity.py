@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Unit tests for the :class:`iris.experimental.ugrid.mesh.Connectivity` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -13,7 +14,7 @@ from xml.dom import minidom
 
 import numpy as np
 from numpy import ma
-from packaging import version
+from pkg_resources import parse_version
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.experimental.ugrid.mesh import Connectivity
@@ -62,7 +63,7 @@ class TestStandard(tests.IrisTest):
 
     def test_read_only(self):
         attributes = ("indices", "cf_role", "start_index", "location_axis")
-        if version.parse(python_version()) >= version.parse("3.11"):
+        if parse_version(python_version()) >= parse_version("3.11"):
             msg = "object has no setter"
         else:
             msg = "can't set attribute"

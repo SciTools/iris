@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Integration tests for NetCDF-UGRID file loading.
 
@@ -15,10 +16,8 @@ import iris.tests as tests  # isort:skip
 
 from collections.abc import Iterable
 
-import pytest
-
 from iris import Constraint, load
-from iris.exceptions import IrisCfWarning
+from iris.experimental.ugrid import logger
 from iris.experimental.ugrid.load import (
     PARSE_UGRID_ON_LOAD,
     load_mesh,
@@ -169,8 +168,8 @@ class TestTolerantLoading(XIOSFileMixin):
 
     def test_mesh_bad_topology_dimension(self):
         # Check that the load generates a suitable warning.
-        warn_regex = r"topology_dimension.* ignoring"
-        with pytest.warns(IrisCfWarning, match=warn_regex):
+        log_regex = r"topology_dimension.* ignoring"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
             template = "minimal_bad_topology_dim"
             dim_line = "mesh_var:topology_dimension = 1 ;"  # which is wrong !
             cube = self.create_synthetic_test_cube(
@@ -182,8 +181,8 @@ class TestTolerantLoading(XIOSFileMixin):
 
     def test_mesh_no_topology_dimension(self):
         # Check that the load generates a suitable warning.
-        warn_regex = r"Mesh variable.* has no 'topology_dimension'"
-        with pytest.warns(IrisCfWarning, match=warn_regex):
+        log_regex = r"Mesh variable.* has no 'topology_dimension'"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
             template = "minimal_bad_topology_dim"
             dim_line = ""  # don't create ANY topology_dimension property
             cube = self.create_synthetic_test_cube(
@@ -195,8 +194,8 @@ class TestTolerantLoading(XIOSFileMixin):
 
     def test_mesh_bad_cf_role(self):
         # Check that the load generates a suitable warning.
-        warn_regex = r"inappropriate cf_role"
-        with pytest.warns(IrisCfWarning, match=warn_regex):
+        log_regex = r"inappropriate cf_role"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
             template = "minimal_bad_mesh_cf_role"
             dim_line = 'mesh_var:cf_role = "foo" ;'
             _ = self.create_synthetic_test_cube(
@@ -205,8 +204,8 @@ class TestTolerantLoading(XIOSFileMixin):
 
     def test_mesh_no_cf_role(self):
         # Check that the load generates a suitable warning.
-        warn_regex = r"no cf_role attribute"
-        with pytest.warns(IrisCfWarning, match=warn_regex):
+        log_regex = r"no cf_role attribute"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
             template = "minimal_bad_mesh_cf_role"
             dim_line = ""
             _ = self.create_synthetic_test_cube(

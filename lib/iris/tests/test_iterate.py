@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Test the iteration of cubes in step.
 
@@ -21,7 +22,6 @@ import numpy as np
 
 import iris
 import iris.analysis
-from iris.exceptions import IrisUserWarning
 import iris.iterate
 import iris.tests.stock
 
@@ -365,12 +365,12 @@ class TestIterateFunctions(tests.IrisTest):
             warnings.simplefilter(
                 "error"
             )  # Cause all warnings to raise Exceptions
-            with self.assertRaises(IrisUserWarning):
+            with self.assertRaises(UserWarning):
                 iris.iterate.izip(
                     self.cube_a, self.cube_b, coords=self.coord_names
                 )
             # Call with coordinates, rather than names
-            with self.assertRaises(IrisUserWarning):
+            with self.assertRaises(UserWarning):
                 iris.iterate.izip(
                     self.cube_a, self.cube_b, coords=[latitude, longitude]
                 )

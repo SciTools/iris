@@ -40,14 +40,12 @@ smoother interoperability:
 
 * The :mod:`iris.pandas` module
 * :doc:`iris_xarray`
-* :doc:`phrasebook`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
    iris_xarray
-   phrasebook
 
 Plugins
 -------

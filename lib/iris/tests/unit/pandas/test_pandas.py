@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """All unit tests for the :mod:`iris.pandas` module."""
 
 # import iris tests first so that some things can be initialised before
@@ -1074,7 +1075,7 @@ class TestPandasAsCubes(tests.IrisTest):
     def test_3d_with_2d_coord(self):
         df = self._create_pandas(index_levels=3)
         coord_shape = df.index.levshape[:2]
-        coord_values = np.arange(np.prod(coord_shape))
+        coord_values = np.arange(np.product(coord_shape))
         coord_name = "foo"
         df[coord_name] = coord_values.repeat(df.index.levshape[-1])
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
@@ -1088,7 +1089,7 @@ class TestPandasAsCubes(tests.IrisTest):
     def test_coord_varies_all_indices(self):
         df = self._create_pandas(index_levels=3)
         coord_shape = df.index.levshape
-        coord_values = np.arange(np.prod(coord_shape))
+        coord_values = np.arange(np.product(coord_shape))
         coord_name = "foo"
         df[coord_name] = coord_values
         result = iris.pandas.as_cubes(df, aux_coord_cols=[coord_name])
@@ -1104,7 +1105,7 @@ class TestPandasAsCubes(tests.IrisTest):
         #  increment.
         df = self._create_pandas(index_levels=2)
         coord_shape = df.index.levshape
-        coord_values = np.arange(np.prod(coord_shape))
+        coord_values = np.arange(np.product(coord_shape))
         coord_name = "foo"
 
         # Create a repeating value along a dimension.

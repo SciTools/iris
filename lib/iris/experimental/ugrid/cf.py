@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 """
 Extensions to Iris' CF variable representation to represent CF UGrid variables.
@@ -9,11 +10,14 @@ Extensions to Iris' CF variable representation to represent CF UGrid variables.
 Eventual destination: :mod:`iris.fileformats.cf`.
 
 """
-import warnings
+import logging
 
-from ...exceptions import IrisCfLabelVarWarning, IrisCfMissingVarWarning
+from ...config import get_logger
 from ...fileformats import cf
 from .mesh import Connectivity
+
+# Configure the logger.
+logger = get_logger(__name__, propagate=True, handler=False)
 
 
 class CFUGridConnectivityVariable(cf.CFVariable):
@@ -46,6 +50,8 @@ class CFUGridConnectivityVariable(cf.CFVariable):
     def identify(cls, variables, ignore=None, target=None, warn=True):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
+        # TODO: reconsider logging level when we have consistent practice.
+        log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify all CF-UGRID connectivity variables.
         for nc_var_name, nc_var in target.items():
@@ -64,10 +70,11 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                 f"{name}, referenced by netCDF variable "
                                 f"{nc_var_name}"
                             )
-                            if warn:
-                                warnings.warn(
-                                    message, category=IrisCfMissingVarWarning
-                                )
+                            logger.log(
+                                level=log_level,
+                                msg=message,
+                                extra=dict(cls=cls.__name__),
+                            )
                         else:
                             # Restrict to non-string type i.e. not a
                             # CFLabelVariable.
@@ -81,10 +88,11 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                     f"as a CF-UGRID connectivity - is a "
                                     f"CF-netCDF label variable."
                                 )
-                                if warn:
-                                    warnings.warn(
-                                        message, category=IrisCfLabelVarWarning
-                                    )
+                                logger.log(
+                                    level=log_level,
+                                    msg=message,
+                                    extra=dict(cls=cls.__name__),
+                                )
 
         return result
 
@@ -123,6 +131,8 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
     def identify(cls, variables, ignore=None, target=None, warn=True):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
+        # TODO: reconsider logging level when we have consistent practice.
+        log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify any CF-UGRID-relevant auxiliary coordinate variables.
         for nc_var_name, nc_var in target.items():
@@ -139,11 +149,11 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                     f"variable {name}, referenced by netCDF "
                                     f"variable {nc_var_name}"
                                 )
-                                if warn:
-                                    warnings.warn(
-                                        message,
-                                        category=IrisCfMissingVarWarning,
-                                    )
+                                logger.log(
+                                    level=log_level,
+                                    msg=message,
+                                    extra=dict(cls=cls.__name__),
+                                )
                             else:
                                 # Restrict to non-string type i.e. not a
                                 # CFLabelVariable.
@@ -160,11 +170,11 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                         f"auxiliary coordinate - is a "
                                         f"CF-netCDF label variable."
                                     )
-                                    if warn:
-                                        warnings.warn(
-                                            message,
-                                            category=IrisCfLabelVarWarning,
-                                        )
+                                    logger.log(
+                                        level=log_level,
+                                        msg=message,
+                                        extra=dict(cls=cls.__name__),
+                                    )
 
         return result
 
@@ -195,6 +205,8 @@ class CFUGridMeshVariable(cf.CFVariable):
     def identify(cls, variables, ignore=None, target=None, warn=True):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
+        # TODO: reconsider logging level when we have consistent practice.
+        log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify all CF-UGRID mesh variables.
         all_vars = target == variables
@@ -220,10 +232,11 @@ class CFUGridMeshVariable(cf.CFVariable):
                             f"Missing CF-UGRID mesh variable {name}, "
                             f"referenced by netCDF variable {nc_var_name}"
                         )
-                        if warn:
-                            warnings.warn(
-                                message, category=IrisCfMissingVarWarning
-                            )
+                        logger.log(
+                            level=log_level,
+                            msg=message,
+                            extra=dict(cls=cls.__name__),
+                        )
                     else:
                         # Restrict to non-string type i.e. not a
                         # CFLabelVariable.
@@ -237,10 +250,11 @@ class CFUGridMeshVariable(cf.CFVariable):
                                 f"CF-UGRID mesh - is a CF-netCDF label "
                                 f"variable."
                             )
-                            if warn:
-                                warnings.warn(
-                                    message, category=IrisCfLabelVarWarning
-                                )
+                            logger.log(
+                                level=log_level,
+                                msg=message,
+                                extra=dict(cls=cls.__name__),
+                            )
 
         return result
 

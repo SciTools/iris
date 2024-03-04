@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project.
 
@@ -52,7 +53,7 @@ class SingleDiagnosticMixin:
             if three_d:
                 create_kwargs["n_levels"] = 71
 
-            # Will reuse a file if already present.
+            # Will re-use a file if already present.
             file_path = make_cubesphere_testfile(**create_kwargs)
 
         else:

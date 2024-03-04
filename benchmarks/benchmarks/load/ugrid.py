@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Mesh data loading benchmark tests.
 
@@ -76,7 +77,7 @@ class DataRealisation:
     warmup_time = 0.0
     timeout = 300.0
 
-    params = [int(1e4), int(2e5)]
+    params = [1, int(2e5)]
     param_names = ["number of faces"]
 
     def setup_common(self, **kwargs):

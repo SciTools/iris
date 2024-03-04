@@ -1,17 +1,19 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+"""
+Time handling.
 
-"""Time handling."""
+"""
 
 import functools
 
 
 @functools.total_ordering
 class PartialDateTime:
-    """Allow partial comparisons against datetime-like objects.
-
+    """
     A :class:`PartialDateTime` object specifies values for some subset of
     the calendar/time fields (year, month, hour, etc.) for comparing
     with :class:`datetime.datetime`-like instances.
@@ -43,7 +45,7 @@ class PartialDateTime:
     #: A dummy value provided as a workaround to allow comparisons with
     #: :class:`datetime.datetime`.
     #: See http://bugs.python.org/issue8005.
-    #: NB. It doesn't even matter what this value is.
+    # NB. It doesn't even matter what this value is.
     timetuple = None
 
     def __init__(
@@ -56,28 +58,20 @@ class PartialDateTime:
         second=None,
         microsecond=None,
     ):
-        """Allow partial comparisons against datetime-like objects.
+        """
+        Allows partial comparisons against datetime-like objects.
 
-        Parameters
-        ----------
-        year : int
-            The year number as an integer, or None.
-        month : int
-            The month number as an integer, or None.
-        day : int
-            The day number as an integer, or None.
-        hour : int
-            The hour number as an integer, or None.
-        minute : int
-            The minute number as an integer, or None.
-        second : int
-            The second number as an integer, or None.
-        microsecond : int
-            The microsecond number as an integer, or None.
+        Args:
 
-        Examples
-        --------
-        To select any days of the year after the 3rd of April:
+        * year (int):
+        * month (int):
+        * day (int):
+        * hour (int):
+        * minute (int):
+        * second (int):
+        * microsecond (int):
+
+        For example, to select any days of the year after the 3rd of April:
 
         >>> from iris.time import PartialDateTime
         >>> import datetime
@@ -92,12 +86,20 @@ class PartialDateTime:
         False
 
         """
+
+        #: The year number as an integer, or None.
         self.year = year
+        #: The month number as an integer, or None.
         self.month = month
+        #: The day number as an integer, or None.
         self.day = day
+        #: The hour number as an integer, or None.
         self.hour = hour
+        #: The minute number as an integer, or None.
         self.minute = minute
+        #: The second number as an integer, or None.
         self.second = second
+        #: The microsecond number as an integer, or None.
         self.microsecond = microsecond
 
     def __repr__(self):

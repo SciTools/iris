@@ -15,7 +15,7 @@ authors = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
     "Operating System :: MacOS",
     "Operating System :: POSIX",
     "Operating System :: POSIX :: Linux",
@@ -48,7 +48,7 @@ keywords = [
     "ugrid",
     "visualisation",
 ]
-license = {text = "BSD-3-Clause"}
+license = {text = "LGPL-3.0-or-later"}
 name = "scitools-iris"
 requires-python = ">=3.9"
 
@@ -59,7 +59,7 @@ Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
 Issues = "https://github.com/SciTools/iris/issues"
 
 [tool.setuptools]
-license-files = ["LICENSE"]
+license-files = ["COPYING", "COPYING.LESSER"]
 zip-safe = false
 
 [tool.setuptools.dynamic]

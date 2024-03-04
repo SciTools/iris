@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Unit tests for :meth:`iris.fileformats.netcdf.saver.Saver._lazy_stream_data`.
 
@@ -17,7 +18,6 @@ import dask.array as da
 import numpy as np
 import pytest
 
-from iris.exceptions import IrisMaskValueMatchWarning
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf.saver import Saver, _FillvalueCheckInfo
 
@@ -183,5 +183,5 @@ class Test__lazy_stream_data:
         if n_expected_warnings > 0:
             warning = issued_warnings[0]
             msg = "contains unmasked data points equal to the fill-value, 2.0"
-            assert isinstance(warning, IrisMaskValueMatchWarning)
+            assert isinstance(warning, UserWarning)
             assert msg in warning.args[0]

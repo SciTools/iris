@@ -16,9 +16,9 @@ dependencies:
   - cftime >=1.5
   - dask-core >=2022.9.0
   - libnetcdf !=4.9.1
-  - matplotlib-base >=3.5
+  - matplotlib >=3.5
   - netcdf4
-  - numpy >1.21, !=1.24.3
+  - numpy >=1.21, !=1.24.3
   - python-xxhash
   - pyproj
   - scipy
@@ -35,7 +35,6 @@ dependencies:
   - python-stratify
 
 # Test dependencies.
-  - asv_runner
   - distributed
   - filelock
   - imagehash >=4.0

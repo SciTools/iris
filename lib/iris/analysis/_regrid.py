@@ -1,7 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import copy
 import functools
@@ -19,7 +20,6 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid, guess_coord_axis
 
 
@@ -956,9 +956,11 @@ class RectilinearRegridder:
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
 
-        # Define regrid function
-        regrid = functools.partial(
+        data = map_complete_blocks(
+            src,
             self._regrid,
+            (y_dim, x_dim),
+            sample_grid_x.shape,
             x_dim=x_dim,
             y_dim=y_dim,
             src_x_coord=src_x_coord,
@@ -967,10 +969,6 @@ class RectilinearRegridder:
             sample_grid_y=sample_grid_y,
             method=self._method,
             extrapolation_mode=self._extrapolation_mode,
-        )
-
-        data = map_complete_blocks(
-            src, regrid, (y_dim, x_dim), sample_grid_x.shape
         )
 
         # Wrap up the data as a Cube.
@@ -1136,6 +1134,6 @@ def _create_cube(
                 "Cannot update aux_factory {!r} because of dropped"
                 " coordinates.".format(factory.name())
             )
-            warnings.warn(msg, category=IrisImpossibleUpdateWarning)
+            warnings.warn(msg)
 
     return result
