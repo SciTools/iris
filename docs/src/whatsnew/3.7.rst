@@ -36,6 +36,21 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
+v3.7.1 (04 Mar 2024)
+====================
+
+.. dropdown:: v3.7.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+
+   The patches in this release of Iris include:
+
+   #. `@stephenworsley`_ fixed a potential memory leak for Iris uses of
+      :func:`dask.array.map_blocks`; known specifically to be a problem in the
+      :class:`iris.analysis.AreaWeighted` regridder. (:pull:`5767`)
+
+
 📢 Announcements
 ================
 
@@ -47,7 +62,7 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ rewrote :func:`~iris.util.broadcast_to_shape` so it now handles
    lazy data. (:pull:`5307`)
-   
+
    .. _concat_warnings:
 
 #. `@acchamber`_   added error and warning messages about coordinate overlaps to
@@ -70,11 +85,11 @@ This document explains the changes made to Iris for this release
 =============
 
 #. `@acchamber`_ fixed a bug with :func:`~iris.util.unify_time_units` so it does not block
-   concatenation through different data types in rare instances. (:pull:`5372`) 
+   concatenation through different data types in rare instances. (:pull:`5372`)
 
 #. `@acchamber`_ removed some obsolete code that prevented extraction of time points
    from cubes with bounded times (:pull:`5175`)
-   
+
    .. _cftime_warnings:
 
 #. `@rcomer`_ modified pp-loading to avoid a ``cftime`` warning for non-standard
