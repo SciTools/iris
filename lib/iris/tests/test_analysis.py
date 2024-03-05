@@ -1496,7 +1496,7 @@ class TestRollingWindow(tests.IrisTest):
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
     def test_longitude_masked_lazy(self):
-        self.cube.data = ma.array(
+        self.cube.data = da.ma.masked_array(
             self.cube.data,
             mask=[
                 [True, True, True, True],
@@ -1504,7 +1504,6 @@ class TestRollingWindow(tests.IrisTest):
                 [False, False, False, False],
             ],
         )
-        self.cube.data = self.cube.lazy_data()
         res_cube = self.cube.rolling_window("longitude", iris.analysis.MEAN, window=2)
 
         expected_result = np.ma.array(
