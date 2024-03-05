@@ -3175,8 +3175,51 @@ class Cube(CFVariableMixin):
                     add_coord(result_coord, dims)
                     coord_mapping[id(src_coord)] = result_coord
 
+            def create_cell_measures(src_coords, add_coord):
+                # Add copies of the source coordinates, selecting
+                # the appropriate subsets out of coordinates which
+                # share the intersection dimension.
+                for src_coord in src_coords:
+                    # dims = self.cell_measure_dims(src_coord)
+                    dims = src_coord.cube_dims(self)
+                    if dim in dims:
+                        dim_within_coord = dims.index(dim)
+                        data = np.concatenate(
+                            [
+                                chunk.cell_measure(src_coord.name()).core_data()
+                                for chunk in chunks
+                            ],
+                            dim_within_coord,
+                        )
+                        result_coord = src_coord.copy(values=data)
+                    else:
+                        result_coord = src_coord.copy()
+                    add_coord(result_coord, dims)
+
+            def create_anc(src_coords, add_coord):
+                # Add copies of the source coordinates, selecting
+                # the appropriate subsets out of coordinates which
+                # share the intersection dimension.
+                for src_coord in src_coords:
+                    dims = src_coord.cube_dims(self)
+                    if dim in dims:
+                        dim_within_coord = dims.index(dim)
+                        data = np.concatenate(
+                            [
+                                chunk.ancillary_variable(src_coord.name()).core_data()
+                                for chunk in chunks
+                            ],
+                            dim_within_coord,
+                        )
+                        result_coord = src_coord.copy(values=data)
+                    else:
+                        result_coord = src_coord.copy()
+                    add_coord(result_coord, dims)
+
             create_coords(self.dim_coords, result.add_dim_coord)
             create_coords(self.aux_coords, result.add_aux_coord)
+            create_cell_measures(self.cell_measures(), result.add_cell_measure)
+            create_anc(self.ancillary_variables(), result.add_ancillary_variable)
             for factory in self.aux_factories:
                 result.add_aux_factory(factory.updated(coord_mapping))
         return result
