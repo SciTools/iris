@@ -42,7 +42,10 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@rcomer`_ removed the *target* parameter from
+   :func:`~iris.fileformats.pp.as_fields` and
+   :func:`~iris.fileformats.pp.save_pairs_from_cube` because it had no effect.
+   (:pull:`5783`)
 
 
 🚀 Performance Enhancements
