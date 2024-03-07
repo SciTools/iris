@@ -2469,6 +2469,85 @@ class Saver:
                 # Issue a fill-value warning immediately, if appropriate.
                 _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=True)
 
+    @staticmethod
+    def _create_completion_delayed(sources, targets, fill_infos):
+        # Define a combined store-and-fillvalue-check operation, delayed for
+        #  application to lazy data blocks.
+        @dask.delayed
+        def delayed_block_save_and_fv_check(
+            datablock, target_block, block_slices, fillinfo
+        ):
+            # The inner function of a delayed fill-value check
+            # Save the block and return array([is_masked, contains_value]).
+            target_block[block_slices] = datablock
+            is_masked, contains_value = _data_fillvalue_check(
+                np, datablock, fillinfo.check_value
+            )
+            return np.array([is_masked, contains_value])
+
+        # Map the function across the blocks of the input data.
+        # NOTE: the goal is to process the to-be-saved blockwise via a delayed
+        # operation that will return (is_masked, contains_value) for each block.
+        # These block-wise results are then OR-ed for each source.
+        # N.B. `da.map_blocks` apparently will not do this, at least not without
+        #  `drop_axis` which seems to trigger loading of the whole source array.
+        # TODO: It probably *can* be done with `da.blockwise`, but I have so far
+        #  failed to grasp how you would do that.
+        delayed_fillvalue_checks = []
+        for source, target, fillinfo in zip(sources, targets, fill_infos):
+            # Note: we compute the source-slicing corresponding to each block.
+            # TODO: there might be a neat standard way of getting this info.
+            dim_chunk_starts = [
+                np.concatenate([np.array([0]), np.cumsum(chunks)])
+                for chunks in source.chunks
+            ]
+            per_block_lazy_fvs = []
+            blocks_shape = tuple(len(dim_chunks) for dim_chunks in source.chunks)
+            for block_inds in np.ndindex(blocks_shape):
+                source_slices = tuple(
+                    slice(
+                        dim_chunk_starts[i_dim][block_inds[i_dim]],
+                        dim_chunk_starts[i_dim][block_inds[i_dim] + 1],
+                    )
+                    for i_dim in range(source.ndim)
+                )
+                per_block_lazy_fvs.append(
+                    delayed_block_save_and_fv_check(
+                        source[source_slices], target, source_slices, fillinfo
+                    )
+                )
+            # Transform the list of delayeds into a list of da.arrays.
+            per_block_lazy_fvs = [
+                da.from_delayed(lazy_result, dtype=bool, shape=(2,))
+                for lazy_result in per_block_lazy_fvs
+            ]
+            # 'OR' over blocks, to get an overall ("is_masked", "contains_data").
+            wholesource_lazy_fv = da.any(da.stack(per_block_lazy_fvs), axis=0)
+            delayed_fillvalue_checks.append(wholesource_lazy_fv)
+
+        # Return a single delayed object which completes the delayed saves and
+        # returns a list of any fill-value warnings.
+        @dask.delayed
+        def compute_and_return_warnings(fv_infos, fv_checks):
+            results = []
+            # Pair each fill_check result (is_masked, contains_value) with its
+            # fillinfo and construct a suitable Warning if needed.
+            for fillinfo, (is_masked, contains_value) in zip(fv_infos, fv_checks):
+                fv_warning = _fillvalue_report(
+                    fill_info=fillinfo,
+                    is_masked=is_masked,
+                    contains_fill_value=contains_value,
+                )
+                if fv_warning is not None:
+                    # Collect the warnings and return them.
+                    results.append(fv_warning)
+            return results
+
+        return compute_and_return_warnings(
+            fv_infos=fill_infos,
+            fv_checks=delayed_fillvalue_checks,
+        )
+
     def delayed_completion(self) -> Delayed:
         """Perform file completion for delayed saves.
 
@@ -2492,82 +2571,7 @@ class Saver:
         if self._delayed_writes:
             # Create a single delayed operation to complete the file.
             sources, targets, fill_infos = zip(*self._delayed_writes)
-
-            # Define a combined store-and-fillvalue-check operation, delayed for
-            #  application to lazy data blocks.
-            @dask.delayed
-            def delayed_block_save_and_fv_check(
-                datablock, target_block, block_slices, fillinfo
-            ):
-                # The inner function of a delayed fill-value check
-                # Save the block and return array([is_masked, contains_value]).
-                target_block[block_slices] = datablock
-                is_masked, contains_value = _data_fillvalue_check(
-                    np, datablock, fillinfo.check_value
-                )
-                return np.array([is_masked, contains_value])
-
-            # Map the function across the blocks of the input data.
-            # NOTE: the goal is to process the to-be-saved blockwise via a delayed
-            # operation that will return (is_masked, contains_value) for each block.
-            # These block-wise results are then OR-ed for each source.
-            # N.B. `da.map_blocks` apparently will not do this, at least not without
-            #  `drop_axis` which seems to trigger loading of the whole source array.
-            # TODO: It probably *can* be done with `da.blockwise`, but I have so far
-            #  failed to grasp how you would do that.
-            delayed_fillvalue_checks = []
-            for source, target, fillinfo in zip(sources, targets, fill_infos):
-                # Note: we compute the source-slicing corresponding to each block.
-                # TODO: there might be a neat standard way of getting this info.
-                dim_chunk_starts = [
-                    np.concatenate([np.array([0]), np.cumsum(chunks)])
-                    for chunks in source.chunks
-                ]
-                per_block_lazy_fvs = []
-                for block_inds in np.ndindex(source.blocks.shape):
-                    source_slices = [
-                        slice(
-                            dim_chunk_starts[i_dim][block_inds[i_dim]],
-                            dim_chunk_starts[i_dim][block_inds[i_dim] + 1],
-                        )
-                        for i_dim in range(source.ndim)
-                    ]
-                    per_block_lazy_fvs.append(
-                        delayed_block_save_and_fv_check(
-                            source.blocks[block_inds], target, source_slices, fillinfo
-                        )
-                    )
-                # Transform the list of delayeds into a list of da.arrays.
-                per_block_lazy_fvs = [
-                    da.from_delayed(lazy_result, dtype=bool, shape=(2,))
-                    for lazy_result in per_block_lazy_fvs
-                ]
-                # 'OR' over blocks, to get an overall ("is_masked", "contains_data").
-                wholesource_lazy_fv = da.any(da.stack(per_block_lazy_fvs), axis=0)
-                delayed_fillvalue_checks.append(wholesource_lazy_fv)
-
-            # Return a single delayed object which completes the delayed saves and
-            # returns a list of any fill-value warnings.
-            @dask.delayed
-            def compute_and_return_warnings(fv_infos, fv_checks):
-                results = []
-                # Pair each fill_check result (is_masked, contains_value) with its
-                # fillinfo and construct a suitable Warning if needed.
-                for fillinfo, (is_masked, contains_value) in zip(fv_infos, fv_checks):
-                    fv_warning = _fillvalue_report(
-                        fill_info=fillinfo,
-                        is_masked=is_masked,
-                        contains_fill_value=contains_value,
-                    )
-                    if fv_warning is not None:
-                        # Collect the warnings and return them.
-                        results.append(fv_warning)
-                return results
-
-            result = compute_and_return_warnings(
-                fv_infos=fill_infos,
-                fv_checks=delayed_fillvalue_checks,
-            )
+            result = self._create_completion_delayed(sources, targets, fill_infos)
 
         else:
             # Return a delayed, which returns an empty list, for usage consistency.

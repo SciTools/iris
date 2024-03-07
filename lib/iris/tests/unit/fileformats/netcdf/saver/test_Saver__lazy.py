@@ -82,7 +82,8 @@ class Test_check_attribute_compliance__exception_handling(
 class TestStreamed(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_2d()
-        self.store_watch = self.patch("dask.array.store")
+        patch_target = "iris.fileformats.netcdf.saver.Saver._create_completion_delayed"
+        self.storelazy_watch = self.patch(patch_target)
 
     def save_common(self, cube_to_save):
         with self.temp_filename(".nc") as nc_path:
@@ -91,26 +92,26 @@ class TestStreamed(tests.IrisTest):
 
     def test_realised_not_streamed(self):
         self.save_common(self.cube)
-        self.assertFalse(self.store_watch.called)
+        self.assertFalse(self.storelazy_watch.called)
 
     def test_lazy_streamed_data(self):
         self.cube.data = self.cube.lazy_data()
         self.save_common(self.cube)
-        self.assertTrue(self.store_watch.called)
+        self.assertTrue(self.storelazy_watch.called)
 
     def test_lazy_streamed_coord(self):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
         lazy_coord = aux_coord.copy(aux_coord.lazy_points(), aux_coord.lazy_bounds())
         self.cube.replace_coord(lazy_coord)
         self.save_common(self.cube)
-        self.assertTrue(self.store_watch.called)
+        self.assertTrue(self.storelazy_watch.called)
 
     def test_lazy_streamed_bounds(self):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
         lazy_coord = aux_coord.copy(aux_coord.points, aux_coord.lazy_bounds())
         self.cube.replace_coord(lazy_coord)
         self.save_common(self.cube)
-        self.assertTrue(self.store_watch.called)
+        self.assertTrue(self.storelazy_watch.called)
 
 
 if __name__ == "__main__":
