@@ -18,8 +18,7 @@ from iris.exceptions import ConcatenateError
 
 class TestEpoch:
     @pytest.fixture()
-    @staticmethod
-    def simple_1d_time_cubes():
+    def simple_1d_time_cubes(self):
         reftimes = [
             "hours since 1970-01-01 00:00:00",
             "hours since 1970-01-01 00:00:00",
@@ -51,8 +50,7 @@ class TestEpoch:
 
 class TestMessages:
     @pytest.fixture()
-    @staticmethod
-    def sample_cubes():
+    def sample_cubes(self):
         # Construct and return a pair of identical cubes
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
