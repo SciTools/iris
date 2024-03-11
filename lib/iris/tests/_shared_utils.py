@@ -498,7 +498,7 @@ def assert_array_equal(a, b, err_msg=""):
 
 
 @contextlib.contextmanager
-def _recordWarningMatches(expected_regexp=""):
+def _record_warning_matches(expected_regexp=""):
     # Record warnings raised matching a given expression.
     matches = []
     with warnings.catch_warnings(record=True) as w:
@@ -510,7 +510,7 @@ def _recordWarningMatches(expected_regexp=""):
 
 
 @contextlib.contextmanager
-def assertLogs(caplog, logger=None, level=None, msg_regex=None):
+def assert_logs(caplog, logger=None, level=None, msg_regex=None):
     """Also adds the ``msg_regex`` kwarg:
     If used, check that the result is a single message of the specified
     level, and that it matches this regex.
@@ -539,9 +539,9 @@ def assertLogs(caplog, logger=None, level=None, msg_regex=None):
 
 
 @contextlib.contextmanager
-def assertNoWarningsRegexp(expected_regexp=""):
+def assert_no_warnings_regexp(expected_regexp=""):
     # Check that no warning matching the given expression is raised.
-    with _recordWarningMatches(expected_regexp) as matches:
+    with _record_warning_matches(expected_regexp) as matches:
         yield
 
     msg = "Unexpected warning(s) raised, matching '{}' : {!r}."
