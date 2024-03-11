@@ -324,23 +324,22 @@ class TestOrder:
 
 
 class TestConcatenate__dask:
-    @staticmethod
-    def build_lazy_cube(points):
-        nx = 4
-        data = np.arange(len(points) * nx).reshape(len(points), nx)
-        data = as_lazy_data(data)
-        cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
-        lat = iris.coords.DimCoord(points, "latitude")
-        lon = iris.coords.DimCoord(np.arange(nx), "longitude")
-        cube.add_dim_coord(lat, 0)
-        cube.add_dim_coord(lon, 1)
-        return cube
-
     @pytest.fixture()
     def sample_lazy_cubes(self):
         # Make a pair of concatenatable cubes, with dim points [1, 2] and [3, 4, 5]
-        c1 = self.build_lazy_cube([1, 2])
-        c2 = self.build_lazy_cube([3, 4, 5])
+        def build_lazy_cube(points):
+            nx = 4
+            data = np.arange(len(points) * nx).reshape(len(points), nx)
+            data = as_lazy_data(data)
+            cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
+            lat = iris.coords.DimCoord(points, "latitude")
+            lon = iris.coords.DimCoord(np.arange(nx), "longitude")
+            cube.add_dim_coord(lat, 0)
+            cube.add_dim_coord(lon, 1)
+            return cube
+
+        c1 = build_lazy_cube([1, 2])
+        c2 = build_lazy_cube([3, 4, 5])
         return c1, c2
 
     @staticmethod
@@ -363,7 +362,6 @@ class TestConcatenate__dask:
 
     def test_lazy_concatenate_aux_coords(self, sample_lazy_cubes):
         c1, c2 = sample_lazy_cubes
-        c2 = self.build_lazy_cube([3, 4, 5])
         for cube in (c1, c2):
             self.add_sample_auxcoord(cube)
         (result,) = concatenate([c1, c2])
