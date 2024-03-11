@@ -221,29 +221,7 @@ def result_path(self, basename=None, ext=""):
 
     """
     return None
-    # if ext and not ext.startswith("."):
-    #     ext = "." + ext
-    # # Generate the folder name from the calling file name.
-    # path = os.path.abspath(inspect.getfile(self.__class__))
-    # path = os.path.splitext(path)[0]
-    # sub_path = path.rsplit("iris", 1)[1].split("tests", 1)[1][1:]
-    #
-    # # Generate the file name from the calling function name?
-    # if basename is None:
-    #     stack = inspect.stack()
-    #     for frame in stack[1:]:
-    #         if "test_" in frame[3]:
-    #             basename = frame[3].replace("test_", "")
-    #             break
-    # filename = basename + ext
-    #
-    # result = os.path.join(
-    #     get_result_path(""),
-    #     sub_path.replace("test_", ""),
-    #     self.__class__.__name__.replace("Test_", ""),
-    #     filename,
-    # )
-    # return result
+    # todo: complete this!
 
 
 def assert_CML_approx_data(cubes, reference_filename=None, **kwargs):
@@ -511,20 +489,16 @@ def _record_warning_matches(expected_regexp=""):
 
 @contextlib.contextmanager
 def assert_logs(caplog, logger=None, level=None, msg_regex=None):
-    """Also adds the ``msg_regex`` kwarg:
-    If used, check that the result is a single message of the specified
+    """If msg_regex is used, checks that the result is a single message of the specified
     level, and that it matches this regex.
 
-    The inherited version of this method temporarily *replaces* the logger
-    in order to capture log records generated within the context.
-    However, in doing so it prevents any messages from being formatted
-    by the original logger.
-    This version first calls the original method, but then *also* exercises
-    the message formatters of all the logger's handlers, just to check that
-    there are no formatting errors.
+    Checks that there is at least one message logged at the given parameters,
+    but then *also* exercises the message formatters of all the logger's handlers,
+    just to check that there are no formatting errors.
 
     """
     with caplog.at_level(level, logger.name):
+        assert len(caplog.records) != 0
         # Check for any formatting errors by running all the formatters.
         for record in caplog.records:
             for handler in caplog.logger.handlers:
@@ -678,7 +652,11 @@ def assert_array_shape_stats(result, shape, mean, std_dev, rtol=1e-6):
 
 
 def assert_dict_equal(lhs, rhs, msg=None):
-    """Dictionary Comparison."""
+    """Dictionary Comparison.
+
+    This allows us to cope with dictionary comparison where the value of a key
+    may be a numpy array.
+    """
     emsg = f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
     assert isinstance(lhs, Mapping), emsg
 
