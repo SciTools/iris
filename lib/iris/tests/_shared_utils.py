@@ -11,8 +11,7 @@ import difflib
 import filecmp
 import functools
 import gzip
-
-# import inspect
+import inspect
 import json
 import math
 import os
@@ -208,9 +207,8 @@ def get_result_path(relative_path):
     return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
 
-def result_path(self, basename=None, ext=""):
-    """Return the full path to a test result, generated from the \
-    calling file, class and, optionally, method.
+def result_path(basename=None, ext=""):
+    """Generate the path to a test result; from the calling file, class, method.
 
     Parameters
     ----------
@@ -220,8 +218,45 @@ def result_path(self, basename=None, ext=""):
         Appended file extension.
 
     """
-    return None
-    # todo: complete this!
+    if __package__ != "iris.tests":
+        # Relying on this being the location so that we can derive the full
+        #  path of the tests root.
+        # Would normally use assert, but this means something to PyTest.
+        message = "result_path() must be in the iris.tests root to function."
+        raise RuntimeError(message)
+    tests_root = Path(__file__).parent
+
+    if ext and not ext.startswith("."):
+        ext = f".{ext}"
+
+    frame = inspect.currentframe()
+    caller_frame = inspect.getouterframes(frame)[1]
+    caller_path = Path(caller_frame.filename)
+    caller_instance = caller_frame.frame.f_locals.get("self")
+    caller_func = caller_frame.function
+
+    # Generate the directory name from the calling file name.
+    output_path = get_result_path("") / caller_path.relative_to(tests_root)
+    output_path = output_path.with_suffix("")
+    output_path = output_path.with_name(output_path.name.replace("test_", ""))
+
+    # Add a class subdirectory if called from a class.
+    if caller_instance is not None:
+        output_class = caller_instance.__class__.__name__.replace("Test", "")
+        output_path = output_path / output_class
+
+    # Generate the file name from the calling function name.
+    if basename is not None:
+        output_func = basename
+    elif caller_func == "<module>":
+        output_func = ""
+    else:
+        output_func = caller_func.replace("test_", "")
+    output_path = output_path / output_func
+
+    output_path = output_path.with_suffix(ext)
+
+    return str(output_path)
 
 
 def assert_CML_approx_data(cubes, reference_filename=None, **kwargs):
@@ -818,7 +853,9 @@ def skip_data(fn):
         or os.environ.get("IRIS_TEST_NO_DATA")
     )
 
-    skip = pytest.skipIf(condition=no_data, reason="Test(s) require external data.")
+    skip = pytest.mark.skipif(
+        condition=no_data, reason="Test(s) require external data."
+    )
 
     return skip(fn)
 
@@ -833,31 +870,33 @@ def skip_gdal(fn):
             ...
 
     """
-    skip = pytest.skipIf(condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'.")
+    skip = pytest.mark.skipif(
+        condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'."
+    )
     return skip(fn)
 
 
 skip_plot = graphics.skip_plot
 
-skip_sample_data = pytest.skipIf(
+skip_sample_data = pytest.mark.skipif(
     not SAMPLE_DATA_AVAILABLE,
     ('Test(s) require "iris-sample-data", ' "which is not available."),
 )
 
 
-skip_nc_time_axis = pytest.skipIf(
+skip_nc_time_axis = pytest.mark.skipif(
     not NC_TIME_AXIS_AVAILABLE,
     'Test(s) require "nc_time_axis", which is not available.',
 )
 
 
-skip_inet = pytest.skipIf(
+skip_inet = pytest.mark.skipif(
     not INET_AVAILABLE,
     ('Test(s) require an "internet connection", ' "which is not available."),
 )
 
 
-skip_stratify = pytest.skipIf(
+skip_stratify = pytest.mark.skipif(
     not STRATIFY_AVAILABLE,
     'Test(s) require "python-stratify", which is not available.',
 )
