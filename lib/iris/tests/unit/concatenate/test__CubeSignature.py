@@ -19,7 +19,7 @@ from iris.util import new_axis
 
 
 class Test__coordinate_dim_metadata_equality:
-    @pytest.fixture
+    @pytest.fixture()
     def sample_data(self):
         # Return a standard set of test items, wrapped in a data object
         @dataclass

@@ -17,7 +17,7 @@ from iris.exceptions import ConcatenateError
 
 
 class TestEpoch:
-    @pytest.fixture
+    @pytest.fixture()
     def simple_1d_time_cubes(self):
         reftimes = [
             "hours since 1970-01-01 00:00:00",
@@ -49,7 +49,7 @@ class TestEpoch:
 
 
 class TestMessages:
-    @pytest.fixture
+    @pytest.fixture()
     def sample_cubes(self):
         # Construct and return a pair of identical cubes
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
@@ -324,7 +324,7 @@ class TestOrder:
 
 
 class TestConcatenate__dask:
-    @pytest.fixture
+    @pytest.fixture()
     def sample_lazy_cubes(self):
         # Make a pair of concatenatable cubes, with dim points [1, 2] and [3, 4, 5]
         def build_lazy_cube(points):
