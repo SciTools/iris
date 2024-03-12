@@ -219,6 +219,8 @@ def result_path(basename=None, ext=""):
 
     """
     if __package__ != "iris.tests":
+        # Relying on this being the location so that we can derive the full
+        #  path of the tests root.
         # Would normally use assert, but this means something to PyTest.
         message = "result_path() must be in the iris.tests root to function."
         raise RuntimeError(message)
@@ -246,6 +248,8 @@ def result_path(basename=None, ext=""):
     # Generate the file name from the calling function name.
     if basename is not None:
         output_func = basename
+    elif caller_func == "<module>":
+        output_func = ""
     else:
         output_func = caller_func.replace("test_", "")
     output_path = output_path / output_func
