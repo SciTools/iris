@@ -243,15 +243,12 @@ class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
 @tests.skip_plot
 class Test1dScatter:
     @pytest.fixture(autouse=True)
-    def set_draw_method(self):
-        self.draw_method = iplt.scatter
-
-    @pytest.fixture(autouse=True)
     def setup(self, check_graphic_caller):
         self.cube = iris.load_cube(
             tests.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
             "Temperature",
         )
+        self.draw_method = iplt.scatter
         self.check_graphic = check_graphic_caller
 
     def test_coord_coord(self):
@@ -297,8 +294,12 @@ class Test1dScatter:
 @tests.skip_data
 @tests.skip_plot
 class Test1dQuickplotScatter(Test1dScatter):
-    @pytest.fixture(autouse=True)
-    def set_draw_method(self):
+    def setUp(self):
+        tests.GraphicsTest.setUp(self)
+        self.cube = iris.load_cube(
+            tests.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
+            "Temperature",
+        )
         self.draw_method = qplt.scatter
 
 
