@@ -13,7 +13,6 @@ import warnings
 
 import cf_units
 import numpy as np
-import pytest
 
 import iris
 import iris.analysis
@@ -241,15 +240,14 @@ class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
 
 @tests.skip_data
 @tests.skip_plot
-class Test1dScatter:
-    @pytest.fixture(autouse=True)
-    def setup(self, check_graphic_caller):
+class Test1dScatter(tests.GraphicsTest):
+    def setUp(self):
+        super().setUp()
         self.cube = iris.load_cube(
             tests.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
             "Temperature",
         )
         self.draw_method = iplt.scatter
-        self.check_graphic = check_graphic_caller
 
     def test_coord_coord(self):
         x = self.cube.coord("longitude")
@@ -289,6 +287,27 @@ class Test1dScatter:
         c = self.cube.coord("Travel Time").points
         self.draw_method(x, y, c=c, edgecolor="none")
         self.check_graphic()
+
+    def test_incompatible_objects(self):
+        # cubes/coordinates of different sizes cannot be plotted
+        x = self.cube
+        y = self.cube.coord("altitude")[:-1]
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y)
+
+    def test_multidimensional(self):
+        # multidimensional cubes/coordinates are not allowed
+        x = _load_4d_testcube()[0, :, :, 0]
+        y = x.coord("model_level_number")
+        with self.assertRaises(ValueError):
+            self.draw_method(x, y)
+
+    def test_not_cube_or_coord(self):
+        # inputs must be cubes or coordinates
+        x = np.arange(self.cube.shape[0])
+        y = self.cube
+        with self.assertRaises(TypeError):
+            self.draw_method(x, y)
 
 
 @tests.skip_data
