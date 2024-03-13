@@ -227,11 +227,19 @@ def result_path(request: pytest.FixtureRequest, basename=None, ext=""):
     ----------
     request : pytest.FixtureRequest
         A pytest ``request`` fixture passed down from the calling test. Is
-        interpreted for the automatic generation of a result path.
+        interpreted for the automatic generation of a result path. See Examples
+        for how to access the ``request`` fixture.
     basename : optional, default=None
         File basename. If omitted, this is generated from the calling method.
     ext : str, optional, default=""
         Appended file extension.
+
+    Examples
+    --------
+    The PyTest ``request`` fixture is always available as a test argument:
+
+    >>> def test_one(request):
+    ...     path_one = (result_path(request))
 
     """
     _check_for_request_fixture(request, "result_path")
@@ -287,6 +295,7 @@ def assert_CML_approx_data(
     request: pytest.FixtureRequest, cubes, reference_filename=None, **kwargs
 ):
     # passes args and kwargs on to approx equal
+    # See result_path() Examples for how to access the ``request`` fixture.
 
     _check_for_request_fixture(request, "assert_CML_approx_data")
 
@@ -318,7 +327,8 @@ def assert_CDL(
     ----------
     request : pytest.FixtureRequest
         A pytest ``request`` fixture passed down from the calling test. Is
-        required by :func:`result_path`.
+        required by :func:`result_path`. See :func:`result_path` Examples
+        for how to access the ``request`` fixture.
     netcdf_filename :
         The path to the netCDF file.
     reference_filename : optional, default=None
@@ -388,7 +398,8 @@ def assert_CML(
     ----------
     request : pytest.FixtureRequest
         A pytest ``request`` fixture passed down from the calling test. Is
-        required by :func:`result_path`.
+        required by :func:`result_path`. See :func:`result_path` Examples
+        for how to access the ``request`` fixture.
     cubes :
         Either a Cube or a sequence of Cubes.
     reference_filename : optional, default=None
@@ -505,7 +516,8 @@ def assert_string(request: pytest.FixtureRequest, string, reference_filename=Non
     ----------
     request: pytest.FixtureRequest
         A pytest ``request`` fixture passed down from the calling test. Is
-        required by :func:`result_path`.
+        required by :func:`result_path`. See :func:`result_path` Examples
+        for how to access the ``request`` fixture.
     string : str
         The string to check.
     reference_filename : optional, default=None
