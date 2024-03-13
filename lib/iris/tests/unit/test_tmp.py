@@ -1,17 +1,19 @@
 from pathlib import Path
+
 import pytest
 
 from iris import tests
 from iris.tests._shared_utils import result_path
-
 
 under_test = tests.IrisTest.result_path
 
 
 class TestResultPath:
     """Tests to fully exercise iris.tests.IrisTest.result_path"""
+
     def test_basic(self):
         from iris.tests.test_cf import TestLoad
+
         result = under_test(TestLoad())
         assert result == (
             f"/tmp/persistent/repos/iris/lib/iris/tests/results/cf/TestLoad/basic"
@@ -19,6 +21,7 @@ class TestResultPath:
 
     def test_basename(self):
         from iris.tests.test_cf import TestLoad
+
         result = under_test(TestLoad(), basename="foo")
         assert result == (
             f"/tmp/persistent/repos/iris/lib/iris/tests/results/cf/TestLoad/foo"
@@ -35,11 +38,6 @@ class TestResultPath:
     def test_ext_none(self):
         result = under_test(tests.IrisTest())
         assert Path(result).suffix == ""
-
-
-
-
-
 
 
 class TestTmp(tests.IrisTest):
