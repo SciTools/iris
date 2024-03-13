@@ -11,7 +11,6 @@ import difflib
 import filecmp
 import functools
 import gzip
-import inspect
 import json
 import math
 import os
@@ -207,17 +206,36 @@ def get_result_path(relative_path):
     return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
 
-def result_path(basename=None, ext=""):
+def _check_for_request_fixture(request, func_name: str):
+    """Raise an error if the first argument is not a pytest.FixtureRequest.
+
+    Written to provide the clearest possible message for devs refactoring from
+    the deprecated IrisTest style tests.
+    """
+    if not hasattr(request, "fixturenames"):
+        message = (
+            f"{func_name}() expected: pytest.FixtureRequest instance, got: "
+            f"{request}"
+        )
+        raise ValueError(message)
+
+
+def result_path(request: pytest.FixtureRequest, basename=None, ext=""):
     """Generate the path to a test result; from the calling file, class, method.
 
     Parameters
     ----------
+    request : pytest.FixtureRequest
+        A pytest ``request`` fixture passed down from the calling test. Is
+        interpreted for the automatic generation of a result path.
     basename : optional, default=None
         File basename. If omitted, this is generated from the calling method.
     ext : str, optional, default=""
         Appended file extension.
 
     """
+    _check_for_request_fixture(request, "result_path")
+
     if __package__ != "iris.tests":
         # Relying on this being the location so that we can derive the full
         #  path of the tests root.
@@ -229,42 +247,53 @@ def result_path(basename=None, ext=""):
     if ext and not ext.startswith("."):
         ext = f".{ext}"
 
-    frame = inspect.currentframe()
-    caller_frame = inspect.getouterframes(frame)[1]
-    caller_path = Path(caller_frame.filename)
-    caller_instance = caller_frame.frame.f_locals.get("self")
-    caller_func = caller_frame.function
+    def remove_test(string: str):
+        result = string
+        result = re.sub(r"(?i)test_", "", result)
+        result = re.sub(r"(?i)test", "", result)
+        return result
 
     # Generate the directory name from the calling file name.
-    output_path = get_result_path("") / caller_path.relative_to(tests_root)
+    output_path = get_result_path("") / request.path.relative_to(tests_root)
     output_path = output_path.with_suffix("")
-    output_path = output_path.with_name(output_path.name.replace("test_", ""))
+    output_path = output_path.with_name(remove_test(output_path.name))
 
-    # Add a class subdirectory if called from a class.
-    if caller_instance is not None:
-        output_class = caller_instance.__class__.__name__.replace("Test", "")
+    # Optionally add a class subdirectory if called from a class.
+    if request.cls is not None:
+        output_class = remove_test(request.cls.__name__)
         output_path = output_path / output_class
 
     # Generate the file name from the calling function name.
+    node_name = request.node.originalname
     if basename is not None:
         output_func = basename
-    elif caller_func == "<module>":
+    elif node_name == "<module>":
         output_func = ""
     else:
-        output_func = caller_func.replace("test_", "")
+        output_func = remove_test(node_name)
     output_path = output_path / output_func
+
+    # Optionally use parameter values as the file name if parameterised.
+    #  (The function becomes a subdirectory in this case).
+    if hasattr(request.node, "callspec"):
+        output_path = output_path / request.node.callspec.id
 
     output_path = output_path.with_suffix(ext)
 
     return str(output_path)
 
 
-def assert_CML_approx_data(cubes, reference_filename=None, **kwargs):
+def assert_CML_approx_data(
+    request: pytest.FixtureRequest, cubes, reference_filename=None, **kwargs
+):
     # passes args and kwargs on to approx equal
+
+    _check_for_request_fixture(request, "assert_CML_approx_data")
+
     if isinstance(cubes, iris.cube.Cube):
         cubes = [cubes]
     if reference_filename is None:
-        reference_filename = result_path(None, "cml")
+        reference_filename = result_path(request, None, "cml")
         reference_filename = [get_result_path(reference_filename)]
     for i, cube in enumerate(cubes):
         fname = list(reference_filename)
@@ -276,7 +305,9 @@ def assert_CML_approx_data(cubes, reference_filename=None, **kwargs):
     assert_CML(cubes, reference_filename, checksum=False)
 
 
-def assert_CDL(netcdf_filename, reference_filename=None, flags="-h"):
+def assert_CDL(
+    request: pytest.FixtureRequest, netcdf_filename, reference_filename=None, flags="-h"
+):
     """Test that the CDL for the given netCDF file matches the contents
     of the reference file.
 
@@ -285,6 +316,9 @@ def assert_CDL(netcdf_filename, reference_filename=None, flags="-h"):
 
     Parameters
     ----------
+    request : pytest.FixtureRequest
+        A pytest ``request`` fixture passed down from the calling test. Is
+        required by :func:`result_path`.
     netcdf_filename :
         The path to the netCDF file.
     reference_filename : optional, default=None
@@ -297,8 +331,10 @@ def assert_CDL(netcdf_filename, reference_filename=None, flags="-h"):
         separated string or an iterable. Defaults to '-h'.
 
     """
+    _check_for_request_fixture(request, "assert_CDL")
+
     if reference_filename is None:
-        reference_path = result_path(None, "cdl")
+        reference_path = result_path(request, None, "cdl")
     else:
         reference_path = get_result_path(reference_filename)
 
@@ -339,7 +375,9 @@ def assert_CDL(netcdf_filename, reference_filename=None, flags="-h"):
     _check_same(cdl, reference_path, type_comparison_name="CDL")
 
 
-def assert_CML(cubes, reference_filename=None, checksum=True):
+def assert_CML(
+    request: pytest.FixtureRequest, cubes, reference_filename=None, checksum=True
+):
     """Test that the CML for the given cubes matches the contents of
     the reference file.
 
@@ -348,6 +386,9 @@ def assert_CML(cubes, reference_filename=None, checksum=True):
 
     Parameters
     ----------
+    request : pytest.FixtureRequest
+        A pytest ``request`` fixture passed down from the calling test. Is
+        required by :func:`result_path`.
     cubes :
         Either a Cube or a sequence of Cubes.
     reference_filename : optional, default=None
@@ -360,10 +401,12 @@ def assert_CML(cubes, reference_filename=None, checksum=True):
         Cube's data. Defaults to True.
 
     """
+    _check_for_request_fixture(request, "assert_CML")
+
     if isinstance(cubes, iris.cube.Cube):
         cubes = [cubes]
     if reference_filename is None:
-        reference_filename = result_path(None, "cml")
+        reference_filename = result_path(request, None, "cml")
 
     if isinstance(cubes, (list, tuple)):
         xml = iris.cube.CubeList(cubes).xml(
@@ -452,7 +495,7 @@ def assert_files_equal(test_filename, reference_filename):
         shutil.copy(test_filename, reference_path)
 
 
-def assert_string(string, reference_filename=None):
+def assert_string(request: pytest.FixtureRequest, string, reference_filename=None):
     """Test that `string` matches the contents of the reference file.
 
     If the environment variable IRIS_TEST_CREATE_MISSING is
@@ -460,6 +503,9 @@ def assert_string(string, reference_filename=None):
 
     Parameters
     ----------
+    request: pytest.FixtureRequest
+        A pytest ``request`` fixture passed down from the calling test. Is
+        required by :func:`result_path`.
     string : str
         The string to check.
     reference_filename : optional, default=None
@@ -469,8 +515,10 @@ def assert_string(string, reference_filename=None):
         :meth:`iris.tests.IrisTest.result_path`.
 
     """
+    _check_for_request_fixture(request, "assert_string")
+
     if reference_filename is None:
-        reference_path = result_path(None, "txt")
+        reference_path = result_path(request, None, "txt")
     else:
         reference_path = get_result_path(reference_filename)
     _check_same(string, reference_path, type_comparison_name="Strings")
