@@ -23,12 +23,12 @@ def lenient():
 class Test___init__:
     def test_default(self, lenient):
         expected = dict(maths=True)
-        assert expected == lenient.__dict__
+        assert lenient.__dict__ == expected
 
     def test_kwargs(self, lenient):
         actual = Lenient(maths=False)
         expected = dict(maths=False)
-        assert expected, actual.__dict__
+        assert actual.__dict__, expected
 
     def test_kwargs_invalid(self, lenient):
         emsg = "Invalid .* option, got 'merge'."
@@ -57,7 +57,7 @@ class Test___getitem__:
 class Test___repr__:
     def test(self, lenient):
         expected = "Lenient(maths=True)"
-        assert expected == repr(lenient)
+        assert repr(lenient) == expected
 
 
 class Test___setitem__:
