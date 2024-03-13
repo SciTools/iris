@@ -19,7 +19,6 @@ from pathlib import Path
 import sys
 import threading
 from typing import Callable, Dict, Union
-import unittest
 
 import filelock
 import pytest
@@ -51,7 +50,7 @@ if MPL_AVAILABLE and "-d" in sys.argv:
     _DISPLAY_FIGURES = True
 
 # Threading non re-entrant blocking lock to ensure thread-safe plotting in the
-# GraphicsTestMixin.
+# GraphicsTestMixin and check_graphics_caller.
 _lock = threading.Lock()
 
 #: Default perceptual hash size.
@@ -265,13 +264,19 @@ def skip_plot(fn: Callable) -> Callable:
     """Decorator to choose whether to run tests, based on the availability of the
     matplotlib library.
 
-    Example usage:
-        @skip_plot
-        class MyPlotTests(test.GraphicsTest):
-            ...
+    Examples
+    --------
+    >>> @skip_plot
+    >>> class TestMyPlots:
+    ...     def test_my_plot(self, check_graphic_caller):
+    ...         pass
+    ...
+    >>> @skip_plot
+    >>> def test_my_plot(check_graphic_caller):
+    ...     pass
 
     """
-    skip = unittest.skipIf(
+    skip = pytest.mark.skipIf(
         condition=not MPL_AVAILABLE,
         reason="Graphics tests require the matplotlib library.",
     )
