@@ -290,6 +290,12 @@ def check_graphic_caller(_unique_id) -> callable:
 
     Ensures a safe Matplotlib setup (and tears down afterwards), and generates
     a unique test id for each call.
+
+    Examples
+    --------
+    >>> def test_my_plot(check_graphic_caller):
+    ...     # ... do some plotting ...
+    ...     check_graphic_caller()
     """
     from iris.tests import _RESULT_PATH
 
