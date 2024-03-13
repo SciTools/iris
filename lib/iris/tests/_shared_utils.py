@@ -638,20 +638,6 @@ def _ensure_folder(path):
         os.makedirs(dir_path)
 
 
-# todo: need to find equlivalence for `unique_id` in pytest
-def check_graphic():
-    """Check the hash of the current matplotlib figure matches the expected
-    image hash for the current graphic test.
-
-    To create missing image test results, set the IRIS_TEST_CREATE_MISSING
-    environment variable before running the tests. This will result in new
-    and appropriately "<hash>.png" image files being generated in the image
-    output directory, and the imagerepo.json file being updated.
-
-    """
-    assert False
-
-
 # todo: relied on unitest functionality, need to find a pytest alternative
 def patch(*args, **kwargs):
     """Install a mock.patch, to be removed after the current test.
