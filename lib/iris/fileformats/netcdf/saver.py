@@ -19,7 +19,6 @@ import os
 import os.path
 import re
 import string
-from typing import List
 import warnings
 
 import cf_units
@@ -282,103 +281,6 @@ def _setncattr(variable, name, attribute):
 # NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
-
-
-_FillvalueCheckInfo = collections.namedtuple(
-    "_FillvalueCheckInfo", ["user_value", "check_value", "dtype", "varname"]
-)
-
-
-def _data_fillvalue_check(arraylib, data, check_value):
-    """Check whether an array is masked, and whether it contains a fill-value.
-
-    Parameters
-    ----------
-    arraylib : module
-        Either numpy or dask.array : When dask, results are lazy computations.
-    data : array-like
-        Array to check (numpy or dask).
-    check_value : number or None
-        If not None, fill-value to check for existence in the array.
-        If None, do not do value-in-array check.
-
-    Returns
-    -------
-    is_masked : bool
-        True if array has any masked points.
-    contains_value : bool
-        True if array contains check_value.
-        Always False if check_value is None.
-
-    """
-    is_masked = arraylib.any(arraylib.ma.getmaskarray(data))
-    if check_value is None:
-        contains_value = False
-    else:
-        contains_value = arraylib.any(data == check_value)
-    return is_masked, contains_value
-
-
-class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
-    """Backwards compatible form of :class:`iris.warnings.IrisSaverFillValueWarning`."""
-
-    # TODO: remove at the next major release.
-    pass
-
-
-def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
-    """Work out whether there was a possible or actual fill-value collision.
-
-    From the given information, work out whether there was a possible or actual
-    fill-value collision, and if so construct a warning.
-
-    Parameters
-    ----------
-    fill_info : _FillvalueCheckInfo
-        A named-tuple containing the context of the fill-value check.
-    is_masked : bool
-        Whether the data array was masked.
-    contains_fill_value : bool
-        Whether the data array contained the fill-value.
-    warn : bool, default=False
-        If True, also issue any resulting warning immediately.
-
-    Returns
-    -------
-    None or :class:`Warning`
-        If not None, indicates a known or possible problem with filling.
-
-    """
-    varname = fill_info.varname
-    user_value = fill_info.user_value
-    check_value = fill_info.check_value
-    is_byte_data = fill_info.dtype.itemsize == 1
-    result = None
-    if is_byte_data and is_masked and user_value is None:
-        result = SaverFillValueWarning(
-            f"CF var '{varname}' contains byte data with masked points, but "
-            "no fill_value keyword was given. As saved, these "
-            "points will read back as valid values. To save as "
-            "masked byte data, `_FillValue` needs to be explicitly "
-            "set. For Cube data this can be done via the 'fill_value' "
-            "keyword during saving, otherwise use ncedit/equivalent."
-        )
-    elif contains_fill_value:
-        result = SaverFillValueWarning(
-            f"CF var '{varname}' contains unmasked data points equal to the "
-            f"fill-value, {check_value}. As saved, these points will read back "
-            "as missing data. To save these as normal values, "
-            "`_FillValue` needs to be set to not equal any valid data "
-            "points. For Cube data this can be done via the 'fill_value' "
-            "keyword during saving, otherwise use ncedit/equivalent."
-        )
-
-    if warn and result is not None:
-        warnings.warn(
-            result,
-            category=_WarnComboMaskSave,
-        )
-    return result
 
 
 class Saver:
@@ -2430,55 +2332,34 @@ class Saver:
                 # A None means we will NOT check for collisions.
                 fill_value_to_check = None
 
-            fill_info = _FillvalueCheckInfo(
-                user_value=fill_value,
-                check_value=fill_value_to_check,
-                dtype=dtype,
-                varname=cf_var.name,
-            )
-
             doing_delayed_save = is_lazy_data(data)
             if doing_delayed_save:
                 # save lazy data with a delayed operation.  For now, we just record the
                 # necessary information -- a single, complete delayed action is constructed
                 # later by a call to delayed_completion().
-                def store(data, cf_var, fill_info):
+                def store(data, cf_var):
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
                     write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
                         self.filepath, cf_var, self.file_write_lock
                     )
                     # Add to the list of delayed writes, used in delayed_completion().
-                    self._delayed_writes.append((data, write_wrapper, fill_info))
-                    # In this case, fill-value checking is done later. But return 2 dummy
-                    # values, to be consistent with the non-streamed "store" signature.
-                    is_masked, contains_value = False, False
-                    return is_masked, contains_value
+                    self._delayed_writes.append((data, write_wrapper))
 
             else:
                 # Real data is always written directly, i.e. not via lazy save.
                 # We also check it immediately for any fill-value problems.
-                def store(data, cf_var, fill_info):
+                def store(data, cf_var):
                     cf_var[:] = data
-                    return _data_fillvalue_check(np, data, fill_info.check_value)
 
-            # Store the data and check if it is masked and contains the fill value.
-            is_masked, contains_fill_value = store(data, cf_var, fill_info)
-
-            if not doing_delayed_save:
-                # Issue a fill-value warning immediately, if appropriate.
-                _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=True)
+            # Store the data.
+            store(data, cf_var)
 
     def delayed_completion(self) -> Delayed:
         """Perform file completion for delayed saves.
 
         Create and return a :class:`dask.delayed.Delayed` to perform file
         completion for delayed saves.
-
-        This contains all the delayed writes, which complete the file by
-        filling out the data of variables initially created empty, and also the
-        checks for potential fill-value collisions.  When computed, it returns
-        a list of any warnings which were generated in the save operation.
 
         Returns
         -------
@@ -2491,54 +2372,20 @@ class Saver:
         """
         if self._delayed_writes:
             # Create a single delayed da.store operation to complete the file.
-            sources, targets, fill_infos = zip(*self._delayed_writes)
-            store_op = da.store(sources, targets, compute=False, lock=False)
-
-            # Construct a delayed fill-check operation for each (lazy) source array.
-            delayed_fillvalue_checks = [
-                # NB with arraylib=dask.array, this routine does lazy array computation
-                _data_fillvalue_check(da, source, fillinfo.check_value)
-                for source, fillinfo in zip(sources, fill_infos)
-            ]
-
-            # Return a single delayed object which completes the delayed saves and
-            # returns a list of any fill-value warnings.
-            @dask.delayed
-            def compute_and_return_warnings(store_op, fv_infos, fv_checks):
-                # Note: we don't actually *do* anything with the 'store_op' argument,
-                # but including it here ensures that dask will compute it (thus
-                # performing all the delayed saves), before calling this function.
-                results = []
-                # Pair each fill_check result (is_masked, contains_value) with its
-                # fillinfo and construct a suitable Warning if needed.
-                for fillinfo, (is_masked, contains_value) in zip(fv_infos, fv_checks):
-                    fv_warning = _fillvalue_report(
-                        fill_info=fillinfo,
-                        is_masked=is_masked,
-                        contains_fill_value=contains_value,
-                    )
-                    if fv_warning is not None:
-                        # Collect the warnings and return them.
-                        results.append(fv_warning)
-                return results
-
-            result = compute_and_return_warnings(
-                store_op,
-                fv_infos=fill_infos,
-                fv_checks=delayed_fillvalue_checks,
-            )
+            sources, targets = zip(*self._delayed_writes)
+            result = da.store(sources, targets, compute=False, lock=False)
 
         else:
-            # Return a delayed, which returns an empty list, for usage consistency.
+            # Return a do-nothing delayed, for usage consistency.
             @dask.delayed
             def no_op():
-                return []
+                return None
 
             result = no_op()
 
         return result
 
-    def complete(self, issue_warnings=True) -> List[Warning]:
+    def complete(self) -> None:
         """Complete file by computing any delayed variable saves.
 
         This requires that the Saver has closed the dataset (exited its context).
@@ -2561,15 +2408,8 @@ class Saver:
             )
             raise ValueError(msg)
 
-        delayed_write = self.delayed_completion()
-        # Complete the saves now, and handle any delayed warnings that occurred
-        result_warnings = delayed_write.compute()
-        if issue_warnings:
-            # Issue any delayed warnings from the compute.
-            for delayed_warning in result_warnings:
-                warnings.warn(delayed_warning, category=iris.warnings.IrisSaveWarning)
-
-        return result_warnings
+        # Complete the saves now
+        self.delayed_completion().compute()
 
 
 def save(
