@@ -50,4 +50,4 @@ def _unique_id(request: pytest.FixtureRequest, test_call_counter) -> callable:
 
 
 # Share this existing fixture from the expected location.
-check_graphic_caller = iris.tests.graphics.check_graphic_caller
+check_graphic_caller = iris.tests.graphics._check_graphic_caller

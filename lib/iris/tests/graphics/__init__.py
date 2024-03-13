@@ -285,7 +285,7 @@ def skip_plot(fn: Callable) -> Callable:
 
 
 @pytest.fixture
-def check_graphic_caller(_unique_id) -> callable:
+def _check_graphic_caller(_unique_id) -> callable:
     """Provide a function calling :func:`check_graphic` with safe configuration.
 
     Ensures a safe Matplotlib setup (and tears down afterwards), and generates
