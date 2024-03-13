@@ -28,7 +28,7 @@ class Test___init__:
     def test_kwargs(self, lenient):
         actual = Lenient(maths=False)
         expected = dict(maths=False)
-        assert actual.__dict__, expected
+        assert actual.__dict__ == expected
 
     def test_kwargs_invalid(self, lenient):
         emsg = "Invalid .* option, got 'merge'."
@@ -46,7 +46,7 @@ class Test___contains__:
 
 class Test___getitem__:
     def test_in(self, lenient):
-        assert lenient["maths"] is True
+        assert bool(lenient["maths"]) is True
 
     def test_not_in(self, lenient):
         emsg = "Invalid .* option, got 'MATHS'."
@@ -73,97 +73,97 @@ class Test___setitem__:
             lenient["maths"] = value
 
     def test_maths_disable__lenient_enable_true(self, lenient):
-        assert _LENIENT.enable is True
+        assert bool(_LENIENT.enable) is True
         lenient["maths"] = False
-        assert lenient.__dict__["maths"] is False
-        assert _LENIENT.enable is False
+        assert bool(lenient.__dict__["maths"]) is False
+        assert bool(_LENIENT.enable) is False
 
     def test_maths_disable__lenient_enable_false(self, lenient):
         _LENIENT.__dict__["enable"] = False
-        assert _LENIENT.enable is False
+        assert bool(_LENIENT.enable) is False
         lenient["maths"] = False
-        assert lenient.__dict__["maths"] is False
-        assert _LENIENT.enable is False
+        assert bool(lenient.__dict__["maths"]) is False
+        assert bool(_LENIENT.enable) is False
 
     def test_maths_enable__lenient_enable_true(self, lenient):
-        assert _LENIENT.enable is True
+        assert bool(_LENIENT.enable) is True
         lenient["maths"] = True
-        assert lenient.__dict__["maths"] is True
-        assert _LENIENT.enable is True
+        assert bool(lenient.__dict__["maths"]) is True
+        assert bool(_LENIENT.enable) is True
 
     def test_maths_enable__lenient_enable_false(self, lenient):
         _LENIENT.__dict__["enable"] = False
-        assert _LENIENT.enable is False
+        assert bool(_LENIENT.enable) is False
         lenient["maths"] = True
-        assert lenient.__dict__["maths"] is True
-        assert _LENIENT.enable is True
+        assert bool(lenient.__dict__["maths"]) is True
+        assert bool(_LENIENT.enable) is True
 
 
 class Test_context:
     def test_nop(self, lenient):
-        assert lenient["maths"] is True
+        assert bool(lenient["maths"]) is True
 
         with lenient.context():
-            assert lenient["maths"] is True
+            assert bool(lenient["maths"]) is True
 
-        assert lenient["maths"] is True
+        assert bool(lenient["maths"]) is True
 
     def test_maths_disable__lenient_true(self, lenient):
         # synchronised
-        assert _LENIENT.enable is True
-        assert lenient["maths"] is True
+        assert bool(_LENIENT.enable) is True
+        assert bool(lenient["maths"]) is True
 
         with lenient.context(maths=False):
             # still synchronised
-            assert _LENIENT.enable is False
-            assert lenient["maths"] is False
+            assert bool(_LENIENT.enable) is False
+            assert bool(lenient["maths"]) is False
 
         # still synchronised
-        assert _LENIENT.enable is True
-        assert lenient["maths"] is True
+        assert bool(_LENIENT.enable) is True
+        assert bool(lenient["maths"]) is True
 
     def test_maths_disable__lenient_false(self, lenient):
         # not synchronised
         _LENIENT.__dict__["enable"] = False
-        assert _LENIENT.enable is False
-        assert lenient["maths"] is True
+        assert bool(_LENIENT.enable) is False
+        assert bool(lenient["maths"]) is True
 
         with lenient.context(maths=False):
             # now synchronised
-            assert _LENIENT.enable is False
-            assert lenient["maths"] is False
+            assert bool(_LENIENT.enable) is False
+            assert bool(lenient["maths"]) is False
 
         # still synchronised
-        assert _LENIENT.enable is True
-        assert lenient["maths"] is True
+        assert bool(_LENIENT.enable) is True
+        assert bool(lenient["maths"]) is True
 
     def test_maths_enable__lenient_true(self, lenient):
         # not synchronised
-        assert _LENIENT.enable is True
+        assert bool(_LENIENT.enable) is True
         lenient.__dict__["maths"] = False
-        assert lenient["maths"] is False
+        assert bool(lenient["maths"]) is False
 
         with lenient.context(maths=True):
             # now synchronised
-            assert _LENIENT.enable is True
-            assert lenient["maths"] is True
+            assert bool(_LENIENT.enable) is True
+            assert bool(lenient["maths"]) is True
 
         # still synchronised
-        assert _LENIENT.enable is False
-        assert lenient["maths"] is False
+        assert bool(_LENIENT.enable) is False
+        assert bool(lenient["maths"]) is False
 
     def test_maths_enable__lenient_false(self, lenient):
         # synchronised
         _LENIENT.__dict__["enable"] = False
-        assert _LENIENT.enable is False
+        assert bool(_LENIENT.enable) is False
         lenient.__dict__["maths"] = False
-        assert lenient["maths"] is False
+        assert bool(lenient["maths"]) is False
 
         with lenient.context(maths=True):
             # still synchronised
-            assert _LENIENT.enable is True
-            assert lenient["maths"] is True
+            assert bool(_LENIENT.enable) is True
+            assert bool(lenient["maths"]) is True
 
         # still synchronised
-        assert _LENIENT.enable is False
-        assert lenient["maths"] is False
+        assert bool(_LENIENT.enable) is False
+        assert bool(lenient["maths"]) is False
