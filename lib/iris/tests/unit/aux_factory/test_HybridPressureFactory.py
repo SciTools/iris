@@ -115,7 +115,7 @@ class Test___init__:
         assert factory.coord_system is None
         assert factory.attributes == {}
 
-    def test_promote_sigma_units_unknown_to_dimensionless(self, mocker):
+    def test_promote_sigma_units_unknown_to_dimensionless(self):
         sigma = Mock(units=cf_units.Unit("unknown"), nbounds=0)
         factory = HybridPressureFactory(
             delta=self.delta,
@@ -249,32 +249,32 @@ class Test_update:
     def _setup(self):
         create_default_sample_parts(self)
 
-    def test_good_delta(self, mocker):
+    def test_good_delta(self):
         new_delta_coord = Mock(units=cf_units.Unit("Pa"), nbounds=0)
         self.factory.update(self.delta, new_delta_coord)
         assert self.factory.delta is new_delta_coord
 
-    def test_bad_delta(self, mocker):
+    def test_bad_delta(self):
         new_delta_coord = Mock(units=cf_units.Unit("1"), nbounds=0)
         with pytest.raises(ValueError):
             self.factory.update(self.delta, new_delta_coord)
 
-    def test_alternative_bad_delta(self, mocker):
+    def test_alternative_bad_delta(self):
         new_delta_coord = Mock(units=cf_units.Unit("Pa"), nbounds=4)
         with pytest.raises(ValueError):
             self.factory.update(self.delta, new_delta_coord)
 
-    def test_good_surface_air_pressure(self, mocker):
+    def test_good_surface_air_pressure(self):
         new_surface_p_coord = Mock(units=cf_units.Unit("Pa"), nbounds=0)
         self.factory.update(self.surface_air_pressure, new_surface_p_coord)
         assert self.factory.surface_air_pressure is new_surface_p_coord
 
-    def test_bad_surface_air_pressure(self, mocker):
+    def test_bad_surface_air_pressure(self):
         new_surface_p_coord = Mock(units=cf_units.Unit("km"), nbounds=0)
         with pytest.raises(ValueError):
             self.factory.update(self.surface_air_pressure, new_surface_p_coord)
 
-    def test_non_dependency(self, mocker):
+    def test_non_dependency(self):
         old_coord = Mock()
         new_coord = Mock()
         orig_dependencies = self.factory.dependencies
