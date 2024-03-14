@@ -468,6 +468,10 @@ class TestAttributePositive(_shared_utils.GraphicsTest):
 @_shared_utils.skip_data
 @pytest.fixture(scope="module")
 def _load_4d_testcube():
+    """Load the realistic_4d() cube with specific modifications.
+
+    Scoped to only load once - used many times so this is much faster.
+    """
     # Load example 4d data (TZYX).
     test_cube = iris.tests.stock.realistic_4d()
     # Replace forecast_period coord with a multi-valued version.
@@ -497,6 +501,10 @@ def _load_4d_testcube():
 @_shared_utils.skip_data
 @pytest.fixture(scope="module")
 def _load_wind_no_bounds():
+    """Load a cube representing wind data but with no coordinate bounds.
+
+    Scoped to only load once - used many times so this is much faster.
+    """
     # Load the COLPEX data => TZYX
     path = tests.get_data_path(("PP", "COLPEX", "small_eastward_wind.pp"))
     wind = iris.load_cube(path, "x_wind")
@@ -536,6 +544,9 @@ class SliceMixin:
 
     @pytest.fixture(autouse=True)
     def set_warnings_stance(self):
+        # Defining in a fixture enables inheritance by classes that expect a
+        #  warning - setting self.warning_checker to the pytest.warns() context
+        #  manager instead.
         self.warning_checker = nullcontext
 
     def test_yx(self):
@@ -723,6 +734,7 @@ class LambdaStr:
 class TestPlotCoordinatesGiven(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True, scope="class")
     def get_cube(self):
+        # Class-scoped to avoid wastefully reloading the same Cube repeatedly.
         filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
         self.__class__.cube = iris.load_cube(filename, "air_potential_temperature")
 

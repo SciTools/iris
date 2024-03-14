@@ -993,6 +993,8 @@ def env_bin_path(exe_name: AnyStr = None):
 
 
 class GraphicsTest:
+    """All inheriting classes automatically have access to ``self.check_graphic()``."""
+
     @pytest.fixture(autouse=True)
     def _get_check_graphics(self, check_graphic_caller):
         self.check_graphic = check_graphic_caller
