@@ -122,7 +122,7 @@ class Test___init__:
             sigma=sigma,
             surface_air_pressure=self.surface_air_pressure,
         )
-        assert "1" == factory.dependencies["sigma"].units
+        assert factory.dependencies["sigma"].units == "1"
 
 
 class Test_dependencies:
@@ -173,7 +173,7 @@ class Test_make_coord:
             surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        assert expected_coord == derived_coord
+        assert derived_coord == expected_coord
 
     def test_none_delta(self):
         delta_pts = 0
@@ -188,7 +188,7 @@ class Test_make_coord:
             surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        assert expected_coord == derived_coord
+        assert derived_coord == expected_coord
 
     def test_none_sigma(self):
         delta_pts = self.delta.points[..., np.newaxis, np.newaxis]
@@ -203,7 +203,7 @@ class Test_make_coord:
             surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        assert expected_coord == derived_coord
+        assert derived_coord == expected_coord
 
     def test_none_surface_air_pressure(self):
         # Note absence of broadcasting as multidimensional coord
@@ -214,7 +214,7 @@ class Test_make_coord:
         )
         factory = HybridPressureFactory(delta=self.delta, sigma=self.sigma)
         derived_coord = factory.make_coord(self.coords_dims_func)
-        assert expected_coord == derived_coord
+        assert derived_coord == expected_coord
 
     def test_with_bounds(self):
         self.delta.guess_bounds(0)
@@ -241,7 +241,7 @@ class Test_make_coord:
             surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        assert expected_coord == derived_coord
+        assert derived_coord == expected_coord
 
 
 class Test_update:
@@ -279,7 +279,7 @@ class Test_update:
         new_coord = Mock()
         orig_dependencies = self.factory.dependencies
         self.factory.update(old_coord, new_coord)
-        assert orig_dependencies == self.factory.dependencies
+        assert self.factory.dependencies == orig_dependencies
 
     def test_none_delta(self):
         self.factory.update(self.delta, None)
