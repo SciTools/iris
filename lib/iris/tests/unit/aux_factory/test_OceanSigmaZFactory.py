@@ -6,28 +6,25 @@
 `iris.aux_factory.OceanSigmaZFactory` class.
 
 """
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
+from unittest.mock import Mock
 
 from cf_units import Unit
 import numpy as np
+import pytest
 
 from iris.aux_factory import OceanSigmaZFactory
 from iris.coords import AuxCoord, DimCoord
 
 
-class Test___init__(tests.IrisTest):
-    def setUp(self):
-        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
-        self.eta = mock.Mock(units=Unit("m"), nbounds=0)
-        self.depth = mock.Mock(units=Unit("m"), nbounds=0)
-        self.depth_c = mock.Mock(units=Unit("m"), nbounds=0, shape=(1,))
-        self.nsigma = mock.Mock(units=Unit("1"), nbounds=0, shape=(1,))
-        self.zlev = mock.Mock(units=Unit("m"), nbounds=0)
+class Test___init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.sigma = Mock(units=Unit("1"), nbounds=0)
+        self.eta = Mock(units=Unit("m"), nbounds=0)
+        self.depth = Mock(units=Unit("m"), nbounds=0)
+        self.depth_c = Mock(units=Unit("m"), nbounds=0, shape=(1,))
+        self.nsigma = Mock(units=Unit("1"), nbounds=0, shape=(1,))
+        self.zlev = Mock(units=Unit("m"), nbounds=0)
         self.kwargs = dict(
             sigma=self.sigma,
             eta=self.eta,
@@ -38,9 +35,9 @@ class Test___init__(tests.IrisTest):
         )
 
     def test_insufficient_coordinates(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(
                 sigma=self.sigma,
                 eta=self.eta,
@@ -49,7 +46,7 @@ class Test___init__(tests.IrisTest):
                 nsigma=self.nsigma,
                 zlev=None,
             )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(
                 sigma=None,
                 eta=None,
@@ -58,7 +55,7 @@ class Test___init__(tests.IrisTest):
                 nsigma=self.nsigma,
                 zlev=self.zlev,
             )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(
                 sigma=self.sigma,
                 eta=None,
@@ -67,7 +64,7 @@ class Test___init__(tests.IrisTest):
                 nsigma=self.nsigma,
                 zlev=self.zlev,
             )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(
                 sigma=self.sigma,
                 eta=None,
@@ -76,7 +73,7 @@ class Test___init__(tests.IrisTest):
                 nsigma=self.nsigma,
                 zlev=self.zlev,
             )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(
                 sigma=self.sigma,
                 eta=self.eta,
@@ -88,69 +85,70 @@ class Test___init__(tests.IrisTest):
 
     def test_sigma_too_many_bounds(self):
         self.sigma.nbounds = 4
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_zlev_too_many_bounds(self):
         self.zlev.nbounds = 4
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_sigma_zlev_same_boundedness(self):
         self.zlev.nbounds = 2
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_depth_c_non_scalar(self):
         self.depth_c.shape = (2,)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_nsigma_non_scalar(self):
         self.nsigma.shape = (4,)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_zlev_incompatible_units(self):
         self.zlev.units = Unit("Pa")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_sigma_incompatible_units(self):
         self.sigma.units = Unit("km")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_eta_incompatible_units(self):
         self.eta.units = Unit("km")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_depth_c_incompatible_units(self):
         self.depth_c.units = Unit("km")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_depth_incompatible_units(self):
         self.depth.units = Unit("km")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
     def test_promote_sigma_units_unknown_to_dimensionless(self):
-        sigma = mock.Mock(units=Unit("unknown"), nbounds=0)
+        sigma = Mock(units=Unit("unknown"), nbounds=0)
         self.kwargs["sigma"] = sigma
         factory = OceanSigmaZFactory(**self.kwargs)
-        self.assertEqual("1", factory.dependencies["sigma"].units)
+        assert factory.dependencies["sigma"].units == "1"
 
 
-class Test_dependencies(tests.IrisTest):
-    def setUp(self):
-        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
-        self.eta = mock.Mock(units=Unit("m"), nbounds=0)
-        self.depth = mock.Mock(units=Unit("m"), nbounds=0)
-        self.depth_c = mock.Mock(units=Unit("m"), nbounds=0, shape=(1,))
-        self.nsigma = mock.Mock(units=Unit("1"), nbounds=0, shape=(1,))
-        self.zlev = mock.Mock(units=Unit("m"), nbounds=0)
+class Test_dependencies:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.sigma = Mock(units=Unit("1"), nbounds=0)
+        self.eta = Mock(units=Unit("m"), nbounds=0)
+        self.depth = Mock(units=Unit("m"), nbounds=0)
+        self.depth_c = Mock(units=Unit("m"), nbounds=0, shape=(1,))
+        self.nsigma = Mock(units=Unit("1"), nbounds=0, shape=(1,))
+        self.zlev = Mock(units=Unit("m"), nbounds=0)
         self.kwargs = dict(
             sigma=self.sigma,
             eta=self.eta,
@@ -162,10 +160,10 @@ class Test_dependencies(tests.IrisTest):
 
     def test_values(self):
         factory = OceanSigmaZFactory(**self.kwargs)
-        self.assertEqual(factory.dependencies, self.kwargs)
+        assert factory.dependencies == self.kwargs
 
 
-class Test_make_coord(tests.IrisTest):
+class Test_make_coord:
     @staticmethod
     def coord_dims(coord):
         mapping = dict(
@@ -195,7 +193,8 @@ class Test_make_coord(tests.IrisTest):
             )
         return result
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.sigma = DimCoord(
             np.arange(5, dtype=np.float64) * 10, long_name="sigma", units="1"
         )
@@ -236,7 +235,7 @@ class Test_make_coord(tests.IrisTest):
         # Calculate the actual result.
         factory = OceanSigmaZFactory(**self.kwargs)
         coord = factory.make_coord(self.coord_dims)
-        self.assertEqual(expected_coord, coord)
+        assert coord == expected_coord
 
     def test_derived_points_with_bounds(self):
         self.sigma.guess_bounds()
@@ -263,7 +262,7 @@ class Test_make_coord(tests.IrisTest):
         # Calculate the actual result.
         factory = OceanSigmaZFactory(**self.kwargs)
         coord = factory.make_coord(self.coord_dims)
-        self.assertEqual(expected_coord, coord)
+        assert coord == expected_coord
 
     def test_no_eta(self):
         # Broadcast expected points given the known dimensional mapping.
@@ -279,7 +278,7 @@ class Test_make_coord(tests.IrisTest):
         self.kwargs["eta"] = None
         factory = OceanSigmaZFactory(**self.kwargs)
         coord = factory.make_coord(self.coord_dims)
-        self.assertEqual(expected_coord, coord)
+        assert coord == expected_coord
 
     def test_no_sigma(self):
         # Broadcast expected points given the known dimensional mapping.
@@ -295,7 +294,7 @@ class Test_make_coord(tests.IrisTest):
         self.kwargs["sigma"] = None
         factory = OceanSigmaZFactory(**self.kwargs)
         coord = factory.make_coord(self.coord_dims)
-        self.assertEqual(expected_coord, coord)
+        assert coord == expected_coord
 
     def test_no_depth_c(self):
         # Broadcast expected points given the known dimensional mapping.
@@ -311,7 +310,7 @@ class Test_make_coord(tests.IrisTest):
         self.kwargs["depth_c"] = None
         factory = OceanSigmaZFactory(**self.kwargs)
         coord = factory.make_coord(self.coord_dims)
-        self.assertEqual(expected_coord, coord)
+        assert coord == expected_coord
 
     def test_no_depth(self):
         # Broadcast expected points given the known dimensional mapping.
@@ -327,17 +326,18 @@ class Test_make_coord(tests.IrisTest):
         self.kwargs["depth"] = None
         factory = OceanSigmaZFactory(**self.kwargs)
         coord = factory.make_coord(self.coord_dims)
-        self.assertEqual(expected_coord, coord)
+        assert coord == expected_coord
 
 
-class Test_update(tests.IrisTest):
-    def setUp(self):
-        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
-        self.eta = mock.Mock(units=Unit("m"), nbounds=0)
-        self.depth = mock.Mock(units=Unit("m"), nbounds=0)
-        self.depth_c = mock.Mock(units=Unit("m"), nbounds=0, shape=(1,))
-        self.nsigma = mock.Mock(units=Unit("1"), nbounds=0, shape=(1,))
-        self.zlev = mock.Mock(units=Unit("m"), nbounds=0)
+class Test_update:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.sigma = Mock(units=Unit("1"), nbounds=0)
+        self.eta = Mock(units=Unit("m"), nbounds=0)
+        self.depth = Mock(units=Unit("m"), nbounds=0)
+        self.depth_c = Mock(units=Unit("m"), nbounds=0, shape=(1,))
+        self.nsigma = Mock(units=Unit("1"), nbounds=0, shape=(1,))
+        self.zlev = Mock(units=Unit("m"), nbounds=0)
         self.kwargs = dict(
             sigma=self.sigma,
             eta=self.eta,
@@ -349,98 +349,94 @@ class Test_update(tests.IrisTest):
         self.factory = OceanSigmaZFactory(**self.kwargs)
 
     def test_sigma(self):
-        new_sigma = mock.Mock(units=Unit("1"), nbounds=0)
+        new_sigma = Mock(units=Unit("1"), nbounds=0)
         self.factory.update(self.sigma, new_sigma)
-        self.assertIs(self.factory.sigma, new_sigma)
+        assert self.factory.sigma is new_sigma
 
     def test_sigma_too_many_bounds(self):
-        new_sigma = mock.Mock(units=Unit("1"), nbounds=4)
-        with self.assertRaises(ValueError):
+        new_sigma = Mock(units=Unit("1"), nbounds=4)
+        with pytest.raises(ValueError):
             self.factory.update(self.sigma, new_sigma)
 
     def test_sigma_zlev_same_boundedness(self):
-        new_sigma = mock.Mock(units=Unit("1"), nbounds=2)
-        with self.assertRaises(ValueError):
+        new_sigma = Mock(units=Unit("1"), nbounds=2)
+        with pytest.raises(ValueError):
             self.factory.update(self.sigma, new_sigma)
 
     def test_sigma_incompatible_units(self):
-        new_sigma = mock.Mock(units=Unit("Pa"), nbounds=0)
-        with self.assertRaises(ValueError):
+        new_sigma = Mock(units=Unit("Pa"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.sigma, new_sigma)
 
     def test_eta(self):
-        new_eta = mock.Mock(units=Unit("m"), nbounds=0)
+        new_eta = Mock(units=Unit("m"), nbounds=0)
         self.factory.update(self.eta, new_eta)
-        self.assertIs(self.factory.eta, new_eta)
+        assert self.factory.eta is new_eta
 
     def test_eta_incompatible_units(self):
-        new_eta = mock.Mock(units=Unit("Pa"), nbounds=0)
-        with self.assertRaises(ValueError):
+        new_eta = Mock(units=Unit("Pa"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.eta, new_eta)
 
     def test_depth(self):
-        new_depth = mock.Mock(units=Unit("m"), nbounds=0)
+        new_depth = Mock(units=Unit("m"), nbounds=0)
         self.factory.update(self.depth, new_depth)
-        self.assertIs(self.factory.depth, new_depth)
+        assert self.factory.depth is new_depth
 
     def test_depth_incompatible_units(self):
-        new_depth = mock.Mock(units=Unit("Pa"), nbounds=0)
-        with self.assertRaises(ValueError):
+        new_depth = Mock(units=Unit("Pa"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.depth, new_depth)
 
     def test_depth_c(self):
-        new_depth_c = mock.Mock(units=Unit("m"), nbounds=0, shape=(1,))
+        new_depth_c = Mock(units=Unit("m"), nbounds=0, shape=(1,))
         self.factory.update(self.depth_c, new_depth_c)
-        self.assertIs(self.factory.depth_c, new_depth_c)
+        assert self.factory.depth_c is new_depth_c
 
     def test_depth_c_non_scalar(self):
-        new_depth_c = mock.Mock(units=Unit("m"), nbounds=0, shape=(10,))
-        with self.assertRaises(ValueError):
+        new_depth_c = Mock(units=Unit("m"), nbounds=0, shape=(10,))
+        with pytest.raises(ValueError):
             self.factory.update(self.depth_c, new_depth_c)
 
     def test_depth_c_incompatible_units(self):
-        new_depth_c = mock.Mock(units=Unit("Pa"), nbounds=0, shape=(1,))
-        with self.assertRaises(ValueError):
+        new_depth_c = Mock(units=Unit("Pa"), nbounds=0, shape=(1,))
+        with pytest.raises(ValueError):
             self.factory.update(self.depth_c, new_depth_c)
 
     def test_nsigma(self):
-        new_nsigma = mock.Mock(units=Unit("1"), nbounds=0, shape=(1,))
+        new_nsigma = Mock(units=Unit("1"), nbounds=0, shape=(1,))
         self.factory.update(self.nsigma, new_nsigma)
-        self.assertIs(self.factory.nsigma, new_nsigma)
+        assert self.factory.nsigma is new_nsigma
 
     def test_nsigma_missing(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.factory.update(self.nsigma, None)
 
     def test_nsigma_non_scalar(self):
-        new_nsigma = mock.Mock(units=Unit("1"), nbounds=0, shape=(10,))
-        with self.assertRaises(ValueError):
+        new_nsigma = Mock(units=Unit("1"), nbounds=0, shape=(10,))
+        with pytest.raises(ValueError):
             self.factory.update(self.nsigma, new_nsigma)
 
     def test_zlev(self):
-        new_zlev = mock.Mock(units=Unit("m"), nbounds=0)
+        new_zlev = Mock(units=Unit("m"), nbounds=0)
         self.factory.update(self.zlev, new_zlev)
-        self.assertIs(self.factory.zlev, new_zlev)
+        assert self.factory.zlev is new_zlev
 
     def test_zlev_missing(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.factory.update(self.zlev, None)
 
     def test_zlev_too_many_bounds(self):
-        new_zlev = mock.Mock(units=Unit("m"), nbounds=4)
-        with self.assertRaises(ValueError):
+        new_zlev = Mock(units=Unit("m"), nbounds=4)
+        with pytest.raises(ValueError):
             self.factory.update(self.zlev, new_zlev)
 
     def test_zlev_same_boundedness(self):
-        new_zlev = mock.Mock(units=Unit("m"), nbounds=2)
-        with self.assertRaises(ValueError):
+        new_zlev = Mock(units=Unit("m"), nbounds=2)
+        with pytest.raises(ValueError):
             self.factory.update(self.zlev, new_zlev)
 
     def test_zlev_incompatible_units(self):
-        new_zlev = new_zlev = mock.Mock(units=Unit("Pa"), nbounds=0)
-        with self.assertRaises(ValueError):
+        new_zlev = new_zlev = Mock(units=Unit("Pa"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.zlev, new_zlev)
-
-
-if __name__ == "__main__":
-    tests.main()
