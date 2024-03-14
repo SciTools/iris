@@ -3,10 +3,6 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 from contextlib import nullcontext
 
 import cf_units
@@ -20,7 +16,7 @@ from iris.tests import _shared_utils
 import iris.tests.stock
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
 
     import iris.plot as iplt
@@ -80,7 +76,7 @@ class TestMissingCoord(_shared_utils.GraphicsTest):
 class TestMissingCS(_shared_utils.GraphicsTest):
     @_shared_utils.skip_data
     def test_missing_cs(self):
-        cube = tests.stock.simple_pp()
+        cube = iris.tests.stock.simple_pp()
         cube.coord("latitude").coord_system = None
         cube.coord("longitude").coord_system = None
         qplt.contourf(cube)
@@ -248,7 +244,7 @@ class Test1dScatter(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube = iris.load_cube(
-            tests.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
+            _shared_utils.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
             "Temperature",
         )
 
@@ -283,7 +279,7 @@ class Test1dScatter(_shared_utils.GraphicsTest):
 
     def test_cube_cube(self):
         x = iris.load_cube(
-            tests.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
+            _shared_utils.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
             "Rel Humidity",
         )
         y = self.cube
@@ -326,7 +322,7 @@ class Test1dQuickplotScatter(Test1dScatter):
 class Test2dPoints(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
     def _setup(self):
-        pp_file = tests.get_data_path(("PP", "globClim1", "u_wind.pp"))
+        pp_file = _shared_utils.get_data_path(("PP", "globClim1", "u_wind.pp"))
         self.cube = iris.load(pp_file)[0][0]
 
     def test_circular_changes(self):
@@ -348,7 +344,7 @@ class Test1dFillBetween(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube = iris.load_cube(
-            tests.get_data_path(("NetCDF", "testing", "small_theta_colpex.nc")),
+            _shared_utils.get_data_path(("NetCDF", "testing", "small_theta_colpex.nc")),
             "air_potential_temperature",
         )[0, 0]
 
@@ -441,25 +437,27 @@ class Test1dQuickplotFillBetween(Test1dFillBetween):
 @_shared_utils.skip_plot
 class TestAttributePositive(_shared_utils.GraphicsTest):
     def test_1d_positive_up(self):
-        path = tests.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
+        path = _shared_utils.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
         cube = iris.load_cube(path)
         qplt.plot(cube.coord("depth"), cube[0, :, 60, 80])
         self.check_graphic()
 
     def test_1d_positive_down(self):
-        path = tests.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
+        path = _shared_utils.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
         cube = iris.load_cube(path)
         qplt.plot(cube[0, :, 60, 80], cube.coord("depth"))
         self.check_graphic()
 
     def test_2d_positive_up(self):
-        path = tests.get_data_path(("NetCDF", "testing", "small_theta_colpex.nc"))
+        path = _shared_utils.get_data_path(
+            ("NetCDF", "testing", "small_theta_colpex.nc")
+        )
         cube = iris.load_cube(path, "air_potential_temperature")[0, :, 42, :]
         qplt.pcolormesh(cube)
         self.check_graphic()
 
     def test_2d_positive_down(self):
-        path = tests.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
+        path = _shared_utils.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
         cube = iris.load_cube(path)[0, :, 42, :]
         qplt.pcolormesh(cube)
         self.check_graphic()
@@ -506,7 +504,7 @@ def load_wind_no_bounds():
     Scoped to only load once - used many times so this is much faster.
     """
     # Load the COLPEX data => TZYX
-    path = tests.get_data_path(("PP", "COLPEX", "small_eastward_wind.pp"))
+    path = _shared_utils.get_data_path(("PP", "COLPEX", "small_eastward_wind.pp"))
     wind = iris.load_cube(path, "x_wind")
 
     # Remove bounds from all coords that have them.
@@ -735,7 +733,9 @@ class TestPlotCoordinatesGiven(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True, scope="class")
     def _get_cube(self):
         # Class-scoped to avoid wastefully reloading the same Cube repeatedly.
-        filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
+        filename = _shared_utils.get_data_path(
+            ("PP", "COLPEX", "theta_and_orog_subset.pp")
+        )
         self.__class__.cube = iris.load_cube(filename, "air_potential_temperature")
 
     @pytest.fixture(autouse=True)
@@ -917,7 +917,7 @@ class TestPlotHist(_shared_utils.GraphicsTest):
 class TestPlotDimAndAuxCoordsKwarg(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
     def _setup(self):
-        filename = tests.get_data_path(
+        filename = _shared_utils.get_data_path(
             ("NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc")
         )
         self.cube = iris.load_cube(filename)
@@ -976,7 +976,7 @@ class TestSymbols(_shared_utils.GraphicsTest):
 class TestPlottingExceptions:
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.bounded_cube = tests.stock.lat_lon_cube()
+        self.bounded_cube = iris.tests.stock.lat_lon_cube()
         self.bounded_cube.coord("latitude").guess_bounds()
         self.bounded_cube.coord("longitude").guess_bounds()
 
@@ -1021,7 +1021,7 @@ class TestPlottingExceptions:
 @_shared_utils.skip_plot
 class TestPlotOtherCoordSystems(_shared_utils.GraphicsTest):
     def test_plot_tmerc(self):
-        filename = tests.get_data_path(
+        filename = _shared_utils.get_data_path(
             ("NetCDF", "transverse_mercator", "tmean_1910_1910.nc")
         )
         self.cube = iris.load_cube(filename)
