@@ -16,7 +16,7 @@ from iris.coords import AuxCoord, DimCoord
 
 class Test___init__:
     @pytest.fixture(autouse=True)
-    def setup(self, mocker):
+    def _setup(self, mocker):
         self.pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=())
         self.sigma = mocker.Mock(units=Unit("1"), nbounds=0)
         self.surface_air_pressure = mocker.Mock(units=Unit("Pa"), nbounds=0)
@@ -176,7 +176,7 @@ class Test_make_coord:
         return result
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.pressure_at_top = AuxCoord(
             [3.0],
             long_name="pressure_at_top",
@@ -228,7 +228,7 @@ class Test_make_coord:
 
 class Test_update:
     @pytest.fixture(autouse=True)
-    def setup(self, mocker):
+    def _setup(self, mocker):
         self.pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=())
         self.sigma = mocker.Mock(units=Unit("1"), nbounds=0)
         self.surface_air_pressure = mocker.Mock(units=Unit("Pa"), nbounds=0)
