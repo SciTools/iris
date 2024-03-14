@@ -22,26 +22,26 @@ def lenient():
 
 
 class Test___init__:
-    @pytest.fixture()
-    def expected(self):
-        return dict(active=None, enable=_LENIENT_ENABLE_DEFAULT)
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.expected = dict(active=None, enable=_LENIENT_ENABLE_DEFAULT)
 
-    def test_default(self, expected, lenient):
-        assert lenient.__dict__ == expected
+    def test_default(self, lenient):
+        assert lenient.__dict__ == self.expected
 
-    def test_args_service_str(self, expected):
+    def test_args_service_str(self):
         service = "service1"
         lenient = _Lenient(service)
-        expected.update(dict(service1=True))
-        assert lenient.__dict__ == expected
+        self.expected.update(dict(service1=True))
+        assert lenient.__dict__ == self.expected
 
-    def test_args_services_str(self, expected):
+    def test_args_services_str(self):
         services = ("service1", "service2")
         lenient = _Lenient(*services)
-        expected.update(dict(service1=True, service2=True))
-        assert lenient.__dict__ == expected
+        self.expected.update(dict(service1=True, service2=True))
+        assert lenient.__dict__ == self.expected
 
-    def test_args_services_callable(self, expected):
+    def test_args_services_callable(self):
         def service1():
             pass
 
@@ -50,22 +50,22 @@ class Test___init__:
 
         services = (service1, service2)
         lenient = _Lenient(*services)
-        expected.update({_qualname(service1): True, _qualname(service2): True})
-        assert lenient.__dict__ == expected
+        self.expected.update({_qualname(service1): True, _qualname(service2): True})
+        assert lenient.__dict__ == self.expected
 
-    def test_kwargs_client_str(self, expected):
+    def test_kwargs_client_str(self):
         client = dict(client1="service1")
         lenient = _Lenient(**client)
-        expected.update(dict(client1=("service1",)))
-        assert lenient.__dict__ == expected
+        self.expected.update(dict(client1=("service1",)))
+        assert lenient.__dict__ == self.expected
 
-    def test_kwargs_clients_str(self, expected):
+    def test_kwargs_clients_str(self):
         clients = dict(client1="service1", client2="service2")
         lenient = _Lenient(**clients)
-        expected.update(dict(client1=("service1",), client2=("service2",)))
-        assert lenient.__dict__ == expected
+        self.expected.update(dict(client1=("service1",), client2=("service2",)))
+        assert lenient.__dict__ == self.expected
 
-    def test_kwargs_clients_callable(self, expected):
+    def test_kwargs_clients_callable(self):
         def client1():
             pass
 
@@ -85,13 +85,13 @@ class Test___init__:
             qualname_client2: (service1, service2),
         }
         lenient = _Lenient(**clients)
-        expected.update(
+        self.expected.update(
             {
                 _qualname(client1): (_qualname(service1),),
                 _qualname(client2): (_qualname(service1), _qualname(service2)),
             }
         )
-        assert lenient.__dict__ == expected
+        assert lenient.__dict__ == self.expected
 
 
 class Test___call__:
