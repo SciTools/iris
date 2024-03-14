@@ -92,7 +92,7 @@ class TestMissingCS(_shared_utils.GraphicsTest):
 @_shared_utils.skip_data
 class TestHybridHeight(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.cube = iris.tests.stock.realistic_4d()[0, :15, 0, :]
 
     def _check(self, plt_method, test_altitude=True):
@@ -131,11 +131,11 @@ class TestHybridHeight(_shared_utils.GraphicsTest):
         self.check_graphic()
 
         # TODO: Test bounds once they are supported.
+        qplt.pcolor(self.cube)
         with pytest.raises(NotImplementedError):
-            qplt.pcolor(self.cube)
             iplt.orography_at_bounds(self.cube)
-            iplt.outline(self.cube)
-            self.check_graphic()
+            # iplt.outline(self.cube)
+            # self.check_graphic()
 
 
 @_shared_utils.skip_plot
@@ -147,8 +147,8 @@ class Test1dPlotMultiArgs(_shared_utils.GraphicsTest):
         self.draw_method = iplt.plot
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_4d_testcube):
-        self.cube1d = _load_4d_testcube[0, :, 0, 0]
+    def _setup(self, load_4d_testcube):
+        self.cube1d = load_4d_testcube[0, :, 0, 0]
 
     def test_cube(self):
         # just plot a cube against its dim coord
@@ -206,13 +206,13 @@ class Test1dPlotMultiArgs(_shared_utils.GraphicsTest):
 
     def test_incompatible_objects(self):
         # incompatible objects (not the same length) should raise an error
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="are not compatible"):
             self.draw_method(self.cube1d.coord("time"), (self.cube1d))
 
-    def test_multimidmensional(self, _load_4d_testcube):
+    def test_multimidmensional(self, load_4d_testcube):
         # multidimensional cubes are not allowed
-        cube = _load_4d_testcube[0, :, :, 0]
-        with pytest.raises(ValueError):
+        cube = load_4d_testcube[0, :, :, 0]
+        with pytest.raises(ValueError, match="must be 1-dimensional"):
             self.draw_method(cube)
 
     def test_not_cube_or_coord(self):
@@ -246,7 +246,7 @@ class Test1dScatter(_shared_utils.GraphicsTest):
         self.draw_method = iplt.scatter
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.cube = iris.load_cube(
             tests.get_data_path(("NAME", "NAMEIII_trajectory.txt")),
             "Temperature",
@@ -295,14 +295,14 @@ class Test1dScatter(_shared_utils.GraphicsTest):
         # cubes/coordinates of different sizes cannot be plotted
         x = self.cube
         y = self.cube.coord("altitude")[:-1]
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="are not compatible"):
             self.draw_method(x, y)
 
-    def test_multidimensional(self, _load_4d_testcube):
+    def test_multidimensional(self, load_4d_testcube):
         # multidimensional cubes/coordinates are not allowed
-        x = _load_4d_testcube[0, :, :, 0]
+        x = load_4d_testcube[0, :, :, 0]
         y = x.coord("model_level_number")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="must be 1-dimensional"):
             self.draw_method(x, y)
 
     def test_not_cube_or_coord(self):
@@ -325,7 +325,7 @@ class Test1dQuickplotScatter(Test1dScatter):
 @_shared_utils.skip_plot
 class Test2dPoints(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         pp_file = tests.get_data_path(("PP", "globClim1", "u_wind.pp"))
         self.cube = iris.load(pp_file)[0][0]
 
@@ -346,7 +346,7 @@ class Test1dFillBetween(_shared_utils.GraphicsTest):
         self.draw_method = iplt.fill_between
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.cube = iris.load_cube(
             tests.get_data_path(("NetCDF", "testing", "small_theta_colpex.nc")),
             "air_potential_temperature",
@@ -385,7 +385,7 @@ class Test1dFillBetween(_shared_utils.GraphicsTest):
         x = self.cube.coord("grid_latitude")[:-1]
         y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)
         y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="are not all compatible"):
             self.draw_method(x, y1, y2)
 
     def test_incompatible_objects_y1_odd(self):
@@ -393,7 +393,7 @@ class Test1dFillBetween(_shared_utils.GraphicsTest):
         x = self.cube.coord("grid_latitude")
         y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)[:-1]
         y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="are not all compatible"):
             self.draw_method(x, y1, y2)
 
     def test_incompatible_objects_y2_odd(self):
@@ -401,7 +401,7 @@ class Test1dFillBetween(_shared_utils.GraphicsTest):
         x = self.cube.coord("grid_latitude")
         y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)
         y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)[:-1]
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="are not all compatible"):
             self.draw_method(x, y1, y2)
 
     def test_incompatible_objects_all_odd(self):
@@ -409,7 +409,7 @@ class Test1dFillBetween(_shared_utils.GraphicsTest):
         x = self.cube.coord("grid_latitude")
         y1 = self.cube.collapsed("grid_longitude", iris.analysis.MIN)[:-1]
         y2 = self.cube.collapsed("grid_longitude", iris.analysis.MAX)[:-2]
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="are not all compatible"):
             self.draw_method(x, y1, y2)
 
     def test_multidimensional(self):
@@ -417,7 +417,7 @@ class Test1dFillBetween(_shared_utils.GraphicsTest):
         x = self.cube.coord("grid_latitude")
         y1 = self.cube
         y2 = self.cube
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="must be 1-dimensional"):
             self.draw_method(x, y1, y2)
 
     def test_not_cube_or_coord(self):
@@ -467,7 +467,7 @@ class TestAttributePositive(_shared_utils.GraphicsTest):
 
 @_shared_utils.skip_data
 @pytest.fixture(scope="module")
-def _load_4d_testcube():
+def load_4d_testcube():
     """Load the realistic_4d() cube with specific modifications.
 
     Scoped to only load once - used many times so this is much faster.
@@ -500,7 +500,7 @@ def _load_4d_testcube():
 
 @_shared_utils.skip_data
 @pytest.fixture(scope="module")
-def _load_wind_no_bounds():
+def load_wind_no_bounds():
     """Load a cube representing wind data but with no coordinate bounds.
 
     Scoped to only load once - used many times so this is much faster.
@@ -543,7 +543,7 @@ class SliceMixin:
     """
 
     @pytest.fixture(autouse=True)
-    def set_warnings_stance(self):
+    def _set_warnings_stance(self):
         # Defining in a fixture enables inheritance by classes that expect a
         #  warning - setting self.warning_checker to the pytest.warns() context
         #  manager instead.
@@ -591,8 +591,8 @@ class TestContour(_shared_utils.GraphicsTest, SliceMixin):
     """Test the iris.plot.contour routine."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_4d_testcube):
-        self.wind = _load_4d_testcube
+    def _setup(self, load_4d_testcube):
+        self.wind = load_4d_testcube
         self.draw_method = iplt.contour
 
 
@@ -601,8 +601,8 @@ class TestContourf(_shared_utils.GraphicsTest, SliceMixin):
     """Test the iris.plot.contourf routine."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_4d_testcube):
-        self.wind = _load_4d_testcube
+    def _setup(self, load_4d_testcube):
+        self.wind = load_4d_testcube
         self.draw_method = iplt.contourf
 
 
@@ -611,8 +611,8 @@ class TestPcolor(_shared_utils.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolor routine."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_4d_testcube):
-        self.wind = _load_4d_testcube
+    def _setup(self, load_4d_testcube):
+        self.wind = load_4d_testcube
         self.draw_method = iplt.pcolor
 
 
@@ -621,14 +621,14 @@ class TestPcolormesh(_shared_utils.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolormesh routine."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_4d_testcube):
-        self.wind = _load_4d_testcube
+    def _setup(self, load_4d_testcube):
+        self.wind = load_4d_testcube
         self.draw_method = iplt.pcolormesh
 
 
 class SliceWarningsMixin(SliceMixin):
     @pytest.fixture(autouse=True)
-    def set_warnings_stance(self):
+    def _set_warnings_stance(self):
         self.warning_checker = pytest.warns
 
 
@@ -640,8 +640,8 @@ class TestPcolorNoBounds(_shared_utils.GraphicsTest, SliceWarningsMixin):
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_wind_no_bounds):
-        self.wind = _load_wind_no_bounds
+    def _setup(self, load_wind_no_bounds):
+        self.wind = load_wind_no_bounds
         self.draw_method = iplt.pcolor
 
 
@@ -653,8 +653,8 @@ class TestPcolormeshNoBounds(_shared_utils.GraphicsTest, SliceWarningsMixin):
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_wind_no_bounds):
-        self.wind = _load_wind_no_bounds
+    def _setup(self, load_wind_no_bounds):
+        self.wind = load_wind_no_bounds
         self.draw_method = iplt.pcolormesh
 
 
@@ -700,8 +700,8 @@ class TestPlot(_shared_utils.GraphicsTest, Slice1dMixin):
     """Test the iris.plot.plot routine."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_4d_testcube):
-        self.wind = _load_4d_testcube
+    def _setup(self, load_4d_testcube):
+        self.wind = load_4d_testcube
         self.draw_method = iplt.plot
 
 
@@ -710,8 +710,8 @@ class TestQuickplotPlot(_shared_utils.GraphicsTest, Slice1dMixin):
     """Test the iris.quickplot.plot routine."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, _load_4d_testcube):
-        self.wind = _load_4d_testcube
+    def _setup(self, load_4d_testcube):
+        self.wind = load_4d_testcube
         self.draw_method = qplt.plot
 
 
@@ -733,13 +733,13 @@ class LambdaStr:
 @_shared_utils.skip_plot
 class TestPlotCoordinatesGiven(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True, scope="class")
-    def get_cube(self):
+    def _get_cube(self):
         # Class-scoped to avoid wastefully reloading the same Cube repeatedly.
         filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
         self.__class__.cube = iris.load_cube(filename, "air_potential_temperature")
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.draw_module = iris.plot
         self.contourf = LambdaStr(
             "iris.plot.contourf",
@@ -846,28 +846,28 @@ class TestPlotCoordinatesGiven(_shared_utils.GraphicsTest):
             draw_fn,
             cube,
             coords=["grid_longitude", "grid_longitude"],
+            match="don't span the 2 data dimensions",
         )
         pytest.raises(
             ValueError,
             draw_fn,
             cube,
             coords=["grid_longitude", "grid_longitude", "grid_latitude"],
+            match="should have the same length",
         )
         pytest.raises(
             iris.exceptions.CoordinateNotFoundError,
             draw_fn,
             cube,
             coords=["grid_longitude", "wibble"],
+            match="but found none",
         )
-        pytest.raises(ValueError, draw_fn, cube, coords=[])
         pytest.raises(
             ValueError,
             draw_fn,
             cube,
-            coords=[
-                cube.coord("grid_longitude"),
-                cube.coord("grid_longitude"),
-            ],
+            coords=[],
+            match="should have the same length",
         )
         pytest.raises(
             ValueError,
@@ -876,8 +876,19 @@ class TestPlotCoordinatesGiven(_shared_utils.GraphicsTest):
             coords=[
                 cube.coord("grid_longitude"),
                 cube.coord("grid_longitude"),
+            ],
+            match="don't span the 2 data dimensions",
+        )
+        pytest.raises(
+            ValueError,
+            draw_fn,
+            cube,
+            coords=[
+                cube.coord("grid_longitude"),
+                cube.coord("grid_longitude"),
                 cube.coord("grid_longitude"),
             ],
+            match="should have the same length",
         )
 
     def test_non_cube_coordinate(self):
@@ -905,7 +916,7 @@ class TestPlotHist(_shared_utils.GraphicsTest):
 @_shared_utils.skip_plot
 class TestPlotDimAndAuxCoordsKwarg(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         filename = tests.get_data_path(
             ("NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc")
         )
@@ -964,7 +975,7 @@ class TestSymbols(_shared_utils.GraphicsTest):
 @_shared_utils.skip_plot
 class TestPlottingExceptions:
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.bounded_cube = tests.stock.lat_lon_cube()
         self.bounded_cube.coord("latitude").guess_bounds()
         self.bounded_cube.coord("longitude").guess_bounds()
@@ -980,7 +991,7 @@ class TestPlottingExceptions:
             ),
             [0, 1],
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Could not get XY grid from bounds"):
             iplt.pcolormesh(cube, coords=["longitude", "latitude"])
 
     def test_boundmode_4bounds(self):
@@ -993,7 +1004,7 @@ class TestPlottingExceptions:
         ).transpose()
         cube.remove_coord("latitude")
         cube.add_aux_coord(lat, 0)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Could not get XY grid from bounds."):
             iplt.pcolormesh(cube, coords=["longitude", "latitude"])
 
     def test_different_coord_systems(self):
@@ -1002,7 +1013,7 @@ class TestPlottingExceptions:
         lon = cube.coord("longitude")
         lat.coord_system = iris.coord_systems.GeogCS(7000000)
         lon.coord_system = iris.coord_systems.GeogCS(7000001)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="must have equal coordinate systems"):
             iplt.pcolormesh(cube, coords=["longitude", "latitude"])
 
 
@@ -1022,7 +1033,7 @@ class TestPlotOtherCoordSystems(_shared_utils.GraphicsTest):
 @_shared_utils.skip_plot
 class TestPlotCitation(_shared_utils.GraphicsTest):
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.figure = plt.figure()
         self.axes = self.figure.gca()
         self.text = (
