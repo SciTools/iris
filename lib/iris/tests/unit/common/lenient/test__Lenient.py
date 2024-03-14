@@ -718,7 +718,7 @@ class Test_unregister_client:
             pass
 
         qualname_client = _qualname(client)
-        self.lenient.__dict__[qualname_client] = True
+        lenient.__dict__[qualname_client] = True
         emsg = "Cannot unregister .* client, as .* is not a valid .* client."
         with pytest.raises(ValueError, match=emsg):
             lenient.unregister_client(client)
@@ -727,16 +727,16 @@ class Test_unregister_client:
         client = "client"
         lenient.__dict__[client] = (None,)
         lenient.unregister_client(client)
-        assert client not in self.lenient.__dict__
+        assert client not in lenient.__dict__
 
-    def test_callable(self):
+    def test_callable(self, lenient):
         def client():
             pass
 
         qualname_client = _qualname(client)
         lenient.__dict__[qualname_client] = (None,)
         lenient.unregister_client(client)
-        assert qualname_client not in self.lenient.__dict__
+        assert qualname_client not in lenient.__dict__
 
 
 class Test_unregister_service:
@@ -773,13 +773,13 @@ class Test_unregister_service:
         service = "service"
         lenient.__dict__[service] = True
         lenient.unregister_service(service)
-        assert service not in self.lenient.__dict__
+        assert service not in lenient.__dict__
 
-    def test_callable(self):
+    def test_callable(self, lenient):
         def service():
             pass
 
         qualname_service = _qualname(service)
         lenient.__dict__[qualname_service] = True
         lenient.unregister_service(service)
-        assert qualname_service not in self.lenient.__dict__
+        assert qualname_service not in lenient.__dict__
