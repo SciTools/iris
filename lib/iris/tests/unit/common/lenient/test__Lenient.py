@@ -96,7 +96,7 @@ class Test___init__:
 
 class Test___call__:
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.client = "myclient"
         self.lenient = _Lenient()
 
@@ -465,7 +465,7 @@ class Test___setitem__:
 
 class Test_context:
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.lenient = _Lenient()
         self.default = dict(active=None, enable=_LENIENT_ENABLE_DEFAULT)
 
@@ -573,7 +573,7 @@ class Test_context:
 
 class Test_enable:
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def _setup(self):
         self.lenient = _Lenient()
 
     def test_getter(self):
