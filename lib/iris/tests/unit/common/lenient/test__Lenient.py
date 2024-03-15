@@ -101,18 +101,18 @@ class Test___call__:
         self.lenient = _Lenient()
 
     def test_missing_service_str(self):
-        assert bool(self.lenient("myservice")) is False
+        assert not self.lenient("myservice")
 
     def test_missing_service_callable(self):
         def myservice():
             pass
 
-        assert bool(self.lenient(myservice)) is False
+        assert not self.lenient(myservice)
 
     def test_disabled_service_str(self):
         service = "myservice"
         self.lenient.__dict__[service] = False
-        assert bool(self.lenient(service)) is False
+        assert not self.lenient(service)
 
     def test_disable_service_callable(self):
         def myservice():
@@ -120,12 +120,12 @@ class Test___call__:
 
         qualname_service = _qualname(myservice)
         self.lenient.__dict__[qualname_service] = False
-        assert bool(self.lenient(myservice)) is False
+        assert not self.lenient(myservice)
 
     def test_service_str_with_no_active_client(self):
         service = "myservice"
         self.lenient.__dict__[service] = True
-        assert bool(self.lenient(service)) is False
+        assert not self.lenient(service)
 
     def test_service_callable_with_no_active_client(self):
         def myservice():
@@ -133,13 +133,13 @@ class Test___call__:
 
         qualname_service = _qualname(myservice)
         self.lenient.__dict__[qualname_service] = True
-        assert bool(self.lenient(myservice)) is False
+        assert not self.lenient(myservice)
 
     def test_service_str_with_active_client_with_no_registered_services(self):
         service = "myservice"
         self.lenient.__dict__[service] = True
         self.lenient.__dict__["active"] = self.client
-        assert bool(self.lenient(service)) is False
+        assert not self.lenient(service)
 
     def test_service_callable_with_active_client_with_no_registered_services(
         self,
@@ -153,14 +153,14 @@ class Test___call__:
         qualname_service = _qualname(myservice)
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = _qualname(myclient)
-        assert bool(self.lenient(myservice)) is False
+        assert not self.lenient(myservice)
 
     def test_service_str_with_active_client_with_unmatched_registered_services(self):
         service = "myservice"
         self.lenient.__dict__[service] = True
         self.lenient.__dict__["active"] = self.client
         self.lenient.__dict__[self.client] = ("service1", "service2")
-        assert bool(self.lenient(service)) is False
+        assert not self.lenient(service)
 
     def test_service_callable_with_active_client_with_unmatched_registered_services(
         self,
@@ -176,14 +176,14 @@ class Test___call__:
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = qualname_client
         self.lenient.__dict__[qualname_client] = ("service1", "service2")
-        assert bool(self.lenient(myservice)) is False
+        assert not self.lenient(myservice)
 
     def test_service_str_with_active_client_with_registered_services(self):
         service = "myservice"
         self.lenient.__dict__[service] = True
         self.lenient.__dict__["active"] = self.client
         self.lenient.__dict__[self.client] = ("service1", "service2", service)
-        assert bool(self.lenient(service)) is True
+        assert self.lenient(service)
 
     def test_service_callable_with_active_client_with_registered_services(self):
         def myservice():
@@ -201,7 +201,7 @@ class Test___call__:
             "service2",
             qualname_service,
         )
-        assert bool(self.lenient(myservice)) is True
+        assert self.lenient(myservice)
 
     def test_service_str_with_active_client_with_unmatched_registered_service_str(
         self,
@@ -210,7 +210,7 @@ class Test___call__:
         self.lenient.__dict__[service] = True
         self.lenient.__dict__["active"] = self.client
         self.lenient.__dict__[self.client] = "serviceXXX"
-        assert bool(self.lenient(service)) is False
+        assert not self.lenient(service)
 
     def test_service_callable_with_active_client_with_unmatched_registered_service_str(
         self,
@@ -226,14 +226,14 @@ class Test___call__:
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = qualname_client
         self.lenient.__dict__[qualname_client] = f"{qualname_service}XXX"
-        assert bool(self.lenient(myservice)) is False
+        assert not self.lenient(myservice)
 
     def test_service_str_with_active_client_with_registered_service_str(self):
         service = "myservice"
         self.lenient.__dict__[service] = True
         self.lenient.__dict__["active"] = self.client
         self.lenient.__dict__[self.client] = service
-        assert bool(self.lenient(service)) is True
+        assert self.lenient(service)
 
     def test_service_callable_with_active_client_with_registered_service_str(
         self,
@@ -249,16 +249,16 @@ class Test___call__:
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = qualname_client
         self.lenient.__dict__[qualname_client] = qualname_service
-        assert bool(self.lenient(myservice)) is True
+        assert self.lenient(myservice)
 
     def test_enable(self):
         service = "myservice"
         self.lenient.__dict__[service] = True
         self.lenient.__dict__["active"] = self.client
         self.lenient.__dict__[self.client] = service
-        assert bool(self.lenient(service)) is True
+        assert self.lenient(service)
         self.lenient.__dict__["enable"] = False
-        assert bool(self.lenient(service)) is False
+        assert not self.lenient(service)
 
 
 class Test___contains__:
@@ -298,7 +298,7 @@ class Test__getitem__:
 
         qualname_service = _qualname(service)
         lenient.__dict__[qualname_service] = True
-        assert bool(lenient[service]) is True
+        assert lenient[service]
 
     def test_not_in(self, lenient):
         emsg = "Invalid .* option, got 'wibble'."
@@ -365,8 +365,8 @@ class Test___setitem__:
         client = "client"
         lenient.__dict__[client] = None
         lenient[client] = True
-        assert bool(lenient.__dict__[client]) is True
-        assert bool((isinstance(lenient.__dict__[client], Iterable))) is False
+        assert lenient.__dict__[client]
+        assert not isinstance(lenient.__dict__[client], Iterable)
 
     def test_callable_in_value_bool(self, lenient):
         def client():
@@ -375,8 +375,8 @@ class Test___setitem__:
         qualname_client = _qualname(client)
         lenient.__dict__[qualname_client] = None
         lenient[client] = True
-        assert bool(lenient.__dict__[qualname_client]) is True
-        assert bool(isinstance(lenient.__dict__[qualname_client], Iterable)) is False
+        assert lenient.__dict__[qualname_client]
+        assert not isinstance(lenient.__dict__[qualname_client], Iterable)
 
     def test_in_value_iterable(self, lenient):
         client = "client"
@@ -453,9 +453,9 @@ class Test___setitem__:
         enable = "enable"
         assert lenient.__dict__[enable] == _LENIENT_ENABLE_DEFAULT
         lenient[enable] = True
-        assert bool(lenient.__dict__[enable]) is True
+        assert lenient.__dict__[enable]
         lenient[enable] = False
-        assert bool(lenient.__dict__[enable]) is False
+        assert not lenient.__dict__[enable]
 
     def test_enable_invalid(self, lenient):
         emsg = "Invalid .* option 'enable'"
@@ -587,7 +587,7 @@ class Test_enable:
     def test_setter(self):
         assert self.lenient.enable == _LENIENT_ENABLE_DEFAULT
         self.lenient.enable = False
-        assert bool(self.lenient.enable) is False
+        assert not self.lenient.enable
 
 
 class Test_register_client:
@@ -671,8 +671,8 @@ class Test_register_service:
         assert service not in lenient.__dict__
         lenient.register_service(service)
         assert service in lenient.__dict__
-        assert bool(isinstance(lenient.__dict__[service], Iterable)) is False
-        assert bool(lenient.__dict__[service]) is True
+        assert not isinstance(lenient.__dict__[service], Iterable)
+        assert lenient.__dict__[service]
 
     def test_callable(self, lenient):
         def service():
@@ -682,8 +682,8 @@ class Test_register_service:
         assert qualname_service not in lenient.__dict__
         lenient.register_service(service)
         assert qualname_service in lenient.__dict__
-        assert bool(isinstance(lenient.__dict__[qualname_service], Iterable)) is False
-        assert bool(lenient.__dict__[qualname_service]) is True
+        assert not isinstance(lenient.__dict__[qualname_service], Iterable)
+        assert lenient.__dict__[qualname_service]
 
     def test_not_protected(self, lenient):
         emsg = "Cannot register .* service"
