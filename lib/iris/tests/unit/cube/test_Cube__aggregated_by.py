@@ -26,7 +26,8 @@ from iris.tests.stock import realistic_4d
 
 
 class Test_aggregated_by(tests.IrisTest):
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = Cube(np.arange(44).reshape(4, 11))
 
         val_coord = AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1], long_name="val")
@@ -329,7 +330,8 @@ class Test_aggregated_by(tests.IrisTest):
 
 
 class Test_aggregated_by__lazy(tests.IrisTest):
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = np.arange(44).reshape(4, 11)
         self.lazydata = as_lazy_data(self.data)
         self.cube = Cube(self.lazydata)
@@ -528,7 +530,8 @@ class Test_aggregated_by__lazy(tests.IrisTest):
 
 
 class Test_aggregated_by__climatology(tests.IrisTest):
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = np.arange(100).reshape(20, 5)
         self.aggregator = iris.analysis.MEAN
 
@@ -790,7 +793,8 @@ class Test_aggregated_by__climatology(tests.IrisTest):
 
 
 class Test_aggregated_by__derived(tests.IrisTest):
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = realistic_4d()[:, :10, :6, :8]
         self.time_cat_coord = AuxCoord([0, 0, 1, 1, 2, 2], long_name="time_cat")
         self.cube.add_aux_coord(self.time_cat_coord, 0)

@@ -7,12 +7,12 @@
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests  # isort:skip
-
 import operator
 
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
 from iris._lazy_data import as_lazy_data
@@ -145,7 +145,8 @@ class Test_lazy_maths__scalar_cube(tests.IrisTest):
         data = as_lazy_data(np.array(value, dtype=dtype))
         return iris.cube.Cube(data, standard_name="air_temperature", units="K")
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.c1 = self.build_lazy_cube(3)
         self.c2 = self.build_lazy_cube(4)
         self.c3 = self.build_lazy_cube(3, dtype=np.int64)
