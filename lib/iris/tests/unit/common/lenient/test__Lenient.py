@@ -533,9 +533,9 @@ class Test_context:
         assert pre == self.default
         expected = self.default.copy()
         expected.update(dict(active=client, client=services))
-        assert context["active"], expected["active"]
-        assert set(context["client"]), set(expected["client"])
-        assert post, self.default
+        assert context["active"] == expected["active"]
+        assert set(context["client"]) == set(expected["client"])
+        assert post == self.default
 
     def test_args_callable(self):
         def service1():
