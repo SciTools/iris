@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.common.lenient._lenient_client`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
 from inspect import getmodule
 
 import pytest
