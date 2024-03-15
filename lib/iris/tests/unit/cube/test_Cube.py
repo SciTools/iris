@@ -293,7 +293,8 @@ class Test_xml:
 
 
 class Test_collapsed__lazy:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = np.arange(6.0).reshape((2, 3))
         self.lazydata = as_lazy_data(self.data)
         cube = Cube(self.lazydata)
@@ -348,7 +349,8 @@ class Test_collapsed__lazy:
 
 
 class Test_collapsed__multidim_weighted_with_arr:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = np.arange(6.0).reshape((2, 3))
         self.lazydata = as_lazy_data(self.data)
         # Test cubes with (same-valued) real and lazy data
@@ -506,7 +508,8 @@ class Test_collapsed__multidim_weighted_with_arr:
 class Test_collapsed__multidim_weighted_with_cube(
     Test_collapsed__multidim_weighted_with_arr
 ):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         super().setUp()
 
         self.y_weights_original = self.y_weights
@@ -542,7 +545,8 @@ class Test_collapsed__multidim_weighted_with_cube(
 class Test_collapsed__multidim_weighted_with_str(
     Test_collapsed__multidim_weighted_with_cube
 ):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         super().setUp()
 
         self.full_weights_y = "full_y"
@@ -578,7 +582,8 @@ class Test_collapsed__multidim_weighted_with_str(
 class Test_collapsed__multidim_weighted_with_dim_metadata(
     Test_collapsed__multidim_weighted_with_str
 ):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         super().setUp()
 
         self.full_weights_y = self.dim_metadata_full_y
@@ -588,7 +593,8 @@ class Test_collapsed__multidim_weighted_with_dim_metadata(
 
 
 class Test_collapsed__cellmeasure_ancils:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = Cube(np.arange(6.0).reshape((2, 3)))
         for i_dim, name in enumerate(("y", "x")):
             npts = cube.shape[i_dim]
@@ -613,7 +619,8 @@ class Test_collapsed__cellmeasure_ancils:
 
 
 class Test_collapsed__warning:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = Cube([[1, 2], [1, 2]])
         lat = DimCoord([1, 2], standard_name="latitude")
         lon = DimCoord([1, 2], standard_name="longitude")
@@ -712,7 +719,8 @@ class Test_collapsed__warning:
 
 
 class Test_collapsed_coord_with_3_bounds:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = Cube([1, 2])
 
         bounds = [[0.0, 1.0, 2.0], [2.0, 3.0, 4.0]]
@@ -771,7 +779,8 @@ class Test_collapsed_coord_with_3_bounds:
 
 
 class Test_summary:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = Cube(0)
 
     def test_cell_datetime_objects(self):
@@ -851,7 +860,8 @@ class Test_summary:
 
 
 class Test_is_compatible:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.test_cube = Cube([1.0])
         self.other_cube = self.test_cube.copy()
 
@@ -874,7 +884,8 @@ class Test_is_compatible:
 
 
 class Test_rolling_window:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = Cube(np.arange(6), units="kg")
         self.multi_dim_cube = Cube(np.arange(36).reshape(6, 6))
         val_coord = DimCoord([0, 1, 2, 3, 4, 5], long_name="val", units="s")
@@ -975,7 +986,8 @@ class Test_slices_dim_order:
     ability to correctly re-order the dimensions.
     """
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         """Setup a 4D iris cube, each dimension is length 1.
         The dimensions are;
             dim1: time
@@ -1049,7 +1061,8 @@ class Test_slices_dim_order:
 
 @tests.skip_data
 class Test_slices_over:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.realistic_4d()
         # Define expected iterators for 1D and 2D test cases.
         self.exp_iter_1d = range(len(self.cube.coord("model_level_number").points))
@@ -1085,7 +1098,7 @@ class Test_slices_over:
             assert res_cube == expected
 
     def test_1d_slice_nonexistent_dimension_given(self):
-        with pytest.raisesRegex(ValueError, "iterator over a dimension"):
+        with pytest.raises(ValueError, match="iterator over a dimension"):
             _ = self.cube.slices_over(self.cube.ndim + 1)
 
     def test_2d_slice_coord_given(self):
@@ -1145,7 +1158,7 @@ class Test_slices_over:
             assert next(res) == expected
 
     def test_2d_slice_nonexistent_dimension_given(self):
-        with pytest.raises(ValueError, "iterator over a dimension"):
+        with pytest.raises(ValueError, match="iterator over a dimension"):
             _ = self.cube.slices_over([0, self.cube.ndim + 1])
 
     def test_multidim_slice_coord_given(self):
@@ -1970,7 +1983,8 @@ class Test_intersection__ScatterModulus:
 
 # Test the API of the cube interpolation method.
 class Test_interpolate:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_2d()
 
         self.scheme = mock.Mock(name="interpolation scheme")
@@ -2100,7 +2114,8 @@ class Test_coords__mesh_coords:
 
     """
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Create a standard test cube with a variety of types of coord.
         _add_test_meshcube(self)
 
@@ -2155,7 +2170,8 @@ class Test_coords__mesh_coords:
 
 
 class Test_mesh:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Create a standard test cube with a variety of types of coord.
         _add_test_meshcube(self)
 
@@ -2171,7 +2187,8 @@ class Test_mesh:
 
 
 class Test_location:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Create a standard test cube with a variety of types of coord.
         _add_test_meshcube(self)
 
@@ -2195,7 +2212,8 @@ class Test_location:
 
 
 class Test_mesh_dim:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Create a standard test cube with a variety of types of coord.
         _add_test_meshcube(self)
 
@@ -2226,7 +2244,8 @@ class Test__init__mesh:
 
     """
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Create a standard test mesh and other useful components.
         mesh = sample_mesh()
         meshco = sample_meshcoord(mesh=mesh)
@@ -2342,7 +2361,8 @@ class Test__add_aux_coord__mesh:
 
     """
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         _add_test_meshcube(self)
         # Remove the existing "meshco_y", so we can add similar ones without
         # needing to distinguish from the existing.
@@ -2432,7 +2452,8 @@ class Test__eq__mesh:
 
     """
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Create a 'standard' test cube.
         _add_test_meshcube(self)
 
@@ -2458,7 +2479,8 @@ class Test__eq__mesh:
 
 
 class Test_dtype:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.dtypes = (
             np.dtype("int"),
             np.dtype("uint"),
@@ -2609,7 +2631,8 @@ class Test_add_metadata:
 
 
 class Test_remove_metadata:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = Cube(np.arange(6).reshape(2, 3))
         x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
         cube.add_dim_coord(x_coord, 1)
@@ -2663,7 +2686,8 @@ class Test_remove_metadata:
 
 
 class TestCoords:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = Cube(np.arange(6).reshape(2, 3))
         x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
         cube.add_dim_coord(x_coord, 1)
@@ -2689,7 +2713,8 @@ class Test_coord_division_units:
 
 
 class Test__getitem_CellMeasure:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = Cube(np.arange(6).reshape(2, 3))
         x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
         cube.add_dim_coord(x_coord, 1)
@@ -2713,7 +2738,8 @@ class Test__getitem_CellMeasure:
 
 
 class Test__getitem_AncillaryVariables:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = Cube(np.arange(6).reshape(2, 3))
         x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
         cube.add_dim_coord(x_coord, 1)
@@ -2739,7 +2765,8 @@ class Test__getitem_AncillaryVariables:
 
 
 class TestAncillaryVariables:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = Cube(10 * np.arange(6).reshape(2, 3))
         self.ancill_var = AncillaryVariable(
             np.arange(6).reshape(2, 3),
@@ -2793,7 +2820,8 @@ class TestAncillaryVariables:
 
 
 class TestCellMeasures:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = Cube(np.arange(6).reshape(2, 3))
         x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
         cube.add_dim_coord(x_coord, 1)
@@ -2849,7 +2877,8 @@ class TestCellMeasures:
 
 
 class Test_transpose:
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = np.arange(24).reshape(3, 2, 4)
         self.cube = Cube(self.data)
         self.lazy_cube = Cube(as_lazy_data(self.data))
@@ -3099,7 +3128,7 @@ class Test__eq__meta:
         assert cube1 == cube2
 
 
-@pytest.fixture
+@pytest.fixture()
 def simplecube():
     return stock.simple_2d_w_cell_measure_ancil_var()
 
@@ -3177,7 +3206,7 @@ class TestReprs:
     """
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
-    @pytest.fixture
+    @pytest.fixture()
     def patched_cubeprinter(self):
         target = "iris._representation.cube_printout.CubePrinter"
         instance_mock = mock.MagicMock(
@@ -3234,7 +3263,7 @@ class TestHtmlRepr:
     """
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
-    @pytest.fixture
+    @pytest.fixture()
     def patched_cubehtml(self):
         target = "iris.experimental.representation.CubeRepresentation"
         instance_mock = mock.MagicMock(
@@ -3260,7 +3289,7 @@ class TestHtmlRepr:
 
 class Test__cell_methods:
     @pytest.fixture(autouse=True)
-    def cell_measures_testdata(self):
+    def _setup(self):
         self.cube = Cube([0])
         self.cm = CellMethod("mean", "time", "6hr")
         self.cm2 = CellMethod("max", "latitude", "4hr")

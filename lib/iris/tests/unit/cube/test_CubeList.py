@@ -6,6 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+import pytest
+
 import iris.tests as tests  # isort:skip
 
 import collections
@@ -21,6 +23,7 @@ from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
 import iris.exceptions
 from iris.fileformats.pp import STASH
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 NOT_CUBE_MSG = "cannot be put in a cubelist, as it is not a Cube."
@@ -28,24 +31,26 @@ NON_ITERABLE_MSG = "object is not iterable"
 
 
 class Test_append(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cubelist = iris.cube.CubeList()
         self.cube1 = iris.cube.Cube(1, long_name="foo")
         self.cube2 = iris.cube.Cube(1, long_name="bar")
 
     def test_pass(self):
         self.cubelist.append(self.cube1)
-        self.assertEqual(self.cubelist[-1], self.cube1)
+        assert self.cubelist[-1] == self.cube1
         self.cubelist.append(self.cube2)
-        self.assertEqual(self.cubelist[-1], self.cube2)
+        assert self.cubelist[-1] == self.cube2
 
     def test_fail(self):
-        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+        with pytest.raises(ValueError, match=NOT_CUBE_MSG):
             self.cubelist.append(None)
 
 
 class Test_concatenate_cube(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.units = Unit("days since 1970-01-01 00:00:00", calendar="standard")
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
         self.cube1.add_dim_coord(DimCoord([0, 1, 2], "time", units=self.units), 0)
@@ -54,13 +59,13 @@ class Test_concatenate_cube(tests.IrisTest):
         self.cube2 = Cube([1, 2, 3], "air_temperature", units="K")
         self.cube2.add_dim_coord(DimCoord([3, 4, 5], "time", units=self.units), 0)
         result = CubeList([self.cube1, self.cube2]).concatenate_cube()
-        self.assertIsInstance(result, Cube)
+        assert isinstance(result, Cube)
 
     def test_fail(self):
         units = Unit("days since 1970-01-02 00:00:00", calendar="standard")
         cube2 = Cube([1, 2, 3], "air_temperature", units="K")
         cube2.add_dim_coord(DimCoord([0, 1, 2], "time", units=units), 0)
-        with self.assertRaises(iris.exceptions.ConcatenateError):
+        with pytest.raises(iris.exceptions.ConcatenateError):
             CubeList([self.cube1, cube2]).concatenate_cube()
 
     def test_names_differ_fail(self):
@@ -69,17 +74,18 @@ class Test_concatenate_cube(tests.IrisTest):
         self.cube3 = Cube([1, 2, 3], "air_pressure", units="Pa")
         self.cube3.add_dim_coord(DimCoord([3, 4, 5], "time", units=self.units), 0)
         exc_regexp = "Cube names differ: air_temperature != air_pressure"
-        with self.assertRaisesRegex(iris.exceptions.ConcatenateError, exc_regexp):
+        with pytest.raises(iris.exceptions.ConcatenateError, match=exc_regexp):
             CubeList([self.cube1, self.cube2, self.cube3]).concatenate_cube()
 
     def test_empty(self):
         exc_regexp = "can't concatenate an empty CubeList"
-        with self.assertRaisesRegex(ValueError, exc_regexp):
+        with pytest.raises(ValueError, match=exc_regexp):
             CubeList([]).concatenate_cube()
 
 
 class Test_extend(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
         self.cube2 = iris.cube.Cube(1, long_name="bar")
         self.cubelist1 = iris.cube.CubeList([self.cube1])
@@ -88,21 +94,22 @@ class Test_extend(tests.IrisTest):
     def test_pass(self):
         cubelist = copy.copy(self.cubelist1)
         cubelist.extend(self.cubelist2)
-        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        assert cubelist == self.cubelist1 + self.cubelist2
         cubelist.extend([self.cube2])
-        self.assertEqual(cubelist[-1], self.cube2)
+        assert cubelist[-1] == self.cube2
 
     def test_fail(self):
-        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+        with pytest.raises(TypeError, match=NON_ITERABLE_MSG):
             self.cubelist1.extend(self.cube1)
-        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+        with pytest.raises(TypeError, match=NON_ITERABLE_MSG):
             self.cubelist1.extend(None)
-        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+        with pytest.raises(ValueError, match=NOT_CUBE_MSG):
             self.cubelist1.extend(range(3))
 
 
 class Test_extract_overlapping(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         shape = (6, 14, 19)
         n_time, n_lat, n_lon = shape
         n_data = n_time * n_lat * n_lon
@@ -133,32 +140,33 @@ class Test_extract_overlapping(tests.IrisTest):
     def test_extract_one_str_dim(self):
         cubes = iris.cube.CubeList([self.cube[2:], self.cube[:4]])
         a, b = cubes.extract_overlapping("time")
-        self.assertEqual(a.coord("time"), self.cube.coord("time")[2:4])
-        self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
+        assert a.coord("time") == self.cube.coord("time")[2:4]
+        assert b.coord("time") == self.cube.coord("time")[2:4]
 
     def test_extract_one_list_dim(self):
         cubes = iris.cube.CubeList([self.cube[2:], self.cube[:4]])
         a, b = cubes.extract_overlapping(["time"])
-        self.assertEqual(a.coord("time"), self.cube.coord("time")[2:4])
-        self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
+        assert a.coord("time") == self.cube.coord("time")[2:4]
+        assert b.coord("time") == self.cube.coord("time")[2:4]
 
     def test_extract_two_dims(self):
         cubes = iris.cube.CubeList([self.cube[2:, 5:], self.cube[:4, :10]])
         a, b = cubes.extract_overlapping(["time", "latitude"])
-        self.assertEqual(a.coord("time"), self.cube.coord("time")[2:4])
-        self.assertEqual(a.coord("latitude"), self.cube.coord("latitude")[5:10])
-        self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
-        self.assertEqual(b.coord("latitude"), self.cube.coord("latitude")[5:10])
+        assert a.coord("time") == self.cube.coord("time")[2:4]
+        assert a.coord("latitude") == self.cube.coord("latitude")[5:10]
+        assert b.coord("time") == self.cube.coord("time")[2:4]
+        assert b.coord("latitude") == self.cube.coord("latitude")[5:10]
 
     def test_different_orders(self):
         cubes = iris.cube.CubeList([self.cube[::-1][:4], self.cube[:4]])
         a, b = cubes.extract_overlapping("time")
-        self.assertEqual(a.coord("time"), self.cube[::-1].coord("time")[2:4])
-        self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
+        assert a.coord("time") == self.cube[::-1].coord("time")[2:4]
+        assert b.coord("time") == self.cube.coord("time")[2:4]
 
 
 class Test_iadd(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
         self.cube2 = iris.cube.Cube(1, long_name="bar")
         self.cubelist1 = iris.cube.CubeList([self.cube1])
@@ -167,36 +175,38 @@ class Test_iadd(tests.IrisTest):
     def test_pass(self):
         cubelist = copy.copy(self.cubelist1)
         cubelist += self.cubelist2
-        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        assert cubelist == self.cubelist1 + self.cubelist2
         cubelist += [self.cube2]
-        self.assertEqual(cubelist[-1], self.cube2)
+        assert cubelist[-1] == self.cube2
 
     def test_fail(self):
-        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+        with pytest.raises(TypeError, match=NON_ITERABLE_MSG):
             self.cubelist1 += self.cube1
-        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+        with pytest.raises(TypeError, match=NON_ITERABLE_MSG):
             self.cubelist1 += 1.0
-        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+        with pytest.raises(ValueError, match=NOT_CUBE_MSG):
             self.cubelist1 += range(3)
 
 
 class Test_insert(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
         self.cube2 = iris.cube.Cube(1, long_name="bar")
         self.cubelist = iris.cube.CubeList([self.cube1] * 3)
 
     def test_pass(self):
         self.cubelist.insert(1, self.cube2)
-        self.assertEqual(self.cubelist[1], self.cube2)
+        assert self.cubelist[1] == self.cube2
 
     def test_fail(self):
-        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+        with pytest.raises(ValueError, match=NOT_CUBE_MSG):
             self.cubelist.insert(0, None)
 
 
 class Test_merge_cube(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
         self.cube1.add_aux_coord(AuxCoord([0], "height", units="m"))
 
@@ -204,29 +214,33 @@ class Test_merge_cube(tests.IrisTest):
         cube2 = self.cube1.copy()
         cube2.coord("height").points = [1]
         result = CubeList([self.cube1, cube2]).merge_cube()
-        self.assertIsInstance(result, Cube)
+        assert isinstance(result, Cube)
 
     def test_fail(self):
         cube2 = self.cube1.copy()
         cube2.rename("not air temperature")
-        with self.assertRaises(iris.exceptions.MergeError):
+        with pytest.raises(iris.exceptions.MergeError):
             CubeList([self.cube1, cube2]).merge_cube()
 
     def test_empty(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             CubeList([]).merge_cube()
 
     def test_single_cube(self):
         result = CubeList([self.cube1]).merge_cube()
-        self.assertEqual(result, self.cube1)
-        self.assertIsNot(result, self.cube1)
+        assert result == self.cube1
+        assert result is not self.cube1
 
     def test_repeated_cube(self):
-        with self.assertRaises(iris.exceptions.MergeError):
+        with pytest.raises(iris.exceptions.MergeError):
             CubeList([self.cube1, self.cube1]).merge_cube()
 
 
 class Test_merge__time_triple(tests.IrisTest):
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
+
     @staticmethod
     def _make_cube(fp, rt, t, realization=None):
         cube = Cube(np.arange(20).reshape(4, 5))
@@ -259,7 +273,7 @@ class Test_merge__time_triple(tests.IrisTest):
         en2_cubes = [self._make_cube(*triple, realization=2) for triple in triples]
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         (cube,) = cubes.merge()
-        self.assertCML(cube, checksum=False)
+        _shared_utils.assert_CML(self.request, cube, checksum=False)
 
     def test_combination_with_realization(self):
         # => fp, rt, t: 8; realization: 2
@@ -277,7 +291,7 @@ class Test_merge__time_triple(tests.IrisTest):
         en2_cubes = [self._make_cube(*triple, realization=2) for triple in triples]
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         (cube,) = cubes.merge()
-        self.assertCML(cube, checksum=False)
+        _shared_utils.assert_CML(self.request, cube, checksum=False)
 
     def test_combination_with_extra_realization(self):
         # => fp, rt, t, realization: 17
@@ -298,7 +312,7 @@ class Test_merge__time_triple(tests.IrisTest):
         en3_cubes = [self._make_cube(0, 10, 2, realization=3)]
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes) + CubeList(en3_cubes)
         (cube,) = cubes.merge()
-        self.assertCML(cube, checksum=False)
+        _shared_utils.assert_CML(self.request, cube, checksum=False)
 
     def test_combination_with_extra_triple(self):
         # => fp, rt, t, realization: 17
@@ -320,11 +334,12 @@ class Test_merge__time_triple(tests.IrisTest):
         ]
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         (cube,) = cubes.merge()
-        self.assertCML(cube, checksum=False)
+        _shared_utils.assert_CML(self.request, cube, checksum=False)
 
 
 class Test_setitem(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
         self.cube2 = iris.cube.Cube(1, long_name="bar")
         self.cube3 = iris.cube.Cube(1, long_name="boo")
@@ -332,41 +347,40 @@ class Test_setitem(tests.IrisTest):
 
     def test_pass(self):
         self.cubelist[1] = self.cube2
-        self.assertEqual(self.cubelist[1], self.cube2)
+        assert self.cubelist[1] == self.cube2
         self.cubelist[:2] = (self.cube2, self.cube3)
-        self.assertEqual(
-            self.cubelist,
-            iris.cube.CubeList([self.cube2, self.cube3, self.cube1]),
-        )
+        assert self.cubelist == iris.cube.CubeList([self.cube2, self.cube3, self.cube1])
 
     def test_fail(self):
-        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+        with pytest.raises(ValueError, match=NOT_CUBE_MSG):
             self.cubelist[0] = None
-        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+        with pytest.raises(ValueError, match=NOT_CUBE_MSG):
             self.cubelist[0:2] = [self.cube3, None]
 
-        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+        with pytest.raises(TypeError, match=NON_ITERABLE_MSG):
             self.cubelist[:1] = 2.5
-        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+        with pytest.raises(TypeError, match=NON_ITERABLE_MSG):
             self.cubelist[:1] = self.cube1
 
 
 class Test_xml(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cubes = CubeList([Cube(np.arange(3)), Cube(np.arange(3))])
 
     def test_byteorder_default(self):
-        self.assertIn("byteorder", self.cubes.xml())
+        assert "byteorder" in self.cubes.xml()
 
     def test_byteorder_false(self):
-        self.assertNotIn("byteorder", self.cubes.xml(byteorder=False))
+        assert "byteorder" not in self.cubes.xml(byteorder=False)
 
     def test_byteorder_true(self):
-        self.assertIn("byteorder", self.cubes.xml(byteorder=True))
+        assert "byteorder" in self.cubes.xml(byteorder=True)
 
 
 class Test_extract(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.scalar_cubes = CubeList()
         for i in range(5):
             for letter in "abcd":
@@ -376,7 +390,7 @@ class Test_extract(tests.IrisTest):
         # Test the name based extraction of a CubeList containing scalar cubes.
         res = self.scalar_cubes.extract("a")
         expected = CubeList([Cube(i, long_name="a") for i in range(5)])
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_scalar_cube_data_constraint(self):
         # Test the extraction of a CubeList containing scalar cubes
@@ -385,7 +399,7 @@ class Test_extract(tests.IrisTest):
         constraint = iris.Constraint(cube_func=lambda c: c.data == val)
         res = self.scalar_cubes.extract(constraint)
         expected = CubeList([Cube(val, long_name=letter) for letter in "abcd"])
-        self.assertEqual(res, expected)
+        assert res == expected
 
 
 class ExtractMixin:
@@ -393,7 +407,8 @@ class ExtractMixin:
     # Effectively "abstract" -- inheritor must define this property :
     #   method_name = 'extract_cube' / 'extract_cubes'
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube_x = Cube(0, long_name="x")
         self.cube_y = Cube(0, long_name="y")
         self.cons_x = Constraint("x")
@@ -412,20 +427,18 @@ class ExtractMixin:
         cubelist = CubeList(cubes)
         method = getattr(cubelist, self.method_name)
         if isinstance(expected, str):
-            with self.assertRaisesRegex(
-                iris.exceptions.ConstraintMismatchError, expected
-            ):
+            with pytest.raises(iris.exceptions.ConstraintMismatchError, match=expected):
                 method(constraints)
         else:
             result = method(constraints)
             if expected is None:
-                self.assertIsNone(result)
+                assert result is None
             elif isinstance(expected, Cube):
-                self.assertIsInstance(result, Cube)
-                self.assertEqual(result, expected)
+                assert isinstance(result, Cube)
+                assert result == expected
             elif isinstance(expected, list):
-                self.assertIsInstance(result, CubeList)
-                self.assertEqual(result, expected)
+                assert isinstance(result, CubeList)
+                assert result == expected
             else:
                 msg = (
                     'Unhandled usage in "check_extract" call: '
@@ -466,7 +479,7 @@ class Test_extract_cube(ExtractMixin, tests.IrisTest):
     def test_constraint_in_list__fail(self):
         # Check that we *cannot* use [constraint]
         msg = "cannot be cast to a constraint"
-        with self.assertRaisesRegex(TypeError, msg):
+        with pytest.raises(TypeError, match=msg):
             self.check_extract([], [self.cons_x], [])
 
     def test_multi_cube_ok(self):
@@ -628,39 +641,41 @@ class Test_extract_cubes__multi_constraints(ExtractCubesMixin, tests.IrisTest):
 
 
 class Test_iteration(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.scalar_cubes = CubeList()
         for i in range(5):
             for letter in "abcd":
                 self.scalar_cubes.append(Cube(i, long_name=letter))
 
     def test_iterable(self):
-        self.assertIsInstance(self.scalar_cubes, collections.abc.Iterable)
+        assert isinstance(self.scalar_cubes, collections.abc.Iterable)
 
     def test_iteration(self):
         letters = "abcd" * 5
         for i, cube in enumerate(self.scalar_cubes):
-            self.assertEqual(cube.long_name, letters[i])
+            assert cube.long_name == letters[i]
 
 
 class TestPrint(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cubes = CubeList([iris.tests.stock.lat_lon_cube()])
 
     def test_summary(self):
         expected = "0: unknown / (unknown)                 (latitude: 3; longitude: 4)"
-        self.assertEqual(str(self.cubes), expected)
+        assert str(self.cubes) == expected
 
     def test_summary_name_unit(self):
         self.cubes[0].long_name = "aname"
         self.cubes[0].units = "1"
         expected = "0: aname / (1)                         (latitude: 3; longitude: 4)"
-        self.assertEqual(str(self.cubes), expected)
+        assert str(self.cubes) == expected
 
     def test_summary_stash(self):
         self.cubes[0].attributes["STASH"] = STASH.from_msi("m01s00i004")
         expected = "0: m01s00i004 / (unknown)              (latitude: 3; longitude: 4)"
-        self.assertEqual(str(self.cubes), expected)
+        assert str(self.cubes) == expected
 
 
 class TestRealiseData(tests.IrisTest):
@@ -672,16 +687,17 @@ class TestRealiseData(tests.IrisTest):
         call_patch = self.patch("iris._lazy_data.co_realise_cubes")
         test_cubelist.realise_data()
         # Check it was called once, passing cubes as *args.
-        self.assertEqual(call_patch.call_args_list, [mock.call(*mock_cubes_list)])
+        assert call_patch.call_args_list == [mock.call(*mock_cubes_list)]
 
 
 class Test_CubeList_copy(tests.IrisTest):
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube_list = iris.cube.CubeList()
         self.copied_cube_list = self.cube_list.copy()
 
     def test_copy(self):
-        self.assertIsInstance(self.copied_cube_list, iris.cube.CubeList)
+        assert isinstance(self.copied_cube_list, iris.cube.CubeList)
 
 
 class TestHtmlRepr:
